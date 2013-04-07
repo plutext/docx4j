@@ -52,6 +52,7 @@ public class PageNumberInformationCollector {
 	}
 
 	protected static class FieldVisitor extends TraversalUtilVisitor<CTSimpleField> {
+		
 		private static final Object PAGE_FIELD_TYPE = "PAGE";
 		private static final Object NUMPAGES_FIELD_TYPE = "NUMPAGES";
 		private static final Object SECTIONPAGES_FIELD_TYPE = "SECTIONPAGES";
@@ -65,8 +66,17 @@ public class PageNumberInformationCollector {
 
 		@Override
 		public void apply(CTSimpleField element) {
-		String instr = element.getInstr();
-		String fieldType = FldSimpleUnitsHelper.getFldSimpleName(instr);
+			
+			String instr = element.getInstr();
+			
+			//String fieldType = FldSimpleUnitsHelper.getFldSimpleName(instr);
+			try {
+				fldSimpleModel.build(instr); // TODO: do this once only
+			} catch (TransformerException e) {
+				e.printStackTrace();
+			} 
+			String fieldType = fldSimpleModel.getFldType();
+			
 			if (PAGE_FIELD_TYPE.equals(fieldType)) {
 				results.setPagePresent(true);
 				results.setPageFormat(extractFormat(instr));

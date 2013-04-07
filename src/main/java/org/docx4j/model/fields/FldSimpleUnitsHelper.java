@@ -1,15 +1,37 @@
 package org.docx4j.model.fields;
 
 import java.text.DateFormat;
+import java.text.Format;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.docx4j.wml.NumberFormat;
+import org.docx4j.wml.RPr;
 
+/**
+ * Formats the string value of the field according to the three possible formatting switches:
+ * 
+ * + date-and-time-formatting-switch: \@ 
+ * + numeric-formatting-switch: \#
+ * + general-formatting-switch: \*
+ * 
+ * TODO: rename this class.  New name: FormattingSwitchHelper (matching the terminology in the spec)
+ * 
+ * Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT are not handled here. 
+ * It is the responsibility of the calling code to handle these.
+ * 
+ * @author alberto, jharrop
+ *
+ */
 public class FldSimpleUnitsHelper {
+	
+	private static Logger log = Logger.getLogger(FldSimpleUnitsHelper.class);		
+	
 	/* http://office.microsoft.com/en-us/word-help/insert-and-format-field-codes-in-word-2010-HA101830917.aspx
 	 * Switches:
 	 * 
@@ -95,6 +117,22 @@ public class FldSimpleUnitsHelper {
 	 * `numbereditem`  Number of the preceding item that you numbered. 
 	 * 
 	 */
+
+/*	
+	 DOCPROPERTY  caAQN_Title_Negociacion  \* Upper 
+	 DOCPROPERTY  caAQN_IdFiscalRep1  \* Lower 
+	 DOCPROPERTY  caSupplier.CorporateAddress.PostalAddress.Lines  \* FirstCap 
+	 DOCPROPERTY  caSupplier.CorporateAddress.PostalAddress.City  \* Caps 
+
+	 DOCPROPERTY  caSupplier  \* Charformat 
+	 DOCPROPERTY  caAQN_IdFiscalProv  \* MERGEFORMAT  
+
+	 DOCPROPERTY  caAQN_Vol_PosNegMulti  \# 0.00 
+	 
+	 DOCPROPERTY  caAQN_Fecha_Max_Pre_Le  \@ "d, MMMM 'de' YYYY" 
+	 DOCPROPERTY  caAQN_Fecha_R_Adj  \@ "'on' MMM - d, yyyy"
+	 DOCPROPERTY  caAQN_Fecha_R_Adj  \@ "d 'de' MMMM 'de' yyyy"
+*/
 	
 	protected static final ThreadLocal<SimpleDateFormat> DATE_FORMATS = new ThreadLocal();
 	
@@ -144,6 +182,7 @@ public class FldSimpleUnitsHelper {
 		//Year
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yy","yy");		//Year as two digits with a leading 0 (zero) for years 01 through 09.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yyyy","yyyy");	//Year as four digits.
+		DATE_FORMAT_ITEMS_TO_JAVA.put("YYYY","yyyy");	//NOT IN SPEC Year as four digits.		
 		//Hour
 		DATE_FORMAT_ITEMS_TO_JAVA.put("h","K");			//(12h) Hour without a leading 0 (zero) for single-digit hours.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("H","H");			//(24h) Hour without a leading 0 (zero) for single-digit hours.
@@ -160,57 +199,130 @@ public class FldSimpleUnitsHelper {
 		//DATE_FORMAT_ITEMS_TO_JAVA.put("AM/PM","a");		//Displays AM or PM as uppercase. 
 	}
 	
-	/** Conversion of the word page number format to the fo page number format.
-	 *  
-	 * @param wordName word page number format
-	 * @return null if the wordName is null, the correspondig fo value if present or a default.
-	 */
-	public static String getFoPageNumberFormat(String wordName) {
-	String ret = null;
-		if ((wordName != null) && (wordName.length() > 0)) {
-			ret = FORMAT_PAGE_TO_FO.get(wordName);
-			if (ret == null) {
-				ret = DEFAULT_FORMAT_PAGE_TO_FO;
+	public static String applyFormattingSwitch(FldSimpleModel model, String value) {
+
+		// date-and-time-formatting-switch: \@ 
+		String format = findFormat("\\@", model.getFldParameters());
+		value = format==null ? value : formatDate(model, format, value );
+		
+		// numeric-formatting-switch: \#
+		format = findFormat("\\#", model.getFldParameters());
+		value = format==null ? value : formatNumber(model, format, value );
+		
+		// general-formatting-switch: \*
+		format = findFormat("\\#", model.getFldParameters());
+		value = format==null ? value : formatNumber(model, format, value );
+		
+		log.debug("Result -> " + value);
+		
+		return value;
+	}
+	
+	private static String formatDate(FldSimpleModel model, String format, String dateStr) {
+		
+		log.debug("Applying format " + format + " to " + dateStr);
+		// eg 31/3/2013
+		// Word's default format for date: 7/04/2013
+		// and time: 11:05 AM		
+		
+		/* Word seems happy to parse dates in any of the following formats:
+		 * 
+		    <vt:lpwstr>13/4/2013</vt:lpwstr>
+		    <vt:lpwstr>13/04/2013</vt:lpwstr>
+		    <vt:lpwstr>13/04/13</vt:lpwstr>
+		    <vt:lpwstr>13-04-2013</vt:lpwstr>
+		    <vt:lpwstr>13/04/2013 11:05 AM</vt:lpwstr>
+		    <vt:lpwstr>2013-08-19T00:00:00Z</vt:lpwstr>
+		 * 
+		 * Control Panel  > Region & Language > Formats determines whether Word 2010 interprets 11/12
+		 * as 11 Dec, or 12 Nov.
+		 * 
+		 * But we'll use a docx4j property to control this. 
+		 */
+		
+		// parse the string into a date.
+		String inputFormat = DateFormatInferencer.determineDateFormat(dateStr);
+		if (inputFormat==null) {
+			log.error("Unrecognised format; Can't parse " + dateStr);
+			return null;
+		} else {
+			log.debug("Parsing with format: " + inputFormat);
+			Date date = null;
+			try {
+				DateFormat dateTimeFormat = new SimpleDateFormat(inputFormat);
+					// is this threadsafe in static method?
+				
+				date = (Date)dateTimeFormat.parse(dateStr);
+			} catch (ParseException e) {
+				log.error("Can't parse " + dateStr + " using format " + inputFormat);				
+				return null;
 			}
-			else if (ret == NONE_STRING) {
-				ret = null;
+			return formatDate(model, format, date);
+		}
+	}
+
+	private static String formatNumber( FldSimpleModel model, String format, String value) {
+
+		log.debug("Applying format " + format + " to " + value);
+		
+		
+		return value;
+	}
+
+	private static String formatGeneral( FldSimpleModel model, String format, String value) {
+		// Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT
+		// are not handled here. It is the responsibility of the calling code
+		// to handle these.
+		
+		log.debug("Applying format " + format + " to " + value);
+
+		
+		// TODO
+		
+		return value;
+	}
+	
+
+	public static String findFormat(String formatSwitch, List<String> fldParameters) {
+		
+		String ret = null;
+		String param = null;
+		if ((fldParameters != null) && (!fldParameters.isEmpty())) {
+			for (int i=0; i<fldParameters.size(); i++) {
+				if (fldParameters.get(i).startsWith(formatSwitch)) {
+					param = fldParameters.get(i);
+					break;
+				}
+			}
+		}
+		if ((param != null) &&  (param.length() > formatSwitch.length())) {
+			ret = param.substring(formatSwitch.length());
+			if ((ret.length() > 0) && 
+				(ret.charAt(0) == '"') && (ret.charAt(ret.length() - 1) == '"')) {
+				ret = ret.substring(1, ret.length() - 1);
 			}
 		}
 		return ret;
 	}
 	
-	/** Check if the page number format has a decoration (eg. dash).
-	 *  
-	 * @param wordName word page number format
-	 * @return decoration type (one of the DECORATION_xxx constants).
-	 */
-	public static int getFoPageNumberDecoration(String wordName) {
-	int ret = DECORATION_NONE;
-		if ((wordName != null) && (wordName.length() > 0)) {
-			if ("ArabicDash".equals(wordName) || 
-			   NumberFormat.NUMBER_IN_DASH.value().equals(wordName)) {
-				ret = DECORATION_DASH;
-			}
-		}
-		return ret;
-	}
 	
-	public static String getFldSimpleName(String instr) {
-	String ret = null;
-	int startValue = 0;
-	int endValue = -1;	
-		if ((instr != null) && (instr.length() > 0)) {
-			while ((startValue < instr.length()) && 
-				   (instr.charAt(startValue) == ' ')) startValue++;
-			endValue = startValue;
-			while ((endValue < instr.length()) && 
-					   (instr.charAt(endValue) != ' ')) endValue++;
-			if (startValue < instr.length()) {
-				ret = instr.substring(startValue, endValue).toUpperCase();
-			}
-		}
-		return ret;
-	}
+//	public static String getFldSimpleName(String instr) {
+//		
+//		String ret = null;
+//		int startValue = 0;
+//		int endValue = -1;	
+//		if ((instr != null) && (instr.length() > 0)) {
+//			while ((startValue < instr.length()) && 
+//				   (instr.charAt(startValue) == ' ')) startValue++;
+//			endValue = startValue;
+//			while ((endValue < instr.length()) && 
+//					   (instr.charAt(endValue) != ' ')) endValue++;
+//			if (startValue < instr.length()) {
+//				ret = instr.substring(startValue, endValue).toUpperCase();
+//			}
+//		}
+//		return ret;
+//	}
 	
 	public static String convertDatePattern(String wordDatePattern) {
 	StringBuilder buffer = new StringBuilder(32);
@@ -283,49 +395,77 @@ public class FldSimpleUnitsHelper {
 		return formatDate(model, new Date()); 
 	}
 
+	
 	public static String formatDate(FldSimpleModel model, Date date) {
-	String format = findFormat("\\@", model.getFldParameters());
-	DateFormat dateFormat = null;
+		
+		String format = findFormat("\\@", model.getFldParameters());
+		return formatDate(model, format, date );
+	}
+
+	public static String formatDate(FldSimpleModel model, String format, Date date) {
+		
+		DateFormat dateFormat = null;
 		if ((format != null) && (format.length() > 0)) {
 			SimpleDateFormat simpleDateFormat = getSimpleDateFormat();
 			simpleDateFormat.applyPattern(convertDatePattern(format));
 			dateFormat = simpleDateFormat;
 		}
 		else {
-			dateFormat = (model.getFldName().indexOf("DATE") > -1 ? 
+			dateFormat = (model.getFldType().indexOf("DATE") > -1 ? 
 						  SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT) :
 					      SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)); 
 		}
 		return dateFormat.format(date);
 	}
-
-	public static String findFormat(String formatSwitch, List<String> fldParameters) {
-	String ret = null;
-	String param = null;
-		if ((fldParameters != null) && (!fldParameters.isEmpty())) {
-			for (int i=0; i<fldParameters.size(); i++) {
-				if (fldParameters.get(i).startsWith(formatSwitch)) {
-					param = fldParameters.get(i);
-					break;
-				}
-			}
-		}
-		if ((param != null) &&  (param.length() > formatSwitch.length())) {
-			ret = param.substring(formatSwitch.length());
-			if ((ret.length() > 0) && 
-				(ret.charAt(0) == '"') && (ret.charAt(ret.length() - 1) == '"')) {
-				ret = ret.substring(1, ret.length() - 1);
-			}
-		}
-		return ret;
-	}
+	
 	
 	private static SimpleDateFormat getSimpleDateFormat() {
-	SimpleDateFormat ret = DATE_FORMATS.get();
+		
+		SimpleDateFormat ret = DATE_FORMATS.get();
 		if (ret == null) {
 			ret = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance();
 			DATE_FORMATS.set(ret);
 		}
 		return ret;
 	}
+
+	
+	
+	// TODO: move the below methods to some other class
+	
+	/** Conversion of the word page number format to the fo page number format.
+	 *  
+	 * @param wordName word page number format
+	 * @return null if the wordName is null, the correspondig fo value if present or a default.
+	 */
+	public static String getFoPageNumberFormat(String wordName) {
+	String ret = null;
+		if ((wordName != null) && (wordName.length() > 0)) {
+			ret = FORMAT_PAGE_TO_FO.get(wordName);
+			if (ret == null) {
+				ret = DEFAULT_FORMAT_PAGE_TO_FO;
+			}
+			else if (ret == NONE_STRING) {
+				ret = null;
+			}
+		}
+		return ret;
+	}
+	
+	/** Check if the page number format has a decoration (eg. dash).
+	 *  
+	 * @param wordName word page number format
+	 * @return decoration type (one of the DECORATION_xxx constants).
+	 */
+	public static int getFoPageNumberDecoration(String wordName) {
+	int ret = DECORATION_NONE;
+		if ((wordName != null) && (wordName.length() > 0)) {
+			if ("ArabicDash".equals(wordName) || 
+			   NumberFormat.NUMBER_IN_DASH.value().equals(wordName)) {
+				ret = DECORATION_DASH;
+			}
+		}
+		return ret;
+	}
+	
 }

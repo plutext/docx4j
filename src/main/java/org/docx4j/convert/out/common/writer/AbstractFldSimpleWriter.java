@@ -13,6 +13,7 @@ import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.wml.CTSimpleField;
@@ -30,13 +31,15 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	}
 	
 	public interface FldSimpleNodeWriterHandler extends FldSimpleWriterHandler {
+		
 		public static final int PROCESS_NONE = 0;
 		public static final int PROCESS_APPLY_STYLE = 1;
 		public static final int PROCESS_WRAP_APPLY_STYLE = 2;
 		
 		public int getProcessType();
 		
-		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException;
+		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) 
+				throws TransformerException;
 	}
 	
 	public interface FldSimpleStringWriterHandler extends FldSimpleWriterHandler {
@@ -75,6 +78,31 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		}
 	}
 
+	protected static class DocPropertyHandler implements FldSimpleStringWriterHandler {
+		@Override
+		public String getName() { return "DOCPROPERTY"; }
+
+		@Override
+		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
+			
+			// First, get the value
+			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
+			List<String> params = model.splitParameters(model.getFldParameterString());
+//			for (String param : params) {
+//				System.out.println(param);
+//				if (param.startsWith("\\@")) {
+//					System.out.println(FldSimpleUnitsHelper.formatDate(model));
+//				}
+//			}
+			
+			//String key = params.get(0);
+			String key = model.getFldArgument();
+			String value = dpr.getValue(key).toString();
+			log.debug("= " + value);
+			
+			return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);			
+		}
+	}
 	
 	
 	
@@ -82,7 +110,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	protected Map<String, FldSimpleWriterHandler> handlers = 
 			new HashMap<String, FldSimpleWriterHandler>();
 	
-	//This handler get's called, if a specific handler isn't avaiable
+	//This handler get's called, if a specific handler isn't available
 	//it should just return the result in the document as it's own result.
 	protected FldSimpleNodeWriterHandler defaultHandler = null;
 	
@@ -100,6 +128,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		registerHandler(new DateHandler());
 		registerHandler(new TimeHandler());
 		registerHandler(new PrintdateHandler());
+		registerHandler(new DocPropertyHandler());
 	}
 	
 	protected void registerHandler(FldSimpleWriterHandler handler) {
@@ -136,9 +165,9 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		
 		FldSimpleModel fldSimpleModel = (FldSimpleModel)model;
 		
-		log.debug("looking for handler for " + fldSimpleModel.getFldName());
+		log.debug("looking for handler for " + fldSimpleModel.getFldType());
 		
-		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldName());
+		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldType());
 		FldSimpleNodeWriterHandler nodeHandler = null;
 		Node ret = null;
 		String value = null;
@@ -149,6 +178,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			log.debug(".. got it .. " + handler.getClass().getName());			
 		}
 		if (handler instanceof FldSimpleNodeWriterHandler) {
+			
 			nodeHandler = (FldSimpleNodeWriterHandler)handler;
 			ret = nodeHandler.toNode(context, fldSimpleModel, doc);
 			switch (nodeHandler.getProcessType()) {
@@ -163,7 +193,8 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 					break;
 			}
 		}
-		else {
+		else { // FldSimpleStringWriterHandler
+			
 			value = ((FldSimpleStringWriterHandler)handler).toString(context, fldSimpleModel);
 			ret = wrap(context, value, doc);
 			applyStyle(context, fldSimpleModel, ret);
@@ -172,8 +203,9 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	}
 
 	protected Node wrap(AbstractWmlConversionContext context, String result, Document doc) {
-	RPr rPr = null;
-	Node node = null;
+		
+		RPr rPr = null;
+		Node node = null;
 		if (result != null) {
 			node = createNode(doc);
 			if (result.length() > 0) {
@@ -184,7 +216,8 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	}
 
 	protected Node wrap(AbstractWmlConversionContext context, Node node, Document doc) {
-	Node wrapper = null;
+		
+		Node wrapper = null;
 		if (node != null) {
 			wrapper = createNode(doc);
 			wrapper.appendChild(node);
@@ -192,9 +225,17 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		return wrapper;
 	}
 
+	/**
+	 * Apply the formatting specified in the rPr node (if any).
+	 * 
+	 * @param context
+	 * @param fldSimpleModel
+	 * @param node
+	 */
 	protected void applyStyle(AbstractWmlConversionContext context, FldSimpleModel fldSimpleModel, Node node) {
-	CTSimpleField ctSimpleField = fldSimpleModel.getFldSimple();
-	RPr rPr = null;
+		
+		CTSimpleField ctSimpleField = fldSimpleModel.getFldSimple();
+		RPr rPr = null;
 		if (node != null) {
 			rPr = getRPr(ctSimpleField.getContent());
 			if (rPr != null) {

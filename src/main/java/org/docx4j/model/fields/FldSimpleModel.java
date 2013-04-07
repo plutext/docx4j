@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.wml.CTSimpleField;
 import org.w3c.dom.Node;
@@ -13,19 +15,29 @@ import org.w3c.dom.Node;
 /** Just a basic model for w:fldSimple that gets used in the 
  *  FldSimpleModelConverter for the conversion to pdf/html
  * 
+ *  
+ *  field:
+ *  	field-type field-argument [switches]
  */
 public class FldSimpleModel extends Model {
+	
+	private static Logger log = Logger.getLogger(FldSimpleModel.class);			
+	
 	public static final String MODEL_ID = "w:fldSimple";
 	
 	protected CTSimpleField fldSimple = null;
 	protected Node content = null;
-	protected String fldName = null;
+	protected String fldType = null;
+	protected String fldArgument = null; 
 	protected String fldParameterString = null;
 	protected List<String> fldParameters = null;
 	
 	@Override
 	public void build(Object node, Node content) throws TransformerException {
 		this.fldSimple = (CTSimpleField)node;
+		
+		log.debug(XmlUtils.marshaltoString(fldSimple, true, true));
+		
 		this.content = content;
 		setupNameParameterString(fldSimple.getInstr());
 	}
@@ -47,13 +59,13 @@ public class FldSimpleModel extends Model {
 					nameEnd++;
 			}
 			if (nameStart < nameEnd) {
-				fldName = text.substring(nameStart, nameEnd);
+				fldType = text.substring(nameStart, nameEnd);
 				if (nameEnd < text.length()) {
 					fldParameterString = text.substring(nameEnd).trim();
 				}
 			}
 		}
-		if (fldName != null) fldName = fldName.toUpperCase(); 
+		if (fldType != null) fldType = fldType.toUpperCase(); 
 	}
 
 	public static List<String> splitParameters(String text) {
@@ -112,8 +124,12 @@ public class FldSimpleModel extends Model {
 		}
 	}
 
-	public String getFldName() {
-		return fldName;
+	public String getFldType() {
+		return fldType;
+	}
+
+	public String getFldArgument() {
+		return getFldParameters().get(0);
 	}
 	
 	public String getFldParameterString() {
@@ -138,7 +154,7 @@ public class FldSimpleModel extends Model {
 	protected void reset() {
 		fldSimple = null;
 		content = null;
-		fldName = null;
+		fldType = null;
 		fldParameterString = null;
 		fldParameters = null;
 	}
