@@ -48,18 +48,24 @@ public class FldSimpleModel extends Model {
 	}
 	
 	protected void setupNameParameterString(String text) {
-	int nameStart = 0;
-	int nameEnd = 0;
+		
+		int nameStart = 0;
+		int nameEnd = 0;
 		if ((text != null) && (text.length() > 0)) {
 			while ((nameStart < text.length()) && (text.charAt(nameStart) == ' '))
 				nameStart++;
-			if (nameStart < text.length()) {
+			if (nameStart < text.length() ) {
 				nameEnd = nameStart + 1;
-				while ((nameEnd < text.length()) && (text.charAt(nameEnd) != ' '))
-					nameEnd++;
+				if (text.charAt(nameStart) == '=') {
+					// Special case =nn
+					fldType = "=";
+				} else {
+					while ((nameEnd < text.length()) && (text.charAt(nameEnd) != ' '))
+						nameEnd++;
+					fldType = text.substring(nameStart, nameEnd);
+				}
 			}
 			if (nameStart < nameEnd) {
-				fldType = text.substring(nameStart, nameEnd);
 				if (nameEnd < text.length()) {
 					fldParameterString = text.substring(nameEnd).trim();
 				}
@@ -69,10 +75,11 @@ public class FldSimpleModel extends Model {
 	}
 
 	public static List<String> splitParameters(String text) {
-	List<String> ret = Collections.EMPTY_LIST;
-	int valStart = -1;
-	boolean inLiteral = false;
-	char ch = '\0';
+		
+		List<String> ret = Collections.EMPTY_LIST;
+		int valStart = -1;
+		boolean inLiteral = false;
+		char ch = '\0';
 		if ((text != null) && (text.length() > 0)) {
 			ret = new ArrayList<String>(4);
 			for (int chidx = 0; chidx<text.length(); chidx++) {

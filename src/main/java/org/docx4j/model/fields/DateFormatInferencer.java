@@ -25,7 +25,7 @@ public class DateFormatInferencer {
 	
 	static {
 		
-		if (Docx4jProperties.getProperty("docx4j.DateParser.USA", false)) {
+		if (Docx4jProperties.getProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", false)) {
 			
 			// parse USA 
 			log.info("Infering dates based using USA formats");

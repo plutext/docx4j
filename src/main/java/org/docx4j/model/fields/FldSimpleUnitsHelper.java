@@ -1,13 +1,16 @@
 package org.docx4j.model.fields;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.docx4j.wml.NumberFormat;
@@ -117,22 +120,6 @@ public class FldSimpleUnitsHelper {
 	 * `numbereditem`  Number of the preceding item that you numbered. 
 	 * 
 	 */
-
-/*	
-	 DOCPROPERTY  caAQN_Title_Negociacion  \* Upper 
-	 DOCPROPERTY  caAQN_IdFiscalRep1  \* Lower 
-	 DOCPROPERTY  caSupplier.CorporateAddress.PostalAddress.Lines  \* FirstCap 
-	 DOCPROPERTY  caSupplier.CorporateAddress.PostalAddress.City  \* Caps 
-
-	 DOCPROPERTY  caSupplier  \* Charformat 
-	 DOCPROPERTY  caAQN_IdFiscalProv  \* MERGEFORMAT  
-
-	 DOCPROPERTY  caAQN_Vol_PosNegMulti  \# 0.00 
-	 
-	 DOCPROPERTY  caAQN_Fecha_Max_Pre_Le  \@ "d, MMMM 'de' YYYY" 
-	 DOCPROPERTY  caAQN_Fecha_R_Adj  \@ "'on' MMM - d, yyyy"
-	 DOCPROPERTY  caAQN_Fecha_R_Adj  \@ "d 'de' MMMM 'de' yyyy"
-*/
 	
 	protected static final ThreadLocal<SimpleDateFormat> DATE_FORMATS = new ThreadLocal();
 	
@@ -197,6 +184,7 @@ public class FldSimpleUnitsHelper {
 		//AM/PM
 		//DATE_FORMAT_ITEMS_TO_JAVA.put("am/pm","a");		//Displays AM or PM as uppercase.
 		//DATE_FORMAT_ITEMS_TO_JAVA.put("AM/PM","a");		//Displays AM or PM as uppercase. 
+		
 	}
 	
 	public static String applyFormattingSwitch(FldSimpleModel model, String value) {
@@ -210,8 +198,10 @@ public class FldSimpleUnitsHelper {
 		value = format==null ? value : formatNumber(model, format, value );
 		
 		// general-formatting-switch: \*
-		format = findFormat("\\#", model.getFldParameters());
-		value = format==null ? value : formatNumber(model, format, value );
+		format = findFormat("\\*", model.getFldParameters());
+		value = format==null ? value : formatGeneral(model, format, value );
+		
+		// TODO: if no formatting and its a number, use the default number formatting
 		
 		log.debug("Result -> " + value);
 		
@@ -261,25 +251,228 @@ public class FldSimpleUnitsHelper {
 		}
 	}
 
-	private static String formatNumber( FldSimpleModel model, String format, String value) {
+	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, String value) {
 
-		log.debug("Applying format " + format + " to " + value);
+		log.debug("Applying format " + wordNumberPattern + " to " + value);
+		
+		// First, parse the value
+		NumberExtractor nex = new NumberExtractor();
+		try {
+			value = nex.extractNumber(value);
+		} catch (java.lang.IllegalStateException noMatch) {
+			// There is no number in this string.
+			// In this case Word just inserts the non-numeric text,
+			// without attempting to format the number
+			return value;
+		}
+		
+		double dub = Double.parseDouble(value);
+
+		// OK, now we have a number, let's apply the formatting string 
+		
+		/* Per the spec, if no numeric-formatting-switch is present, a numeric result is formatted 
+		 * without leading spaces or trailing fractional zeros. 
+		 * If the result is negative, a leading minus sign is present. 
+		 * If the result is a whole number, no radix point is present. */
 		
 		
-		return value;
+		boolean encounteredPlus = false;
+		boolean encounteredMinus = false;
+		boolean encounteredDecimalPoint = false;
+		boolean encounteredX = false;
+		
+		// in Java's NumberFormatter, you can't mix # and 0,
+		// but you can swap to the other after the decimal point
+		char fillerBeforeDecimalPoint= '\0';
+		char fillerAfterDecimalPoint= '\0';
+		
+		int round = 0;
+		
+		StringBuilder buffer = new StringBuilder(32);
+		int valueStart = -1;
+		int idx = 0;
+		int idx2 = 0;
+		char ch = '\0';
+		char lastCh = '\0';
+		boolean inLiteral = false;
+		
+		if ((wordNumberPattern != null) && (wordNumberPattern.length() > 0)) {
+			
+			while (idx < wordNumberPattern.length()) {
+				ch = wordNumberPattern.charAt(idx);
+				if (ch == '\'') {
+					if (inLiteral) {
+						// End literal
+						buffer.append(wordNumberPattern.substring(valueStart, idx)); //ignore closing '
+						idx2 = idx + 1; //skip '
+						/*
+						 * Word treats the whitespace outside the right single quote as significant, 
+						 * and inserts zero, one or many spaces as if the whitespace was inside the 
+						 * literal.
+						 * 
+						 * WARNING: downstream XML processing needs to treat
+						 * this whitespace as significant. 
+						 */
+						while ((idx2 < wordNumberPattern.length()) && 
+							   (wordNumberPattern.charAt(idx2) == ' ')) {
+							buffer.append(' ');
+							idx2++;
+						}
+						buffer.append('\'');
+						idx = idx2 - 1;
+						inLiteral = false;
+						valueStart = -1;
+					}
+					else {
+						// Start literal
+						if (valueStart > -1) {
+							appendNumberItem(buffer, wordNumberPattern.substring(valueStart, idx));
+						}
+						inLiteral = true;
+						valueStart = idx;
+					}
+				} else if (!inLiteral) {
+					
+//					if (lastCh != ch) {
+//						if (valueStart > -1) {
+//							appendNumberItem(buffer, wordNumberPattern.substring(valueStart, idx));
+//						}
+//						valueStart = idx;
+//						lastCh = ch;
+//					}
+					
+					if (ch=='x') {
+						//wordNumberPattern.replaceFirst("x", "#");
+						if (encounteredDecimalPoint) {
+							encounteredX = true;
+							round++; // we honour the last
+							
+							if (fillerAfterDecimalPoint == '\0') {
+								buffer.append('#'); // replacing x
+								fillerAfterDecimalPoint ='#'; // and now we're committed to that
+							} else {
+								buffer.append(fillerAfterDecimalPoint);
+							}
+							
+						} else {
+							log.error("TODO implement 'x' digit dropper before decimal point ");
+						}
+					} else {
+						if ((ch=='0')||(ch=='#')) {
+													
+							if (encounteredDecimalPoint) {
+								round++;
+								
+								// Use uniform filler char
+								if (fillerAfterDecimalPoint == '\0') {
+									fillerAfterDecimalPoint=ch;
+								}
+								buffer.append(fillerAfterDecimalPoint);
+							} else {
+								if (fillerBeforeDecimalPoint == '\0') {
+									fillerBeforeDecimalPoint=ch;
+								}
+								buffer.append(fillerBeforeDecimalPoint);
+							}
+							
+						} else if ((ch=='%') // Java special characters
+									||(ch=='\u2030') //  ‰
+									||(ch=='E')  
+									||(ch=='\u00A4') // ¤
+									) {
+							// escape them by quoting
+							buffer.append('\'');
+							buffer.append(ch);
+							buffer.append('\'');
+						} else {
+							buffer.append(ch); 
+							if (ch=='+') {
+								encounteredPlus = true;
+							}
+							else if (ch=='-') {
+								encounteredMinus = true;
+							}
+							else if (ch=='.') {
+								encounteredDecimalPoint = true;
+							}
+						}
+					}
+				}
+				idx++;
+			}
+		}
+		if (valueStart > -1) {
+			appendDateItem(buffer, wordNumberPattern.substring(valueStart));
+		}
+		
+		String javaFormatter = buffer.toString();
+		
+		DecimalFormat formatter = new DecimalFormat(javaFormatter); 
+		if (encounteredX) {
+			formatter.setMaximumFractionDigits(round);
+		}
+		
+		return formatter.format(dub);
+		
 	}
+	
+	private static void appendNumberItem(StringBuilder buffer, String dateItem) {
+		// identity for now		
+		buffer.append(dateItem);
+	}
+	
 
 	private static String formatGeneral( FldSimpleModel model, String format, String value) {
 		// Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
 		
+		// TODO: handle the SMALLCAPS exception!
+		
 		log.debug("Applying format " + format + " to " + value);
 
+		if (format.toUpperCase().contains("CAPS") ) {
+			String[] bits = value.split(" ");
+			StringBuffer sb = new StringBuffer();
+			for (int i= 0; i<bits.length; i++) {
+//				System.out.println("'" + bits[i] + "'");
+				if (i>0) sb.append(" ");
+				sb.append(firstCap(bits[i]));
+				
+				// TODO: test what Word does with whitespace
+			}
+			return sb.toString();
+		}
 		
-		// TODO
+		if (format.toUpperCase().contains("FIRSTCAP") ) {
+			return firstCap(value);
+		}
+		
+		if (format.toUpperCase().contains("UPPER") ) {
+			return value.toUpperCase();
+		}
+
+		if (format.toUpperCase().contains("LOWER") ) {
+			return value.toLowerCase();
+		}
+		
+		log.debug("Ignoring format: " + format);
+		// This method does not currently handle:
+		// alphabetic, arabic, cardtext, dollartext, hex, ordtext, ordinal, or roman
 		
 		return value;
+	}
+	
+	private static String firstCap(String value) {
+		
+		if (value == null || value.length()==0) {
+			return "";
+		} else if (value.length()==1) {
+			return value.substring(0, 1).toUpperCase();
+		} else { // (value.length()>1) 
+			return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+		}
+		
 	}
 	
 
@@ -325,18 +518,35 @@ public class FldSimpleUnitsHelper {
 //	}
 	
 	public static String convertDatePattern(String wordDatePattern) {
-	StringBuilder buffer = new StringBuilder(32);
-	int valueStart = -1;
-	int idx = 0;
-	char ch = '\0';
-	char lastCh = '\0';
-	boolean inLiteral = false;
+		StringBuilder buffer = new StringBuilder(32);
+		int valueStart = -1;
+		int idx = 0;
+		int idx2 = 0;
+		char ch = '\0';
+		char lastCh = '\0';
+		boolean inLiteral = false;
 		if ((wordDatePattern != null) && (wordDatePattern.length() > 0)) {
 			while (idx < wordDatePattern.length()) {
 				ch = wordDatePattern.charAt(idx);
 				if (ch == '\'') {
 					if (inLiteral) {
-						buffer.append(wordDatePattern.substring(valueStart, idx + 1));
+						buffer.append(wordDatePattern.substring(valueStart, idx)); //ignore closing '
+						idx2 = idx + 1; //skip '
+						/*
+						 * Word treats the whitespace outside the right single quote as significant, 
+						 * and inserts zero, one or many spaces as if the whitespace was inside the 
+						 * literal.
+						 * 
+						 * WARNING: downstream XML processing needs to treat
+						 * this whitespace as significant. 
+						 */
+						while ((idx2 < wordDatePattern.length()) && 
+							   (wordDatePattern.charAt(idx2) == ' ')) {
+							buffer.append(' ');
+							idx2++;
+						}
+						buffer.append('\'');
+						idx = idx2 - 1;
 						inLiteral = false;
 						valueStart = -1;
 					}
@@ -467,5 +677,16 @@ public class FldSimpleUnitsHelper {
 		}
 		return ret;
 	}
+
+    public static void main(String[] args) 
+            throws Exception {
+    	
+    	// parseInt("1,000") no good, but the following works
+    	java.text.NumberFormat format = java.text.NumberFormat.getInstance(Locale.FRANCE);
+        Number number = format.parse("€ 1,234 EUR");    	
+    	
+    	System.out.println(number.longValue());
+
+    }
 	
 }
