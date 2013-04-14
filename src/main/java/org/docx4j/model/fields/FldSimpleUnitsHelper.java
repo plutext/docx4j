@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.RPr;
 
@@ -187,30 +188,92 @@ public class FldSimpleUnitsHelper {
 		
 	}
 	
-	public static String applyFormattingSwitch(FldSimpleModel model, String value) {
+	public static String applyFormattingSwitch(FldSimpleModel model, String value) throws Docx4JException {
 
 		// date-and-time-formatting-switch: \@ 
-		String format = findFormat("\\@", model.getFldParameters());
-		value = format==null ? value : formatDate(model, format, value );
+		Date date = null;
+		try {
+			date = getDate(model, value );
+			String dtFormat = findFormat("\\@", model.getFldParameters());
+			log.debug("Applying date format " + dtFormat + " to " + value);
+			
+			
+			if (dtFormat==null) {
+				// SPECIFICATION: If no date-and-time-formatting-switch is present, 
+				// a date or time result is formatted in an implementation-defined manner.
+				
+				// TODO .. analyse what Word does
+				// for now, just leave as is
+			} else {
+				value = formatDate(model, dtFormat, date);
+			}
+			
+		} catch (FieldResultIsNotADateOrTimeException e) {
+			// SPECIFICATION: If the result of a field is not a date or time,
+			// the date-and-time-formatting-switch has no effect
+		}
 		
 		// numeric-formatting-switch: \#
-		format = findFormat("\\#", model.getFldParameters());
-		value = format==null ? value : formatNumber(model, format, value );
+		double number;
+		if (date==null) {
+			// It is not a date, so see whether it is a number
+			
+			try {
+				number = getNumber(model, value);
+				String nFormat = findFormat("\\#", model.getFldParameters());
+				log.debug("Applying number format " + nFormat + " to " + number);
+				
+				if (nFormat==null) {
+					// SPECIFICATION: If no numeric-formatting-switch is present, 
+					// a numeric result is formatted without leading spaces or
+					// trailing fractional zeros.  
+					// If the result is negative, a leading minus sign is present.  
+					// If the result is a whole number, no radix point is present.
+					
+					// TODO
+					
+				} else {
+					value = formatNumber(model, nFormat, number );
+				}
+				
+			} catch (FieldResultIsNotANumberException e) {
+				// SPECIFICATION: If the result of a field is not a number,
+				// the numeric-formatting-switch has no effect
+				
+			}
+			
+		}
 		
 		// general-formatting-switch: \*
-		format = findFormat("\\*", model.getFldParameters());
-		value = format==null ? value : formatGeneral(model, format, value );
+		// SPECIFICATION: A general-formatting-switch specifies a variety of
+		// formats for a numeric or text result.  If the result type of a field
+		// does not correspond to the format specified, this switch has no effect.
 		
-		// TODO: if no formatting and its a number, use the default number formatting
+		// TODO: test whether these also apply to a date time result? ie you can make a date Upper or Lower?
+		String gFormat = findFormat("\\*", model.getFldParameters());		
+		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
+		
 		
 		log.debug("Result -> " + value);
 		
 		return value;
 	}
 	
-	private static String formatDate(FldSimpleModel model, String format, String dateStr) {
+	private static class FieldResultIsNotADateOrTimeException extends Exception {
+
+		public FieldResultIsNotADateOrTimeException(){
+			super();
+		}
+	}
+	private static class FieldResultIsNotANumberException extends Exception {
+
+		public FieldResultIsNotANumberException(){
+			super();
+		}
+	}
+	
+	private static Date getDate(FldSimpleModel model, String dateStr) throws FieldResultIsNotADateOrTimeException {
 		
-		log.debug("Applying format " + format + " to " + dateStr);
 		// eg 31/3/2013
 		// Word's default format for date: 7/04/2013
 		// and time: 11:05 AM		
@@ -242,31 +305,40 @@ public class FldSimpleUnitsHelper {
 				DateFormat dateTimeFormat = new SimpleDateFormat(inputFormat);
 					// is this threadsafe in static method?
 				
-				date = (Date)dateTimeFormat.parse(dateStr);
+				return (Date)dateTimeFormat.parse(dateStr);
 			} catch (ParseException e) {
-				log.error("Can't parse " + dateStr + " using format " + inputFormat);				
-				return null;
+				log.warn("Can't parse " + dateStr + " using format " + inputFormat);				
+				throw new FieldResultIsNotADateOrTimeException();
 			}
-			return formatDate(model, format, date);
 		}
 	}
 
-	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, String value) {
+	private static double getNumber( FldSimpleModel model, String value) throws FieldResultIsNotANumberException {
+		
+		// Hmm, Word seems to be happy to extract a number from a DOCPROPERTY string,
+		// but not from = ... so we should only use NumberExtractor for certain field types?
 
-		log.debug("Applying format " + wordNumberPattern + " to " + value);
-		
-		// First, parse the value
-		NumberExtractor nex = new NumberExtractor();
-		try {
-			value = nex.extractNumber(value);
-		} catch (java.lang.IllegalStateException noMatch) {
-			// There is no number in this string.
-			// In this case Word just inserts the non-numeric text,
-			// without attempting to format the number
-			return value;
-		}
-		
-		double dub = Double.parseDouble(value);
+			// First, parse the value
+			NumberExtractor nex = new NumberExtractor();
+			try {
+				value = nex.extractNumber(value);
+			} catch (java.lang.IllegalStateException noMatch) {
+				// There is no number in this string.
+				// In this case Word just inserts the non-numeric text,
+				// without attempting to format the number
+				throw new FieldResultIsNotANumberException();
+			}
+
+			try {
+				return Double.parseDouble(value);
+			} catch (Exception e) {
+				throw new FieldResultIsNotANumberException();				
+			}
+	}
+	
+	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub) 
+		throws FieldFormattingException {
+
 
 		// OK, now we have a number, let's apply the formatting string 
 		
@@ -276,8 +348,8 @@ public class FldSimpleUnitsHelper {
 		 * If the result is a whole number, no radix point is present. */
 		
 		
-		boolean encounteredPlus = false;
-		boolean encounteredMinus = false;
+//		boolean encounteredPlus = false;
+//		boolean encounteredMinus = false;
 		boolean encounteredDecimalPoint = false;
 		boolean encounteredX = false;
 		
@@ -285,8 +357,13 @@ public class FldSimpleUnitsHelper {
 		// but you can swap to the other after the decimal point
 		char fillerBeforeDecimalPoint= '\0';
 		char fillerAfterDecimalPoint= '\0';
+
+		
+		// in Java's NumberFormatter, you have # or 0, then a literal or %,$ etc then # or 0 again
+		boolean encounteredNonFiller =false; 
 		
 		int round = 0;
+		int fillerBeforeDecimalPointCount = 0; // to check for an anomolous result
 		
 		StringBuilder buffer = new StringBuilder(32);
 		int valueStart = -1;
@@ -330,6 +407,9 @@ public class FldSimpleUnitsHelper {
 						}
 						inLiteral = true;
 						valueStart = idx;
+						
+						if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') 
+							encounteredNonFiller = true;
 					}
 				} else if (!inLiteral) {
 					
@@ -355,24 +435,30 @@ public class FldSimpleUnitsHelper {
 							}
 							
 						} else {
-							log.error("TODO implement 'x' digit dropper before decimal point ");
+							throw new FieldFormattingException("TODO implement 'x' digit dropper before decimal point ");
 						}
 					} else {
 						if ((ch=='0')||(ch=='#')) {
 													
+							if (encounteredNonFiller) {
+								throw new FieldFormattingException("Can't format arbitrary character between [0|#]* ");
+							}
+							
 							if (encounteredDecimalPoint) {
 								round++;
-								
+
 								// Use uniform filler char
 								if (fillerAfterDecimalPoint == '\0') {
 									fillerAfterDecimalPoint=ch;
 								}
 								buffer.append(fillerAfterDecimalPoint);
 							} else {
+								
 								if (fillerBeforeDecimalPoint == '\0') {
 									fillerBeforeDecimalPoint=ch;
 								}
 								buffer.append(fillerBeforeDecimalPoint);
+								fillerBeforeDecimalPointCount++;
 							}
 							
 						} else if ((ch=='%') // Java special characters
@@ -384,16 +470,27 @@ public class FldSimpleUnitsHelper {
 							buffer.append('\'');
 							buffer.append(ch);
 							buffer.append('\'');
-						} else {
-							buffer.append(ch); 
+							
+							if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') 
+								encounteredNonFiller = true;
+							
+						} else  
 							if (ch=='+') {
-								encounteredPlus = true;
+								// Drop it
+//								encounteredPlus = true;
 							}
 							else if (ch=='-') {
-								encounteredMinus = true;
-							}
-							else if (ch=='.') {
+								// Drop it
+//								encounteredMinus = true;
+						} else {
+							buffer.append(ch); 
+							if (ch=='.') {
 								encounteredDecimalPoint = true;
+							} else if (ch==',' || ch==' ') {
+								// ok
+							} else {
+								if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') 
+									encounteredNonFiller = true;								
 							}
 						}
 					}
@@ -405,9 +502,22 @@ public class FldSimpleUnitsHelper {
 			appendDateItem(buffer, wordNumberPattern.substring(valueStart));
 		}
 		
+		if (fillerBeforeDecimalPointCount<1) {
+			if ( (dub<0) // Word loses the negative sign!
+					|| (dub>=1) ) // Word returns the fractional part only!
+				throw new FieldFormattingException("Refusing to replicate Word anomolous result. ");		
+			
+		}
+		
 		String javaFormatter = buffer.toString();
 		
-		DecimalFormat formatter = new DecimalFormat(javaFormatter); 
+		DecimalFormat formatter = null;
+		try {
+			formatter = new DecimalFormat(javaFormatter);
+		} catch (java.lang.IllegalArgumentException iae) {
+			// Malformed pattern
+			throw new FieldFormattingException(iae.getMessage() + " from " + wordNumberPattern);
+		}
 		if (encounteredX) {
 			formatter.setMaximumFractionDigits(round);
 		}
@@ -429,7 +539,7 @@ public class FldSimpleUnitsHelper {
 		
 		// TODO: handle the SMALLCAPS exception!
 		
-		log.debug("Applying format " + format + " to " + value);
+		log.debug("Applying general format " + format + " to " + value);
 
 		if (format.toUpperCase().contains("CAPS") ) {
 			String[] bits = value.split(" ");
