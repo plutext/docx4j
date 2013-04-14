@@ -36,8 +36,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Preprocess;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
@@ -45,6 +43,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.Style;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -298,17 +297,25 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
 
+		Style defaultParagraphStyle = 
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle() :
+				null);
+		
+    	String defaultParagraphStyleId;
+    	if (defaultParagraphStyle==null) // possible, for non MS source docx
+    		defaultParagraphStyleId = "Normal";
+    	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
+    	
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-			pStyleVal = "Normal";
-			if (context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null) {
-				pStyleVal = context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
-			}
+//			pStyleVal = "Normal";
+			pStyleVal = defaultParagraphStyleId;
 		}
     	log.debug("style '" + pStyleVal );     		
     	
 //    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
-    	    	
+
     	
         try {
         	
@@ -318,7 +325,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
         	// can't just adorn our DOM tree with the
         	// original JAXB objects?
         	PPr pPr = null;
-        	if (pPrNodeIt!=null) {
+        	if (pPrNodeIt!=null) { //It is never null
         		Node n = pPrNodeIt.nextNode();
         		if (n!=null) {
         			Unmarshaller u = Context.jc.createUnmarshaller();			
@@ -360,38 +367,8 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
-				if (!inlineStyle.toString().contains(SpaceBefore.CSS_NAME) ) {
-			    	// If there is no w:spacing/@w:before, it should be 0.
-			    	// unless it is set to anything in the effective style 
-			    	PropertyResolver propertyResolver = context.getPropertyResolver();
-					PPr stylePPr = propertyResolver.getEffectivePPr(pStyleVal);
-					if (stylePPr.getSpacing()!=null 
-							&& stylePPr.getSpacing().getBefore()!=null) {
-						// it is specified in the style
-					} else {
-						/* For a doc where there is no w:spacing/@w:before specified
-						 * in the styles, Word's HTML output defaults to 
- 
-							 p.MsoNormal, li.MsoNormal, div.MsoNormal
-								{
-								margin-top:0cm;
-								margin-right:0cm;
-								margin-bottom:10.0pt;
-								margin-left:0cm;
-								line-height:115%;  <------- from w:spacing/@w:line?
-								mso-pagination:widow-orphan;
-								font-size:11.0pt;
-								font-family:"Calibri","sans-serif";
-								
-							Here, for now, we are just dealing with 
-							w:spacing/@w:before.
-						 */
-						xhtmlBlock.setAttribute("style", inlineStyle.toString() + "; margin-top:0cm; " );
-						
-					}
-				}
-					
 			}
+			
 						
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates

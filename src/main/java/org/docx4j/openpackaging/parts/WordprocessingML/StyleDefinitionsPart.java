@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -33,6 +34,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
@@ -189,7 +191,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		</w:docDefaults>
 
 	 */
-    protected void createVirtualStylesForDocDefaults() throws Docx4JException {
+    public void createVirtualStylesForDocDefaults() throws Docx4JException {
     	
     	Style pDefault = Context.getWmlObjectFactory().createStyle();
     	
@@ -230,6 +232,19 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 
 		} else {
 			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+			if (documentDefaultPPr==null) {
+				documentDefaultPPr = Context.getWmlObjectFactory().createPPr();
+			}
+		}
+		
+		// If the docDefaults have no setting for w:spacing
+		// then add it:
+		if (documentDefaultPPr.getSpacing()==null) {
+			Spacing spacing = Context.getWmlObjectFactory().createPPrBaseSpacing();
+			documentDefaultPPr.setSpacing(spacing);
+			spacing.setBefore(BigInteger.ZERO);
+			spacing.setAfter(BigInteger.ZERO);
+			spacing.setLine(BigInteger.valueOf(240));
 		}
 
 		// Setup documentDefaultRPr
@@ -244,6 +259,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 			}
 		} else {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+			if (documentDefaultRPr==null) {
+				documentDefaultRPr = Context.getWmlObjectFactory().createRPr();
+			}
 		}
     	
 		pDefault.setPPr(documentDefaultPPr);
