@@ -450,7 +450,18 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     		String pStyleVal,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
-    
+
+		Style defaultRunStyle = 
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
+				null);
+		
+    	String defaultCharacterStyleId;
+    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
+    		defaultCharacterStyleId = "DefaultParagraphFont";
+    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
+    	
+    	
     	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
     	    	
     	// Note that this is invoked for every paragraph with a pPr node.
@@ -464,23 +475,27 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	
     	
         try {
-        	
-        	// Get the pPr node as a JAXB object,
+
+        	// Get the rPr node as a JAXB object,
         	// so we can read it using our standard
         	// methods.  Its a bit sad that we 
         	// can't just adorn our DOM tree with the
         	// original JAXB objects?
-			Unmarshaller u = Context.jc.createUnmarshaller();			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			Object jaxb = u.unmarshal(rPrNodeIt.nextNode());
-			
 			RPr rPr = null;
-			try {
-				rPr =  (RPr)jaxb;
-			} catch (ClassCastException e) {
-		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
-			}
-        	
+        	if (rPrNodeIt!=null) { //It is never null
+        		Node n = rPrNodeIt.nextNode();
+        		if (n!=null) {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+        			try {
+        				rPr =  (RPr)jaxb;
+        			} catch (ClassCastException e) {
+        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
+        			}        	        			
+        		}
+        	}
+        	        	
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
@@ -490,35 +505,25 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			Node span = document.createElement("span");			
 			document.appendChild(span);
 			
-			if (rPr==null) {
-				Text err = document.createTextNode( "Couldn't cast " + jaxb.getClass().getName() + " to PPr!" );
-				span.appendChild(err);
-				
+			// Set @class	
+			String rStyleVal = defaultCharacterStyleId;
+			if ( rPr!=null && rPr.getRStyle()!=null) {
+				rStyleVal = rPr.getRStyle().getVal();
+			}
+			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+			if (asn==null) {
+				log.warn("No style node for: " + rStyleVal);
 			} else {
+				((Element)span).setAttribute("class", 
+						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
+				);		
+			}
+			
+			if (rPr!=null) {
 				
 				if (log.isDebugEnabled()) {					
 					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
-				}
-				
-				if (pStyleVal==null || pStyleVal.equals("")) {
-					pStyleVal = "Normal";
-					if (context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null) {
-						pStyleVal = context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
-					}
-				}
-
-				// Set @class	
-				if ( rPr.getRStyle()!=null) {
-					String rStyleVal = rPr.getRStyle().getVal();
-					Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-					org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-					if (asn==null) {
-						log.warn("No style node for: " + rStyleVal);
-					} else {
-						((Element)span).setAttribute("class", 
-								StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-						);		
-					}
 				}
 				
 				// Does our rPr contain anything else?
@@ -527,14 +532,13 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)span).setAttribute("style", inlineStyle.toString() );
 				}
-				
-				
-				// Our fo:block wraps whatever result tree fragment
-				// our style sheet produced when it applied-templates
-				// to the child nodes
-				Node n = childResults.nextNode();
-				XmlUtils.treeCopy( n,  span );			
 			}
+			
+			// Our fo:block wraps whatever result tree fragment
+			// our style sheet produced when it applied-templates
+			// to the child nodes
+			Node n = childResults.nextNode();
+			XmlUtils.treeCopy( n,  span );			
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

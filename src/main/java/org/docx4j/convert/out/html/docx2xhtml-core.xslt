@@ -306,27 +306,18 @@
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
 
   <xsl:template match="w:r">  	
-  	<xsl:choose>
-  		<xsl:when test="w:rPr">
-  			<!--  Invoke an extension function, so we can use
-  			      docx4j to populate the fo:block -->
   		
-			<xsl:variable name="childResults">
-				<xsl:apply-templates/>
-			</xsl:variable>
-			
-			<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
-			
-			<xsl:variable name="rPrNode" select="w:rPr" />  	
-	
-		  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
-		  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
+		<xsl:variable name="childResults">
+			<xsl:apply-templates/>
+		</xsl:variable>
+		
+		<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
+		
+		<xsl:variable name="rPrNode" select="w:rPr" />  	
+
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
+	  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
 	  		
-	  	</xsl:when>
-	  	<xsl:otherwise>
-        	<xsl:apply-templates/>
-	  	</xsl:otherwise>
-	  </xsl:choose>					
 		
   </xsl:template>
 
