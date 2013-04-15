@@ -230,7 +230,7 @@ public class FldSimpleUnitsHelper {
 					// If the result is negative, a leading minus sign is present.  
 					// If the result is a whole number, no radix point is present.
 					
-					// TODO
+					value = formatNumber(model, "#.##########", number );
 					
 				} else {
 					value = formatNumber(model, nFormat, number );
@@ -249,7 +249,10 @@ public class FldSimpleUnitsHelper {
 		// formats for a numeric or text result.  If the result type of a field
 		// does not correspond to the format specified, this switch has no effect.
 		
-		// TODO: test whether these also apply to a date time result? ie you can make a date Upper or Lower?
+		//  Word 2010 can handle:
+		//     \@ &quot;d 'de' MMMM 'de' yyyy  &quot; \* Upper"
+		// (ie \@ and \* at same time)
+		// but \@ must be before \*
 		String gFormat = findFormat("\\*", model.getFldParameters());		
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
@@ -537,6 +540,10 @@ public class FldSimpleUnitsHelper {
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
 		
+		// Drop surrounding quotes.  TODO improve this
+		if (value.startsWith("\"")) value = value.substring(1);
+		if (value.endsWith("\"")) value = value.substring(0, value.length()-1);
+		
 		// TODO: handle the SMALLCAPS exception!
 		
 		log.debug("Applying general format " + format + " to " + value);
@@ -569,6 +576,8 @@ public class FldSimpleUnitsHelper {
 		log.debug("Ignoring format: " + format);
 		// This method does not currently handle:
 		// alphabetic, arabic, cardtext, dollartext, hex, ordtext, ordinal, or roman
+		// so throw unimplemented, else 
+		// mimic Word by including value "Error! Unknown switch argument" 
 		
 		return value;
 	}
