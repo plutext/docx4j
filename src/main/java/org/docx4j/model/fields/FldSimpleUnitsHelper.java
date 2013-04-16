@@ -230,7 +230,15 @@ public class FldSimpleUnitsHelper {
 					// If the result is negative, a leading minus sign is present.  
 					// If the result is a whole number, no radix point is present.
 					
-					value = formatNumber(model, "#.##########", number );
+					// We'll only honour this if the number is really a number.
+					// Not, for example, CL.87559-p
+					try {
+						number = Double.parseDouble(value);
+						value = formatNumber(model, "#.##########", number );
+					} catch (Exception e) {
+						log.debug(value + " is not a number");				
+					}
+					
 					
 				} else {
 					value = formatNumber(model, nFormat, number );
@@ -257,7 +265,7 @@ public class FldSimpleUnitsHelper {
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
-		log.debug("Result -> " + value);
+		log.debug("Result -> " + value + "\n");
 		
 		return value;
 	}
@@ -299,7 +307,7 @@ public class FldSimpleUnitsHelper {
 		// parse the string into a date.
 		String inputFormat = DateFormatInferencer.determineDateFormat(dateStr);
 		if (inputFormat==null) {
-			log.error("Unrecognised format; Can't parse " + dateStr);
+			log.debug("Unrecognised format; Can't parse " + dateStr);
 			return null;
 		} else {
 			log.debug("Parsing with format: " + inputFormat);

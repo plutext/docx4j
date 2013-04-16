@@ -16,6 +16,7 @@ import org.docx4j.model.fields.FldSimpleUnitsHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
@@ -88,19 +89,17 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			// First, get the value
 			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
 			List<String> params = model.splitParameters(model.getFldParameterString());
-//			for (String param : params) {
-//				System.out.println(param);
-//				if (param.startsWith("\\@")) {
-//					System.out.println(FldSimpleUnitsHelper.formatDate(model));
-//				}
-//			}
 			
 			//String key = params.get(0);
 			String key = model.getFldArgument();
 			String value = dpr.getValue(key).toString();
 			log.debug("= " + value);
 			
-			return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);			
+			try {
+				return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);
+			} catch (Docx4JException e) {
+				throw new TransformerException(e);
+			}			
 		}
 	}
 	
@@ -177,6 +176,29 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		} else {
 			log.debug(".. got it .. " + handler.getClass().getName());			
 		}
+		
+		/*
+		 * There are three cases for the formatting of the result:
+		 * 
+		 * \* CHARFORMAT applies the formatting of the first character of 
+		 *    the instrText (not the existing result!) to the entire result
+		 * 
+		 * \* MERGEFORMAT reuses the formatting of the existing result
+		 * 
+		 * If neither is present, the existing formatting of the 
+		 * instrText is used (the formatting of the existing formatting is
+		 * ignored), ie CHARFORMAT is assumed.
+		 * 
+		 * The above concepts only apply to complex fields!!
+		 * We could honour them in our simple fields though, if
+		 * we carried the appropriate formatting over
+		 * in FieldsCombiner (maybe it does that already?)
+		 * 
+		 * As these general formatting switches don't apply
+		 * to a field which is simple, we'd have to distinguish 
+		 * converted ones from ones which were already simple.
+		 * 
+		 */		
 		if (handler instanceof FldSimpleNodeWriterHandler) {
 			
 			nodeHandler = (FldSimpleNodeWriterHandler)handler;
@@ -197,6 +219,8 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			
 			value = ((FldSimpleStringWriterHandler)handler).toString(context, fldSimpleModel);
 			ret = wrap(context, value, doc);
+			// applyStyle treats all 3 cases like CHARFORMAT,
+			// so implementing MERGEFORMAT is a TODO
 			applyStyle(context, fldSimpleModel, ret);
 		}
 		return ret;
