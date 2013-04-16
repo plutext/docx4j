@@ -21,6 +21,9 @@
 package org.docx4j.openpackaging.parts;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -141,23 +144,38 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 		return jaxbElement;
     	
     }
+	
+	private Map<String, String> props = null;
     
     public String getProperty(String propName) {
     	
 		// NB, at present this assumes the property is a string
 
+    	if (props==null) {
+    		initMap();
+    	}
+    	
+		return props.get(propName);    	
+    }
+    
+    private void initMap() {
+    	
+		props = new HashMap<String, String>();
+		
     	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
 		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
 			
-			log.info(prop.getName());
+//			log.debug(prop.getName());
 			
-			if (prop.getName().equals(propName)) {
-				log.info("GOT IT! returning " + prop.getLpwstr());
-				return prop.getLpwstr();
-			}
+			props.put(prop.getName(), prop.getLpwstr());
+			
+//			if (prop.getName().equals(propName)) {
+//				log.debug("GOT IT! returning " + prop.getLpwstr());
+//				return prop.getLpwstr();
+//			}
 			
 		}
-		return null;    	
+    	
     }
     
     public void setProperty(String propName, String propValue) {
@@ -192,6 +210,12 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 		
 		// set the value
 		newProp.setLpwstr(propValue);
+		
+		// Add it to our lookup
+    	if (props==null) {
+    		initMap();
+    	}
+		props.put(propName, propValue);
 		    	
     }
     
