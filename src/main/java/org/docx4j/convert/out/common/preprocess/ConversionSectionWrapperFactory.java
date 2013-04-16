@@ -179,9 +179,9 @@ public class ConversionSectionWrapperFactory {
 			parentList.addAll(index, sdtBlock.getSdtContent().getContent());				
 		}
 		
-		if (log.isDebugEnabled()) {
-			log.debug(XmlUtils.marshaltoString(document, true, true));
-		}
+//		if (log.isDebugEnabled()) {
+//			log.debug(XmlUtils.marshaltoString(document, true, true));
+//		}
 		
 		// Make a list, so it is easy to look at the following sectPr,
 		// which we need to do to handle continuous sections properly

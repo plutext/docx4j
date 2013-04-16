@@ -36,7 +36,7 @@ public class FldSimpleModel extends Model {
 	public void build(Object node, Node content) throws TransformerException {
 		this.fldSimple = (CTSimpleField)node;
 		
-		log.debug(XmlUtils.marshaltoString(fldSimple, true, true));
+		log.debug("\n" + XmlUtils.marshaltoString(fldSimple, true, true));
 		
 		this.content = content;
 		setupNameParameterString(fldSimple.getInstr());

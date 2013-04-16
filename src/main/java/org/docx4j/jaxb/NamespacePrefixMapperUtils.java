@@ -110,10 +110,10 @@ public class NamespacePrefixMapperUtils {
 			return prefixMapperRels;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			// javax.xml.bind.PropertyException
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
 		} catch (javax.xml.bind.PropertyException notJava6) {
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
 		}
 	}
