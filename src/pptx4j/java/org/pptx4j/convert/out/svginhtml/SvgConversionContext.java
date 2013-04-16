@@ -21,14 +21,15 @@ package org.pptx4j.convert.out.svginhtml;
 
 import org.docx4j.convert.out.AbstractConversionContext;
 import org.docx4j.convert.out.AbstractConversionSettings;
-import org.docx4j.convert.out.AbstractMessageWriter;
+import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.convert.out.html.HTMLConversionImageHandler;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.pptx4j.convert.out.AbstractPmlConversionContext;
 import org.pptx4j.model.ResolvedLayout;
 
-public class SvgConversionContext extends AbstractConversionContext {
+public class SvgConversionContext extends AbstractPmlConversionContext {
 	//The message writer for svg (the same as for html)	
 	protected static final AbstractMessageWriter SVG_MESSAGE_WRITER = new AbstractMessageWriter() {
 		@Override
