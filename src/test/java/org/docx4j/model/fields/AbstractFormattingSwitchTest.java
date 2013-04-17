@@ -56,7 +56,7 @@ public class AbstractFormattingSwitchTest {
 			
 			try {
 				//sb.append("\n" + "TOBE: " + tt.expectedResult);
-				String result = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, fsm.getFldArgument() );
+				String result = FormattingSwitchHelper.applyFormattingSwitch(fsm, fsm.getFldArgument() );
 				//sb.append("\n" + "ASIS: " + result);
 				
 //				assertEquals(result, tt.expectedResult);
@@ -83,7 +83,7 @@ public class AbstractFormattingSwitchTest {
 //			for (String param : params) {
 //				System.out.println(param);
 //				if (param.startsWith("\\@")) {
-//					System.out.println(FldSimpleUnitsHelper.formatDate(fsm));
+//					System.out.println(FormattingSwitchHelper.formatDate(fsm));
 //				}
 //			}
 //			
