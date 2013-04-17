@@ -22,19 +22,26 @@ package org.docx4j.convert.in;
 
 
 import java.io.FileInputStream;
+import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
+import org.apache.poi.hwpf.usermodel.LineSpacingDescriptor;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.hwpf.usermodel.Section;
 import org.apache.poi.hwpf.usermodel.Table;
 import org.apache.poi.hwpf.usermodel.TableCell;
 import org.apache.poi.hwpf.usermodel.TableRow;
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.STLineSpacingRule;
 
 /**
  * @author jason
@@ -141,7 +148,9 @@ public class Doc {
 			MainDocumentPart documentPart,
 			org.docx4j.wml.ObjectFactory factory) {
 		
-		org.docx4j.wml.P wmlP =  null; 				
+		org.docx4j.wml.P wmlP =  null; 		
+		
+		
 
 		if (p.getStyleIndex() > 0) {
 			log.debug("Styled paragraph, with index: " + p.getStyleIndex());
@@ -154,6 +163,22 @@ public class Doc {
 		} else {
 			wmlP = documentPart.createParagraphOfText(null);
 		}
+		
+//		LineSpacingDescriptor lsd = p.getLineSpacing();
+//		if (lsd==null || lsd.isEmpty()) {
+//			// do nothing
+//		} else {
+//			PPr pPr = wmlP.getPPr();
+//			if (pPr==null) {
+//				pPr = Context.getWmlObjectFactory().createPPr();
+//				wmlP.setPPr(pPr);
+//			}
+//			Spacing spacing = Context.getWmlObjectFactory().createPPrBaseSpacing();
+//			spacing.setLine(lsd._dyaLine); // not visible
+//			spacing.setLineRule(STLineSpacingRule.AUTO);
+//			pPr.setSpacing(spacing);
+//		}
+		
 
 		for (int z = 0; z < p.numCharacterRuns(); z++) {
 			// character run
@@ -209,6 +234,8 @@ public class Doc {
 			wmlP.getParagraphContent().add(wmlRun);					
 			
 		}
+		
+		System.out.println(XmlUtils.marshaltoString(wmlP, true, true));
 		
 		return wmlP;
 
@@ -335,15 +362,15 @@ public class Doc {
 
 	public static void main(String[] args) throws Exception {
 				
-		String localPath = "/home/dev/TargetFeatureSet.doc";
+		String localPath = System.getProperty("user.dir") + "/LineSpacing.doc";
 				
 		WordprocessingMLPackage out = convert(new FileInputStream(localPath));
 		
-		String outputfilepath = "/home/dev/tmp/test-out.docx";		
-		
-		SaveToZipFile saver = new SaveToZipFile(out);
-		saver.save(outputfilepath);
-		log.info("Done - saved docx as " + outputfilepath);
+//		String outputfilepath = "/home/dev/tmp/test-out.docx";		
+//		
+//		SaveToZipFile saver = new SaveToZipFile(out);
+//		saver.save(outputfilepath);
+//		log.info("Done - saved docx as " + outputfilepath);
 		
 		
 	}	
