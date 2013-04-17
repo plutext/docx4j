@@ -112,9 +112,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 * */     
 	@Override
 	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
-	PdfConversionContext conversionContext = null;
-	Configuration localFopConfiguration = fopConfig;
-	WordprocessingMLPackage localWmlPackage = (wordMLPackage != null ? 
+		
+		PdfConversionContext conversionContext = null;
+		Configuration localFopConfiguration = fopConfig;
+		WordprocessingMLPackage localWmlPackage = (wordMLPackage != null ? 
 			wordMLPackage : (WordprocessingMLPackage)settings.getWmlPackage());
 
 		if (settings == null) {

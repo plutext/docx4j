@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -25,13 +26,23 @@ import org.docx4j.wml.Text;
  * 
  */
 public class FieldsCombiner {
+	
+	private static Logger log = Logger.getLogger(FieldsCombiner.class);		
+	
 	protected static final CombineVisitor COMBINE_VISITOR = new CombineVisitor();
 	
 	/** Combine complex fields to w:fldSimple
 	 * 
 	 */
 	public static void process(WordprocessingMLPackage wmlPackage) {
+		log.info("starting");
 		TraversalUtil.visit(wmlPackage, false, COMBINE_VISITOR);
+		
+		if (log.isDebugEnabled()) {
+			log.debug(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), 
+					true, true));
+		}
+		
 	}
 	
 	protected static class CombineVisitor extends TraversalUtilVisitor<P> {
@@ -52,18 +63,19 @@ public class FieldsCombiner {
 		}	
 
 		protected void processContent(List<Object> pContent) {
-		List<Object> pResult = null;
-		boolean haveChanges = false;
-		boolean inField = false;
-		Object item = null;
-		STFldCharType fldCharType = null;
-		int level = 0;
-		int state = STATE_EXPECT_BEGIN;
-		int markIdx = -1;
-		boolean rollback = false;
-		List<Object> resultList = new ArrayList<Object>(2);
-		StringBuilder instrTextBuffer = new StringBuilder(128);
-		String tmpInstrText = null;
+			
+			List<Object> pResult = null;
+			boolean haveChanges = false;
+			boolean inField = false;
+			Object item = null;
+			STFldCharType fldCharType = null;
+			int level = 0;
+			int state = STATE_EXPECT_BEGIN;
+			int markIdx = -1;
+			boolean rollback = false;
+			List<Object> resultList = new ArrayList<Object>(2);
+			StringBuilder instrTextBuffer = new StringBuilder(128);
+			String tmpInstrText = null;
 		
 			if ((pContent != null) && (!pContent.isEmpty())) {
 				pResult = new ArrayList<Object>(pContent.size());

@@ -32,9 +32,9 @@ import org.docx4j.wml.RPr;
  * @author alberto, jharrop
  *
  */
-public class FldSimpleUnitsHelper {
+public class FormattingSwitchHelper {
 	
-	private static Logger log = Logger.getLogger(FldSimpleUnitsHelper.class);		
+	private static Logger log = Logger.getLogger(FormattingSwitchHelper.class);		
 	
 	/* http://office.microsoft.com/en-us/word-help/insert-and-format-field-codes-in-word-2010-HA101830917.aspx
 	 * Switches:
@@ -805,15 +805,5 @@ public class FldSimpleUnitsHelper {
 		return ret;
 	}
 
-    public static void main(String[] args) 
-            throws Exception {
-    	
-    	// parseInt("1,000") no good, but the following works
-    	java.text.NumberFormat format = java.text.NumberFormat.getInstance(Locale.FRANCE);
-        Number number = format.parse("€ 1,234 EUR");    	
-    	
-    	System.out.println(number.longValue());
-
-    }
 	
 }

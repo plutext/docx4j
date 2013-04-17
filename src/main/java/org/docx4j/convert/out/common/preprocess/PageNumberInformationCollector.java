@@ -6,7 +6,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
@@ -69,7 +69,7 @@ public class PageNumberInformationCollector {
 			
 			String instr = element.getInstr();
 			
-			//String fieldType = FldSimpleUnitsHelper.getFldSimpleName(instr);
+			//String fieldType = FormattingSwitchHelper.getFldSimpleName(instr);
 			try {
 				fldSimpleModel.build(instr); // TODO: do this once only
 			} catch (TransformerException e) {
@@ -95,7 +95,7 @@ public class PageNumberInformationCollector {
 		String ret = null;
 			try {
 				fldSimpleModel.build(instr);
-				return FldSimpleUnitsHelper.findFormat("\\*", fldSimpleModel.getFldParameters());
+				return FormattingSwitchHelper.findFormat("\\*", fldSimpleModel.getFldParameters());
 			} catch (TransformerException e) {
 				ret = null;
 			}

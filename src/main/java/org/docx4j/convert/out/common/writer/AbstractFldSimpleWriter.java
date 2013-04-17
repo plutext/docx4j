@@ -12,7 +12,7 @@ import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -54,7 +54,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 	
@@ -64,7 +64,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 	
@@ -75,7 +75,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 
@@ -96,7 +96,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			log.debug("= " + value);
 			
 			try {
-				return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);
+				return FormattingSwitchHelper.applyFormattingSwitch(model, value);
 			} catch (Docx4JException e) {
 				throw new TransformerException(e);
 			}			

@@ -90,7 +90,8 @@ public class Preprocess implements ConversionFeatures {
 	 * @throws Docx4JException
 	 */
 	public static WordprocessingMLPackage process(WordprocessingMLPackage wmlPackage, Set<String> features) throws Docx4JException {
-	WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+	
+		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
 	
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			FieldsCombiner.process(ret);

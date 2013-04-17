@@ -89,7 +89,7 @@ public interface ConversionFeatures {
 	/** Default features, that get applied to a HTML conversion
 	 */
 	public static final String[] DEFAULT_HTML_FEATURES = {
-		PP_COMMON_DEEP_COPY, 
+//		PP_COMMON_DEEP_COPY, 
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
