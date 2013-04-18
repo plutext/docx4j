@@ -22,9 +22,15 @@ package org.docx4j.convert.out;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,6 +67,19 @@ public class Converter {
     public static int getNextFootnoteNumber(AbstractWmlConversionContext context) {
     	return context.getNextFootnoteNumber();
     }
+    
+	public static Node getFootnote(AbstractWmlConversionContext context, String id) {	
+		WordprocessingMLPackage wmlPackage = context.getWmlPackage();
+		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement();
+		int pos = Integer.parseInt(id);
+		
+		// No @XmlRootElement on CTFtnEdn, so .. 
+		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
+		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
+				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
+		log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		return d;
+	}
 
     /** Next number of a endnote
      * 

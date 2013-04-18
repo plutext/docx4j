@@ -208,6 +208,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
 		}
 	}
 
+	@Deprecated // see instead org.docx4j.convert.out.Converter
 	public static Node getFootnote(WordprocessingMLPackage wmlPackage, String id) {	
 		
 		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement();
