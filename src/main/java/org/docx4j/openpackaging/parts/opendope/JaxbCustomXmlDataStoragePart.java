@@ -1,4 +1,6 @@
-package org.docx4j.openpackaging.parts;
+package org.docx4j.openpackaging.parts.opendope;
+// It would be better if this class was in org.docx4j.openpackaging.parts,
+// but it is too late to move it now 
 
 import java.util.List;
 
@@ -12,6 +14,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -22,6 +27,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 	// where what we (currently) want is String or list of nodes.
 	// Besides, XPath doesn't really work with RI (it may with moXy?).
 	// The XPath methods here are copied from XmlPart.
+	
 	
 	
 	public JaxbCustomXmlDataStoragePart(PartName partName) throws InvalidFormatException {

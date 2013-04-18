@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
@@ -56,7 +57,7 @@ public class DocPropsCoverPagePart extends JaxbCustomXmlDataStoragePart<CoverPag
 				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE));
 
 		// Used when this Part is added to a rels 
-		setRelationshipType(Namespaces.PROPERTIES_COVERPAGE);
+		setRelationshipType("http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps"); // hardcoding Namespaces.PROPERTIES_COVERPAGE for ease of integration in MergeDocx
 		
 		setJAXBContext(Context.jc);						
 		

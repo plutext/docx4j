@@ -10,7 +10,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.conditions.Condition;
 

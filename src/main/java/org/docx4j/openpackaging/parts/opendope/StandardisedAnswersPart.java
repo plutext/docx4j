@@ -4,7 +4,6 @@ import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.PartName;
 
 public class StandardisedAnswersPart extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers> {
