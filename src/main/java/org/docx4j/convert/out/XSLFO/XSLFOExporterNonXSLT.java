@@ -33,10 +33,11 @@ import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.Preprocess;
+import org.docx4j.convert.out.pdf.viaXSLFO.FopResultUtils;
 import org.docx4j.convert.out.pdf.viaXSLFO.LayoutMasterSetBuilder;
 import org.docx4j.convert.out.pdf.viaXSLFO.PDFConversionImageHandler;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
-import org.docx4j.fonts.fop.util.FopUtils;
+import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.images.ConversionImageHandler;
@@ -1101,17 +1102,18 @@ public class XSLFOExporterNonXSLT {
 
 // ========================================================================	
 	
-	public void output(Document xslfo, OutputStream os, Configuration fopConfig) throws Docx4JException {
+	public void output(Document xslfo, OutputStream os, Configuration fopConfigZZZ) throws Docx4JException {
 	WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)pdfSettings.getWmlPackage();
 
+		String fopConfig = null;
 		if (fopConfig == null) {
-			fopConfig = FopUtils.createDefaultConfiguration(wmlPackage.getFontMapper(), 
+			fopConfig = FopConfigUtil.createDefaultConfiguration(wmlPackage.getFontMapper(), 
 							wmlPackage.getMainDocumentPart().fontsInUse());
 		}
 
 		try {
 			long startTime = System.currentTimeMillis();				
-			FopUtils.render(fopConfig, MimeConstants.MIME_PDF, xslfo, null, os);
+			FopResultUtils.render(fopConfig, MimeConstants.MIME_PDF, xslfo, null, os);
 			long endTime = System.currentTimeMillis();
 			log.info("FOP converted FO to PDF in elapsed time: " + Math.round((endTime-startTime)/1000) );
 			// Clean-up

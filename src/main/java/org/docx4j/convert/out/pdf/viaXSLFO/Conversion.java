@@ -25,7 +25,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Preprocess;
 import org.docx4j.convert.out.common.preprocess.Containerization;
-import org.docx4j.fonts.fop.util.FopUtils;
+import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -114,7 +114,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
 		
 		PdfConversionContext conversionContext = null;
-		Configuration localFopConfiguration = fopConfig;
+//		Configuration localFopConfiguration = fopConfig;
+		String localFopConfiguration = null;
 		WordprocessingMLPackage localWmlPackage = (wordMLPackage != null ? 
 			wordMLPackage : (WordprocessingMLPackage)settings.getWmlPackage());
 
@@ -158,7 +159,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			if (localFopConfiguration == null) {
 				localFopConfiguration = 
-						FopUtils.createDefaultConfiguration(localWmlPackage.getFontMapper(), 
+						FopConfigUtil.createDefaultConfiguration(localWmlPackage.getFontMapper(), 
 															localWmlPackage.getMainDocumentPart().fontsInUse());
 			}
 			if (saveFO != null || log.isDebugEnabled()) {
@@ -176,9 +177,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					log.info("Saved " + saveFO.getPath());
 				}
 
-				FopUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, fo, null, os);
+				FopResultUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, fo, null, os);
 			} else {
-				FopUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, domDoc, xslt, conversionContext.getXsltParameters(), os);
+				FopResultUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, domDoc, xslt, conversionContext.getXsltParameters(), os);
 			}
 
 		} catch (Exception e) {

@@ -53,8 +53,18 @@ import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
 
 /**
- * @author jharrop, alberto
+ * In Word, adjacent paragraphs with the same borders are enclosed in a single border
+ * (unless bullets/numbering apply).
+ * 
+ * Similarly with shading.  (If the 2 paragraphs are shaded different colors, then the
+ * color of the first extends to the start of the second, so there is no white strip
+ * between them).
+ * 
+ * To do the same in HTML and PDF output, we put matching paragraphs into a content
+ * control, and set the border/shading on that.  This gives us an appropriate
+ * div or fo:block.
  *
+ * @author jharrop, alberto
  */
 public class Containerization {
 
@@ -110,18 +120,7 @@ public class Containerization {
 		}
 	}
 	
-	/**
-	 * In Word, adjacent paragraphs with the same borders are enclosed in a single border
-	 * (unless bullets/numbering apply).
-	 * 
-	 * Similarly with shading.  (If the 2 paragraphs are shaded different colors, then the
-	 * color of the first extends to the start of the second, so there is no white strip
-	 * between them).
-	 * 
-	 * To do the same in HTML and PDF output, we put matching paragraphs into a content
-	 * control, and set the border/shading on that.  This gives us an appropriate
-	 * div or fo:block.
-	 */
+
 	protected static void groupAdjacentBorders(List<Object> content) {
 		
 		List<Object> groupedContent = null;
