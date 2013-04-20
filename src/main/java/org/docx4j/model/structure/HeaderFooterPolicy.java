@@ -107,31 +107,29 @@ public class HeaderFooterPolicy {
 		List<CTRel> hdrFtrRefs = sectPr.getEGHdrFtrReferences();
 		BooleanDefaultTrue titlePage = sectPr.getTitlePg();
 		
-		// Headers. Does this sectPr have any?
-		if (hasHdrRef(hdrFtrRefs) ) {
-			setHeaderReferences(hdrFtrRefs, rels, titlePage );
-		} else {
-			// If not, get them from previousHF
-			firstHeader   = previousHF.firstHeader;
-			if (titlePage!=null && titlePage.isVal() ) {
-				firstHeaderActive   = previousHF.firstHeader;
-			}
-			defaultHeader = previousHF.defaultHeader;
-			evenHeader    =  previousHF.evenHeader; 
+		// Headers. 
+		// Init from previousHF
+		firstHeader   = previousHF.firstHeader;
+		if (titlePage!=null && titlePage.isVal() ) {
+			firstHeaderActive   = previousHF.firstHeader;
 		}
+		defaultHeader = previousHF.defaultHeader;
+		evenHeader    =  previousHF.evenHeader; 
+		// and overwrite with whatever we have
+		// specific to this sectPr
+		setHeaderReferences(hdrFtrRefs, rels, titlePage );
 		
 		// Now, same for Footers. 
-		if (hasFtrRef(hdrFtrRefs) ) {
-			setFooterReferences(hdrFtrRefs, rels, titlePage );
-		} else {
-			// If not, get them from previousHF
-			firstFooter   = previousHF.firstFooter;
-			if (titlePage!=null && titlePage.isVal() ) {
-				firstFooterActive   = previousHF.firstFooter;
-			}
-			defaultFooter = previousHF.defaultFooter;
-			evenFooter    =  previousHF.evenFooter; 
+		// Init from previousHF
+		firstFooter   = previousHF.firstFooter;
+		if (titlePage!=null && titlePage.isVal() ) {
+			firstFooterActive   = previousHF.firstFooter;
 		}
+		defaultFooter = previousHF.defaultFooter;
+		evenFooter    =  previousHF.evenFooter; 
+		// and overwrite with whatever we have
+		// specific to this sectPr
+		setFooterReferences(hdrFtrRefs, rels, titlePage );
 		
 		if ((titlePage != null) && (titlePage.isVal())) {
 			if (firstHeaderActive == null) {
@@ -214,22 +212,22 @@ public class HeaderFooterPolicy {
 		}
 	}
 
-	private boolean hasHdrRef(List<CTRel> hdrFtrRefs) {
-		
-		if (hdrFtrRefs==null) return false;
-		for (CTRel rel : hdrFtrRefs) {
-			if (rel instanceof HeaderReference ) return true; 
-		}
-		return false;
-	}
-	private boolean hasFtrRef(List<CTRel> hdrFtrRefs) {
-		
-		if (hdrFtrRefs==null) return false;
-		for (CTRel rel : hdrFtrRefs) {
-			if (rel instanceof FooterReference ) return true; 
-		}
-		return false;
-	}
+//	private boolean hasHdrRef(List<CTRel> hdrFtrRefs) {
+//		
+//		if (hdrFtrRefs==null) return false;
+//		for (CTRel rel : hdrFtrRefs) {
+//			if (rel instanceof HeaderReference ) return true; 
+//		}
+//		return false;
+//	}
+//	private boolean hasFtrRef(List<CTRel> hdrFtrRefs) {
+//		
+//		if (hdrFtrRefs==null) return false;
+//		for (CTRel rel : hdrFtrRefs) {
+//			if (rel instanceof FooterReference ) return true; 
+//		}
+//		return false;
+//	}
 
 	private void setHeaderReferences(List<CTRel> hdrFtrRefs, RelationshipsPart rels,
 			BooleanDefaultTrue titlePage) {
