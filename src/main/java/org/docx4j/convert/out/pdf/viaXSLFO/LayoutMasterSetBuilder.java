@@ -112,10 +112,18 @@ public class LayoutMasterSetBuilder {
 						(hf.getDefaultFooter()!=null) ));				
 			}
 
-			// simple (no headers and footers)
-			if ((hf.getFirstHeader() == null) && (hf.getFirstFooter() == null) &&
-				(hf.getDefaultHeader() == null) && (hf.getDefaultFooter() == null) &&
-				(hf.getEvenHeader() == null) && (hf.getEvenFooter() == null)) {
+			// simple: no headers and footers - after the first page anyway/
+			// We still need this where there is just a first page header/footer,
+			// since otherwise there'd be no page sequence for any content 
+			// after the first page, and you'd get: 
+			//    org.apache.fop.fo.pagination.PageProductionException: 
+			//    Subsequences exhausted in page-sequence-master ..., cannot recover.
+			//
+			// <w:sectPr>
+			//   <w:headerReference w:type="first" r:id="rId7"/>
+			// </w:sectPr>			
+			if (
+				(hf.getDefaultHeader() == null) && (hf.getDefaultFooter() == null)) {
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 						createSimplePageMaster(sectionName + "-simple",  
 								section.getPageDimensions(), 
@@ -133,7 +141,8 @@ public class LayoutMasterSetBuilder {
 	
 	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf, 
 			String sectionName ) {
-		boolean noHeadersFooters = true;
+		
+		boolean noHeadersFootersAfterFirstPage = true;
 		
 		PageSequenceMaster psm = getFactory().createPageSequenceMaster();
 		psm.setMasterName(sectionName);
@@ -148,7 +157,6 @@ public class LayoutMasterSetBuilder {
 			cpmr1.setMasterReference(sectionName+"-firstpage");
 			cpmr1.setPagePosition(PagePositionType.FIRST);
 			rpma.getConditionalPageMasterReference().add(cpmr1);
-			noHeadersFooters = false;
 		}
 
 		if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
@@ -166,7 +174,7 @@ public class LayoutMasterSetBuilder {
 			cpmr3.setOddOrEven(OddOrEvenType.ODD);
 			rpma.getConditionalPageMasterReference().add(cpmr3);			
 			
-			noHeadersFooters = false;
+			noHeadersFootersAfterFirstPage = false;
 		} else if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
 			
 			ConditionalPageMasterReference cpmr4 = getFactory().createConditionalPageMasterReference();
@@ -174,10 +182,10 @@ public class LayoutMasterSetBuilder {
 			//cpmr4.setPagePosition(PagePositionType.FIRST);
 			rpma.getConditionalPageMasterReference().add(cpmr4);			
 			
-			noHeadersFooters = false;
+			noHeadersFootersAfterFirstPage = false;
 		}
 		
-		if (noHeadersFooters) {
+		if (noHeadersFootersAfterFirstPage) {
 			ConditionalPageMasterReference cpmr5 = getFactory().createConditionalPageMasterReference();
 			cpmr5.setMasterReference(sectionName+"-simple");
 			//cpmr5.setPagePosition(PagePositionType.FIRST);
