@@ -69,14 +69,16 @@ public class Indent extends AbstractParagraphProperty {
 		if (numberingIndent!=null) {
 			// Use anything not specifically set already
 			
+			if (val.getHanging()==null 
+					&& val.getFirstLine()==null // since these are mutually exclusive
+					&& numberingIndent.getHanging()!=null) {
+				val.setHanging(numberingIndent.getHanging());
+			}
 			if (val.getFirstLine()==null 
 					&& numberingIndent.getFirstLine()!=null) {
 				val.setFirstLine(numberingIndent.getFirstLine());
 			}
-			if (val.getHanging()==null 
-					&& numberingIndent.getHanging()!=null) {
-				val.setHanging(numberingIndent.getHanging());
-			}
+			
 			if (val.getLeft()==null 
 					&& numberingIndent.getLeft()!=null) {
 				val.setLeft(numberingIndent.getLeft());
@@ -172,12 +174,15 @@ public class Indent extends AbstractParagraphProperty {
 		}
 		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
 		BigInteger hanging = ((Ind)this.getObject()).getHanging();
-		if (firstLine != null) {
+		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
+		// the firstLine value is ignored.
+		if (hanging != null) {
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(-hanging.intValue()) );
+		} else if (firstLine != null) {
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(firstLine.intValue()) );
 			updated = true;
-		} else if (hanging != null) {
-			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(-hanging.intValue()) );
-		}    
+		}
+		
 		if (!updated) {
 			log.warn("Only left/first-line indentation is handled at present");
 		}
@@ -186,7 +191,7 @@ public class Indent extends AbstractParagraphProperty {
 
 	public void setXslFOListBlock(Element foElement) {
 
-		// <w:ind w:left="360" w:hanging="360"/>
+		// TODO: provisional-distance-between-starts from tab value on ppr, or /w:settings/w:defaultTabStop/@w:val
 		
 		boolean updated = false;
 		BigInteger left = ((Ind)this.getObject()).getLeft();
@@ -197,30 +202,42 @@ public class Indent extends AbstractParagraphProperty {
 		
 		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
 		BigInteger hanging = ((Ind)this.getObject()).getHanging();
-				
-		if (firstLine != null) {
-			// TODO
-			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );				
-			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(firstLine.intValue()) );
-			
-			
-		} else if (hanging != null) {
+		
+		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
+		// the firstLine value is ignored.
+		if (hanging != null) {
+			// <w:ind w:left="360" w:hanging="360"/>
 			
 			int hangingInt = hanging.intValue();
 			
 			// start = left - hanging
-			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-hangingInt) );	
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-hangingInt) );
 			
 			// pdbs = hanging
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(hangingInt));
 
 			// text is always 0
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(0) );
+
+		} else { 
 			
-		} else {
-			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );	
-			// TODO
-		}
+			
+			int firstLineInt = 0;
+			if (firstLine != null) {
+				firstLineInt = firstLine.intValue();
+			}
+
+			int pdbs = 360;  
+			
+			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(pdbs));
+			
+			// start = left - pdbs
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-pdbs) );	
+			
+			// text = left + first 
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(leftInt + firstLineInt ) );
+						
+		} 
 		
 		updated = true;
 			
