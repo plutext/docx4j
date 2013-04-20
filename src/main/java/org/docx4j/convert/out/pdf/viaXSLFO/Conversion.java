@@ -434,9 +434,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        		if (triple.getBullet()!=null ) {
 		        		foListItemLabelBody.setTextContent(triple.getBullet() );
 		        	} else if (triple.getNumString()==null) {
-			    		log.warn("computed NumString was null!");
+			    		log.debug("computed NumString was null!");
 		        		if (log.isDebugEnabled() ) {
-		        			foListItemLabelBody.setTextContent("nns");
+		        			foListItemLabelBody.setAttribute("color", "red");
+		        			foListItemLabelBody.setTextContent("null#");
 		        		} 
 			    	} else {
 						Text number = document.createTextNode( triple.getNumString() );

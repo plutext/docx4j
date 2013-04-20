@@ -33,7 +33,10 @@ public class ConversionSectionWrapper extends SectionWrapper {
 	protected String id = null;
 	protected PageNumberInformation pageNumberInformation = null;
 	
-	public ConversionSectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, String id, List<Object> content, PageNumberInformation pageNumberInformation) {
+	public ConversionSectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, 
+			BooleanDefaultTrue evenAndOddHeaders, String id, List<Object> content, 
+			PageNumberInformation pageNumberInformation) {
+		
 		super(sectPr, previousHF, rels, evenAndOddHeaders);
 		this.id = id;
 		this.content = content;
