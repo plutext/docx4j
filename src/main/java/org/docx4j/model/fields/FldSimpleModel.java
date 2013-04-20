@@ -77,7 +77,7 @@ public class FldSimpleModel extends Model {
 				nameEnd = nameStart + 1;
 				if (text.charAt(nameStart) == '=') {
 					// Special case =nn
-					fldType = "=";
+					fldType = "="; // NB, we can't process this field unless it is just a number (as opposed to a calculation)
 				} else {
 					while ((nameEnd < text.length()) && (text.charAt(nameEnd) != ' '))
 						nameEnd++;

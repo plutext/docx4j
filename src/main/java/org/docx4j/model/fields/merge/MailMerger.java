@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.TransformerException;
+
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
@@ -16,6 +18,8 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
+import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.structure.SectionWrapper;
@@ -62,6 +66,9 @@ import org.docx4j.wml.SectPr;
  * Images and hyperlinks should be ok. But numbering 
  * will continue, as will footnotes/endnotes. 
  * 
+ * From 3.0, there is some support for formatting switches
+ * (date/time, numeric, and general).
+ *  
  * LIMITATIONS:
  * - no support for text before (\b) and text after (\f)
  *   switches
@@ -470,10 +477,20 @@ public class MailMerger {
 				log.info("Key: '" + key + "'");
 				
 				String val = datamap.get( new DataFieldName(key));
-				
+								
 				if (val==null) {
 					log.warn("Couldn't find value for key: '" + key + "'");
 				} else {
+					
+					// Now format the result
+					FldSimpleModel fsm = new FldSimpleModel();
+					try {
+						fsm.build(instr);
+						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					} catch (TransformerException e) {
+						log.warn("Can't format the field", e);
+					}
+					
 					fr.setResult(val);
 				}
 				

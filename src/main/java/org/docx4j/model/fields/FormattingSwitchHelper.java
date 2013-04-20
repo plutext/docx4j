@@ -43,8 +43,6 @@ import org.docx4j.wml.RPr;
  * + numeric-formatting-switch: \#
  * + general-formatting-switch: \*
  * 
- * TODO: rename this class.  New name: FormattingSwitchHelper (matching the terminology in the spec)
- * 
  * Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT are not handled here. 
  * It is the responsibility of the calling code to handle these.
  * 

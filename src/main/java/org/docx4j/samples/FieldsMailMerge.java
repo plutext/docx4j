@@ -26,12 +26,20 @@ public class FieldsMailMerge {
 		map.put( new DataFieldName("KundenNAme"), "Daffy duck");
 		map.put( new DataFieldName("Kundenname"), "Plutext");
 		map.put(new DataFieldName("Kundenstrasse"), "Bourke Street");
+
+		// To get dates right, make sure you have docx4j property docx4j.Fields.Dates.DateFormatInferencer.USA
+		// set to true or false as appropriate.  It defaults to non-US.
+		map.put(new DataFieldName("yourdate"), "15/4/2013");  
+		map.put(new DataFieldName("yournumber"), "2456800");
 		
 		data.add(map);
 				
 		map = new HashMap<DataFieldName, String>();
 		map.put( new DataFieldName("Kundenname"), "Jason");
 		map.put(new DataFieldName("Kundenstrasse"), "Collins Street");
+
+		map.put(new DataFieldName("yourdate"), "12/10/2013");
+		map.put(new DataFieldName("yournumber"), "1234800");
 		
 		data.add(map);		
 		
