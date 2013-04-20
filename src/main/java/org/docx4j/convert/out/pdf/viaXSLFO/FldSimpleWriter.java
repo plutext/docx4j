@@ -46,6 +46,8 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		}
 	}
 	
+	// NB see super class for definition of other handlers.
+	
 	protected FldSimpleWriter() {
 		super(FO_NS, "fo:inline");
 	}

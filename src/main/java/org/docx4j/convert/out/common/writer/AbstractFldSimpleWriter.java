@@ -123,6 +123,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		}
 	}
 	
+	//NB, see also FldSimpleWriter, where PAGE handler is defined.
 	
 	
 	//These are the specific handlers, that are implemented

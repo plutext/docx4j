@@ -149,13 +149,10 @@
 	<xsl:template match="section">
 			<xsl:variable name="dummy"
 				select="java:org.docx4j.convert.out.Converter.moveNextSection($conversionContext)" />
-	
+
 			<xsl:variable name="pageNumberFormat" 
 				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberFormat($conversionContext)" />
 	
-			<xsl:variable name="pageNumberInitial" 
-				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($conversionContext)" />
-
 			<!-- start page-sequence
 				here comes the text (contained in flow objects)
 				the page-sequence can contain different fo:flows
@@ -163,7 +160,11 @@
 				which is to be used to layout the text contained in this
 				page-sequence-->
 				
-			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}" >
+			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" >
+				<xsl:if test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasPgNumTypeStart($conversionContext)">
+					<xsl:attribute name="initial-page-number"><xsl:value-of 
+						select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($conversionContext)"/></xsl:attribute>
+				</xsl:if>
 
 				<!--  First Page Header -->
 				<xsl:if

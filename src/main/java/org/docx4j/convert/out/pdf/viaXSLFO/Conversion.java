@@ -835,6 +835,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
     
+    
     public static String getPageNumberFormat(PdfConversionContext context) {
     	
     	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
@@ -872,23 +873,35 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		
     	return "1";
     }
-	
+
+    public static boolean hasPgNumTypeStart(PdfConversionContext context) {
+    	
+    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
+    	
+    	if (sectPr==null) return false;
+    	
+    	CTPageNumber pageNumber = sectPr.getPgNumType();
+    	
+    	if (pageNumber==null) return false;
+    	
+    	return (pageNumber.getStart()!=null);
+    }
+    
     public static String getPageNumberInitial(PdfConversionContext context) {
     	
     	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
 
-    	if (sectPr==null) return "1";
+//    	if (sectPr==null) return "1";
     	
-    	CTPageNumber pageNumber = sectPr.getPgNumType();
-    	
-    	if (pageNumber==null) {
-    		log.debug("No PgNumType");
-    		return "1";
-    	}
+    	CTPageNumber pageNumber = sectPr.getPgNumType();    	
+//    	if (pageNumber==null) {
+//    		log.debug("No PgNumType");
+//    		return "1";
+//    	}
     	
     	BigInteger start = pageNumber.getStart();
     	
-    	if (start==null) return "1";
+//    	if (start==null) return "1";
     	
     	return start.toString();
     }
