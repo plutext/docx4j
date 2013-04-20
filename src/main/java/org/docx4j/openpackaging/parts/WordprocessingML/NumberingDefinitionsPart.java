@@ -150,7 +150,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
             	= new ListNumberingDefinition(numNode, abstractListDefinitions);
 
             instanceListDefinitions.put(listDef.getListNumberId(), listDef);
-            log.debug("Added list: " + listDef.getListNumberId() );
+//            log.debug("Added list: " + listDef.getListNumberId() );
         }
 
     }

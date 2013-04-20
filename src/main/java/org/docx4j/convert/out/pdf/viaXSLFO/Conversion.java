@@ -248,20 +248,19 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	return docfrag;
     }	
     /**
-     * On the block representing the w:p, we want to put both
-     * pPr and rPr attributes.
+     * This is invoked on every paragraph, whether it has a pPr or not.
      * 
      * @param wmlPackage
      * @param pPrNodeIt
      * @param pStyleVal
-     * @param childResults
+     * @param childResults - the already transformed contents of the paragraph.
      * @return
      */
     public static DocumentFragment createBlockForPPr( 
     		PdfConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults) {
-
+    	
     	return createBlock( 
         		context,
         		pPrNodeIt,
@@ -320,13 +319,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	} else {
         		Node n = pPrNodeIt.nextNode();
         		if (n==null) {
-        			log.debug("pPrNodeIt.nextNode() was null.");
+        			log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
             		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
             		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
             		// TODO - in this case, we should be able to compute once,
             		// and on subsequent calls, just return pre computed value
         		} else {
-					log.debug( XmlUtils.w3CDomNodeToString(n) );
+					log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
@@ -335,6 +334,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     				if (pPr==null) {
     					log.debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
     				}
+    				
+    				// On the block representing the w:p, we want to put both
+    			    // pPr and rPr attributes.
+    				
     				log.debug("getting rPr for paragraph style");    				
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
     					// rPr in pPr direct formatting only applies to paragraph mark, 
@@ -343,7 +346,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	}        	
 
 			if (log.isDebugEnabled() && pPr!=null) {				
-				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
 			}
         	
             // Create a DOM builder and parse the fragment			
@@ -352,22 +355,42 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			
 			//log.info("Document: " + document.getClass().getName() );
 			
-			boolean inlist = false;
+			boolean indentHandledByNumbering = false;
 			
 			Element foBlockElement;
-			if (pPr!=null && pPr.getNumPr()!=null ) {
+			Element foListBlock = null;
+			if (pPr!=null 
+					&& pPr.getNumPr()!=null 
+					&& pPr.getNumPr().getNumId()!=null
+					&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
+					) {
 				
-				inlist = true;
 				
 				// Its a list item.  At present we make a new list-block for
 				// each list-item. This is not great; DocumentModel will ultimately
 				// allow us to use fo:list-block properly.
 
-				Element foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+				/* Create something like:
+				 * 			
+					<fo:list-block provisional-distance-between-starts="0.5in" start-indent="0.5in">
+					  <fo:list-item>
+					    <fo:list-item-label>
+					      <fo:block font-family="Times New Roman">-</fo:block>
+					    </fo:list-item-label>
+					    <fo:list-item-body start-indent="body-start()">
+					      <fo:block font-family="Times New Roman" font-size="9.0pt" line-height="100%" space-after="0.08in" space-before="0.08in" text-align="justify">
+					        <inline xmlns="http://www.w3.org/1999/XSL/Format" id="clauseDPI5123341"/>Content goes here...
+					      </fo:block>
+					    </fo:list-item-body>
+					  </fo:list-item>
+					</fo:list-block>
+				 */				
+
+				foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
 						"fo:list-block");
 				document.appendChild(foListBlock);
 								
-				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
+//				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
 				
 				// Need to apply shading at fo:list-block level
 				if (pPr.getShd()!=null) {
@@ -411,17 +434,19 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				if (triple==null) {
 	        		log.warn("computed number ResultTriple was null");
 	        		if (log.isDebugEnabled() ) {
-	        			foListItemLabelBody.setTextContent("nrt");
+	        			foListItemLabelBody.setAttribute("color", "red");
+	        			foListItemLabelBody.setTextContent("null#");
 	        		} 
 	        	} else {
 	        		
 	        		// Indent (in combination with provisional-distance-between-starts
-	        		// above
-	        		if (triple.getIndent()!=null) {
-	        			Indent indent = new Indent(triple.getIndent());
-	    				//foListBlock.setAttribute(Indent.FO_NAME, "2in");
-	    				indent.setXslFO(foListBlock);
-	        		}
+	        		// above)
+	        		// Indent on direct pPr trumps indent in pPr in numbering, which trumps indent
+	    			// specified in a style.  Well, not exactly, components which aren't set in
+	        		// the direct formatting will be contributed by the numbering's indent settings
+	        		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+    				indent.setXslFOListBlock(foListBlock);
+    				indentHandledByNumbering = true; 
 	        		
 	        		// Set the font
 	        		if (triple.getNumFont()!=null) {
@@ -455,6 +480,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						"fo:block");
 				foListItemBody.appendChild(foBlockElement);
 				
+				log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+				
+				
 			} else {
 
 				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
@@ -466,14 +494,21 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
 
-				createFoAttributes(context.getWmlPackage(), pPr, ((Element)foBlockElement), inlist, ignoreBorders );
+				createFoAttributes(context.getWmlPackage(), pPr, ((Element)foBlockElement), indentHandledByNumbering, ignoreBorders );
 			}
 
 			
-			if (rPr!=null) {											
-				createFoAttributes(context.getWmlPackage(), rPr, ((Element)foBlockElement) );
+			if (rPr!=null) {
+				
+				if (foListBlock==null) {
+					createFoAttributes(context.getWmlPackage(), rPr, ((Element)foBlockElement) );
+				} else {
+					createFoAttributes(context.getWmlPackage(), rPr, ((Element)foListBlock) );					
+				}
 	        }
-        
+
+			log.debug("after createFoAttributes: " + XmlUtils.w3CDomNodeToString(foBlockElement) );
+			
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes

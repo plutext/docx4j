@@ -26,6 +26,7 @@ import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.w3c.dom.Element;
@@ -51,6 +52,39 @@ public class Indent extends AbstractParagraphProperty {
 	
 	public Indent(Ind val) {
 		this.setObject(val);
+	}
+
+	/**
+	 * Compose an effective indent value.
+	 * 
+	 * @param pPrDirectIndent
+	 * @param numberingIndent
+	 */
+	public Indent(Ind pPrDirectIndent, Ind numberingIndent) {
+		
+		Ind val=Context.getWmlObjectFactory().createPPrBaseInd();
+		if (pPrDirectIndent!=null) {
+			StyleUtil.apply(pPrDirectIndent, val);
+		}
+		if (numberingIndent!=null) {
+			// Use anything not specifically set already
+			
+			if (val.getFirstLine()==null 
+					&& numberingIndent.getFirstLine()!=null) {
+				val.setFirstLine(numberingIndent.getFirstLine());
+			}
+			if (val.getHanging()==null 
+					&& numberingIndent.getHanging()!=null) {
+				val.setHanging(numberingIndent.getHanging());
+			}
+			if (val.getLeft()==null 
+					&& numberingIndent.getLeft()!=null) {
+				val.setLeft(numberingIndent.getLeft());
+			}
+		}
+		
+		this.setObject(val);
+		
 	}
 	
 	public Indent(CSSValue value) {	
@@ -128,24 +162,75 @@ public class Indent extends AbstractParagraphProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 
+		// <w:ind w:left="360" w:hanging="360"/>
+		
 		boolean updated = false;
-		BigInteger left = ((Ind)this.getObject()).getLeft();		
+		BigInteger left = ((Ind)this.getObject()).getLeft();
 		if (left !=null) {
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 			updated = true;
 		}
 		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
+		BigInteger hanging = ((Ind)this.getObject()).getHanging();
 		if (firstLine != null) {
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(firstLine.intValue()) );
 			updated = true;
-		}
-    
+		} else if (hanging != null) {
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(-hanging.intValue()) );
+		}    
 		if (!updated) {
 			log.warn("Only left/first-line indentation is handled at present");
 		}
 
 	}
 
+	public void setXslFOListBlock(Element foElement) {
+
+		// <w:ind w:left="360" w:hanging="360"/>
+		
+		boolean updated = false;
+		BigInteger left = ((Ind)this.getObject()).getLeft();
+		int leftInt = 0;
+		if (left!=null) {
+			leftInt = left.intValue();
+		}
+		
+		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
+		BigInteger hanging = ((Ind)this.getObject()).getHanging();
+				
+		if (firstLine != null) {
+			// TODO
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );				
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(firstLine.intValue()) );
+			
+			
+		} else if (hanging != null) {
+			
+			int hangingInt = hanging.intValue();
+			
+			// start = left - hanging
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-hangingInt) );	
+			
+			// pdbs = hanging
+			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(hangingInt));
+
+			// text is always 0
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(0) );
+			
+		} else {
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );	
+			// TODO
+		}
+		
+		updated = true;
+			
+    
+		if (!updated) {
+			log.warn("Only left/first-line indentation is handled at present");
+		}
+
+	}
+	
 	@Override
 	public void set(PPr pPr) {
 		pPr.setInd( (Ind)this.getObject() );
