@@ -2518,8 +2518,12 @@ public class StyleUtil {
 		return (source == null ? destination : source);
 	}
 
+//	protected static BigInteger apply(BigInteger source, BigInteger destination) {
+//		return (source == null || BigInteger.ZERO.equals(source) ? destination : source);
+//	}
+	// Need to honour eg <w:ind w:firstLine="0"/>
 	protected static BigInteger apply(BigInteger source, BigInteger destination) {
-		return (source == null || BigInteger.ZERO.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	protected static Integer apply(Integer source, Integer destination) {
