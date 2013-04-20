@@ -124,10 +124,9 @@ public abstract class AbstractHtmlExporter implements Output {
     			return "\u2022  "; 
 				// see notes in docx2xhtmlNG2.xslt as to why we don't use &bull;
     			
-    			
     		} else if (triple.getNumString()==null) {
-	    		log.error("computed NumString was null!");
-	    		return "?  ";
+	    		log.debug("computed NumString was null (which may be ok)");
+	    		return " ";
 	    		
 	    	} else {
 				return triple.getNumString() + " " ;
