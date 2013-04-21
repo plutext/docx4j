@@ -60,7 +60,7 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 	 */
 	public static void main(String[] args) throws Docx4JException {
 		DateTimeFormattingSwitchTests fst = new DateTimeFormattingSwitchTests();
-//		fst.generateSampleDocx();
+//		fst.generateSampleDocx("test_DateTimeFormatting.docx");
 		
 		fst.testFormatting();
 	}

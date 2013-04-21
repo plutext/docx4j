@@ -166,9 +166,11 @@ public class NumericFormattingSwitchTests extends AbstractFormattingSwitchTest {
 	 * @throws Docx4JException 
 	 */
 	public static void main(String[] args) throws Docx4JException {
-//		generateSampleDocx();
-		
+
 		NumericFormattingSwitchTests nfst = new NumericFormattingSwitchTests();
+
+//		nfst.generateSampleDocx("test_NumericFormatting.docx");
+		
 		nfst.testFormatting();
 	}
 

@@ -98,7 +98,7 @@ public class AbstractFormattingSwitchTest {
 	}
 	
 	
-	public void generateSampleDocx() throws Docx4JException {
+	public void generateSampleDocx(String filename) throws Docx4JException {
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
@@ -118,9 +118,9 @@ public class AbstractFormattingSwitchTest {
 //				XmlUtils.marshaltoString(mdp.getJaxbElement(), true, true) );
 		
 		// Optionally save it
-		String filename = System.getProperty("user.dir") + "/OUT_Formatting.docx";
-		wordMLPackage.save(new java.io.File(filename) );
-		System.out.println("Saved " + filename);
+		String path = System.getProperty("user.dir") + "/" + filename;
+		wordMLPackage.save(new java.io.File(path) );
+		System.out.println("Saved " + path);
 	}
 	
 	private CTSimpleField createSimpleField(SwitchTestQuad triple) {
