@@ -136,22 +136,29 @@ public class Indent extends AbstractParagraphProperty {
 	@Override
 	public String getCssProperty() {
 		
+		// Note regarding numbering case; handling of tab after the number:-
+		// We get this right in the PDF case, via setXslFOListBlock below.
+		// We don't attempt to get the tab right in the HTML case,
+		// since without some research, I don't know what markup would be required.
+		
 		String prop = "position: relative; ";
 		
 		BigInteger left = ((Ind)this.getObject()).getLeft();		
 		if (left!=null) {
 			prop  = prop  + composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 
-		
-		BigInteger firstline = ((Ind)this.getObject()).getFirstLine();		
-		if (firstline!=null) {
-			prop  = prop  + composeCss("text-indent", UnitsOfMeasurement.twipToBest(firstline.intValue()) );
-		} 
 
+		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
+		// the firstLine value is ignored.		
+		BigInteger firstline = ((Ind)this.getObject()).getFirstLine();		
 		BigInteger hanging = ((Ind)this.getObject()).getHanging();		
 		if (hanging!=null) {
 			prop  = prop  + composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue()) );
 		} 
+		else if (firstline!=null) {
+			prop  = prop  + composeCss("text-indent", UnitsOfMeasurement.twipToBest(firstline.intValue()) );
+		} 
+
 		
 		if (left==null && firstline == null && hanging==null){
 			log.debug("What to do with " + XmlUtils.marshaltoString(this.getObject(), true, true));
@@ -227,6 +234,11 @@ public class Indent extends AbstractParagraphProperty {
 	
 
 	public void setXslFOListBlock(Element foElement, int pdbs) {
+		// NB the calculations in this method are correct and tested
+		// (at least for positive left values).
+		// So if there are problems with indentation, they are more 
+		// likely to be somewhere else, eg in how the Ind value
+		// is being derived.
 
 		// The pdbs value only affects the firstLine case.
 		// It is not used in the hanging case.
@@ -244,7 +256,6 @@ public class Indent extends AbstractParagraphProperty {
 		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
 		// the firstLine value is ignored.
 		if (hanging != null) {
-			// <w:ind w:left="360" w:hanging="360"/>
 			
 			int hangingInt = hanging.intValue();
 			
@@ -257,15 +268,12 @@ public class Indent extends AbstractParagraphProperty {
 			// text is always 0
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(0) );
 
-		} else { 
-			
+		} else { 			
 			
 			int firstLineInt = 0;
 			if (firstLine != null) {
 				firstLineInt = firstLine.intValue();
 			}
-
-			//int pdbs = 360;  
 			
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(pdbs));
 			System.out.println("Using pdbs " + pdbs + "=" + UnitsOfMeasurement.twipToBest(pdbs));
@@ -273,7 +281,7 @@ public class Indent extends AbstractParagraphProperty {
 			// start = left - pdbs
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-pdbs) );	
 			
-			// text = left + first 
+			// text 
 			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest( firstLineInt + pdbs ) );
 						
 		} 

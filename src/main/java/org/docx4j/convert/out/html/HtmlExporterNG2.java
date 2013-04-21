@@ -36,12 +36,14 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Preprocess;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.w3c.dom.Document;
@@ -362,6 +364,22 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = (htmlElementName.equals("p"));
 			if (pPr!=null) {
+				
+				// Is there numbering indentation to honour?
+				if (pPr.getNumPr()!=null 
+						&& pPr.getNumPr().getNumId()!=null
+						&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
+						) {
+					Ind numInd = org.docx4j.model.listnumbering.Emulator.getInd(
+	        			context.getWmlPackage(), pStyleVal, 
+	        			pPr.getNumPr().getNumId().getVal().toString(), 
+	        			pPr.getNumPr().getIlvl().getVal().toString() ); 
+					if (numInd!=null) {
+		        		Indent indent = new Indent(pPr.getInd(), numInd);
+		        		pPr.setInd((Ind)indent.getObject());						
+					}
+				}
+				
 				StringBuffer inlineStyle =  new StringBuffer();
 				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
 				if (!inlineStyle.toString().equals("") ) {

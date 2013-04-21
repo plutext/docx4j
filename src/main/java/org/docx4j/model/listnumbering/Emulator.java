@@ -291,6 +291,146 @@ public class Emulator {
 		return triple;
     }
 
+    
+    /**
+     * Used in HTML output.
+     * 
+     * @since 3.0.0
+     */
+    public static Ind getInd(WordprocessingMLPackage wmlPackage, String pStyleVal, 
+    		String numId, String levelId) {
+    	
+    	// TODO refactor.  Remove duplicated code.
+    	
+    	
+    	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
+    		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+    	
+    	if (numberingPart==null) {
+    		return null;
+    	}
+
+    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
+    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
+    	
+    	PropertyResolver propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	    	
+    	// If numId is not provided explicitly, 
+    	// is it provided by the style?
+    	// (ie does this style have a list associated with it?)
+    	if (numId == null 
+    			|| numId.equals("")) {
+    		
+    		org.docx4j.wml.Style style = null;
+    		if (pStyleVal==null || pStyleVal.equals("") ) {
+        		log.debug("no explicit numId; no style either");
+    			return null;
+    		}
+    		
+    		log.debug("no explicit numId; looking in styles");
+			style = propertyResolver.getStyle(pStyleVal); 
+			
+	    	if (style == null) {
+	    		log.debug("Couldn't find style '" + pStyleVal + "'");
+	    		return null;
+	    	} 
+	    	
+	    	if (style.getPPr() == null) {
+		    		log.debug("Style '" + pStyleVal + "' has no pPr");
+//		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
+//		        	System.out.println(
+//		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
+//		        			);
+		        	
+		    		return null;
+	    	} 
+
+	    	
+    		NumPr numPr = style.getPPr().getNumPr();
+    		
+    		if (numPr==null) {
+	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
+//	        	log.debug(
+//	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
+//	        			);
+	        	// So there is no numbering set on the style either
+	        	// That's ok ..
+	        	return null;
+    		}
+    		
+    		
+    		if (numPr.getNumId()==null) {
+    			log.debug("NumPr element has no numId");
+    			if (pStyleVal==null) {
+    				return null;
+    			} else {
+    	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
+        			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
+    				PPr ppr = propertyResolver.getEffectivePPr(pStyleVal);
+    				
+    				numPr = ppr.getNumPr();
+        			if (numPr==null) {	
+            			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
+        				return null; // Is this the right thing to do? Check!
+        			} else {        				
+        				log.info("Got numId: " + numPr.getNumId() );
+        			}
+    				
+    			}
+    			
+    		}
+    		
+    		if (numPr.getNumId()==null) {
+    			log.error("numId was null!");
+    			return null;    			
+    		}
+    		
+    		numId = numPr.getNumId().getVal().toString();
+    		if (numId.equals("")) {
+    			log.error("numId was empty!");
+    			return null;
+    		} 
+    		
+    		if (levelId == null 
+    				|| levelId.equals("") ) {
+    			
+    			if (numPr.getIlvl() != null ) {
+    				
+    				levelId = numPr.getIlvl().getVal().toString();
+    	    		log.info("levelId=" + levelId + " (from style)" );
+    			} else {
+    				// default
+    				levelId = "0";
+    			}
+    		}
+    	}
+
+		log.debug("Using numId: " + numId);    		
+    	
+		if (levelId == null || levelId.equals("")) {
+			// String numId = getAttributeValue(numIdNode, ValAttrName);
+			log.warn("No level id?! Default to 0.");
+			levelId="0";
+		}
+
+
+		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
+				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
+						levelId)) {
+
+			// don't IncrementCounter here
+			
+			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			if (ppr==null) {
+				return null;
+			} else {
+				return ppr.getInd();
+			}
+			
+		} 
+		return null;
+    }
+    
 //    public ListLevel getListNumberingDefinition(NumberingDefinitionsPart numberingPart, NumPr numPr) {
 //    	
 //		if (numPr.getNumId()==null) {
