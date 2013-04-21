@@ -46,6 +46,8 @@ import org.docx4j.wml.RPr;
  * Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT are not handled here. 
  * It is the responsibility of the calling code to handle these.
  * 
+ * TODO: use <w:decimalSymbol w:val="."/><w:listSeparator w:val=","/> from DocumentSettingsPart.
+ * 
  * @author alberto, jharrop
  *
  */

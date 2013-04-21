@@ -2,6 +2,8 @@ package org.docx4j.model.fields.docproperty;
 
 import org.apache.log4j.Logger;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.model.fields.FieldFormattingException;
+import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 
@@ -18,6 +20,14 @@ public class DocPropertyResolver {
 		But not CoverPageProps (if available), since those are
 		accessible via content control data binding, but not
 		DOCPROPERTY field (at least via Word 2010 UI).
+
+		Notes:
+		
+			 DOCPROPERTY  Pages  \* MERGEFORMAT 
+			--> 54
+			 DOCPROPERTY  PAGES / NUMPAGES  \* MERGEFORMAT 
+			!-> NOT FOUND! 
+	
 	
 	*/	
 	
@@ -40,27 +50,37 @@ public class DocPropertyResolver {
 		
 	}
 	
-	public Object getValue(String key) {
+	public String getValue(String key) throws FieldFormattingException, FieldValueException {
+		
+		Object value = null;
 		
 		// Most likely a custom value, so try this first
 		if (docPropsCustomPart!=null) {
-			String customProp = docPropsCustomPart.getProperty(key);
-			if (customProp!=null) return customProp;
-			
-				// TODO: handle types which aren't String
+			value = docPropsCustomPart.getProperty(key);
 		}
 		
 		if (BUILT_IN_FIELDS_CORE.contains(key)) {
-			return getCoreValue(key);
+			value = getCoreValue(key);
 		} else if (BUILT_IN_FIELDS_EXTENDED.contains(key)) {
-			return getExtendedValue(key);
+			value = getExtendedValue(key);
 		} else if (BUILT_IN_FIELDS_UNSUPPORTED.contains(key)) {
 			log.warn("No support for DOCPROPERTY field " + key);
 			return null;
 		} 
+		
+		if (value==null) {
+			throw new FieldValueException("No value found for DOCPROPERTY " + key);			
+		} else {
+			
+			if (value instanceof String) {
+				return (String)value;
+			} else if (value instanceof Integer) {
+				return ((Integer)value).toString();
+			} else {
+				throw new FieldFormattingException("TODO: convert " + value.getClass().getName() + " to string");
+			}
+		}
 
-		log.warn("No value found for DOCPROPERTY " + key);
-		return null;
 	}
 
 	private Object getCoreValue(String key) {

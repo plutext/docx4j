@@ -16,7 +16,7 @@ import org.docx4j.customXmlProperties.DatastoreItem;
 import org.docx4j.customXmlProperties.SchemaRefs;
 import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.fields.FieldLocator;
+import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
 import org.docx4j.model.fields.merge.DataFieldName;
@@ -92,7 +92,7 @@ public class FromMergeFields extends AbstractMigrator {
 				+ XmlUtils.marshaltoString(pkgOut.getMainDocumentPart().getJaxbElement(), true));
 		
 		// find fields
-		FieldLocator fl = new FieldLocator();
+		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(pkgOut.getMainDocumentPart().getContent(), fl);
 		log.info("Found " + fl.getStarts().size() + " fields ");
 		

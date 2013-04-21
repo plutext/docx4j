@@ -31,6 +31,7 @@ import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
@@ -112,12 +113,20 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			
 			//String key = params.get(0);
 			String key = model.getFldArgument();
-			String value = dpr.getValue(key).toString();
-			log.debug("= " + value);
 			
 			try {
+				String value = dpr.getValue(key).toString();
+				log.debug("= " + value);
 				return FormattingSwitchHelper.applyFormattingSwitch(model, value);
+			} catch (FieldValueException e) {
+				
+				if (e.getMessage().contains("No value found for DOCPROPERTY PAGES")) {// TODO improve this
+					// Handle this case
+				}
+				throw new TransformerException(e);
+				
 			} catch (Docx4JException e) {
+				
 				throw new TransformerException(e);
 			}			
 		}

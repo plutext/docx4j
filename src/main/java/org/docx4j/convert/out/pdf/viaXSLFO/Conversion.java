@@ -841,7 +841,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			if ( !instr.toLowerCase().contains( "page") ) {
 				
 				if (log.isDebugEnabled() ) {
-					return context.getMessageWriter().message("no support for fields (except PAGE numbering)");
+					return context.getMessageWriter().message("no support for complex field " + instr);
 				} else {
 					
 					// Try this

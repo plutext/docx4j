@@ -15,7 +15,7 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.fields.FieldLocator;
+import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
 import org.docx4j.model.fields.FldSimpleModel;
@@ -438,7 +438,7 @@ public class MailMerger {
 		Body shellClone = (Body)XmlUtils.deepCopy(shell);
 		
 		// find fields
-		FieldLocator fl = new FieldLocator();
+		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(shellClone, fl);
 		log.info("Found " + fl.getStarts().size() + " fields ");
 		

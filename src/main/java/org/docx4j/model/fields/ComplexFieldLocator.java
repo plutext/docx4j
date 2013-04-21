@@ -9,7 +9,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.STFldCharType;
 
 	
-public class FieldLocator extends CallbackImpl {
+public class ComplexFieldLocator extends CallbackImpl {
 	
 	/**
 	 * A list of paragraphs containing field begins.

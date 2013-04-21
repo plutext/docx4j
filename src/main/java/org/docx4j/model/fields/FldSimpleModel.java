@@ -46,10 +46,10 @@ public class FldSimpleModel extends Model {
 	
 	protected CTSimpleField fldSimple = null;
 	protected Node content = null;
-	protected String fldType = null;
-	protected String fldArgument = null; 
-	protected String fldParameterString = null;
-	protected List<String> fldParameters = null;
+	private String fldType = null;
+	private String fldArgument = null; 
+	private String fldParameterString = null;
+	private List<String> fldParameters = null;
 	
 	@Override
 	public void build(Object node, Node content) throws TransformerException {
@@ -150,6 +150,9 @@ public class FldSimpleModel extends Model {
 		}
 	}
 
+	/**
+	 * returns uppercase value
+	 */
 	public String getFldType() {
 		return fldType;
 	}

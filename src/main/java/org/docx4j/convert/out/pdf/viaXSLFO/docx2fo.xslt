@@ -798,7 +798,7 @@
     
   <xsl:template match="w:continuationSeparator" />
 
-
+  <!--  Simple fields: several different types are supported, including PAGE, DATE, TIME, PRINTDATE, DOCPROPERTY -->
   <xsl:template match="w:fldSimple" >
 
 		<xsl:variable name="childResults">
@@ -808,7 +808,8 @@
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode(
 	  			$conversionContext,., $childResults)"/>	  		
   </xsl:template>
-  
+
+  <!--  Complex fields: only PAGE is supported -->
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
 			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.inFieldUpdateState($conversionContext, .)" />  	
