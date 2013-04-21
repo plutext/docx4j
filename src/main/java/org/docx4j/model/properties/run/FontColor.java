@@ -102,7 +102,12 @@ public class FontColor extends AbstractRunProperty {
 	public void setXslFO(Element foElement) {
 		
 		if (((Color)this.getObject()).getVal()!=null ) {
-			foElement.setAttribute(FO_NAME, "#" + ((Color)this.getObject()).getVal());
+			if (((Color)this.getObject()).getVal().equals("auto")) {
+				// set it to black
+				foElement.setAttribute(FO_NAME, "black");				
+			} else {
+				foElement.setAttribute(FO_NAME, "#" + ((Color)this.getObject()).getVal());
+			}
 		} else {
 			//
 		}
