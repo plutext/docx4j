@@ -39,14 +39,18 @@ import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
+import org.docx4j.wml.CTTabStop;
+import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
 import org.w3c.dom.Document;
@@ -438,14 +442,37 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        			foListItemLabelBody.setTextContent("null#");
 	        		} 
 	        	} else {
+        			int numChars=1;
+	        		if (triple.getBullet()!=null ) {
+		        		foListItemLabelBody.setTextContent(triple.getBullet() );
+		        	} else if (triple.getNumString()==null) {
+			    		log.debug("computed NumString was null!");
+		        		if (log.isDebugEnabled() ) {
+		        			foListItemLabelBody.setAttribute("color", "red");
+		        			foListItemLabelBody.setTextContent("null#");
+		        		} 
+		        		numChars=0;
+			    	} else {
+						Text number = document.createTextNode( triple.getNumString() );
+						foListItemLabelBody.appendChild(number);
+						numChars = triple.getNumString().length();
+			    	}
 	        		
-	        		// Indent (in combination with provisional-distance-between-starts
-	        		// above)
+	        		// Indent (setting provisional-distance-between-starts)
 	        		// Indent on direct pPr trumps indent in pPr in numbering, which trumps indent
 	    			// specified in a style.  Well, not exactly, components which aren't set in
 	        		// the direct formatting will be contributed by the numbering's indent settings
 	        		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
-    				indent.setXslFOListBlock(foListBlock);
+	        		if (indent.isHanging() ) {
+	    				indent.setXslFOListBlock(foListBlock, -1);	        			
+	        		} else {
+	        			
+	        			int numWidth = 90 * numChars; // crude .. TODO take font size into account
+	        			
+	        		    int pdbs = getDistanceToNextTabStop(indent.getNumberPosition(), numWidth,
+	        		    		pPrDirect.getTabs(), context.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart());
+	    				indent.setXslFOListBlock(foListBlock, pdbs);	        				        			
+	        		}
     				indentHandledByNumbering = true; 
 	        		
 	        		// Set the font
@@ -456,18 +483,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        			}
 	        		}
 	        		
-	        		if (triple.getBullet()!=null ) {
-		        		foListItemLabelBody.setTextContent(triple.getBullet() );
-		        	} else if (triple.getNumString()==null) {
-			    		log.debug("computed NumString was null!");
-		        		if (log.isDebugEnabled() ) {
-		        			foListItemLabelBody.setAttribute("color", "red");
-		        			foListItemLabelBody.setTextContent("null#");
-		        		} 
-			    	} else {
-						Text number = document.createTextNode( triple.getNumString() );
-						foListItemLabelBody.appendChild(number);		    		
-			    	}
 	        	}
 				
 				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
@@ -551,6 +566,44 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     	return null;
     	
+    }
+    
+    
+    private static int getDistanceToNextTabStop(int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
+    	    	
+		int pdbs = 0; 
+		int defaultTab = 360;
+		if (pprTabs!=null
+				&& pprTabs.getTab()!=null
+				&& pprTabs.getTab().size()>0) {
+			
+			for ( CTTabStop tabStop : pprTabs.getTab() ) {
+					if (tabStop.getPos().intValue()> (pos+ numWidth) ) {
+						log.debug("tab stop: using specified");
+						return (tabStop.getPos().intValue() - pos);
+					}
+			}
+			
+		} 
+		
+		// The default tabs continue to apply after the specified ones
+		if (settings!=null
+				&& settings.getJaxbElement().getDefaultTabStop()!=null ) {
+			CTTwipsMeasure twips = settings.getJaxbElement().getDefaultTabStop();
+			defaultTab = twips.getVal().intValue();
+			
+			if (defaultTab>0) {
+				log.debug("tab stop: using default from docx");
+				int tabNUmber = (int)Math.floor((pos+numWidth)/defaultTab);
+				int nextTabPos = defaultTab*(tabNUmber+1);
+				return nextTabPos - pos;
+			}
+		}
+
+		log.debug("tab stop: assuming default tab 360");
+		int tabNUmber = (int)Math.floor((pos+numWidth)/defaultTab);
+		int nextTabPos = defaultTab*(tabNUmber+1);
+		return nextTabPos - pos;
     }
 
 	public static void createFoAttributes(OpcPackage opcPackage, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
@@ -677,9 +730,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			document.appendChild(foInlineElement);
 			
 				
-			if (log.isDebugEnabled() && rPr!=null) {					
-				log.debug(XmlUtils.marshaltoString(rPr, true, true));					
-			}
+//			if (log.isDebugEnabled() && rPr!=null) {					
+//				log.debug(XmlUtils.marshaltoString(rPr, true, true));					
+//			}
 			
 			//if (rPr!=null) {				
 				createFoAttributes(context.getWmlPackage(), rPr, ((Element)foInlineElement) );

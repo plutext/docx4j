@@ -188,11 +188,49 @@ public class Indent extends AbstractParagraphProperty {
 		}
 
 	}
-
-	public void setXslFOListBlock(Element foElement) {
-
-		// TODO: provisional-distance-between-starts from tab value on ppr, or /w:settings/w:defaultTabStop/@w:val
+	
+	public boolean isHanging() {
 		
+		return ((Ind)this.getObject()).getHanging()!=null;
+	}
+	
+	public int getNumberPosition() {
+
+		boolean updated = false;
+		BigInteger left = ((Ind)this.getObject()).getLeft();
+		int leftInt = 0;
+		if (left!=null) {
+			leftInt = left.intValue();
+		}
+		
+		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
+		BigInteger hanging = ((Ind)this.getObject()).getHanging();
+		
+		// SPEC: The firstLine and hanging attributes are mutually exclusive, if both are specified, then
+		// the firstLine value is ignored.
+		if (hanging != null) {
+			// <w:ind w:left="360" w:hanging="360"/>
+			
+			int hangingInt = hanging.intValue();
+			
+			return ( leftInt-hangingInt) ;
+
+		} else { 
+			
+			int firstLineInt = 0;
+			if (firstLine != null) {
+				firstLineInt = firstLine.intValue();
+			}
+			return (leftInt + firstLineInt );
+		} 
+	}
+	
+
+	public void setXslFOListBlock(Element foElement, int pdbs) {
+
+		// The pdbs value only affects the firstLine case.
+		// It is not used in the hanging case.
+				
 		boolean updated = false;
 		BigInteger left = ((Ind)this.getObject()).getLeft();
 		int leftInt = 0;
@@ -227,15 +265,16 @@ public class Indent extends AbstractParagraphProperty {
 				firstLineInt = firstLine.intValue();
 			}
 
-			int pdbs = 360;  
+			//int pdbs = 360;  
 			
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(pdbs));
+			System.out.println("Using pdbs " + pdbs + "=" + UnitsOfMeasurement.twipToBest(pdbs));
 			
 			// start = left - pdbs
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-pdbs) );	
 			
 			// text = left + first 
-			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(leftInt + firstLineInt ) );
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest( firstLineInt + pdbs ) );
 						
 		} 
 		
