@@ -129,8 +129,8 @@ public class FopFactoryUtil {
 			fopFactory = (FopFactory)method.invoke(fopFactoryBuilder);
 			
 		} catch (Exception e) {
-			log.warn("Can't set up FOP svn.");
-			e.printStackTrace();
+			log.warn("Can't set up FOP svn; " + e.getMessage() );
+			log.debug(e);
 			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
 			
 			// legacy FOP 1.0 or 1.1 config.
