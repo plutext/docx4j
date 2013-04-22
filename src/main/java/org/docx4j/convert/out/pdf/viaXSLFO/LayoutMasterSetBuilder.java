@@ -61,11 +61,13 @@ public class LayoutMasterSetBuilder {
 	}
 	
 	private static LayoutMasterSet getFoLayoutMasterSet(AbstractWmlConversionContext context) {
+		
 		LayoutMasterSet lms = getFactory().createLayoutMasterSet();
 		List<ConversionSectionWrapper> sections = context.getSections().getList();
 		ConversionSectionWrapper section = null;
 		
 		for(int i=0; i<sections.size(); i++) {
+			
 			section = sections.get(i);
 			HeaderFooterPolicy hf = section.getHeaderFooterPolicy();
 			String sectionName = "s" + Integer.toString(i + 1);
@@ -73,6 +75,7 @@ public class LayoutMasterSetBuilder {
 			// FIRST, create simple-page-masters
 			// has first header or footer?
 			if (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null) {
+				// per spec, HeaderFooterPolicy checks the titlePg elememt
 				
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createSimplePageMaster(sectionName + "-firstpage", 

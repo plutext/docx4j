@@ -32,6 +32,7 @@ import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.wml.BooleanDefaultFalse;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.STPageOrientation;
@@ -118,12 +119,12 @@ public class ConversionSectionWrapperFactory {
 	
 	
 	public static ConversionSectionWrappers process(WordprocessingMLPackage wmlPackage, boolean dummySections, boolean dummyPageNumbering) {
-	List<ConversionSectionWrapper> conversionSections = null;
-	Document document = wmlPackage.getMainDocumentPart().getJaxbElement();
-	RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
-	BooleanDefaultTrue evenAndOddHeaders = null;
+		
+		List<ConversionSectionWrapper> conversionSections = null;
+		Document document = wmlPackage.getMainDocumentPart().getJaxbElement();
+		RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
+		BooleanDefaultTrue evenAndOddHeaders = null;
 	
-
 		if ((wmlPackage.getMainDocumentPart().getDocumentSettingsPart() != null) &&
 			(wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement() != null)) {
 			evenAndOddHeaders = wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().getEvenAndOddHeaders();
@@ -149,11 +150,14 @@ public class ConversionSectionWrapperFactory {
 	 * @param dummyPageNumbering
 	 * @return
 	 */
-	protected static List<ConversionSectionWrapper> processDummy(WordprocessingMLPackage wmlPackage, Document document, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
-	List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
-	ConversionSectionWrapper currentSectionWrapper = null;
-	HeaderFooterPolicy previousHF =
+	protected static List<ConversionSectionWrapper> processDummy(WordprocessingMLPackage wmlPackage, Document document, 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
+		
+		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
+		ConversionSectionWrapper currentSectionWrapper = null;
+		HeaderFooterPolicy previousHF =
 			new HeaderFooterPolicy(document.getBody().getSectPr(), null, rels, evenAndOddHeaders);
+		
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				1, document.getBody().getContent(), dummyPageNumbering); 		
@@ -161,7 +165,8 @@ public class ConversionSectionWrapperFactory {
 		return conversionSections;
 	}
 	
-	protected static List<ConversionSectionWrapper> processComplete(WordprocessingMLPackage wmlPackage, Document document, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
+	protected static List<ConversionSectionWrapper> processComplete(WordprocessingMLPackage wmlPackage, Document document, 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
 		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
 		List<Object> sectionContent = new ArrayList<Object>();
 		ConversionSectionWrapper currentSectionWrapper = null;
