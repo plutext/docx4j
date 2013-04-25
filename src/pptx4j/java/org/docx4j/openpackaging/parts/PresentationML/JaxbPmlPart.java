@@ -22,20 +22,21 @@ package org.docx4j.openpackaging.parts.PresentationML;
 
 import java.util.Random;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.pptx4j.jaxb.Context;
+import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.pptx4j.jaxb.Context;
 
 
 
 public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
+	
+	protected static Logger log = Logger.getLogger(JaxbPmlPart.class);
+	
 	
 	public final static String COMMON_SLIDE_DATA = 
 	    "<p:cSld  xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">"
