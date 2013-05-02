@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="docx4j">
+    <property environment="env"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.5"/>
+    <property name="source" value="1.5"/>
+	<property name="dist" value="./dist"/>
+	
+	<property name="version" value="3.0.0-SNAPSHOT"/>
+
+    <property name="src.main.java.dir" value="src/main/java"/>
+	
+	<property name="m2Repository" value="../../../.m2/repository"/>	
+	<!-- 
+	
+			org.docx4j:docx4j:jar:2.8.2-SNAPSHOT
+			+- org.docx4j:xhtmlrenderer:jar:1.0.0:compile
+			|  \- com.lowagie:itext:jar:2.1.7:compile
+			+- org.plutext:jaxb-svg11:jar:1.0.2:compile
+			+- org.plutext:jaxb-xslfo:jar:1.0.1:compile
+			+- org.plutext:jaxb-xmldsig-core:jar:1.0.0:compile
+			+- log4j:log4j:jar:1.2.15:compile
+			+- commons-lang:commons-lang:jar:2.4:compile
+			+- commons-logging:commons-logging:jar:1.1.1:compile
+			+- commons-codec:commons-codec:jar:1.3:compile
+			+- org.apache.xmlgraphics:xmlgraphics-commons:jar:1.5:compile
+			|  \- commons-io:commons-io:jar:1.3.1:compile
+			+- org.apache.xmlgraphics:fop:jar:1.1:compile
+			|  +- org.apache.xmlgraphics:batik-svg-dom:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-anim:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-css:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-dom:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-parser:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-util:jar:1.7:compile
+			|  |  +- xml-apis:xml-apis:jar:1.3.04:compile
+			|  |  \- xml-apis:xml-apis-ext:jar:1.3.04:compile
+			|  +- org.apache.xmlgraphics:batik-bridge:jar:1.7:compile
+			|  |  +- org.apache.xmlgraphics:batik-script:jar:1.7:compile
+			|  |  \- org.apache.xmlgraphics:batik-xml:jar:1.7:compile
+			|  +- org.apache.xmlgraphics:batik-awt-util:jar:1.7:compile
+			|  +- org.apache.xmlgraphics:batik-gvt:jar:1.7:compile
+			|  +- org.apache.xmlgraphics:batik-transcoder:jar:1.7:compile
+			|  |  \- org.apache.xmlgraphics:batik-svggen:jar:1.7:compile
+			|  +- org.apache.xmlgraphics:batik-extension:jar:1.7:compile
+			|  \- org.apache.xmlgraphics:batik-ext:jar:1.7:compile
+			+- org.apache.avalon.framework:avalon-framework-api:jar:4.3.1:compile
+			+- org.apache.avalon.framework:avalon-framework-impl:jar:4.3.1:compile
+			+- xalan:xalan:jar:2.7.1:compile
+			|  \- xalan:serializer:jar:2.7.1:compile
+			+- net.arnx:wmf2svg:jar:0.9.0:compile
+			+- org.apache.poi:poi-scratchpad:jar:3.8:compile
+			|  \- org.apache.poi:poi:jar:3.8:compile
+			+- com.googlecode.jaxb-namespaceprefixmapper-interfaces:JAXBNamespacePrefixMapper:jar:2.2.4:provided
+			+- org.antlr:antlr-runtime:jar:3.3:compile
+			+- org.antlr:stringtemplate:jar:3.2.1:compile
+			|  \- antlr:antlr:jar:2.7.7:compile
+
+		Optional:
+			+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.4.1:compile
+			|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.4.1:compile
+			|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:3.3.1.v201206041142:compile
+			|  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:3.2.0.v201206041011:compile				
+	 -->
+
+
+    <path id="Maven Dependencies.libraryclasspath">
+        <pathelement location="${m2Repository}/javax/mail/mail/1.4/mail-1.4.jar"/>
+        <pathelement location="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/xhtmlrenderer/1.0.1-SNAPSHOT/xhtmlrenderer-1.0.1-SNAPSHOT.jar"/>
+        <pathelement location="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xmldsig-core/1.0.0/jaxb-xmldsig-core-1.0.0.jar"/>
+        <pathelement location="${m2Repository}/log4j/log4j/1.2.15/log4j-1.2.15.jar"/>
+        <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
+        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
+        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
+        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.0/wmf2svg-0.9.0.jar"/>
+        <pathelement location="${m2Repository}/org/apache/poi/poi-scratchpad/3.8/poi-scratchpad-3.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/poi/poi/3.8/poi-3.8.jar"/>
+        <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>
+        <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.3/antlr-runtime-3.3.jar"/>
+        <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
+        <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
+        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>
+    </path>
+    <path id="docx4j.classpath">
+        <pathelement location="bin"/>
+        <path refid="Maven Dependencies.libraryclasspath"/>
+        <!-- <pathelement location="lib/jtidy-r938.jar"/>  -->
+        <pathelement location="../../../workspace/FOP/lib/batik-all-1.7.jar"/>
+        <pathelement location="../../../workspace/FOP/lib/xmlgraphics-commons-svn-trunk.jar"/>
+        <pathelement location="../../../workspace/FOP/build/fop.jar"/>
+    </path>
+    
+    <path id="dist.classpath">
+        <path refid="docx4j.classpath"/>
+    </path>
+
+    <path id="junit.classpath">
+        <path refid="docx4j.classpath"/>
+        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>
+    </path>
+	
+	<path id="jre.libs" description="Java runtime libraries">
+	  <pathelement location="${java.home}\lib" />
+	 </path>	
+	
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
+        </copy>
+    </target>
+	
+    <target name="clean">
+        <delete dir="bin"/>
+        <delete dir="dist"/>
+    </target>
+    <target depends="build-project" name="build"/>
+   
+    <target name="build-project" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <echo message="${ant.java.version}"/>
+        
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" 
+        	target="${target}">
+            <src path="${src.main.java.dir}"/>
+            <src path="src/diffx"/>
+            <src path="src/glox4j/java"/>
+            <src path="src/pptx4j/java"/>
+            <src path="src/xlsx4j/java"/>
+            <!-- <classpath refid="docx4j.classpath"/> -->
+            <!--  build with earlier than
+
+					java version "1.6.0_19" (and possibly later)
+					Java(TM) SE Runtime Environment (build 1.6.0_19-b04)
+					Java HotSpot(TM) 64-Bit Server VM (build 16.2-b04, mixed mode)
+
+				 requires  Xalan 2.7.1, so -->
+			<classpath refid="dist.classpath"/>				 
+        </javac>
+        
+        <!--  Force ant to compile package-info.java.
+              Without these, you'll get JAXB "unexpected element" errors.
+        	  This is necessary because of a dubious change in ant behaviour, 
+              starting with 1.7.1 (see javac task doc, and ant bug 43114).  
+              
+			  "In Ant 1.7.1 the package-info.java will only be compiled if:
+				
+				   1. If a package-info.class file exists and is older than the package-info.java file.
+				   2. If the directory for the package-info.class file does not exist.
+				   3. If the directory for the package-info.class file exists, and has an older modification 
+				   time than the the package-info.java file. In this case <javac> will touch the corresponding 
+				   .class directory on successful compilation."              
+              -->
+        <sleep seconds="2"/> <!--  wait a little, so our modifications times are newer -->
+        <touch><fileset dir="${src.main.java.dir}" includes="**/package-info.java" /></touch>        
+        <touch><fileset dir="src/pptx4j/java" includes="**/package-info.java" /></touch>        
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="${src.main.java.dir}"/>
+            <src path="src/pptx4j/java"/>
+            <src path="src/xlsx4j/java"/>
+        	<include name="**/package-info.java"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+
+        <echo message="Join the docx4j developers mailing list by emailing docx4j-dev-subscribe@docx4java.org" />
+        
+    </target>
+ 
+ 
+ <!-- ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist -->
+    <target name="dist"  depends="clean, build-project" >
+				
+        <mkdir dir="${dist}"/>
+				
+		<jar destfile="${dist}/docx4j-${version}.jar" basedir="./bin"/>		
+		
+		<!-- copy all the jar files! -->
+		<copy todir="${dist}" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+			    <path refid="dist.classpath"/>
+			</path>
+		</copy>		
+    	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
+    </target>
+    
+    <target name="JAXB-use-MOXy" >
+    
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/bibliography/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/customxml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/customXmlProperties/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/chart/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/chartDrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/compatibility/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/diagram/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/diagram2008/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/lockedCanvas/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/picture/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/spreadsheetdrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/wordprocessingDrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/core/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/core/dc/elements/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/core/dc/terms/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/custom/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/extended/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/coverPageProps/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/variantTypes/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/fonts/microsoft/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/fonts/substitutions/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/math/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/model/structure/jaxb/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/openpackaging/contenttype/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/relationships/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/sharedtypes/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/officedrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/presentationDrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/root/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/spreadsheetDrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/wordprocessingDrawing/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/wml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/xmlPackage/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/components/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/conditions/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/questions/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/SmartArt/dataHierarchy/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/xpaths/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/answers/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/pptx4j/java/org/pptx4j/pml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/xlsx4j/java/org/xlsx4j/sml/jaxb.properties"/>
+    
+    	<echo message="in pom.xml, uncomment the org.eclipse.persistence.moxy dependency, and the EclipseLink Repo" />
+    
+    </target>	
+
+    <target name="JAXB-switch-from-MOXy-to-Oracle" >
+    
+		<delete file="src/main/java/org/docx4j/bibliography/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/customxml/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/customXmlProperties/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/chart/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/chartDrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/compatibility/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/diagram/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/diagram2008/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/lockedCanvas/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/picture/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/spreadsheetdrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/dml/wordprocessingDrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/core/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/core/dc/elements/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/core/dc/terms/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/custom/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/extended/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/coverPageProps/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/variantTypes/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/fonts/microsoft/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/fonts/substitutions/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/math/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/model/structure/jaxb/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/openpackaging/contenttype/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/relationships/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/sharedtypes/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/officedrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/presentationDrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/root/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/spreadsheetDrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/vml/wordprocessingDrawing/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/wml/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/xmlPackage/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/components/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/conditions/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/questions/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/SmartArt/dataHierarchy/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/xpaths/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/answers/jaxb.properties"/>
+		<delete file="src/pptx4j/java/org/pptx4j/pml/jaxb.properties"/>
+		<delete file="src/xlsx4j/java/org/xlsx4j/sml/jaxb.properties"/>
+    
+	</target>
+	
+	<!--  build just diffx; the usual targets build diffx as part of docx4j -->
+    <target name="build-diffx" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src/diffx"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+    </target>
+
+    <target name="diffxjar"  depends="clean, build-diffx" >							
+		<jar destfile="diffx.jar" basedir="./bin"/>									
+    </target>	
+
+	
+	<target name="javadoc">
+	
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+	
+		
+        <javadoc access="public" author="false" 
+         destdir="javadoc" 
+         doctitle="docx4j 2.7.0" 
+         nodeprecated="false" 
+         nodeprecatedlist="false" 
+         noindex="false" 
+         nonavbar="false" 
+         notree="false" 
+         source="1.6" 
+        sourcepath="src/main/java:src/pptx4j/java:src/xlsx4j/java:src/glox4j/java:src/diffx" 
+        splitindex="true" use="true" version="false"
+        maxmemory="512m">
+                    <classpath refid="docx4j.classpath"/>
+        </javadoc>
+		
+<!-- 		
+      <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
+      <bottom>
+        <![CDATA[<i>Copyright 2007-2008 Plutext Pty Ltd.</i>]]>
+      </bottom>
+      <group>
+        <title>dml - DrawingML</title>
+        <package name="org.docx4j.dml*"/>
+      </group>
+      <group>
+        <title>wml - WordprocessingML</title>
+        <package name="org.docx4j.wml*"/>
+      </group>
+       -->		
+	
+	</target>
+	
+    <target name="test" depends="dist">
+
+	    <path id="tests.classpath">
+	    	<pathelement location="${dist}/docx4j.jar" />
+	        <path refid="Maven Dependencies.libraryclasspath"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
+	        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>	    	
+	    </path>    	
+        
+    	<!--  Make jar containing tests only  -->
+        <delete file="docx4j-tests-only.jar"/>
+        <delete dir="testing"/>
+        <mkdir dir="testing"/>
+        <javac debug="off" destdir="testing" source="${source}" target="${target}">
+            <src path="src/test/java"/>
+            <classpath refid="tests.classpath"/>
+        </javac>
+        <copy includeemptydirs="false" todir="testing">
+            <fileset dir="src/test/resources">
+                <include name="**/*"/> 
+            </fileset>
+        </copy>
+	   	 <jar destfile="docx4j-tests-only.jar">
+	   	    <fileset dir="./testing" />
+	   	  </jar>    	
+
+	    <path id="testsplus.classpath">
+	    	<pathelement location="docx4j-tests-only.jar" />
+	        <path refid="tests.classpath"/>
+	    </path>
+    	
+        <delete dir="${junit.output.dir}"/>
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="on" haltonfailure="on">
+            <formatter type="xml"/>
+        	  <batchtest fork="yes" todir="${junit.output.dir}">
+        	  	<resources>
+        	  		<zipfileset src="docx4j-tests-only.jar" includes="**/*Test.class"/>
+        	  	</resources> 
+        	 </batchtest>
+        	
+            <classpath refid="testsplus.classpath"/>
+        </junit>
+        <delete dir="testing"/>
+        	
+    </target>
+	
+   
+</project>
