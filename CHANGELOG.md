@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+Version 2.8.1.3 (3 May 2013)
+- backports so MergePptx 1.0.4 works with 2.8.1
+  + LoadFromZipNG: Call setPartShortcut, even if this part has been encountered already
+    (since for pptx, more than 1 slide typically use the same layout part)
+    https://github.com/plutext/docx4j/commit/7e62425c68f5cb9e2bab1c2e92916f48f19847a2#src/main/java/org/docx4j/openpackaging/io/LoadFromZipNG.java
+  + Base: associate arbitrary data with a package or part 
+    (not critical to MergePptx, but avoids need for another release)
+    https://github.com/plutext/docx4j/commit/daf2570645fb2ccc094ce91cf18883bd7026059f#src/main/java/org/docx4j/openpackaging/Base.java
+  + mc-preprocessor.xslt
+    https://github.com/plutext/docx4j/commit/68d88b4b42953e5155753c3025d87bc270edc216#src/main/java/org/docx4j/jaxb/mc-preprocessor.xslt
+  + CTOleObject   
+    Update src/pptx4j/java/org/pptx4j/pml/CTOleObject.java to ECMA 376 2ed. (of Nov 03, 2012)
+ 
 Version 2.8.1.2 (6 March 2013)
 - traverse into w:object/w:control (backport)
 

@@ -43,6 +43,28 @@ public abstract class Base {
 
 	public abstract OpcPackage getPackage(); 	
 
+	private Object userData;
+	/**
+	 * @return the userData
+	 * @ since 3.0.0
+	 */
+	public Object getUserData() {
+		return userData;
+	}
+
+	/**
+	 * An object allowing the user of the docx4j
+	 * API to associate arbitrary data with this
+	 * package/part while the package is in memory. 
+	 * Note that the data is not saved when the package is
+	 * saved.
+	 * 
+	 * @param userData the userData to set
+	 * @ since 3.0.0
+	 */
+	public void setUserData(Object userData) {
+		this.userData = userData;
+	}
 	
 	/**
 	 * relationships - the package and each part can have one of these
