@@ -243,7 +243,7 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/markup-compatibility/2006")) {
     		return "mc";
     	}
-		
+    	
     	return suggestion;
     }
     
@@ -253,7 +253,12 @@ public class NamespacePrefixMappings implements NamespaceContext {
     // implement NamespaceContext,
     // for use with for use with javax.xml.xpath
     
-	public String getNamespaceURI(String prefix) {
+	public String getNamespaceURI(String prefix) {  // implementing NamespaceContext
+		
+		// Excel uses a default namespace, not a prefix.  But it is convenient
+		// to be able to use a prefix in XPath
+		if (prefix.equals("s"))
+			return "http://schemas.openxmlformats.org/spreadsheetml/2006/main";				
 		
 		return getNamespaceURIStatic(prefix);
 	}
@@ -361,7 +366,7 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			return Namespaces.XML_EVENTS;
 		else if (prefix.equals("xs"))
 			return Namespaces.XML_SCHEMA;
-		
+
 		// Registered prefixes
 		String result = namespaces.get(prefix);
 		if (result==null) {
@@ -372,7 +377,12 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		
 	}
 
-	public String getPrefix(String namespaceURI) {
+	public String getPrefix(String namespaceURI) {  // implementing NamespaceContext
+		
+    	// Excel uses a default namespace, not a prefix. 
+    	if (namespaceURI.equals("http://schemas.openxmlformats.org/spreadsheetml/2006/main")) {
+    		return "";
+    	}
 		
 		return getPreferredPrefixStatic(namespaceURI, null, false );
 		
