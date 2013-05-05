@@ -20,12 +20,16 @@
 package org.xlsx4j.jaxb;
 
 
+import java.io.File;
+import java.io.InputStream;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.utils.Log4jConfigurator;
+import org.docx4j.utils.ResourceUtils;
 
 public class Context {
 	
@@ -40,20 +44,45 @@ public class Context {
 	public static JAXBContext jcSML;
 	
 	private static Logger log = Logger.getLogger(Context.class);
-	
+		
 	static {
 
 		Log4jConfigurator.configure();
 		
 		// Display diagnostic info about version of JAXB being used.
+		log.info("java.vendor="+System.getProperty("java.vendor"));
+		log.info("java.version="+System.getProperty("java.version"));
+		
+		org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
+		if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+			org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
+		}
+		
 		Object namespacePrefixMapper;
 		try {
 			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
-			if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-				// Java 6
-				log.info("Using Java 6/7 JAXB implementation");
-			} else {
-				log.info("Using JAXB Reference Implementation");			
+			try {
+				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
+				if (f.exists() ) {
+					log.info("MOXy JAXB implementation intended..");
+				} else { 
+					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
+					log.info("MOXy JAXB implementation intended..");
+				}
+			} catch (Exception e2) {
+				log.warn(e2.getMessage());
+				try {
+					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
+					log.info("MOXy JAXB implementation intended..");
+				} catch (Exception e3) {
+					log.warn(e3.getMessage());
+					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+						// Java 6
+						log.info("Using Java 6/7 JAXB implementation");
+					} else {
+						log.info("Using JAXB Reference Implementation");			
+					}
+				}
 			}
 		} catch (JAXBException e) {
 			log.error("PANIC! No suitable JAXB implementation available");
@@ -70,7 +99,12 @@ public class Context {
 			
 			log.info("loading Context jcSML");			
 			jcSML = JAXBContext.newInstance("org.xlsx4j.sml",classLoader );
-			log.info(".. loaded ..");
+			
+			if (jcSML.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
+				log.info("MOXy JAXB implementation is in use!");
+			} else {
+				log.info("Not using MOXy.");				
+			}
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();

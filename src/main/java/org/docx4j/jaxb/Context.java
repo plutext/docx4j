@@ -55,9 +55,7 @@ public class Context {
 	public static JAXBContext jcXmlDSig;
 	
 	private static Logger log = Logger.getLogger(Context.class);
-	
-	private static boolean MOXy_intended = false;
-	
+		
 	static {
 	  
 		Log4jConfigurator.configure();
@@ -78,18 +76,15 @@ public class Context {
 				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
 				if (f.exists() ) {
 					log.info("MOXy JAXB implementation intended..");
-					MOXy_intended = true;
 				} else { 
 					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
-					MOXy_intended = true;
 				}
 			} catch (Exception e2) {
 				log.warn(e2.getMessage());
 				try {
 					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
-					MOXy_intended = true;
 				} catch (Exception e3) {
 					log.warn(e3.getMessage());
 					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
@@ -123,14 +118,11 @@ public class Context {
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
-			String jcImplementation = jc.getClass().getName();
-			log.info("loaded " + jcImplementation + " .. loading others ..");
-			if (MOXy_intended) {
-				if (jcImplementation.contains("org.eclipse.persistence.jaxb.JAXBContext")) {
-					log.info("MOXy is being used.");
-				} else {
-					log.warn("MOXy is not being used, for some reason.");					
-				}
+			
+			if (jc.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
+				log.info("MOXy JAXB implementation is in use!");
+			} else {
+				log.info("Not using MOXy.");				
 			}
 			
 			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
