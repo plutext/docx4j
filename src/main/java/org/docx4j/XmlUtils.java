@@ -65,9 +65,11 @@ import org.apache.xalan.trace.PrintTraceListener;
 import org.apache.xalan.trace.TraceManager;
 import org.apache.xalan.transformer.TransformerImpl;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
+import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -922,6 +924,13 @@ public class XmlUtils {
 	/**
 	 * Fetch JAXB Nodes matching an XPath (for example "//w:p").
 	 * 
+	 * In JAXB, this association is partial; not all XML elements have associated JAXB objects, 
+	 * and not all JAXB objects have associated XML elements.  
+	 * If the XPath returns an element which isn't associated
+	 * with a JAXB object, since 3.0, this method will throw 
+	 * XPathBinderAssociationIsPartialException, to distinguish
+	 * from no matching elements.
+	 * 
 	 * If you have modified your JAXB objects (eg added or changed a 
 	 * w:p paragraph), you need to update the association. The problem
 	 * is that this can only be done ONCE, owing to a bug in JAXB:
@@ -935,10 +944,57 @@ public class XmlUtils {
 	 * @param xpathExpr
 	 * @return
 	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException 
 	 */
 	public static List<Object> getJAXBNodesViaXPath(Binder<Node> binder, 
 			Object jaxbElement, String xpathExpr, boolean refreshXmlFirst) 
-			throws JAXBException {
+			throws JAXBException, XPathBinderAssociationIsPartialException {
+		
+		List<JAXBAssociation> associations = getJAXBAssociationsForXPath(binder, 
+				 jaxbElement,  xpathExpr,  refreshXmlFirst);
+		
+        List<Object> resultList = new ArrayList<Object>();
+        for( JAXBAssociation association : associations ) {
+        	if (association.getJaxbObject()==null) {
+        		
+        		// this association is partial; see JAXBAssociation javadoc for more
+        		throw new XPathBinderAssociationIsPartialException("no object association for xpath result: " 
+        				+ association.getDomNode().getNodeName());
+        	} else {
+        		resultList.add(association.getJaxbObject());        		
+        	}
+        }
+        return resultList;
+    }
+
+	/**
+	 * Fetch DOM node / JAXB object pairs matching an XPath (for example "//w:p").
+	 * 
+	 * In JAXB, this association is partial; not all XML elements have associated JAXB objects, 
+	 * and not all JAXB objects have associated XML elements.  
+	 * 
+	 * If the XPath returns an element which isn't associated
+	 * with a JAXB object, the element's pair will be null.
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param binder
+	 * @param jaxbElement
+	 * @param xpathExpr
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException
+	 * @since 3.0.0
+	 */
+	public static List<JAXBAssociation> getJAXBAssociationsForXPath(Binder<Node> binder, 
+			Object jaxbElement, String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
 		Node node;
 		if (refreshXmlFirst) 
@@ -947,19 +1003,9 @@ public class XmlUtils {
 		
 		//log.debug("XPath will execute against: " + XmlUtils.w3CDomNodeToString(node));
 		
-        List<Object> resultList = new ArrayList<Object>();
+        List<JAXBAssociation> resultList = new ArrayList<JAXBAssociation>();
         for( Node n : xpath(node, xpathExpr) ) {
-        	Object o = binder.getJAXBNode(n);
-        	if (o==null) {
-        		log.warn("no object association for xpath result!");
-        	} else {
-        		if (o instanceof javax.xml.bind.JAXBElement) {
-        			log.debug("added " + JAXBElementDebug((JAXBElement)o) );
-        		} else {
-        			log.debug("added " + o.getClass().getName() );        			
-        		}
-        		resultList.add(o);        		
-        	}
+        	resultList.add(new JAXBAssociation(n, binder.getJAXBNode(n)));
         }
         return resultList;
     }
@@ -980,17 +1026,22 @@ public class XmlUtils {
 //    			+ System.getProperty(XPathFactory.DEFAULT_PROPERTY_NAME));    
 //        System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME, 
 //        		"org.apache.xpath.jaxp.XPathFactoryImpl");
+        // com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl
+        
+        log.debug(w3CDomNodeToString(node));
         
         // create XPath
         XPathFactory xpf = XPathFactory.newInstance();
         XPath xpath = xpf.newXPath();
+        
+        log.debug("xpath implementation: " + xpath.getClass().getName());
 
 		xpath.setNamespaceContext(nsContext);
         
         try {
             List<Node> result = new ArrayList<Node>();
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
-            log.debug("evaluate returned " + nl.getLength() );
+            log.info("evaluate returned " + nl.getLength() );
             for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
             }

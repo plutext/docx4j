@@ -32,7 +32,9 @@ import javax.xml.transform.dom.DOMResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -135,9 +137,10 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 	 * @param refreshXmlFirst
 	 * @return
 	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException 
 	 */	
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
-			throws JAXBException {
+			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
 		return XmlUtils.getJAXBNodesViaXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
 	}	
@@ -158,13 +161,81 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 	 * @param refreshXmlFirst
 	 * @return
 	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException 
 	 */
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
-		throws JAXBException {
+		throws JAXBException, XPathBinderAssociationIsPartialException {
 
 		return XmlUtils.getJAXBNodesViaXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
 	}	
 
+	/**
+	 * Fetch DOM node / JAXB object pairs matching an XPath (for example "//w:p").
+	 * 
+	 * In JAXB, this association is partial; not all XML elements have associated JAXB objects, 
+	 * and not all JAXB objects have associated XML elements.  
+	 * 
+	 * If the XPath returns an element which isn't associated
+	 * with a JAXB object, the element's pair will be null.
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param binder
+	 * @param jaxbElement
+	 * @param xpathExpr
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException
+	 * @since 3.0.0
+	 */
+	public List<JAXBAssociation> getJAXBAssociationsForXPath(
+			String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException, XPathBinderAssociationIsPartialException {
+
+		return XmlUtils.getJAXBAssociationsForXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
+		
+	}	
+	
+	/**
+	 * Fetch DOM node / JAXB object pairs matching an XPath (for example ".//w:p" - note the dot,
+	 * which is necessary for this sort of relative path).
+	 * 
+	 * In JAXB, this association is partial; not all XML elements have associated JAXB objects, 
+	 * and not all JAXB objects have associated XML elements.  
+	 * 
+	 * If the XPath returns an element which isn't associated
+	 * with a JAXB object, the element's pair will be null.
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param binder
+	 * @param jaxbElement
+	 * @param xpathExpr
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException
+	 * @since 3.0.0
+	 */
+	public List<JAXBAssociation> getJAXBAssociationsForXPath(
+			Object someJaxbElement, String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException, XPathBinderAssociationIsPartialException {
+
+		return XmlUtils.getJAXBAssociationsForXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+		
+	}	
+	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may

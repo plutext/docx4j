@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.wml.P;
 import org.w3c.dom.Node;
 
@@ -108,9 +109,10 @@ public class XPathAwareCloner {
 	 * @param refreshXmlFirst
 	 * @return
 	 * @throws JAXBException
+	 * @throws XPathBinderAssociationIsPartialException 
 	 */	
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
-			throws JAXBException {
+			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
 		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, xpathExpr, refreshXmlFirst);
 	}	
@@ -118,8 +120,9 @@ public class XPathAwareCloner {
 	/**
 	 * @param args
 	 * @throws JAXBException 
+	 * @throws XPathBinderAssociationIsPartialException 
 	 */
-	public static void main(String[] args) throws JAXBException {
+	public static void main(String[] args) throws JAXBException, XPathBinderAssociationIsPartialException {
 		
 	    String pString = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
 	    	      +"<w:r>"
