@@ -112,7 +112,7 @@ public final class AlternativeFormatInputPart extends BinaryPart {
 			// Alternatively, you can serve your XHTML (any version) as application/xml, or even as text/xml
 			// but which is right for Word?
 		} else if (type.equals(AltChunkType.Mht) ) {
-			this.setContentType(new ContentType("multipart/related"));
+			this.setContentType(new ContentType("message/rfc822"));
 		} else if (type.equals(AltChunkType.Xml) ) {
 			this.setContentType(new ContentType("application/xml")); // or text/xml?
 		} else if (type.equals(AltChunkType.TextPlain) ) {
@@ -139,7 +139,7 @@ public final class AlternativeFormatInputPart extends BinaryPart {
 		if (type.equals(AltChunkType.Xhtml) ) {
 			ctm.addDefaultContentType("xhtml", "application/xhtml+xml");
 		} else if (type.equals(AltChunkType.Mht) ) {
-			ctm.addDefaultContentType("mht", "multipart/related");
+			ctm.addDefaultContentType("mht", "message/rfc822");
 		} else if (type.equals(AltChunkType.Xml) ) {
 			ctm.addDefaultContentType("xml", "application/xml");
 		} else if (type.equals(AltChunkType.TextPlain) ) {
