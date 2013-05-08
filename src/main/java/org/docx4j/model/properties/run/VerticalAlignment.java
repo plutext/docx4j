@@ -61,6 +61,9 @@ public class VerticalAlignment extends AbstractRunProperty {
 		if (value.getCssText().toLowerCase().equals("top")) {			
 			vAlign.setVal(STVerticalAlignRun.SUPERSCRIPT);			
 			this.setObject( vAlign );
+		} else if (value.getCssText().toLowerCase().equals("super")) {			
+			vAlign.setVal(STVerticalAlignRun.SUPERSCRIPT);			
+			this.setObject( vAlign );
 		} else if (value.getCssText().toLowerCase().equals("bottom")) {
 			vAlign.setVal(STVerticalAlignRun.SUBSCRIPT);			
 			this.setObject( vAlign );
