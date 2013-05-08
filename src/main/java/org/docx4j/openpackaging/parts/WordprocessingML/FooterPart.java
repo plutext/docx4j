@@ -33,7 +33,7 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Ftr;
 
 
-public final class FooterPart extends JaxbXmlPartXPathAware<Ftr>  implements ContentAccessor {
+public final class FooterPart extends JaxbXmlPartXPathAware<Ftr> implements ContentAccessor {
 	
 	private static Logger log = Logger.getLogger(FooterPart.class);			
 	

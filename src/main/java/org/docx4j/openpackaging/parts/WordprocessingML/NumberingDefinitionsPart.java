@@ -47,6 +47,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Lvl;
@@ -62,7 +63,7 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
 
 
 
-public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
+public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Numbering> {
 	
 	private static Logger log = Logger.getLogger(NumberingDefinitionsPart.class);	
 	

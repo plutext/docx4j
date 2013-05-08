@@ -30,6 +30,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.DocDefaults;
@@ -45,7 +46,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 
-public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
+public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	
 	private static Logger log = Logger.getLogger(StyleDefinitionsPart.class);		
 	

@@ -34,7 +34,7 @@ import org.docx4j.wml.Hdr;
 
 
 
-public final class HeaderPart extends JaxbXmlPartXPathAware<Hdr>  implements ContentAccessor {
+public final class HeaderPart extends JaxbXmlPartXPathAware<Hdr> implements ContentAccessor {
 	
 	private static Logger log = Logger.getLogger(HeaderPart.class);			
 	
