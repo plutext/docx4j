@@ -93,7 +93,39 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 	 */
 	public Binder<Node> getBinder() {
 		
+		if (binder==null) {
+			PartStore partStore = this.getPackage().getPartStore();
+			try {
+				String name = this.partName.getName();
+				InputStream is = partStore.loadPart( 
+						name.substring(1));
+				if (is==null) {
+					log.warn(name + " missing from part store");
+				} else {
+					log.info("Lazily unmarshalling " + name);
+					unmarshal( is );
+				}
+			} catch (JAXBException e) {
+				log.error(e);
+			} catch (Docx4JException e) {
+				log.error(e);
+			}
+		}
+		
 		return binder;
+	}
+	
+	public void setJaxbElement(E jaxbElement) {
+		
+		// In order to create binder:-
+		log.info("creating binder");
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement);
+		try {
+			unmarshal(doc.getDocumentElement());
+		} catch (JAXBException e) {
+			log.error(e);
+		}
+
 	}
 	
 	/**
@@ -116,7 +148,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
 		E el = getJaxbElement();
-		return XmlUtils.getJAXBNodesViaXPath(binder, el, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(getBinder(), el, xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
@@ -140,7 +172,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
 		throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		return XmlUtils.getJAXBNodesViaXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(getBinder(), someJaxbElement, xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
@@ -173,7 +205,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
 		E el = getJaxbElement();
-		return XmlUtils.getJAXBAssociationsForXPath(binder, el, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), el, xpathExpr, refreshXmlFirst);
 		
 	}	
 	
@@ -207,7 +239,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 			Object someJaxbElement, String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		return XmlUtils.getJAXBAssociationsForXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), someJaxbElement, xpathExpr, refreshXmlFirst);
 		
 	}	
 	
@@ -339,6 +371,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
+			log.info("For " + this.getClass().getName() + ", unmarshall via binder");
 
 			binder = jc.createBinder();
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
