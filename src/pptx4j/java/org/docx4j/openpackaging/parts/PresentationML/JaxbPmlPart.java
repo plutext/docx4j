@@ -20,6 +20,7 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Random;
 
@@ -37,8 +38,10 @@ import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
+import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -151,9 +154,25 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	 */
 	public Binder<Node> getBinder() {
 		
-//		if (binder ==null) {
-//			binder = jc.createBinder();			
-//		}		
+		if (binder==null) {
+			PartStore partStore = this.getPackage().getPartStore();
+			try {
+				String name = this.partName.getName();
+				InputStream is = partStore.loadPart( 
+						name.substring(1));
+				if (is==null) {
+					log.warn(name + " missing from part store");
+				} else {
+					log.info("Lazily unmarshalling " + name);
+					unmarshal( is );
+				}
+			} catch (JAXBException e) {
+				log.error(e);
+			} catch (Docx4JException e) {
+				log.error(e);
+			}
+		}
+		
 		return binder;
 	}
 	
@@ -176,7 +195,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
-		return XmlUtils.getJAXBNodesViaXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(getBinder(), getJaxbElement(), xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
@@ -200,7 +219,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
 		throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		return XmlUtils.getJAXBNodesViaXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(getBinder(), someJaxbElement, xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
@@ -232,7 +251,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 			String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		return XmlUtils.getJAXBAssociationsForXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), getJaxbElement(), xpathExpr, refreshXmlFirst);
 		
 	}	
 	
@@ -266,7 +285,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 			Object someJaxbElement, String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		return XmlUtils.getJAXBAssociationsForXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), someJaxbElement, xpathExpr, refreshXmlFirst);
 		
 	}	
 	
