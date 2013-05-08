@@ -31,6 +31,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.wml.BooleanDefaultFalse;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.FooterReference;
@@ -113,6 +114,7 @@ public class HeaderFooterPolicy {
 		if (titlePage!=null && titlePage.isVal() ) {
 			firstHeaderActive   = previousHF.firstHeader;
 		}
+		
 		defaultHeader = previousHF.defaultHeader;
 		evenHeader    =  previousHF.evenHeader; 
 		// and overwrite with whatever we have
@@ -140,8 +142,26 @@ public class HeaderFooterPolicy {
 			}
 		}
 		
-		if (evenAndOddHeaders != null) {
+		if (evenAndOddHeaders == null) {
+			
+			log.debug("evenAndOddHeader setting missing; defaults to false");
+			
+			// per spec, assume false, so use odd only:-
+			
+			//Any even header/footer will be ignored
+			//As the setting is on the document level it is not necessary to
+			//keep any defined header/footer for inheritance
+			evenHeader = null;
+			evenFooter = null;
+			
+		} else {
+			
+			log.debug("evenAndOddHeader: "+ evenAndOddHeaders.isVal());
+			
 			if (evenAndOddHeaders.isVal()) {
+				
+				// If true, per the spec, use both even and odd
+				
 				//If there is only a default/odd header/footer present, then 
 				//the even header/footer is always a dummy empty header/footer
 				if (evenHeader == null) {
@@ -152,28 +172,11 @@ public class HeaderFooterPolicy {
 				}
 			}
 			else {
-				//Any even header/footer will be ignored
+				// Per spec, use odd only.  Any even header/footer will be ignored
 				//As the setting is on the document level it is not necessary to
 				//keep any defined header/footer for inheritance
 				evenHeader = null;
 				evenFooter = null;
-			}
-		}
-		else {
-			/* If there is an even and odd(default) Header but only a default Footer
-			 * then let the even Footer reference the default Footer.
-			 * Or if there is an even and odd(default) Footer but only a default Header
-			 * then let the even Header reference the default Header.
-			 * In Word the headers and footers are independent, but the xslfo-structure 
-			 * only knows about a simple page (with only default Header/Footers) or an 
-			 * even/odd page (with an even and an odd Header and Footer).
-			 */
-			
-			if ((evenHeader != null) && (defaultHeader != null) && (evenFooter == null)) {
-				evenFooter = defaultFooter;
-			}
-			else if ((evenFooter != null) && (defaultFooter != null) && (evenHeader == null)) {
-				evenHeader = defaultHeader;
 			}
 		}
 	}
