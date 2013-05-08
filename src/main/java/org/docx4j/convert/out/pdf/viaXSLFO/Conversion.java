@@ -105,7 +105,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		this.fopConfig = fopConfig;
 	}
 	
-	
+
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
 	 * @param os
@@ -116,6 +116,22 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 * */     
 	@Override
 	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
+		output( os,  settings,  false);
+	}
+	
+	public void outputXSLFO(OutputStream os, PdfSettings settings) throws Docx4JException {
+		output( os,  settings,  true);
+	}
+	
+	/** Create a pdf version of the document, using XSL FO. 
+	 * 
+	 * @param os
+	 *            The OutputStream to write the pdf to 
+	 * @param settings
+	 *            The configuration for the conversion 
+	 * 
+	 * */     
+	private void output(OutputStream os, PdfSettings settings, boolean foOnly) throws Docx4JException {
 		
 		PdfConversionContext conversionContext = null;
 //		Configuration localFopConfiguration = fopConfig;
@@ -166,14 +182,23 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						FopConfigUtil.createDefaultConfiguration(localWmlPackage.getFontMapper(), 
 															localWmlPackage.getMainDocumentPart().fontsInUse());
 			}
-			if (saveFO != null || log.isDebugEnabled()) {
+			if (foOnly || saveFO != null || log.isDebugEnabled()) {
 
-				ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
+				OutputStream intermediate;
+				if (foOnly) {
+					intermediate = os;
+				} else {
+					intermediate = new ByteArrayOutputStream();
+				}
+				
 				Result intermediateResult = new StreamResult(intermediate);
-
 				XmlUtils.transform(domDoc, xslt, conversionContext.getXsltParameters(), intermediateResult);
+				
+				if (foOnly) {
+					return;
+				}
 
-				String fo = intermediate.toString("UTF-8");
+				String fo = ((ByteArrayOutputStream)intermediate).toString("UTF-8");
 				log.debug(fo);
 
 				if (saveFO != null) {
@@ -198,6 +223,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		}
 
 	}
+	
 	
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
