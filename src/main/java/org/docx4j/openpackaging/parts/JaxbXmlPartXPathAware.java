@@ -93,7 +93,11 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 	 */
 	public Binder<Node> getBinder() {
 		
-		if (binder==null) {
+		if (jaxbElement == null) {
+			// Test jaxbElement, since we don't want to do the
+			// below if jaxbElement has already been set
+			// using setJaxbElement (which doesn't create 
+			// binder)
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
@@ -114,18 +118,36 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 		
 		return binder;
 	}
+
+	/* Don't override setJaxbElement(E jaxbElement) to create	  	
+	 * binder here, since that would set the
+	 * jaxbElement field to something different to
+	 * the object being passed in, leading to
+	 * calling code doing something different to what it thinks it 
+	 * is doing! (ie backwards compatibility would be broken).
+	 * 
+	 * That's why we have this new method createBinderAndJaxbElement
+	 */
 	
-	public void setJaxbElement(E jaxbElement) {
+	/**
+	 * Set the JAXBElement for this part, and a corresponding
+	 * binder, based on the object provided.  Returns the new
+	 * JAXBElement, so calling code can manipulate it.  Beware
+	 * that this object is different to the one passed in!
+	 * @param source
+	 * @return
+	 * @throws JAXBException
+	 * @since 3.0.0
+	 */
+	public E createBinderAndJaxbElement(E source) throws JAXBException {
 		
 		// In order to create binder:-
 		log.info("creating binder");
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement);
-		try {
-			unmarshal(doc.getDocumentElement());
-		} catch (JAXBException e) {
-			log.error(e);
-		}
-
+		unmarshal(doc.getDocumentElement());
+		// return the newly created object, so calling code can use it in place
+		// of their source object
+		return jaxbElement;
 	}
 	
 	/**

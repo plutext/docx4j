@@ -154,7 +154,11 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	 */
 	public Binder<Node> getBinder() {
 		
-		if (binder==null) {
+		if (jaxbElement == null) {
+			// Test jaxbElement, since we don't want to do the
+			// below if jaxbElement has already been set
+			// using setJaxbElement (which doesn't create 
+			// binder)
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
@@ -175,6 +179,28 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 		
 		return binder;
 	}
+	
+	/**
+	 * Set the JAXBElement for this part, and a corresponding
+	 * binder, based on the object provided.  Returns the new
+	 * JAXBElement, so calling code can manipulate it.  Beware
+	 * that this object is different to the one passed in!
+	 * @param source
+	 * @return
+	 * @throws JAXBException
+	 * @since 3.0.0
+	 */
+	public E createBinderAndJaxbElement(E source) throws JAXBException {
+		
+		// In order to create binder:-
+		log.info("creating binder");
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement);
+		unmarshal(doc.getDocumentElement());
+		// return the newly created object, so calling code can use it in place
+		// of their source object
+		return jaxbElement;
+	}
+	
 	
 	/**
 	 * Fetch JAXB Nodes matching an XPath (for example "//w:p").
