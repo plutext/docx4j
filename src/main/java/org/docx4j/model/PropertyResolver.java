@@ -1060,6 +1060,27 @@ public class PropertyResolver {
     }
 		
 
+	public String getDefaultMajorFontLatin() {
+		
+		if (themePart==null) {
+			// No  theme part - default to Cambria
+			log.info("No theme part - default to Cambria");								
+			return "Cambria"; 			
+		} else {
+			org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+			if (fontScheme.getMajorFont()!=null
+					&& fontScheme.getMajorFont().getLatin()!=null) {
+														
+				org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
+				log.debug("majorFont/latin font is " + textFont.getTypeface() );
+				return textFont.getTypeface(); 
+			} else {
+				// No majorFont/latin in theme part - default to Cambria
+				log.info("No majorFont/latin in theme part - default to Cambria");								
+				return "Cambria"; 
+			}
+		} 
+	}
 	
 	/**
 	 * Returns default document font, by attempting to look at styles/docDefaults/rPrDefault/rPr/rFonts.

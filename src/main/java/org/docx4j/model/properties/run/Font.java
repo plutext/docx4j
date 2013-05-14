@@ -30,6 +30,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
+import org.docx4j.wml.STTheme;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -78,6 +79,8 @@ public class Font extends AbstractRunProperty {
 		
 		RFonts rFonts = (RFonts)this.getObject();
 		
+		log.debug("Processing " + XmlUtils.marshaltoString(rFonts, true));
+		
 		String font=null;
 		if (rFonts.getHint()!=null && rFonts.getHint().equals(STHint.EAST_ASIA) ) {
 			
@@ -98,18 +101,27 @@ public class Font extends AbstractRunProperty {
 
 			font = rFonts.getAscii();		
 			
-			if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
-				font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
+			if (font==null 
+					&& wmlPackage instanceof WordprocessingMLPackage) {
+				// So, use the theme				
+				if (rFonts.getAsciiTheme()!=null
+						&& (rFonts.getAsciiTheme().equals(STTheme.MAJOR_ASCII)
+								|| rFonts.getAsciiTheme().equals(STTheme.MAJOR_H_ANSI) )) {
+					font=((WordprocessingMLPackage)wmlPackage).getDefaultMajorFont();					
+				} else {
+					font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
+				}
 			}
 			
 		}
-		
 		
 		return getPhysicalFont(wmlPackage, font);
 		
 	}
 
 	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
+		
+		log.debug("looking for: " + fontName);
 
 		if (!(wmlPackage instanceof WordprocessingMLPackage)) {
 			log.error("Implement me for pptx4j");
