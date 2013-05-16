@@ -5,9 +5,12 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 // about it which is specific to WML.
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.BufferUtil;
 
 public class EmbeddedPackagePart extends BinaryPart { // maybe should extend EmbeddedPackagePart
 
@@ -31,7 +34,17 @@ public class EmbeddedPackagePart extends BinaryPart { // maybe should extend Emb
 
 		// Used when this Part is added to a rels
 		setRelationshipType(Namespaces.EMBEDDED_PKG);
+	}
+	
+	/**
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.0.0
+	 */
+	public OpcPackage extractPackage() throws Docx4JException {
 		
+		return OpcPackage.load(
+				BufferUtil.newInputStream(getBuffer()));
 		
 	}
 
