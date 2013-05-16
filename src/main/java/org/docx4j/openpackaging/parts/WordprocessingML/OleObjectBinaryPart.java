@@ -31,7 +31,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.poifs.dev.POIFSViewEngine;
+import org.apache.poi.poifs.filesystem.DirectoryNode;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
+import org.apache.poi.poifs.filesystem.DocumentNode;
+import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
@@ -103,21 +106,72 @@ public class OleObjectBinaryPart extends BinaryPart {
 	
     public void viewFile(boolean verbose) throws IOException
     {
+    	viewFile(System.out, verbose);
+    	
+    }
+
+    /**
+     * @param os
+     * @param verbose
+     * @throws IOException
+     * @since 3.0.0
+     */
+    public void viewFile(OutputStream os, boolean verbose) throws IOException
+    {
     	String indent="";
     	boolean withSizes = true;    	
-    	org.apache.poi.poifs.dev.POIFSLister.displayDirectory(fs.getRoot(), indent, withSizes);
+    	displayDirectory(fs.getRoot(), os, indent, withSizes);
     	
     	if (verbose) {
 	        List strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
 			Iterator iter = strings.iterator();
 	
 			while (iter.hasNext()) {
-				System.out.print(iter.next());
+				os.write( ((String)iter.next()).getBytes());
 			}
     	}
     	
     }
+    
+    
+    /**
+     * Adapted from org.apache.poi.poifs.dev.POIFSLister
+     * @param dir
+     * @param indent
+     * @param withSizes
+     * @throws IOException 
+     * 
+     */
+    private void displayDirectory(DirectoryNode dir, OutputStream os, String indent, boolean withSizes) throws IOException {
+        System.out.println(indent + dir.getName() + " -");
+        String newIndent = indent + "  ";
 
+        boolean hadChildren = false;
+        for(Iterator<Entry> it = dir.getEntries(); it.hasNext();) {
+           hadChildren = true;
+           Entry entry = it.next();
+           if (entry instanceof DirectoryNode) {
+              displayDirectory((DirectoryNode) entry, os, newIndent, withSizes);
+           } else {
+              DocumentNode doc = (DocumentNode) entry;
+              String name = doc.getName();
+              String size = "";
+              if (name.charAt(0) < 10) {
+                 String altname = "(0x0" + (int) name.charAt(0) + ")" + name.substring(1);
+                 name = name.substring(1) + " <" + altname + ">";
+              }
+              if (withSizes) {
+                 size = " [" + doc.getSize() + " / 0x" + 
+                        Integer.toHexString(doc.getSize()) + "]";
+              }
+              os.write((newIndent + name + size).getBytes());
+           }
+        }
+        if (!hadChildren) {
+        	os.write((newIndent + "(no children)").getBytes());
+        }
+     }
+    
 //	public void extractPdf(OutputStream out) throws IOException {
 //		
 //		DocumentInputStream inputStream = fs.createDocumentInputStream("CONTENTS");

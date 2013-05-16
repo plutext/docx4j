@@ -106,6 +106,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
@@ -313,6 +314,12 @@ public class ContentTypeManager  {
 			epp.setContentType(new ContentType(contentType));
 			return epp;
 
+		} else if (rel!=null && rel.getType().equals(Namespaces.OLE_OBJECT) ) {
+			
+			OleObjectBinaryPart olePart = new OleObjectBinaryPart(new PartName(partName));
+			olePart.setContentType(new ContentType(contentType));
+			return olePart;
+			
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
 			return CreateMainDocumentPartObject(partName);
 			// how is the main document distinguished from the glossary document?
