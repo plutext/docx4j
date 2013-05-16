@@ -22,13 +22,14 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Comments;
 
 
 
-public final class CommentsPart extends JaxbXmlPart<Comments> {
+public final class CommentsPart extends JaxbXmlPartXPathAware<Comments> {
 	
 	public CommentsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
