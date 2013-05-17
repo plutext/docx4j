@@ -127,63 +127,77 @@ public class XmlUtils {
 		// javax.xml.parsers.SAXParserFactory
 		String sp = Docx4jProperties.getProperty("javax.xml.parsers.SAXParserFactory");
 		if (sp!=null) {
+			
 			System.setProperty("javax.xml.parsers.SAXParserFactory",sp);
 			log.info("Using " + sp + " (from docx4j.properties)");
-		} 
 		
-		// CONSIDER using Xerces if present?
-		//		System.setProperty("javax.xml.parsers.SAXParserFactory",
-		//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
-		
-		
-    	// Crimson fails to parse the HTML XSLT, so use Xerces ..
-		// .. this one is available in Java 6.	
-		// System.out.println(System.getProperty("java.vendor"));
-		// System.out.println(System.getProperty("java.version"));
-		else if ((System.getProperty("java.version").startsWith("1.6")
+		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.SAXParserFactory.donotset", false)) {
+			
+			// Since 3.0.0
+			// Don't set docx4j.javax.xml.parsers.SAXParserFactory
+			log.info("Not setting docx4j.javax.xml.parsers.SAXParserFactory");
+			
+		} else if ((System.getProperty("java.version").startsWith("1.6")
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
-		
+
+	    	// Crimson fails to parse the HTML XSLT, so use Xerces ..
+			// .. this one is available in Java 6.	
+			// System.out.println(System.getProperty("java.vendor"));
+			// System.out.println(System.getProperty("java.version"));
+			
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 
 			log.info("Using com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
 		} else {
+			
+			// In this case suggest you add and use Xerces
+			//		System.setProperty("javax.xml.parsers.SAXParserFactory",
+			//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+			
+			
 			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
 		}
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
 		// since we want to avoid Crimson being used for the life of the application.
 
 		// javax.xml.parsers.DocumentBuilderFactory
-
-		// Crimson doesn't support setTextContent; this.writeDocument also fails.
-		// We've already worked around the problem with setTextContent,
-		// but rather than do the same for writeDocument,
-		// let's just stop using it.
-
 		String dbf = Docx4jProperties.getProperty("javax.xml.parsers.DocumentBuilderFactory");
 		if (dbf!=null) {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",dbf);
 			log.info("Using " + dbf + " (from docx4j.properties)");
-		} 
-		
-		// Consider using Xerces if present?  Not necessary...
-		// System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-		//		"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-		// which is what we used to do in XmlPart.
-		else if ((System.getProperty("java.version").startsWith("1.6")
+			
+		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.DocumentBuilderFactory.donotset", false)) {
+			
+			// Since 3.0.0
+			// Don't set docx4j.javax.xml.parsers.DocumentBuilderFactory
+			log.info("Not setting docx4j.javax.xml.parsers.DocumentBuilderFactory");
+			
+		} else if ((System.getProperty("java.version").startsWith("1.6")
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
 		
+			// Crimson doesn't support setTextContent; this.writeDocument also fails.
+			// We've already worked around the problem with setTextContent,
+			// but rather than do the same for writeDocument,
+			// let's just stop using it.
+
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 
 			log.info("Using com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			
 		} else {
+
+			// In this case suggest you add and use Xerces
+			//     System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+			//		    "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+			// which is what we used to do in XmlPart.
+			
 			log.warn("Using default DocumentBuilderFactory: " 
 					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" ));
 		}
