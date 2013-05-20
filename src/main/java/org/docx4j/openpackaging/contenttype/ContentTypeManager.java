@@ -804,35 +804,6 @@ public class ContentTypeManager  {
 // debugPrint(ctmDocument);
 		OpcPackage p;
 		
-		  
-		// Check overrides first
-		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
-			log.info("Detected WordProcessingML package ");
-			p = new WordprocessingMLPackage(this);
-			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
-			log.info("Detected PresentationMLPackage package ");
-			p = new PresentationMLPackage(this);
-			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
-			//  "xlam", "xlsb" ?
-			log.info("Detected SpreadhseetMLPackage package ");
-			p = new SpreadsheetMLPackage(this);
-			return p;			
-		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
-			log.info("Detected Glox file ");
-			p = new GloxPackage(this);
-			return p;						
-		} 
-		
 		// Check defaults; POI apparently writes something like:
 		// <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
 		// See http://stackoverflow.com/questions/15007550/dox4j-cannot-read-poi-saved-files-who-is-at-fault
@@ -859,12 +830,40 @@ public class ContentTypeManager  {
 				//  "xlam", "xlsb" ?
 				log.info("Detected SpreadhseetMLPackage package ");
 				p = new SpreadsheetMLPackage(this);
-				return p;			
+				return p;
 			} else if (defaultContentTypeForXML.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
 				log.info("Detected Glox file ");
 				p = new GloxPackage(this);
-				return p;						
+				return p;
 			} 
+		}
+
+		// Check overrides
+		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
+			log.info("Detected WordProcessingML package ");
+			p = new WordprocessingMLPackage(this);
+			return p;
+		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
+				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
+				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
+			log.info("Detected PresentationMLPackage package ");
+			p = new PresentationMLPackage(this);
+			return p;
+		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
+			//  "xlam", "xlsb" ?
+			log.info("Detected SpreadhseetMLPackage package ");
+			p = new SpreadsheetMLPackage(this);
+			return p;
+		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
+			log.info("Detected Glox file ");
+			p = new GloxPackage(this);
+			return p;
 		}
 				
 		// Nothing in overrides or defaults
