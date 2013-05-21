@@ -398,12 +398,8 @@ public class ContentTypeManager  {
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
-			
-			if (partName.endsWith(".xml") ) {			
-				return new VMLPart(new PartName(partName));
-			} else {
-				return new VMLBinaryPart(new PartName(partName));				
-			}
+			return new VMLPart(new PartName(partName));
+//			return new VMLBinaryPart(new PartName(partName));				
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
