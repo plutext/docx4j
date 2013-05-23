@@ -28,6 +28,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
+import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
@@ -208,7 +209,6 @@ public class FieldsPreprocessor {
 						
 					} else if (isCharType(o2, STFldCharType.SEPARATE)) {
 						
-//						log.debug(".. sep ..  ");
 						seenSeparate = true;
 						
 						newR.getContent().add(o2);
@@ -235,42 +235,50 @@ public class FieldsPreprocessor {
 						
 						fieldRPr = existingRun.getRPr();
 						newR.setRPr(fieldRPr);
-						
+
+					} else if (depth==1 && seenSeparate) {
+						// we only want a single run between SEPARATOR and END,
+						// and we added that in the SEPARATE stuff above
 					} else {
 						newR.getContent().add(o2);
 
 // CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
 // adds:							
 						newR.setRPr(existingRun.getRPr());
-			            newP.getContent().add(newR);
-			            newR = Context.getWmlObjectFactory().createR();
-          }
-				}
-				
+						newP.getContent().add(newR);
+						newR = Context.getWmlObjectFactory().createR();
+					}
+				} // end for (Object o2 : existingRun.getContent() )
+
+			} else if (o instanceof ProofErr) {
+				// Ignore
+				// What happens if we ignore eg grammarStart, but its matching
+				// grammarEnd is outside and retained?
+				// Well, a stray spellStart doesn't matter to Word 2010, so
+				// assume others would be ok as well.
 			} else {
-				// its not an R, 
+				// its not an R,
 
 				// Add the previous run, if necessary
-				if (newR.getContent().size()>0) {
+				if (newR.getContent().size() > 0) {
 					newP.getContent().add(newR);
 					newR = Context.getWmlObjectFactory().createR();
 				}
-				
+
 				newP.getContent().add(o);
-				
+
 				// TODO .. detect separator, and remove stuff?
 				// This model can't really do that right now, since it
 				// works only within the paragraph.
 			}
-			
+
 		}
-		if (newR.getContent().size()>0
-				&& !newP.getContent().contains(newR) ) {
+		if (newR.getContent().size() > 0 && !newP.getContent().contains(newR)) {
 			newP.getContent().add(newR);
 		}
-		
-//		log.debug(XmlUtils.marshaltoString(newP, true));
-		
+
+		// log.debug(XmlUtils.marshaltoString(newP, true));
+
 		return newP;
 	}
 	

@@ -118,7 +118,7 @@ public class MailMerger {
 			List<Map<DataFieldName, String>> data, boolean processHeadersAndFooters) throws Docx4JException {
 		
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		System.out.println("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+		log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
 		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
 
 		Map<CTRel, JaxbXmlPart> hfTemplates = null;
@@ -142,7 +142,7 @@ public class MailMerger {
 				JaxbXmlPart part = (JaxbXmlPart)input.getMainDocumentPart().getRelationshipsPart().getPart(relId);
 				FieldsPreprocessor.complexifyFields(part );
 				
-				System.out.println("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+				log.debug("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
 				
 				hfTemplates.put(rel, part);
 			}
@@ -362,6 +362,8 @@ public class MailMerger {
 		
 		// MDP
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
+		log.debug("\n\n COMPLEXIFIED " + input.getMainDocumentPart().getPartName().getName() + "\n\n"
+				+ input.getMainDocumentPart().getXML() + "\n");
 		List<Object> mdpResults = performOnInstance(input.getMainDocumentPart().getContent(), data );
 		input.getMainDocumentPart().getContent().clear();
 		input.getMainDocumentPart().getContent().addAll(mdpResults);
@@ -450,8 +452,11 @@ public class MailMerger {
 			if (p.getParent() instanceof ContentAccessor) {
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-//				log.debug("NewP length: " + newP.getContent().size() );
+				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+
+				//				log.debug("NewP length: " + newP.getContent().size() );
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
+				
 //			} else if (p.getParent() instanceof java.util.List) {
 //				index = ((java.util.List)p.getParent()).indexOf(p);
 //				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
