@@ -61,7 +61,8 @@ import org.w3c.dom.Node;
  * @author jharrop
  * @since 2.8
  */
-public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements AltChunkInterface {
+public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> 
+implements AltChunkInterface, XPathEnabled<E> {
 	
 	protected static Logger log = Logger.getLogger(JaxbXmlPartXPathAware.class);
 

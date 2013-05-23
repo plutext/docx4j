@@ -46,7 +46,7 @@ import org.w3c.dom.Node;
 
 
 
-public final class VMLPart extends JaxbXmlPart<Xml> {
+public final class VMLPart extends JaxbXmlPart<Xml> implements XPathEnabled<Xml> {
 	
 	private static Logger log = Logger.getLogger(VMLPart.class);		
 	

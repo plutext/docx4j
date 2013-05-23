@@ -23,10 +23,11 @@ import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XPathEnabled;
 import org.w3c.dom.Node;
 import org.xlsx4j.jaxb.Context;
 
-public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E> {
+public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E>  implements XPathEnabled<E> {
 
 	public JaxbSmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -103,6 +104,12 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E> {
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
+				
+				try {
+					this.setContentLengthAsLoaded(
+							partStore.getPartSize( name.substring(1)));
+				} catch (UnsupportedOperationException uoe) {}
+				
 				InputStream is = partStore.loadPart( 
 						name.substring(1));
 				if (is==null) {
