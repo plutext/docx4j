@@ -31,7 +31,7 @@ public abstract class Model {
 		this.wordMLPackage = wordMLPackage;
 	}
 	
-	protected WordprocessingMLPackage getWordMLPackage() {
+	public WordprocessingMLPackage getWordMLPackage() {
 		return wordMLPackage;
 	}
 	

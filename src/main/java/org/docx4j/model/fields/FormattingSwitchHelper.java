@@ -33,6 +33,8 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.RPr;
 
@@ -347,23 +349,34 @@ public class FormattingSwitchHelper {
 		
 		// Hmm, Word seems to be happy to extract a number from a DOCPROPERTY string,
 		// but not from = ... so we should only use NumberExtractor for certain field types?
-
-			// First, parse the value
-			NumberExtractor nex = new NumberExtractor();
-			try {
-				value = nex.extractNumber(value);
-			} catch (java.lang.IllegalStateException noMatch) {
-				// There is no number in this string.
-				// In this case Word just inserts the non-numeric text,
-				// without attempting to format the number
-				throw new FieldResultIsNotANumberException();
+		
+		WordprocessingMLPackage pkg = model.getWordMLPackage();
+		String decimalSymbol=null;
+		if (pkg!=null
+				&& pkg.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+			
+			DocumentSettingsPart docSettingsPart = pkg.getMainDocumentPart().getDocumentSettingsPart();
+			if (docSettingsPart.getJaxbElement().getDecimalSymbol()!=null) {
+				decimalSymbol = docSettingsPart.getJaxbElement().getDecimalSymbol().getVal();
 			}
+		}
 
-			try {
-				return Double.parseDouble(value);
-			} catch (Exception e) {
-				throw new FieldResultIsNotANumberException();				
-			}
+		// First, parse the value
+		NumberExtractor nex = new NumberExtractor(decimalSymbol);
+		try {
+			value = nex.extractNumber(value);
+		} catch (java.lang.IllegalStateException noMatch) {
+			// There is no number in this string.
+			// In this case Word just inserts the non-numeric text,
+			// without attempting to format the number
+			throw new FieldResultIsNotANumberException();
+		}
+
+		try {
+			return Double.parseDouble(value);
+		} catch (Exception e) {
+			throw new FieldResultIsNotANumberException();				
+		}
 	}
 	
 	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub) 

@@ -20,15 +20,26 @@ public class NumberExtractor {
 			"([\\+-]?[0](\\.\\d+))|" +             // optional +/-, then 0, then decimal place, then digits
 			"([\\+-]?(\\d+)(\\.\\d*)?)";   // optional +/-, then digit, then optional (decimal place, then zero or more digits)
 
-	static String radixPointCharacter;
+	static String decimalSymbolFallback;
 	static String groupingSeparator;
 
 	static Pattern pattern = Pattern.compile(regex);
 	
 	static {
 		
-		radixPointCharacter = Docx4jProperties.getProperty("docx4j.Fields.Numbers.RadixPointCharacter", ".");
+		decimalSymbolFallback = Docx4jProperties.getProperty("docx4j.Fields.Numbers.DecimalSymbol", ".");
 		groupingSeparator = Docx4jProperties.getProperty("docx4j.Fields.Numbers.GroupingSeparator", ",");
+	}
+	
+	private String decimalSymbol;
+	
+	public NumberExtractor(String decimalSymbol) {
+		
+		if (decimalSymbol==null) {
+			this.decimalSymbol = decimalSymbolFallback;
+		} else {
+			this.decimalSymbol = decimalSymbol;
+		}
 		
 	}
 	
@@ -41,11 +52,11 @@ public class NumberExtractor {
 		
 		string = string.replaceAll(groupingSeparator, "");
 		
-		if (radixPointCharacter.equals(".")) {
+		if (decimalSymbol.equals(".")) {
 			// do nothing
 			return string;
 		} else {
-			return string.replaceAll(radixPointCharacter, ".");
+			return string.replace(decimalSymbol, ".");
 		}
 		
 	}
@@ -73,7 +84,7 @@ public class NumberExtractor {
 	 */
 	public static void main(String[] args) {
 
-		NumberExtractor nex = new NumberExtractor();
+		NumberExtractor nex = new NumberExtractor(".");
 		System.out.println(nex.extractNumber("€ HEH EUR"));
 		
 	}
