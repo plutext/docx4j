@@ -110,8 +110,17 @@ public class FlatOpcXmlImporter  {
 //				new javax.xml.transform.stream.StreamSource(is))).getValue(); 
 
 		// JAXB RI unmarshalls to JAXBElement; MOXy gives Package directly
-		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
-				new javax.xml.transform.stream.StreamSource(is))); 
+		org.docx4j.xmlPackage.Package flatOpcXml = null;
+		try {
+			flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
+					new javax.xml.transform.stream.StreamSource(is)));
+		} catch ( javax.xml.bind.UnmarshalException e) {
+			if (e.getMessage().contains("http://schemas.microsoft.com/office/word/2003/wordml")) {
+				throw new IllegalArgumentException("Word 2003 XML is not supported. Use a docx or Flat OPC XML instead, or look at the Word2003XmlConverter proof of concept.");	
+				// So as not to change existing throws clause
+			}
+			throw e;
+		}
 		
 		init(flatOpcXml);
 		
@@ -452,7 +461,7 @@ public class FlatOpcXmlImporter  {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart ) {
-
+					
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCore);
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
 						
