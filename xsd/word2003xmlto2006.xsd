@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema 
+           xmlns:transit="http://www.docx4java.org/word2003xml/to/wordprocessingml/2006"  
+           targetNamespace="http://www.docx4java.org/word2003xml/to/wordprocessingml/2006"  
+		   xmlns:o="urn:schemas-microsoft-com:office:office" 
+           xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" 
+           xmlns:wsp="http://schemas.microsoft.com/office/word/2003/wordml/sp2" 
+           xmlns:v="urn:schemas-microsoft-com:vml" 
+           xmlns="http://schemas.microsoft.com/office/word/2003/wordml" 
+           xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" 
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:sl="http://schemas.microsoft.com/schemaLibrary/2003/core" 
+           xmlns:aml="http://schemas.microsoft.com/aml/2001/core" 
+           xmlns:w10="urn:schemas-microsoft-com:office:word" 
+           xmlns:dt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882"
+           xmlns:wx="http://schemas.microsoft.com/office/word/2003/auxHint" 
+           xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+           attributeFormDefault="unqualified" elementFormDefault="qualified" 
+           xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" 
+	jaxb:version="2.1">
+           
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+			
+ 	 xjc  word2003xmlto2006.xsd -d temp -no-header -target 2.0 -extension
+	 
+
+-->
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	  schemaLocation="wml/wml.xsd" />
+	  
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.convert.in.word2003xml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+  <xsd:element name="transition03to06"> 
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="w:fonts" />
+        <xsd:element ref="w:numbering" />
+        <xsd:element ref="w:styles" />
+        <xsd:element ref="w:body" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  
+</xsd:schema>

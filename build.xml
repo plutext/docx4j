@@ -65,6 +65,11 @@
     <path id="Maven Dependencies.libraryclasspath">
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB -->
+        <pathelement location="moxy/org.eclipse.persistence.moxy_2.5.0.v20130425-368d603.jar"/>
+        <pathelement location="moxy/org.eclipse.persistence.core_2.5.0.v20130425-368d603.jar"/>
+        <pathelement location="moxy/org.eclipse.persistence.asm_3.3.1.v201302191223.jar"/>
+        <pathelement location="moxy/org.eclipse.persistence.antlr_3.2.0.v201302191141.jar"/>
+        <pathelement location="${m2Repository}/javax/mail/mail/1.4/mail-1.4.jar"/>
     	<!-- 
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.4.1/org.eclipse.persistence.moxy-2.4.1.jar"/>
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.4.1/org.eclipse.persistence.core-2.4.1.jar"/>
@@ -186,6 +191,7 @@
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="src/xlsx4j/java" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
         </copy>
     </target>
@@ -269,6 +275,7 @@
     <target name="JAXB-use-MOXy" >
     
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/bibliography/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/convert/in/word2003xml/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/customxml/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/customXmlProperties/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/dml/jaxb.properties"/>
@@ -319,6 +326,7 @@
     <target name="JAXB-switch-from-MOXy-to-Oracle" >
     
 		<delete file="src/main/java/org/docx4j/bibliography/jaxb.properties"/>
+		<delete tofile="src/main/java/org/docx4j/convert/in/word2003xml/jaxb.properties"/>		
 		<delete file="src/main/java/org/docx4j/customxml/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/customXmlProperties/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/dml/jaxb.properties"/>

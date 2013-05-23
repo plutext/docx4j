@@ -14278,14 +14278,18 @@ PRINCIPLES:
 							Background</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element name="body" type="CT_Body" minOccurs="0" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>Document Body</xsd:documentation>
-					</xsd:annotation>
-				</xsd:element>
+				<xsd:element ref="body" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
+	
+	<xsd:element name="body" type="CT_Body">
+		<xsd:annotation>
+			<xsd:documentation>Document Body</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	
+	
 	<xsd:element name="glossaryDocument">
 		<!-- type="CT_GlossaryDocument" -->
 		<xsd:annotation>
