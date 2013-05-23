@@ -131,10 +131,13 @@ public class XSLFOExporterNonXSLT {
 	org.w3c.dom.Document document;
 	
 	PdfSettings pdfSettings = null;
+	WordprocessingMLPackage localWmlPackage = null;
 	
 	public XSLFOExporterNonXSLT(WordprocessingMLPackage wmlPackage, 
 			ConversionImageHandler conversionImageHandler) {
 
+		this.localWmlPackage = wmlPackage;
+		
 		pdfSettings = new PdfSettings();
 		pdfSettings.setWmlPackage(wmlPackage);
 		pdfSettings.setImageHandler(conversionImageHandler);
@@ -148,7 +151,6 @@ public class XSLFOExporterNonXSLT {
 		Element foRoot = null;
 		Element pageSequence = null;
 		Element flow = null;
-		WordprocessingMLPackage localWmlPackage = null;
 		ConversionSectionWrappers conversionSectionWrappers = null;
 		
 		
