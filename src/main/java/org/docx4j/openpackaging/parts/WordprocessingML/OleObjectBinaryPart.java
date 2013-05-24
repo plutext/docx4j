@@ -22,7 +22,6 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -32,7 +31,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.poi.poifs.dev.POIFSViewEngine;
 import org.apache.poi.poifs.filesystem.DirectoryNode;
-import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.poifs.filesystem.DocumentNode;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
@@ -41,6 +39,13 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
+/**
+ * You can use oleObjectBinaryPart.setBinaryData( ByteBuffer.wrap(bytes) );
+ * to populate this from a byte[]
+ * 
+ * @author jharrop
+ *
+ */
 public class OleObjectBinaryPart extends BinaryPart {
 
 	private static Logger log = Logger.getLogger(OleObjectBinaryPart.class);		
@@ -60,6 +65,7 @@ public class OleObjectBinaryPart extends BinaryPart {
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_OLE_OBJECT));
+			// should be this, unless it contains eg a doc stored directly (ie a non-generic OLE object)
 
 		// Used when this Part is added to a rels
 		setRelationshipType(Namespaces.OLE_OBJECT);
@@ -68,46 +74,64 @@ public class OleObjectBinaryPart extends BinaryPart {
 	}
 
 	POIFSFileSystem fs;
-	public POIFSFileSystem getFs() {
+	public POIFSFileSystem getFs() throws IOException {
+		if (fs==null) {
+			initPOIFSFileSystem();
+		}
 		return fs;
 	}
 	
 	public void initPOIFSFileSystem() throws IOException {
 		
-		
-		//fs = new POIFSFileSystem( org.docx4j.utils.BufferUtil.newInputStream(bb) );
-		
-		// the above seems to be calling methods which aren't implemented,
-		// so, for now, brute force..
-		
-		getBuffer().clear();
-        byte[] bytes = new byte[getBuffer().capacity()];
-        getBuffer().get(bytes, 0, bytes.length);
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-		fs = new POIFSFileSystem(bais);
-		
+		if (getBuffer()!=null) {
+
+			//fs = new POIFSFileSystem( org.docx4j.utils.BufferUtil.newInputStream(bb) );
+			// the above seems to be calling methods which aren't implemented,
+			// so, for now, brute force..
+
+			log.info("initing POIFSFileSystem from existing data");
+			getBuffer().clear();
+	        byte[] bytes = new byte[getBuffer().capacity()];
+	        getBuffer().get(bytes, 0, bytes.length);
+			
+			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+			fs = new POIFSFileSystem(bais);
+			
+		} else {
+
+			log.info("creating new empty POIFSFileSystem");
+			fs = new POIFSFileSystem();
+			writePOIFSFileSystem();
+		}
 	}
 	
+	/**
+	 * Write any changes which have been made to POIFSFileSystem,
+	 * to the underlying ByteBuffer.  This is necessary if the changes
+	 * are to be persisted.
+	 * 
+	 * @throws IOException
+	 */
 	public void writePOIFSFileSystem() throws IOException {
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 
-		fs.writeFilesystem(baos);
+		getFs().writeFilesystem(baos);
 		
 		// Need to put this is bb
 		byte[] bytes = baos.toByteArray();
 		
+		// java.nio.ByteBuffer bb contains the data
 		setBinaryData( ByteBuffer.wrap(bytes) );
 		
 	}
 	
-	// java.nio.ByteBuffer bb contains the data
 	
+    
+    
     public void viewFile(boolean verbose) throws IOException
     {
     	viewFile(System.out, verbose);
-    	
     }
 
     /**
@@ -120,7 +144,7 @@ public class OleObjectBinaryPart extends BinaryPart {
     {
     	String indent="";
     	boolean withSizes = true;    	
-    	displayDirectory(fs.getRoot(), os, indent, withSizes);
+    	displayDirectory(getFs().getRoot(), os, indent, withSizes);
     	
     	if (verbose) {
 	        List strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
@@ -130,9 +154,7 @@ public class OleObjectBinaryPart extends BinaryPart {
 				os.write( ((String)iter.next()).getBytes());
 			}
     	}
-    	
     }
-    
     
     /**
      * Adapted from org.apache.poi.poifs.dev.POIFSLister
@@ -164,30 +186,12 @@ public class OleObjectBinaryPart extends BinaryPart {
                  size = " [" + doc.getSize() + " / 0x" + 
                         Integer.toHexString(doc.getSize()) + "]";
               }
-              os.write((newIndent + name + size).getBytes());
+              os.write((newIndent + name + size + "\n").getBytes() );
            }
         }
         if (!hadChildren) {
         	os.write((newIndent + "(no children)").getBytes());
         }
      }
-    
-//	public void extractPdf(OutputStream out) throws IOException {
-//		
-//		DocumentInputStream inputStream = fs.createDocumentInputStream("CONTENTS");
-//	    
-//	    byte buf[]=new byte[1024];
-//	    int len;
-//	    while ((len=inputStream.read(buf))>0) {
-//	    	out.write(buf,0,len);
-//	    }
-//	    out.close();
-//	    inputStream.close();
-//		
-//	}
-
-	
-	
-	
 	
 }
