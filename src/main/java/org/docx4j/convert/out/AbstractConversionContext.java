@@ -54,6 +54,16 @@ public abstract class AbstractConversionContext {
 	private OpcPackage opcPackage = null;
 	private ConversionImageHandler imageHandler = null;
 	private AbstractMessageWriter messageWriter = null;
+	private AbstractConversionSettings settings = null;
+	private Map<String, String> hyperlinkExtMap = null;
+	
+
+	/**
+	 * @return the settings
+	 */
+	public AbstractConversionSettings getConversionSettings() { // This method not required if individual settings each have their own method below
+		return settings;
+	}
 
 	protected AbstractConversionContext(AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings) {
 		initializeSettings(conversionSettings);
@@ -65,8 +75,12 @@ public abstract class AbstractConversionContext {
 			if (settings.getWmlPackage() == null) {
 				throw new IllegalArgumentException("The OpcPackage is missing in the settings.");
 			}
+			this.settings = settings;
 			this.imageHandler = initializeImageHandler(settings, settings.getImageHandler());
 			this.opcPackage = initializeOpcPackage(settings, settings.getWmlPackage());
+			this.hyperlinkExtMap = (Map<String, String>)settings.getSettings().get(AbstractConversionSettings.HYPERLINK_EXT_MAPPINGS);
+			
+			// Do this last
 			this.xsltParameters = initializeXsltParameters(settings, settings.getSettings());
 		}
 	}
@@ -79,13 +93,16 @@ public abstract class AbstractConversionContext {
 		return opcPackage;
 	}
 
+	
 	protected Map<String, Object> initializeXsltParameters(AbstractConversionSettings settings, Map<String, Object> settingParameters) {
-	Map<String, Object> ret = new HashMap<String, Object>();
+		
+		Map<String, Object> ret = new HashMap<String, Object>();
 		if (settingParameters != null) {
 			ret.putAll(settingParameters);
 			//remove from the parameters items that get duplicated in the context
 			ret.remove(AbstractConversionSettings.IMAGE_HANDLER);
 			ret.remove(AbstractConversionSettings.WML_PACKAGE);
+			ret.remove(AbstractConversionSettings.HYPERLINK_EXT_MAPPINGS);
 	
 			//these are implicitly included in the ImageHandler
 			ret.remove(AbstractConversionSettings.IMAGE_INCLUDE_UUID);
@@ -116,5 +133,8 @@ public abstract class AbstractConversionContext {
 		return xsltParameters;
 	}
 	
+	public Map<String, String> getHyperlinkExtensionMappings() {
+		return hyperlinkExtMap;
+	}	
 
 }

@@ -46,6 +46,7 @@ public class PdfConversionContext extends AbstractWmlConversionContext {
 				registerConverter(new TableWriter());
 				registerConverter(new SymbolWriter());
 				registerConverter(new FldSimpleWriter());
+				registerConverter(new HyperlinkWriter());
 			}
 		};
 			

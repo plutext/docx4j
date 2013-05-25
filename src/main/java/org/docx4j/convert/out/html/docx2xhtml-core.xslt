@@ -570,6 +570,17 @@
 		</w:hyperlink>
 -->  
   <xsl:template match="w:hyperlink">
+  
+		<xsl:variable name="hyperlinkNode" select="." />  			
+
+		<xsl:variable name="childResults">
+			<xsl:apply-templates /> 
+		</xsl:variable>
+  
+  
+  	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $hyperlinkNode, $childResults)"/>
+  
+  <!-- 
     <a>
 	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
       
@@ -596,7 +607,8 @@
           <xsl:value-of select="$href"/>
         </xsl:attribute>
       </xsl:if>
-      
+       -->
+       
 <!-- 
       <xsl:for-each select="@w:tgtFrame">
         <xsl:attribute name="target">
@@ -609,8 +621,11 @@
         </xsl:attribute>
       </xsl:for-each>
  -->
+ <!-- 
  		<xsl:apply-templates />      
     </a>
+    
+     -->
   </xsl:template>
    
   <xsl:template match="w:bookmarkStart">

@@ -26,6 +26,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.HyperlinkModel;
 import org.docx4j.model.Model;
 import org.docx4j.model.SymbolModel;
 import org.docx4j.model.TransformState;
@@ -82,7 +83,7 @@ public abstract class AbstractModelRegistry {
 //    	registerModel("w:p", ParagraphModel.class);
 //    	registerModel("w:t", TextModel.class);
 //    	registerModel("wp:inline", ImageModel.class);
-//    	registerModel("w:hyperlink", HyperlinkModel.class);
+    	registerModel("w:hyperlink", HyperlinkModel.class);
 //    	registerModel("w:bookmarkStart", BookmarkModel.class);
 	}
 	  
@@ -149,7 +150,9 @@ public abstract class AbstractModelRegistry {
 	 * @param doc
 	 * @return
 	 */
-	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, String modelID, Node content, Document doc) {
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
+			String modelID, Node content, Document doc) {
+		
 			Class c = modelClasses.get(modelID);
 			if (c == null) {
 				log.error("No model registered for " + modelID);

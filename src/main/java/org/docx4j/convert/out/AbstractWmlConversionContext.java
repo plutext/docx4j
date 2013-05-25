@@ -60,7 +60,8 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 
 	@Override
 	protected OpcPackage initializeOpcPackage(AbstractConversionSettings conversionSettings, OpcPackage opcPackage) {
-	OpcPackage ret = super.initializeOpcPackage(conversionSettings, opcPackage);
+		
+		OpcPackage ret = super.initializeOpcPackage(conversionSettings, opcPackage);
 		if (!(ret instanceof WordprocessingMLPackage)) {
 			throw new IllegalArgumentException("The opcPackage isn't a WordprocessingMLPackage, it is a " + ret.getClass().getName());
 		}
