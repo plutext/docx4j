@@ -1,107 +1,11 @@
-package com.topologi.diffx.load;
-
-/* ============================================================================
- * ARTISTIC LICENCE
- * 
- * Preamble
- * 
- * The intent of this document is to state the conditions under which a Package
- * may be copied, such that the Copyright Holder maintains some semblance of 
- * artistic control over the development of the package, while giving the users
- * of the package the right to use and distribute the Package in a more-or-less
- * customary fashion, plus the right to make reasonable modifications.
+/*
+ * This file is part of the DiffX library.
  *
- * Definitions:
- *  - "Package" refers to the collection of files distributed by the Copyright 
- *    Holder, and derivatives of that collection of files created through 
- *    textual modification.
- *  - "Standard Version" refers to such a Package if it has not been modified, 
- *    or has been modified in accordance with the wishes of the Copyright 
- *    Holder.
- *  - "Copyright Holder" is whoever is named in the copyright or copyrights 
- *    for the package.
- *  - "You" is you, if you're thinking about copying or distributing this 
- *    Package.
- *  - "Reasonable copying fee" is whatever you can justify on the basis of 
- *    media cost, duplication charges, time of people involved, and so on. 
- *    (You will not be required to justify it to the Copyright Holder, but only 
- *    to the computing community at large as a market that must bear the fee.)
- *  - "Freely Available" means that no fee is charged for the item itself, 
- *    though there may be fees involved in handling the item. It also means 
- *    that recipients of the item may redistribute it under the same conditions
- *    they received it.
- *
- * 1. You may make and give away verbatim copies of the source form of the 
- *    Standard Version of this Package without restriction, provided that you 
- *    duplicate all of the original copyright notices and associated 
- *    disclaimers.
- *
- * 2. You may apply bug fixes, portability fixes and other modifications 
- *    derived from the Public Domain or from the Copyright Holder. A Package 
- *    modified in such a way shall still be considered the Standard Version.
- *
- * 3. You may otherwise modify your copy of this Package in any way, provided 
- *    that you insert a prominent notice in each changed file stating how and 
- *    when you changed that file, and provided that you do at least ONE of the 
- *    following:
- * 
- *    a) place your modifications in the Public Domain or otherwise make them 
- *       Freely Available, such as by posting said modifications to Usenet or 
- *       an equivalent medium, or placing the modifications on a major archive 
- *       site such as ftp.uu.net, or by allowing the Copyright Holder to 
- *       include your modifications in the Standard Version of the Package.
- * 
- *    b) use the modified Package only within your corporation or organization.
- *
- *    c) rename any non-standard executables so the names do not conflict with 
- *       standard executables, which must also be provided, and provide a 
- *       separate manual page for each non-standard executable that clearly 
- *       documents how it differs from the Standard Version.
- * 
- *    d) make other distribution arrangements with the Copyright Holder.
- *
- * 4. You may distribute the programs of this Package in object code or 
- *    executable form, provided that you do at least ONE of the following:
- * 
- *    a) distribute a Standard Version of the executables and library files, 
- *       together with instructions (in the manual page or equivalent) on where
- *       to get the Standard Version.
- *
- *    b) accompany the distribution with the machine-readable source of the 
- *       Package with your modifications.
- * 
- *    c) accompany any non-standard executables with their corresponding 
- *       Standard Version executables, giving the non-standard executables 
- *       non-standard names, and clearly documenting the differences in manual 
- *       pages (or equivalent), together with instructions on where to get 
- *       the Standard Version.
- *
- *    d) make other distribution arrangements with the Copyright Holder.
- *
- * 5. You may charge a reasonable copying fee for any distribution of this 
- *    Package. You may charge any fee you choose for support of this Package. 
- *    You may not charge a fee for this Package itself. However, you may 
- *    distribute this Package in aggregate with other (possibly commercial) 
- *    programs as part of a larger (possibly commercial) software distribution 
- *    provided that you do not advertise this Package as a product of your own.
- *
- * 6. The scripts and library files supplied as input to or produced as output 
- *    from the programs of this Package do not automatically fall under the 
- *    copyright of this Package, but belong to whomever generated them, and may
- *    be sold commercially, and may be aggregated with this Package.
- *
- * 7. C or perl subroutines supplied by you and linked into this Package shall 
- *    not be considered part of this Package.
- *
- * 8. The name of the Copyright Holder may not be used to endorse or promote 
- *    products derived from this software without specific prior written 
- *    permission.
- * 
- * 9. THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED 
- *    WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF 
- *    MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- * ============================================================================
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
  */
+package com.topologi.diffx.load;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -111,6 +15,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -125,59 +30,62 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
-import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.config.DiffXConfig;
 import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.event.CloseElementEvent;
 import com.topologi.diffx.event.OpenElementEvent;
+import com.topologi.diffx.event.TextEvent;
 import com.topologi.diffx.event.impl.EventFactory;
 import com.topologi.diffx.event.impl.ProcessingInstructionEvent;
-import com.topologi.diffx.load.text.TextTokeniser;
-import com.topologi.diffx.load.text.TokeniserFactory;
+import com.topologi.diffx.load.text.TextTokenizer;
+import com.topologi.diffx.load.text.TokenizerFactory;
 import com.topologi.diffx.sequence.EventSequence;
+import com.topologi.diffx.sequence.PrefixMapping;
 
 /**
  * Loads a DOM documents as a sequence of events.
  * 
  * <p>This class implements the methods {@link Recorder#process(File)} and
  * {@link Recorder#process(String)} for convenience, but is it much more efficient
- * to feed this recorder directly with a DOM. 
+ * to feed this recorder directly with a DOM.
  * 
  * <p>This class is not synchronised.
  * 
  * @author Christophe Lauret
- * @version 26 April 2005
+ * @version 10 May 2010
+ * 
+ * @since 0.7
  */
 public final class DOMRecorder implements XMLRecorder {
 
-  /**
-   * Set to <code>true</code> to show debug info.
-   */
-  private static final boolean DEBUG = false;
-
-// class attributes ---------------------------------------------------------------------
+  // class attributes -------------------------------------------------------------------------------
 
   /**
    * The DiffX configuration to use
    */
-  private DiffXConfig config = new DiffXConfig(); 
+  private DiffXConfig config = new DiffXConfig();
 
-// state variables ----------------------------------------------------------------------
-
-  /**
-   * The factory that will produce events according to the configuration. 
-   */
-  private transient EventFactory efactory = null;
+  // state variables --------------------------------------------------------------------------------
 
   /**
-   * The factory that will produce text tokenisers according to the configuration.
+   * The factory that will produce events according to the configuration.
    */
-  private transient TokeniserFactory tfactory = null;
+  private transient EventFactory efactory;
+
+  /**
+   * The text tokenizer used by this recorder.
+   */
+  private transient TextTokenizer tokenizer;
 
   /**
    * The sequence of event for this recorder.
    */
-  private transient EventSequence sequence = null;
+  private transient EventSequence sequence;
+
+  /**
+   * The sequence of event for this recorder.
+   */
+  private transient PrefixMapping mapping;
 
   /**
    * The weight of the current element.
@@ -187,21 +95,21 @@ public final class DOMRecorder implements XMLRecorder {
   /**
    * The stack of events' weight, should only contain <code>Integer</code>.
    */
-  private transient ArrayList weights = new ArrayList();
+  private transient List<Integer> weights = new ArrayList<Integer>();
 
   /**
    * Indicates whether the given document is a fragment.
    * 
-   * <p>An fragment is a portion of XML that is not necessrily well-formed by
-   * itself, because the namespace has been declared higher in the hierarchy, in
-   * which if the DOM tree was serialised it would not produce well-formed XML.
+   * <p>An fragment is a portion of XML that is not necessarily well-formed by itself, because the
+   * namespace has been declared higher in the hierarchy, in which if the DOM tree was serialised
+   * it would not produce well-formed XML.
    * 
-   * <p>This option indicates that the recorder should try to generate the prefix
-   * mapping without the declaration.  
+   * <p>This option indicates that the recorder should try to generate the prefix mapping without
+   * the declaration.
    */
   private transient boolean isFragment = true;
 
-// methods ------------------------------------------------------------------------------
+  // methods ----------------------------------------------------------------------------------------
 
   /**
    * Returns the configuration used by this recorder.
@@ -209,7 +117,7 @@ public final class DOMRecorder implements XMLRecorder {
    * @return the configuration used by this recorder.
    */
   public DiffXConfig getConfig() {
-    return config;
+    return this.config;
   }
 
   /**
@@ -222,7 +130,7 @@ public final class DOMRecorder implements XMLRecorder {
   }
 
   /**
-   * @see Recorder#process(java.io.File)
+   * {@inheritDoc}
    */
   public EventSequence process(File file) throws LoadingException, IOException {
     InputStream in = new BufferedInputStream(new FileInputStream(file));
@@ -230,7 +138,7 @@ public final class DOMRecorder implements XMLRecorder {
   }
 
   /**
-   * @see Recorder#process(java.lang.String)
+   * {@inheritDoc}
    */
   public EventSequence process(String xml) throws LoadingException {
     return process(new InputSource(new StringReader(xml)));
@@ -243,12 +151,12 @@ public final class DOMRecorder implements XMLRecorder {
    * 
    * @return The recorded sequence of events.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   public EventSequence process(InputSource is) throws LoadingException {
     this.isFragment = false; // input source is not a fragment
     DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    dbFactory.setNamespaceAware(config.isNamespaceAware());
+    dbFactory.setNamespaceAware(this.config.isNamespaceAware());
     dbFactory.setExpandEntityReferences(true);
     dbFactory.setValidating(false);
     try {
@@ -261,86 +169,104 @@ public final class DOMRecorder implements XMLRecorder {
   }
 
   /**
-   * Processed the given node and return the corresponding event sequence. 
+   * Processes the given node and returns the corresponding event sequence.
    * 
    * @param node The W3C DOM node to be processed.
    * 
    * @return The recorded sequence of events.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   public EventSequence process(Node node) throws LoadingException {
     // initialise the state variables.
-    this.efactory = new EventFactory(config.isNamespaceAware());
-    this.tfactory = new TokeniserFactory(config);
+    this.efactory = new EventFactory(this.config.isNamespaceAware());
+    this.tokenizer = TokenizerFactory.get(this.config);
     this.sequence = new EventSequence();
+    this.mapping = this.sequence.getPrefixMapping();
     // start processing the nodes
     loadNode(node);
     this.isFragment = true;
     return this.sequence;
   }
 
-// specific loaders ---------------------------------------------------------------------
+  /**
+   * Processes the given node list and returns the corresponding event sequence.
+   * 
+   * <p>This method only returns the event sequence from the first node in the node list, if the
+   * node list is empty, this method returns an empty sequence.
+   * 
+   * @param node The W3C DOM node to be processed.
+   * 
+   * @return The recorded sequence of events.
+   * 
+   * @throws LoadingException If thrown while parsing.
+   */
+  public EventSequence process(NodeList node) throws LoadingException {
+    if (node.getLength() == 0)
+      return new EventSequence();
+    return process(node.item(0));
+  }
+
+  // specific loaders ---------------------------------------------------------------------
 
   /**
-   * Loads the given node in the current sequence. 
+   * Loads the given node in the current sequence.
    * 
    * @param node The W3C DOM node to load.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   private void loadNode(Node node) throws LoadingException {
-    // dispatch to the correct loader
-    // performance: order by occurrence
-    if (node instanceof Element)
+    // dispatch to the correct loader performance: order by occurrence
+    if (node instanceof Element) {
       load((Element)node);
-    if (node instanceof Text)
+    }
+    if (node instanceof Text) {
       load((Text)node);
-    else if (node instanceof Attr)
+    } else if (node instanceof Attr) {
       load((Attr)node);
-    else if (node instanceof Document)
+    } else if (node instanceof Document) {
       load((Document)node);
-    else if (node instanceof ProcessingInstruction)
+    } else if (node instanceof ProcessingInstruction) {
       load((ProcessingInstruction)node);
-    // all other node types are ignored
+      // all other node types are ignored
+    }
   }
 
   /**
-   * Loads the given document in the current sequence. 
+   * Loads the given document in the current sequence.
    * 
    * @param document The W3C DOM document node to load.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   private void load(Document document) throws LoadingException {
     load(document.getDocumentElement());
   }
 
   /**
-   * Loads the given element in the current sequence. 
+   * Loads the given element in the current sequence.
    * 
    * @param element The W3C DOM element node to load.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   private void load(Element element) throws LoadingException {
-    if (currentWeight > 0) weights.add(new Integer(currentWeight));
-    currentWeight = 1;
+    if (this.currentWeight > 0) {
+      this.weights.add(Integer.valueOf(this.currentWeight));
+    }
+    this.currentWeight = 1;
     // namespace handling
     OpenElementEvent open = null;
     // namespace aware configuration
-    if (config.isNamespaceAware()) {
-      String uri = (element.getNamespaceURI() == null)? "" : element.getNamespaceURI();
+    if (this.config.isNamespaceAware()) {
+      String uri = element.getNamespaceURI() == null? "" : element.getNamespaceURI();
       String name = element.getLocalName();
-      if (isFragment) {
-        String prefix = element.getPrefix();
-        if (prefix != null && isFragment)
-          this.sequence.mapPrefix(uri, prefix);
-      }
-      open = efactory.makeOpenElement(uri, name);
-    // not namespace aware
+      handlePrefixMapping(uri, element.getPrefix());
+      open = this.efactory.makeOpenElement(uri, name);
+      // not namespace aware
     } else {
-      open = efactory.makeOpenElement(null, element.getNodeName());
+      open = this.efactory.makeOpenElement(null, element.getNodeName());
     }
 
     this.sequence.addEvent(open);
@@ -348,8 +274,8 @@ public final class DOMRecorder implements XMLRecorder {
     // only 1 attribute, just load it
     if (atts.getLength() == 1) {
       load((Attr)atts.item(0));
-    // several attributes sort them in alphabetical order
-    // TODO: also use URI
+      // several attributes sort them in alphabetical order
+      // TODO: also use URI
     } else if (atts.getLength() > 1) {
       String[] names = new String[atts.getLength()];
       for (int i = 0; i < atts.getLength(); i++) {
@@ -357,14 +283,16 @@ public final class DOMRecorder implements XMLRecorder {
         names[i] = attr.getName();
       }
       Arrays.sort(names);
-      for (int i = 0; i < names.length; i++)
-        load((Attr)atts.getNamedItem(names[i]));
+      for (String name : names) {
+        load((Attr)atts.getNamedItem(name));
+      }
     }
     // load all the child nodes
     NodeList list = element.getChildNodes();
-    for (int i = 0; i < list.getLength(); i++)
+    for (int i = 0; i < list.getLength(); i++) {
       loadNode(list.item(i));
-    CloseElementEvent close = efactory.makeCloseElement(open);
+    }
+    CloseElementEvent close = this.efactory.makeCloseElement(open);
     this.sequence.addEvent(close);
     // handle the weights
     close.setWeight(this.currentWeight);
@@ -373,29 +301,29 @@ public final class DOMRecorder implements XMLRecorder {
   }
 
   /**
-   * Loads the given text in the current sequence depending on the configuration. 
+   * Loads the given text in the current sequence depending on the configuration.
    * 
    * @param text The W3C DOM text node to load.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   private void load(Text text) throws LoadingException {
-    TextTokeniser ct = tfactory.makeTokeniser(text.getData());
-    for (int i = 0; i < ct.countTokens(); i++) {
-      sequence.addEvent(ct.nextToken());
-      this.currentWeight++;
+    List<TextEvent> events = this.tokenizer.tokenize(text.getData());
+    for (TextEvent e : events) {
+      this.sequence.addEvent(e);
     }
+    this.currentWeight += events.size();
   }
 
   /**
-   * Loads the given processing instruction in the current sequence. 
+   * Loads the given processing instruction in the current sequence.
    * 
    * @param pi The W3C DOM PI node to load.
    * 
-   * @throws LoadingException If thrown whilst parsing.
+   * @throws LoadingException If thrown while parsing.
    */
   private void load(ProcessingInstruction pi) throws LoadingException {
-    sequence.addEvent(new ProcessingInstructionEvent(pi.getTarget(), pi.getData()));
+    this.sequence.addEvent(new ProcessingInstructionEvent(pi.getTarget(), pi.getData()));
     this.currentWeight++;
   }
 
@@ -412,73 +340,53 @@ public final class DOMRecorder implements XMLRecorder {
   }
 
   /**
-   * Handles the attributes, will add them to the sequence in order if any.
-   * 
-   * @param element The element which attributes have to be handled.
-   */
-  private void handleAttributes(Element element) {
-    NamedNodeMap atts = element.getAttributes();
-    // only 1 attribute, just load it
-    if (atts.getLength() == 1) {
-      load((Attr)atts.item(0));
-    // several attributes sort them in alphabetical order
-    } else if (atts.getLength() > 1) {
-      AttributeEvent[] events = new AttributeEvent[atts.getLength()];
-      for (int i = 0; i < atts.getLength(); i++) {
-        Attr attr = (Attr)atts.item(i);
-        events[i] = efactory.makeAttribute(attr.getNamespaceURI(), 
-                                           attr.getLocalName(),
-                                           attr.getNodeName(),
-                                           attr.getValue());
-      }
-      Arrays.sort(events, new AttributeComparator());
-      for (int i = 0; i < events.length; i++)
-        load(events[i]);
-    }
-  }
-
-  /**
-   * Loads the given attribute in the current sequence. 
+   * Loads the given attribute in the current sequence.
    * 
    * @param attr The W3C DOM attribute node to load.
    */
   private void load(Attr attr) {
-    load(efactory.makeAttribute(attr.getNamespaceURI(),
-                                attr.getLocalName(),
-                                attr.getNodeName(),
-                                attr.getValue())); 
+    handlePrefixMapping(attr.getNamespaceURI(), attr.getPrefix());
+    load(this.efactory.makeAttribute(attr.getNamespaceURI(),
+        attr.getLocalName(),
+        attr.getNodeName(),
+        attr.getValue()));
   }
 
   /**
-   * Loads the given attribute in the current sequence. 
+   * Loads the given attribute in the current sequence.
    * 
    * @param e An attribute event.
    */
   private void load(AttributeEvent e) {
-	  
     // a namespace declaration, translate the event into a prefix mapping
     if ("http://www.w3.org/2000/xmlns/".equals(e.getURI())) {
-    	
-    	//Docx4jDriver.log("Encountered namespace declaration: " + e.getValue() );
-    	
-    	// Trap/handle xmlns:xmlns="",
-    	// which JAXB seems to produce 
-    	// and will later cause errors since
-    	// Non-default namespace can not map to empty URI (as per Namespace 1.0 # 2) in XML 1.0 documents
-    	if (e.getName().equals("xmlns") &&
-    			e.getValue().equals("") ) {
-    		Docx4jDriver.log("Ignoring xmlns:xmlns='' ");
-    		return;
-    	}
-    	
-      this.sequence.mapPrefix(e.getValue(), e.getName()); 
-    
-    // a regular attribute
+      this.sequence.mapPrefix(e.getValue(), e.getName());
+
+      // a regular attribute
     } else {
-    	//System.out.print(e.getURI());
       e.setWeight(2);
       this.currentWeight += 2;
       this.sequence.addEvent(e);
     }
   }
+
+  /**
+   * Handles the prefix mapping.
+   * 
+   * If the current process is working on a fragment,
+   * 
+   * @param uri    The namespace URI.
+   * @param prefix The prefix used for the namespace.
+   */
+  private void handlePrefixMapping(String uri, String prefix) {
+    if (this.isFragment) {
+      if (this.mapping.getPrefix(uri) != null) return;
+      if (prefix == null && !"".equals(uri)) {
+        this.mapping.add(uri, "");
+      } else if (prefix != null && !"xmlns".equals(prefix)) {
+        this.mapping.add(uri, prefix);
+      }
+    }
+  }
+
 }

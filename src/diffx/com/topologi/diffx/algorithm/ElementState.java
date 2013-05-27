@@ -1,7 +1,15 @@
+/*
+ * This file is part of the DiffX library.
+ *
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
+ */
 package com.topologi.diffx.algorithm;
 
-import com.topologi.diffx.event.DiffXEvent;
+import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.event.CloseElementEvent;
+import com.topologi.diffx.event.DiffXEvent;
 import com.topologi.diffx.event.OpenElementEvent;
 
 /**
@@ -9,18 +17,18 @@ import com.topologi.diffx.event.OpenElementEvent;
  * algorithm.
  *
  * <p>This class has two purposes, firstly to provide an object that is more specialised
- * than the generic lists and stack for use by the DiffX algorithms. Second, to deleguate
- * some of the complexity of algorithm.  
+ * than the generic lists and stack for use by the DiffX algorithms. Second, to delegate
+ * some of the complexity of algorithm.
  * 
  * <p>This class has several methods that are similar to <code>List</code> interface
  * but does not implement it.
  * 
- * <p>This class is not synchronised and is not meant to be serialisable.
+ * <p>This class is not synchronised and is not meant to be serializable.
  * 
  * @author Christophe Lauret
- * @version 7 April 2005
+ * @version 12 May 2005
  */
-final class ElementState {
+public final class ElementState {
 
   /**
    * The stack of open elements.
@@ -58,25 +66,26 @@ final class ElementState {
   }
 
   /**
-   * Increases the capacity of this class instance, if necessary, to ensure 
-   * that it can hold at least the number of elements specified by the 
-   * minimum capacity argument. 
+   * Increases the capacity of this class instance, if necessary, to ensure
+   * that it can hold at least the number of elements specified by the
+   * minimum capacity argument.
    *
    * @param minCapacity The desired minimum capacity.
    */
   public void ensureCapacity(int minCapacity) {
-    int oldCapacity = openElements.length;
+    int oldCapacity = this.openElements.length;
     if (minCapacity > oldCapacity) {
       // make a copy of the old arrays.
       OpenElementEvent[] oldElements = this.openElements;
       char[] oldChanges = this.openChanges;
-      int newCapacity = (oldCapacity * 3) / 2 + 1;
-        if (newCapacity < minCapacity)
-          newCapacity = minCapacity;
+      int newCapacity = oldCapacity * 3 / 2 + 1;
+      if (newCapacity < minCapacity) {
+        newCapacity = minCapacity;
+      }
       // create new arrays
       this.openElements = new OpenElementEvent[newCapacity];
       this.openChanges = new char[newCapacity];
-      // copy the values of the old arrays into the new ones 
+      // copy the values of the old arrays into the new ones
       System.arraycopy(oldElements, 0, this.openElements, 0, this.size);
       System.arraycopy(oldChanges, 0, this.openChanges, 0, this.size);
     }
@@ -98,7 +107,7 @@ final class ElementState {
    *          <code>false</code> otherwise.
    */
   public boolean isEmpty() {
-    return size == 0;
+    return this.size == 0;
   }
 
   /**
@@ -114,8 +123,8 @@ final class ElementState {
   }
 
   /**
-   * Searches for the first occurrence of the given argument, testing 
-   * for equality using the <code>equals</code> method. 
+   * Searches for the first occurrence of the given argument, testing
+   * for equality using the <code>equals</code> method.
    *
    * @param element The open elemnt to find.
    * 
@@ -126,12 +135,12 @@ final class ElementState {
    */
   public int indexOf(OpenElementEvent element) {
     if (element == null) {
-      for (int i = 0; i < size; i++)
-        if (openElements[i] == null)
+      for (int i = 0; i < this.size; i++)
+        if (this.openElements[i] == null)
           return i;
     } else {
-      for (int i = 0; i < size; i++)
-        if (element.equals(openElements[i]))
+      for (int i = 0; i < this.size; i++)
+        if (element.equals(this.openElements[i]))
           return i;
     }
     return -1;
@@ -159,7 +168,7 @@ final class ElementState {
     return -1;
   }
 
-// Maintenance methods ------------------------------------------------------------------------
+  // Maintenance methods ------------------------------------------------------------------------
 
   /**
    * Returns the current open element.
@@ -168,7 +177,7 @@ final class ElementState {
    */
   public OpenElementEvent current() {
     if (!isEmpty())
-      return this.openElements[size - 1];
+      return this.openElements[this.size - 1];
     else
       return null;
   }
@@ -180,7 +189,7 @@ final class ElementState {
    */
   public char currentChange() {
     if (!isEmpty())
-      return this.openChanges[size - 1];
+      return this.openChanges[this.size - 1];
     else
       return ' ';
   }
@@ -209,10 +218,11 @@ final class ElementState {
    * @param e The inserted event.
    */
   public void insert(DiffXEvent e) {
-    if (e instanceof OpenElementEvent)
+    if (e instanceof OpenElementEvent) {
       push((OpenElementEvent)e, '+');
-    else if (e instanceof CloseElementEvent)
+    } else if (e instanceof CloseElementEvent) {
       pop();
+    }
   }
 
   /**
@@ -221,10 +231,11 @@ final class ElementState {
    * @param e The formatted event.
    */
   public void format(DiffXEvent e) {
-    if (e instanceof OpenElementEvent)
+    if (e instanceof OpenElementEvent) {
       push((OpenElementEvent)e, '=');
-    else if (e instanceof CloseElementEvent)
+    } else if (e instanceof CloseElementEvent) {
       pop();
+    }
   }
 
   /**
@@ -233,10 +244,11 @@ final class ElementState {
    * @param e The deleted event.
    */
   public void delete(DiffXEvent e) {
-    if (e instanceof OpenElementEvent)
+    if (e instanceof OpenElementEvent) {
       push((OpenElementEvent)e, '-');
-    else if (e instanceof CloseElementEvent)
+    } else if (e instanceof CloseElementEvent) {
       pop();
+    }
   }
 
   /**
@@ -255,7 +267,7 @@ final class ElementState {
     if (isEmpty()) return false;
     // check if they match
     return ((CloseElementEvent)e).match(current())
-          && openChanges[size - 1] == '=';
+        && this.openChanges[this.size - 1] == '=';
   }
 
   /**
@@ -274,7 +286,7 @@ final class ElementState {
     if (isEmpty()) return false;
     // check if they match
     return ((CloseElementEvent)e).match(current())
-          && openChanges[size - 1] == '+';
+        && this.openChanges[this.size - 1] == '+';
   }
 
   /**
@@ -293,22 +305,42 @@ final class ElementState {
     if (isEmpty()) return false;
     // check if they match
     return ((CloseElementEvent)e).match(current())
-        && openChanges[size - 1] == '-';
+        && this.openChanges[this.size - 1] == '-';
   }
 
-// Stack methods ------------------------------------------------------------------------
+  /**
+   * Indicates whether the first specified event has priority over the second element.
+   * 
+   * It only seem to be the case when the algorithm has the choice between an attribute and another
+   * element.
+   * 
+   * @param e1 The element assumed to have priority.
+   * @param e2 The other element.
+   * 
+   * @return <code>true</code> if first specified event has priority over the second element;
+   *         <code>false</code> otherwise.
+   */
+  public boolean hasPriorityOver(DiffXEvent e1, DiffXEvent e2) {
+    if (e1 instanceof AttributeEvent
+        && !(e2 instanceof AttributeEvent)
+        && !isEmpty())
+      return true;
+    return false;
+  }
+
+  // Stack methods ------------------------------------------------------------------------
 
   /**
    * Push the specified open element and flags it with the specified change.
    * 
    * @param e The open element to push.
-   * @param c The character corresponding to change. 
+   * @param c The character corresponding to change.
    */
   private void push(OpenElementEvent e, char c) {
-    ensureCapacity(size + 1);
-    this.openElements[size] = e;
-    this.openChanges[size] = c;
-    size++;
+    ensureCapacity(this.size + 1);
+    this.openElements[this.size] = e;
+    this.openChanges[this.size] = c;
+    this.size++;
   }
 
   /**
@@ -317,14 +349,14 @@ final class ElementState {
    * @return The last element from the top of the stack.
    */
   public OpenElementEvent pop() {
-    if (size > 0) {
+    if (this.size > 0) {
       this.size--;
-      return this.openElements[size];
+      return this.openElements[this.size];
     }
     return null;
   }
 
-// Positional Access Operations ---------------------------------------------------------
+  // Positional Access Operations ---------------------------------------------------------
 
   /**
    * Returns the open element at the specified position in this list.
@@ -333,24 +365,12 @@ final class ElementState {
    * 
    * @return The element at the specified position in this list.
    * 
-   * @throws IndexOutOfBoundsException if index is out of range 
+   * @throws IndexOutOfBoundsException if index is out of range
    *         <code>(index &lt; 0 || index &gt;= size())</code>.
    */
   public OpenElementEvent get(int index) throws IndexOutOfBoundsException {
     checkRange(index);
-    return openElements[index];
-  }
-
-  /**
-   * Appends the specified element to the end of this list.
-   *
-   * @param o element to be appended to this list.
-   * @return <tt>true</tt> (as per the general contract of Collection.add).
-   */
-  private boolean add(OpenElementEvent o) {
-    ensureCapacity(size + 1);
-    openElements[size++] = o;
-    return true;
+    return this.openElements[index];
   }
 
   /**
@@ -362,16 +382,17 @@ final class ElementState {
    * 
    * @return The element that was removed from the list.
    * 
-   * @throws IndexOutOfBoundsException if index is out of range 
+   * @throws IndexOutOfBoundsException if index is out of range
    *         <code>(index &lt; 0 || index &gt;= size())</code>.
    */
   public OpenElementEvent remove(int index) throws IndexOutOfBoundsException {
     checkRange(index);
     OpenElementEvent oldValue = this.openElements[index];
-    int numMoved = size - index - 1;
-    if (numMoved > 0)
+    int numMoved = this.size - index - 1;
+    if (numMoved > 0) {
       System.arraycopy(this.openElements, index+1, this.openElements, index, numMoved);
-    this.openElements[--size] = null; // Let gc do its work
+    }
+    this.openElements[--this.size] = null; // Let gc do its work
     return oldValue;
   }
 
@@ -381,9 +402,10 @@ final class ElementState {
    */
   public void clear() {
     // Let gc do its work
-    for (int i = 0; i < size; i++)
-      openElements[i] = null;
-    size = 0;
+    for (int i = 0; i < this.size; i++) {
+      this.openElements[i] = null;
+    }
+    this.size = 0;
   }
 
   /**
@@ -394,12 +416,12 @@ final class ElementState {
    * 
    * @param index The index to check.
    * 
-   * @throws IndexOutOfBoundsException if index is out of range 
+   * @throws IndexOutOfBoundsException if index is out of range
    *         <code>(index &lt; 0 || index &gt;= size())</code>.
    */
   private void checkRange(int index) throws IndexOutOfBoundsException {
     if (index >= this.size)
-      throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size);
+      throw new IndexOutOfBoundsException("Index: "+index+", Size: "+this.size);
   }
 
 }

@@ -1,17 +1,25 @@
+/*
+ * This file is part of the DiffX library.
+ *
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
+ */
 package com.topologi.diffx.sequence;
 
 import java.util.Stack;
 
+import com.topologi.diffx.event.CloseElementEvent;
 import com.topologi.diffx.event.DiffXEvent;
 import com.topologi.diffx.event.OpenElementEvent;
-import com.topologi.diffx.event.CloseElementEvent;
-
 
 /**
  * A utility class for event sequences.
  * 
  * @author Christophe Lauret
  * @version 3 April 2005
+ * 
+ * @since 0.6
  */
 public final class EventSequenceUtils {
 
@@ -27,12 +35,12 @@ public final class EventSequenceUtils {
    * @param sequence The sequence.
    * 
    * @return <code>true</code> if the sequence is "well-formed";
-   *         <code>false</code> otherwise. 
+   *         <code>false</code> otherwise.
    */
   public static boolean isWellFormed(EventSequence sequence) {
     // TODO: if the sequence is null ??
     if (sequence == null) return false;
-    Stack open = new Stack();
+    Stack<DiffXEvent> open = new Stack<DiffXEvent>();
     DiffXEvent e = null;
     for (int i = 0; i < sequence.size(); i++) {
       e = sequence.getEvent(i);
@@ -46,7 +54,7 @@ public final class EventSequenceUtils {
         if (!closeElementName.equals(lastOpenElementName)) return false;
       }
     }
-    return open.empty(); 
+    return open.empty();
   }
 
   /**
@@ -63,13 +71,16 @@ public final class EventSequenceUtils {
     int max = 0;
     int depth = 0;
     for (int i = 0; i < sequence.size(); i++) {
-      if (sequence.getEvent(i) instanceof OpenElementEvent)
+      if (sequence.getEvent(i) instanceof OpenElementEvent) {
         depth++;
-      else if (sequence.getEvent(i) instanceof CloseElementEvent)
+      } else if (sequence.getEvent(i) instanceof CloseElementEvent) {
         depth--;
-      if (depth > max) max = depth;
+      }
+      if (depth > max) {
+        max = depth;
+      }
     }
-    return max; 
+    return max;
   }
 
   /**
@@ -89,8 +100,12 @@ public final class EventSequenceUtils {
       if (e instanceof OpenElementEvent) {
         tmp = 0;
       } else if (e instanceof CloseElementEvent) {
-        if (tmp > max) max = tmp;
-      } else tmp++;
+        if (tmp > max) {
+          max = tmp;
+        }
+      } else {
+        tmp++;
+      }
     }
     return max;
   }
