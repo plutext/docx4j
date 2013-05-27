@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	 
+
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
-  </parent>  	
+  </parent>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
 	<version>3.0.0-SNAPSHOT</version>
@@ -69,11 +69,11 @@
 		</contributor>
 		<contributor>
 			<name>Holger Schlegel</name>
-		</contributor>		
-		<contributor>			
+		</contributor>
+		<contributor>
 			<name>Jeromy Evans</name>
 		</contributor>
-		<contributor>			
+		<contributor>
 			<name>Jojada Tirtowidjojo</name>
 		</contributor>
 		<contributor>
@@ -146,24 +146,24 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<!-- The objective is to generate a jar which is compatible with Java 
-						1.5, whilst at the same time allowing @Override annotations in the source 
-						code on methods which merely implement an interface (Java 6 allows this, 
-						but 1.5 gives an error). When I played around with this, I found that both 
-						maven and ant would happily compile to target 1.5 with the pesky @Override 
-						annotations present (irrespective of whether source was set to 1.5 or 1.6). 
-						You are not allowed source=1.6, target=1.5; this results in: Failure executing 
-						javac, but could not parse the error javac: source release 1.6 requires target 
-						release 1.6 So we need source=1.5, target=1.5 The downside is that m2eclipse 
-						mirrors this in Eclipse's compiler settings, and Eclipse then complains about 
-						the @Override annotations :-( So you must manually change the Eclipse compiler 
+					<!-- The objective is to generate a jar which is compatible with Java
+						1.5, whilst at the same time allowing @Override annotations in the source
+						code on methods which merely implement an interface (Java 6 allows this,
+						but 1.5 gives an error). When I played around with this, I found that both
+						maven and ant would happily compile to target 1.5 with the pesky @Override
+						annotations present (irrespective of whether source was set to 1.5 or 1.6).
+						You are not allowed source=1.6, target=1.5; this results in: Failure executing
+						javac, but could not parse the error javac: source release 1.6 requires target
+						release 1.6 So we need source=1.5, target=1.5 The downside is that m2eclipse
+						mirrors this in Eclipse's compiler settings, and Eclipse then complains about
+						the @Override annotations :-( So you must manually change the Eclipse compiler
 						setting back to 1.6. -->
 					<source>1.5</source>
 					<target>1.5</target>
 
 					<verbose>false</verbose>
 					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
-					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller: 
+					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller:
 						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
 				</configuration>
 			</plugin>
@@ -174,7 +174,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<!-- The Surefire Plugin is used during the test phase of the build lifecycle 
+				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
 					to execute the unit tests of an application -->
 				<version>2.6</version>
 				<configuration>
@@ -190,17 +190,17 @@
 				<version>2.3.1</version>
 				<configuration>
 					<excludes>
-						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources 
+						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources
 							add unwanted 1 MB to jar. -->
 						<exclude>src/test/resources/**</exclude>
-						<!-- TODO this still leaves some ugly directories in our jar. Anyone 
+						<!-- TODO this still leaves some ugly directories in our jar. Anyone
 							know how to leave out all files and directories in src/test/resources? -->
 					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<!-- The Source Plugin creates a jar archive of the source files of the 
+				<!-- The Source Plugin creates a jar archive of the source files of the
 					current project. -->
 				<version>2.1.2</version>
 				<executions>
@@ -211,7 +211,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this 
+			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
 				out if your build is failing because you don't have enough. -->
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -292,7 +292,7 @@
 					<include>xhtmlrenderer.conf</include>
 				</includes>
 			</resource>
-			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude> 
+			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
 				</excludes> </resource> -->
 		</resources>
 	</build>
@@ -329,45 +329,45 @@
 		</plugins>
 	</reporting>
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.2.2</version>
 		</dependency>
-	
 
-		<!--  To use MOXy, uncomment this and the EclipseLink repo, and run ant JAXB-use-MOXy  
-		
+
+		<!--  To use MOXy, uncomment this and the EclipseLink repo, and run ant JAXB-use-MOXy
+
 		      Please note that we are waiting for 2.4.2 to hit Maven, since 2.4.1 has
 		      some issues.
-		      
+
 		      See further http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html
-		
+
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.moxy</artifactId>
 			<version>2.4.1</version>
-		</dependency>	
+		</dependency>
 		-->
 		<dependency>
 		  <groupId>javax.mail</groupId>
 		  <artifactId>mail</artifactId>
-		  <version>1.4</version>		
-		</dependency>	
-	  
-		  <!--  Uncomment this if you are using Java 5.  
-		  		
+		  <version>1.4</version>
+		</dependency>
+
+		  <!--  Uncomment this if you are using Java 5.
+
 		  		StAX reference implementation,
 		        required for MLInputFactory.newInstance() in Differencer
-		        iff you are using Java 1.5  
-		        (not necessary for Java 6) 
+		        iff you are using Java 1.5
+		        (not necessary for Java 6)
 		        -->
-			        <!-- 
+			        <!--
    			<dependency>
 			  <groupId>stax</groupId>
 			  <artifactId>stax</artifactId>
-			  <version>1.2.0</version>	
+			  <version>1.2.0</version>
 				<exclusions>
 					<exclusion>
 					<groupId>stax</groupId>
@@ -377,7 +377,7 @@
    			</dependency>  -->
 			<!--  stax 1.2.0 grabs 1.0.1(!); jaxb would grab 1.0.2 (where from?) -->
 
-<!-- Uncomment this for Java 5	
+<!-- Uncomment this for Java 5
    			<dependency>
    				<groupId>javax.xml.bind</groupId>
    				<artifactId>jaxb-api</artifactId>
@@ -386,11 +386,11 @@
    			<dependency>
    				<groupId>com.sun.xml.bind</groupId>
    				<artifactId>jaxb-impl</artifactId>
-   				<version>2.1.3</version> 
-   				
+   				<version>2.1.3</version>
+
    			</dependency>
-  -->   
-			  
+  -->
+
    			<!--  nothing newer in the repository! -->
 
 
@@ -404,13 +404,13 @@
 			<artifactId>xslfo</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
- -->	
+ -->
 
 		<!--  New for docx4j 2.8.0 -->
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>xhtmlrenderer</artifactId><!--  supports xhtml import -->
-			<version>1.0.1-SNAPSHOT</version> 
+			<version>1.0.1-SNAPSHOT</version>
 			<!-- currently itext is required (fonts for width calculations)
 				<exclusions>
 					<exclusion>
@@ -435,9 +435,16 @@
 			<artifactId>jaxb-xmldsig-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!--  End of new 2.8.0 new dependencies -->
-	
+
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -459,14 +466,14 @@
 						<groupId>com.sun.jmx</groupId>
 						<artifactId>jmxri</artifactId>
 					</exclusion>
-				</exclusions>			
+				</exclusions>
 		</dependency>
 		<dependency>
 			<!--  required for our diffx -->
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.4</version>
-		</dependency>				
+		</dependency>
 		<dependency>
 			<!-- required for fop, xmlgraphics-commons;
 			     list it explicitly, so dependencies can be excluded. -->
@@ -475,7 +482,7 @@
 			<version>1.1.1</version>
 			<!-- These are required for commons-logging 1.1, otherwise these unwanted dependencies are included.
 				See http://raibledesigns.com/rd/entry/maven_2_hates_commons_logging
-				
+
 				<exclusions>
 				<exclusion>
 				<groupId>log4j</groupId>
@@ -502,25 +509,12 @@
 			<version>1.3</version>
 		</dependency>
 
-		<dependency>
+	<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>1.3.1</version>
 		</dependency>
 
-<!-- To use a version of FOP more recent than 1.1
-     (eg built from source), comment out  
-     xmlgraphics-commons:1.5 and fop below,
-     and add the following classes to your
-     class path:
-     
-           http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/batik-all-1.7.jar
-           (there is probably something in maven
-     
-     	   http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/xmlgraphics-commons-svn-trunk.jar
-     	   
-     	   
-      
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
 		<artifactId>xmlgraphics-commons</artifactId>
@@ -539,9 +533,17 @@
 				<artifactId>avalon-framework-impl</artifactId>
 				<groupId>org.apache.avalon.framework</groupId>
 			</exclusion>
+			<exclusion>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis-ext</artifactId>
+			</exclusion>
 		</exclusions>
 	</dependency>
-	 -->
+	
 	<!-- these two are to correct issues in fop dependency -->
 	<dependency>
 		<groupId>org.apache.avalon.framework</groupId>
@@ -557,16 +559,20 @@
 		<groupId>xalan</groupId>
 		<artifactId>xalan</artifactId>
 		<version>2.7.1</version>
-		<!-- may not be needed, but don't exclude <exclusions> <exclusion> <groupId>xml-apis</groupId> 
-			<artifactId>xml-apis</artifactId> </exclusion> </exclusions> -->
+		<exclusions>
+			<exclusion>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+			</exclusion>
+		</exclusions>
 	</dependency>
 
 <!-- These work for basic marshalling/unmarshalling,
-     but not with our XSLT extension functions. 	
+     but not with our XSLT extension functions.
 <dependency>
     <groupId>net.sf.saxon</groupId>
     <artifactId>saxon</artifactId>
-    <version>8.7</version> 
+    <version>8.7</version>
 </dependency>
 <dependency>
     <groupId>net.sf.saxon</groupId>
@@ -574,7 +580,7 @@
     <version>8.7</version>
 </dependency>
 -->
-		
+
 <dependency>
     <groupId>net.arnx</groupId>
     <artifactId>wmf2svg</artifactId>
@@ -591,15 +597,15 @@
 		     even if the user has just one.
 		     NB: this (or an added source location containing them) is
 		     necessary (at least for Maven 2.2.1) since without this,
-		     Maven doesn't find the Java 6 copy in rt.jar -->  
+		     Maven doesn't find the Java 6 copy in rt.jar -->
 		<dependency>
 		    <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
 		    <artifactId>JAXBNamespacePrefixMapper</artifactId>
 		    <version>2.2.4</version>
-   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->    	
-   			<scope>provided</scope>			
-   		</dependency> 
-		
+   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->
+   			<scope>provided</scope>
+   		</dependency>
+
 		<dependency>
     		<groupId>org.antlr</groupId>
     		<artifactId>antlr-runtime</artifactId>
@@ -617,23 +623,23 @@
 			<version>4.8</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 <!-- Uncomment for load/save via JCR, which
-		may be found in docx4j-extras.		
+		may be found in docx4j-extras.
 		<dependency>
 			<groupId>javax.jcr</groupId>
 			<artifactId>jcr</artifactId>
 			<version>1.0</version>
 		</dependency>
 		-->
- 
-		
+
+
 <!--	Uncomment for the PDF conversion via HTML or iText, which
 		may be found in docx4j-extras.
-		
+
 		If you are planning to use that, you'll also want to uncomment
-		the BaseFont stuff in PhysicalFonts. 	
-		
+		the BaseFont stuff in PhysicalFonts.
+
  		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext-unsigned</artifactId>
@@ -649,12 +655,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	-->	
+	-->
 
 
 <!-- Uncomment for the PDF conversion via HTML, which
 		may be found in docx4j-extras.
-		 
+
 		<dependency>
 			<groupId>pdf-renderer</groupId>
 			<artifactId>pdf-renderer</artifactId>
@@ -670,49 +676,49 @@
 			<groupId>xhtmlrenderer</groupId>
 			<artifactId>core-renderer</artifactId>
 			<version>R8pre2</version>
-		</dependency> 
+		</dependency>
  -->
 
 
- 
+
 		<!-- if you want to use the vfs stuff in docx4j-extras, you'll need commons-vfs
 		     (one of the two versions below), and jdom.
-		
- 			 required by commons-vfs; 
-			 TODO that POM should declare this.  
+
+ 			 required by commons-vfs;
+			 TODO that POM should declare this.
 			<dependency>
 				<groupId>jdom</groupId>
 				<artifactId>jdom</artifactId>
 				<version>1.0</version>
-			</dependency>		
-		
+			</dependency>
+
 			<dependency>
 			    <groupId>commons-vfs</groupId>
 			    <artifactId>commons-vfs</artifactId>
 			    <version>1.0</version>
-			</dependency>		
-		
+			</dependency>
+
 			This patched version of VFS is required for WebDAV
-		
-		     In the meantime, this may be found in 
+
+		     In the meantime, this may be found in
 		     https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2/org/apache/commons/commons-vfs-patched/
-		      			
+
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-vfs-patched</artifactId>
-				<version>1.9.1</version> 
+				<version>1.9.1</version>
 			</dependency>
 		-->
-		
-		
-  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 
-			
-			(stuff not available in public repositories) 
-						 
+
+
+  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+
+			(stuff not available in public repositories)
+
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-			
+
 		-->
-		
+
 	</dependencies>
 
 <repositories>
@@ -722,7 +728,7 @@
   </repository>
 </repositories>
     <!-- note that ampersands in this URL are escaped because this is in an xml file -
-            un-escape them to use in browser 
+            un-escape them to use in browser
      -->
 
 	<profiles> <!--  use -P eg mvn -Psign-artifacts  -->
@@ -747,7 +753,7 @@
 				</plugins>
 			</build>
 		</profile>
-		
+
    		<!--  comment this out, until the Windows path issues below are fixed in m2eclipse
    	<profile>
    		<id>jdk15</id>
@@ -791,17 +797,17 @@
                     /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
                 </systemPath>
    					Note for Windows users: Maven won't find rt.jar if systemPath
-   					contains a space (eg "Program Files"). Either copy rt.jar 
+   					contains a space (eg "Program Files"). Either copy rt.jar
    					to a path that doesn't contain spaces, or use:
-   					
+
    					    <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
-   					
-   					which works on the command line, but not in m2eclipse 0.9.x. 
+
+   					which works on the command line, but not in m2eclipse 0.9.x.
    					See http://jira.codehaus.org/browse/MNGECLIPSE-581
-   					
+
    					<systemPath>${java.home}/lib/rt.jar</systemPath>
-   					broken (mvn 2.0.9) even though java.home is supposed to point to JRE_HOME: 
-   					
+   					broken (mvn 2.0.9) even though java.home is supposed to point to JRE_HOME:
+
    				-->
-	
+
 </project>

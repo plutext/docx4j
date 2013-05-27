@@ -1,7 +1,16 @@
+/*
+ * This file is part of the DiffX library.
+ *
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
+ */
 package com.topologi.diffx.sequence;
 
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Provides a mapping of namespace URIs to prefixes.
@@ -11,23 +20,25 @@ import java.util.Hashtable;
  * <p>Note that for each namespace URI there can only be one prefix.
  * 
  * @author Christophe Lauret
- * @version 14 March 2005
+ * @version 12 May 2010
+ * 
+ * @since 0.7
  */
 public final class PrefixMapping {
 
   /**
    * Maps namespace URIs to prefixes.
    */
-  private final Hashtable mappings = new Hashtable();
+  private final Map<String, String> mappings = new HashMap<String, String>();
 
   /**
-   * Add the specified mapping if the namespace URI has not beem mapped before.
+   * Add the specified mapping if the namespace URI has not been mapped before.
    * 
-   * <p>This method will garantee that the mapping is actually unique, that is that
+   * <p>This method will ensure that the mapping is actually unique, that is that
    * the namespace URI correspond to one and only one prefix and that the prefix only
    * corresponds to one and only one namespace URI.
    * 
-   * @param uri    The namespace URI to map. 
+   * @param uri    The namespace URI to map.
    * @param prefix The prefix to use.
    * 
    * @throws NullPointerException if the URI or prefix is <code>null</code>
@@ -36,28 +47,20 @@ public final class PrefixMapping {
     if (!this.mappings.containsKey(uri)) {
       int count = 0;
       String actualPrefix = prefix;
-      while (this.mappings.contains(actualPrefix))
-        actualPrefix = prefix + (count++);  
+      while (this.mappings.containsValue(actualPrefix)) {
+        actualPrefix = prefix + count++;
+      }
       this.mappings.put(uri, actualPrefix);
     }
   }
 
-  public void add(PrefixMapping others) throws NullPointerException {
-
-		String key;
-		for (Enumeration e = others.mappings.keys(); e.hasMoreElements();) {
-			key = (String) e.nextElement();
-			this.mappings.put(key, others.mappings.get(key));
-		}
-	}
-  
   /**
-	 * Returns an enumeration of the namespace URIs used in this mapping.
-	 * 
-	 * @return An enumeration of the namespace URIs used in this mapping.
-	 */
-  public Enumeration getURIs() {
-    return this.mappings.keys();
+   * Returns an enumeration of the namespace URIs used in this mapping.
+   * 
+   * @return An enumeration of the namespace URIs used in this mapping.
+   */
+  public Enumeration<String> getURIs() {
+    return Collections.enumeration(this.mappings.keySet());
   }
 
   /**
@@ -65,10 +68,10 @@ public final class PrefixMapping {
    * 
    * @param uri The namespace URI to map.
    * 
-   * @return The corresponding prefix. 
+   * @return The corresponding prefix.
    */
   public String getPrefix(String uri) {
-    return (String)this.mappings.get(uri);
+    return uri == null? "" : this.mappings.get(uri);
   }
 
 }

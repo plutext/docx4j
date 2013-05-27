@@ -1,107 +1,11 @@
-package com.topologi.diffx.xml;
-
-/* ============================================================================
- * ARTISTIC LICENCE
- * 
- * Preamble
- * 
- * The intent of this document is to state the conditions under which a Package
- * may be copied, such that the Copyright Holder maintains some semblance of 
- * artistic control over the development of the package, while giving the users
- * of the package the right to use and distribute the Package in a more-or-less
- * customary fashion, plus the right to make reasonable modifications.
+/*
+ * This file is part of the DiffX library.
  *
- * Definitions:
- *  - "Package" refers to the collection of files distributed by the Copyright 
- *    Holder, and derivatives of that collection of files created through 
- *    textual modification.
- *  - "Standard Version" refers to such a Package if it has not been modified, 
- *    or has been modified in accordance with the wishes of the Copyright 
- *    Holder.
- *  - "Copyright Holder" is whoever is named in the copyright or copyrights 
- *    for the package.
- *  - "You" is you, if you're thinking about copying or distributing this 
- *    Package.
- *  - "Reasonable copying fee" is whatever you can justify on the basis of 
- *    media cost, duplication charges, time of people involved, and so on. 
- *    (You will not be required to justify it to the Copyright Holder, but only 
- *    to the computing community at large as a market that must bear the fee.)
- *  - "Freely Available" means that no fee is charged for the item itself, 
- *    though there may be fees involved in handling the item. It also means 
- *    that recipients of the item may redistribute it under the same conditions
- *    they received it.
- *
- * 1. You may make and give away verbatim copies of the source form of the 
- *    Standard Version of this Package without restriction, provided that you 
- *    duplicate all of the original copyright notices and associated 
- *    disclaimers.
- *
- * 2. You may apply bug fixes, portability fixes and other modifications 
- *    derived from the Public Domain or from the Copyright Holder. A Package 
- *    modified in such a way shall still be considered the Standard Version.
- *
- * 3. You may otherwise modify your copy of this Package in any way, provided 
- *    that you insert a prominent notice in each changed file stating how and 
- *    when you changed that file, and provided that you do at least ONE of the 
- *    following:
- * 
- *    a) place your modifications in the Public Domain or otherwise make them 
- *       Freely Available, such as by posting said modifications to Usenet or 
- *       an equivalent medium, or placing the modifications on a major archive 
- *       site such as ftp.uu.net, or by allowing the Copyright Holder to 
- *       include your modifications in the Standard Version of the Package.
- * 
- *    b) use the modified Package only within your corporation or organization.
- *
- *    c) rename any non-standard executables so the names do not conflict with 
- *       standard executables, which must also be provided, and provide a 
- *       separate manual page for each non-standard executable that clearly 
- *       documents how it differs from the Standard Version.
- * 
- *    d) make other distribution arrangements with the Copyright Holder.
- *
- * 4. You may distribute the programs of this Package in object code or 
- *    executable form, provided that you do at least ONE of the following:
- * 
- *    a) distribute a Standard Version of the executables and library files, 
- *       together with instructions (in the manual page or equivalent) on where
- *       to get the Standard Version.
- *
- *    b) accompany the distribution with the machine-readable source of the 
- *       Package with your modifications.
- * 
- *    c) accompany any non-standard executables with their corresponding 
- *       Standard Version executables, giving the non-standard executables 
- *       non-standard names, and clearly documenting the differences in manual 
- *       pages (or equivalent), together with instructions on where to get 
- *       the Standard Version.
- *
- *    d) make other distribution arrangements with the Copyright Holder.
- *
- * 5. You may charge a reasonable copying fee for any distribution of this 
- *    Package. You may charge any fee you choose for support of this Package. 
- *    You may not charge a fee for this Package itself. However, you may 
- *    distribute this Package in aggregate with other (possibly commercial) 
- *    programs as part of a larger (possibly commercial) software distribution 
- *    provided that you do not advertise this Package as a product of your own.
- *
- * 6. The scripts and library files supplied as input to or produced as output 
- *    from the programs of this Package do not automatically fall under the 
- *    copyright of this Package, but belong to whomever generated them, and may
- *    be sold commercially, and may be aggregated with this Package.
- *
- * 7. C or perl subroutines supplied by you and linked into this Package shall 
- *    not be considered part of this Package.
- *
- * 8. The name of the Copyright Holder may not be used to endorse or promote 
- *    products derived from this software without specific prior written 
- *    permission.
- * 
- * 9. THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED 
- *    WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF 
- *    MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- * ============================================================================
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
  */
+package com.topologi.diffx.xml;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -114,7 +18,7 @@ import com.topologi.diffx.xml.esc.XMLEscapeWriterUTF8;
  *
  * <p>Provides methods to generate well-formed XML data easily. wrapping a writer.
  *
- * <p>This version only supports utf-8 encoding, if writing to a file make sure that the 
+ * <p>This version only supports utf-8 encoding, if writing to a file make sure that the
  * encoding of the file output stream is "utf-8".
  *
  * <p>The recommended implementation is to use a <code>BufferedWriter</code> to write.
@@ -125,18 +29,9 @@ import com.topologi.diffx.xml.esc.XMLEscapeWriterUTF8;
  * </pre>
  *
  * @author  Christophe Lauret
- * @version 4 April 2005
+ * @version 17 May 2005
  */
 abstract class XMLWriterBase implements XMLWriter {
-
-  /**
-   * Indicates whether the xml should be indented or not.
-   *
-   * <p>The default is <code>true</code> (indented).
-   *
-   * <p>The indentation is 2 white-spaces.
-   */
-  final boolean indent;
 
   /**
    * Where the XML data goes.
@@ -144,14 +39,14 @@ abstract class XMLWriterBase implements XMLWriter {
   final Writer writer;
 
   /**
-   * Encoding of the output xml
+   * Encoding of the output xml.
    */
-  static final String ENCODING = "utf-8";
+  String encoding = "utf-8";
 
   /**
-   * Encoding of the output xml
+   * Encoding of the output xml.
    */
-  final XMLEscapeWriter writerEscape;
+  XMLEscapeWriter writerEscape;
 
   /**
    * Level of the depth of the xml document currently produced.
@@ -160,277 +55,312 @@ abstract class XMLWriterBase implements XMLWriter {
    */
   int depth = 0;
 
-/* ----------------------- constructors ----------------------- */
-
   /**
-   * <p>Create a new XML writer.
+   * Indicates whether the xml should be indented or not.
    *
-   * <p>Sets the depth attribute to 0 and the indentation to <code>true</code>.
+   * <p>The default is <code>true</code> (indented).
    *
-   * @param writer Where this writer should write the XML data.
-   * 
-   * @throws NullPointerException If the writer is <code>null</code>.
+   * <p>The indentation is 2 white-spaces.
    */
-  public XMLWriterBase(Writer writer) throws NullPointerException {
-    this(writer, true);
-  }
+  boolean indent;
 
   /**
-   * <p>Create a new XML writer.
+   * The default indentation spaces used.
+   */
+  private String indentChars = null;
+
+  /**
+   * Flag to indicate that the element open tag is not finished yet.
+   */
+  boolean isNude = false;
+
+  // constructors -------------------------------------------------------------------------
+
+  /**
+   * <p>Creates a new XML writer.
    *
    * @param writer  Where this writer should write the XML data.
    * @param indent  Set the indentation flag.
-   * 
+   *
    * @throws NullPointerException If the writer is <code>null</code>.
    */
   public XMLWriterBase(Writer writer, boolean indent) throws NullPointerException {
-    if (writer == null) 
+    if (writer == null)
       throw new NullPointerException("XMLWriter cannot use a null writer.");
     this.writer = writer;
     this.writerEscape = new XMLEscapeWriterUTF8(writer);
     this.indent = indent;
+    if (indent) {
+      this.indentChars = "  ";
+    }
   }
 
-  // common methods ---------------------------------------------------------------------------
+  // setup methods ------------------------------------------------------------------------
 
   /**
-   * Write the XML declaration.
-   *
-   * <p>Always:
-   * <pre>
-   *   &lt;?xml version="1.0" encoding="<i>encoding</i>"?&gt;
-   * </pre>
-   * followed by a new line character.
-   * 
-   * @throws IOException If thrown by the wrapped writer. 
+   * {@inheritDoc}
    */
+  @Override
   public final void xmlDecl() throws IOException {
-    this.writer.write("<?xml version=\"1.0\" encoding=\""+ENCODING+"\"?>\n");
+    this.writer.write("<?xml version=\"1.0\" encoding=\""+this.encoding+"\"?>");
+    if (this.indent) {
+      this.writer.write('\n');
+    }
   }
 
   /**
-   * Write the given text correctly for the encoding of this document.
-   *
-   * <p>This method turn the string into an array of chars.
-   *
-   * <p>Do nothing if the text is <code>null</code> or empty string.
-   *
-   * @see XMLEscapeWriter#writeText(String)
-   *
-   * @param text The text to write
-   *
-   * @throws IOException If thrown by the wrapped writer. 
+   * {@inheritDoc}
    */
-  public void writeText(String text) throws IOException {
-    writerEscape.writeText(text);
+  @Override
+  public final void setIndentChars(String spaces) throws IllegalStateException, IllegalArgumentException {
+    if (this.depth != 0)
+      throw new IllegalStateException("To late to set the indentation characters!");
+    // check that this is a valid indentation string
+    if (spaces != null) {
+      for (int i = 0; i < spaces.length(); i++) {
+        if (!Character.isSpaceChar(spaces.charAt(i)))
+          throw new IllegalArgumentException("Not a valid indentation string.");
+      }
+    }
+    // update the flags
+    this.indentChars = spaces;
+    this.indent = spaces != null;
   }
 
   /**
-   * Write the given text correctly for the encoding of this
-   * document.
+   * Sets the encoding to use.
    *
-   * <p>This method turn the string into an array of chars.
+   * <p>The encoding must match the encoding used if there is an underlying
+   * <code>OutputStreamWriter</code>.
    *
-   * @see #writeChar
+   * @param encoding The encoding to use.
    *
-   * @param text The text to write
-   * @param off  The offset
-   * @param len  The length to be written
-   * 
-   * @throws IOException If thrown by the wrapped writer.
+   * @throws IllegalArgumentException If the encoding is not valid.
+   * @throws IllegalStateException    If the writer has already been used.
    */
-  public void writeText(char[] text, int off, int len) throws IOException {
-    for (int i = off; i < (off+len); i++)
-      writeChar(text[i]);
+  public final void setEncoding(String encoding) throws IllegalStateException, IllegalArgumentException {
+    if (this.depth != 0)
+      throw new IllegalStateException("To late to set the encoding!");
+    this.encoding = encoding;
   }
 
+  // Write text methods
+  // ----------------------------------------------------------------------------------------------
+
   /**
-   * @see com.topologi.diffx.xml.XMLWriter#writeXML(java.lang.String)
+   * {@inheritDoc}
    */
-  public void writeXML(String text) throws IOException {
-    this.writer.write(text);
+  @Override
+  public final void writeText(String text) throws IOException {
+    if (text == null) return;
+    deNude();
+    this.writerEscape.writeText(text);
   }
 
   /**
-   * @see com.topologi.diffx.xml.XMLWriter#writeXML(char[], int, int)
+   * {@inheritDoc}
    */
-  public void writeXML(char[] text, int off, int len) throws IOException {
-    this.writer.write(text, off, len);
+  @Override
+  public final void writeText(char[] text, int off, int len) throws IOException {
+    deNude();
+    this.writerEscape.writeText(text, off, len);
   }
 
   /**
-   * Write the given character correctly.
-   *
-   * <ul>
-   *   <li>'&lt;' escaped as '&amp;lt;'
-   *   <li>'&gt;' escaped as '&amp;gt;'
-   *   <li>'&amp;' escaped as '&amp;amp;'
-   *   <li>Characters above 255 escaped as a character 
-   *       reference &#<i>decimal_value</i>;
-   *   <li>Control Characters 0 (less than 0x20) ignored,
-   *       except line feed, carriage return and tabulations.
-   *   <li>Control Characters 1 (between 0x80 and 0x9f) ignored.
-   *   <li>Backspace character 0x7f ignored.
-   *  </ul>
-   *
-   * @param c the character to write
-   * 
-   * @throws IOException If thrown by the wrapped writer.
+   * {@inheritDoc}
    */
-  public void writeChar(char c) throws IOException {
-    writerEscape.writeText(c);
+  @Override
+  public final void writeText(char c) throws IOException {
+    deNude();
+    this.writerEscape.writeText(c);
   }
 
   /**
-   * Write the string value of an object.
+   * Writes the string value of an object.
    *
-   * <p>Do nothing if the object is <code>null</code>.
+   * <p>Does nothing if the object is <code>null</code>.
    *
    * @see Object#toString
    * @see #writeText(java.lang.String)
    *
    * @param o The object that should be written as text.
-   * 
+   *
    * @throws IOException If thrown by the wrapped writer.
    */
   public final void writeText(Object o) throws IOException {
-    if (o != null)
+    // TODO: what about an XML serializable ???
+    // TODO: Add to interface ???
+    if (o != null) {
       this.writeText(o.toString());
+    }
+  }
+
+  // Write XML methods
+  // ----------------------------------------------------------------------------------------------
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final void writeXML(String text) throws IOException {
+    if (text == null) return;
+    deNude();
+    this.writer.write(text);
   }
 
   /**
-   * Write an XML comment.
-   *
-   * <p>An XML comment is:<br>
-   * <pre>
-   *   &lt;!-- <i>comment</i> --&gt;
-   * </pre>
-   *
-   * <p>Comments are not indented.
-   *
-   * @param comment the comment to be written
-   * 
-   * @throws IOException If thrown by the wrapped writer.
-   * @throws IllegalArgumentException If the comment contains "--".
+   * {@inheritDoc}
    */
-  public void writeComment(String comment) throws IOException, IllegalArgumentException {
-    if (comment != null && comment.indexOf("--") >= 0)
-      throw new IllegalArgumentException("A comment should not contain '--'.");
-    if (indent) this.writer.write('\n');
+  @Override
+  public final void writeXML(char[] text, int off, int len) throws IOException {
+    deNude();
+    this.writer.write(text, off, len);
+  }
+
+  // Processing Instructions, CDATA sections and comments
+  // ----------------------------------------------------------------------------------------------
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final void writeComment(String comment) throws IOException, IllegalArgumentException {
+    if (comment == null)
+      return;
+    if (comment.indexOf("--") >= 0)
+      throw new IllegalArgumentException("A comment must not contain '--'.");
+    deNude();
     this.writer.write("<!-- ");
     this.writer.write(comment);
     this.writer.write(" -->");
-    if (indent) this.writer.write('\n');
+    if (this.indent) {
+      this.writer.write('\n');
+    }
   }
 
   /**
-   * Writes an XML processing instruction.
-   *
-   * <p>An XML processing intruction is:<br>
-   * <pre>
-   *   &lt;?<i>target</i> <i>data</i>?&gt;
-   * </pre>
-   *
-   * @param target The PI's target.
-   * @param data   The PI's data.
-   * 
-   * @throws IOException If an I/O exception is occurs.
+   * {@inheritDoc}
    */
-  public void writePI(String target, String data) throws IOException {
+  @Override
+  public final void writePI(String target, String data) throws IOException {
+    deNude();
     this.writer.write("<?");
     this.writer.write(target);
     this.writer.write(' ');
     this.writer.write(data);
     this.writer.write("?>");
-    if (indent) this.writer.write('\n');
+    if (this.indent) {
+      this.writer.write('\n');
+    }
   }
 
   /**
-   * Insert spaces depending on the depth and if the <code>indent</code> flag
-   * is set to true.
-   *
-   * <p>Insert two spaces per level of depth.
-   * 
-   * @throws IOException If thrown by the wrapped writer.
+   * {@inheritDoc}
    */
-  void indent() throws IOException {
-    // TODO: allow different indent style
-    if (indent) for (int i = 0; i < depth; i++) this.writer.write("  ");
+  @Override
+  public final void writeCDATA(String data) throws IOException {
+    if (data == null) return;
+    final String end = "]]>";
+    if (data.indexOf(end) >= 0)
+      throw new IllegalArgumentException("CDATA sections must not contain \']]>\'");
+    deNude();
+    this.writer.write("<![CDATA[");
+    this.writer.write(data);
+    this.writer.write(end);
   }
 
-  // open/close specific elements -------------------------------------------------------------
+  // Attribute methods
+  // ----------------------------------------------------------------------------------------------
 
   /**
-   * Opens element, inserts text node and closes.
-   * 
-   * <p>The same as:
-   * <pre>
-   *   openElement(name);
-   *   writeText(text);
-   *   closeElement();
-   * </pre>
-   *
-   * @param name The name of the element
-   * @param text The text of the element
-   * 
-   * @throws IOException If thrown by the wrapped writer.
+   * {@inheritDoc}
    */
+  @Override
+  public final void attribute(String name, String value)
+      throws IOException {
+    if (!this.isNude) throw new IllegalStateException("Cannot write attribute: too late!");
+    this.writer.write(' ');
+    this.writer.write(name);
+    this.writer.write('=');
+    this.writer.write('"');
+    this.writerEscape.writeAttValue(value);
+    this.writer.write('"');
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public final void attribute(String name, int value)
+      throws IOException {
+    if (!this.isNude) throw new IllegalStateException("Cannot write attribute: too late!");
+    this.writer.write(' ');
+    this.writer.write(name);
+    this.writer.write('=');
+    this.writer.write('"');
+    this.writer.write(Integer.toString(value));
+    this.writer.write('"');
+  }
+
+  // Open/close specific elements
+  // ----------------------------------------------------------------------------------------------
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void element(String name, String text) throws IOException {
     this.openElement(name);
     this.writeText(text);
-    this.closeElement();
+    closeElement();
   }
 
-  // direct access to the writer --------------------------------------------------------------
+  // Direct access to the writer
+  // ----------------------------------------------------------------------------------------------
 
   /**
-   * Write the given string directly.
-   *
-   * @param s the string to write
-   * 
-   * @throws IOException If thrown by the wrapped writer.
+   * {@inheritDoc}
    */
-  public final void write(String s) throws IOException {
-    this.writer.write(s);
-  }
-
-  /**
-   * Write the given character directly.
-   *
-   * @param c the character to write
-   *
-   * @throws IOException If thrown by the wrapped writer.
-   */
-  public final void write(char c) throws IOException {
-    this.writer.write(c);
-  }
-
-  /**
-   * Flush the writer.
-   * 
-   * @throws IOException If thrown by the wrapped writer.
-   */
+  @Override
   public final void flush() throws IOException {
     this.writer.flush();
   }
 
+  // Base class and convenience methods
+  // ----------------------------------------------------------------------------------------------
+
   /**
-   * Close the writer.
-   * 
+   * Writes the end of the open element tag.
+   *
+   * <p>After this method is invoked it is not possible to write attributes
+   * for an element.
+   *
    * @throws IOException If thrown by the wrapped writer.
    */
-  public final void close() throws IOException {
-    this.writer.close();
+  abstract void deNude() throws IOException;
+
+  /**
+   * Insert the correct amount of space characterss depending on the depth and if
+   * the <code>indent</code> flag is set to <code>true</code>.
+   *
+   * @throws IOException If thrown by the wrapped writer.
+   */
+  void indent() throws IOException {
+    if (this.indent) {
+      for (int i = 0; i < this.depth; i++) {
+        this.writer.write(this.indentChars);
+      }
+    }
   }
 
   /**
    * Does nothing.
-   * 
+   *
    * <p>This method exists so that we can explicitly say that we should do nothing
-   * in certain conditions. 
+   * in certain conditions.
    */
   static final void doNothing() {
-  	return;
+    return;
   }
 
 }
