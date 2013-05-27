@@ -330,12 +330,13 @@
 	</reporting>
 	<dependencies>
 	
+	<!-- 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.2.2</version>
 		</dependency>
-	
+	 -->
 
 		<!--  To use MOXy, uncomment this and the EclipseLink repo, and run ant JAXB-use-MOXy  
 		
@@ -518,7 +519,7 @@
            (there is probably something in maven
      
      	   http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/xmlgraphics-commons-svn-trunk.jar
-     	   
+     	-->   
      	   
       
 	<dependency>
@@ -541,7 +542,7 @@
 			</exclusion>
 		</exclusions>
 	</dependency>
-	 -->
+	 
 	<!-- these two are to correct issues in fop dependency -->
 	<dependency>
 		<groupId>org.apache.avalon.framework</groupId>

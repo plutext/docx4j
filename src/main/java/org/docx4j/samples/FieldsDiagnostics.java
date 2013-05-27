@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
-import org.docx4j.model.fields.FieldLocator;
+import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -71,7 +71,7 @@ public class FieldsDiagnostics {
 		
 		
 		// find fields
-		FieldLocator fl = new FieldLocator();
+		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(contentList, fl);
 		log.info("Found " + fl.getStarts().size() + " paragraphs containing the following fields: ");
 		

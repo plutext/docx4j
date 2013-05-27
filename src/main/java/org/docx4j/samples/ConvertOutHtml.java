@@ -23,7 +23,6 @@ package org.docx4j.samples;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.convert.out.html.SdtWriter;
@@ -48,8 +47,8 @@ public class ConvertOutHtml extends AbstractSample {
 	
 	// Config for non-command line version
 	static {
-		
-    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
+	
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 		
 		save = true;
 	}
@@ -77,8 +76,8 @@ public class ConvertOutHtml extends AbstractSample {
     	htmlSettings.setImageTargetUri(inputfilepath.substring(inputfilepath.lastIndexOf("/")+1) 
     			+ "_files");
     	
-    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
-    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
+//    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
+//    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
 		
 		// Sample sdt tag handler (tag handlers insert specific
 		// html depending on the contents of an sdt's tag).  
@@ -86,8 +85,8 @@ public class ConvertOutHtml extends AbstractSample {
 		// the string @class=XXX
 //			SdtWriter.registerTagHandler("@class", new TagClass() );
 		
-		SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox() );
-		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
+//		SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox() );
+//		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
 		
 		// exporter writes to a Result object.		
 		OutputStream os; 
