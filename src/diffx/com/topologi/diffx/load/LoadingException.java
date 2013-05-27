@@ -1,14 +1,26 @@
+/*
+ * This file is part of the DiffX library.
+ *
+ * For licensing information please see the file license.txt included in the release.
+ * A copy of this licence can also be found at
+ *   http://www.opensource.org/licenses/artistic-license-2.0.php
+ */
 package com.topologi.diffx.load;
 
 import com.topologi.diffx.DiffXException;
 
 /**
- * Class of exceptions occuring when trying to load data for Diff-X.
+ * Class of exceptions occurring when trying to load data for Diff-X.
  * 
  * @author Christophe Lauret
- * @version 3 February 2005
+ * @version 14 May 2005
  */
 public final class LoadingException extends DiffXException {
+
+  /**
+   * Version number for the serialised class.
+   */
+  private static final long serialVersionUID = -5026953481292613087L;
 
   /**
    * Creates a new Loading exception.
@@ -27,7 +39,7 @@ public final class LoadingException extends DiffXException {
   }
 
   /**
-   * Creates a new loading exception wrapping an occuring exception.
+   * Creates a new loading exception wrapping an occurring exception.
    * 
    * @param ex The exception to be wrapped.
    */
@@ -36,7 +48,7 @@ public final class LoadingException extends DiffXException {
   }
 
   /**
-   * Creates a new loading exception wrapping an occuring exception.
+   * Creates a new loading exception wrapping an occurring exception.
    * 
    * @param message The message explaining the exception.
    * @param ex The exception to be wrapped.
