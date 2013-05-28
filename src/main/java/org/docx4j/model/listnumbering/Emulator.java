@@ -281,7 +281,12 @@ public class Emulator {
 			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
-			log.error("Couldn't find list " + numId);
+			if (numId.equals("0")) {
+				// By convention, in Word this generally means turn off numbering
+				log.debug("Couldn't find list " + numId);
+			} else {
+				log.warn("Couldn't find list " + numId);
+			}
 			
 		} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 				levelId)){
