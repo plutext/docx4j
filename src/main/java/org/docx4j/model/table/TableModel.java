@@ -51,6 +51,7 @@ import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner.GridSpan;
 import org.docx4j.wml.TcPrInner.VMerge;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -309,6 +310,8 @@ public class TableModel extends Model {
 		TrFinder trFinder = new TrFinder();
 		new TraversalUtil(tbl, trFinder);
 		
+		ensureFoTableBody(trFinder.trList); // this is currently applied to HTML etc as well
+		
 		int r = 0;
 		for (Tr tr : trFinder.trList) {
 				startRow(tr);
@@ -324,6 +327,67 @@ public class TableModel extends Model {
 		}
 		
 		width = calcTableWidth();
+	}
+	
+	/**
+	 * "fo:table" content model is: (marker*,table-column*,table-header?,table-footer?,table-body+)
+	 * ie table-header (if any) must precede table-body
+	 * 
+	 * The first requirement is that there is a table-body. Since the docx format doesn't
+	 * have any equivalent to table-footer, we can always treat the last row as table-body.
+	 * 
+	 * The second requirement is that there is no table-header after table-body.
+	 * We could either treat each t-h after a t-b as t-b,
+	 * or we could treat all t-b before t-h as t-h.  
+	 * 
+	 * If the docx has normal rows before the a t-h row, the user should split the table into 
+	 * two.  Since they can do that, we'll treat all rows before last t-h row as t-h rows
+	 * 
+	 */
+	private void ensureFoTableBody(List<Tr> rows) {
+		
+		int numRows = rows.size();
+		
+		if (numRows==0) {
+			log.warn("Encountered table with no rows");
+			return;
+		}
+		
+		// Req 1: Make sure the last row is not a header row
+		Tr lastRow = rows.get(numRows-1);
+		if (isHeaderRow(lastRow)) {
+			List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = lastRow.getTrPr().getCnfStyleOrDivIdOrGridBefore();
+			JAXBElement tblHeader = getElement(cnfStyleOrDivIdOrGridBefore, "tblHeader");
+			cnfStyleOrDivIdOrGridBefore.remove(tblHeader);
+		}
+		
+		// Req 2: All rows before last header row become header rows
+		// .. find last header row
+		int indexOfLastHeaderRow=-1;
+		for (int i = rows.size(); i>0; i--) {
+			Tr tr = rows.get(i-1);
+			if (isHeaderRow(tr)) {
+				indexOfLastHeaderRow = i-1;
+				break;
+			}
+		}
+		// .. now convert all rows up to that one
+		for (int i = 0; i<indexOfLastHeaderRow; i++) {
+			Tr tr = rows.get(i);
+			if (!isHeaderRow(tr)) {
+				// make it so...
+				TrPr trpr = null;
+				if (tr.getTrPr() == null) {
+					trpr = Context.getWmlObjectFactory().createTrPr(); 
+				    tr.setTrPr(trpr); 
+				}
+		        // Create object for tblHeader (wrapped in JAXBElement) 
+		        BooleanDefaultTrue booleandefaulttrue = Context.getWmlObjectFactory().createBooleanDefaultTrue(); 
+		        JAXBElement<org.docx4j.wml.BooleanDefaultTrue> booleandefaulttrueWrapped 
+		        	= Context.getWmlObjectFactory().createCTTrPrBaseTblHeader(booleandefaulttrue); 
+		        trpr.getCnfStyleOrDivIdOrGridBefore().add( booleandefaulttrueWrapped); 					
+			}
+		}
 	}
 	
 	static class TrFinder extends CallbackImpl {
@@ -531,7 +595,7 @@ public class TableModel extends Model {
 				&& tr.getTblPrEx().getTblCellSpacing() != null) {
 			borderConflictResolutionRequired = false;
 		}
-		
+				
 		if (headerRow && (headerMaxRow < r)) {
 			headerMaxRow = r;
 		}
@@ -570,9 +634,10 @@ public class TableModel extends Model {
 	}
 	
 	protected boolean isHeaderRow(Tr tr) {
-	List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
-	JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "tblHeader");
-	BooleanDefaultTrue boolVal = (element != null ? (BooleanDefaultTrue)element.getValue() : null);
+		
+		List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
+		JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "tblHeader");
+		BooleanDefaultTrue boolVal = (element != null ? (BooleanDefaultTrue)element.getValue() : null);
 		return (boolVal != null ? boolVal.isVal() : false);
 	}
 	
