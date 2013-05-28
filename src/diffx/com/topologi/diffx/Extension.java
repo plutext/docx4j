@@ -154,8 +154,13 @@ public final class Extension {
    * @return the corresponding document node.
    */
   private static Node toNode(String xml, DiffXConfig config, String factory) throws IOException, ParserConfigurationException, SAXException {
-    DocumentBuilderFactory dbFactory = factory == null ? DocumentBuilderFactory.newInstance()
-        : DocumentBuilderFactory.newInstance(factory, Extension.class.getClassLoader());
+	  
+//    DocumentBuilderFactory dbFactory = factory == null ? DocumentBuilderFactory.newInstance()
+//        : DocumentBuilderFactory.newInstance(factory, Extension.class.getClassLoader());  
+    
+	// Avoid build error - see https://code.google.com/p/wo-diffx/issues/detail?id=7  
+    DocumentBuilderFactory dbFactory =  DocumentBuilderFactory.newInstance();
+    
     dbFactory.setNamespaceAware(config.isNamespaceAware());
     dbFactory.setExpandEntityReferences(true);
     dbFactory.setValidating(false);
