@@ -24,6 +24,9 @@ package org.docx4j.model.datastorage.migration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -94,107 +97,126 @@ public class VariablePrepare {
 		log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
 	}
 	
+    private final static QName _RT_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t");
+    
+//	public static void main(String[] args) throws Exception {
+//
+//		String inputfilepath = System.getProperty("user.dir") + "/absoluteAnchor.docx";
+//		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+//		P p = (P)wmlPackage.getMainDocumentPart().getContent().get(2);
+//		System.out.println(XmlUtils.marshaltoString(p, true, true));
+//		joinupRuns(p);
+//		System.out.println(XmlUtils.marshaltoString(p, true, true));
+//	}
+//	
+	
+	public static void joinupRuns(P p) {
+
+		List<Object> existingContents = p.getContent();
+		List<Object> newContents = new ArrayList<Object>();
+		
+		R currentR = null;
+		String currentRPrString = null;
+		
+		// First join up runs with same run properties
+		for (Object o : existingContents) {
+			
+			if (o instanceof R) {
+				
+				if (currentR==null) { // first object, or after something not a run
+					currentR=(R)o;
+					if (currentR.getRPr()!=null) {
+						currentRPrString = XmlUtils.marshaltoString(currentR.getRPr(), true);
+					}
+					newContents.add(currentR);
+				} else {
+					RPr other = ((R)o).getRPr();
+					
+					boolean makeNewRun = true; // unless proven otherwise
+					
+					if (currentRPrString==null && other==null) makeNewRun=false;
+					if (currentRPrString!=null && other!=null) {
+						// Simple minded notion of equality
+						if ( XmlUtils.marshaltoString(other, true).equals(currentRPrString) )  makeNewRun=false; 
+					}
+					
+					if (makeNewRun) {
+						currentR=(R)o;
+						if (currentR.getRPr()==null) {
+							currentRPrString = null;
+						} else {
+							currentRPrString = XmlUtils.marshaltoString(currentR.getRPr(), true);
+						}
+						newContents.add(currentR);
+					} else {
+						currentR.getContent().addAll( ((R)o).getContent() );
+					}
+				}
+				
+			} else {
+				// not a run (eg w:ins) .. just add it and move on
+				newContents.add(o);
+				currentR = null;
+				currentRPrString = null;
+			}
+			
+		}
+				
+		// Now, in each run, join up adjacent text nodes
+		for (Object o : newContents) {
+			
+			if (o instanceof R) {
+				
+				List<Object> newRunContents = new ArrayList<Object>();	
+				JAXBElement currentT = null;
+				for ( Object rc : ((R)o).getContent() ) {
+					
+					if (rc instanceof JAXBElement
+							&& ((JAXBElement)rc).getName().equals(_RT_QNAME)) {
+						
+						if (currentT==null) { // first object, or after something not a w:t
+							currentT=(JAXBElement)rc;
+							newRunContents.add(currentT);
+						} else {
+							Text currentText = (Text)XmlUtils.unwrap(currentT);
+							String val = currentText.getValue();
+							
+							currentText.setValue(val + ((Text)XmlUtils.unwrap(rc)).getValue() );								
+						}
+						
+						// <w:t xml:space="preserve">
+						if (((Text)XmlUtils.unwrap(rc)).getSpace()!=null
+								&& ((Text)XmlUtils.unwrap(rc)).getSpace().equals("preserve")) { // any of them
+							((Text)XmlUtils.unwrap(currentT)).setSpace("preserve");
+						}
+						
+					} else {
+						log.debug(rc.getClass().getName());
+						// not text .. just add it and move on
+						newRunContents.add(rc);
+						currentT = null;
+					}
+				
+				}
+				
+				((R)o).getContent().clear();
+				((R)o).getContent().addAll(newRunContents);
+				
+			}
+		
+		}
+		
+		// Now replace w:p contents
+		p.getContent().clear();
+		p.getContent().addAll(newContents);
+		
+	}
 
 	public static class TraversalUtilParagraphVisitor extends TraversalUtilVisitor<P> {
 		
 		@Override
 		public void apply(P p, Object parent, List<Object> siblings) {
-			
-			List<Object> existingContents = p.getContent();
-			List<Object> newContents = new ArrayList<Object>();
-			
-			R currentR = null;
-			String currentRPrString = null;
-			
-			// First join up runs with same run properties
-			for (Object o : existingContents) {
-				
-				if (o instanceof R) {
-					
-					if (currentR==null) { // first object, or after something not a run
-						currentR=(R)o;
-						if (currentR.getRPr()!=null) {
-							currentRPrString = XmlUtils.marshaltoString(currentR.getRPr(), true);
-						}
-						newContents.add(currentR);
-					} else {
-						RPr other = ((R)o).getRPr();
-						
-						boolean makeNewRun = true; // unless proven otherwise
-						
-						if (currentRPrString==null && other==null) makeNewRun=false;
-						if (currentRPrString!=null && other!=null) {
-							// Simple minded notion of equality
-							if ( XmlUtils.marshaltoString(other, true).equals(currentRPrString) )  makeNewRun=false; 
-						}
-						
-						if (makeNewRun) {
-							currentR=(R)o;
-							if (currentR.getRPr()==null) {
-								currentRPrString = null;
-							} else {
-								currentRPrString = XmlUtils.marshaltoString(currentR.getRPr(), true);
-							}
-							newContents.add(currentR);
-						} else {
-							currentR.getContent().addAll( ((R)o).getContent() );
-						}
-					}
-					
-				} else {
-					// not a run (eg w:ins) .. just add it and move on
-					newContents.add(o);
-					currentR = null;
-					currentRPrString = null;
-				}
-				
-			}
-			
-			// Now, in each run, join up adjacent text nodes
-			for (Object o : newContents) {
-				
-				if (o instanceof R) {
-					
-					List<Object> newRunContents = new ArrayList<Object>();	
-					Text currentT = null;
-					for ( Object rc : ((R)o).getContent() ) {
-						
-						rc = XmlUtils.unwrap(rc);
-						if (rc instanceof Text) {
-							
-							if (currentT==null) { // first object, or after something not a run
-								currentT=(Text)rc;
-								newRunContents.add(currentT);
-							} else {
-								String val = currentT.getValue();
-								currentT.setValue(val + ((Text)rc).getValue() );								
-							}
-							
-							// <w:t xml:space="preserve">
-							if (((Text)rc).getSpace()!=null
-									&& ((Text)rc).getSpace().equals("preserve")) { // any of them
-								currentT.setSpace("preserve");
-							}
-							
-						} else {
-							System.out.println(rc.getClass().getName());
-							// not text .. just add it and move on
-							newRunContents.add(rc);
-							currentT = null;
-						}
-					
-					}
-					
-					((R)o).getContent().clear();
-					((R)o).getContent().addAll(newRunContents);
-					
-				}
-			
-			}
-			
-			// Now replace w:p contents
-			p.getContent().clear();
-			p.getContent().addAll(newContents);
+			joinupRuns(p);
 		}
 	
 	}
