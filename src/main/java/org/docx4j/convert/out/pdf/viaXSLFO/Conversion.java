@@ -377,6 +377,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			if (log.isDebugEnabled() && pPr!=null) {				
 				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
+
+				log.debug("P effective rPr: "+ XmlUtils.marshaltoString(rPr, true, true));					
 			}
         	
             // Create a DOM builder and parse the fragment			

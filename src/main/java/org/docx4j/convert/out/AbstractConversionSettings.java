@@ -13,7 +13,6 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
 	public static final String IMAGE_DIR_PATH = "imageDirPath";
 	public static final String IMAGE_HANDLER = "imageHandler";
-	public static final String HYPERLINK_EXT_MAPPINGS = "hyperlinkExtMap";
 	public static final String WML_PACKAGE = "wmlPackage";
 
 	protected Map<String, Object> settings = new TreeMap<String, Object>();
@@ -62,18 +61,6 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	}
 	public ConversionImageHandler getImageHandler() {
 		return (ConversionImageHandler)settings.get(IMAGE_HANDLER);
-	}
-	
-    /**
-     * Where a collection of docx files are all being converted, hyperlinks between
-     * them can be converted to the new format (ie html or pdf) as well.
-     * For this, the map would contain key:docx, value:html or value:pdf.
-	 */
-	public void setHyperlinkExtensionMappings(Map<String, String> extensionMappings) {
-		settings.put(HYPERLINK_EXT_MAPPINGS, extensionMappings);		
-	}
-	public Map<String, String> getHyperlinkExtensionMappings() {
-		return (Map<String, String>)settings.get(HYPERLINK_EXT_MAPPINGS);
 	}
 	
 	public void setWmlPackage(OpcPackage wmlPackage) {

@@ -68,7 +68,7 @@
 
      ======================================= 
      
-     TODO:  cross references.
+     TODO:  w:hyperlink, cross references.
      
      -->
         
@@ -665,16 +665,41 @@
 		</w:hyperlink>
 -->  
   <xsl:template match="w:hyperlink">
-  
-		<xsl:variable name="hyperlinkNode" select="." />  			
-
-		<xsl:variable name="childResults">
-			<xsl:apply-templates /> 
-		</xsl:variable>
-  
-  
-  	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $hyperlinkNode, $childResults)"/>
-  
+    <fo:basic-link color="blue" text-decoration="underline" >
+	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
+      
+	<xsl:variable name="hTemp" 
+		select="java:org.docx4j.convert.out.Converter.resolveHref(
+		             $conversionContext, $relId )" />
+		                   
+      <xsl:variable name="href">
+          <xsl:value-of select="$hTemp"/>
+        <xsl:choose>
+          <xsl:when test="@w:anchor"><xsl:value-of select="@w:anchor"/></xsl:when>
+          <xsl:when test="@w:bookmark"><xsl:value-of select="@w:bookmark"/></xsl:when>
+          <xsl:when test="@w:arbLocation"><xsl:value-of select="@w:arbLocation"/></xsl:when>
+        </xsl:choose>
+      </xsl:variable>
+      
+        <xsl:choose>
+          <xsl:when test="@w:bookmark">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+		<!--  TODO: id for anchor, heading etc? Re headers, I think Word may just insert a bookmark -->
+          <xsl:when test="@w:arbLocation">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+          <xsl:when test="@w:anchor">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+          	<!--  TODO file? -->
+	        <xsl:attribute name="external-destination">url(<xsl:value-of select="$href"/>)</xsl:attribute>          
+          </xsl:otherwise>
+        </xsl:choose>
+      
+ 		<xsl:apply-templates />      
+    </fo:basic-link>
   </xsl:template>
 
 <!-- <w:bookmarkStart w:id="0" w:name="mybm"/>  -->
