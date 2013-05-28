@@ -24,9 +24,11 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
+import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
+import org.docx4j.model.SymbolModel;
+import org.docx4j.model.TransformState;
 import org.docx4j.wml.R;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -41,8 +43,12 @@ import org.w3c.dom.Text;
  *  @author Jason Harrop, alberto
  *  
 */
-public class SymbolWriter extends AbstractSymbolWriter {
+public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
 	private final static Logger log = Logger.getLogger(SymbolWriter.class);
+	
+	public SymbolWriter() {
+		super(SymbolModel.MODEL_ID);
+	}
 
 	/* 
 		Some TTF Symbol Fonts (probably all :-D ) have their glyphs in the 
@@ -79,11 +85,13 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		
 		*/
 	
-	
+
 	@Override
-	protected Node toNode(AbstractWmlConversionContext context, R.Sym sym, Document doc) throws TransformerException {
-		String fontName = sym.getFont();
-		String textValue =  sym.getChar();
+	protected Node toNode(AbstractWmlConversionContext context, R.Sym modelData, 
+			Node modelContent, TransformState state, Document doc)
+			throws TransformerException {
+		String fontName = modelData.getFont();
+		String textValue =  modelData.getChar();
 		PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
 		char chValue = '\0';
 		Typeface typeface = null;

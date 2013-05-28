@@ -37,9 +37,8 @@ public class PageNumberInformation {
 	protected String sectionpagesFormat = null;
 	
 	public PageNumberInformation(SectPr sectPr) {
-		
-		CTPageNumber pageNumber = (sectPr != null ? sectPr.getPgNumType() : null);
-		NumberFormat numberFormat = null;
+	CTPageNumber pageNumber = (sectPr != null ? sectPr.getPgNumType() : null);
+	NumberFormat numberFormat = null;
 		if (pageNumber != null) {
 			if (pageNumber.getFmt() != null) {
 				defaultNumberFormat = pageNumber.getFmt().value();

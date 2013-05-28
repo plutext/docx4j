@@ -47,7 +47,7 @@
 		
 		
 	<html>
-		<head>
+		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 			<style>
 				<xsl:comment>
 
@@ -341,11 +341,11 @@
 			<xsl:apply-templates select="w:sdtContent/*" />
 		</xsl:variable>
 
-		<xsl:variable name="sdtPrNode" select="./w:sdtPr" />
+		<xsl:variable name="currentNode" select="./w:sdtPr" />
 
 		<xsl:copy-of
 			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
-  			$conversionContext, $sdtPrNode, 
+  			$conversionContext, $currentNode, 
   			$childResults)"  />
 
 	</xsl:template>
@@ -434,7 +434,7 @@
   <xsl:template match="w:tbl">
 	  	<xsl:call-template name="pretty-print-block"/>
 
-		<xsl:variable name="tblNode" select="." />  			
+		<xsl:variable name="currentNode" select="." />  			
 
 		<xsl:variable name="childResults">
 			<xsl:apply-templates /> <!-- select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" /-->
@@ -447,7 +447,7 @@
   -->
   
 		<!--  Create the HTML table in Java --> 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $tblNode, $childResults)"/>
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, $childResults)"/>
 	  			  		
   </xsl:template>
 
@@ -512,9 +512,9 @@
 		<xsl:apply-templates /> 
 	</xsl:variable>
 
-	<xsl:variable name="symNode" select="." />  			
+	<xsl:variable name="currentNode" select="." />  			
 
-     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $symNode, 
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, 
 			$childResults)" />
   		  			
 </xsl:template>
@@ -614,7 +614,14 @@
   </xsl:template>
    
   <xsl:template match="w:bookmarkStart">
-    <a name="{@w:name}"/>
+	<xsl:variable name="childResults">
+		<xsl:apply-templates /> 
+	</xsl:variable>
+
+	<xsl:variable name="currentNode" select="." />  			
+
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, 
+			$childResults)" />
   </xsl:template>
   
 <xsl:template match="w:bookmarkStart[@w:name='_GoBack']" />  

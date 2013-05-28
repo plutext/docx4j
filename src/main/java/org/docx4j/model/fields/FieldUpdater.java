@@ -7,7 +7,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -87,6 +86,7 @@ public class FieldUpdater {
 	
 	public void updateSimple(JaxbXmlPart part) throws Docx4JException {
 		
+		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
 		List contentList = ((ContentAccessor)part).getContent();
 		
 		// find fields
@@ -102,16 +102,15 @@ public class FieldUpdater {
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 //			System.out.println(simpleField.getInstr());
 			
-			FldSimpleModel fsm = new FldSimpleModel();
-			try {
-				fsm.build(simpleField.getInstr());
-			} catch (TransformerException e) {
-				e.printStackTrace();
-			}
-						
-			if (fsm.getFldType().equals("DOCPROPERTY")) {
+			if ("DOCPROPERTY".equals(FldSimpleUnitsHelper.getFldSimpleName(simpleField.getInstr()))) {
+				//only parse those fields that get processed
+				try {
+					fsm.build(simpleField.getInstr());
+				} catch (TransformerException e) {
+					e.printStackTrace();
+				}
 				
-				String key = fsm.getFldArgument();
+				String key = fsm.getFldParameterString();
 				
 				String val;
 				try {
@@ -130,7 +129,7 @@ public class FieldUpdater {
 				} else {
 							//docPropsCustomPart.getProperty(key);
 	//				System.out.println(val);
-					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					val = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( simpleField.getInstr() + "\n");
 					report.append( "--> " + val + "\n");
@@ -174,6 +173,7 @@ public class FieldUpdater {
 
 	public void updateComplex(JaxbXmlPart part) throws Docx4JException {
 		
+		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
 		List contentList = ((ContentAccessor)part).getContent();
 		
 		ComplexFieldLocator fl = new ComplexFieldLocator();
@@ -208,15 +208,14 @@ public class FieldUpdater {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			FldSimpleModel fsm = new FldSimpleModel();  // reuse its parser
-			try {
-				fsm.build(fr.getInstr());
-			} catch (TransformerException e) {
-				e.printStackTrace();
-			}
-			if (fsm.getFldType().equals("DOCPROPERTY")) {
+			if ("DOCPROPERTY".equals(FldSimpleUnitsHelper.getFldSimpleName(fr.getInstr()))) {
+				try {
+					fsm.build(fr.getInstr());
+				} catch (TransformerException e) {
+					e.printStackTrace();
+				}
 
-				String key = fsm.getFldArgument();
+				String key = fsm.getFldParameterString();
 				String val = (String) docPropertyResolver.getValue(key); 
 				try {
 				  val = (String) docPropertyResolver.getValue(key); 
@@ -234,7 +233,7 @@ public class FieldUpdater {
 				} else {
 				
 	//				System.out.println(val);
-					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					val = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( fr.getInstr() + "\n");
 					report.append( "--> " + val + "\n");

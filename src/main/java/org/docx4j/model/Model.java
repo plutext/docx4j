@@ -22,17 +22,25 @@ package org.docx4j.model;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.Part;
 import org.w3c.dom.Node;
 
 public abstract class Model {
 	
 	private WordprocessingMLPackage wordMLPackage = null;
-	public void setWordMLPackage(WordprocessingMLPackage wordMLPackage) {
+	private Part currentPart = null;
+	
+	public void setup(WordprocessingMLPackage wordMLPackage, Part currentPart) {
 		this.wordMLPackage = wordMLPackage;
+		this.currentPart = currentPart;
 	}
 	
-	public WordprocessingMLPackage getWordMLPackage() {
+	protected WordprocessingMLPackage getWordMLPackage() {
 		return wordMLPackage;
+	}
+	
+	protected Part getCurrentPart() {
+		return currentPart;
 	}
 	
 	/**

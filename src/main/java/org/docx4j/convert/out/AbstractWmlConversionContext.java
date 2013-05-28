@@ -24,6 +24,8 @@ import java.util.Map;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.fields.HyperlinkModel;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -114,4 +116,10 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	public ConversionSectionWrappers getSections() {
 		return conversionSectionWrappers;
 	}
+
+	@Override
+	public void handleHyperlink(HyperlinkModel model) throws Docx4JException {
+		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), getCurrentPart());
+	}
+	
 }

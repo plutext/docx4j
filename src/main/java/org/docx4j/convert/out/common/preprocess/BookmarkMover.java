@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -38,6 +39,7 @@ import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.P;
 
+
 /** This class moves w:bookmarkStart into the next paragraph if they 
  *  are outside of a paragraph. This is done so that the BoomarkStartModelWriter
  *  are able to generate a correct output. 
@@ -47,6 +49,9 @@ import org.docx4j.wml.P;
  * 
  */
 public class BookmarkMover {
+	
+	protected static Logger log = Logger.getLogger(BookmarkMover.class);	
+	
 	
 	/** Move bookmarks into a paragraph
 	 * 
@@ -136,7 +141,7 @@ public class BookmarkMover {
 		}
 
 		private boolean removeBookmarkEnd(Object child) {
-		CTMarkupRange bmEnd = (CTMarkupRange)XmlUtils.unwrap(child);
+			CTMarkupRange bmEnd = (CTMarkupRange)XmlUtils.unwrap(child);
 			return bookmarksEndToRemove.remove(bmEnd.getId());
 		}
 

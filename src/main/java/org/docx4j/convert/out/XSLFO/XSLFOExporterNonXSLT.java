@@ -38,8 +38,11 @@ import org.docx4j.convert.out.pdf.viaXSLFO.LayoutMasterSetBuilder;
 import org.docx4j.convert.out.pdf.viaXSLFO.PDFConversionImageHandler;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
+import org.docx4j.model.BookmarkStartModel;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -131,13 +134,10 @@ public class XSLFOExporterNonXSLT {
 	org.w3c.dom.Document document;
 	
 	PdfSettings pdfSettings = null;
-	WordprocessingMLPackage localWmlPackage = null;
 	
 	public XSLFOExporterNonXSLT(WordprocessingMLPackage wmlPackage, 
 			ConversionImageHandler conversionImageHandler) {
 
-		this.localWmlPackage = wmlPackage;
-		
 		pdfSettings = new PdfSettings();
 		pdfSettings.setWmlPackage(wmlPackage);
 		pdfSettings.setImageHandler(conversionImageHandler);
@@ -151,18 +151,23 @@ public class XSLFOExporterNonXSLT {
 		Element foRoot = null;
 		Element pageSequence = null;
 		Element flow = null;
+		WordprocessingMLPackage localWmlPackage = (WordprocessingMLPackage)pdfSettings.getWmlPackage();
 		ConversionSectionWrappers conversionSectionWrappers = null;
 		
 		
 		localWmlPackage = Preprocess.process(localWmlPackage, pdfSettings.getFeatures());
-		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, pdfSettings.getFeatures()); 
 		pdfSettings.setWmlPackage(localWmlPackage);
+		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, pdfSettings.getFeatures()); 
 		
 		XSLFOConversionContextNonXSLT conversionContext = new XSLFOConversionContextNonXSLT(pdfSettings, conversionSectionWrappers);
+		//Ensure that no parameters are needed in the generated fo, this will cause 
+		//errors in the NUMPAGES and SECTIONPAGES fields if a 2 pass generation was required.
+		conversionContext.forceRequires1Pass();
 		
     	document = XmlUtils.neww3cDomDocument();
     	
     	foRoot = document.createElementNS(XSL_FO, "root");
+    	foRoot.setAttribute("id", "docroot");
     	document.appendChild(foRoot);
     	
     	LayoutMasterSetBuilder.appendLayoutMasterSetFragment( conversionContext, foRoot);  	
@@ -189,12 +194,19 @@ public class XSLFOExporterNonXSLT {
 	
 	protected Element createPageSequence(Element root, ConversionSectionWrapper sectionWrapper) {
 	Element pageSequence = document.createElementNS(XSL_FO, "page-sequence");
+	int pageNumberInitial = sectionWrapper.getPageNumberInformation().getPageStart();
+	String pageFormat = sectionWrapper.getPageNumberInformation().getPageFormat();
+	
     	root.appendChild(pageSequence);
     	pageSequence.setAttribute("master-reference", sectionWrapper.getId());
-    	pageSequence.setAttribute("initial-page-number", 
-    			PageNumberHelper.getPageNumberInitial(sectionWrapper.getSectPr()));
-    	pageSequence.setAttribute("format", 
-    			PageNumberHelper.getPageNumberFormat(sectionWrapper.getSectPr()));
+    	pageSequence.setAttribute("id", "section_" + sectionWrapper.getId());
+    	pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
+    	if (pageNumberInitial > -1) {
+        	pageSequence.setAttribute("initial-page-number", Integer.toString(pageNumberInitial));
+    	}
+    	if (pageFormat != null) {
+        	pageSequence.setAttribute("format", pageFormat);
+    	}
     	
     	return pageSequence;
 	}
@@ -878,32 +890,32 @@ public class XSLFOExporterNonXSLT {
 				}
 								
 			} else if (o instanceof org.docx4j.wml.Text) {
-				
-				log.debug("Processing '" + ((org.docx4j.wml.Text)o).getValue());					
-				
-				if (currentSpan!=null) {
-					currentSpan.appendChild(document.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));
-					
-					log.debug(XmlUtils.w3CDomNodeToString(currentP));
-					
-				} else {
-					currentP.appendChild(document.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));					
-				}
-
+				getCurrentParent().appendChild(document.createTextNode(
+						((org.docx4j.wml.Text)o).getValue()));
 
 			} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
 				convertToNode(conversionContext, 
-							  (ContentAccessor)o, FldSimpleModel.MODEL_ID,
-							  document, (currentSpan != null ? currentSpan : currentP));
+							  o, FldSimpleModel.MODEL_ID,
+							  document, getCurrentParent());
+				
+			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+
+				convertToNode(conversionContext, 
+							  o, HyperlinkModel.MODEL_ID,
+							  document, getCurrentParent());
+				
+			} else if (o instanceof org.docx4j.wml.CTBookmark) {
+
+				convertToNode(conversionContext, 
+							  o, BookmarkStartModel.MODEL_ID,
+							  document, getCurrentParent());
 				
 
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
 				convertToNode(conversionContext, 
-							  (ContentAccessor)o, TableModel.MODEL_ID,
+							  o, TableModel.MODEL_ID,
 							  document, (currentP != null ? currentP : parentNode));
 				
 				currentP=null;
@@ -976,46 +988,6 @@ public class XSLFOExporterNonXSLT {
 					currentP.setAttribute("white-space-treatment", "preserve");
 				}
 				
-			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
-				
-				P.Hyperlink hyperlink = (P.Hyperlink)o;
-				
-				Element spanEl = document.createElementNS(XSL_FO, "basic-link");
-				currentP.appendChild( spanEl  );
-				currentSpan = spanEl;
-				
-				currentSpan.setAttribute("color", "blue");
-				currentSpan.setAttribute("text-decoration", "underline");
-				
-				String hTemp = Converter.resolveHref(conversionContext, hyperlink.getId() );
-				String href;
-				// @w:anchor
-				if (hyperlink.getAnchor() != null) {
-					href = hTemp + hyperlink.getAnchor();
-				} else {
-					href = hTemp;
-				}
-				// via XSLT also had @w:bookmark and @w:arbLocation,
-				// but these aren't in the P.Hyperlink object?
-				
-				if (hyperlink.getAnchor() != null) {
-					currentSpan.setAttribute("internal-destination", href);					
-				} else {
-					currentSpan.setAttribute("external-destination", href);										
-				}
-				
-				// "Manually" get the contents of the hyperlink.
-				// If we don't do this, it'll be added as a span
-				// outside the hyperlink.
-				// This is a consequence of our simple minded
-				// two level hierarchy (ie block or inline)
-		    	DocumentFragment hFragment = document.createDocumentFragment();
-				XSLFOGenerator hTraversor = new XSLFOGenerator(conversionContext, hFragment);
-				new TraversalUtil(hyperlink.getContent(), hTraversor);
-				
-				currentSpan.appendChild(hFragment);
-				
-				
 			} else {
 				log.warn("Need to handle " + o.getClass().getName() );				
 			}
@@ -1024,20 +996,23 @@ public class XSLFOExporterNonXSLT {
 		}
 
 		private void convertToNode(XSLFOConversionContextNonXSLT conversionContext, 
-								   ContentAccessor contentAccessor, String modelId, 
+								   Object unmarshalledNode, String modelId, 
 								   org.w3c.dom.Document document, Node parentNode) throws DOMException {
 
 			// To use our existing model, first we need childResults.
-			// We get these using a new HTMLGenerator object.
+			// We get these using a new Generator object.
 			
-			DocumentFragment childResults = document.createDocumentFragment();
-			XSLFOGenerator generator = new XSLFOGenerator(conversionContext, childResults);
-			new TraversalUtil(contentAccessor.getContent(), generator);
+			DocumentFragment childResults = null;
+			if (unmarshalledNode instanceof ContentAccessor) {
+				childResults = document.createDocumentFragment();
+				XSLFOGenerator generator = new XSLFOGenerator(conversionContext, childResults);
+				new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
+			}
 			
 			Node resultNode = 
 				 conversionContext.getModelRegistry().toNode(
 						 conversionContext, 
-						 contentAccessor, 
+						 unmarshalledNode, 
 						 modelId, 
 						 childResults, 
 						 document);
@@ -1045,6 +1020,15 @@ public class XSLFOExporterNonXSLT {
 			if (resultNode != null) {
 				parentNode.appendChild(resultNode);
 			}
+		}
+
+		private Node getCurrentParent() {
+			//this might be executed within a new level of traversal util
+			//currentSpan or currentP might be null
+			return (currentSpan != null ? 
+					   currentSpan :
+					   (currentP != null ? currentP : parentNode)
+				   );
 		}
     	
     	@Override

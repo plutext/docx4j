@@ -1,22 +1,3 @@
-/*
-   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
-   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
 package org.docx4j.convert.out;
 
 import java.util.Set;
@@ -27,7 +8,7 @@ import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.convert.out.common.preprocess.ConversionSectionWrapperFactory;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
 import org.docx4j.convert.out.common.preprocess.PageBreak;
-//import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -60,9 +41,9 @@ public class Preprocess implements ConversionFeatures {
 	Set<String> relationshipTypes = null;
 		checkParams(opcPackage, features);
 		relationshipTypes = createRelationshipTypes(features);
-//		if (features.contains(PP_COMMON_DEEP_COPY)) {
-//			ret = PartialDeepCopy.process(opcPackage, relationshipTypes);
-//		}
+		if (features.contains(PP_COMMON_DEEP_COPY)) {
+			ret = PartialDeepCopy.process(opcPackage, relationshipTypes);
+		}
 		return ret;
 	}
 
@@ -109,8 +90,7 @@ public class Preprocess implements ConversionFeatures {
 	 * @throws Docx4JException
 	 */
 	public static WordprocessingMLPackage process(WordprocessingMLPackage wmlPackage, Set<String> features) throws Docx4JException {
-	
-		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+	WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
 	
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			FieldsCombiner.process(ret);

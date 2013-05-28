@@ -1,22 +1,3 @@
-/*
-   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
-   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
 package org.docx4j.convert.out;
 
 /** This interface contains flags that get passed to the conversion process.
@@ -44,7 +25,7 @@ public interface ConversionFeatures {
 	public static final String PP_COMMON_MOVE_BOOKMARKS = "pp.common.movebookmarks";
 
 	/** Word might put some pagebreaks in a paragraph. In the conversion process the 
-	 *  pagebreaks need to be at the beginning of a paragraph. This is not needed if 
+	 *  pagebreaks need to be at the beginnig of a paragraph. This is not needed if 
 	 *  the document doesn't contain explicit pagebreaks. 
 	 */
 	public static final String PP_COMMON_MOVE_PAGEBREAK = "pp.common.movepagebreak";
@@ -96,19 +77,19 @@ public interface ConversionFeatures {
 	/** Default features, that get applied to a PDF conversion
 	 */
 	public static final String[] DEFAULT_PDF_FEATURES = {
-//		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_DEEP_COPY, 
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
-//		PP_COMMON_PAGE_NUMBERING,
+		PP_COMMON_PAGE_NUMBERING,
 		PP_COMMON_CREATE_SECTIONS
 	};
 
 	/** Default features, that get applied to a HTML conversion
 	 */
 	public static final String[] DEFAULT_HTML_FEATURES = {
-//		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_DEEP_COPY, 
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,

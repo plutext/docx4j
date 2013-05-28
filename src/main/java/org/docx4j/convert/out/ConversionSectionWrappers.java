@@ -25,7 +25,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.structure.jaxb.ObjectFactory;
 import org.docx4j.model.structure.jaxb.Sections;
 import org.docx4j.model.structure.jaxb.Sections.Section;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.w3c.dom.Element;
 
 public class ConversionSectionWrappers {
@@ -53,27 +52,11 @@ public class ConversionSectionWrappers {
 		
 		Section ret = factory.createSectionsSection();
 		ret.setName(conversionSectionWrapper.getId());
-		
-		if (conversionSectionWrapper.getContent().size()==0) {
-			// Occurs if a docx contains a single p containing a sectPr,
-			// or consecutive p each containing sectPr.
-			
-			// Avoid org.apache.fop.fo.ValidationException: "fo:flow" is missing child elements. 
-			// Required content model: marker* (%block;)+ 
-			
-			// Create empty w:p
-			org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();
-			ret.getAny().add(doc.createElementNS(Namespaces.NS_WORD12, "p"));
-			
-		} else {
-			// Usual case
-			for (int i=0; i<conversionSectionWrapper.getContent().size(); i++) {
-				// TODO: since the section model knows nothing about WML,
-				// we have to marshall each object separately.
-				// To fix this, next time wml is generated, include the section model there!
-				ret.getAny().add(marshall(conversionSectionWrapper.getContent().get(i)));
-			}
-		
+		for (int i=0; i<conversionSectionWrapper.getContent().size(); i++) {
+			// TODO: since the section model knows nothing about WML,
+			// we have to marshall each object separately.
+			// To fix this, next time wml is generated, include the section model there!
+			ret.getAny().add(marshall(conversionSectionWrapper.getContent().get(i)));
 		}
 		return ret;
 	}

@@ -33,7 +33,7 @@ import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.model.fields.FldSimpleUnitsHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -75,7 +75,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FldSimpleUnitsHelper.formatDate(model);
 		}
 	}
 	
@@ -85,7 +85,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FldSimpleUnitsHelper.formatDate(model);
 		}
 	}
 	
@@ -96,7 +96,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FormattingSwitchHelper.formatDate(model);
+			return FldSimpleUnitsHelper.formatDate(model);
 		}
 	}
 
@@ -109,15 +109,15 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			
 			// First, get the value
 			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
-			List<String> params = model.splitParameters(model.getFldParameterString());
+			List<String> params = model.getFldParameters();
 			
 			//String key = params.get(0);
-			String key = model.getFldArgument();
+			String key = model.getFldParameterString();
 			
 			try {
 				String value = dpr.getValue(key).toString();
 				log.debug("= " + value);
-				return FormattingSwitchHelper.applyFormattingSwitch(model, value);
+				return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);
 			} catch (FieldValueException e) {
 				
 				if (e.getMessage().contains("No value found for DOCPROPERTY PAGES")) {// TODO improve this
@@ -194,9 +194,9 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 		
 		FldSimpleModel fldSimpleModel = (FldSimpleModel)model;
 		
-		log.debug("looking for handler for " + fldSimpleModel.getFldType());
+		log.debug("looking for handler for " + fldSimpleModel.getFldName());
 		
-		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldType());
+		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldName());
 		FldSimpleNodeWriterHandler nodeHandler = null;
 		Node ret = null;
 		String value = null;

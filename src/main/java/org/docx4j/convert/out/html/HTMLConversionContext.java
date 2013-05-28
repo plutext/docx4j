@@ -46,6 +46,8 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 				registerConverter(new TableWriter());
 				registerConverter(new SymbolWriter());
 				registerConverter(new FldSimpleWriter());
+				registerConverter(new BookmarkStartWriter());
+				registerConverter(new HyperlinkWriter());
 			}
 		};
 

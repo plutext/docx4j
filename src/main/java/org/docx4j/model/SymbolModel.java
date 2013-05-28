@@ -19,40 +19,8 @@
  */
 package org.docx4j.model;
 
-import javax.xml.transform.TransformerException;
+import org.docx4j.wml.R;
 
-import org.apache.log4j.Logger;
-import org.docx4j.wml.R.Sym;
-import org.w3c.dom.Node;
-
-public class SymbolModel extends Model {
+public class SymbolModel extends AbstractSimpleModel<R.Sym> {
 	public static final String MODEL_ID = "w:sym";
-	
-	private final static Logger log = Logger.getLogger(SymbolModel.class);
-
-	private Sym sym;
-	/**
-	 * @return the sym
-	 */
-	public Sym getSym() {
-		return sym;
-	}
-	
-	@Override
-	public void build(Object unmarshalledNode, Node content) throws TransformerException {
-
-		try {
-			sym = (Sym)unmarshalledNode;
-		} catch (ClassCastException e) {
-			throw new TransformerException("Node is not of the type Sym it is " + unmarshalledNode.getClass().getName());
-		}
-		
-	}
-
-	@Override
-	public Object toJAXB() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

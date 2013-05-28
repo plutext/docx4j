@@ -19,7 +19,7 @@ import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.model.fields.FldSimpleUnitsHelper;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.structure.SectionWrapper;
@@ -28,7 +28,6 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -118,7 +117,7 @@ public class MailMerger {
 			List<Map<DataFieldName, String>> data, boolean processHeadersAndFooters) throws Docx4JException {
 		
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+		System.out.println("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
 		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
 
 		Map<CTRel, JaxbXmlPart> hfTemplates = null;
@@ -142,7 +141,7 @@ public class MailMerger {
 				JaxbXmlPart part = (JaxbXmlPart)input.getMainDocumentPart().getRelationshipsPart().getPart(relId);
 				FieldsPreprocessor.complexifyFields(part );
 				
-				log.debug("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+				System.out.println("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
 				
 				hfTemplates.put(rel, part);
 			}
@@ -362,8 +361,6 @@ public class MailMerger {
 		
 		// MDP
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		log.debug("\n\n COMPLEXIFIED " + input.getMainDocumentPart().getPartName().getName() + "\n\n"
-				+ input.getMainDocumentPart().getXML() + "\n");
 		List<Object> mdpResults = performOnInstance(input.getMainDocumentPart().getContent(), data );
 		input.getMainDocumentPart().getContent().clear();
 		input.getMainDocumentPart().getContent().addAll(mdpResults);
@@ -452,11 +449,8 @@ public class MailMerger {
 			if (p.getParent() instanceof ContentAccessor) {
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
-
-				//				log.debug("NewP length: " + newP.getContent().size() );
+//				log.debug("NewP length: " + newP.getContent().size() );
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-				
 //			} else if (p.getParent() instanceof java.util.List) {
 //				index = ((java.util.List)p.getParent()).indexOf(p);
 //				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
@@ -491,7 +485,7 @@ public class MailMerger {
 					FldSimpleModel fsm = new FldSimpleModel();
 					try {
 						fsm.build(instr);
-						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+						val = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, val);
 					} catch (TransformerException e) {
 						log.warn("Can't format the field", e);
 					}

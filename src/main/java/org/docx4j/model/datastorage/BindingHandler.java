@@ -206,7 +206,7 @@ public class BindingHandler {
 					return part.xpathGetString(xpath, prefixMappings);
 				}
 			} catch (Docx4JException e) {
-				e.printStackTrace();
+				log.error(e);
 				return null;
 			}
 		}

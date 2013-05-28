@@ -23,8 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
+import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.parts.Part;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -50,9 +53,17 @@ public abstract class AbstractConversionContext {
 		protected String getOutputPrefix() {return null;}
 	};
 	
+	protected static final ConversionHyperlinkHandler DUMMY_HYPERLINK_HANDLER = new ConversionHyperlinkHandler() {
+		@Override
+		public void handleHyperlink(HyperlinkModel hyperlinkModel, OpcPackage opcPackage, Part currentPart) throws Docx4JException {
+			//do nothing
+		}
+	};
+	
 	private Map<String, Object> xsltParameters = null;
 	private OpcPackage opcPackage = null;
 	private ConversionImageHandler imageHandler = null;
+	private ConversionHyperlinkHandler hyperlinkHandler = null;
 	private AbstractMessageWriter messageWriter = null;
 
 	protected AbstractConversionContext(AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings) {
@@ -66,6 +77,7 @@ public abstract class AbstractConversionContext {
 				throw new IllegalArgumentException("The OpcPackage is missing in the settings.");
 			}
 			this.imageHandler = initializeImageHandler(settings, settings.getImageHandler());
+			this.hyperlinkHandler = initializeHyperlinkHandler(settings, settings.getHyperlinkHandler());
 			this.opcPackage = initializeOpcPackage(settings, settings.getWmlPackage());
 			this.xsltParameters = initializeXsltParameters(settings, settings.getSettings());
 		}
@@ -73,6 +85,10 @@ public abstract class AbstractConversionContext {
 
 	protected ConversionImageHandler initializeImageHandler(AbstractConversionSettings settings, ConversionImageHandler handler) {
 		return handler;
+	}
+
+	protected ConversionHyperlinkHandler initializeHyperlinkHandler(AbstractConversionSettings settings, ConversionHyperlinkHandler handler) {
+		return (handler != null ? handler : DUMMY_HYPERLINK_HANDLER);
 	}
 
 	protected OpcPackage initializeOpcPackage(AbstractConversionSettings settings, OpcPackage opcPackage) {
@@ -106,6 +122,14 @@ public abstract class AbstractConversionContext {
 
 	public ConversionImageHandler getImageHandler() {
 		return imageHandler;
+	}
+
+	protected ConversionHyperlinkHandler getHyperlinkHandler() {
+		return hyperlinkHandler;
+	}
+
+	public void handleHyperlink(HyperlinkModel model) throws Docx4JException {
+		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), null);
 	}
 
 	public AbstractMessageWriter getMessageWriter() {

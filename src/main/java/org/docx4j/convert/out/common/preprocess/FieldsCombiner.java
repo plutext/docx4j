@@ -82,19 +82,18 @@ public class FieldsCombiner {
 		}	
 
 		protected void processContent(List<Object> pContent) {
-			
-			List<Object> pResult = null;
-			boolean haveChanges = false;
-			boolean inField = false;
-			Object item = null;
-			STFldCharType fldCharType = null;
-			int level = 0;
-			int state = STATE_EXPECT_BEGIN;
-			int markIdx = -1;
-			boolean rollback = false;
-			List<Object> resultList = new ArrayList<Object>(2);
-			StringBuilder instrTextBuffer = new StringBuilder(128);
-			String tmpInstrText = null;
+		List<Object> pResult = null;
+		boolean haveChanges = false;
+		boolean inField = false;
+		Object item = null;
+		STFldCharType fldCharType = null;
+		int level = 0;
+		int state = STATE_EXPECT_BEGIN;
+		int markIdx = -1;
+		boolean rollback = false;
+		List<Object> resultList = new ArrayList<Object>(2);
+		StringBuilder instrTextBuffer = new StringBuilder(128);
+		String tmpInstrText = null;
 		
 			if ((pContent != null) && (!pContent.isEmpty())) {
 				pResult = new ArrayList<Object>(pContent.size());

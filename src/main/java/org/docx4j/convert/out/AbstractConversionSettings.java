@@ -13,6 +13,7 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
 	public static final String IMAGE_DIR_PATH = "imageDirPath";
 	public static final String IMAGE_HANDLER = "imageHandler";
+	public static final String HYPERLINK_HANDLER = "hyperlinkHandler";
 	public static final String WML_PACKAGE = "wmlPackage";
 
 	protected Map<String, Object> settings = new TreeMap<String, Object>();
@@ -61,6 +62,13 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	}
 	public ConversionImageHandler getImageHandler() {
 		return (ConversionImageHandler)settings.get(IMAGE_HANDLER);
+	}
+
+	public void setHyperlinkHandler(ConversionHyperlinkHandler hyperlinkHandler) {
+		settings.put(HYPERLINK_HANDLER, hyperlinkHandler);
+	}
+	public ConversionHyperlinkHandler getHyperlinkHandler() {
+		return (ConversionHyperlinkHandler)settings.get(HYPERLINK_HANDLER);
 	}
 	
 	public void setWmlPackage(OpcPackage wmlPackage) {

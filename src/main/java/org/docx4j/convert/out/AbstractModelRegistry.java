@@ -26,10 +26,12 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.BookmarkStartModel;
 import org.docx4j.model.Model;
 import org.docx4j.model.SymbolModel;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.table.TableModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -79,11 +81,11 @@ public abstract class AbstractModelRegistry {
 	    registerModel(TableModel.MODEL_ID, TableModel.class);
 	    registerModel(SymbolModel.MODEL_ID, SymbolModel.class);
 	    registerModel(FldSimpleModel.MODEL_ID, FldSimpleModel.class);
+	    registerModel(BookmarkStartModel.MODEL_ID, BookmarkStartModel.class);
+	    registerModel(HyperlinkModel.MODEL_ID, HyperlinkModel.class);
 //    	registerModel("w:p", ParagraphModel.class);
 //    	registerModel("w:t", TextModel.class);
 //    	registerModel("wp:inline", ImageModel.class);
-//    	registerModel("w:hyperlink", HyperlinkModel.class);
-//    	registerModel("w:bookmarkStart", BookmarkModel.class);
 	}
 	  
 	public void registerModel(String name, Class modelClass) {
@@ -150,18 +152,10 @@ public abstract class AbstractModelRegistry {
 	 * @return
 	 */
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, String modelID, Node content, Document doc) {
-			Class c = modelClasses.get(modelID);
-			if (c == null) {
-				log.error("No model registered for " + modelID);
-				throw new IllegalArgumentException("No model registered for " + modelID);
-			} else {
-				log.debug("Using model " + c.getName() + " for node " + modelID);
-			}
+		Node ret = null;
+		Model model = buildModel(context, unmarshalledNode, modelID, content);
+		if (model != null) {
 			try {
-				Model model = (Model)c.newInstance();
-				model.setWordMLPackage(context.getWmlPackage());
-				model.build(unmarshalledNode, content);
-
 				ModelConverter converter = converterInstances.get(modelID);
 				if (converter == null) {
 
@@ -174,14 +168,40 @@ public abstract class AbstractModelRegistry {
 					org.w3c.dom.Document docMarshalled = XmlUtils.marshaltoW3CDomDocument(o);
 					DocumentFragment docfrag = docMarshalled.createDocumentFragment();
 					docfrag.appendChild(docMarshalled.getDocumentElement());
-					return docfrag;
+					ret = docfrag;
 
 				} else {
-					return converter.toNode(context, model, context.getTransformState(modelID), doc);
+					ret = converter.toNode(context, model, context.getTransformState(modelID), doc);
 				}
 			} catch (Exception e) {
 				log.error("Cannot convert " + unmarshalledNode, e);
-				return null;
 			}
 		}
+		return ret;
+	}
+	
+	public Model buildModel(AbstractWmlConversionContext context, Object unmarshalledNode, String modelID, Node content) {
+		Model model = null;
+		Class c = modelClasses.get(modelID);
+		if (c == null) {
+			log.error("No model registered for " + modelID);
+			throw new IllegalArgumentException("No model registered for " + modelID);
+		} else {
+			log.debug("Using model " + c.getName() + " for node " + modelID);
+		}
+		try {
+			model = (Model)c.newInstance();
+		} catch (Exception e) {
+			log.error("Cannot instantiate model (" + modelID + ") for " + unmarshalledNode, e);
+		}
+		if (model != null) {
+			try {
+				model.setup(context.getWmlPackage(), context.getCurrentPart());
+				model.build(unmarshalledNode, content);
+			} catch (Exception e) {
+				log.error("Cannot configure model (" + modelID + ") " + unmarshalledNode, e);
+			}
+		}
+		return model;
+	}
 }

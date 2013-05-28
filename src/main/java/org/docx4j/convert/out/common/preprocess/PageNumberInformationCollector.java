@@ -19,19 +19,17 @@
  */
 package org.docx4j.convert.out.common.preprocess;
 
-import java.util.List;
-
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FormattingSwitchHelper;
+import org.docx4j.model.fields.FldSimpleUnitsHelper;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.CTSimpleField;
-import org.docx4j.wml.SectPr;
 
 
 /** This class collects information about the use of page numbering fields,
@@ -39,15 +37,17 @@ import org.docx4j.wml.SectPr;
  *  It checks for fields of the type: PAGE, NUMPAGES, SECTIONPAGES
  */
 public class PageNumberInformationCollector {
-	public static PageNumberInformation process(List<Object> content, SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, boolean dummyPageNumbering) {
-	PageNumberInformation ret = new PageNumberInformation(sectPr);
+
+	public static PageNumberInformation process(ConversionSectionWrapper sectionWrapper, boolean dummyPageNumbering) {
+	PageNumberInformation ret = new PageNumberInformation(sectionWrapper.getSectPr());
 	FieldVisitor fldVisitor = null;
+	HeaderFooterPolicy headerFooterPolicy = sectionWrapper.getHeaderFooterPolicy();
 		//If it is a dummyPageNumberInformation the data is read from the sectPr,
 		//and it is assumed that there are no NUMPAGES and SECTIONPAGES fields
 		//the result will allways be a single pass conversion.
 		if (!dummyPageNumbering) {
 			fldVisitor = new FieldVisitor(ret);
-			TraversalUtil.visit(content, fldVisitor);
+			TraversalUtil.visit(sectionWrapper.getContent(), fldVisitor);
 			process(headerFooterPolicy.getFirstHeader(), fldVisitor);
 			process(headerFooterPolicy.getFirstFooter(), fldVisitor);
 			process(headerFooterPolicy.getDefaultHeader(), fldVisitor);
@@ -71,7 +71,6 @@ public class PageNumberInformationCollector {
 	}
 
 	protected static class FieldVisitor extends TraversalUtilVisitor<CTSimpleField> {
-		
 		private static final Object PAGE_FIELD_TYPE = "PAGE";
 		private static final Object NUMPAGES_FIELD_TYPE = "NUMPAGES";
 		private static final Object SECTIONPAGES_FIELD_TYPE = "SECTIONPAGES";
@@ -85,17 +84,8 @@ public class PageNumberInformationCollector {
 
 		@Override
 		public void apply(CTSimpleField element) {
-			
-			String instr = element.getInstr();
-			
-			//String fieldType = FormattingSwitchHelper.getFldSimpleName(instr);
-			try {
-				fldSimpleModel.build(instr); // TODO: do this once only
-			} catch (TransformerException e) {
-				e.printStackTrace();
-			} 
-			String fieldType = fldSimpleModel.getFldType();
-			
+		String instr = element.getInstr();
+		String fieldType = FldSimpleUnitsHelper.getFldSimpleName(instr);
 			if (PAGE_FIELD_TYPE.equals(fieldType)) {
 				results.setPagePresent(true);
 				results.setPageFormat(extractFormat(instr));
@@ -114,7 +104,7 @@ public class PageNumberInformationCollector {
 		String ret = null;
 			try {
 				fldSimpleModel.build(instr);
-				return FormattingSwitchHelper.findFormat("\\*", fldSimpleModel.getFldParameters());
+				return FldSimpleUnitsHelper.findFirstSwitchValue("\\*", fldSimpleModel.getFldParameters(), true);
 			} catch (TransformerException e) {
 				ret = null;
 			}

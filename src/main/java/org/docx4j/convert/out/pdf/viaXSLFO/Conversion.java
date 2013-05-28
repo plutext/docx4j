@@ -4,8 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -19,15 +20,19 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
+import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
+import org.apache.fop.apps.PageSequenceResults;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Preprocess;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.fields.FldSimpleUnitsHelper;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -40,15 +45,12 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
-import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
@@ -170,6 +172,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			conversionContext = new PdfConversionContext(settings, conversionSectionWrappers);
 			
+			//disabled until 2pass is implemented
+			//if (foOnly) {
+				//Ensure that no parameters are needed in the generated fo, this will cause 
+				//errors in the NUMPAGES and SECTIONPAGES fields if a 2 pass generation was required.
+			//	conversionContext.forceRequires1Pass();
+			//}
+			
 			Document domDoc = XmlUtils.marshaltoW3CDomDocument(conversionSectionWrappers.createSections(),
 					Context.jcSectionModel);
 				
@@ -199,7 +208,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				}
 
 				String fo = ((ByteArrayOutputStream)intermediate).toString("UTF-8");
-				log.debug(fo);
+				if (log.isDebugEnabled()) {
+					log.debug(fo);
+				}
 
 				if (saveFO != null) {
 					FileUtils.writeStringToFile(saveFO, fo, "UTF-8");
@@ -223,10 +234,51 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		}
 
 	}
-	
-	
 
-    /* ---------------Xalan XSLT Extension Functions ---------------- */
+	private Map<String, Object> setupPageParameters(PdfConversionContext conversionContext, Map<String, Object> transformParameters) {
+		Map<String, Object> ret = new HashMap<String, Object>();
+		List<ConversionSectionWrapper> wrapperList = conversionContext.getSections().getList();
+		String sectionId = null;
+		if (transformParameters != null) {
+			ret.putAll(transformParameters);
+		}
+		for (int i=0; i<wrapperList.size(); i++) {
+			sectionId = wrapperList.get(i).getId();
+			ret.put("field_numpages_" + sectionId +  "_value", "##"); //start with dummy page number values (##);
+			ret.put("field_sectionpages_" + sectionId +  "_value", "##"); //start with dummy page number values (##);
+		}
+		return ret;
+	}
+
+	private void setupPageResults(FormattingResults calcResults,
+			PdfConversionContext conversionContext, Map<String, Object> transformParameters) {
+		List<ConversionSectionWrapper> wrapperList = conversionContext.getSections().getList();
+		List<PageSequenceResults> resultList = calcResults.getPageSequences();
+		ConversionSectionWrapper section = null;
+		Map<String, Integer> sectionPageCountMap = new HashMap<String, Integer>();
+		int sectionpages = 0;
+		int numpages = calcResults.getPageCount();
+		for (int i=0; i<resultList.size(); i++) {
+			sectionPageCountMap.put(resultList.get(i).getID(), resultList.get(i).getPageCount());
+		}
+		for (int i=0; i<wrapperList.size(); i++) {
+			section = wrapperList.get(i);
+			transformParameters.put("field_numpages_" + section.getId() +  "_value", 
+					formatPageNumber(section, numpages));
+			sectionpages = 0;
+			if (sectionPageCountMap.containsKey("section_" + section.getId())) {
+				sectionpages = sectionPageCountMap.get("section_" + section.getId());
+			}
+			transformParameters.put("field_sectionpages_" + section.getId() +  "_value", 
+					formatPageNumber(section, sectionpages));
+		}
+	}
+	
+	private String formatPageNumber(ConversionSectionWrapper section, int pageNumber) {
+	String pageFormat = section.getPageNumberInformation().getPageFormat();
+		pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
+		return FldSimpleUnitsHelper.formatFoPageNumber(pageNumber, pageFormat);
+	}
 
 	public static void logDebug(String message) {
 		log.debug(message);
@@ -325,7 +377,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 //			pStyleVal = "Normal";
 			pStyleVal = defaultParagraphStyleId;
 		}
-    	log.debug("style '" + pStyleVal );     		
+		if (log.isDebugEnabled()) {
+			log.debug("style '" + pStyleVal );
+		}
 
     	//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
@@ -343,32 +397,40 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	PPr pPr = null;
         	RPr rPr = null;
         	if (pPrNodeIt==null) {  // Never happens?        		
-    			log.debug("Here after all!!");        		
+    			if (log.isDebugEnabled()) {
+    				log.debug("Here after all!!");
+    			}
         		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
         		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
         	} else {
         		Node n = pPrNodeIt.nextNode();
         		if (n==null) {
-        			log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
+        			if (log.isDebugEnabled()) {
+        				log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
+        			}
             		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
             		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
             		// TODO - in this case, we should be able to compute once,
             		// and on subsequent calls, just return pre computed value
         		} else {
-					log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
+        			if (log.isDebugEnabled()) {
+        				log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
+        			}
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
     				pPrDirect =  (PPr)jaxb;
     				pPr = propertyResolver.getEffectivePPr(pPrDirect);  
-    				if (pPr==null) {
+    				if ((pPr==null) && (log.isDebugEnabled())) {
     					log.debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
     				}
     				
     				// On the block representing the w:p, we want to put both
     			    // pPr and rPr attributes.
     				
-    				log.debug("getting rPr for paragraph style");    				
+    				if (log.isDebugEnabled()) {
+    					log.debug("getting rPr for paragraph style");
+    				}
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
     					// rPr in pPr direct formatting only applies to paragraph mark, 
     					// so pass null here       				
@@ -377,8 +439,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			if (log.isDebugEnabled() && pPr!=null) {				
 				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
-
-				log.debug("P effective rPr: "+ XmlUtils.marshaltoString(rPr, true, true));					
 			}
         	
             // Create a DOM builder and parse the fragment			
@@ -523,7 +583,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						"fo:block");
 				foListItemBody.appendChild(foBlockElement);
 				
-				log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+				if (log.isDebugEnabled()) {
+					log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+				}
 				
 				
 			} else {
@@ -550,7 +612,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				}
 	        }
 
-			log.debug("after createFoAttributes: " + XmlUtils.w3CDomNodeToString(foBlockElement) );
+			if (log.isDebugEnabled()) {
+				log.debug("after createFoAttributes: " + XmlUtils.w3CDomNodeToString(foBlockElement) );
+			}
 			
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
@@ -953,75 +1017,23 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     
     
     public static String getPageNumberFormat(PdfConversionContext context) {
-    	
-    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
-    	
-    	if (sectPr==null) return "1";
-    	
-    	CTPageNumber pageNumber = sectPr.getPgNumType();
-    	
-    	if (pageNumber==null) return "1";
-    	
-    	NumberFormat format = pageNumber.getFmt();
-    	
-    	if (format==null) return "1";
-    	
-    	log.debug("w:pgNumType/@w:fmt=" + format.toString());
-    	
-//    	 *     &lt;enumeration value="decimal"/>
-//    	 *     &lt;enumeration value="upperRoman"/>
-//    	 *     &lt;enumeration value="lowerRoman"/>
-//    	 *     &lt;enumeration value="upperLetter"/>
-//    	 *     &lt;enumeration value="lowerLetter"/>    	
-    	if (format==NumberFormat.DECIMAL)
-    		return "1";
-    	else if (format==NumberFormat.UPPER_ROMAN)
-    		return "I";
-    	else if (format==NumberFormat.LOWER_ROMAN)
-    		return "i";
-    	//else if (format.equals(NumberFormat.UPPER_LETTER))
-    	else if (format==NumberFormat.UPPER_LETTER)
-    		return "A";
-    	else if (format==NumberFormat.LOWER_LETTER)
-    		return "a";
-
-        // TODO .. other formats
-    		
-    	return "1";
+    	String pageFormat = 
+    			context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
+    	//may return empty string if no page number format supplied
+    	pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
+    	return (pageFormat == null ? "" : pageFormat);
+    }
+	
+    public static String getPageNumberInitial(PdfConversionContext context) {
+    	int ret = 
+    			context.getSections().getCurrentSection().getPageNumberInformation().getPageStart();
+    	//may return empty string if no start page number supplied
+    	return (ret == -1 ? "" : Integer.toString(ret));
     }
 
     public static boolean hasPgNumTypeStart(PdfConversionContext context) {
-    	
-    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
-    	
-    	if (sectPr==null) return false;
-    	
-    	CTPageNumber pageNumber = sectPr.getPgNumType();
-    	
-    	if (pageNumber==null) return false;
-    	
-    	return (pageNumber.getStart()!=null);
+    	return (context.getSections().getCurrentSection().getPageNumberInformation().getPageStart() > -1);
     }
-    
-    public static String getPageNumberInitial(PdfConversionContext context) {
-    	
-    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
-
-//    	if (sectPr==null) return "1";
-    	
-    	CTPageNumber pageNumber = sectPr.getPgNumType();    	
-//    	if (pageNumber==null) {
-//    		log.debug("No PgNumType");
-//    		return "1";
-//    	}
-    	
-    	BigInteger start = pageNumber.getStart();
-    	
-//    	if (start==null) return "1";
-    	
-    	return start.toString();
-    }
-	
 	
 	public static void inFieldUpdateState(PdfConversionContext context, NodeIterator fldCharNodeIt) {
 		context.inFieldUpdateState(fldCharNodeIt);
@@ -1029,6 +1041,34 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	public static boolean inFieldGetState(PdfConversionContext context) {
 		return context.inFieldGetState();
+	}
+	
+	public static DocumentFragment create2PassParameters(PdfConversionContext context) {
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		Document document = null;
+		DocumentFragment ret = null;
+		Element element = null;
+		List<ConversionSectionWrapper> wrapperList = null;
+		try {
+			document = factory.newDocumentBuilder().newDocument();
+			ret = document.createDocumentFragment();
+			if (context.isRequires2Pass()) {
+				wrapperList = context.getSections().getList();
+				for (int i=0; i<wrapperList.size(); i++) {
+					element  = document.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:param");
+					element.setAttribute("name", "field_numpages_" + wrapperList.get(i).getId() +  "_value");
+					ret.appendChild(element);
+					element  = document.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:param");
+					element.setAttribute("name", "field_sectionpages_" + wrapperList.get(i).getId() +  "_value");
+					ret.appendChild(element);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
+		} 
+		return ret;
 	}
 	
 }
