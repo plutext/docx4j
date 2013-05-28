@@ -221,9 +221,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 //		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chartDrawing")) {
 //    		return "?";
 //		}  
-//		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing")) {
-//    		return "?";
-//		}  
+		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing")) {
+    		return "xdr";
+		}  
 //		if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")) {
 //    		return "?";
 //		}  
@@ -344,7 +344,12 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			return "http://schemas.openxmlformats.org/officeDocument/2006/customXml";
 
 		if (prefix.equals("mc"))
-			return "http://schemas.openxmlformats.org/markup-compatibility/2006";		
+			return "http://schemas.openxmlformats.org/markup-compatibility/2006";	
+		
+		if (prefix.equals("xdr"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";	
+		
+		
 		
 		// OpenDoPE
 		if (prefix.equals("odx"))
