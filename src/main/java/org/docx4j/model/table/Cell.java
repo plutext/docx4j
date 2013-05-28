@@ -107,7 +107,7 @@ public class Cell {
 		// rowspan
 		try {
 			String vm = tc.getTcPr().getVMerge().getVal();
-			if (vm == null)
+			if (vm == null || vm.equals("continue"))
 				dummy = true;
 			// dummy cells propagate this call upwards until a real cell is found
 			incrementRowSpan();
