@@ -24,6 +24,7 @@ import javax.xml.bind.JAXBElement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.plutext.jaxb.xmldsig.SignatureType;
@@ -33,7 +34,7 @@ import org.plutext.jaxb.xmldsig.SignatureType;
  * @since 2.8
 
  */
-public class XmlSignaturePart extends JaxbXmlPart<JAXBElement<SignatureType>> {
+public class XmlSignaturePart extends JaxbXmlPartXPathAware<JAXBElement<SignatureType>> {
 
 	public XmlSignaturePart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -31,7 +31,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
 
-public final class ThemePart extends JaxbXmlPart<Theme> {
+public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 	
 	private static Logger log = Logger.getLogger(ThemePart.class);		
 	

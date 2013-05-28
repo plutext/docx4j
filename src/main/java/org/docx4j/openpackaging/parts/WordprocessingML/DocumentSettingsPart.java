@@ -23,13 +23,14 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTSettings;
 
 
 
-public final class DocumentSettingsPart extends JaxbXmlPart<CTSettings> { 
+public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings> { 
 	
 	private final static Logger log = Logger.getLogger(DocumentSettingsPart.class);
 	

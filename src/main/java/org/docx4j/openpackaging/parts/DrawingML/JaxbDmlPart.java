@@ -26,11 +26,12 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.jaxb.Context;
 
-public abstract class JaxbDmlPart<E>  extends JaxbXmlPart<E> {
+public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 
 	public JaxbDmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);

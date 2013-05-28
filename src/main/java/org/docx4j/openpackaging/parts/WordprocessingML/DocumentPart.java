@@ -31,6 +31,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -48,7 +49,7 @@ import org.w3c.dom.Node;
 
 
 
-public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
+public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document
