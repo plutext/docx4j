@@ -110,6 +110,12 @@ public abstract class JaxbXmlPart<E> extends Part {
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
+				
+//				try {
+//					this.setContentLengthAsLoaded(
+//							partStore.getPartSize( name.substring(1)));
+//				} catch (UnsupportedOperationException uoe) {}
+					
 				InputStream is = partStore.loadPart( 
 						name.substring(1));
 				if (is==null) {
@@ -134,6 +140,16 @@ public abstract class JaxbXmlPart<E> extends Part {
 	public void setJaxbElement(JAXBResult result) throws JAXBException {
 		
 		setJaxbElement((E)result.getResult());
+	}
+	
+	/**
+	 * See your content as XML.  An easy way to invoke XmlUtils.marshaltoString 
+	 *  
+	 * @return
+	 * @since 3.0.0
+	 */
+	public String getXML() {
+		return XmlUtils.marshaltoString( getJaxbElement(), true, true, jc );
 	}
 	
 	public boolean isUnmarshalled(){

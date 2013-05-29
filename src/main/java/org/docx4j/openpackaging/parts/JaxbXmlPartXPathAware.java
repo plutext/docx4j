@@ -104,10 +104,10 @@ implements XPathEnabled<E> {
 			try {
 				String name = this.partName.getName();
 				
-				try {
-					this.setContentLengthAsLoaded(
-							partStore.getPartSize( name.substring(1)));
-				} catch (UnsupportedOperationException uoe) {}
+//				try {
+//					this.setContentLengthAsLoaded(
+//							partStore.getPartSize( name.substring(1)));
+//				} catch (UnsupportedOperationException uoe) {}
 				
 				InputStream is = partStore.loadPart( 
 						name.substring(1));

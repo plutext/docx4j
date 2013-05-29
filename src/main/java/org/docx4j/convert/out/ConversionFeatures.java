@@ -77,20 +77,20 @@ public interface ConversionFeatures {
 	/** Default features, that get applied to a PDF conversion
 	 */
 	public static final String[] DEFAULT_PDF_FEATURES = {
-//		PP_COMMON_DEEP_COPY, 
-//		PP_COMMON_MOVE_BOOKMARKS,
+		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
-//		PP_COMMON_PAGE_NUMBERING,
+		PP_COMMON_PAGE_NUMBERING,
 		PP_COMMON_CREATE_SECTIONS
 	};
 
 	/** Default features, that get applied to a HTML conversion
 	 */
 	public static final String[] DEFAULT_HTML_FEATURES = {
-//		PP_COMMON_DEEP_COPY, 
-//		PP_COMMON_MOVE_BOOKMARKS,
+		PP_COMMON_DEEP_COPY, 
+		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,

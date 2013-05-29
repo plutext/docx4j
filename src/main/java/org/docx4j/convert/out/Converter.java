@@ -241,47 +241,6 @@ public class Converter {
 				context.getWmlPackage().getMainDocumentPart().getFootnotesPart().getJaxbElement());		
 	}
 
-
-    //=====================================================
-    // Resolve href 
-    //=====================================================
-    /* 
-    
-		<w:hyperlink r:id="rId4" w:history="true">
-			<w:r>
-				<w:rPr>
-				    <w:rStyle w:val="Hyperlink"/>
-				</w:rPr>
-				<w:t>hyperlink</w:t>
-			</w:r>
-		</w:hyperlink>
-	
-	  Micrososoft C# code replaces w:hyperlink with 
-	  a new node 
-	  
-	      <w:hlink w:dest=".." [other attributes cloned] />
-	      
-	  before the XSLT is called.
-	
-	  But we use an extension function instead.
-                    
-                    */    
-    public static String resolveHref(AbstractWmlConversionContext context, String id  )  {
-    	
-    	org.docx4j.relationships.Relationship rel = context.getWmlPackage().getMainDocumentPart().getRelationshipsPart().getRelationshipByID(id);
-    	
-    	if ( rel != null) {
-    		
-        	// TODO resolve ServerRelativePath, if its not a full URL 
-
-    		return rel.getTarget();
-    		
-    	} else {
-    		
-    		log.error("Couldn't resolve hyperlink for rel " + id);    		
-    		return "";    		
-    	}
-    }
 	
 	//=======================================================
 	// Output of (debug) messages into the generated document
