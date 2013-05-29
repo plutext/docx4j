@@ -6,15 +6,22 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.wml.CTSimpleField;
 import org.w3c.dom.Node;
 
 /** Just a basic model for w:fldSimple that gets used in the 
  *  FldSimpleModelConverter for the conversion to pdf/html
+ *  
+ *  @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/XML.html">the spec</a>
  * 
  */
 public class FldSimpleModel extends Model {
+	
+	private static Logger log = Logger.getLogger(FldSimpleModel.class);		
+	
 	public static final String MODEL_ID = "w:fldSimple";
 	
 	protected CTSimpleField fldSimple = null;
@@ -26,6 +33,7 @@ public class FldSimpleModel extends Model {
 	@Override
 	public void build(Object node, Node content) throws TransformerException {
 		this.fldSimple = (CTSimpleField)node;
+		log.debug("\n" + XmlUtils.marshaltoString(fldSimple, true, true));
 		this.content = content;
 		setupNameParameterString(fldSimple.getInstr());
 	}
@@ -43,8 +51,14 @@ public class FldSimpleModel extends Model {
 				nameStart++;
 			if (nameStart < text.length()) {
 				nameEnd = nameStart + 1;
-				while ((nameEnd < text.length()) && (text.charAt(nameEnd) != ' '))
-					nameEnd++;
+				
+				if (text.charAt(nameStart) == '=') {
+					// Special case =nn
+					// NB, we can't process this field unless it is just a number (as opposed to a calculation)
+				} else {
+					while ((nameEnd < text.length()) && (text.charAt(nameEnd) != ' '))
+						nameEnd++;
+				}				
 			}
 			if (nameStart < nameEnd) {
 				fldName = text.substring(nameStart, nameEnd);
@@ -57,10 +71,10 @@ public class FldSimpleModel extends Model {
 	}
 
 	public static List<String> splitParameters(String text) {
-	List<String> ret = Collections.EMPTY_LIST;
-	int valStart = -1;
-	boolean inLiteral = false;
-	char ch = '\0';
+		List<String> ret = Collections.EMPTY_LIST;
+		int valStart = -1;
+		boolean inLiteral = false;
+		char ch = '\0';
 		if ((text != null) && (text.length() > 0)) {
 			ret = new ArrayList<String>(4);
 			for (int chidx = 0; chidx<text.length(); chidx++) {
@@ -99,13 +113,23 @@ public class FldSimpleModel extends Model {
 		parameters.add(value);
 	}
 
+	/**
+	 * The name of the field, for example DATE, MERGEFIELD
+	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/file_2.html">field syntax</a>
+	 * @return
+	 */
 	public String getFldName() {
 		return fldName;
 	}
 	
+	public String getFldArgument() {
+		return getFldParameters().get(0);
+	}	
+	
 	public String getFldParameterString() {
 		return fldParameterString;
 	}
+	
 	
 	public List<String> getFldParameters() {
 		if (fldParameters == null) {

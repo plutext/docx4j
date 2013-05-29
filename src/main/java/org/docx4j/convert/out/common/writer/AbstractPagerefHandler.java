@@ -9,7 +9,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.HyperlinkModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -42,7 +42,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	String textcontent = null;
 	List<String> textcontentitems = null;
 	String textcontentitem = null;
-		if (FldSimpleUnitsHelper.hasSwitch("\\p", model.getFldParameters())) {
+		if (FormattingSwitchHelper.hasSwitch("\\p", model.getFldParameters())) {
 			textcontent = getTextcontent(content);
 			textcontentitems = splitTextcontent(textcontent);
 			//textcontentitems == null -> no page number (above/below)
@@ -70,7 +70,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 			content = doc.createDocumentFragment();
 			content.appendChild(createPageref(context, doc, bookmarkId));
 		}
-		if (FldSimpleUnitsHelper.hasSwitch("\\h", model.getFldParameters())) {
+		if (FormattingSwitchHelper.hasSwitch("\\h", model.getFldParameters())) {
 			hyperlinkModel = new HyperlinkModel();
 			hyperlinkModel.setup(context.getWmlPackage(), context.getCurrentPart());
 			hyperlinkModel.build(model, content); //the bookmark is the target, \h gets ignored

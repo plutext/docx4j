@@ -45,10 +45,18 @@ public class HyperlinkUtil {
 	}
 
 	private static Node toFoNode(AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) {
-	Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:basic-link");
-	String internalTarget = model.getInternalTarget();
-	String externalTarget = model.getExternalTarget();
-	String location = null;
+		
+		Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:basic-link");
+		String internalTarget = model.getInternalTarget();
+		String externalTarget = model.getExternalTarget();
+		
+		if (internalTarget==null
+				&& externalTarget==null) {
+			log.error("No targets found for " );
+		}
+		
+		String location = null;
+		
 		if (model.isExternal()) {
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {
@@ -67,10 +75,12 @@ public class HyperlinkUtil {
 	}
 
 	private static Node toHtmlNode(AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) {
-	Element ret = doc.createElement("a");
-	String internalTarget = model.getInternalTarget();
-	String externalTarget = model.getExternalTarget();
-	String location = null;
+		
+		Element ret = doc.createElement("a");
+		String internalTarget = model.getInternalTarget();
+		String externalTarget = model.getExternalTarget();
+		String location = null;
+		
 		if (model.isExternal()) {
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {

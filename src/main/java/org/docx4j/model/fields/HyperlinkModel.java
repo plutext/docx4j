@@ -4,6 +4,9 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.XSLFO.XSLFOExporterNonXSLT;
 import org.docx4j.model.Model;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -17,6 +20,9 @@ import org.w3c.dom.Node;
  * 
  */
 public class HyperlinkModel extends Model {
+	
+	private static Logger log = Logger.getLogger(HyperlinkModel.class);
+	
 	public static final String MODEL_ID = "w:hyperlink";
 	
 	protected Node content = null;
@@ -76,18 +82,23 @@ public class HyperlinkModel extends Model {
 	/** Default build method, get's called with a P.Hyperlink. 
 	 */
 	public void build(Object node, Node content) throws TransformerException {
-	Relationship relationship = null;
-	RelationshipsPart rPart = null;
-	P.Hyperlink hyperlink = (P.Hyperlink)node;
+		
+		Relationship relationship = null;
+		RelationshipsPart rPart = null;
+		P.Hyperlink hyperlink = (P.Hyperlink)node;
+		
+		System.out.println(XmlUtils.marshaltoString(hyperlink, true, true));
+		
 		this.content = content;
 		setAnchor(hyperlink.getAnchor());
 		setDocLocation(hyperlink.getDocLocation());
 		setRId(hyperlink.getId());
 		setTgtFrame(hyperlink.getTgtFrame());
 		setTooltip(hyperlink.getTooltip());
-		if ((getRId() != null) && 
-			(getRId().length() > 0) &&
-			(getCurrentPart() != null)) {
+		if (getCurrentPart() == null) {
+			log.warn("currentPart not set!");
+		} else if ((getRId() != null) && 
+			(getRId().length() > 0) ) {
 			rPart = getCurrentPart().getRelationshipsPart();
 			if (rPart != null) {
 				relationship = rPart.getRelationshipByID(getRId());
@@ -125,12 +136,14 @@ public class HyperlinkModel extends Model {
 	 *  where the hyperlink is defined within a Field
 	 */
 	public void build(FldSimpleModel fldSimpleModel, Node content) throws TransformerException {
-	int idx = 0;
-	List<String> parameters = fldSimpleModel.getFldParameters();
-	String parameter = null;
-	boolean isSwitch = false;
-	char switchChar = '\0';
-	String switchParameter = null;
+		
+		int idx = 0;
+		List<String> parameters = fldSimpleModel.getFldParameters();
+		String parameter = null;
+		boolean isSwitch = false;
+		char switchChar = '\0';
+		String switchParameter = null;
+		
 		this.content = content;
 		while (idx < parameters.size()) {
 			parameter = parameters.get(idx);
@@ -140,14 +153,14 @@ public class HyperlinkModel extends Model {
 					switchChar = Character.toLowerCase(parameter.charAt(1));
 					switch (switchChar) {
 						case 'l': //target
-							switchParameter = FldSimpleUnitsHelper.getSwitchValue(idx + 1, parameters);
+							switchParameter = FormattingSwitchHelper.getSwitchValue(idx + 1, parameters);
 							if (switchParameter != null) {
 								setTarget(switchParameter);
 								idx++;
 							}
 							break;
 						case 't': //target frame name
-							switchParameter = FldSimpleUnitsHelper.getSwitchValue(idx + 1, parameters);
+							switchParameter = FormattingSwitchHelper.getSwitchValue(idx + 1, parameters);
 							if (switchParameter != null) {
 								setTgtFrame(switchParameter);
 								idx++;
@@ -157,7 +170,7 @@ public class HyperlinkModel extends Model {
 							setTgtFrame("_blank");
 							break;
 						case 'o': //tooltip
-							switchParameter = FldSimpleUnitsHelper.getSwitchValue(idx + 1, parameters);
+							switchParameter = FormattingSwitchHelper.getSwitchValue(idx + 1, parameters);
 							if (switchParameter != null) {
 								setTooltip(switchParameter);
 								idx++;
@@ -170,7 +183,7 @@ public class HyperlinkModel extends Model {
 				else { 
 					//should only happen once with the first value, all others should be preceeded by a switch
 					if (idx == 0) {
-						setTarget(FldSimpleUnitsHelper.getSwitchValue(idx, parameters));
+						setTarget(FormattingSwitchHelper.getSwitchValue(idx, parameters));
 					}
 				}
 			}

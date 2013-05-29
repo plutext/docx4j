@@ -24,7 +24,7 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 				"Monday, April 15, 2013"));
 		quads.add(new SwitchTestQuad("4/15/2013", "\"MMMM d, yyyy\"", "April 15, 2013"));
 
-		// Word drops the rest if the quptes are missing
+		// Word drops the rest if the quotes are missing
 		quads.add(new SwitchTestQuad("4/15/2013", "dddd, MMMM dd, yyyy","Monday,")); 		
 		quads.add(new SwitchTestQuad("4/15/2013", "MMMM d, yyyy", "January 3, 2006", "January 3, 2006")); // nope
 		
@@ -37,7 +37,7 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 		quads.add(new SwitchTestQuad("4/15/2013", "\"d MMMM yyyy\"", "15 April 2013"));
 		quads.add(new SwitchTestQuad("4/15/2013", "\"MMMM yy\"", "April 13"));
 
-		// Word drops the rest if the quptes are missing
+		// Word drops the rest if the quotes are missing
 		quads.add(new SwitchTestQuad("4/15/2013", "MMM. d, yy", "Jan. 3, 06", "Jan. 3, 06")); // nope
 		quads.add(new SwitchTestQuad("4/15/2013", "d MMMM yyyy", "3 January 2006", "3 January 2006")); //nope
 		quads.add(new SwitchTestQuad("4/15/2013", "MMMM yy", "January 06", "January 06")); //nope

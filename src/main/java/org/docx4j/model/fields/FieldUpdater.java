@@ -102,7 +102,7 @@ public class FieldUpdater {
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 //			System.out.println(simpleField.getInstr());
 			
-			if ("DOCPROPERTY".equals(FldSimpleUnitsHelper.getFldSimpleName(simpleField.getInstr()))) {
+			if ("DOCPROPERTY".equals(FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr()))) {
 				//only parse those fields that get processed
 				try {
 					fsm.build(simpleField.getInstr());
@@ -129,7 +129,7 @@ public class FieldUpdater {
 				} else {
 							//docPropsCustomPart.getProperty(key);
 	//				System.out.println(val);
-					val = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, val);
+					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( simpleField.getInstr() + "\n");
 					report.append( "--> " + val + "\n");
@@ -208,7 +208,7 @@ public class FieldUpdater {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ("DOCPROPERTY".equals(FldSimpleUnitsHelper.getFldSimpleName(fr.getInstr()))) {
+			if ("DOCPROPERTY".equals(FormattingSwitchHelper.getFldSimpleName(fr.getInstr()))) {
 				try {
 					fsm.build(fr.getInstr());
 				} catch (TransformerException e) {
@@ -233,7 +233,7 @@ public class FieldUpdater {
 				} else {
 				
 	//				System.out.println(val);
-					val = FldSimpleUnitsHelper.applyFormattingSwitch(fsm, val);
+					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( fr.getInstr() + "\n");
 					report.append( "--> " + val + "\n");

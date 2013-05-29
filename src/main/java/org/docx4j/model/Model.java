@@ -35,7 +35,7 @@ public abstract class Model {
 		this.currentPart = currentPart;
 	}
 	
-	protected WordprocessingMLPackage getWordMLPackage() {
+	public WordprocessingMLPackage getWordMLPackage() {
 		return wordMLPackage;
 	}
 	

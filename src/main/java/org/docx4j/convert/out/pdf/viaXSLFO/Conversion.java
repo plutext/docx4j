@@ -32,7 +32,7 @@ import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -276,8 +276,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	private String formatPageNumber(ConversionSectionWrapper section, int pageNumber) {
 	String pageFormat = section.getPageNumberInformation().getPageFormat();
-		pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
-		return FldSimpleUnitsHelper.formatFoPageNumber(pageNumber, pageFormat);
+		pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
+		return FormattingSwitchHelper.formatFoPageNumber(pageNumber, pageFormat);
 	}
 
 	public static void logDebug(String message) {
@@ -1020,7 +1020,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	String pageFormat = 
     			context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
     	//may return empty string if no page number format supplied
-    	pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
+    	pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
     	return (pageFormat == null ? "" : pageFormat);
     }
 	

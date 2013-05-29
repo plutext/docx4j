@@ -1,42 +1,20 @@
-/*
-   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
-   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
 package org.docx4j.model.fields;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.NumberFormat;
-import org.docx4j.wml.RPr;
 
 /**
  * Formats the string value of the field according to the three possible formatting switches:
@@ -47,16 +25,14 @@ import org.docx4j.wml.RPr;
  * 
  * Note that the general-formatting-switch arguments CHARFORMAT and MERGEFORMAT are not handled here. 
  * It is the responsibility of the calling code to handle these.
- * 
- * TODO: use <w:decimalSymbol w:val="."/><w:listSeparator w:val=","/> from DocumentSettingsPart.
- * 
+ *  
  * @author alberto, jharrop
  *
  */
 public class FormattingSwitchHelper {
 	
 	private static Logger log = Logger.getLogger(FormattingSwitchHelper.class);		
-	
+
 	/* http://office.microsoft.com/en-us/word-help/insert-and-format-field-codes-in-word-2010-HA101830917.aspx
 	 * Switches:
 	 * 
@@ -159,24 +135,32 @@ public class FormattingSwitchHelper {
 	public static final int DECORATION_NONE = 0;
 	public static final int DECORATION_DASH = 1;
 	
+	protected static final String MERGEFORMAT = "MERGEFORMAT";
+	
+    // constants
+    protected static final String FO_PAGENUMBER_DECIMAL    = "1";       // '1'
+    protected static final String FO_PAGENUMBER_LOWERALPHA = "a";    // 'a'
+    protected static final String FO_PAGENUMBER_UPPERALPHA = "A";    // 'A'
+    protected static final String FO_PAGENUMBER_LOWERROMAN = "i";    // 'i'
+    protected static final String FO_PAGENUMBER_UPPERROMAN = "I";    // 'I'
 	
 	protected static final Map<String, String> DATE_FORMAT_ITEMS_TO_JAVA = new HashMap<String, String>();
 	
 	static {
-		FORMAT_PAGE_TO_FO.put("Arabic", "1");
-		FORMAT_PAGE_TO_FO.put("ArabicDash", "1");
-		FORMAT_PAGE_TO_FO.put("alphabetic", "a");
-		FORMAT_PAGE_TO_FO.put("ALPHABETIC", "A");
-		FORMAT_PAGE_TO_FO.put("roman", "i");
-		FORMAT_PAGE_TO_FO.put("ROMAN", "I");
+		FORMAT_PAGE_TO_FO.put("Arabic", FO_PAGENUMBER_DECIMAL);
+		FORMAT_PAGE_TO_FO.put("ArabicDash", FO_PAGENUMBER_DECIMAL);
+		FORMAT_PAGE_TO_FO.put("alphabetic", FO_PAGENUMBER_LOWERALPHA);
+		FORMAT_PAGE_TO_FO.put("ALPHABETIC", FO_PAGENUMBER_UPPERALPHA);
+		FORMAT_PAGE_TO_FO.put("roman", FO_PAGENUMBER_LOWERROMAN);
+		FORMAT_PAGE_TO_FO.put("ROMAN", FO_PAGENUMBER_UPPERROMAN);
 
 		FORMAT_PAGE_TO_FO.put(NumberFormat.NONE.value(), NONE_STRING); 		//"none"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL.value(), "1"); 			// "decimal"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.NUMBER_IN_DASH.value(), "1");	//"numberInDash"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.LOWER_LETTER.value(), "a");		//"lowerLetter"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_LETTER.value(), "A");		//"upperLetter"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.LOWER_ROMAN.value(), "i");		//"lowerRoman"
-		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_ROMAN.value(), "I");		//"upperRoman"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.DECIMAL.value(), FO_PAGENUMBER_DECIMAL); 			// "decimal"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.NUMBER_IN_DASH.value(), FO_PAGENUMBER_DECIMAL);	//"numberInDash"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.LOWER_LETTER.value(), FO_PAGENUMBER_LOWERALPHA);		//"lowerLetter"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_LETTER.value(), FO_PAGENUMBER_UPPERALPHA);		//"upperLetter"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.LOWER_ROMAN.value(), FO_PAGENUMBER_LOWERROMAN);		//"lowerRoman"
+		FORMAT_PAGE_TO_FO.put(NumberFormat.UPPER_ROMAN.value(), FO_PAGENUMBER_UPPERROMAN);		//"upperRoman"
 		
 		//Month
 		DATE_FORMAT_ITEMS_TO_JAVA.put("M","M");			//Number without a leading 0 (zero) for single-digit months.
@@ -191,7 +175,6 @@ public class FormattingSwitchHelper {
 		//Year
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yy","yy");		//Year as two digits with a leading 0 (zero) for years 01 through 09.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("yyyy","yyyy");	//Year as four digits.
-		DATE_FORMAT_ITEMS_TO_JAVA.put("YYYY","yyyy");	//NOT IN SPEC Year as four digits.		
 		//Hour
 		DATE_FORMAT_ITEMS_TO_JAVA.put("h","K");			//(12h) Hour without a leading 0 (zero) for single-digit hours.
 		DATE_FORMAT_ITEMS_TO_JAVA.put("H","H");			//(24h) Hour without a leading 0 (zero) for single-digit hours.
@@ -206,7 +189,21 @@ public class FormattingSwitchHelper {
 		//AM/PM
 		//DATE_FORMAT_ITEMS_TO_JAVA.put("am/pm","a");		//Displays AM or PM as uppercase.
 		//DATE_FORMAT_ITEMS_TO_JAVA.put("AM/PM","a");		//Displays AM or PM as uppercase. 
-		
+	}
+
+
+	private static class FieldResultIsNotADateOrTimeException extends Exception {
+
+		public FieldResultIsNotADateOrTimeException(){
+			super();
+		}
+	}
+	
+	private static class FieldResultIsNotANumberException extends Exception {
+
+		public FieldResultIsNotANumberException(){
+			super();
+		}
 	}
 	
 	public static String applyFormattingSwitch(FldSimpleModel model, String value) throws Docx4JException {
@@ -215,7 +212,7 @@ public class FormattingSwitchHelper {
 		Date date = null;
 		try {
 			date = getDate(model, value );
-			String dtFormat = findFormat("\\@", model.getFldParameters());
+			String dtFormat = findFirstSwitchValue("\\@", model.getFldParameters(), true);
 			log.debug("Applying date format " + dtFormat + " to " + value);
 			
 			
@@ -241,7 +238,7 @@ public class FormattingSwitchHelper {
 			
 			try {
 				number = getNumber(model, value);
-				String nFormat = findFormat("\\#", model.getFldParameters());
+				String nFormat = findFirstSwitchValue("\\#", model.getFldParameters(), true);
 				log.debug("Applying number format " + nFormat + " to " + number);
 				
 				if (nFormat==null) {
@@ -282,26 +279,13 @@ public class FormattingSwitchHelper {
 		//     \@ &quot;d 'de' MMMM 'de' yyyy  &quot; \* Upper"
 		// (ie \@ and \* at same time)
 		// but \@ must be before \*
-		String gFormat = findFormat("\\*", model.getFldParameters());		
+		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), true);		
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
 		log.debug("Result -> " + value + "\n");
 		
 		return value;
-	}
-	
-	private static class FieldResultIsNotADateOrTimeException extends Exception {
-
-		public FieldResultIsNotADateOrTimeException(){
-			super();
-		}
-	}
-	private static class FieldResultIsNotANumberException extends Exception {
-
-		public FieldResultIsNotANumberException(){
-			super();
-		}
 	}
 	
 	private static Date getDate(FldSimpleModel model, String dateStr) throws FieldResultIsNotADateOrTimeException {
@@ -349,7 +333,7 @@ public class FormattingSwitchHelper {
 		
 		// Hmm, Word seems to be happy to extract a number from a DOCPROPERTY string,
 		// but not from = ... so we should only use NumberExtractor for certain field types?
-		
+
 		WordprocessingMLPackage pkg = model.getWordMLPackage();
 		String decimalSymbol=null;
 		if (pkg!=null
@@ -361,22 +345,23 @@ public class FormattingSwitchHelper {
 			}
 		}
 
-		// First, parse the value
-		NumberExtractor nex = new NumberExtractor(decimalSymbol);
-		try {
-			value = nex.extractNumber(value);
-		} catch (java.lang.IllegalStateException noMatch) {
-			// There is no number in this string.
-			// In this case Word just inserts the non-numeric text,
-			// without attempting to format the number
-			throw new FieldResultIsNotANumberException();
-		}
+		
+			// First, parse the value
+			NumberExtractor nex = new NumberExtractor(decimalSymbol);
+			try {
+				value = nex.extractNumber(value);
+			} catch (java.lang.IllegalStateException noMatch) {
+				// There is no number in this string.
+				// In this case Word just inserts the non-numeric text,
+				// without attempting to format the number
+				throw new FieldResultIsNotANumberException();
+			}
 
-		try {
-			return Double.parseDouble(value);
-		} catch (Exception e) {
-			throw new FieldResultIsNotANumberException();				
-		}
+			try {
+				return Double.parseDouble(value);
+			} catch (Exception e) {
+				throw new FieldResultIsNotANumberException();				
+			}
 	}
 	
 	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub) 
@@ -634,56 +619,147 @@ public class FormattingSwitchHelper {
 		
 	}
 	
-
-	public static String findFormat(String formatSwitch, List<String> fldParameters) {
-		
-		String ret = null;
-		String param = null;
-		if ((fldParameters != null) && (!fldParameters.isEmpty())) {
-			for (int i=0; i<fldParameters.size(); i++) {
-				if (fldParameters.get(i).startsWith(formatSwitch)) {
-					param = fldParameters.get(i);
-					break;
-				}
+	
+	/** Conversion of the word page number format to the fo page number format.
+	 *  
+	 * @param wordName word page number format
+	 * @return null if the wordName is null, the correspondig fo value if present or a default.
+	 */
+	public static String getFoPageNumberFormat(String wordName) {
+	String ret = null;
+		if ((wordName != null) && (wordName.length() > 0)) {
+			ret = FORMAT_PAGE_TO_FO.get(wordName);
+			if (ret == null) {
+				ret = DEFAULT_FORMAT_PAGE_TO_FO;
 			}
-		}
-		if ((param != null) &&  (param.length() > formatSwitch.length())) {
-			ret = param.substring(formatSwitch.length());
-			if ((ret.length() > 0) && 
-				(ret.charAt(0) == '"') && (ret.charAt(ret.length() - 1) == '"')) {
-				ret = ret.substring(1, ret.length() - 1);
+			else if (ret == NONE_STRING) {
+				ret = null;
 			}
 		}
 		return ret;
 	}
 	
+	/** Check if the page number format has a decoration (eg. dash).
+	 *  
+	 * @param wordName word page number format
+	 * @return decoration type (one of the DECORATION_xxx constants).
+	 */
+	public static int getFoPageNumberDecoration(String wordName) {
+	int ret = DECORATION_NONE;
+		if ((wordName != null) && (wordName.length() > 0)) {
+			if ("ArabicDash".equals(wordName) || 
+			   NumberFormat.NUMBER_IN_DASH.value().equals(wordName)) {
+				ret = DECORATION_DASH;
+			}
+		}
+		return ret;
+	}
 	
-//	public static String getFldSimpleName(String instr) {
-//		
-//		String ret = null;
-//		int startValue = 0;
-//		int endValue = -1;	
-//		if ((instr != null) && (instr.length() > 0)) {
-//			while ((startValue < instr.length()) && 
-//				   (instr.charAt(startValue) == ' ')) startValue++;
-//			endValue = startValue;
-//			while ((endValue < instr.length()) && 
-//					   (instr.charAt(endValue) != ' ')) endValue++;
-//			if (startValue < instr.length()) {
-//				ret = instr.substring(startValue, endValue).toUpperCase();
-//			}
-//		}
-//		return ret;
-//	}
+	/** Format a page number the way fo would do it, taken from PageNumberGenerator
+	 *  of Apache-Fop 1.0
+	 * 
+	 * @param pageNumber to be formatted
+	 * @param foFormat fo format name
+	 * @return formatted page number (or null if pageNumber < 0)
+	 */
+	public static String formatFoPageNumber(int pageNumber, String foFormat) {
+	String ret = null;
+		if (pageNumber > -1) {
+			if (foFormat == null) foFormat = "1"; //default
+			if (pageNumber == 1) {
+				//shortcut for html, for 1 the foFormat and the result are the same
+				ret = foFormat; 
+			}
+			else {
+		        if (FO_PAGENUMBER_DECIMAL.equals(foFormat)) {
+		        	//formatting with leading zeroes omitted
+		            ret = Integer.toString(pageNumber);
+		        } else if (FO_PAGENUMBER_LOWERROMAN.equals(foFormat) || 
+		        		  FO_PAGENUMBER_UPPERROMAN.equals(foFormat)) {
+		            ret = makeRoman(pageNumber);
+		            if (FO_PAGENUMBER_UPPERROMAN.equals(foFormat)) {
+		                ret = ret.toUpperCase();
+		            }
+		        } else {
+		            // alphabetic
+		            ret = makeAlpha(pageNumber);
+		            if (FO_PAGENUMBER_UPPERALPHA.equals(foFormat)) {
+		                ret = ret.toUpperCase();
+		            }
+		        }
+			}
+		}
+		return ret;
+	}
+
+    private static String makeRoman(int num) {
+        int[] arabic = {
+            1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
+        };
+        String[] roman = {
+            "m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv",
+            "i"
+        };
+
+        int i = 0;
+        StringBuffer romanNumber = new StringBuffer();
+
+        while (num > 0) {
+            while (num >= arabic[i]) {
+                num = num - arabic[i];
+                romanNumber.append(roman[i]);
+            }
+            i = i + 1;
+        }
+        return romanNumber.toString();
+    }
+
+    private static String makeAlpha(int num) {
+        String letters = "abcdefghijklmnopqrstuvwxyz";
+        StringBuffer alphaNumber = new StringBuffer();
+
+        int base = 26;
+        int rem = 0;
+
+        num--;
+        if (num < base) {
+            alphaNumber.append(letters.charAt(num));
+        } else {
+            while (num >= base) {
+                rem = num % base;
+                alphaNumber.append(letters.charAt(rem));
+                num = num / base;
+            }
+            alphaNumber.append(letters.charAt(num - 1));
+        }
+        return alphaNumber.reverse().toString();
+    }
+	
+	public static String getFldSimpleName(String instr) {
+	String ret = null;
+	int startValue = 0;
+	int endValue = -1;	
+		if ((instr != null) && (instr.length() > 0)) {
+			while ((startValue < instr.length()) && 
+				   (instr.charAt(startValue) == ' ')) startValue++;
+			endValue = startValue;
+			while ((endValue < instr.length()) && 
+					   (instr.charAt(endValue) != ' ')) endValue++;
+			if (startValue < instr.length()) {
+				ret = instr.substring(startValue, endValue).toUpperCase();
+			}
+		}
+		return ret;
+	}
 	
 	public static String convertDatePattern(String wordDatePattern) {
-		StringBuilder buffer = new StringBuilder(32);
-		int valueStart = -1;
-		int idx = 0;
-		int idx2 = 0;
-		char ch = '\0';
-		char lastCh = '\0';
-		boolean inLiteral = false;
+	StringBuilder buffer = new StringBuilder(32);
+	int valueStart = -1;
+	int idx = 0;
+	int idx2 = 0;
+	char ch = '\0';
+	char lastCh = '\0';
+	boolean inLiteral = false;
 		if ((wordDatePattern != null) && (wordDatePattern.length() > 0)) {
 			while (idx < wordDatePattern.length()) {
 				ch = wordDatePattern.charAt(idx);
@@ -691,14 +767,6 @@ public class FormattingSwitchHelper {
 					if (inLiteral) {
 						buffer.append(wordDatePattern.substring(valueStart, idx)); //ignore closing '
 						idx2 = idx + 1; //skip '
-						/*
-						 * Word treats the whitespace outside the right single quote as significant, 
-						 * and inserts zero, one or many spaces as if the whitespace was inside the 
-						 * literal.
-						 * 
-						 * WARNING: downstream XML processing needs to treat
-						 * this whitespace as significant. 
-						 */
 						while ((idx2 < wordDatePattern.length()) && 
 							   (wordDatePattern.charAt(idx2) == ' ')) {
 							buffer.append(' ');
@@ -761,13 +829,12 @@ public class FormattingSwitchHelper {
 	}
 	
 	public static String formatDate(FldSimpleModel model) {
-		return formatDate(model, new Date()); 
+		return formatDate(model, new Date());
 	}
-
 	
 	public static String formatDate(FldSimpleModel model, Date date) {
 		
-		String format = findFormat("\\@", model.getFldParameters());
+		String format = findFirstSwitchValue("\\@", model.getFldParameters(), true);
 		return formatDate(model, format, date );
 	}
 
@@ -780,62 +847,81 @@ public class FormattingSwitchHelper {
 			dateFormat = simpleDateFormat;
 		}
 		else {
-			dateFormat = (model.getFldType().indexOf("DATE") > -1 ? 
+			dateFormat = (model.getFldName().indexOf("DATE") > -1 ? 
 						  SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT) :
 					      SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)); 
 		}
 		return dateFormat.format(date);
 	}
 	
+	public static boolean hasSwitch(String switchDef, List<String> fldParameters) {
+		return (findSwitch(switchDef, 0, fldParameters) > -1);
+	}
+	
+	public static String findFirstSwitchValue(String switchDef, List<String> fldParameters, boolean ignoreMergeformat) {
+		int pos = findSwitch(switchDef, 0, fldParameters);
+		String switchValue = null;
+		if (pos > -1) {
+			switchValue = getSwitchValue(pos + 1, fldParameters);
+			if (MERGEFORMAT.equals(switchValue) && ignoreMergeformat) {
+				switchValue = null;
+				pos = findSwitch(switchDef, pos + 1, fldParameters);
+				if (pos > -1) {
+					switchValue = getSwitchValue(pos + 1, fldParameters);
+				}
+			}
+		}
+		return switchValue;
+	}
+	
+	public static String getSwitchValue(int pos, List<String> fldParameters) {
+	String ret = null;
+		if ((fldParameters != null) && (pos > -1) && (pos < fldParameters.size())) {
+			ret = fldParameters.get(pos);
+			if ((ret.length() > 1) && 
+				(ret.charAt(0) == '"') && 
+				(ret.charAt(ret.length() - 1) == '"')) {
+				ret = ret.substring(1, ret.length() - 1);
+			}
+		}
+		if ((ret != null) && (ret.length() > 0) && (ret.charAt(0) == '\\')) {
+			//don't return a switch as a switch value;
+			ret = null;
+		}
+		return ret;
+	}
+
+	public static List<String> findAllSwitchValues(String switchDef, List<String> fldParameters) {
+	List<String> ret = null;
+	int pos = 0;
+		while ((pos = findSwitch(switchDef, pos, fldParameters)) > -1) {
+			if (ret == null) {
+				ret = new ArrayList<String>();
+			}
+			pos++;
+			ret.add(getSwitchValue(pos, fldParameters));
+		}
+		return ret;
+	}
+
+	public static int findSwitch(String switchDef, int startPos, List<String> fldParameters) {
+	int ret = -1;
+		if ((fldParameters != null) && (!fldParameters.isEmpty())) {
+			for (int i=startPos; i<fldParameters.size(); i++) {
+				if (switchDef.equals(fldParameters.get(i))) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 	
 	private static SimpleDateFormat getSimpleDateFormat() {
-		
-		SimpleDateFormat ret = DATE_FORMATS.get();
+	SimpleDateFormat ret = DATE_FORMATS.get();
 		if (ret == null) {
 			ret = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance();
 			DATE_FORMATS.set(ret);
 		}
 		return ret;
 	}
-
-	
-	
-	// TODO: move the below methods to some other class
-	
-	/** Conversion of the word page number format to the fo page number format.
-	 *  
-	 * @param wordName word page number format
-	 * @return null if the wordName is null, the correspondig fo value if present or a default.
-	 */
-	public static String getFoPageNumberFormat(String wordName) {
-	String ret = null;
-		if ((wordName != null) && (wordName.length() > 0)) {
-			ret = FORMAT_PAGE_TO_FO.get(wordName);
-			if (ret == null) {
-				ret = DEFAULT_FORMAT_PAGE_TO_FO;
-			}
-			else if (ret == NONE_STRING) {
-				ret = null;
-			}
-		}
-		return ret;
-	}
-	
-	/** Check if the page number format has a decoration (eg. dash).
-	 *  
-	 * @param wordName word page number format
-	 * @return decoration type (one of the DECORATION_xxx constants).
-	 */
-	public static int getFoPageNumberDecoration(String wordName) {
-	int ret = DECORATION_NONE;
-		if ((wordName != null) && (wordName.length() > 0)) {
-			if ("ArabicDash".equals(wordName) || 
-			   NumberFormat.NUMBER_IN_DASH.value().equals(wordName)) {
-				ret = DECORATION_DASH;
-			}
-		}
-		return ret;
-	}
-
-	
 }

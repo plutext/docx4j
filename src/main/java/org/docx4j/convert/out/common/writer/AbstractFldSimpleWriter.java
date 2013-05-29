@@ -33,7 +33,7 @@ import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -75,7 +75,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 	
@@ -85,7 +85,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 	
@@ -96,7 +96,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return FldSimpleUnitsHelper.formatDate(model);
+			return FormattingSwitchHelper.formatDate(model);
 		}
 	}
 
@@ -117,7 +117,7 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 			try {
 				String value = dpr.getValue(key).toString();
 				log.debug("= " + value);
-				return FldSimpleUnitsHelper.applyFormattingSwitch(model, value);
+				return FormattingSwitchHelper.applyFormattingSwitch(model, value);
 			} catch (FieldValueException e) {
 				
 				if (e.getMessage().contains("No value found for DOCPROPERTY PAGES")) {// TODO improve this

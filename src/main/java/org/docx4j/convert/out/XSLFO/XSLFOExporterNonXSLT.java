@@ -41,7 +41,7 @@ import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.model.BookmarkStartModel;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
@@ -136,11 +136,10 @@ public class XSLFOExporterNonXSLT {
 	PdfSettings pdfSettings = null;
 	
 	public XSLFOExporterNonXSLT(WordprocessingMLPackage wmlPackage, 
-			ConversionImageHandler conversionImageHandler) {
+			PdfSettings  pdfSettings) {
 
-		pdfSettings = new PdfSettings();
-		pdfSettings.setWmlPackage(wmlPackage);
-		pdfSettings.setImageHandler(conversionImageHandler);
+		this.pdfSettings = pdfSettings;
+		
 	}
 	
 	/**
@@ -148,6 +147,7 @@ public class XSLFOExporterNonXSLT {
 	 * @return
 	 */
 	public org.w3c.dom.Document export() throws Docx4JException {
+		
 		Element foRoot = null;
 		Element pageSequence = null;
 		Element flow = null;
@@ -159,10 +159,12 @@ public class XSLFOExporterNonXSLT {
 		pdfSettings.setWmlPackage(localWmlPackage);
 		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, pdfSettings.getFeatures()); 
 		
-		XSLFOConversionContextNonXSLT conversionContext = new XSLFOConversionContextNonXSLT(pdfSettings, conversionSectionWrappers);
+		XSLFOConversionContextNonXSLT conversionContext = 
+				new XSLFOConversionContextNonXSLT(pdfSettings, conversionSectionWrappers);
 		//Ensure that no parameters are needed in the generated fo, this will cause 
 		//errors in the NUMPAGES and SECTIONPAGES fields if a 2 pass generation was required.
 		conversionContext.forceRequires1Pass();
+		conversionContext.setCurrentPartMainDocument(); 
 		
     	document = XmlUtils.neww3cDomDocument();
     	
@@ -200,7 +202,7 @@ public class XSLFOExporterNonXSLT {
     	root.appendChild(pageSequence);
     	pageSequence.setAttribute("master-reference", sectionWrapper.getId());
     	pageSequence.setAttribute("id", "section_" + sectionWrapper.getId());
-    	pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
+    	pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
     	if (pageNumberInitial > -1) {
         	pageSequence.setAttribute("initial-page-number", Integer.toString(pageNumberInitial));
     	}
@@ -900,6 +902,8 @@ public class XSLFOExporterNonXSLT {
 							  document, getCurrentParent());
 				
 			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+				
+				System.out.println("Handling hyperlink..");
 
 				convertToNode(conversionContext, 
 							  o, HyperlinkModel.MODEL_ID,
@@ -1058,13 +1062,19 @@ public class XSLFOExporterNonXSLT {
 //		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 //				+ "/table-nested.docx";
-		+ "/sample-docs/word/headers.docx";
+//		+ "/sample-docs/word/headers.docx";
+		+ "/sample-docs/word/sample-docxv2.docx";		
 		
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		
+		PdfSettings pdfSettings = new PdfSettings();
+		pdfSettings.setWmlPackage(wmlPackage);
+		pdfSettings.setImageHandler(new PDFConversionImageHandler());
+		
+		
 		XSLFOExporterNonXSLT withoutXSLT = new XSLFOExporterNonXSLT(wmlPackage, 
-													new PDFConversionImageHandler());		
+				pdfSettings);		
 //		new PDFConversionImageHandler(settings.getImageDirPath(), true) : 
 //				new HTMLConversionImageHandler("c:\\temp", "/bar", true) );
 		

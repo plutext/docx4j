@@ -10,7 +10,7 @@ import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.convert.out.common.writer.RefHandler;
 import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.FldSimpleUnitsHelper;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.properties.Property;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -25,8 +25,8 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		@Override
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
 		String pageFormat = context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
-			pageFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageFormat);
-			return FldSimpleUnitsHelper.formatFoPageNumber(1, pageFormat);
+			pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
+			return FormattingSwitchHelper.formatFoPageNumber(1, pageFormat);
 		}
 	}
 	
@@ -54,8 +54,8 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		protected Node createPageref(AbstractWmlConversionContext context, Document doc, String bookmarkId) {
 		Element ret = doc.createElement("span");
 		String pageNumberFormat = context.getSections().getCurrentSection().getPageNumberInformation().getNumpagesFormat();
-			pageNumberFormat = FldSimpleUnitsHelper.getFoPageNumberFormat(pageNumberFormat);
-			ret.appendChild(doc.createTextNode(FldSimpleUnitsHelper.formatFoPageNumber(1, pageNumberFormat)));
+			pageNumberFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageNumberFormat);
+			ret.appendChild(doc.createTextNode(FormattingSwitchHelper.formatFoPageNumber(1, pageNumberFormat)));
 			return ret;
 		}
 		
