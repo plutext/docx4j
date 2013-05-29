@@ -569,48 +569,16 @@
 			</w:r>
 		</w:hyperlink>
 -->  
+
   <xsl:template match="w:hyperlink">
-    <a>
-	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
-      
-	<xsl:variable name="hTemp" 
-		select="java:org.docx4j.convert.out.Converter.resolveHref(
-		             $conversionContext, $relId )" />
-		                   
-      <xsl:variable name="href">
-          <xsl:value-of select="$hTemp"/>
-        <xsl:choose>
-          <xsl:when test="@w:anchor">
-            #<xsl:value-of select="@w:anchor"/>
-          </xsl:when>
-          <xsl:when test="@w:bookmark">
-            #<xsl:value-of select="@w:bookmark"/>
-          </xsl:when>
-          <xsl:when test="@w:arbLocation">
-            # <xsl:value-of select="@w:arbLocation"/>
-          </xsl:when>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:if test="not(href='')">
-        <xsl:attribute name="href">
-          <xsl:value-of select="$href"/>
-        </xsl:attribute>
-      </xsl:if>
-      
-<!-- 
-      <xsl:for-each select="@w:tgtFrame">
-        <xsl:attribute name="target">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
-      <xsl:for-each select="@w:tooltip">
-        <xsl:attribute name="title">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
- -->
- 		<xsl:apply-templates />      
-    </a>
+	<xsl:variable name="childResults">
+		<xsl:apply-templates /> 
+	</xsl:variable>
+
+	<xsl:variable name="currentNode" select="." />  			
+
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext,$currentNode, 
+			$childResults)" />
   </xsl:template>
    
   <xsl:template match="w:bookmarkStart">

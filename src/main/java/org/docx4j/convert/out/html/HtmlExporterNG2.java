@@ -223,9 +223,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	public void html(WordprocessingMLPackage wmlPackage,
 			javax.xml.transform.Result result, HtmlSettings htmlSettings)
 			throws Exception {
-	HTMLConversionContext conversionContext = null;
-	WordprocessingMLPackage localWmlPackage = wmlPackage;
-	ConversionSectionWrappers conversionSectionWrappers = null; 
+		
+		HTMLConversionContext conversionContext = null;
+		WordprocessingMLPackage localWmlPackage = wmlPackage;
+		ConversionSectionWrappers conversionSectionWrappers = null; 
 
 	
 		// Prep parameters
@@ -248,6 +249,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		
 		//Setup the context
 		conversionContext = new HTMLConversionContext(htmlSettings, conversionSectionWrappers);
+		conversionContext.setCurrentPartMainDocument();
 
 		// Now do the transformation
 		log.debug("About to transform...");

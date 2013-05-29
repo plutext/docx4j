@@ -6,7 +6,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.XSLFO.XSLFOExporterNonXSLT;
 import org.docx4j.model.Model;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -78,6 +77,16 @@ public class HyperlinkModel extends Model {
 
 	// imageMapCoordinates switch \m ignored - requires a ismap attribute in an embedded img
 	
+//	P.Hyperlink pHyperlink;
+//	/**
+//	 * Where this model was built with a P.Hyperlink,
+//	 * here it is.  Useful for debugging.
+//	 * @return
+//	 */
+//	public P.Hyperlink getPHyperlink() {
+//		return pHyperlink;
+//	}
+	
 	@Override
 	/** Default build method, get's called with a P.Hyperlink. 
 	 */
@@ -85,22 +94,25 @@ public class HyperlinkModel extends Model {
 		
 		Relationship relationship = null;
 		RelationshipsPart rPart = null;
-		P.Hyperlink hyperlink = (P.Hyperlink)node;
+		P.Hyperlink pHyperlink = (P.Hyperlink)node;
 		
-		System.out.println(XmlUtils.marshaltoString(hyperlink, true, true));
+//		log.debug(XmlUtils.marshaltoString(hyperlink, true, true));
 		
 		this.content = content;
-		setAnchor(hyperlink.getAnchor());
-		setDocLocation(hyperlink.getDocLocation());
-		setRId(hyperlink.getId());
-		setTgtFrame(hyperlink.getTgtFrame());
-		setTooltip(hyperlink.getTooltip());
+		setAnchor(pHyperlink.getAnchor());
+		setDocLocation(pHyperlink.getDocLocation());
+		setRId(pHyperlink.getId());
+		setTgtFrame(pHyperlink.getTgtFrame());
+		setTooltip(pHyperlink.getTooltip());
 		if (getCurrentPart() == null) {
-			log.warn("currentPart not set!");
+			log.warn("set currentPart (via conversionContext)");
 		} else if ((getRId() != null) && 
 			(getRId().length() > 0) ) {
 			rPart = getCurrentPart().getRelationshipsPart();
-			if (rPart != null) {
+			if (rPart == null) {
+				log.error("RelationshipsPart is missing!");				
+			} else {
+				log.debug("looking for rel" + getRId());
 				relationship = rPart.getRelationshipByID(getRId());
 				if ((relationship != null) &&
 					(Namespaces.HYPERLINK.equals(relationship.getType()))) {
@@ -212,9 +224,10 @@ public class HyperlinkModel extends Model {
 	}
 	
 	public String getInternalTarget() {
-	String ret = (isExternal() ? null : getTarget());
+		
+		String ret = (isExternal() ? null : getTarget());
 		if (ret == null) {
-			ret = getAnchor();
+			ret = getAnchor(); // this is a target, see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/hyperlink_2.html
 		}
 		if (ret == null) {
 			ret = getDocLocation();

@@ -23,7 +23,8 @@ public class HyperlinkUtil {
 	public static Node toNode(int outputType, AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) throws TransformerException {
 	Node ret = content;
 		try {
-			context.handleHyperlink(model);
+			context.handleHyperlink(model); // extension point: you can pass your own handler in settings
+			
 			switch (outputType) {
 				case HTML_OUTPUT:
 					ret = toHtmlNode(context, model, content, doc);
