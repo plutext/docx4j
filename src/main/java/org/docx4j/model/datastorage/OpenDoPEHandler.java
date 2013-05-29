@@ -16,14 +16,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.namespace.NamespaceContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -34,7 +31,6 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -48,14 +44,12 @@ import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.R;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.Text;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
@@ -69,7 +63,6 @@ public class OpenDoPEHandler {
 
 		this.wordMLPackage = wordMLPackage;
 
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 			throw new Docx4JException("OpenDoPE XPaths part missing");
 		} else {
@@ -132,10 +125,10 @@ public class OpenDoPEHandler {
 	 * If set to <code>true</code>, conditional SDT cells are removed entirely.
 	 * Note that the table geometry is not changed; hence this works better
 	 * without dynamic table widths / no global width settings.
-	 * 
-	 * Due to the architecture of this class, this is a static flag changing the
-	 * behavior of all following calls to {@link #preprocess}.
-	 * 
+	 *
+	 * This affects all future calls on the {{@link #preprocess} method for this
+	 * instance.
+	 *
 	 * @param removeSdtCellsOnFailedCondition
 	 *            The new value for the cell removal flag.
 	 */
@@ -285,8 +278,7 @@ public class OpenDoPEHandler {
 
 				log.info(tag.getVal());
 
-				QueryString qs = new QueryString();
-				HashMap<String, String> map = qs.parseQueryString(tag.getVal(),
+				HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(),
 						true);
 
 				String componentId = map.get(BINDING_ROLE_COMPONENT);
@@ -617,7 +609,7 @@ public class OpenDoPEHandler {
 			List<Object> newChildren = new ArrayList<Object>();
 
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
-			List children = getChildren(parentUnwrapped);
+			List<Object> children = getChildren(parentUnwrapped);
 			if (children == null) {
 				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
@@ -672,8 +664,7 @@ public class OpenDoPEHandler {
 
 		log.info(tag.getVal());
 
-		QueryString qs = new QueryString();
-		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 
 		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
@@ -871,7 +862,6 @@ public class OpenDoPEHandler {
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
 		log.info("/n/n Repeat: using xpath: " + xpathBase);
-		NamespaceContext nsContext = new NamespacePrefixMappings();
 		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
 				storeItemId, xpathBase, prefixMappings);
 		// storeItemId, xpathBase+"/*", prefixMappings);
@@ -1005,7 +995,7 @@ public class OpenDoPEHandler {
 		@Override
 		public void walkJAXBElements(Object parent) {
 
-			List children = getChildren(parent);
+			List<Object> children = getChildren(parent);
 			if (children != null) {
 
 				for (Object o : children) {
@@ -1055,7 +1045,6 @@ public class OpenDoPEHandler {
 		String repeatId = null;
 		String bindingId = null;
 
-		Condition c = null;
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
 		Tag tag = sdtPr.getTag();
@@ -1182,10 +1171,7 @@ public class OpenDoPEHandler {
 	private void processDescendantCondition(Object sdt, String xpathBase,
 			int index, Tag tag ) {
 
-		String thisXPath = null;
-
 		Condition c = null;
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
 		HashMap<String, String> map = QueryString.parseQueryString(
 				tag.getVal(), true);
@@ -1314,9 +1300,6 @@ public class OpenDoPEHandler {
 		
 		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
 		System.out.println(filepathprefix);
-		
-		StringBuilder timingSummary = new StringBuilder();
-		
 
 		// Process conditionals and repeats
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
