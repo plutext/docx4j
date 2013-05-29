@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
@@ -30,6 +31,9 @@ import org.w3c.dom.Document;
  * 
  */
 public class PartialDeepCopy {
+	
+	protected static Logger log = Logger.getLogger(PartialDeepCopy.class);
+	
 	
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
 	OpcPackage ret = null;
@@ -92,28 +96,40 @@ public class PartialDeepCopy {
 			Base sourcePart,
 			Base targetPart,
 			Set<String> relationshipTypes) throws Docx4JException {
-	RelationshipsPart sourceRelationshipsPart = sourcePart.getRelationshipsPart(false);
-	Relationships sourceRelationships = (sourceRelationshipsPart != null ? 
-								   		 sourceRelationshipsPart.getRelationships() : 
-								   null);
-	List<Relationship> sourceRelationshipList = (sourceRelationships != null ? 
-								   				 sourceRelationships.getRelationship() : 
-												 null);
-	RelationshipsPart targetRelationshipsPart = null;
-	Relationships targetRelationships = null;
-	Relationship sourceRelationship = null;
-	Relationship targetRelationship = null;
-	Part sourceChild = null;
-	Part targetChild = null;
+		
+		RelationshipsPart sourceRelationshipsPart = sourcePart.getRelationshipsPart(false);
+		Relationships sourceRelationships = (sourceRelationshipsPart != null ? 
+									   		 sourceRelationshipsPart.getRelationships() : 
+									   null);
+		List<Relationship> sourceRelationshipList = (sourceRelationships != null ? 
+									   				 sourceRelationships.getRelationship() : 
+													 null);
+		
+		RelationshipsPart targetRelationshipsPart = null;
+		Relationships targetRelationships = null;
+		
+		Relationship sourceRelationship = null;
+		Relationship targetRelationship = null;
+		
+		Part sourceChild = null;
+		Part targetChild = null;
+		
 		if ((sourceRelationshipList != null) && 
 			(!sourceRelationshipList.isEmpty())) {
+			
 			targetRelationshipsPart = targetPart.getRelationshipsPart(); //create if needed
 			targetRelationships = targetRelationshipsPart.getRelationships();
+			
 			for (int i=0; i<sourceRelationshipList.size(); i++) {
+				
 				sourceRelationship = sourceRelationshipList.get(i);
 				//the Relationship doesn't have any references to parts, therefore it can be reused
 				targetRelationships.getRelationship().add(sourceRelationship);
-				if (!"external".equals(sourceRelationship.getTargetMode())) {
+				
+				if (sourceRelationship.getTargetMode()==null
+						// per ECMA 376 4ed Part 2, capitalisation should be thus: "External"
+						// but we can relax this..
+						|| !"external".equals(sourceRelationship.getTargetMode().toLowerCase())) {
 					sourceChild = sourceRelationshipsPart.getPart(sourceRelationship);
 					targetChild = deepCopyPart(opcPackage, targetPart, sourceChild, relationshipTypes);
 					if (sourceChild != targetChild) {
@@ -125,8 +141,9 @@ public class PartialDeepCopy {
 	}
 
 	protected static Part deepCopyPart(OpcPackage opcPackage, Base targetParent, Part sourcePart, Set<String> relationshipTypes) throws Docx4JException {
-	//check if already handled
-	Part ret = opcPackage.getParts().get(sourcePart.getPartName());
+
+		//check if already handled
+		Part ret = opcPackage.getParts().get(sourcePart.getPartName());
 		if (ret == null) {
 			//
 			ret = copyPart(sourcePart, 
