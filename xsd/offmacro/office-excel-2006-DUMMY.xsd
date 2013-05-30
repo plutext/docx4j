@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/office/excel/2006/main"
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	targetNamespace="http://schemas.microsoft.com/office/excel/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	
+	<!--  Don't generate classes from this; it exists solely for 2008-2 -->
+					
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.schemas.microsoft.com.office.excel_2006.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	 	
+	
+
+
+	<xsd:element name="macrosheet" type="CT_Worksheet" />
+	<xsd:complexType name="CT_Worksheet" /> <!--  DUMMY shell element -->
+
+</xsd:schema>

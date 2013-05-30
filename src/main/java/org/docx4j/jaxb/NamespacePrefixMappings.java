@@ -157,6 +157,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "WX";
     	}
 
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2006/wordml")) {
+    		return "wne";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
     		return "aml";
     	}
@@ -318,6 +322,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 
 		if (prefix.equals("WX"))
 			return "http://schemas.microsoft.com/office/word/2003/auxHint";
+		
+		if (prefix.equals("wne"))
+			return "http://schemas.microsoft.com/office/word/2006/wordml";
 
 		if (prefix.equals("aml"))
 			return "http://schemas.microsoft.com/aml/2001/core";

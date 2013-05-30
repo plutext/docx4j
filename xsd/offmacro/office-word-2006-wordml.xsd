@@ -1,42 +1,92 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema elementFormDefault="qualified"
-xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns="http://schemas.microsoft.com/office/word/2006/wordml" targetNamespace="http://schemas.microsoft.com/office/word/2006/wordml">
-  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="word12.xsd" />
-  <xsd:import id="rel" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd" />
-  <xsd:element name="vbaSuppData" type="CT_VbaSuppData"/>
-  <xsd:complexType name="CT_DocEvents">
-    <xsd:sequence>
-      <xsd:element name="eventDocNew" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocOpen" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocClose" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocSync" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocXmlAfterInsert" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocXmlBeforeDelete" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocContentControlAfterInsert" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocContentControlBeforeDelete" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocContentControlOnExit" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocContentControlOnEnter" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocStoreUpdate" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="eventDocContentControlContentUpdate" minOccurs="0" maxOccs="1"/>
-      <xsd:element name="eventDocBuildingBlockAfterInsert" minOccurs="0" maxOccurs="1"/>
-    </xsd:sequence>
-  </xsd:complexType>
-  <xsd:complexType name="CT_Mcd">
-    <xsd:attribute name="macroName" type="w:ST_String" use="optional"/>
-    <xsd:attribute name="name" type="w:ST_String" use="optional"/>
-    <xsd:attribute name="menuHelp" type="w:ST_String" use="optional"/>
-    <xsd:attribute name="bEncrypt" type="w:ST_UcharHexNumber"/>
-    <xsd:attribute name="cmg" type="w:ST_UcharHexNumber"/>
-  </xsd:complexType>
-  <xsd:complexType name="CT_Mcds">
-    <xsd:sequence>
-      <xsd:element name="mcd" type="CT_Mcd" minOccurs="0" maxOccurs="unbounded"/>
-    </xsd:sequence>
-  </xsd:complexType>
-  <xsd:complexType name="CT_VbaSuppData">
-    <xsd:sequence>
-      <xsd:element name="docEvents" type="CT_DocEvents" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="mcds" type="CT_Mcds" minOccurs="0" maxOccurs="1"/>
-    </xsd:sequence>
-  </xsd:complexType>
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns="http://schemas.microsoft.com/office/word/2006/wordml"
+	targetNamespace="http://schemas.microsoft.com/office/word/2006/wordml"	
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- From [MS-OFFMACRO2]  -->
+	
+	<!--
+	
+	JAXB INSTRUCTIONS
+		  
+	  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+	  
+				
+	 	  \Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer  office-word-2006-wordml.xsd -d temp -no-header -target 2.0 -extension
+		 
+	-->	
+	
+	<xsd:import
+		namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+		schemaLocation="../wml/wml.xsd" />
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd" /> <!-- orel.xsd -->
+		
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.schemas.microsoft.com.office.word_2006.wordml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	 
+			
+	<xsd:element name="vbaSuppData" type="CT_VbaSuppData" />
+	<xsd:complexType name="CT_DocEvents">
+		<xsd:sequence>
+			<xsd:element name="eventDocNew" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocOpen" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocClose" minOccurs="0"
+				maxOccurs="1" />
+			<xsd:element name="eventDocSync" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocXmlAfterInsert" minOccurs="0"
+				maxOccurs="1" />
+			<xsd:element name="eventDocXmlBeforeDelete" minOccurs="0"
+				maxOccurs="1" />
+			<xsd:element name="eventDocContentControlAfterInsert"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocContentControlBeforeDelete"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocContentControlOnExit"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocContentControlOnEnter"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocStoreUpdate" minOccurs="0"
+				maxOccurs="1" />
+			<xsd:element name="eventDocContentControlContentUpdate"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="eventDocBuildingBlockAfterInsert"
+				minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Mcd">
+		<xsd:attribute name="macroName" type="w:ST_String" use="optional" />
+		<xsd:attribute name="name" type="w:ST_String" use="optional" />
+		<xsd:attribute name="menuHelp" type="w:ST_String" use="optional" />
+		<xsd:attribute name="bEncrypt" type="w:ST_UcharHexNumber" />
+		<xsd:attribute name="cmg" type="w:ST_UcharHexNumber" />
+	</xsd:complexType>
+	<xsd:complexType name="CT_Mcds">
+		<xsd:sequence>
+			<xsd:element name="mcd" type="CT_Mcd" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_VbaSuppData">
+		<xsd:sequence>
+			<xsd:element name="docEvents" type="CT_DocEvents"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="mcds" type="CT_Mcds" minOccurs="0"
+				maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
 </xsd:schema>

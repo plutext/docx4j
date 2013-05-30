@@ -98,7 +98,9 @@ public class Context {
 			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
 			log.info("loading Context jcSML");			
-			jcSML = JAXBContext.newInstance("org.xlsx4j.sml",classLoader );
+			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
+					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
+					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader );
 			
 			if (jcSML.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");

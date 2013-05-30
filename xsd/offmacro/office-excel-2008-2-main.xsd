@@ -1,35 +1,81 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema elementFormDefault="qualified"
-xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.microsoft.com/office/excel/2008/2/main" xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main" targetNamespace="http://schemas.microsoft.com/office/excel/2008/2/main">
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsheet.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlpivot.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlworkbook.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsupbook.xsd" />
-  <xsd:element name="macrosheet" type="CT_Worksheet"/>
-  <xsd:complexType name="CT_DefinedName">
-    <xsd:sequence>
-      <xsd:element name="argumentDescriptions" type="CT_DefinedNameArgumentDescriptions" minOccurs="0" maxOccurs="1"/>
-    </xsd:sequence>
-    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
-  </xsd:complexType>
-  <xsd:complexType name="CT_DefinedNameArgumentDescription">
-    <xsd:simpleContent>
-      <xsd:extension base="x:ST_Xstring">
-        <xsd:attribute name="index" type="xsd:unsignedInt" use="required"/>
-      </xsd:extension>
-    </xsd:simpleContent>
-  </xsd:complexType>
-  <xsd:complexType name="CT_DefinedNameArgumentDescriptions">
-    <xsd:sequence>
-      <xsd:element name="argumentDescription" type="CT_DefinedNameArgumentDescription" minOccurs="1" maxOccurs="unbounded"/>
-    </xsd:sequence>
-    <xsd:attribute name="count" type="xsd:unsignedInt" use="optional"/>
-  </xsd:complexType>
-  <xsd:complexType name="CT_DefinedNames">
-    <xsd:sequence>
-      <xsd:element name="definedName" type="CT_DefinedName" minOccurs="1" maxOccurs="unbounded"/>
-    </xsd:sequence>
-  </xsd:complexType>
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns="http://schemas.microsoft.com/office/excel/2008/2/main" 
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"
+  	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"	
+	targetNamespace="http://schemas.microsoft.com/office/excel/2008/2/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- From [MS-OFFMACRO2] but with quite a few corrections -->
+	
+	<!--
+	
+	JAXB INSTRUCTIONS
+		  
+	  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+	  
+				
+	 	  \Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer  office-excel-2008-2-main.xsd -d temp -no-header -target 2.0 -extension
+	 	  
+	 	  (must be ppp 1.2, not 1.0)
+		 
+	-->	
+
+  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" 
+  	schemaLocation="office-excel-2006-DUMMY.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="../sml/sml_ECMA376_4ed_transitional.xsd" />
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+					
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	 	
+	
+	 	
+	<xsd:element name="macrosheet" type="xm:CT_Worksheet" />
+	
+	<xsd:complexType name="CT_DefinedName">
+		<xsd:sequence>
+			<xsd:element name="argumentDescriptions" type="CT_DefinedNameArgumentDescriptions"
+				minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+		<xsd:attribute name="name" type="s:ST_Xstring" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="CT_DefinedNameArgumentDescription">
+		<xsd:simpleContent>
+			<xsd:extension base="s:ST_Xstring">
+				<xsd:attribute name="index" type="xsd:unsignedInt"
+					use="required" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CT_DefinedNameArgumentDescriptions">
+		<xsd:sequence>
+			<xsd:element name="argumentDescription" type="CT_DefinedNameArgumentDescription"
+				minOccurs="1" maxOccurs="unbounded" />
+		</xsd:sequence>
+		<xsd:attribute name="count" type="xsd:unsignedInt" use="optional" />
+	</xsd:complexType>
+	<xsd:complexType name="CT_DefinedNames">
+		<xsd:sequence>
+			<xsd:element name="definedName" type="CT_DefinedName"
+				minOccurs="1" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
 </xsd:schema>

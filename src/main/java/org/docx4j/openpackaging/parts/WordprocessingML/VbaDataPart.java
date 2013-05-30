@@ -21,14 +21,27 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import javax.xml.bind.JAXBElement;
+
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.schemas.microsoft.com.office.word_2006.wordml.CTVbaSuppData;
 
 
-public final class VbaDataPart extends XmlPart {
+/**
+ * @see <a href="http://msdn.microsoft.com/en-us/library/dd947889(v=office.12).aspx">[MS-OFFMACRO2]</a>
+ * 
+ * Since 3.0, this extends JaxbXmlPart<JAXBElement<CTVbaSuppData>>
+ * Previously, it just extended XmlPart.
+ * 
+ * @author jharrop
+ *
+ */
+public final class VbaDataPart extends JaxbXmlPart<JAXBElement<CTVbaSuppData>> {
 	
 	/*
 	 * eg <wne:vbaSuppData xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
@@ -59,12 +72,6 @@ public final class VbaDataPart extends XmlPart {
 
 		// Used when this Part is added to a rels
 		setRelationshipType(Namespaces.VBA_DATA_WORD);
-	}
-
-	@Override
-	public org.w3c.dom.Document getDocument() throws Docx4JException {
-		// Used when saving to JCR
-		return doc;
 	}
 	
 }
