@@ -51,6 +51,9 @@ public class FieldsPreprocessor {
 
     private final static QName _RInstrText_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", 
     		"instrText");
+    private final static QName _PHyperlink_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", 
+    		"hyperlink");
+    
 	
 	static Templates xslt;			
 	private static XPathFactory xPathFactory;
@@ -125,7 +128,6 @@ public class FieldsPreprocessor {
 		 */
 		
 		// TODO merge adjacent instrText elements
-		// TODO canonlicalise inside a hyperlink eg a PAGEREF in a table of contents
 		
 		FieldsPreprocessor fp = new FieldsPreprocessor(fieldRefs);
 		return fp.canonicaliseInstance(p);
@@ -133,24 +135,65 @@ public class FieldsPreprocessor {
 	
 	private P canonicaliseInstance(P p) {
 
-		newP = Context.getWmlObjectFactory().createP();
+		P newP = Context.getWmlObjectFactory().createP();
 		newP.setPPr(p.getPPr());
 		
 		depth = 0;
 		newR = Context.getWmlObjectFactory().createR();
-		
 		fieldRPr = null;
-		
 		currentField = null;
-		
 		seenSeparate=false;
 		
-		for (Object o : p.getContent() ) {
+		handleContent(p.getContent(), newP);
+
+		// log.debug(XmlUtils.marshaltoString(newP, true));
+
+		return newP;
+	}
+	
+	private List<FieldRef> fieldRefs;
+	private int depth;
+	private boolean seenSeparate; // TODO doesn't handle nested fields
+	private FieldRef currentField;
+	private RPr fieldRPr;
+	private R newR;
+	
+	private void handleContent(List<Object> objects, ContentAccessor attachmentPoint) {
+		// handles case where the run(s) containing the field are inside a P, or inside a P.Hyperlink 
+		// (eg a PAGEREF in a table of contents).
+		
+		for (Object o : objects ) {
+
+			// Handling for hyperlink in field result, which might contain another
+			// nested field. Comment this out (making it handled by else case below), 
+			// until we have better handling for nested fields
 			
-			if ( o instanceof R ) {
+//			if ( o instanceof P.Hyperlink
+//					|| ((o instanceof JAXBElement
+//							&& ((JAXBElement)o).getName().equals(_PHyperlink_QNAME)) )	) {
+//
+//				// Add the previous run, if necessary
+//				if (newR.getContent().size() > 0) {
+//					attachmentPoint.getContent().add(newR);
+//					newR = Context.getWmlObjectFactory().createR();
+//				}
+//				
+//				P.Hyperlink hyperlink = (P.Hyperlink)XmlUtils.unwrap(o);
+//				P.Hyperlink newH = Context.getWmlObjectFactory().createPHyperlink();
+//				attachmentPoint.getContent().add(newH);
+//				
+//				// recurse to handle runs inside hyperlink
+//				handleContent(hyperlink.getContent(), newH );
+//
+//				// don't want our last run being added by handleContent at 2 levels in the iteration 
+//				newR=Context.getWmlObjectFactory().createR();
+//				
+//			} else 
+			
+				if ( o instanceof R ) {
 				
 				R existingRun = (R)o;
-				handleRun(existingRun);
+				handleRun(existingRun, attachmentPoint);
 
 			} else if (o instanceof ProofErr) {
 				// Ignore
@@ -159,15 +202,17 @@ public class FieldsPreprocessor {
 				// Well, a stray spellStart doesn't matter to Word 2010, so
 				// assume others would be ok as well.
 			} else {
-				// its not an R,
+				// its not something we're interested in
+				
+				System.out.println(XmlUtils.unwrap(o));
 
 				// Add the previous run, if necessary
 				if (newR.getContent().size() > 0) {
-					newP.getContent().add(newR);
+					attachmentPoint.getContent().add(newR);
 					newR = Context.getWmlObjectFactory().createR();
 				}
 
-				newP.getContent().add(o);
+				attachmentPoint.getContent().add(o);
 
 				// TODO .. detect separator, and remove stuff?
 				// This model can't really do that right now, since it
@@ -175,24 +220,13 @@ public class FieldsPreprocessor {
 			}
 
 		}
-		if (newR.getContent().size() > 0 && !newP.getContent().contains(newR)) {
-			newP.getContent().add(newR);
+		if (newR.getContent().size() > 0 && !attachmentPoint.getContent().contains(newR)) {
+			attachmentPoint.getContent().add(newR);
 		}
-
-		// log.debug(XmlUtils.marshaltoString(newP, true));
-
-		return newP;
+		
 	}
 	
-	List<FieldRef> fieldRefs;
-	int depth;
-	boolean seenSeparate;
-	FieldRef currentField;
-	RPr fieldRPr;
-	P newP;
-	R newR;
-	
-	private void handleRun(R existingRun) {
+	private void handleRun(R existingRun, ContentAccessor newAttachPoint) {
 		
 		for (Object o2 : existingRun.getContent() ) {
 
@@ -220,7 +254,7 @@ public class FieldsPreprocessor {
 					// Setup our FieldRef object - only top level fields for now
 					currentField = new FieldRef();							
 					fieldRefs.add(currentField);
-					currentField.setParent(newP);							
+					currentField.setParent(newAttachPoint);							
 					currentField.setBeginRun(newR);
 
 				}
@@ -235,12 +269,12 @@ public class FieldsPreprocessor {
 					//  <w:r>
 					//    <w:fldChar w:fldCharType="separate"/>
 					//  </w:r>
-					// is missing, so add it
+					// is missing (valid per spec), so add it
 					R separateR = Context.getWmlObjectFactory().createR();							
 					FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
 					fldChar.setFldCharType(STFldCharType.SEPARATE);
 					newR.getContent().add(fldChar);
-					newP.getContent().add(separateR);
+					newAttachPoint.getContent().add(separateR);
 					
 					newR = Context.getWmlObjectFactory().createR();
 					currentField.setResultsSlot(newR); 
@@ -249,11 +283,11 @@ public class FieldsPreprocessor {
 				depth--;
 				if (depth==0 ) {
 					// Top level field end - gets its own w:r
-					newP.getContent().add(newR);
+					newAttachPoint.getContent().add(newR);
 					
 					newR = Context.getWmlObjectFactory().createR();
 					newR.getContent().add(o2);
-					newP.getContent().add(newR);
+					newAttachPoint.getContent().add(newR);
 					
 					currentField.setEndRun(newR);
 					
@@ -269,7 +303,7 @@ public class FieldsPreprocessor {
 				newR.getContent().add(o2);
 				if (depth==1 ) {
 					// Top level field separator
-					newP.getContent().add(newR);
+					newAttachPoint.getContent().add(newR);
 					newR = Context.getWmlObjectFactory().createR();
 					
 					// May as well set this; we'll insert our result into
@@ -292,15 +326,21 @@ public class FieldsPreprocessor {
 				newR.setRPr(fieldRPr);
 
 			} else if (depth==1 && seenSeparate) {
+				// TODO: a TOC field usually has a PAGEREF wrapped in a hyperlink in its
+				// result part.  We should either keep the entire result, or empty it.
+				// only do this if the field has no nested field; we need a way to look ahead
+				// to see whether a nested field is coming up)
+				
 				// we only want a single run between SEPARATOR and END,
 				// and we added that in the SEPARATE stuff above
+				System.out.println("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
 			} else {
 				newR.getContent().add(o2);
 
 //CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
 //adds:							
 				newR.setRPr(existingRun.getRPr());
-				newP.getContent().add(newR);
+				newAttachPoint.getContent().add(newR);
 				newR = Context.getWmlObjectFactory().createR();
 			}
 		} // end for (Object o2 : existingRun.getContent() )

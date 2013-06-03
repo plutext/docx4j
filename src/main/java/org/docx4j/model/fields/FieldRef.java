@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
@@ -258,11 +259,11 @@ import org.docx4j.wml.Text;
  */
 public class FieldRef {
 	
-	private P parent;
-	public P getParent() {
+	private ContentAccessor parent;
+	public ContentAccessor getParent() {
 		return parent;
 	}
-	public void setParent(P parent) {
+	public void setParent(ContentAccessor parent) {
 		this.parent = parent;
 	}
 
