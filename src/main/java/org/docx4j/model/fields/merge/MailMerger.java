@@ -472,6 +472,9 @@ public class MailMerger {
 
 				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
 				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
+
+				System.out.println("BEFORE " +XmlUtils.marshaltoString(
+ 				fr.getParent(), true, true));
 				
 				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 				tmp = tmp.trim();
@@ -496,12 +499,14 @@ public class MailMerger {
 					fr.setResult(val);
 				}
 				
-				// If doing an actual mail merge, the begin-separate run is removed, as is the end run
-				fr.getParent().getContent().remove(fr.getBeginRun());
-				fr.getParent().getContent().remove(fr.getEndRun());
+				if (!retainMergeField) {
+					// If doing an actual mail merge, the begin-separate run is removed, as is the end run				
+					fr.getParent().getContent().remove(fr.getBeginRun());
+					fr.getParent().getContent().remove(fr.getEndRun());
+				}
 				
-//				System.out.println(XmlUtils.marshaltoString(
-//						fr.getParent(), true, true));
+				System.out.println("AFTER " +XmlUtils.marshaltoString(
+						fr.getParent(), true, true));
 				
 			}
 		}
@@ -510,6 +515,21 @@ public class MailMerger {
 
 	}
 	
+	private static boolean retainMergeField = false;
+	
+
+	/**
+	 * Whether to leave the MERGEFIELD in the output, or to
+	 * get rid of it.  Keeping it will allow you to perform
+	 * another merge on the output document.  Default is to remove. 
+	 * 
+	 * @since 3.0.0
+	 * 
+	 * @param retainMergeField the retainMergeField to set
+	 */
+	public static void keepMERGEFIELD(boolean retainMergeField) {
+		MailMerger.retainMergeField = retainMergeField;
+	}
 
 	public static boolean isMergeField(String type) {
 	
