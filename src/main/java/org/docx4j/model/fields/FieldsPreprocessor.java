@@ -70,6 +70,10 @@ public class FieldsPreprocessor {
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();		
 	}
+	
+	private FieldsPreprocessor(List<FieldRef> fieldRefs) {
+		this.fieldRefs = fieldRefs;
+	}
 
 	/**
 	 * Convert any w:fldSimple in this part to complex field. 
@@ -121,134 +125,32 @@ public class FieldsPreprocessor {
 		 */
 		
 		// TODO merge adjacent instrText elements
+		// TODO canonlicalise inside a hyperlink eg a PAGEREF in a table of contents
+		
+		FieldsPreprocessor fp = new FieldsPreprocessor(fieldRefs);
+		return fp.canonicaliseInstance(p);
+	}
+	
+	private P canonicaliseInstance(P p) {
 
-		P newP = Context.getWmlObjectFactory().createP();
+		newP = Context.getWmlObjectFactory().createP();
 		newP.setPPr(p.getPPr());
 		
-		int depth = 0;
-		R newR = Context.getWmlObjectFactory().createR();
+		depth = 0;
+		newR = Context.getWmlObjectFactory().createR();
 		
-		RPr fieldRPr = null;
+		fieldRPr = null;
 		
-		FieldRef currentField = null;
+		currentField = null;
 		
-		boolean seenSeparate=false;
+		seenSeparate=false;
 		
 		for (Object o : p.getContent() ) {
 			
 			if ( o instanceof R ) {
 				
 				R existingRun = (R)o;
-				for (Object o2 : existingRun.getContent() ) {
-
-					if (isCharType(o2, STFldCharType.BEGIN)) {
-						
-//						log.debug("begin.. ");
-						seenSeparate = false;
-						
-						depth++;
-						if (depth==1 ) { 
-						
-// CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
-// comments out:							
-							
-							// Add any content the run contains before the BEGIN
-//							if (newR.getContent().size()>0) {
-//								newP.getContent().add(newR);
-//
-//								newR.setRPr(existingRun.getRPr() ); // if any
-//							}
-
-							newR = Context.getWmlObjectFactory().createR();
-							newR.getContent().add(o2);
-							
-							// Setup our FieldRef object - only top level fields for now
-							currentField = new FieldRef();							
-							fieldRefs.add(currentField);
-							currentField.setParent(newP);							
-							currentField.setBeginRun(newR);
-
-						}
-					}
-					else if (isCharType(o2, STFldCharType.END)) {
-						
-//						log.debug(".. end ");
-						
-						if (!seenSeparate) {
-//							log.debug(".. ADDING SEP ..  ");
-							// Word 2010 can produce a docx where:
-							//  <w:r>
-							//    <w:fldChar w:fldCharType="separate"/>
-							//  </w:r>
-							// is missing, so add it
-							R separateR = Context.getWmlObjectFactory().createR();							
-							FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
-							fldChar.setFldCharType(STFldCharType.SEPARATE);
-							newR.getContent().add(fldChar);
-							newP.getContent().add(separateR);
-							
-							newR = Context.getWmlObjectFactory().createR();
-							currentField.setResultsSlot(newR); 
-						}
-						
-						depth--;
-						if (depth==0 ) {
-							// Top level field end - gets its own w:r
-							newP.getContent().add(newR);
-							
-							newR = Context.getWmlObjectFactory().createR();
-							newR.getContent().add(o2);
-							newP.getContent().add(newR);
-							
-							currentField.setEndRun(newR);
-							
-							newR = Context.getWmlObjectFactory().createR();
-						} else {
-							newR.getContent().add(o2);							
-						}
-						
-					} else if (isCharType(o2, STFldCharType.SEPARATE)) {
-						
-						seenSeparate = true;
-						
-						newR.getContent().add(o2);
-						if (depth==1 ) {
-							// Top level field separator
-							newP.getContent().add(newR);
-							newR = Context.getWmlObjectFactory().createR();
-							
-							// May as well set this; we'll insert our result into
-							// this (or recreate it).
-							newR.setRPr(fieldRPr ); 
-							
-							currentField.setResultsSlot(newR); // FIXME: ensure newR is actually added!
-							
-						}
-					} else if (o2 instanceof JAXBElement
-							&& ((JAXBElement)o2).getName().equals(_RInstrText_QNAME)) {
-						
-//						log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
-						
-						currentField.setInstrText( (JAXBElement<Text>)o2);
-
-						newR.getContent().add(o2);	
-						
-						fieldRPr = existingRun.getRPr();
-						newR.setRPr(fieldRPr);
-
-					} else if (depth==1 && seenSeparate) {
-						// we only want a single run between SEPARATOR and END,
-						// and we added that in the SEPARATE stuff above
-					} else {
-						newR.getContent().add(o2);
-
-// CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
-// adds:							
-						newR.setRPr(existingRun.getRPr());
-						newP.getContent().add(newR);
-						newR = Context.getWmlObjectFactory().createR();
-					}
-				} // end for (Object o2 : existingRun.getContent() )
+				handleRun(existingRun);
 
 			} else if (o instanceof ProofErr) {
 				// Ignore
@@ -280,6 +182,129 @@ public class FieldsPreprocessor {
 		// log.debug(XmlUtils.marshaltoString(newP, true));
 
 		return newP;
+	}
+	
+	List<FieldRef> fieldRefs;
+	int depth;
+	boolean seenSeparate;
+	FieldRef currentField;
+	RPr fieldRPr;
+	P newP;
+	R newR;
+	
+	private void handleRun(R existingRun) {
+		
+		for (Object o2 : existingRun.getContent() ) {
+
+			if (isCharType(o2, STFldCharType.BEGIN)) {
+				
+//				log.debug("begin.. ");
+				seenSeparate = false;
+				
+				depth++;
+				if (depth==1 ) { 
+				
+//CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
+//comments out:							
+					
+					// Add any content the run contains before the BEGIN
+//					if (newR.getContent().size()>0) {
+//						newP.getContent().add(newR);
+//
+//						newR.setRPr(existingRun.getRPr() ); // if any
+//					}
+
+					newR = Context.getWmlObjectFactory().createR();
+					newR.getContent().add(o2);
+					
+					// Setup our FieldRef object - only top level fields for now
+					currentField = new FieldRef();							
+					fieldRefs.add(currentField);
+					currentField.setParent(newP);							
+					currentField.setBeginRun(newR);
+
+				}
+			}
+			else if (isCharType(o2, STFldCharType.END)) {
+				
+//				log.debug(".. end ");
+				
+				if (!seenSeparate) {
+//					log.debug(".. ADDING SEP ..  ");
+					// Word 2010 can produce a docx where:
+					//  <w:r>
+					//    <w:fldChar w:fldCharType="separate"/>
+					//  </w:r>
+					// is missing, so add it
+					R separateR = Context.getWmlObjectFactory().createR();							
+					FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
+					fldChar.setFldCharType(STFldCharType.SEPARATE);
+					newR.getContent().add(fldChar);
+					newP.getContent().add(separateR);
+					
+					newR = Context.getWmlObjectFactory().createR();
+					currentField.setResultsSlot(newR); 
+				}
+				
+				depth--;
+				if (depth==0 ) {
+					// Top level field end - gets its own w:r
+					newP.getContent().add(newR);
+					
+					newR = Context.getWmlObjectFactory().createR();
+					newR.getContent().add(o2);
+					newP.getContent().add(newR);
+					
+					currentField.setEndRun(newR);
+					
+					newR = Context.getWmlObjectFactory().createR();
+				} else {
+					newR.getContent().add(o2);							
+				}
+				
+			} else if (isCharType(o2, STFldCharType.SEPARATE)) {
+				
+				seenSeparate = true;
+				
+				newR.getContent().add(o2);
+				if (depth==1 ) {
+					// Top level field separator
+					newP.getContent().add(newR);
+					newR = Context.getWmlObjectFactory().createR();
+					
+					// May as well set this; we'll insert our result into
+					// this (or recreate it).
+					newR.setRPr(fieldRPr ); 
+					
+					currentField.setResultsSlot(newR); // FIXME: ensure newR is actually added!
+					
+				}
+			} else if (o2 instanceof JAXBElement
+					&& ((JAXBElement)o2).getName().equals(_RInstrText_QNAME)) {
+				
+//				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
+				
+				currentField.setInstrText( (JAXBElement<Text>)o2);
+
+				newR.getContent().add(o2);	
+				
+				fieldRPr = existingRun.getRPr();
+				newR.setRPr(fieldRPr);
+
+			} else if (depth==1 && seenSeparate) {
+				// we only want a single run between SEPARATOR and END,
+				// and we added that in the SEPARATE stuff above
+			} else {
+				newR.getContent().add(o2);
+
+//CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
+//adds:							
+				newR.setRPr(existingRun.getRPr());
+				newP.getContent().add(newR);
+				newR = Context.getWmlObjectFactory().createR();
+			}
+		} // end for (Object o2 : existingRun.getContent() )
+		
 	}
 	
 //	public static boolean containsCharType(Object o, STFldCharType charType) {
