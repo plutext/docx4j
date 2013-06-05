@@ -37,6 +37,7 @@ import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
+import org.docx4j.openpackaging.PackageRelsUtil;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -136,29 +137,24 @@ public class Load3 extends Load {
 		} catch (NullPointerException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		}
-
-		// 2. Create a new Package
-		//		Eventually, you'll also be able to create an Excel package etc
-		//		but only the WordML package exists at present
-		OpcPackage p = ctm.createPackage();
-		p.setPartStore(partStore);
-
-		// 3. Start with _rels/.rels
-
-//		<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-//		  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
-//		  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
-//		  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-//		</Relationships>		
 		
+		// .. now find the name of the main part
 		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(p, partName);
+		RelationshipsPart rp = getRelationshipsPartFromZip(null, partName);
 		if (rp==null) {
 			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
 		}
-		p.setRelationships(rp);
 		
-		log.debug( "Object created for: " + partName);
+		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
+		String pkgContentType = ctm.getContentType(new PartName("/" + mainPartName));
+
+		// 2. Create a new Package; this'll return the appropriate subclass
+		OpcPackage p = ctm.createPackage(pkgContentType);
+		log.info("Instantiated package of type " + p.getClass().getName() );
+		p.setPartStore(partStore);
+
+		p.setRelationships(rp);
+		rp.setSourceP(p); //
 		
 		// 5. Now recursively 
 //		(i) create new Parts for each thing listed
@@ -169,6 +165,8 @@ public class Load3 extends Load {
 
 		// 6.
 		registerCustomXmlDataStorageParts(p);
+		
+		partStore.finishLoad();
 		
 		long endTime = System.currentTimeMillis();
 		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );

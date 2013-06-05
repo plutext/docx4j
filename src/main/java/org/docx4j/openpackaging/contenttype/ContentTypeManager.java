@@ -783,92 +783,44 @@ public class ContentTypeManager  {
 
 	
 
-	/* Return a package of the appropriate type.  Used when loading an existing
-	 * Package, with an already populated [Content_Types].xml.  When 
-	 * creating a new Package, start with the new WordprocessingMLPackage constructor. */
-	public OpcPackage createPackage() throws InvalidFormatException {
+	/** Return a package of the appropriate type.  Used when loading an existing
+	 *  Package, with an already populated [Content_Types].xml.  When 
+	 *  creating a new Package, start with the new WordprocessingMLPackage constructor. */
+	public OpcPackage createPackage(String pkgContentType) throws InvalidFormatException {
 		
-		/*
-		 * How do we know what type of Package this is?
-		 * 
-		 * Because [Content_Types].xml contains an entry for PartName
-		 * /document.xml of content type
-		 * application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
-		 * or equivalent for pptx, xlsx.	
-		 * 
-		 */
-// debugPrint(ctmDocument);
 		OpcPackage p;
 		
 		  
 		// Check overrides first
-		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
+		if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT) 
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)  ) {
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
+		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
+		} else if (pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK) 
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) 
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE) 
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) ) {
 			//  "xlam", "xlsb" ?
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
 			return p;			
-		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
+		} else if (pkgContentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
 			log.info("Detected Glox file ");
 			p = new GloxPackage(this);
 			return p;						
 		} 
-		
-		// Check defaults; POI apparently writes something like:
-		// <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-		// See http://stackoverflow.com/questions/15007550/dox4j-cannot-read-poi-saved-files-who-is-at-fault
-		// and https://github.com/plutext/docx4j/issues/46
-		String defaultContentTypeForXML = this.defaultContentType.get("xml").getContentType();
-		if (defaultContentTypeForXML!=null) {
-			if (defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)
-					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) 
-					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
-					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) ) {
-				log.info("Detected WordProcessingML package ");
-				p = new WordprocessingMLPackage(this);
-				return p;
-			} else if (defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_MAIN)
-					|| defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
-					|| defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
-				log.info("Detected PresentationMLPackage package ");
-				p = new PresentationMLPackage(this);
-				return p;
-			} else if (defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_WORKBOOK) 
-					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) 
-					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_TEMPLATE) 
-					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) ) {
-				//  "xlam", "xlsb" ?
-				log.info("Detected SpreadhseetMLPackage package ");
-				p = new SpreadsheetMLPackage(this);
-				return p;			
-			} else if (defaultContentTypeForXML.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
-				log.info("Detected Glox file ");
-				p = new GloxPackage(this);
-				return p;						
-			} 
-		}
 				
 		// Nothing in overrides or defaults
-		throw new InvalidFormatException("Couldn't identify package from " + toString());
-//			log.warn("No part in [Content_Types].xml for content type"
-//					+ ContentTypes.WORDPROCESSINGML_DOCUMENT);
-//			// TODO - what content type in this case?
-//			return new Package(this);
+		throw new InvalidFormatException("Couldn't identify package from " + pkgContentType);
 	}
 
 	/*
