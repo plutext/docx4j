@@ -754,7 +754,7 @@ public class OpenDoPEHandler {
 	 * If, however, this would produce a table cell without a content, add an
 	 * empty content node to this table cell.
 	 * 
-	 * For backward reasons, also replace a cell to be removed upon a condition
+	 * For backward compatibility, also replace a cell to be removed upon a condition
 	 * or due to a zero item repeat with an empty cell according to this
 	 * condition, unless the global flag
 	 * {@link #removeSdtCellsOnFailedCondition} is set.
@@ -779,13 +779,40 @@ public class OpenDoPEHandler {
 
 			final CTSdtContentCell sdtCellContent = (CTSdtContentCell) ((org.docx4j.wml.CTSdtCell) sdt)
 					.getSdtContent();
-			final Tc tc = (Tc) XmlUtils.unwrap(sdtCellContent.getContent().get(
-					0));
+			
+			// This sdt would ordinarily contain a tc, but that tc could be
+			// nested in yet another sdt
+			Object sdtContent0 = XmlUtils.unwrap(sdtCellContent.getContent().get(0));
+			Tc tc = null;
+			if (sdtContent0 instanceof Tc) {
+				
+				tc = (Tc) sdtContent0;
+				
+			} else if (sdtContent0 instanceof CTSdtCell) {
+				
+				Object innerSdtContent0 = XmlUtils.unwrap(((CTSdtCell)sdtContent0).getSdtContent().getContent().get(0));
+				if (innerSdtContent0 instanceof Tc) {
+					tc = (Tc) innerSdtContent0;
+				} else {
+					log.debug("Fallback handling for " + innerSdtContent0.getClass().getName());
+					tc = Context.getWmlObjectFactory().createTc();
+				}
+				// replace innerSdt with this tc
+				sdtCellContent.getContent().clear();
+				sdtCellContent.getContent().add(tc);
+				
+			} else {
+				log.error("Fallback handling for " + sdtContent0.getClass().getName());
+				tc = Context.getWmlObjectFactory().createTc();
+				sdtCellContent.getContent().clear();
+				sdtCellContent.getContent().add(tc);
+			}
+
 			tc.getContent().clear();
 			final P p = Context.getWmlObjectFactory().createP();
 			tc.getContent().add(p);
 			newContent = Arrays.asList((Object) tc);
-
+				
 		} else if (sdtIsSingleCellChild) {
 
 			final Object p = Context.getWmlObjectFactory().createP();
