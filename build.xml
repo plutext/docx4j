@@ -326,7 +326,7 @@
     <target name="JAXB-switch-from-MOXy-to-Oracle" >
     
 		<delete file="src/main/java/org/docx4j/bibliography/jaxb.properties"/>
-		<delete tofile="src/main/java/org/docx4j/convert/in/word2003xml/jaxb.properties"/>		
+		<delete file="src/main/java/org/docx4j/convert/in/word2003xml/jaxb.properties"/>		
 		<delete file="src/main/java/org/docx4j/customxml/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/customXmlProperties/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/dml/jaxb.properties"/>
