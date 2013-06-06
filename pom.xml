@@ -289,7 +289,7 @@
 					</configuration>
 				</plugin>
 			</plugins>
-		</pluginManagement>		
+		</pluginManagement>
 		<resources>
 			<!-- be sure to get xml,xlst resources in various src trees -->
 			<resource>
@@ -360,8 +360,8 @@
 	</reporting>
 	<dependencies>
 
-	
-	<!-- 
+
+	<!--
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
@@ -371,19 +371,6 @@
 
 
 
-		<!--  To use MOXy, uncomment this and the EclipseLink repo, and run ant JAXB-use-MOXy
-
-		      Please note that we are waiting for 2.4.2 to hit Maven, since 2.4.1 has
-		      some issues.
-
-		      See further http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html
-
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>org.eclipse.persistence.moxy</artifactId>
-			<version>2.5.0</version>
-		</dependency>
-		-->
 		<dependency>
 		  <groupId>javax.mail</groupId>
 		  <artifactId>mail</artifactId>
@@ -551,18 +538,18 @@
 		</dependency>
 
 <!-- To use a version of FOP more recent than 1.1
-     (eg built from source), comment out  
+     (eg built from source), comment out
      xmlgraphics-commons:1.5 and fop below,
      and add the following classes to your
      class path:
-     
+
            http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/batik-all-1.7.jar
            (there is probably something in maven
-     
+
      	   http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/xmlgraphics-commons-svn-trunk.jar
-     	-->   
-     	   
-      
+     	-->
+
+
 
 
 	<dependency>
@@ -840,6 +827,59 @@
    		</dependencies>
    	</profile>
    				-->
+
+	<!-- To use MOXy, enable profile moxy by running mvn -Pmoxy ... Please note
+		that 2.5.0 has hit Maven, updated dependency version as 2.4.1 had some issues,
+		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
+		details. -->
+	<profile>
+		<id>moxy</id>
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.persistence</groupId>
+				<artifactId>org.eclipse.persistence.moxy</artifactId>
+				<version>2.5.0</version>
+			</dependency>
+		</dependencies>
+		<build>
+			<plugins>
+				<plugin>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+					<executions>
+						<execution>
+							<id>provide-jaxb-properties</id>
+							<phase>generate-resources</phase>
+							<configuration>
+								<target>
+									<ant antfile="${basedir}/build.xml">
+                  						<target name="JAXB-use-MOXy"/>
+                					</ant>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>clean-jaxb-properties</id>
+							<phase>clean</phase>
+							<configuration>
+								<target>
+									<ant antfile="${basedir}/build.xml">
+                  						<target name="JAXB-switch-from-MOXy-to-Oracle"/>
+                					</ant>
+								</target>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</build>
+	</profile>
    </profiles>
 
    				<!--
