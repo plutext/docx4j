@@ -23,9 +23,11 @@ package org.docx4j.openpackaging.packages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
@@ -319,7 +321,7 @@ public class PresentationMLPackage  extends OpcPackage {
 		if (styleTree==null) {
 			List<Style> styles = TextStyles.generateStyles(this);
 			
-			List<String> list = new ArrayList<String>();			
+			Set<String> list = new HashSet<String>();			
 			Map<String, Style> map = new HashMap<String, Style>();
 			for (Style s : styles) {
 				map.put(s.getStyleId(), s);

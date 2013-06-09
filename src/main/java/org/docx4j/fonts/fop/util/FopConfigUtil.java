@@ -22,6 +22,7 @@ package org.docx4j.fonts.fop.util;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.Mapper;
@@ -43,7 +44,7 @@ public class FopConfigUtil {
 	
 	protected static Logger log = Logger.getLogger(FopConfigUtil.class);
 
-	public static String createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {
+	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 //  public static Configuration createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {
 		
 		// This method now returns a String, since that works best
@@ -80,20 +81,9 @@ public class FopConfigUtil {
 	 * 
 	 * @return
 	 */
-	protected static void declareFonts(Mapper fontMapper, Map<String, String> fontsInUse, StringBuilder result) {
+	protected static void declareFonts(Mapper fontMapper, Set<String> fontsInUse, StringBuilder result) {
 		
-		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
-		
-		while (fontMappingsIterator.hasNext()) {
-			
-		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
-		    if(pairs.getKey()==null) {
-		    	log.info("Skipped null key");
-//		    	pairs = (Map.Entry)fontMappingsIterator.next();
-		    	continue;
-		    }
-		    
-		    String fontName = (String)pairs.getKey();		    
+		for (String fontName : fontsInUse) {		    
 		    
 		    PhysicalFont pf = fontMapper.getFontMappings().get(fontName);
 		    

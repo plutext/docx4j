@@ -59,7 +59,7 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part, headers/footers, footnotes/endnotes 
 	 * @param allStyles styles defined in the style definitions part
 	 */
-	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles,
+	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles,
 			String defaultParagraphStyleId, String defaultCharacterStyleId) {
 		
 		
@@ -181,14 +181,8 @@ public class StyleTree {
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 
 		// Setup
-    	List<String> stylesInUse = new ArrayList<String>();
-    	Map<String, String> stylesInUseMap = wmlPackage.getMainDocumentPart().getStylesInUse();
-		Iterator it = stylesInUseMap.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)it.next();
-	        String styleId = (String)pairs.getKey();
-	        stylesInUse.add(styleId);
-	    }
+    	Set<String> stylesInUse = wmlPackage.getMainDocumentPart().getStylesInUse();
+
     	
 		Map<String, Style> allStyles = new HashMap<String, Style>();
 		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();		
@@ -207,7 +201,7 @@ public class StyleTree {
 		log.debug(st.cTree.toString());
 		
 		log.debug("\nParagraph classes\n");
-		it = st.pTree.nodes.entrySet().iterator();
+		Iterator it = st.pTree.nodes.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
 	        

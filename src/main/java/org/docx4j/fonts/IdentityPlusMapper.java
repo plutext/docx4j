@@ -21,6 +21,7 @@ package org.docx4j.fonts;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -85,7 +86,7 @@ public class IdentityPlusMapper extends Mapper {
 	 * @param wmlFonts - the content model for the fonts part
 	 * @throws Exception
 	 */
-	public void populateFontMappings(Map documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
+	public void populateFontMappings(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
 		
 		// documentFontNames comes from MDP's fontsInUse()
 		// which contains getPropertyResolver().getFontnameFromStyle
@@ -111,17 +112,7 @@ public class IdentityPlusMapper extends Mapper {
 //		}
 		
 
-		Iterator documentFontMapIterator = documentFontNames.entrySet().iterator();
-	    while (documentFontMapIterator.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)documentFontMapIterator.next();
-	        
-	        if(pairs.getKey()==null) {
-	        	log.info("Skipped null key");
-	        	continue;
-//	        	pairs = (Map.Entry)documentFontMapIterator.next();
-	        }
-	        
-	        String documentFontname = (String)pairs.getKey();
+		for( String documentFontname : documentFontNames) {
 	        log.debug("Document font: " + documentFontname);
 	        
 	        if ( PhysicalFonts.getPhysicalFonts().get(documentFontname)!=null ) {
