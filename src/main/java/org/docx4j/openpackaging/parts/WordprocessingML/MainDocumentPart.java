@@ -56,7 +56,9 @@ import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.R;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 
@@ -136,9 +138,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				log.error(e);
 			}
 	    	
-			// Get these first, so we can be sure they are defined... 
-			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
-			Style defaultCharacterStyle = getStyleDefinitionsPart().getDefaultCharacterStyle();
+//			// Get these first, so we can be sure they are defined... 
+//			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
+//			Style defaultCharacterStyle = getStyleDefinitionsPart().getDefaultCharacterStyle();
 			
 			// Styles defined in StyleDefinitionsPart
 			Map<String, Style> allStyles = new HashMap<String, Style>();
@@ -147,9 +149,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				allStyles.put(s.getStyleId(), s);	
 				//log.debug("live style: " + s.getStyleId() );
 			}
-			styleTree = new StyleTree(getStylesInUse(), allStyles, 
-					defaultParagraphStyle.getStyleId(),
-					defaultCharacterStyle.getStyleId());
+			styleTree = new StyleTree(getStylesInUse(), allStyles);
 				
 		}
 		return styleTree;
@@ -194,16 +194,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
 //		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
-		Finder finder = new Finder(fontsDiscovered, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
+		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
 		new TraversalUtil(bodyChildren, finder);
 
-	// Add default font
-		//String defaultFont = PropertyResolver.getDefaultFont(this.getStyleDefinitionsPart(), this.getThemePart());
-//		String defaultFont = getPropertyResolver().getDefaultFont();
-//		log.debug("fontsDiscovered.put:" + defaultFont);
-//		fontsDiscovered.put( defaultFont, defaultFont  );
+		// Add default font
 		fontsDiscovered.add(  ((WordprocessingMLPackage)pack).getDefaultFont() );
-
 		fontsDiscovered.add( 
 				((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia() );
 		
@@ -261,7 +258,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
 		Set<String> stylesInUse = new HashSet<String>();
-		Finder finder = new Finder(null, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
+		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
+		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		
 		new TraversalUtil(bodyChildren, finder);
 
 		// Styles in headers, footers?
@@ -309,18 +309,18 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      * Traverse looking for fonts and/or styles
      *
      */
-    static class Finder extends CallbackImpl {
+    private static class FontAndStyleFinder extends CallbackImpl {
 		
     	Set<String> fontsDiscovered;
     	Set<String> stylesInUse;
     	
-    	Finder(Set<String> fontsDiscovered, Set<String> stylesInUse) {
+    	FontAndStyleFinder(Set<String> fontsDiscovered, Set<String> stylesInUse) {
     		this.fontsDiscovered = fontsDiscovered;
     		this.stylesInUse = stylesInUse;
     	}
     	
-        String defaultParagraphStyle;
-        String defaultCharacterStyle;
+        Style defaultParagraphStyle;
+        Style defaultCharacterStyle;
     	String defaultTableStyle = "TableNormal";
     	
     	@Override
@@ -328,15 +328,23 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			
 			if (o instanceof org.docx4j.wml.P) {
 				
-			
-				if (((org.docx4j.wml.P)o).getPPr()==null) {	
+				P p = (P)o;
+				if (stylesInUse !=null &&
+						(p.getPPr()==null
+						|| p.getPPr().getPStyle()==null)) {	
 					
 					// Add the default style
-					stylesInUse.add(defaultParagraphStyle );
+					stylesInUse.add(defaultParagraphStyle.getStyleId() );
+					if (defaultParagraphStyle.getRPr()!=null
+							&& defaultParagraphStyle.getRPr().getRStyle()!=null ) {
+						
+						stylesInUse.add(defaultParagraphStyle.getRPr().getRStyle().getVal() );
+					}
+					
 					
 				} else {
 				
-		    		org.docx4j.wml.PPr pPr =  ((org.docx4j.wml.P)o).getPPr();
+		    		org.docx4j.wml.PPr pPr =  p.getPPr();
 					if (stylesInUse !=null && pPr.getPStyle() != null) {
 						// Note this paragraph style
 	//					log.debug("put style "
@@ -363,11 +371,17 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 			} else if ( o instanceof org.docx4j.wml.R) {
 				
-				if (((org.docx4j.wml.R)o).getRPr()==null) {
+				R r = (R)o;
+				if (stylesInUse !=null &&
+						(r.getRPr()==null
+						|| r.getRPr().getRStyle()==null)) {
 
+					// Add the default style
+					stylesInUse.add(defaultCharacterStyle.getStyleId() );
+					
 				} else {
 					
-		    		org.docx4j.wml.RPr rPr =  ((org.docx4j.wml.R)o).getRPr();
+		    		org.docx4j.wml.RPr rPr =  r.getRPr();
 		        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
 		        		// 	Note the font - just Ascii for now
 		        		//log.debug("put font " + rPr.getRFonts().getAscii());
@@ -535,7 +549,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		list.add(o);
 		
 //		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
-		Finder finder = new Finder(fontsDiscovered, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
+		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		
 		finder.walkJAXBElements(list);
 		
 		for( String styleName : stylesInUse) {

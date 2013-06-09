@@ -327,8 +327,8 @@ public class PresentationMLPackage  extends OpcPackage {
 				map.put(s.getStyleId(), s);
 				list.add(s.getStyleId());
 			}
-			styleTree = new StyleTree(list, map, "DocDefaults", "DocDefaults");
-				// We don't have defaultParagraphStyleId, defaultCharacterStyleId
+			styleTree = new StyleTree(list, map);
+				// TODO: We don't have defaultParagraphStyleId, defaultCharacterStyleId
 				// so use DocDefaults for now.
 		}
 		return styleTree;
