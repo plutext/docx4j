@@ -241,8 +241,11 @@ public class StyleTree {
     	}
         List<Node<AugmentedStyle>> classVals =  tree.climb(n);
     	StringBuffer sb = new StringBuffer();
-        for (Node<AugmentedStyle> valNode : classVals) {        	
-        	sb.append(valNode.name + " ");	    		
+        for (Node<AugmentedStyle> valNode : classVals) { 
+        	// Avoid including root node (eg dummy character root node)
+        	if (valNode.getData()!=null) {
+        		sb.append(valNode.name + " ");
+        	}
         }
         return sb.toString();
 	}
