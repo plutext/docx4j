@@ -311,6 +311,16 @@ public abstract class AbstractHtmlExporter implements Output {
 		result.append("\n /* TABLE STYLES */ \n");    	
 		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();		
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
+    		
+    		if (n.getData()==null) {
+    			if (n.equals(tableTree.getRootElement() )) {
+    				// that's ok
+    			} else {
+    				log.error("Node<AugmentedStyle> unexpectedly null data" );
+    			}
+    			continue;
+    		}
+    		
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:table;" );
@@ -363,6 +373,16 @@ public abstract class AbstractHtmlExporter implements Output {
 		result.append("\n /* PARAGRAPH STYLES */ \n");    	
 		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
+    		
+    		if (n.getData()==null) {
+    			if (n.equals(pTree.getRootElement() )) {
+    				// shouldn't happen in paragraph case, but still, that's ok
+    			} else {
+    				log.error("Node<AugmentedStyle> unexpectedly null data" );
+    			}
+    			continue;
+    		}
+    		
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:block;" );
@@ -385,6 +405,15 @@ public abstract class AbstractHtmlExporter implements Output {
 		
 		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : cTree.toList() ) {
+    		
+    		if (n.getData()==null) {
+    			if (n.equals(cTree.getRootElement() )) {
+    				// that's ok
+    			} else {
+    				log.error("Node<AugmentedStyle> unexpectedly null data" );
+    			}
+    			continue;
+    		}    		
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:inline;" );

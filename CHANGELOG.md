@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+Version 2.8.1.4 (10 June 2013)
+- backport https://github.com/plutext/docx4j/commit/ea1d74164fc4abffb0debd1e5e28eb81cc298924
+  There can be more than one style which isn't basedOn another, so don't make such a style the root of the hierarchy. Instead, a child of root.
+- backport https://github.com/plutext/docx4j/commit/8527eacecf6fcb33b07254e7ee0533e20f3ac84a
+  Changes consequent on having dummy root node in StyleTree
+so MergeDocx can properly RENAME_RETAIN styles where there is more than one with no basedOn 
+
 Version 2.8.1.3 (3 May 2013)
 - backports so MergePptx 1.0.4 works with 2.8.1
   + LoadFromZipNG: Call setPartShortcut, even if this part has been encountered already

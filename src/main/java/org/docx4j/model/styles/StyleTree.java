@@ -62,63 +62,78 @@ public class StyleTree {
 	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles,
 			String defaultParagraphStyleId, String defaultCharacterStyleId) {
 		
-		
 		// Set up Table style tree 
-        for (String styleId : stylesInUse ) {
-        	if (tableTree.get(styleId)==null) {
-        		
-            	Style style = allStyles.get(styleId);
-                if (style == null ) {
-                	log.warn("Couldn't find style: " + styleId);
-                	continue;
-                } 	        		
-        		// Is it a table style?
-        		if (style.getType().equals("table")) {                
+		tableTree.setRootElement(new Node<AugmentedStyle>(tableTree, "table-root", null)); // a dummy root node
+	    for (String styleId : stylesInUse ) {
+	    	if (tableTree.get(styleId)==null) {
+	    		
+	        	Style style = allStyles.get(styleId);
+	            if (style == null ) {
+	            	log.warn("Couldn't find style: " + styleId);
+	            	continue;
+	            } 	        		
+	    		// Is it a table style?
+	    		if (style.getType().equals("table")) {                
 	            	// Need to create a node for this
 	        		this.addNode(styleId, allStyles, tableTree);
-        		}
-        	}
-        }
+	    		}
+	    	}
+	    }
 		
-
+	
 		// Set up Paragraph style tree 
-        // but first, add Normal.  (Doesn't matter if its already there)
+	    // but first, add Normal.  (Doesn't matter if its already there)
 		stylesInUse.add(defaultParagraphStyleId);
-        for (String styleId : stylesInUse ) {
-        	if (pTree.get(styleId)==null) {
-        		
-            	Style style = allStyles.get(styleId);
-                if (style == null ) {
-                	log.warn("Couldn't find style: " + styleId);
-                	continue;
-                } 	        		
-        		// Is it a paragraph style?
-        		if (style.getType().equals("paragraph")) {                
+	
+		Style rootStyle = allStyles.get("DocDefaults");
+	    if (rootStyle==null) {
+	    	pTree.setRootElement(new Node<AugmentedStyle>(pTree, "p-root", null));
+	    } else {
+	    	AugmentedStyle as = new AugmentedStyle(rootStyle);        	
+	    	pTree.setRootElement(new Node<AugmentedStyle>(pTree, "DocDefaults", as));        	
+	    }
+	    	
+	    for (String styleId : stylesInUse ) {
+	    	if (pTree.get(styleId)==null) {
+	    		
+	        	Style style = allStyles.get(styleId);
+	            if (style == null ) {
+	            	log.warn("Couldn't find style: " + styleId);
+	            	continue;
+	            } 	        		
+	    		// Is it a paragraph style?
+	    		if (style.getType().equals("paragraph")) {                
 	            	// Need to create a node for this
-        			log.debug("Adding '" +  styleId + "' to paragraph tree" );
+	    			log.debug("Adding '" +  styleId + "' to paragraph tree" );
 	        		this.addNode(styleId, allStyles, pTree);
-        		}
-        	}
-        }
-        
+	    		}
+	    	} else {
+	    		log.debug(styleId + " is already in paragraph tree");
+	    	}
+	    }
+	    
 		// Set up Character style tree 
-        // but first, add DefaultParagraphFont.  (Doesn't matter if its already there)
+	    // but first, add DefaultParagraphFont.  (Doesn't matter if its already there)
 		stylesInUse.add(defaultCharacterStyleId);
-        for (String styleId : stylesInUse ) {
-        	if (cTree.get(styleId)==null) {
-        		
-            	Style style = allStyles.get(styleId);
-                if (style == null ) {
-                	log.warn("Couldn't find style: " + styleId);
-                	continue;
-                } 	        		
-        		// Is it a character style?
-        		if (style.getType().equals("character")) {                
+	
+		cTree.setRootElement(new Node<AugmentedStyle>(cTree, "c-root", null));
+	    for (String styleId : stylesInUse ) {
+	    	if (cTree.get(styleId)==null) {
+	    		
+	        	Style style = allStyles.get(styleId);
+	            if (style == null ) {
+	            	log.warn("Couldn't find style: " + styleId);
+	            	continue;
+	            } 	        		
+	    		// Is it a character style?
+	    		if (style.getType().equals("character")) {                
 	            	// Need to create a node for this
 	        		this.addNode(styleId, allStyles, cTree);
-        		}
-        	}
-        }        
+	    		}
+	    	} else {
+	    		log.debug(styleId + " is already in character tree");
+	    	}
+	    }        
 	}
 	
 	
@@ -139,21 +154,12 @@ public class StyleTree {
     	// Find its parent
     	if (style.getBasedOn()==null) {
     		
-    		// This must be the root element
-			log.debug("Style " + styleId + " is a root style.");
-			if (tree.getRootElement()==null) {
-				tree.setRootElement(n);
-			} else {
-				// Sanity check
-				String root = tree.getRootElement().getData().getStyle().getStyleId();
-				log.debug("Existing root:" + root);
-				if (styleId.equals(root)) {
-					// ok
-				} else {
-					log.warn("overwriting root node: " + styleId);
-					tree.setRootElement(n);
-				}
-			}
+    		// You can have more than 1 node which isn't based on anything
+			log.debug("Style " + styleId + " is not based on anything.");
+			tree.getRootElement().addChild(n);
+			
+			// TODO: this should be basedOn DocDefaults.    Consider whether to do this
+			// at this point, or in SDP.createVirtualStylesForDocDefaults()
 			
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();   
@@ -250,7 +256,10 @@ public class StyleTree {
         List<Node<AugmentedStyle>> classVals =  tree.climb(n);
     	StringBuffer sb = new StringBuffer();
         for (Node<AugmentedStyle> valNode : classVals) {        	
-        	sb.append(valNode.name + " ");	    		
+        	// Avoid including root node (eg dummy character root node)
+        	if (valNode.getData()!=null) {
+        		sb.append(valNode.name + " ");
+        	}
         }
         return sb.toString();
 	}
