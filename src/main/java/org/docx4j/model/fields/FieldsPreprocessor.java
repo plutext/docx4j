@@ -140,7 +140,7 @@ public class FieldsPreprocessor {
 		
 		depth = 0;
 		newR = Context.getWmlObjectFactory().createR();
-		fieldRPr = null;
+//		fieldRPr = null;
 		currentField = null;
 		seenSeparate=false;
 		
@@ -155,7 +155,7 @@ public class FieldsPreprocessor {
 	private int depth;
 	private boolean seenSeparate; // TODO doesn't handle nested fields
 	private FieldRef currentField;
-	private RPr fieldRPr;
+//	private RPr fieldRPr;
 	private R newR;
 	
 	private void handleContent(List<Object> objects, ContentAccessor attachmentPoint) {
@@ -228,6 +228,12 @@ public class FieldsPreprocessor {
 	
 	private void handleRun(R existingRun, ContentAccessor newAttachPoint) {
 		
+		// note that the newR object persists between invocations of this method,
+		// so you have to be careful to actually add it to the docx 
+		// before re-creating it
+		
+		log.debug("\nInput run: \n " + XmlUtils.marshaltoString(existingRun, true, true));
+		
 		for (Object o2 : existingRun.getContent() ) {
 
 			if (isCharType(o2, STFldCharType.BEGIN)) {
@@ -236,19 +242,12 @@ public class FieldsPreprocessor {
 				seenSeparate = false;
 				
 				depth++;
+				System.out.println("depth: " + depth);
 				if (depth==1 ) { 
 				
-//CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
-//comments out:							
-					
-					// Add any content the run contains before the BEGIN
-//					if (newR.getContent().size()>0) {
-//						newP.getContent().add(newR);
-//
-//						newR.setRPr(existingRun.getRPr() ); // if any
-//					}
-
 					newR = Context.getWmlObjectFactory().createR();
+					newR.setRPr(existingRun.getRPr());
+					
 					newR.getContent().add(o2);
 					
 					// Setup our FieldRef object - only top level fields for now
@@ -258,44 +257,6 @@ public class FieldsPreprocessor {
 					currentField.setBeginRun(newR);
 
 				}
-			}
-			else if (isCharType(o2, STFldCharType.END)) {
-				
-//				log.debug(".. end ");
-				
-				if (!seenSeparate) {
-//					log.debug(".. ADDING SEP ..  ");
-					// Word 2010 can produce a docx where:
-					//  <w:r>
-					//    <w:fldChar w:fldCharType="separate"/>
-					//  </w:r>
-					// is missing (valid per spec), so add it
-					R separateR = Context.getWmlObjectFactory().createR();							
-					FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
-					fldChar.setFldCharType(STFldCharType.SEPARATE);
-					newR.getContent().add(fldChar);
-					newAttachPoint.getContent().add(separateR);
-					
-					newR = Context.getWmlObjectFactory().createR();
-					currentField.setResultsSlot(newR); 
-				}
-				
-				depth--;
-				if (depth==0 ) {
-					// Top level field end - gets its own w:r
-					newAttachPoint.getContent().add(newR);
-					
-					newR = Context.getWmlObjectFactory().createR();
-					newR.getContent().add(o2);
-					newAttachPoint.getContent().add(newR);
-					
-					currentField.setEndRun(newR);
-					
-					newR = Context.getWmlObjectFactory().createR();
-				} else {
-					newR.getContent().add(o2);							
-				}
-				
 			} else if (isCharType(o2, STFldCharType.SEPARATE)) {
 				
 				seenSeparate = true;
@@ -304,15 +265,59 @@ public class FieldsPreprocessor {
 				if (depth==1 ) {
 					// Top level field separator
 					newAttachPoint.getContent().add(newR);
-					newR = Context.getWmlObjectFactory().createR();
+					log.debug("\n-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
 					
 					// May as well set this; we'll insert our result into
 					// this (or recreate it).
-					newR.setRPr(fieldRPr ); 
+					newR.setRPr(existingRun.getRPr() ); 
+					
+					newR = Context.getWmlObjectFactory().createR();
+					newR.setRPr(existingRun.getRPr());
 					
 					currentField.setResultsSlot(newR); // FIXME: ensure newR is actually added!
 					
 				}
+			}
+			else if (isCharType(o2, STFldCharType.END)) {
+				
+				log.debug(".. end ");
+				
+				if (!seenSeparate) {
+					log.debug(".. ADDING SEP ..  ");
+					// Word 2010 can produce a docx where:
+					//  <w:r>
+					//    <w:fldChar w:fldCharType="separate"/>
+					//  </w:r>
+					// is missing (valid per spec), so add it
+//					R separateR = Context.getWmlObjectFactory().createR();							
+					FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
+					fldChar.setFldCharType(STFldCharType.SEPARATE);
+					newR.getContent().add(fldChar);
+					newAttachPoint.getContent().add(newR);
+					log.debug("\n-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+					
+					newR = Context.getWmlObjectFactory().createR();
+					newR.setRPr(existingRun.getRPr());
+					
+					currentField.setResultsSlot(newR); 
+				}
+				
+				depth--;
+				if (depth==0 ) {
+					// Top level field end - gets its own w:r
+					newAttachPoint.getContent().add(newR);
+					newR.getContent().add(o2);
+					log.debug("\n-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+										
+					currentField.setEndRun(newR);
+					
+					newR = Context.getWmlObjectFactory().createR();
+					newR.setRPr(existingRun.getRPr());
+					
+				} else {
+					newR.getContent().add(o2);							
+				}
+				
 			} else if (o2 instanceof JAXBElement
 					&& ((JAXBElement)o2).getName().equals(_RInstrText_QNAME)) {
 				
@@ -322,8 +327,6 @@ public class FieldsPreprocessor {
 
 				newR.getContent().add(o2);	
 				
-				fieldRPr = existingRun.getRPr();
-				newR.setRPr(fieldRPr);
 
 			} else if (depth==1 && seenSeparate) {
 				// TODO: a TOC field usually has a PAGEREF wrapped in a hyperlink in its
@@ -337,11 +340,11 @@ public class FieldsPreprocessor {
 			} else {
 				newR.getContent().add(o2);
 
-//CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
-//adds:							
-				newR.setRPr(existingRun.getRPr());
 				newAttachPoint.getContent().add(newR);
+				log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+				
 				newR = Context.getWmlObjectFactory().createR();
+				newR.setRPr(existingRun.getRPr());
 			}
 		} // end for (Object o2 : existingRun.getContent() )
 		
