@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -211,7 +212,7 @@ public class BestMatchingMapper extends Mapper {
 	 * @param wmlFonts - the content model for the fonts part
 	 * @throws Exception
 	 */
-	public void populateFontMappings(Map documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
+	public void populateFontMappings(Set<String> documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
 				
 		/* org.docx4j.wml.Fonts fonts is obtained as follows:
 		 * 
@@ -235,19 +236,9 @@ public class BestMatchingMapper extends Mapper {
 		log.info("\n\n Populating font mappings.");
 		
 		// Go through the font names, and determine which ones we can render!		
-		Iterator documentFontIterator = documentFontNames.entrySet().iterator();
-	    while (documentFontIterator.hasNext()) {
-	    	
+		for (String documentFontName : documentFontNames) {
+			
 	    	PhysicalFont fontMatched = null;
-	    	
-	        Map.Entry pairs = (Map.Entry)documentFontIterator.next();
-	        
-	        if(pairs.getKey()==null) {
-	        	log.info("Skipped null key");
-	        	pairs = (Map.Entry)documentFontIterator.next();
-	        }
-	        
-	        String documentFontName = (String)pairs.getKey();
 
 			log.debug("\n\n" + documentFontName);
 	        	        

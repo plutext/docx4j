@@ -1099,6 +1099,34 @@ public class PropertyResolver {
 		//	   in this case Calibri and Cambria)
 		// 3.2 if there is no rFonts element, default to Times New Roman.
 		
+		/* Per the spec:
+		 * 
+		 * The ASCII font formats all characters in the ASCII range (character values 0–127). 
+		 * This font is specified using the ascii attribute on the rFonts element.
+		 * 
+		 * The East Asian font formats all characters that belong to Unicode sub ranges for East Asian languages. 
+		 * This font is specified using the eastAsia attribute on the rFonts element.
+		 * 
+		 * The complex script font formats all characters that belong to Unicode sub ranges for complex script languages. 
+		 * This font is specified using the cs attribute on the rFonts element.
+		 * 
+		 * The high ANSI font formats all characters that belong to Unicode sub ranges other than those explicitly included 
+		 * by one of the groups above. This font is specified using the hAnsi attribute on the rFonts element.	
+		 * 
+		 * Per Tristan Davis
+		 * http://openxmldeveloper.org/discussions/formats/f/13/t/150.aspx
+		 * 
+		 * First, the characters are classified into the high ansi / east asian / complex script buckets [per above]
+		 * 
+		 * Next, we grab *one* theme font from the theme for each bucket - in the settings part, there's an element called themeFontLang
+		 * The three attributes on that specify the language to use for the characters in each bucket
+		 * 
+		 * Then you take the language specified for each attribute and look out for the right language in the theme - and you use that font
+		 * 
+		 * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
+		 * regarding what to do if the font is not available on the computer.
+		 **/	
+		
 		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();
 		if (rFonts==null) {
 			log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to Times New Roman");
@@ -1166,13 +1194,36 @@ public class PropertyResolver {
 							return fontScheme.getMinorFont().getEa().getTypeface();
 						} else {
 							// No minorFont/EA in theme part - default to SimSun
-							log.info("No minorFont/latin in theme part - default to SimSun");								
+							log.info("No minorFont/ea in theme part - default to SimSun");								
 							return "SimSun"; 
 						}
 					} else {
 						// No theme part - default to SimSun
 						log.info("No theme part - default to SimSun");
 						return "SimSun"; 
+					}
+				} else if (rFonts.getEastAsiaTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
+					// Should use the minorHAnsi theme font as defined in the document's themes part (for text in a high range)
+					// But this isn't part of org.docx4j.dml.FontCollection
+					// http://us.generation-nt.com/answer/how-does-theme1-xml-work-help-38707532.html?page=2 suggests to use latin
+					// but really TODO, should use the algorithm described by Tristan Davis above.
+					if (themePart!=null) {
+						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+						if (fontScheme.getMinorFont()!=null
+								&& fontScheme.getMinorFont().getLatin()!=null) {
+																	
+							org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
+							log.debug("minorFont/latin font is " + textFont.getTypeface() );
+							return textFont.getTypeface(); 
+						} else {
+							// No minorFont/latin in theme part - default to Calibri
+							log.info("No minorFont/latin in theme part - default to Calibri");								
+							return "Calibri"; 
+						}
+					} else {
+						// No theme part - default to Calibri
+						log.info("No theme part - default to Calibri");
+						return "Calibri"; 
 					}
 				} else {
 					// TODO

@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.packages;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -340,7 +341,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.docx4j.wml.Fonts fonts = null;
 
 		// 1.  Get a list of all the fonts in the document
-		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
+		Set<String> fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
 		//if ( fm instanceof BestMatchingMapper ) {
 		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {

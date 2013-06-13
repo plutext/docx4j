@@ -22,6 +22,7 @@ package org.docx4j.fonts;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -85,7 +86,7 @@ public abstract class Mapper {
 	 * @param wmlFonts - the content model for the fonts part
 	 * @throws Exception
 	 */
-	public abstract void populateFontMappings(Map documentFontNames, 
+	public abstract void populateFontMappings(Set<String> documentFontNames, 
 			org.docx4j.wml.Fonts wmlFonts ) throws Exception;
 	
 	
