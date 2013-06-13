@@ -1,16 +1,10 @@
 package org.glox4j.samples;
 
-import javax.xml.bind.JAXBElement;
-
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTElemPropSet;
-import org.docx4j.dml.diagram.CTPt;
-import org.docx4j.dml.diagram.CTSampleData;
 import org.docx4j.dml.diagram.ObjectFactory;
-import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
@@ -24,19 +18,19 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  * Create a docx containing SmartArt
  * based on the sample data in the
  * specified glox file.
- * 
+ *
  * @author jharrop
  *
  */
-public class CreateDocx extends AbstractSample {
-	
-	private static Logger log = Logger.getLogger(CreateDocx.class);						
+public class AddGloxToDocx extends AbstractSample {
+
+	private static Logger log = Logger.getLogger(AddGloxToDocx.class);
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		
+
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
@@ -44,18 +38,18 @@ public class CreateDocx extends AbstractSample {
 			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
 
 		}
-		
+
 		// Make a basic docx
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		wordMLPackage.getMainDocumentPart()
 			.addStyledParagraphOfText("Title", "Hello world");
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("from docx4j!");
-		
+
 		// Now add the SmartArt parts from the glox
 		GloxPackage gloxPackage = GloxPackage.load(new java.io.File(inputfilepath));
-		ObjectFactory factory = new ObjectFactory(); 
-		
-		
+		ObjectFactory factory = new ObjectFactory();
+
+
 		// Layout part
 		DiagramLayoutPart layout = new DiagramLayoutPart();
 		layout.setJaxbElement(gloxPackage.getDiagramLayoutPart().getJaxbElement());
@@ -64,65 +58,65 @@ public class CreateDocx extends AbstractSample {
 		DiagramColorsPart colors = new DiagramColorsPart();
 		colors.unmarshal("colorsDef-accent1_2.xml");
 		//colors.CreateMinimalContent("mycolors");
-		
+
 		DiagramStylePart style = new DiagramStylePart();
 		style.unmarshal("quickStyle-simple1.xml");
 		//style.CreateMinimalContent("mystyle");
-		
+
 		// DiagramDataPart
 		DiagramDataPart data = new DiagramDataPart();
-		
+
 		// Get the sample data from dgm:sampData
 		CTDataModel sampleDataModel = gloxPackage.getDiagramLayoutPart().getJaxbElement().getSampData().getDataModel();
-		
+
 		// If there is none, this sample won't work
 		if (sampleDataModel==null
 				|| sampleDataModel.getPtLst()==null
 				|| sampleDataModel.getPtLst().getPt().size()==0) {
 			System.out.println("No sample data in this glox, so can't create demo docx");
 			return;
-			// TODO: in this case, try generating our own sample data? 
+			// TODO: in this case, try generating our own sample data?
 		}
-				
+
 		CTDataModel clonedDataModel = XmlUtils.deepCopy((CTDataModel)sampleDataModel);
 		data.setJaxbElement( clonedDataModel );
-		
-        /* <dgm:pt modelId="1" type="doc"> 
-		        <dgm:prSet 
-		            loTypeId="mylayout" 
-		            qsTypeId="mystyle" 
-		            csTypeId="mycolors" /> 
-		    </dgm:pt> */		
+
+        /* <dgm:pt modelId="1" type="doc">
+		        <dgm:prSet
+		            loTypeId="mylayout"
+		            qsTypeId="mystyle"
+		            csTypeId="mycolors" />
+		    </dgm:pt> */
 		CTElemPropSet prSet = factory.createCTElemPropSet();
 		prSet.setLoTypeId("mylayout");
 		prSet.setQsTypeId(style.getJaxbElement().getUniqueId());
-		prSet.setCsTypeId(colors.getJaxbElement().getUniqueId());	
-		
+		prSet.setCsTypeId(colors.getJaxbElement().getUniqueId());
+
 		clonedDataModel.getPtLst().getPt().get(0).setPrSet(prSet);
-		
+
 		String layoutRelId = wordMLPackage.getMainDocumentPart().addTargetPart(layout).getId();
 		String dataRelId = wordMLPackage.getMainDocumentPart().addTargetPart(data).getId();
 		String colorsRelId = wordMLPackage.getMainDocumentPart().addTargetPart(colors).getId();
 		String styleRelId = wordMLPackage.getMainDocumentPart().addTargetPart(style).getId();
-		
+
 		// Now use it in the docx
 		wordMLPackage.getMainDocumentPart().addObject(
-				createSmartArt( layoutRelId,  dataRelId, colorsRelId,  styleRelId)); 
-		
+				createSmartArt( layoutRelId,  dataRelId, colorsRelId,  styleRelId));
+
 
 		wordMLPackage.save(new java.io.File(
 				System.getProperty("user.dir") + "/glox-p1.docx" ) );
-		
+
 		System.out.println("Done!");
-		
+
 	}
-	
-	public static P createSmartArt(String layoutRelId, String dataRelId, 
+
+	public static P createSmartArt(String layoutRelId, String dataRelId,
 			String colorsRelId, String styleRelId) throws Exception {
-		
-		
+
+
 		// \"${filenameHint}\"
-		
+
         String ml = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
         	  + "<w:r>"
         	    + "<w:rPr>"
@@ -146,13 +140,13 @@ public class CreateDocx extends AbstractSample {
         	+ "</w:p>";
 
         java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
-        
+
         mappings.put("layoutRelId", layoutRelId);
         mappings.put("dataRelId", dataRelId);
         mappings.put("colorsRelId", colorsRelId);
         mappings.put("styleRelId", styleRelId);
 
-        return (P)org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings ) ;        
+        return (P)org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings ) ;
 	}
-	
+
 }

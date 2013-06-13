@@ -31,7 +31,6 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -64,7 +63,6 @@ public class OpenDoPEHandler {
 
 		this.wordMLPackage = wordMLPackage;
 
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 			throw new Docx4JException("OpenDoPE XPaths part missing");
 		} else {
@@ -93,18 +91,18 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 
 	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
-	
+
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_ROLE_RPTD = "od:rptd";
-	public final static String BINDING_ROLE_RPT_INSTANCE = "od:RptInst"; // when a repeat is reused, distinguish each instance 
+	public final static String BINDING_ROLE_RPT_INSTANCE = "od:RptInst"; // when a repeat is reused, distinguish each instance
 	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";
-	
+
 	public final static String BINDING_ROLE_NARRATIVE = "od:narrative";
-	
+
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
 	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
-	
+
 	public final static String BINDING_CONTENTTYPE = "od:ContentType";
 	/*
 	 * --------------------------------------------------------------------------
@@ -120,17 +118,17 @@ public class OpenDoPEHandler {
 
 	/**
 	 * Configure, how the preprocessor handles conditions on table cells.
-	 * 
+	 *
 	 * If set to <code>false</code>, conditional SDT cells are replaced by empty
 	 * cells. This is the default behavior.
-	 * 
+	 *
 	 * If set to <code>true</code>, conditional SDT cells are removed entirely.
 	 * Note that the table geometry is not changed; hence this works better
 	 * without dynamic table widths / no global width settings.
-	 * 
+	 *
 	 * This affects all future calls on the {@link #preprocess} method for this
      * instance.
-	 * 
+	 *
 	 * @param removeSdtCellsOnFailedCondition
 	 *            The new value for the cell removal flag.
 	 */
@@ -142,45 +140,45 @@ public class OpenDoPEHandler {
 	/**
 	 * Preprocess content controls which have tag
 	 * "od:condition|od:repeat|od:component".
-	 * 
+	 *
 	 * It is "preprocess" in the sense that it is "pre" opening in Word
-	 * 
+	 *
 	 * The algorithm is as follows:
-	 * 
+	 *
 	 * Inject components first.
-	 * 
+	 *
 	 * Look at each top level SDT (ShallowTraversor). If it does not have a real
 	 * data binding, it might have a bindingrole tag we need to process
 	 * (processBindingRoleIfAny).
-	 * 
+	 *
 	 * Conditionals are easy.
-	 * 
+	 *
 	 * processRepeat method:
-	 * 
+	 *
 	 * - clones the sdt n times
-	 * 
+	 *
 	 * - invokes DeepTraversor which changes xpath binding on descendant sdts
 	 * (both sdts with real bindings and sdts with bindingrole tags).
-	 * 
+	 *
 	 * It is not the job of DeepTraversor to expand out any other repeats it
 	 * might encounter, or to resolve conditionals.
-	 * 
+	 *
 	 * Those things are done by ShallowTraversor, to which control returns, as
 	 * it continues its traverse.
-	 * 
+	 *
 	 * The implementation of 13 Sept 2010 replaced the previous XPath based
 	 * implementation, which did not support nested repeats. I've chosen to
 	 * build this around TraversalUtil, instead of using XSLT, and this seems to
 	 * have worked out nicely.
-	 * 
+	 *
 	 * The implementation of 10 October 2010 replaced the v1 conventions
 	 * implementation with a v2 implementation. The main method in this class
 	 * can convert v1 documents to v2. The v2 implementation is not yet
 	 * complete. All v1 features are implemented, but not the new v2 stuff (eg
 	 * complex conditions).
-	 * 
+	 *
 	 * @param documentPart
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public WordprocessingMLPackage preprocess() throws Docx4JException {
 
@@ -316,10 +314,10 @@ public class OpenDoPEHandler {
 				replacements.put(index, ac);
 
 				/*
-				 * 2011 12 11 TODO.  Rethink support for 
+				 * 2011 12 11 TODO.  Rethink support for
 				 * od:continuousBefore and od:continuousAfter.
 				 */
-				
+
 				// This is handled in this class
 				if (map.get(BINDING_ROLE_COMPONENT_BEFORE) != null
 						&& map.get(BINDING_ROLE_COMPONENT_BEFORE)
@@ -433,7 +431,7 @@ public class OpenDoPEHandler {
 				log.debug(methods[j].getName());
 				if (methods[j].getName().equals("process")) {
 					processMethod = methods[j];
-				} 
+				}
 			}
 			if (processMethod == null )
 				throw new NoSuchMethodException();
@@ -583,7 +581,7 @@ public class OpenDoPEHandler {
 
 			// Otherwise just preserve the content
 			List<Object> newContent = new ArrayList<Object>();
-			
+
 			newContent.add(wrapped); // we want the JAXBElement (if any)
 			return newContent;
 
@@ -644,14 +642,14 @@ public class OpenDoPEHandler {
 
 	/**
 	 * This applies to any sdt which might be a conditional|repeat
-	 * 
+	 *
 	 * @param wordMLPackage
 	 * @param sdtParent
 	 * @param sdt
 	 * @param tag
 	 * @param sdtContent
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private List<Object> processBindingRoleIfAny(
 			WordprocessingMLPackage wordMLPackage, Object sdt) {
@@ -719,19 +717,19 @@ public class OpenDoPEHandler {
 
 		} else if (xp != null) {
 
-			// Word can't handle an XPath that returns something 
-			// other than an element 
+			// Word can't handle an XPath that returns something
+			// other than an element
 			// eg string or boolean or number, so we'll need to work this out.
 			// In principal, we could do this in this pre-processing step,
-			// or via bind.xslt. 
-			
+			// or via bind.xslt.
+
 			// Doing it here means the bind.xslt step can be restricted to pure
 			// Word-like processing.
-			
+
 			// Doing it there means we can take advantage of the multiline
 			// processing we have there, and less code.
-			// So as from 13 Sept 2011 (what will be 2.7.1), do it there. 
-						
+			// So as from 13 Sept 2011 (what will be 2.7.1), do it there.
+
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
@@ -742,15 +740,15 @@ public class OpenDoPEHandler {
 
 	/**
 	 * Under normal instances, return an empty list in order to remove content.
-	 * 
+	 *
 	 * If, however, this would produce a table cell without a content, add an
 	 * empty content node to this table cell.
-	 * 
+	 *
 	 * For backward compatibility, also replace a cell to be removed upon a condition
 	 * or due to a zero item repeat with an empty cell according to this
 	 * condition, unless the global flag
 	 * {@link #removeSdtCellsOnFailedCondition} is set.
-	 * 
+	 *
 	 * @param sdt
 	 *            The SDT node currently being processed.
 	 * @return The "eventually empty" node list to replace the content of
@@ -771,17 +769,17 @@ public class OpenDoPEHandler {
 
 			final CTSdtContentCell sdtCellContent = (CTSdtContentCell) ((org.docx4j.wml.CTSdtCell) sdt)
 					.getSdtContent();
-			
+
 			// This sdt would ordinarily contain a tc, but that tc could be
 			// nested in yet another sdt
 			Object sdtContent0 = XmlUtils.unwrap(sdtCellContent.getContent().get(0));
 			Tc tc = null;
 			if (sdtContent0 instanceof Tc) {
-				
+
 				tc = (Tc) sdtContent0;
-				
+
 			} else if (sdtContent0 instanceof CTSdtCell) {
-				
+
 				Object innerSdtContent0 = XmlUtils.unwrap(((CTSdtCell)sdtContent0).getSdtContent().getContent().get(0));
 				if (innerSdtContent0 instanceof Tc) {
 					tc = (Tc) innerSdtContent0;
@@ -792,7 +790,7 @@ public class OpenDoPEHandler {
 				// replace innerSdt with this tc
 				sdtCellContent.getContent().clear();
 				sdtCellContent.getContent().add(tc);
-				
+
 			} else {
 				log.error("Fallback handling for " + sdtContent0.getClass().getName());
 				tc = Context.getWmlObjectFactory().createTc();
@@ -804,7 +802,7 @@ public class OpenDoPEHandler {
 			final P p = Context.getWmlObjectFactory().createP();
 			tc.getContent().add(p);
 			newContent = Arrays.asList((Object) tc);
-				
+
 		} else if (sdtIsSingleCellChild) {
 
 			final Object p = Context.getWmlObjectFactory().createP();
@@ -835,14 +833,14 @@ public class OpenDoPEHandler {
 	}
 
 	private List<Object> obtainChildren(Object element) {
-		Object unwrapped = XmlUtils.unwrap(element); 
+		Object unwrapped = XmlUtils.unwrap(element);
 		if (unwrapped instanceof ContentAccessor) {
 			return ((ContentAccessor) unwrapped).getContent();
 		} else if (unwrapped instanceof SdtElement) {
 			return ((SdtElement) unwrapped).getSdtContent().getContent();
 		}
 		log.warn("Don't know how to access the children of "
-				+ unwrapped.getClass().getName() );
+				+ (unwrapped == null ? "null" : unwrapped.getClass().getName()));
 		return Collections.emptyList();
 	}
 
@@ -935,7 +933,7 @@ public class OpenDoPEHandler {
 		CTDataBinding binding = sdtPr.getDataBinding();
 
 		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
-		
+
 		for (int i = 0; i < numRepeats; i++) {
 
 			// 2012 07 13: for "od:RptPosCon" processing to
@@ -943,8 +941,8 @@ public class OpenDoPEHandler {
 			// in repeat), we need each entry (ie including the
 			// original) to have the same tag (which I've changed
 			// to od:rptd).
-			
-			
+
+
 			// the first sdt is just copied to the output, the rest has a
 			// removed repeat value and no binding
 			//if (i > 0) {
@@ -971,8 +969,8 @@ public class OpenDoPEHandler {
 		return newContent;
 	}
 
-	AtomicInteger repeatInstanceId = new AtomicInteger(); 
-	
+	AtomicInteger repeatInstanceId = new AtomicInteger();
+
 	private void emptyRepeatTagValue(final Tag tag) {
 
 		final String tagVal = tag.getVal();
@@ -1101,7 +1099,7 @@ public class OpenDoPEHandler {
 //						+ XmlUtils.marshaltoString(c, true, true));
 //				xpathObj = getXPathFromCondition(c);
 //				thisXPath = xpathObj.getDataBinding().getXpath();
-				
+
 				processDescendantCondition( sdt,  xpathBase,
 						 index,  tag );
 				return;
@@ -1113,17 +1111,17 @@ public class OpenDoPEHandler {
 
 			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
 
-				xpathObj = XPathsPart.getXPathById(xPaths, 
+				xpathObj = XPathsPart.getXPathById(xPaths,
 						map.get(BINDING_ROLE_XPATH) );
 				thisXPath = xpathObj.getDataBinding().getXpath();
-				
+
 			} else {
 
 				log.warn("couldn't find binding or bindingrole!");
 				// not all sdt's need have a binding;
 				// they could be present in the docx for other purposes
 				return;
-				
+
 				// NB an OpenDoPE xpath tag (with no w:binding element)
 				// eg as created by authoring tool for a "count(" XPath
 				// ends up here.
@@ -1138,10 +1136,10 @@ public class OpenDoPEHandler {
 
 			// Sanity test
 			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
-				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. " 
+				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. "
 						+ xpathObj.getDataBinding().getXpath());
 			}
-			
+
 			// 2012 09 20 - when did this break?
 			//thisXPath = xpathObj.getDataBinding().getXpath();
 		}
@@ -1149,12 +1147,12 @@ public class OpenDoPEHandler {
 //		System.out.println("xpathBase: " + xpathBase);
 //		System.out.println("index: " + index);
 //		System.out.println("thisXPath: " + thisXPath);
-		
-		
+
+
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 
 		System.out.println("newPath: " + newPath);
-		
+
 		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
 			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
 		}
@@ -1170,9 +1168,9 @@ public class OpenDoPEHandler {
 				// set sdt to use it
 				map.put(BINDING_ROLE_REPEAT, newXPathObj.getId());
 				tag.setVal(QueryString.create(map));
-				
+
 			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
-				
+
 				// Also need to create new xpath id, and add that
 				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
 						newPath, xpathObj, index);
@@ -1180,8 +1178,8 @@ public class OpenDoPEHandler {
 				// set sdt to use it
 				map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
 				tag.setVal(QueryString.create(map));
-				
-			}			
+
+			}
 
 		} else {
 			binding.setXpath(newPath);
@@ -1226,10 +1224,10 @@ public class OpenDoPEHandler {
 			// set sdt to use it
 			map.put(BINDING_ROLE_CONDITIONAL, newCondition.getId() );
 			tag.setVal(QueryString.create(map));
-		} 
+		}
 
 	}
-	
+
 	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(
 			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 
@@ -1281,7 +1279,7 @@ public class OpenDoPEHandler {
 
 		/*
 		 * Or could have done:
-		 * 
+		 *
 		 * Object o = XmlUtils.unwrap(raw); Method m =
 		 * o.getClass().getDeclaredMethod("getSdtPr"); SdtPr sdtPr =
 		 * (SdtPr)m.invoke(o);
@@ -1327,21 +1325,21 @@ public class OpenDoPEHandler {
 	}
 
 //	public static void main(String[] args) throws Exception {
-//		
+//
 //		String inputfilepath = System.getProperty("user.dir") + "/item.docx";
-//		
-//		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
-//		
+//
+//		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+//
 //		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
 //		System.out.println(filepathprefix);
-//		
+//
 //		// Process conditionals and repeats
 //		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
 //		odh.preprocess();
-//		
+//
 //		System.out.println(
 //				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-//				);	
+//				);
 //	}
-	
+
 }
