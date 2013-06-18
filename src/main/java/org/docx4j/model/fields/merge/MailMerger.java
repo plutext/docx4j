@@ -8,14 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.TransformerException;
+
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.fields.FieldLocator;
+import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
+import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.structure.SectionWrapper;
@@ -24,7 +28,6 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -38,6 +41,7 @@ import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.SectPr;
+import org.docx4j.wml.Text;
 
 
 /**
@@ -62,6 +66,9 @@ import org.docx4j.wml.SectPr;
  * Images and hyperlinks should be ok. But numbering 
  * will continue, as will footnotes/endnotes. 
  * 
+ * From 3.0, there is some support for formatting switches
+ * (date/time, numeric, and general).
+ *  
  * LIMITATIONS:
  * - no support for text before (\b) and text after (\f)
  *   switches
@@ -111,8 +118,8 @@ public class MailMerger {
 			List<Map<DataFieldName, String>> data, boolean processHeadersAndFooters) throws Docx4JException {
 		
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		System.out.println("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
-		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
+		log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+		List<List<Object>> results = performOverList(input, input.getMainDocumentPart().getContent(), data );
 
 		Map<CTRel, JaxbXmlPart> hfTemplates = null;
 		BooleanDefaultTrue titlePage = null;
@@ -135,7 +142,7 @@ public class MailMerger {
 				JaxbXmlPart part = (JaxbXmlPart)input.getMainDocumentPart().getRelationshipsPart().getPart(relId);
 				FieldsPreprocessor.complexifyFields(part );
 				
-				System.out.println("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+				log.debug("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
 				
 				hfTemplates.put(rel, part);
 			}
@@ -215,7 +222,7 @@ public class MailMerger {
 					}
 					
 					// Populate it
-					List<Object> newContent = performOnInstance(
+					List<Object> newContent = performOnInstance(input,
 							((ContentAccessor)part).getContent(), 
 							data.get(i) );	
 					((ContentAccessor)clonedPart).getContent().addAll(newContent);
@@ -355,7 +362,9 @@ public class MailMerger {
 		
 		// MDP
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		List<Object> mdpResults = performOnInstance(input.getMainDocumentPart().getContent(), data );
+//		log.debug("\n\n COMPLEXIFIED " + input.getMainDocumentPart().getPartName().getName() + "\n\n"
+//				+ input.getMainDocumentPart().getXML() + "\n");
+		List<Object> mdpResults = performOnInstance(input, input.getMainDocumentPart().getContent(), data );
 		input.getMainDocumentPart().getContent().clear();
 		input.getMainDocumentPart().getContent().addAll(mdpResults);
 		
@@ -368,14 +377,22 @@ public class MailMerger {
 						|| r.getType().equals(Namespaces.FOOTER)) {
 					
 					JaxbXmlPart part = (JaxbXmlPart)rp.getPart(r);
+
+					log.debug("\n\n BEFORE " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
 					
 					FieldsPreprocessor.complexifyFields(part );
-					List<Object> results = performOnInstance(
+					
+					log.debug("\n\n COMPLEXIFIED " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+					
+					List<Object> results = performOnInstance(input,
 							((ContentAccessor)part).getContent(), data );
 					((ContentAccessor)part).getContent().clear();
 					((ContentAccessor)part).getContent().addAll(results);
 					
-					System.out.println(XmlUtils.marshaltoString(part.getJaxbElement(), true));
+					log.debug("\n\n AFTER " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
 					
 				}			
 			}		
@@ -397,7 +414,8 @@ public class MailMerger {
 	 * @return
 	 * @throws Docx4JException 
 	 */
-	private static List<List<Object>> performOverList(List<Object> contentList, 
+	private static List<List<Object>> performOverList(WordprocessingMLPackage input, 
+			List<Object> contentList, 
 			List<Map<DataFieldName, String>> data ) throws Docx4JException {
 		
 				
@@ -405,13 +423,14 @@ public class MailMerger {
 		for (Map<DataFieldName, String> datamap : data) {
 			
 			results.add(
-					performOnInstance(contentList, datamap));
+					performOnInstance(input, contentList, datamap));
 		}
 		
 		return results;
 	}
 	
-	private static List<Object> performOnInstance(List<Object> contentList, 
+	private static List<Object> performOnInstance(WordprocessingMLPackage input, 
+			List<Object> contentList, 
 			Map<DataFieldName, String> datamap ) throws Docx4JException {
 		
 		// We need our fieldRefs point to the correct objects;
@@ -423,7 +442,7 @@ public class MailMerger {
 		Body shellClone = (Body)XmlUtils.deepCopy(shell);
 		
 		// find fields
-		FieldLocator fl = new FieldLocator();
+		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(shellClone, fl);
 		log.info("Found " + fl.getStarts().size() + " fields ");
 		
@@ -431,20 +450,34 @@ public class MailMerger {
 		// canonicalise and setup fieldRefs 
 		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
 		for( P p : fl.getStarts() ) {
-			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-			System.out.println("NewP length: " + newP.getContent().size() );
-			((ContentAccessor)p.getParent()).getContent().set(index, newP);
+			int index;
+			if (p.getParent() instanceof ContentAccessor) {
+				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+				
+				((ContentAccessor)p.getParent()).getContent().set(index, newP);
+//			} else if (p.getParent() instanceof java.util.List) {
+//				index = ((java.util.List)p.getParent()).indexOf(p);
+//				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+//				log.debug("NewP length: " + newP.getContent().size() );
+//				((java.util.List)p.getParent()).set(index, newP);				
+			} else {
+				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
+			}
 		}
 		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			String instr = fr.getInstr();
-			if ( isMergeField(instr) ) {
+			if ( fr.getFldName().equals("MERGEFIELD") ) {
+				String instr = extractInstr(fr.getInstructions() );
 
 				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
 				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
+
+//				System.out.println("BEFORE " +XmlUtils.marshaltoString(
+// 				fr.getParent(), true, true));
 				
 				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 				tmp = tmp.trim();
@@ -452,18 +485,30 @@ public class MailMerger {
 				log.info("Key: '" + key + "'");
 				
 				String val = datamap.get( new DataFieldName(key));
-				
+								
 				if (val==null) {
 					log.warn("Couldn't find value for key: '" + key + "'");
 				} else {
+					
+					// Now format the result
+					FldSimpleModel fsm = new FldSimpleModel(input);
+					try {
+						fsm.build(instr);
+						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					} catch (TransformerException e) {
+						log.warn("Can't format the field", e);
+					}
+					
 					fr.setResult(val);
 				}
 				
-				// If doing an actual mail merge, the begin-separate run is removed, as is the end run
-				fr.getParent().getContent().remove(fr.getBeginRun());
-				fr.getParent().getContent().remove(fr.getEndRun());
+				if (!retainMergeField) {
+					// If doing an actual mail merge, the begin-separate run is removed, as is the end run				
+					fr.getParent().getContent().remove(fr.getBeginRun());
+					fr.getParent().getContent().remove(fr.getEndRun());
+				}
 				
-//				System.out.println(XmlUtils.marshaltoString(
+//				System.out.println("AFTER " +XmlUtils.marshaltoString(
 //						fr.getParent(), true, true));
 				
 			}
@@ -473,15 +518,49 @@ public class MailMerger {
 
 	}
 	
-
-	public static boolean isMergeField(String type) {
-	
-		if (type.contains("MERGEFIELD")) {
-			return true;
+	private static String extractInstr(List<Object> instructions) {
+		// For MERGEFIELD, expect the list to contain a simple string
+		
+		if (instructions.size()!=1) {
+			log.error("TODO MERGEFIELD field contained complex instruction");
+			return null;
+		}
+		
+		Object o = XmlUtils.unwrap(instructions.get(0));
+		if (o instanceof Text) {
+			return ((Text)o).getValue();
 		} else {
-			return false;
+			log.error("TODO: extract field name from " + o.getClass().getName() );
+			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			return null;
 		}
 	}
+	
+	
+	private static boolean retainMergeField = false;
+	
+
+	/**
+	 * Whether to leave the MERGEFIELD in the output, or to
+	 * get rid of it.  Keeping it will allow you to perform
+	 * another merge on the output document.  Default is to remove. 
+	 * 
+	 * @since 3.0.0
+	 * 
+	 * @param retainMergeField the retainMergeField to set
+	 */
+	public static void keepMERGEFIELD(boolean retainMergeField) {
+		MailMerger.retainMergeField = retainMergeField;
+	}
+
+//	public static boolean isMergeField(String type) {
+//	
+//		if (type.contains("MERGEFIELD")) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
 	
 
 }
