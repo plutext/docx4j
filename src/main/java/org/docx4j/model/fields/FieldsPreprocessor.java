@@ -193,13 +193,11 @@ public class FieldsPreprocessor {
 				
 				log.debug(XmlUtils.unwrap(o));
 
-				// Add the previous run, if necessary
-				if (newR.getContent().size() > 0) {
-					attachmentPoint.getContent().add(newR);
-					newR = Context.getWmlObjectFactory().createR();
-				}
-
 				attachmentPoint.getContent().add(o);
+
+				// prepare new run
+				newR = Context.getWmlObjectFactory().createR();
+				
 			}
 
 //			if (newR.getContent().size() > 0 && !attachmentPoint.getContent().contains(newR)) {
