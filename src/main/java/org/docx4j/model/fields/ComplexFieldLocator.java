@@ -41,7 +41,7 @@ public class ComplexFieldLocator extends CallbackImpl {
 					starts.add(currentP);
 				}
 			}
-			if (fldChar.getFldCharType().equals(STFldCharType.SEPARATE) ) {
+			if (fldChar.getFldCharType().equals(STFldCharType.END) ) {
 				depth--;
 			}
 		}
