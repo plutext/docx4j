@@ -170,6 +170,7 @@ public class FieldsPreprocessor {
 
 			// Handling for hyperlink in field result, which might contain another
 			// nested field. Since this is in the result, we drop it.
+			// TODO keep it (if preserveResult)
 			
 			//	if ( o instanceof P.Hyperlink
 			//			|| ((o instanceof JAXBElement
@@ -273,7 +274,7 @@ public class FieldsPreprocessor {
 				// Setup a FieldRef object 
 				currentField = new FieldRef((FldChar)XmlUtils.unwrap(o2));							
 				currentField.setParent(newAttachPoint);							
-				currentField.setBeginRun(newR);
+				currentField.setBeginRun(newR); // may as well do this
 				
 				stack.push(currentField);
 				
@@ -291,7 +292,9 @@ public class FieldsPreprocessor {
 					
 						newR = Context.getWmlObjectFactory().createR();
 						newR.getContent().add(o2);					
-	
+						
+						currentField.setBeginRun(newR); // IMPORTANT, so we can delete it when we perform mail merge
+						
 						fieldRefs.add(currentField);					
 					} else {
 						newR.getContent().add(o2);
