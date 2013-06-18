@@ -62,8 +62,10 @@ public class FldSimpleModel extends Model {
 			}
 			if (nameStart < nameEnd) {
 				fldName = text.substring(nameStart, nameEnd);
+				log.debug("fldName: " + fldName);
 				if (nameEnd < text.length()) {
 					fldParameterString = text.substring(nameEnd).trim();
+					log.debug("fldParameterString: " + fldParameterString);
 				}
 			}
 		}
@@ -71,6 +73,7 @@ public class FldSimpleModel extends Model {
 	}
 
 	public static List<String> splitParameters(String text) {
+		log.debug("splitParameters: " + text);
 		List<String> ret = Collections.EMPTY_LIST;
 		int valStart = -1;
 		boolean inLiteral = false;
@@ -110,6 +113,7 @@ public class FldSimpleModel extends Model {
 	}
 	
 	public static void appendParameter(List<String> parameters, String value) {
+		log.debug("parameter: " + value);
 		parameters.add(value);
 	}
 
@@ -126,6 +130,9 @@ public class FldSimpleModel extends Model {
 		return getFldParameters().get(0);
 	}	
 	
+	/**
+	 * For example, "caContractId  \* UPPER"
+	 */
 	public String getFldParameterString() {
 		return fldParameterString;
 	}
@@ -133,7 +140,7 @@ public class FldSimpleModel extends Model {
 	
 	public List<String> getFldParameters() {
 		if (fldParameters == null) {
-			fldParameters = splitParameters(fldParameterString);
+			fldParameters = splitParameters(fldParameterString );
 		}
 		return fldParameters;
 	}

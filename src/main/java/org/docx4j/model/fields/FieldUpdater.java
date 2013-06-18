@@ -111,21 +111,21 @@ public class FieldUpdater {
 					e.printStackTrace();
 				}
 				
-				String key = fsm.getFldParameterString();
+				String key = fsm.getFldParameters().get(0);
 				
 				String val;
 				try {
 				  val = (String) docPropertyResolver.getValue(key); 
 				} catch (FieldValueException e) {
 					report.append( simpleField.getInstr() + "\n");
-					report.append( "!-> NOT FOUND! \n");	
+					report.append( key + " -> NOT FOUND! \n");	
 					continue;
 				}
 				
 				if (val==null) {
 					
 					report.append( simpleField.getInstr() + "\n");
-					report.append( "!-> NOT FOUND! \n");
+					report.append( key + " -> NOT FOUND! \n");	
 					
 				} else {
 							//docPropsCustomPart.getProperty(key);
@@ -218,20 +218,20 @@ public class FieldUpdater {
 					e.printStackTrace();
 				}
 
-				String key = fsm.getFldParameterString();
+				String key = fsm.getFldParameters().get(0);
 				String val = (String) docPropertyResolver.getValue(key); 
 				try {
 				  val = (String) docPropertyResolver.getValue(key); 
 				} catch (FieldValueException e) {
 					report.append( instr + "\n");
-					report.append( "!-> NOT FOUND! \n");	
+					report.append( key + " -> NOT FOUND! \n");	
 					continue;
 				}
 				
 				if (val==null) {
 					
 					report.append( instr + "\n");
-					report.append( "!-> NOT FOUND! \n");
+					report.append( key + " -> NOT FOUND! \n");
 					
 				} else {
 				
@@ -280,21 +280,15 @@ public class FieldUpdater {
 	 */
 	public static void main(String[] args) throws Docx4JException {
 
-		String filenames[] = {"CL FORMALIZACION Vigilancia.docx","CL FORMALIZACION Vigilancia2.docx","Contrato de Ejecucion de Obra AQN130121 Nº1 EJEMPLO_TABULACION.DOCX","Contrato Puesta a Disposición (ETTs) AQN120612 Nº1.docx","RFQ _test.docx","RFQ_EETT_CS.docx","RFQ_General_CS.docx"};		
-//    	inputfilepath = System.getProperty("user.dir") + "/Aq_Obra.docx";
-		
-		int docIndex = 6;
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
 				new java.io.File(
-						System.getProperty("user.dir") + "/aq/" 
-								+ filenames[docIndex]));
+						System.getProperty("user.dir") + "/aq1.docx")); 
 		
 		FieldUpdater fu = new FieldUpdater(wordMLPackage);
 		fu.update(true);
 		
-//		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
+		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 		
-		System.out.println(filenames[docIndex]);
 	}
 
 }
