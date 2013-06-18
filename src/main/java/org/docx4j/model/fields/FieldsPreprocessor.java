@@ -201,9 +201,10 @@ public class FieldsPreprocessor {
 				attachmentPoint.getContent().add(o);
 			}
 
-		}
-		if (newR.getContent().size() > 0 && !attachmentPoint.getContent().contains(newR)) {
-			attachmentPoint.getContent().add(newR);
+//			if (newR.getContent().size() > 0 && !attachmentPoint.getContent().contains(newR)) {
+//				attachmentPoint.getContent().add(newR);
+//			}
+			
 		}
 		
 	}
@@ -231,6 +232,28 @@ public class FieldsPreprocessor {
 		
 	}
 	
+	private boolean preserveResult(FieldRef fieldRef) {
+		
+		if (fieldRef.isLock()) return true;
+		
+		if (fieldRef.getFldName().equals("MERGEFIELD")
+				|| fieldRef.getFldName().equals("DOCPROPERTY")) {
+			return false;
+		}
+		return true;
+	}
+
+	private boolean preserveParentResult() {
+		
+		FieldRef thisField = stack.pop();
+		FieldRef parentField = stack.pop();
+		boolean preserveParentResult = preserveResult(parentField);
+		// restore stack
+		stack.push(parentField);
+		stack.push(thisField);
+		return preserveParentResult;
+	}
+	
 	private void handleRun(R existingRun, ContentAccessor newAttachPoint) {
 		
 		// note that the newR object persists between invocations of this method,
@@ -255,9 +278,12 @@ public class FieldsPreprocessor {
 				stack.push(currentField);
 				
 				if (inParentResult()) {
-
-					log.debug(".. but in result, so don't add to run");
-					// TODO: if parentField.isLock(), we should preserve its result 
+					
+					if (preserveParentResult()) {
+						newR.getContent().add(o2);
+					} else {
+						log.debug(".. but in result, so don't add to run");
+					}
 					
 				} else {
 					
@@ -280,12 +306,19 @@ public class FieldsPreprocessor {
 
 				if (inParentResult()) {
 
-					log.debug(".. but in result, so don't add to run");
+					if (preserveParentResult()) {
+						newR.getContent().add(o2);
+					} else {
+						log.debug(".. but in result, so don't add to run");
+					}
 
 				} else {
 				
 					newR.getContent().add(o2);
-					newAttachPoint.getContent().add(newR);
+					if (!newAttachPoint.getContent().contains(newR)) {
+						newAttachPoint.getContent().add(newR);
+						log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+					}
 					
 					if ( fieldIsTopLevel() ) {
 						// Top level field separator
@@ -302,7 +335,11 @@ public class FieldsPreprocessor {
 				
 				if (inParentResult()) {
 
-					log.debug(".. but in result, so don't add to run");
+					if (preserveParentResult()) {
+						newR.getContent().add(o2);
+					} else {
+						log.debug(".. but in result, so don't add to run");
+					}
 
 				} else {
 
@@ -323,8 +360,10 @@ public class FieldsPreprocessor {
 							fldChar.setFldCharType(STFldCharType.SEPARATE);
 							newR.getContent().add(fldChar);
 													
-							newAttachPoint.getContent().add(newR);
-							log.debug("\n-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+							if (!newAttachPoint.getContent().contains(newR)) {
+								newAttachPoint.getContent().add(newR);
+								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+							}
 							
 						}					
 						
@@ -369,15 +408,21 @@ public class FieldsPreprocessor {
 				
 //				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 				
+				currentField.getInstructions().add(o2);
 				if (inParentResult()) {
 
-					log.debug(".. but in result, so don't add to run");
+					if (preserveParentResult()) {
+						newR.getContent().add(o2);
+					} else {
+						log.debug(".. but in result, so don't add to run");
+					}
 
 				} else {				
-					currentField.getInstructions().add(o2);
 					newR.getContent().add(o2);
 				}
 
+			} else if (preserveResult(currentField)) {
+				newR.getContent().add(o2);					
 			} else {
 				// result content .. can ignore
 				
@@ -391,6 +436,11 @@ public class FieldsPreprocessor {
 				log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
 				
 			} 
+			
+			if (newR.getContent().size() > 0 && !newAttachPoint.getContent().contains(newR)) {
+				newAttachPoint.getContent().add(newR);
+			}
+			
 		} // end for (Object o2 : existingRun.getContent() )
 		
 	}
