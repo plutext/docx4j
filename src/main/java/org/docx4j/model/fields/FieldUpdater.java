@@ -7,6 +7,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -208,9 +209,11 @@ public class FieldUpdater {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ("DOCPROPERTY".equals(FormattingSwitchHelper.getFldSimpleName(fr.getInstr()))) {
+			if ("DOCPROPERTY".equals(fr.getFldName())) {
+				
+				String instr = extractInstr(fr.getInstructions());
 				try {
-					fsm.build(fr.getInstr());
+					fsm.build(instr);
 				} catch (TransformerException e) {
 					e.printStackTrace();
 				}
@@ -220,14 +223,14 @@ public class FieldUpdater {
 				try {
 				  val = (String) docPropertyResolver.getValue(key); 
 				} catch (FieldValueException e) {
-					report.append( fr.getInstr() + "\n");
+					report.append( instr + "\n");
 					report.append( "!-> NOT FOUND! \n");	
 					continue;
 				}
 				
 				if (val==null) {
 					
-					report.append( fr.getInstr() + "\n");
+					report.append( instr + "\n");
 					report.append( "!-> NOT FOUND! \n");
 					
 				} else {
@@ -235,7 +238,7 @@ public class FieldUpdater {
 	//				System.out.println(val);
 					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
 	//				System.out.println("--> " + val);
-					report.append( fr.getInstr() + "\n");
+					report.append( instr + "\n");
 					report.append( "--> " + val + "\n");
 	
 					fr.setResult(val);
@@ -248,9 +251,28 @@ public class FieldUpdater {
 //							fr.getParent(), true, true));
 				}				
 			} else {
-				report.append("Ignoring " + fr.getInstr() + "\n");				
+				report.append("Ignoring " + fr.getFldName() + "\n");				
 			}
-		}	}
+		}	
+	}
+	
+	private String extractInstr(List<Object> instructions) {
+		// For DOCPROPERTY, expect the list to contain a simple string
+		
+		if (instructions.size()!=1) {
+			log.error("TODO DOCPROPERTY field contained complex instruction");
+			return null;
+		}
+		
+		Object o = XmlUtils.unwrap(instructions.get(0));
+		if (o instanceof Text) {
+			return ((Text)o).getValue();
+		} else {
+			log.error("TODO: extract field name from " + o.getClass().getName() );
+			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			return null;
+		}
+	}
 	
 	/**
 	 * @param args

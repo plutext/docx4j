@@ -41,6 +41,7 @@ import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.SectPr;
+import org.docx4j.wml.Text;
 
 
 /**
@@ -467,14 +468,14 @@ public class MailMerger {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			String instr = fr.getInstr();
-			if ( isMergeField(instr) ) {
+			if ( fr.getFldName().equals("MERGEFIELD") ) {
+				String instr = extractInstr(fr.getInstructions() );
 
 				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
 				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
 
-				System.out.println("BEFORE " +XmlUtils.marshaltoString(
- 				fr.getParent(), true, true));
+//				System.out.println("BEFORE " +XmlUtils.marshaltoString(
+// 				fr.getParent(), true, true));
 				
 				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 				tmp = tmp.trim();
@@ -505,8 +506,8 @@ public class MailMerger {
 					fr.getParent().getContent().remove(fr.getEndRun());
 				}
 				
-				System.out.println("AFTER " +XmlUtils.marshaltoString(
-						fr.getParent(), true, true));
+//				System.out.println("AFTER " +XmlUtils.marshaltoString(
+//						fr.getParent(), true, true));
 				
 			}
 		}
@@ -514,6 +515,25 @@ public class MailMerger {
 		return shellClone.getContent();
 
 	}
+	
+	private static String extractInstr(List<Object> instructions) {
+		// For MERGEFIELD, expect the list to contain a simple string
+		
+		if (instructions.size()!=1) {
+			log.error("TODO MERGEFIELD field contained complex instruction");
+			return null;
+		}
+		
+		Object o = XmlUtils.unwrap(instructions.get(0));
+		if (o instanceof Text) {
+			return ((Text)o).getValue();
+		} else {
+			log.error("TODO: extract field name from " + o.getClass().getName() );
+			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			return null;
+		}
+	}
+	
 	
 	private static boolean retainMergeField = false;
 	
@@ -531,14 +551,14 @@ public class MailMerger {
 		MailMerger.retainMergeField = retainMergeField;
 	}
 
-	public static boolean isMergeField(String type) {
-	
-		if (type.contains("MERGEFIELD")) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+//	public static boolean isMergeField(String type) {
+//	
+//		if (type.contains("MERGEFIELD")) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
 	
 
 }

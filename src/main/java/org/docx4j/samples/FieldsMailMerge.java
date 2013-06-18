@@ -46,6 +46,7 @@ public class FieldsMailMerge {
 		
 		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 
+		org.docx4j.model.fields.merge.MailMerger.keepMERGEFIELD(true);
 		WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data, true);
 		
 		

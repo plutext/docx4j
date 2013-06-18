@@ -134,8 +134,8 @@ public class FromMergeFields extends AbstractMigrator {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			String instr = fr.getInstr();
-			if ( isMergeField(instr) ) {
+			if ( fr.getFldName().equals("MERGEFIELD") ) {
+				String instr = extractInstr(fr.getInstructions() );
 
 				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
 				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
@@ -167,16 +167,32 @@ public class FromMergeFields extends AbstractMigrator {
 		return pkgOut;
 	}
 	
-	public static boolean isMergeField(String type) {
+	private static String extractInstr(List<Object> instructions) {
+		// For MERGEFIELD, expect the list to contain a simple string
 		
-		if (type.contains("MERGEFIELD")) {
-			return true;
+		if (instructions.size()!=1) {
+			log.error("TODO MERGEFIELD field contained complex instruction");
+			return null;
+		}
+		
+		Object o = XmlUtils.unwrap(instructions.get(0));
+		if (o instanceof Text) {
+			return ((Text)o).getValue();
 		} else {
-			return false;
+			log.error("TODO: extract field name from " + o.getClass().getName() );
+			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			return null;
 		}
 	}
 	
-
+//	public static boolean isMergeField(String type) {
+//		
+//		if (type.contains("MERGEFIELD")) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
 
 	/**
 	 * @param args
