@@ -56,11 +56,11 @@ public class NamespacePrefixMapperUtils {
 			prefixMapper = new NamespacePrefixMapperSunInternal();
 			return prefixMapper;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
 		} catch (javax.xml.bind.PropertyException notJava6) {
 			// OpenJDK (1.6.0_23) does this
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
 		}
 	}
@@ -110,10 +110,10 @@ public class NamespacePrefixMapperUtils {
 			return prefixMapperRels;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			// javax.xml.bind.PropertyException
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
 		} catch (javax.xml.bind.PropertyException notJava6) {
-			log.error(notJava6.getMessage() + " .. trying RI.");
+			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
 		}
 	}
