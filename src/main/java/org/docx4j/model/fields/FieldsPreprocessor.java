@@ -291,7 +291,9 @@ public class FieldsPreprocessor {
 					
 						newR = Context.getWmlObjectFactory().createR();
 						newR.getContent().add(o2);					
-	
+
+						currentField.setBeginRun(newR);
+						
 						fieldRefs.add(currentField);					
 					} else {
 						newR.getContent().add(o2);
