@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
@@ -27,6 +28,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -168,9 +170,9 @@ public class FieldsPreprocessor {
 		
 		for (Object o : objects ) {
 
-			// Handling for hyperlink in field result, which might contain another
-			// nested field. Since this is in the result, we drop it.
-			// TODO keep it (if preserveResult)
+			// Handling for hyperlink (can occur in field result, and might contain another
+			// nested field).  Since at present the field processing here is for
+			// MERGEFIELD and DOCPROPERTY fields, this is currently just handled by else below.
 			
 			//	if ( o instanceof P.Hyperlink
 			//			|| ((o instanceof JAXBElement
@@ -337,7 +339,54 @@ public class FieldsPreprocessor {
 				if (inParentResult()) {
 
 					if (preserveParentResult()) {
+						
 						newR.getContent().add(o2);
+
+						if (currentField.getFldName().equals("FORMTEXT")) {
+							/*
+							 * Workaround for a bug in Word 2010.
+							 * 
+							 * If you have multiple FORMTEXT in a single run,
+							 * for example:
+							 * 
+							 *      <w:fldChar w:fldCharType="begin">
+							          <w:ffData>
+							            <w:name w:val="Text12"/>
+							            <w:enabled/>
+							            <w:calcOnExit w:val="false"/>
+							            <w:textInput/>
+							          </w:ffData>
+							        </w:fldChar>
+							        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+							        <w:fldChar w:fldCharType="separate"/>
+							        <w:t> </w:t>
+							        <w:fldChar w:fldCharType="end"/>
+							        <w:fldChar w:fldCharType="begin">
+							          <w:ffData>
+							            <w:name w:val="Text12"/>
+							            <w:enabled/>
+							            <w:calcOnExit w:val="false"/>
+							            <w:textInput/>
+							          </w:ffData>
+							        </w:fldChar>
+							        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+							        <w:fldChar w:fldCharType="separate"/>
+							        <w:t> </w:t>
+							        <w:fldChar w:fldCharType="end"/>						
+							 *
+							 * Word 2010 does not display all the w:t elements (ie spaces appear to
+							 * be missing).
+							 * 
+							 * Adding w:t/@xml:space="preserve" doesn't help.
+							 * 
+							 * So the workaround here is to start a new run after each END tag.
+							 */
+							if (!newAttachPoint.getContent().contains(newR)) {
+								newAttachPoint.getContent().add(newR);
+								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+							}
+							newR = Context.getWmlObjectFactory().createR();						
+						}						
 					} else {
 						log.debug(".. but in result, so don't add to run");
 					}
@@ -384,7 +433,9 @@ public class FieldsPreprocessor {
 						newR = Context.getWmlObjectFactory().createR();
 						
 					} else {
-						newR.getContent().add(o2);							
+						newR.getContent().add(o2);	
+						
+
 					}
 					
 				}
@@ -437,6 +488,14 @@ public class FieldsPreprocessor {
 				log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
 				
 			} 
+
+			// Doesn't solve the problem of Word failing to display some spaces.
+//			if ( o2 instanceof Text
+//					|| ((o2 instanceof JAXBElement
+//							&& ((JAXBElement)o2).getName().equals(_RT_QNAME)) )	) {
+//				Text t = (Text)XmlUtils.unwrap(o2);
+//				t.setSpace("preserve");
+//			}
 			
 			if (newR.getContent().size() > 0 && !newAttachPoint.getContent().contains(newR)) {
 				newAttachPoint.getContent().add(newR);
@@ -445,6 +504,9 @@ public class FieldsPreprocessor {
 		} // end for (Object o2 : existingRun.getContent() )
 		
 	}
+		
+	    private final static QName _RT_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t");
+		
 	
 //	public static boolean containsCharType(Object o, STFldCharType charType) {
 //		
