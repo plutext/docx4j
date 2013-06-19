@@ -41,9 +41,7 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 					&& x.getQuestionID().equals(id))
 				return x;
 		}
-		
-		log.warn("No XPath with question id " + id );
-		return null;
+		throw new InputIntegrityException("No XPath with question id " + id );		
 	}
 
 }

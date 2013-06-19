@@ -37,8 +37,7 @@ public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 				return c;
 		}
 		
-		log.warn("Condition " + id + " is missing");
-		return null;
+		throw new InputIntegrityException("No Condition with id " + id );		
 	}
 
 //	/**

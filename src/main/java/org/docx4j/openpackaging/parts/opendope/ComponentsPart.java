@@ -5,6 +5,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
+import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
@@ -34,9 +35,7 @@ public class ComponentsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 			if (c.getId().equals(id))
 				return c;
 		}
-		
-		log.warn("Component " + id + " is missing");
-		return null;
+		throw new InputIntegrityException("No component with id " + id );		
 	}
 
 
