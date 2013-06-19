@@ -28,9 +28,9 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  * @author jharrop
  *
  */
-public class CreateDocx extends AbstractSample {
+public class AddGloxToDocx extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(CreateDocx.class);						
+	private static Logger log = Logger.getLogger(AddGloxToDocx.class);						
 
 	/**
 	 * @param args
