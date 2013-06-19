@@ -23,6 +23,9 @@ import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
+import org.docx4j.org.xhtmlrenderer.css.parser.FSColor;
+import org.docx4j.org.xhtmlrenderer.css.parser.FSRGBColor;
+import org.docx4j.org.xhtmlrenderer.css.parser.PropertyValue;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTVerticalJc;
 import org.docx4j.wml.Color;
@@ -58,14 +61,33 @@ public class PShading extends AbstractParagraphProperty {
 		CTShd shd = Context.getWmlObjectFactory().createCTShd();
 
 		// PrimitiveType 25 -> RGBCOLOR
-		short ignored = 1;
+        short ignored = 1;
 
-		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
-		float fRed = cssPrimitiveValue.getRGBColorValue().getRed().getFloatValue(ignored); 
-		float fGreen = cssPrimitiveValue.getRGBColorValue().getGreen().getFloatValue(ignored); 
-		float fBlue = cssPrimitiveValue.getRGBColorValue().getBlue().getFloatValue(ignored); 
+        float fRed;
+        float fGreen;
+        float fBlue;
+
+        CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue) value;
+        try {
+            fRed = cssPrimitiveValue.getRGBColorValue().getRed()
+                    .getFloatValue(ignored);
+            fGreen = cssPrimitiveValue.getRGBColorValue().getGreen()
+                    .getFloatValue(ignored);
+            fBlue = cssPrimitiveValue.getRGBColorValue().getBlue()
+                    .getFloatValue(ignored);
+        } catch (UnsupportedOperationException e) {
+            if (!(cssPrimitiveValue instanceof PropertyValue))
+                throw e;
+            final FSColor fsColor = ((PropertyValue) cssPrimitiveValue)
+                    .getFSColor();
+            if (!(fsColor instanceof FSRGBColor))
+                throw e;
+            fRed = ((FSRGBColor) fsColor).getRed();
+            fGreen = ((FSRGBColor) fsColor).getGreen();
+            fBlue = ((FSRGBColor) fsColor).getBlue();
+        }
 		
-		shd.setFill(UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue)  );
+		shd.setFill(UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue));
 
 		this.setObject( shd  );
 	}
