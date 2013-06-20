@@ -28,9 +28,9 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  * @author jharrop
  *
  */
-public class CreateDocx extends AbstractSample {
+public class AddGloxToDocx extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(CreateDocx.class);						
+	private static Logger log = Logger.getLogger(AddGloxToDocx.class);						
 
 	/**
 	 * @param args
@@ -41,7 +41,8 @@ public class CreateDocx extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 //			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
+//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
+			inputfilepath = System.getProperty("user.dir") + "/RectTimeline2.glox";
 
 		}
 		
@@ -73,6 +74,10 @@ public class CreateDocx extends AbstractSample {
 		DiagramDataPart data = new DiagramDataPart();
 		
 		// Get the sample data from dgm:sampData
+		if (gloxPackage.getDiagramLayoutPart().getJaxbElement().getSampData()==null) {
+			log.error("Sample data missing!");
+			return;
+		}
 		CTDataModel sampleDataModel = gloxPackage.getDiagramLayoutPart().getJaxbElement().getSampData().getDataModel();
 		
 		// If there is none, this sample won't work
