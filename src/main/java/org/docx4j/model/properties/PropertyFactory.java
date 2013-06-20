@@ -510,7 +510,8 @@ public class PropertyFactory {
 				// font-style
 				return new Italics(value);
 			} else if (name.equals("text-decoration")) {
-				if (value.getCssText().toLowerCase().equals("line-through")) {
+				if (value.getCssText().toLowerCase().equals("line-through")
+				        || value.getCssText().toLowerCase().equals("[line-through]")) {
 					return new Strike(value);
 				} else if (value.getCssText().toLowerCase().equals("underline")
 						|| value.getCssText().toLowerCase().equals("[underline]")) {
@@ -526,7 +527,25 @@ public class PropertyFactory {
 			} else if (name.equals(FontSize.CSS_NAME )) {
 				// font-size
 				return new FontSize(value);
-			} 
+			} else if (name.equals(RShading.CSS_NAME )) {
+			    // background color
+			    if(value.getCssText().toLowerCase().equals("transparent")){
+			        return null;
+			    }
+			    // if css value is presented as color, make shading;
+			    // else assume it is string value so highlight
+			    if(simpleRGBCheck(value.getCssText())){
+			        return new RShading(value);
+			    } else {
+			        return new HighlightColor(value);
+			    }
+			} else if (name.equals(VerticalAlignment.CSS_NAME)) {
+			    //default value
+			    if(value.getCssText().equals("baseline")){
+			        return null;
+			    }
+			    return new VerticalAlignment(value);
+			}
 			
 			// Paragraph properties
 			if (name.equals(Indent.CSS_NAME )) {
@@ -558,8 +577,35 @@ public class PropertyFactory {
 		return null;
 	}
 	
+	/**
+	 * Now used to create fill property for paragraph only
+	 */
+	public static Property createPropertyFromCssNameForPPr(String name, CSSValue value) {
+	    try {
+	        if (name.equals(PShading.CSS_NAME )) {
+	            // background color
+	            if(value.getCssText().toLowerCase().equals("transparent")){
+	                return null;
+	            }
+	            if(simpleRGBCheck(value.getCssText())){
+	                return new PShading(value);
+	            }
+	        }
+	    } catch (java.lang.UnsupportedOperationException uoe) {
+	        // TODO: consider whether it is right to catch this,
+	        // or whether calling code should handle a docx4j exception wrapping this
+	        log.error("Can't create property from: " + name + ":" + value.getCssText() );
+	        return null;
+	    }
+	    log.debug("How to handle: " + name + "?");
+	    return null;
+	}
 	
-	
-	
+	private static boolean simpleRGBCheck(String cssText){
+	    if(cssText.contains("#") || cssText.contains("rgb")){
+	        return true;
+	    }
+	    return false;
+	}
 
 }

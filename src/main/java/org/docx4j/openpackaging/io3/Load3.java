@@ -166,7 +166,7 @@ public class Load3 extends Load {
 		// 6.
 		registerCustomXmlDataStorageParts(p);
 		
-		partStore.finishLoad();
+//		partStore.finishLoad();
 		
 		long endTime = System.currentTimeMillis();
 		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );

@@ -24,6 +24,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -32,6 +33,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
 import org.docx4j.wml.STTheme;
 import org.w3c.dom.Element;
+import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class Font extends AbstractRunProperty {
@@ -55,9 +57,19 @@ public class Font extends AbstractRunProperty {
 	}
 
 	public Font(CSSValue value) {
-		
+	    RFonts rFonts = Context.getWmlObjectFactory().createRFonts();
+	    CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
+	    String[] fonts = cssPrimitiveValue.getStringValue().split(",");
+	    //try first font
+	    if(fonts.length > 0){
+	        if(!fonts[0].isEmpty()){
+	            rFonts.setAscii(fonts[0]);
+	            rFonts.setHAnsi(fonts[0]);
+	            this.setObject(rFonts);
+	        }
+	    }
 		debug(CSS_NAME, value);
-		log.warn("RFonts from CSS font-family is a TODO");
+//		log.warn("RFonts from CSS font-family is a TODO");
 	}
 	
 

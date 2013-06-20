@@ -1314,7 +1314,14 @@ public class XHTMLImporter {
 	        	if (p instanceof AbstractParagraphProperty) {        		
 	        		((AbstractParagraphProperty)p).set(pPr);
 	        	} else {
-	            	//log.debug(p.getClass().getName() );
+	        	    // try specific method
+	        	    p = PropertyFactory.createPropertyFromCssNameForPPr(cssName, cssValue);
+	        	    if (p!=null) {
+	        	        if (p instanceof AbstractParagraphProperty) {               
+	        	            ((AbstractParagraphProperty)p).set(pPr);
+	        	        }
+	        	    }
+	        	    //log.debug(p.getClass().getName() );
 	        	}
         	}
         	

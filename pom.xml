@@ -444,7 +444,7 @@
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>xhtmlrenderer</artifactId><!--  supports xhtml import -->
-			<version>1.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 			<!-- currently itext is required (fonts for width calculations)
 				<exclusions>
 					<exclusion>

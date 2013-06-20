@@ -22,6 +22,7 @@ package org.docx4j.model.properties.run;
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
@@ -64,6 +65,11 @@ public class FontSize extends AbstractRunProperty {
 				log.warn("TODO Handle FontSize units properly: " + adjective );							
 			}
 			
+		} else if(cssPrimitiveValue.getPrimitiveType() == CSSPrimitiveValue.CSS_PX){
+		    float pxVal = cssPrimitiveValue.getFloatValue(CSSPrimitiveValue.CSS_PX);
+		    int iVal = UnitsOfMeasurement.pxToTwip(pxVal)/10;
+		    hpsMeasure.setVal(BigInteger.valueOf(iVal));
+		    this.setObject(hpsMeasure);
 		} else  if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_PT) {
 			log.error("TODO FontSize Handle units: " + cssPrimitiveValue.getPrimitiveType() );
 			debug(CSS_NAME, value);
