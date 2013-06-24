@@ -194,8 +194,9 @@ public class BindingHandler {
 					// Note that Word does not create that part until the user provides one or more prop values
 				
 				if (part==null) {
-					log.error("Couldn't locate part by storeItemId " + storeItemId);
-					return null;
+					throw new InputIntegrityException("Couldn't locate part by storeItemId " + storeItemId);
+//					log.error("Couldn't locate part by storeItemId " + storeItemId);
+//					return null;
 				}
 				
 				if (log.isDebugEnabled() ) {
@@ -207,7 +208,8 @@ public class BindingHandler {
 				}
 			} catch (Docx4JException e) {
 				log.error(e);
-				return null;
+//				return null;
+				throw new InputIntegrityException(e.getMessage());
 			}
 		}
 

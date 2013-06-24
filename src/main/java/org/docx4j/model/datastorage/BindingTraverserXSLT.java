@@ -651,14 +651,16 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		
 		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
 		
-		log.info("Looking for xpath by id: " + xpathId);
-	
+		log.debug("Looking for xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
 		
-		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
-		
-		if (xpath==null) {
-			log.warn("Couldn't find xpath with id: " + xpathId);
-			return null;
+		Xpath xpath = null;
+		try {
+			xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		} catch (InputIntegrityException iie) {
+			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+			throw iie;
+			
+			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
 		}
 		
 		String storeItemId = xpath.getDataBinding().getStoreItemID();
