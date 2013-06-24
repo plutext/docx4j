@@ -56,6 +56,8 @@ public class OpenZippedAndSaveUnzipped extends AbstractSample {
 				
 		// Save it unzipped		
 		File baseDir = new File(System.getProperty("user.dir") + "/OUT"); 
+		baseDir.mkdir();
+		
 		UnzippedPartStore ups = new UnzippedPartStore(baseDir);
 		ups.setSourcePartStore(wordMLPackage.getPartStore());
 		Save saver = new Save(wordMLPackage, ups);

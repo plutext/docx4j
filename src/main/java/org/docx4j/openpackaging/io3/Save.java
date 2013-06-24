@@ -156,7 +156,7 @@ public class Save {
 	
 	
 	/**
-	 * @param realOS
+	 * @param realOS - responsibility of the caller to close this.
 	 * @return
 	 * @throws Docx4JException
 	 */
@@ -190,9 +190,9 @@ public class Save {
 			
 			p.getPartStore().finishSave();
 			
-			if (realOS!=null) {
-				realOS.close();
-			}
+//			if (realOS!=null) {
+//				realOS.close();
+//			}
 	    } catch (Exception e) {
 			e.printStackTrace() ;
 			if (e instanceof Docx4JException) {

@@ -106,17 +106,18 @@ public abstract class JaxbXmlPart<E> extends Part {
 	public E getJaxbElement() {
 		
 		// Lazy unmarshal
+		InputStream is = null;
 		if (jaxbElement==null) {
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
 				
-//				try {
-//					this.setContentLengthAsLoaded(
-//							partStore.getPartSize( name.substring(1)));
-//				} catch (UnsupportedOperationException uoe) {}
+				try {
+					this.setContentLengthAsLoaded(
+							partStore.getPartSize( name.substring(1)));
+				} catch (UnsupportedOperationException uoe) {}
 					
-				InputStream is = partStore.loadPart( 
+				is = partStore.loadPart( 
 						name.substring(1));
 				if (is==null) {
 					log.warn(name + " missing from part store");
@@ -128,7 +129,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 				log.error(e);
 			} catch (Docx4JException e) {
 				log.error(e);
-			}
+			} finally {
+				IOUtils.closeQuietly(is);
+			}			
 		}
 		return jaxbElement;
 	}

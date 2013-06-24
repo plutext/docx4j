@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
@@ -129,13 +130,16 @@ public class Load3 extends Load {
 
 		// 1. Get [Content_Types].xml
 		ContentTypeManager ctm = new ContentTypeManager();
+		InputStream is = null;
 		try {
-			InputStream is = partStore.loadPart("[Content_Types].xml");		
+			is = partStore.loadPart("[Content_Types].xml");		
 			ctm.parseContentTypesFile(is);
 		} catch (Docx4JException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		} catch (NullPointerException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
+		} finally {
+			IOUtils.closeQuietly(is);
 		}
 		
 		// .. now find the name of the main part
@@ -186,7 +190,6 @@ public class Load3 extends Load {
 			if (is==null) {
 				return null; // that's ok
 			}
-			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
 			rp = new RelationshipsPart(new PartName("/" + partName) );
 			rp.setSourceP(p);
 			rp.unmarshal(is);
@@ -196,18 +199,9 @@ public class Load3 extends Load {
 			throw new Docx4JException("Error getting document from Zipped Part:" + partName, e);
 			
 		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException exc) {
-					exc.printStackTrace();
-				}
-			}
+			IOUtils.closeQuietly(is);
 		}
-		
 		return rp;
-	// debugPrint(contents);
-	// TODO - why don't any of the part names in this document start with "/"?
 	}
 	
 		
@@ -556,13 +550,7 @@ public class Load3 extends Load {
 			throw new Docx4JException("Failed to getPart", ex);			
 			
 		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException exc) {
-					exc.printStackTrace();
-				}
-			}
+			IOUtils.closeQuietly(is);
 		}
 		
         if (part == null) {
@@ -577,9 +565,9 @@ public class Load3 extends Load {
 			throws Docx4JException {
 
 		Part part = null;
-		InputStream in = null;					
+		InputStream is = null;					
 		try {
-			in = partStore.loadPart(resolvedPartUri);
+			is = partStore.loadPart(resolvedPartUri);
 			//in = partByteArrays.get(resolvedPartUri).getInputStream();
 			part = new BinaryPart( new PartName("/" + resolvedPartUri));
 			
@@ -588,30 +576,24 @@ public class Load3 extends Load {
 					new ContentType(
 							ctm.getContentType(new PartName("/" + resolvedPartUri)) ) );
 			
-			((BinaryPart)part).setBinaryData(in);
+			((BinaryPart)part).setBinaryData(is);
 			log.info("Stored as BinaryData" );
 			
 		} catch (Exception ioe) {
 			ioe.printStackTrace() ;
 		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException exc) {
-					exc.printStackTrace();
-				}
-			}
+			IOUtils.closeQuietly(is);
 		}
 		return part;
 	}	
 
-	// Testing
-	public static void main(String[] args) throws Exception {
-		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";
-		log.info("Path: " + filepath );
-		ZipPartStore partLoader = new ZipPartStore(new File(filepath));
-		Load3 loader = new Load3(partLoader);
-		loader.get();		
-	}
+//	// Testing
+//	public static void main(String[] args) throws Exception {
+//		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";
+//		log.info("Path: " + filepath );
+//		ZipPartStore partLoader = new ZipPartStore(new File(filepath));
+//		Load3 loader = new Load3(partLoader);
+//		loader.get();		
+//	}
 	
 }

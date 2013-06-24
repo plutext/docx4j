@@ -19,29 +19,13 @@
  */
 package org.docx4j.openpackaging.io3.stores;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -50,7 +34,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io3.Load3;
-import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -127,7 +110,7 @@ public class UnzippedPartStore implements PartStore {
 
 		InputStream is;
 		try {
-			is = new FileInputStream(new File(filePath));
+			is = new FileInputStream(new File(filePath)); 
 		} catch (FileNotFoundException e) {
 			return null;
 //			throw new Docx4JException(e.getMessage(), e);
@@ -135,7 +118,22 @@ public class UnzippedPartStore implements PartStore {
 //        if (is == null) throw new Docx4JException("part '" + partName + "' not found at " + filePath );
 		return is;
 	}
+	
+	@Override
+	public long getPartSize(String partName) throws Docx4JException {
+		
+		String filePath = dir.getPath() + dir.separator + partName;
+		
+		File f = new File(filePath);
+		if (f.exists()) {
+			return f.length();
+		} else {
+			return -1;
+		}
+	}
+	
 
+	
 	///// Save methods
 
 	/**
@@ -333,19 +331,18 @@ public class UnzippedPartStore implements PartStore {
 
 	}
 
-	/**
-	 * Does nothing
-	 */
+	@Override
 	public void finishSave() throws Docx4JException {
-		// Nothing to do
+		// nothing to do
 	}
 
-	/**
-	 * Does nothing
-	 */
-	public void finishLoad() throws Docx4JException {
-		// Nothing to do
+	@Override
+	public void dispose() {
+		// nothing to do
 	}
+
+
+
 
 
 

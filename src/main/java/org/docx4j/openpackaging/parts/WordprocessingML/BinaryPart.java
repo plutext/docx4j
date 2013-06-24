@@ -122,18 +122,31 @@ public class BinaryPart extends Part {
 		} else {
 
 			res = (this.bbRef != null) ? this.bbRef.get() : null;
-			if (res == null) {
-				// no cached buffer, load part data now			
-				PartStore partStore = this.getPackage().getPartStore();
-				InputStream in=null;
+			if (this.getPackage()==null) {
+				log.warn("No package owns this part.");
+				return null;				
+			}
+			// no cached buffer, try to load part data now			
+			PartStore partStore = this.getPackage().getPartStore();
+			if (partStore==null) {
+				log.warn("No PartStore configured for this package");
+				return null;
+			} if (res == null) {
+				InputStream is=null;
 				try {
 					String name = this.partName.getName();
-					in = partStore.loadPart( 
+					
+					try {
+						this.setContentLengthAsLoaded(
+								partStore.getPartSize( name.substring(1)));
+					} catch (UnsupportedOperationException uoe) {}
+					
+					is = partStore.loadPart( 
 							name.substring(1));
-					if (in==null) {
+					if (is==null) {
 						log.warn(name + " missing from part store");
 					} else {
-						res = BufferUtil.readInputStream(in);
+						res = BufferUtil.readInputStream(is);
 						// Store buffer thru soft reference so it could be
 						// unloaded by the java vm if free memory is low.
 						this.bbRef = new SoftReference<ByteBuffer>(res);
@@ -143,14 +156,7 @@ public class BinaryPart extends Part {
 				} catch (IOException e) {
 					log.error(e);
 				} finally {
-					IOUtils.closeQuietly(in);
-	//				if (zf != null) {
-	//					try {
-	//						zf.close();
-	//					} catch (IOException ex) {
-	//						// ignored
-	//					}
-	//				}
+					IOUtils.closeQuietly(is);
 				}
 			
 			}			

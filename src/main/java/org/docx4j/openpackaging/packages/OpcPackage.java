@@ -40,6 +40,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
@@ -415,11 +416,15 @@ public class OpcPackage extends Base {
 //			saver.save(file);
 			
 			Save saver = new Save(this); 
+			FileOutputStream fos = null;
 			try {
-				saver.save(new FileOutputStream(file));
+				fos = new FileOutputStream(file);
+				saver.save(fos);
 			} catch (FileNotFoundException e) {
 				throw new Docx4JException("Couldn't save " + file.getPath(), e);
-			}
+			} finally {
+				IOUtils.closeQuietly(fos);
+			}		
 			
 		} else {
 			// Create the compound file

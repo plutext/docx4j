@@ -34,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -101,15 +102,16 @@ implements XPathEnabled<E> {
 			// binder)
 			PartStore partStore = this.getPackage().getPartStore();
 			
+			InputStream is = null;
 			try {
 				String name = this.partName.getName();
 				
-//				try {
-//					this.setContentLengthAsLoaded(
-//							partStore.getPartSize( name.substring(1)));
-//				} catch (UnsupportedOperationException uoe) {}
+				try {
+					this.setContentLengthAsLoaded(
+							partStore.getPartSize( name.substring(1)));
+				} catch (UnsupportedOperationException uoe) {}
 				
-				InputStream is = partStore.loadPart( 
+				is = partStore.loadPart( 
 						name.substring(1));
 				if (is==null) {
 					log.warn(name + " missing from part store");
@@ -121,7 +123,9 @@ implements XPathEnabled<E> {
 				log.error(e);
 			} catch (Docx4JException e) {
 				log.error(e);
-			}
+			} finally {
+				IOUtils.closeQuietly(is);
+			}		
 		}
 		
 		return binder;

@@ -30,7 +30,9 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.XmlPart;
 
 /**
- * Load/save parts from some storage system.
+ * A PartStore is a connection to a repository for
+ * a particular document/package, enabling it to
+ * be loaded or saved.
  *
  * @author jharrop
  * @since 3.0
@@ -55,14 +57,30 @@ public interface PartStore {
 	 *
 	 */
 
+
 	/**
-	 * Set this if its different to the target part store
-	 * (ie this object)
+	 * Note: JaxbXmlPart and JaxbXmlPartXPathAware both unmarshal lazily
+	 * (ie can invoke this sometime after the docx is loaded). 
+	 * 
+	 * Caller (generally docx4j itself) should close the resulting InputStream after use.
+	 * @param partName
+	 * @return
+	 * @throws Docx4JException
 	 */
-	public void setSourcePartStore(PartStore partStore);
-
 	public InputStream loadPart(String partName) throws Docx4JException;
+	
+	/**
+	 * The size of this part in bytes.
+	 * Return -1 if the part does not exist.
+	 * 
+	 * @param partName
+	 * @return
+	 * @throws Docx4JException
+	 */
+	public long getPartSize(String partName) throws Docx4JException, java.lang.UnsupportedOperationException;
 
+//	public void finishLoad() throws Docx4JException;
+	
 	public void setOutputStream(OutputStream os) throws Docx4JException;
 
 	public void saveContentTypes(ContentTypeManager ctm) throws Docx4JException;
@@ -75,8 +93,21 @@ public interface PartStore {
 
 	public void saveBinaryPart(Part part) throws Docx4JException;
 
+	/**
+	 * Anything necessary to perfect the save operation.
+	 * For example, 
+	 */
 	public void finishSave() throws Docx4JException;
-
-	public void finishLoad() throws Docx4JException;
-
+	
+	/**
+	 * Use in a save operation if the source part store (ie part store 
+	 * from which pkg loaded) is different to this target part store.
+	 * In this case it is necessary to be able to fetch parts which 
+	 * hadn't need to have been loaded up until this point.
+	 */
+	public void setSourcePartStore(PartStore partStore);
+	// if this was instead set on pkg, PartStore would need a reference to pkg 	
+	
+	// whether pkg should have reference to part store or not, we need
+	public void dispose();	
 }

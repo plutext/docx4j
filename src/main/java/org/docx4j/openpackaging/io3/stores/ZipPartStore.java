@@ -173,12 +173,25 @@ public class ZipPartStore implements PartStore {
 
         ByteArray bytes = partByteArrays.get(partName);
         if (bytes == null) {
+        	log.warn("part '" + partName + "' not present in part store");
         	return null;
         	//throw new Docx4JException("part '" + partName + "' not found");
         }
 		return bytes.getInputStream();
 	}
+	
+	@Override
+	public long getPartSize(String partName) throws Docx4JException {
+		
+        ByteArray bytes = partByteArrays.get(partName);
+        if (bytes == null) {
+        	return -1;
+        }
+		return bytes.getLength();
+	}
+	
 
+	
 	///// Save methods
 
 	private ZipOutputStream zos;
@@ -383,12 +396,7 @@ public class ZipPartStore implements PartStore {
 
 	}
 
-	/**
-	 * Does nothing
-	 */
-	public void finishLoad() throws Docx4JException {
-		// Nothing to do
-	}
+
 
 
 	public static class ByteArray implements Serializable {
@@ -430,6 +438,15 @@ public class ZipPartStore implements PartStore {
 			return bytes.length;
 		}
 
+	}
+
+
+
+
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

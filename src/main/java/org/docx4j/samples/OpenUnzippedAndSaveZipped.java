@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 
 import javax.xml.bind.JAXBContext;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.Save;
@@ -69,11 +70,15 @@ public class OpenUnzippedAndSaveZipped extends AbstractSample {
 		zps.setSourcePartStore(opc.getPartStore());
 		
 		Save saver = new Save(opc, zps);
+		FileOutputStream fos = null;
 		try {
-			saver.save(new FileOutputStream(docxFile));
+			fos = new FileOutputStream(docxFile);
+			saver.save(fos);
 		} catch (FileNotFoundException e) {
 			throw new Docx4JException("Couldn't save " + docxFile.getPath(), e);
-		}
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}			
 		
 	}
 		
