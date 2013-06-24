@@ -26,7 +26,6 @@ public abstract class AbstractHyperlinkWriter implements ModelConverter, Abstrac
 	HyperlinkModel hyperlinkModel = (HyperlinkModel)model;
 	Node ret = null;
 		ret = toNode(context, hyperlinkModel, doc);
-		XmlUtils.treeCopy(hyperlinkModel.getContent().getChildNodes(), ret);
 		return ret;
 	}
 
