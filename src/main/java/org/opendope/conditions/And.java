@@ -118,6 +118,20 @@ public class And implements Evaluable {
     	}
 		
 	}
+	
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap) {
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		particle.mapIds(xpathIdMap, conditionIdMap);
+    	}
+	}
+	
     
 	public String toString(Conditions conditions,
 			org.opendope.xpaths.Xpaths xPaths) {

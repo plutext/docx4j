@@ -88,6 +88,24 @@ public class Conditionref implements Evaluable {
 		
 	}
 	
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap) {
+		
+		if (conditionIdMap==null) return;
+		
+		String newId = conditionIdMap.get(getId());
+		if (newId!=null) {
+			setId(newId);
+		}
+	}
+	
+	
 	public String toString(Conditions conditions,
 			org.opendope.xpaths.Xpaths xPaths) {
 
