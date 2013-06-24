@@ -21,17 +21,9 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -43,15 +35,12 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.Sheet;
-import org.xlsx4j.sml.SheetData;
 import org.xlsx4j.sml.Sheets;
 import org.xlsx4j.sml.Worksheet;
 
@@ -63,7 +52,7 @@ import org.xlsx4j.sml.Worksheet;
  */
 public class SpreadsheetMLPackage extends OpcPackage {
 	
-	protected static Logger log = Logger.getLogger(PresentationMLPackage.class);
+	protected static Logger log = Logger.getLogger(SpreadsheetMLPackage.class);
 		
 	
 	/**
