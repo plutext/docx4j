@@ -59,6 +59,10 @@ public interface PartStore {
 
 
 	/**
+	 * Returns null if the part does not exist. This will happen when calling
+	 * code optimistically tries to fetch a rels part (which may or may not
+	 * exist).
+	 * 
 	 * Note: JaxbXmlPart and JaxbXmlPartXPathAware both unmarshal lazily
 	 * (ie can invoke this sometime after the docx is loaded). 
 	 * 
