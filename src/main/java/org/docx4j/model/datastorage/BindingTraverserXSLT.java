@@ -353,7 +353,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		DocumentFragment docfrag = docContainer.createDocumentFragment();
 		
 		try {
-			log.info(xpath + " yielded result " + r);
+			log.info(xpath + " yielded result '" + r + "'");
 			
 			RPr rPr = null;
 			Node rPrNode = rPrNodeIt.nextNode();

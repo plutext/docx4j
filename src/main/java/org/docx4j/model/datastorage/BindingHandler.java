@@ -1,3 +1,22 @@
+/**
+ *  Copyright 2013, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ **/
 package org.docx4j.model.datastorage;
 
 import java.util.Map;
@@ -221,12 +240,20 @@ public class BindingHandler {
 //					return null;
 				}
 				
-				if (log.isDebugEnabled() ) {
-					String r = part.xpathGetString(xpath, prefixMappings);
-					log.debug(xpath + " yielded result " + r);
+				String r = part.xpathGetString(xpath, prefixMappings);
+				if (r==null) {
+					// never expect null, since an empty result set is converted to an empty string
+					log.error(xpath + " unexpectedly null!");
+					return r;
+				} else if (r.equals("")) {
+					log.debug("XML element is missing (or empty) for xpath: " + xpath);
+					// if WARN is enabled for org.docx4j.openpackaging.parts.XmlPart, logs will tell you which
+					return r;
+				} else if (log.isDebugEnabled() ) {
+					log.debug(xpath + " yielded result '" + r + "'");
 					return r;
 				} else {
-					return part.xpathGetString(xpath, prefixMappings);
+					return r;
 				}
 			} catch (Docx4JException e) {
 				log.error(e);
