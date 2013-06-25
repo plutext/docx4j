@@ -27,6 +27,8 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
+import org.docx4j.model.datastorage.RemovalHandler;
+import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 
@@ -69,6 +71,8 @@ public class ContentControlsApplyBindings {
 	 */
 	public static void main(String[] args) throws Exception {
 		
+		String hyperlinkStyle = "Hyperlink";
+		
 		// Convenient to read from .xml file,
 		// so it is easy to manually edit it (ie without having to unzip etc etc) 
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple.docx";
@@ -79,6 +83,10 @@ public class ContentControlsApplyBindings {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
 		// Apply the bindings
+		
+		if (hyperlinkStyle!=null) {
+			BindingHandler.getHyperlinkResolver().setHyperlinkStyle(hyperlinkStyle);
+		}
 		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
@@ -87,6 +95,13 @@ public class ContentControlsApplyBindings {
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
+		
+		// Strip content controls: you MUST do this 
+		// if you are processing hyperlinks
+		if (hyperlinkStyle!=null) {
+			RemovalHandler rh = new RemovalHandler(); // NB: this only removes if OpenDoPE tags are present (they aren't in binding-simple.docx)
+			rh.removeSDTs(wordMLPackage, Quantifier.ALL);		
+		}
 		
 		wordMLPackage.save(new java.io.File(outputfilepath) );
 	}

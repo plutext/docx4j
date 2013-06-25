@@ -174,7 +174,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
-			XHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkStyleId());
+			XHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			
 			String baseUrl = null;
 			List<Object> results = null;
 			try {
@@ -413,16 +414,9 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	}
 	
 	private static void processString(JaxbXmlPart sourcePart, DocumentFragment docfrag, String text, RPr rPr) throws JAXBException {
-		
-		// Since we'll calculate min, we don't want -1 for no match
-		int NOT_FOUND = 99999;
-		int pos1 = text.indexOf("http://")==-1 ? NOT_FOUND : text.indexOf("http://");
-		int pos2 = text.indexOf("https://")==-1 ? NOT_FOUND : text.indexOf("https://");
-		int pos3 = text.indexOf("mailto:")==-1 ? NOT_FOUND : text.indexOf("mailto:");
-		
-		int pos = Math.min(pos1,  Math.min(pos2, pos3));
-		
-		if (pos==NOT_FOUND || BindingHandler.getHyperlinkStyleId() == null) {				
+				
+		int pos = BindingHandler.getHyperlinkResolver().getIndexOfURL(text);
+		if (pos==-1 || BindingHandler.getHyperlinkStyleId() == null) {				
 			addRunToDocFrag(sourcePart, docfrag,  text,  rPr);
 			return;
 		} 
@@ -492,22 +486,10 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		rel.setTarget(url);
 		rel.setTargetMode("External");  
 								
-		sourcePart.getRelationshipsPart().addRelationship(rel);
-		
-		// addRelationship sets the rel's @Id
-		
-		String hpl = "<w:hyperlink r:id=\"" + rel.getId() + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
-        "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
-        "<w:r>" +
-        "<w:rPr>" +
-        "<w:rStyle w:val=\"" + BindingHandler.getHyperlinkStyleId() + "\" />" +  // TODO: enable this style in the document!
-        "</w:rPr>" +
-        "<w:t>" + url + "</w:t>" +
-        "</w:r>" +
-        "</w:hyperlink>";
+		sourcePart.getRelationshipsPart().addRelationship(rel);  // addRelationship sets the rel's @Id
 
 		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(
-				(Hyperlink)XmlUtils.unmarshalString(hpl));
+				BindingHandler.getHyperlinkResolver().generateHyperlink(rel.getId(), url));
 		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
 	}
 	

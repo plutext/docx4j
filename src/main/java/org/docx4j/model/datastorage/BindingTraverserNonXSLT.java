@@ -457,15 +457,8 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 		
 		private void processString(JaxbXmlPart sourcePart, List<Object> contents, String text, RPr rPr) throws JAXBException {
 			
-			// Since we'll calculate min, we don't want -1 for no match
-			int NOT_FOUND = 99999;
-			int pos1 = text.indexOf("http://")==-1 ? NOT_FOUND : text.indexOf("http://");
-			int pos2 = text.indexOf("https://")==-1 ? NOT_FOUND : text.indexOf("https://");
-			int pos3 = text.indexOf("mailto:")==-1 ? NOT_FOUND : text.indexOf("mailto:");
-			
-			int pos = Math.min(pos1,  Math.min(pos2, pos3));
-			
-			if (pos==NOT_FOUND || BindingHandler.getHyperlinkStyleId() == null) {				
+			int pos = BindingHandler.getHyperlinkResolver().getIndexOfURL(text);
+			if (pos==-1 || BindingHandler.getHyperlinkStyleId() == null) {				
 				addRunToDocFrag(sourcePart, contents,  text,  rPr);
 				return;
 			} 

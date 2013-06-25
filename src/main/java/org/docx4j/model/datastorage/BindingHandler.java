@@ -63,17 +63,41 @@ public class BindingHandler {
 	 * 
 	 * @param hyperlinkStyleID
 	 *            The style to use for hyperlinks (eg Hyperlink)
+	 * @deprecated
 	 */
 	public static void setHyperlinkStyle (
 			String hyperlinkStyleID) {
-		hyperlinkStyleId = hyperlinkStyleID;
+		getHyperlinkResolver().setHyperlinkStyle(hyperlinkStyleID);
 	}
+	/**
+	 * @deprecated
+	 */
 	public static String getHyperlinkStyleId() {
-		return hyperlinkStyleId;
+		return getHyperlinkResolver().getHyperlinkStyleId();
+	}
+		
+	
+	/**
+	 * @return the hyperlinkResolver
+	 * @since 3.0.0
+	 */
+	public static BindingHyperlinkResolver getHyperlinkResolver() {
+		
+		if (hyperlinkResolver==null) {
+			hyperlinkResolver = new BindingHyperlinkResolver();
+		}
+		return hyperlinkResolver;
+	}
+	/**
+	 * @param hyperlinkResolver the hyperlinkResolver to set
+	 * @since 3.0.0
+	 */
+	public static void setHyperlinkResolver(
+			BindingHyperlinkResolver hyperlinkResolver) {
+		BindingHandler.hyperlinkResolver = hyperlinkResolver;
 	}
 	
-	private static String hyperlinkStyleId = null;
-	
+	private static BindingHyperlinkResolver hyperlinkResolver;
 	
 	
 	/* ---------------------------------------------------------------------------
@@ -98,9 +122,7 @@ public class BindingHandler {
 			// and in headers/footers. See further
 			// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
 			
-			if (hyperlinkStyleId !=null) {
-					wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
-			}			
+			getHyperlinkResolver().activateHyperlinkStyle(wordMLPackage);
 
 			applyBindings(wordMLPackage.getMainDocumentPart());
 	
@@ -124,8 +146,8 @@ public class BindingHandler {
 				// Binding is a concept which applies more broadly
 				// than just Word documents.
 			
-			if (hyperlinkStyleId !=null && pkg instanceof WordprocessingMLPackage) {
-				((WordprocessingMLPackage)pkg).getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
+			if (pkg instanceof WordprocessingMLPackage) {
+				getHyperlinkResolver().activateHyperlinkStyle((WordprocessingMLPackage)pkg);
 			}
 						
 			XPathsPart xPathsPart = null;
