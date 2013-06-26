@@ -26,8 +26,10 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
+import org.docx4j.model.datastorage.OpenDoPEReverter;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -54,16 +56,19 @@ public class ContentControlBindingExtensions {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
+	static String filepathprefix;
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice0.docx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
-		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
+		filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
 		System.out.println(filepathprefix);
 		
 		StringBuilder timingSummary = new StringBuilder();
@@ -105,19 +110,37 @@ public class ContentControlBindingExtensions {
 		saver.save(filepathprefix + "_bound.docx");
 		System.out.println("Saved: " + filepathprefix + "_bound.docx");
 		
-		// Strip content controls: you MUST do this 
-		// if you are processing hyperlinks
-		startTime = System.currentTimeMillis();
-		RemovalHandler rh = new RemovalHandler();
-		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
-		endTime = System.currentTimeMillis();
-		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
-
-		saver.save(filepathprefix + "_stripped.docx");
-		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
+		reverter(inputfilepath, filepathprefix + "_bound.docx");
+//		
+//		// Strip content controls: you MUST do this 
+//		// if you are processing hyperlinks
+//		startTime = System.currentTimeMillis();
+//		RemovalHandler rh = new RemovalHandler();
+//		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
+//		endTime = System.currentTimeMillis();
+//		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
+//
+//		saver.save(filepathprefix + "_stripped.docx");
+//		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
+//		
+//		System.out.println(timingSummary);
+	}	
+	
+	public static void reverter(String inputfilepath, String instancePath) throws Docx4JException {
 		
-		System.out.println(timingSummary);
-	}		
+		WordprocessingMLPackage instancePkg = WordprocessingMLPackage.load(new java.io.File(instancePath));		
+		
+		OpenDoPEReverter reverter = new OpenDoPEReverter(
+				WordprocessingMLPackage.load(new java.io.File(inputfilepath)), 
+				instancePkg);
+		
+		System.out.println("reverted? " + reverter.revert() );
+		
+		SaveToZipFile saver = new SaveToZipFile(instancePkg);
+		saver.save(filepathprefix + "_reverted.docx");
+		System.out.println("Saved: " + filepathprefix + "_reverted.docx");
+		
+	}
 				
 
 }

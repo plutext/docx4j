@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
@@ -58,11 +60,13 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTLock;
 import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
@@ -110,11 +114,14 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 
 	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
+	public final static String BINDING_RESULT_CONDITION = "od:resultConditionFalse";
 
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
-	public final static String BINDING_ROLE_RPTD = "od:rptd";
+	public final static String BINDING_RESULT_RPTD_ZERO = "od:resultRepeatZero";
+	public final static String BINDING_RESULT_RPTD = "od:rptd";
 	
-	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";
+	// Repeat position condition (eg second last entry)
+	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";  // see bind.xslt
 
 	public final static String BINDING_ROLE_NARRATIVE = "od:narrative";
 
@@ -716,23 +723,16 @@ public class OpenDoPEHandler {
 				return newContent;
 
 			} else {
-				return eventuallyEmptyList(sdt);
+				return conditionFalse(sdt);
 			}
 
 		} else if (repeatId != null) {
 
 			log.info("Processing Repeat: " + tag.getVal());
 
-			final List<Object> repeatResult = processRepeat(sdt,
+			return processRepeat(sdt,
 					customXmlDataStorageParts, wordMLPackage
 							.getMainDocumentPart().getXPathsPart());
-
-			if (repeatResult.isEmpty()) {
-				return eventuallyEmptyList(sdt);
-
-			} else {
-				return repeatResult;
-			}
 
 		} else if (xp != null) {
 
@@ -755,6 +755,56 @@ public class OpenDoPEHandler {
 		}
 		// shouldn't happen
 		return null;
+	}
+	
+	/**
+	 * Insert an empty placeholder SDT, to facilitate round-tripping
+	 * (ie ability to convert instance docx back to original template),
+	 * which you may wish to do if you want to insert updated data,
+	 * but preserve certain manual edits.
+	 * 
+	 * @param sdt
+	 * @return
+	 */	
+	private List<Object> conditionFalse(Object sdt) {
+
+		List<Object> newContent = new ArrayList<Object>();
+		newContent.add(sdt);
+
+		// Change the tag to od:resultConditionFalse
+		SdtPr sdtPr = getSdtPr(sdt);
+
+		CTDataBinding binding = sdtPr.getDataBinding();
+		if (binding != null) {  // Shouldn't be a binding anyway
+			sdtPr.getRPrOrAliasOrLock().remove(binding);
+		}
+
+		Tag tag = sdtPr.getTag(); 
+
+		final String tagVal = tag.getVal();
+		final Pattern stripConditionArgPattern = Pattern
+				.compile("(.*od:condition=)([^&]*)(.*)");
+		final Matcher stripPatternMatcher = stripConditionArgPattern
+				.matcher(tagVal);
+		if (!stripPatternMatcher.matches()) {
+			log.fatal("Cannot find condition tag in sdtPr/tag while setting conditionFalse; something is wrong with " + tagVal);
+			return newContent;
+		}
+		final String emptyConditionValue = BINDING_RESULT_CONDITION + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		tag.setVal(emptyConditionValue);	
+		
+		// Lock it
+        CTLock lock = Context.getWmlObjectFactory().createCTLock(); 
+        lock.setVal(org.docx4j.wml.STLock.SDT_CONTENT_LOCKED);		
+        JAXBElement<org.docx4j.wml.CTLock> lockWrapped = Context.getWmlObjectFactory().createSdtPrLock(lock); 
+        sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
+
+		// Empty the content
+		((SdtElement)sdt).getSdtContent().getContent().clear();
+		// TODO: adapt eventuallyEmptyList to handle the case where
+		// a tc contains an empty sdt, or an sdtcell is empty?
+		
+		return newContent;		
 	}
 
 	/**
@@ -917,7 +967,10 @@ public class OpenDoPEHandler {
 		log.debug("yields REPEATS: " + numRepeats);
 
 		if (numRepeats == 0) {
-			return new ArrayList<Object>(); // effectively, delete
+			//return new ArrayList<Object>(); // effectively, delete
+			
+			// Change tag to od:resultRepeatZero=id
+			return repeatZero(sdt);
 		}
 
 		// duplicate content here ...
@@ -938,6 +991,56 @@ public class OpenDoPEHandler {
 		return repeated;
 	}
 
+	/**
+	 * Insert an empty placeholder SDT, to facilitate round-tripping
+	 * (ie ability to convert instance docx back to original template),
+	 * which you may wish to do if you want to insert updated data,
+	 * but preserve certain manual edits.
+	 * 
+	 * @param sdt
+	 * @return
+	 */
+	private List<Object> repeatZero(Object sdt) {
+
+		List<Object> newContent = new ArrayList<Object>();
+		newContent.add(sdt);
+
+		// Change the tag to od:resultRepeatZero
+		SdtPr sdtPr = getSdtPr(sdt);
+
+		CTDataBinding binding = sdtPr.getDataBinding();
+		if (binding != null) {  // Shouldn't be a binding anyway
+			sdtPr.getRPrOrAliasOrLock().remove(binding);
+		}
+
+		Tag tag = sdtPr.getTag(); 
+
+		final String tagVal = tag.getVal();
+		final Pattern stripRepeatArgPattern = Pattern
+				.compile("(.*od:repeat=)([^&]*)(.*)");
+		final Matcher stripPatternMatcher = stripRepeatArgPattern
+				.matcher(tagVal);
+		if (!stripPatternMatcher.matches()) {
+			log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
+			return newContent;
+		}
+		final String emptyRepeatValue = BINDING_RESULT_RPTD_ZERO + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		tag.setVal(emptyRepeatValue);	
+		
+		// Lock it
+        CTLock lock = Context.getWmlObjectFactory().createCTLock(); 
+        lock.setVal(org.docx4j.wml.STLock.SDT_CONTENT_LOCKED);		
+        JAXBElement<org.docx4j.wml.CTLock> lockWrapped = Context.getWmlObjectFactory().createSdtPrLock(lock); 
+        sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
+
+		// Empty the content
+		((SdtElement)sdt).getSdtContent().getContent().clear();
+		// TODO: adapt eventuallyEmptyList to handle the case where
+		// a tc contains an empty sdt, or an sdtcell is empty?
+		
+		return newContent;
+	}
+	
 	private List<Object> cloneRepeatSdt(Object sdt, String xpathBase,
 			int numRepeats) {
 
@@ -991,8 +1094,6 @@ public class OpenDoPEHandler {
 		return newContent;
 	}
 
-	AtomicInteger repeatInstanceId = new AtomicInteger();
-
 	private void emptyRepeatTagValue(final Tag tag) {
 
 		final String tagVal = tag.getVal();
@@ -1006,7 +1107,7 @@ public class OpenDoPEHandler {
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
 //				+ stripPatternMatcher.group(3);
-		final String emptyRepeatValue = BINDING_ROLE_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		final String emptyRepeatValue = BINDING_RESULT_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyRepeatValue);
 	}
 

@@ -666,7 +666,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(odTag, true);
 		
-		String xpathId = map.get("od:RptPosCon");
+		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_RPT_POS_CON);
 		
 		log.info("Looking for xpath by id: " + xpathId);
 		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);

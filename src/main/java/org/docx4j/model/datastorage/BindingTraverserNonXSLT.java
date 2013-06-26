@@ -175,7 +175,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_CONDITIONAL) ) {
 				// Do nothing
-			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_RPTD) ) {
+			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_RESULT_RPTD) ) {
 				// Do nothing
 				
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_ROLE_RPT_POS_CON) ) {
