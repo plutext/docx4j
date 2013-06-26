@@ -1,3 +1,22 @@
+/**
+ *  Copyright 2010-2013, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ **/
 package org.docx4j.model.datastorage;
 
 import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
@@ -94,7 +113,7 @@ public class OpenDoPEHandler {
 
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_ROLE_RPTD = "od:rptd";
-	public final static String BINDING_ROLE_RPT_INSTANCE = "od:RptInst"; // when a repeat is reused, distinguish each instance
+	
 	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";
 
 	public final static String BINDING_ROLE_NARRATIVE = "od:narrative";
@@ -931,6 +950,9 @@ public class OpenDoPEHandler {
 		// CTDataBinding binding =
 		// (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
 		CTDataBinding binding = sdtPr.getDataBinding();
+		if (binding != null) {  // Shouldn't be a binding anyway
+			sdtPr.getRPrOrAliasOrLock().remove(binding);
+		}
 
 		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
 
@@ -953,9 +975,9 @@ public class OpenDoPEHandler {
 
 					//emptyRepeatTagValue(sdtPr.getTag());
 
-					if (binding != null) {  // Shouldn't be a binding anyway
-						sdtPr.getRPrOrAliasOrLock().remove(binding);
-					}
+//					if (binding != null) {  // Shouldn't be a binding anyway
+//						sdtPr.getRPrOrAliasOrLock().remove(binding);
+//					}
 
 					// Change ID
 					sdtPr.setId();
@@ -979,14 +1001,12 @@ public class OpenDoPEHandler {
 		final Matcher stripPatternMatcher = stripRepeatArgPattern
 				.matcher(tagVal);
 		if (!stripPatternMatcher.matches()) {
-			log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat, sth's very wrong with "
-					+ tagVal);
+			log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
 			return;
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
 //				+ stripPatternMatcher.group(3);
-		final String emptyRepeatValue = BINDING_ROLE_RPTD + "=" + stripPatternMatcher.group(2)
-		+ stripPatternMatcher.group(3) + "&" + BINDING_ROLE_RPT_INSTANCE + "=" + repeatInstanceId.incrementAndGet();
+		final String emptyRepeatValue = BINDING_ROLE_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyRepeatValue);
 	}
 
