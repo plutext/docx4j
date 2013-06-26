@@ -44,6 +44,7 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.SdtPr;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -324,18 +325,100 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		}
 	}
 	
+	/**
+	 * bind.xslt calls this, for case where 'od:xpath' is present
+	 */	
+	public static DocumentFragment xpathGenerateRuns(
+			WordprocessingMLPackage pkg, 
+			JaxbXmlPart sourcePart,				
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			XPathsPart xPathsPart,
+			NodeIterator sdtPrNodeIt, 
+			String sdtParent,
+			String contentChild,				
+			boolean multiLine) {
+		
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		try {
+			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
+		} catch (JAXBException e) {
+			log.error(e);
+		}
+		String odTag = sdtPr.getTag().getVal();
+		
+		QueryString qs = new QueryString();
+		HashMap<String, String> map = qs.parseQueryString(odTag, true);
+		
+		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+		
+		log.debug("Looking for xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+		
+		Xpath xpath = null;
+		try {
+			xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		} catch (InputIntegrityException iie) {
+			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+			throw iie;
+			
+			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
+		}
+		
+		String storeItemId = xpath.getDataBinding().getStoreItemID();
+		String xpathExp = xpath.getDataBinding().getXpath();
+		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+		
+		return xpathGenerateRuns(
+				 pkg, 
+				 sourcePart,				
+				 customXmlDataStorageParts,
+				 storeItemId,  xpathExp,  prefixMappings,
+				 sdtPr, sdtParent, contentChild,
+				  multiLine);
+	}
+	
 	
 	/**
+	 * bind.xslt calls this, for case where 'od:xpath' is not present
 	 */
 	public static DocumentFragment xpathGenerateRuns(
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings,
+			NodeIterator sdtPrNodeIt, 			
 			String sdtParent,
 			String contentChild,				
-			NodeIterator rPrNodeIt, boolean multiLine,
-			String tag) {
+			boolean multiLine) {
+
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		try {
+			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
+		} catch (JAXBException e) {
+			log.error(e);
+		}
+		
+		return xpathGenerateRuns(
+				 pkg, 
+				 sourcePart,				
+				 customXmlDataStorageParts,
+				 storeItemId,  xpath,  prefixMappings,
+				 sdtPr, 			
+				 sdtParent,
+				 contentChild,				
+				  multiLine);
+	}
+	
+	public static DocumentFragment xpathGenerateRuns(
+			WordprocessingMLPackage pkg, 
+			JaxbXmlPart sourcePart,				
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings,
+			SdtPr sdtPr, 			
+			String sdtParent,
+			String contentChild,				
+			 boolean multiLine) {
 		
 		/**
 		 * TODO test cases:
@@ -356,9 +439,11 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			log.info(xpath + " yielded result '" + r + "'");
 			
 			RPr rPr = null;
-			Node rPrNode = rPrNodeIt.nextNode();
-			if (rPrNode!=null) {
-				rPr = (RPr)XmlUtils.unmarshal(rPrNode);
+			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
+				if (o instanceof RPr) {
+					rPr = (RPr)o;
+					break;
+				}
 			}
 
 			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
@@ -399,6 +484,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		return docfrag;			
 	}
 
+	
 	private static void addBrRunToDocFrag(DocumentFragment docfrag, RPr rPr) throws JAXBException {
 		
 		// Not sure whether there is ever anything of interest in the rPr, 
@@ -423,6 +509,12 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		
 		// There is a hyperlink to deal with
 		
+		// We'll need to remove:
+		//   <w:dataBinding w:storeItemID="{5448916C-134B-45E6-B8FE-88CC1FFC17C3}" w:xpath="/myxml[1]/element2[1]" w:prefixMappings=""/>
+		//   <w:text w:multiLine="true"/>
+		// or Word can't open the resulting docx, but we can't do it here,
+		// since sdtPr is in effect read only.  So it is done in bind.xslt
+		
 		if (pos==0) {
 			int spacePos = text.indexOf(" ");
 			if (spacePos==-1) {
@@ -445,7 +537,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		
 		addRunToDocFrag( sourcePart,  docfrag,  first, rPr);
 		// .. now the recursive bit ..
-		processString(sourcePart,  docfrag,  rest,  rPr);				
+		processString(sourcePart,  docfrag,  rest, rPr);				
 	}
 	
 	private static void addRunToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String string, RPr rPr) {
@@ -618,46 +710,6 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		} 
 	}
 	
-	public static DocumentFragment xpathGenerateRuns(
-			WordprocessingMLPackage pkg, 
-			JaxbXmlPart sourcePart,				
-			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			XPathsPart xPathsPart,
-			String odTag, 
-			String sdtParent,
-			String contentChild,				
-			NodeIterator rPrNodeIt, boolean multiLine) {
-		
-		QueryString qs = new QueryString();
-		HashMap<String, String> map = qs.parseQueryString(odTag, true);
-		
-		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
-		
-		log.debug("Looking for xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
-		
-		Xpath xpath = null;
-		try {
-			xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
-		} catch (InputIntegrityException iie) {
-			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
-			throw iie;
-			
-			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
-		}
-		
-		String storeItemId = xpath.getDataBinding().getStoreItemID();
-		String xpathExp = xpath.getDataBinding().getXpath();
-		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
-		
-		return xpathGenerateRuns(
-				 pkg, 
-				 sourcePart,				
-				 customXmlDataStorageParts,
-				 storeItemId,  xpathExp,  prefixMappings,
-				 sdtParent, contentChild,
-				 rPrNodeIt,  multiLine, odTag);
-		
-	}
 	
 	public static String getRepeatPositionCondition(
 			XPathsPart xPathsPart,				

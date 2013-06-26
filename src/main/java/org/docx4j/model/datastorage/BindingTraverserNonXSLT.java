@@ -190,6 +190,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				sdt.getSdtContent().getContent().addAll(
 						this.xpathGenerateRuns(
 							(WordprocessingMLPackage)pkg, part, 
+							sdtPr,
 							sdtPr.getDataBinding(), 
 							//sdtParent, contentChild, 
 							null, isMultiline));
@@ -205,6 +206,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				sdt.getSdtContent().getContent().addAll(
 						this.xpathGenerateRuns(
 							(WordprocessingMLPackage)pkg, part, 
+							sdtPr,
 							sdtPr.getDataBinding(), 
 							//sdtParent, contentChild, 
 							null, false));
@@ -396,7 +398,8 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 		
 		public List<Object> xpathGenerateRuns(
 				WordprocessingMLPackage pkg, 
-				JaxbXmlPart sourcePart,				
+				JaxbXmlPart sourcePart,
+				SdtPr sdtPr,
 				CTDataBinding dataBinding,
 //				String sdtParent,
 //				String contentChild,				
@@ -439,7 +442,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 							addBrRunToDocFrag(contents, rPr);
 						}
 						
-						processString(sourcePart, contents, line, rPr);						
+						processString(sourcePart, contents, line, sdtPr, rPr);						
 					}
 					
 				} else {
@@ -450,7 +453,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 						sb.append( st.nextToken() );
 					}
 					
-					processString(sourcePart, contents, sb.toString(), rPr);
+					processString(sourcePart, contents, sb.toString(), sdtPr, rPr);
 				}				
 				
 			} catch (Exception e) {
@@ -474,7 +477,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 			contents.add(run);
 		}
 		
-		private void processString(JaxbXmlPart sourcePart, List<Object> contents, String text, RPr rPr) throws JAXBException {
+		private void processString(JaxbXmlPart sourcePart, List<Object> contents, String text, SdtPr sdtPr, RPr rPr) throws JAXBException {
 			
 			int pos = BindingHandler.getHyperlinkResolver().getIndexOfURL(text);
 			if (pos==-1 || BindingHandler.getHyperlinkStyleId() == null) {				
@@ -483,6 +486,24 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 			} 
 			
 			// There is a hyperlink to deal with
+			
+			// We'll need to remove:
+			//   <w:dataBinding w:storeItemID="{5448916C-134B-45E6-B8FE-88CC1FFC17C3}" w:xpath="/myxml[1]/element2[1]" w:prefixMappings=""/>
+			//   <w:text w:multiLine="true"/>
+			// or Word can't open the resulting docx, but we can't do it here,
+			sdtPr.setDataBinding(null);
+			
+			Object sdtPrText = null;
+			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
+				Object unwrapped = XmlUtils.unwrap(o);
+				if (unwrapped instanceof CTSdtText) {
+					sdtPrText = o;
+					break;
+				}
+			}
+			if (sdtPrText!=null) {
+				sdtPr.getRPrOrAliasOrLock().remove(sdtPrText);
+			}
 			
 			if (pos==0) {
 				int spacePos = text.indexOf(" ");
@@ -497,7 +518,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				
 				addHyperlinkToDocFrag( sourcePart,  contents,  first);
 				// .. now the recursive bit ..
-				processString(sourcePart,  contents,  rest,  rPr);	
+				processString(sourcePart,  contents,  rest, sdtPr, rPr);	
 				return;
 			}
 			
@@ -506,7 +527,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 			
 			addRunToDocFrag( sourcePart,  contents,  first, rPr);
 			// .. now the recursive bit ..
-			processString(sourcePart,  contents,  rest,  rPr);				
+			processString(sourcePart,  contents,  rest, sdtPr, rPr);				
 		}
 		
 		private void addRunToDocFrag(JaxbXmlPart sourcePart, List<Object> contents, String string, RPr rPr) {

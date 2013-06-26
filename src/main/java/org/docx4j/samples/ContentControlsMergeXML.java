@@ -66,10 +66,12 @@ public class ContentControlsMergeXML {
 	public static void main(String[] args) throws Exception {
 			
 		// the docx 'template'
-		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple.docx";
+//		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple.docx";
+		String input_DOCX = System.getProperty("user.dir") + "/CheckSec_min.docx";
 		
 		// the instance data
-		String input_XML = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple-data.xml";
+//		String input_XML = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple-data.xml";
+		String input_XML = System.getProperty("user.dir") + "/48.xml";
 		
 		// resulting docx
 		String OUTPUT_DOCX = System.getProperty("user.dir") + "/OUT_ContentControlsMergeXML.docx";
@@ -133,8 +135,7 @@ public class ContentControlsMergeXML {
 //				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 //				);
 		
-		// Strip content controls: you MUST do this 
-		// if you are processing hyperlinks
+		// Strip content controls
 		RemovalHandler rh = new RemovalHandler();
 		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
 		

@@ -13,8 +13,9 @@
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	xmlns:dyn="http://exslt.org/dynamic"
+	xmlns:xalan="http://xml.apache.org/xalan"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
+        exclude-result-prefixes="java xalan w a o v WX aml w10 pkg wp pic">	
         
 
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
@@ -328,13 +329,8 @@
   			<!--  honour extended bind (Word databinding only works when a element is returned);
   				  (this used to be in OpenDoPEHandler, but moved 13 Sept 2011 for docx4j 2.7.1.
   			      here we support boolean, integer. What to do with node-set?? -->
-			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
-			     
-			     <xsl:if test="w:stdEndPr">
-			     	<xsl:copy-of select="w:sdtEndPr"/>
-		     	</xsl:if>
-			     
+
+  			<xsl:variable name="content">
 			     <w:sdtContent>
 			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
 			     	
@@ -356,10 +352,9 @@
 														$sourcePart,
 														$customXmlDataStorageParts,
 														$xPathsPart,
-														string(w:sdtPr/w:tag/@w:val),
+														w:sdtPr,
 														local-name(..),
 														local-name(w:sdtContent/*[1]),
-														w:sdtPr/w:rPr,
 														$multiLine)" />
 										</w:p>
 									</w:tc>
@@ -380,10 +375,9 @@
 													$sourcePart,
 													$customXmlDataStorageParts,
 													$xPathsPart,
-													string(w:sdtPr/w:tag/@w:val),
+													w:sdtPr,
 													local-name(..),
 													local-name(w:sdtContent/*[1]),
-													w:sdtPr/w:rPr,
 													$multiLine)" />
 									</w:p>
 								</w:tc>
@@ -404,10 +398,9 @@
 												$sourcePart,
 												$customXmlDataStorageParts,
 												$xPathsPart,
-												string(w:sdtPr/w:tag/@w:val),
+												w:sdtPr,
 												local-name(..),
 												local-name(w:sdtContent/*[1]),
-												w:sdtPr/w:rPr,
 												$multiLine)" />
 								</w:p>
 							</w:tc>
@@ -424,10 +417,9 @@
 											$sourcePart,
 											$customXmlDataStorageParts,
 											$xPathsPart,
-											string(w:sdtPr/w:tag/@w:val),
+											w:sdtPr,
 											local-name(..),
 											local-name(w:sdtContent/*[1]),
-											w:sdtPr/w:rPr,
 											$multiLine)" />
 							</w:p>
 				  		</xsl:when>
@@ -439,27 +431,35 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										string(w:sdtPr/w:tag/@w:val),
+										w:sdtPr,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-										w:sdtPr/w:rPr,
 										$multiLine)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
-			     
-			</xsl:copy>  		  			
-  		</xsl:when>
-  		
-  		<xsl:when test="w:sdtPr/w:dataBinding and not(w:sdtPr/w:richText) and not(w:sdtPr/w:docPartGallery)">
-  			<!--  honour w:dataBinding -->
+			</xsl:variable>
+			
 			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
+			
+				<!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
+			     <xsl:apply-templates select="w:sdtPr">
+					<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+				</xsl:apply-templates>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
 		     	</xsl:if>
-			     
+			
+				<xsl:copy-of select="$content"/>			     
+			</xsl:copy>  		  	
+					  			
+  		</xsl:when>
+  		
+  		<xsl:when test="w:sdtPr/w:dataBinding and not(w:sdtPr/w:richText) and not(w:sdtPr/w:docPartGallery)">
+  			<!--  honour w:dataBinding -->
+  			
+  			<xsl:variable name="content">
 			     <w:sdtContent>
 			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
 			     	
@@ -483,11 +483,10 @@
 														string(w:sdtPr/w:dataBinding/@w:storeItemID),
 														string(w:sdtPr/w:dataBinding/@w:xpath),
 														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
-														w:sdtPr/w:rPr,
-														$multiLine,
-														$tag )" />
+														w:sdtPr,
+														local-name(..),
+														local-name(w:sdtContent/*[1]),
+														$multiLine)" />
 										</w:p>
 									</w:tc>
 								</w:tr>
@@ -509,11 +508,10 @@
 													string(w:sdtPr/w:dataBinding/@w:storeItemID),
 													string(w:sdtPr/w:dataBinding/@w:xpath),
 													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
-													w:sdtPr/w:rPr,
-													$multiLine,
-													$tag )" />
+													w:sdtPr,
+													local-name(..),
+													local-name(w:sdtContent/*[1]),
+													$multiLine)" />
 									</w:p>
 								</w:tc>
 							</w:tr>
@@ -535,11 +533,10 @@
 												string(w:sdtPr/w:dataBinding/@w:storeItemID),
 												string(w:sdtPr/w:dataBinding/@w:xpath),
 												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
-												w:sdtPr/w:rPr,
-												$multiLine,
-												$tag )" />
+												w:sdtPr,
+												local-name(..),
+												local-name(w:sdtContent/*[1]),
+												$multiLine)" />
 								</w:p>
 							</w:tc>
 				  		</xsl:when>				  		
@@ -557,11 +554,10 @@
 											string(w:sdtPr/w:dataBinding/@w:storeItemID),
 											string(w:sdtPr/w:dataBinding/@w:xpath),
 											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
-											w:sdtPr/w:rPr,
-											$multiLine,
-											$tag )" />
+											w:sdtPr,
+											local-name(..),
+											local-name(w:sdtContent/*[1]),
+											$multiLine)" />
 							</w:p>
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level --> 
@@ -574,16 +570,30 @@
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										w:sdtPr,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-										w:sdtPr/w:rPr,
-										$multiLine,
-										$tag )" />
+										$multiLine)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
+			</xsl:variable>
+  			
+			<xsl:copy>
+			
+				<!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
+			     <xsl:apply-templates select="w:sdtPr">
+					<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+				</xsl:apply-templates>
 			     
-			</xsl:copy>  		  			
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			
+				<xsl:copy-of select="$content"/>			     
+			</xsl:copy>  		  	
+			
+					
   		</xsl:when>
   		
   		
@@ -594,6 +604,31 @@
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>
+
+  <!-- A content control with SdtPr w:dataBinding and w:text
+	   which contains a w:hyperlink will prevent Word 2007 from
+	   opening the docx, so if there is a w:hyperlink,
+	   make sure  w:dataBinding and w:text are not present.  -->
+
+  <xsl:template match="w:sdtPr">  
+  	<xsl:param name="content"></xsl:param>
+  	
+  	<xsl:choose>
+  		<xsl:when test="count($content//w:hyperlink)>0">
+  			<w:sdtPr>
+  				<xsl:apply-templates />
+  			</w:sdtPr>
+  		</xsl:when>
+  		<xsl:otherwise>
+  			<xsl:copy-of select="."/>
+  		</xsl:otherwise>
+  	</xsl:choose>
+  	
+  </xsl:template>
+
+  <!-- Remove these if the sdt contains a w:hyperlink -->
+  <xsl:template match="w:dataBinding" />  
+  <xsl:template match="w:text" />  
 
 
   <!-- Remove these, so missing data does not result

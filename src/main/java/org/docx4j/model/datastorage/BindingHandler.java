@@ -72,10 +72,6 @@ public class BindingHandler {
 	 * If hyperlinkStyleId is set to <code>"someWordHyperlinkStyleName"</code>, 
 	 * strings containing 'http://' or 'https://' or or 'mailto:' are converted to w:hyperlink.  
 	 * The default Word hyperlink style name is "Hyperlink".
-	 * If you do this, you will need to post-process with RemovalHandler, since a
-	 * content control with SdtPr w:dataBinding and w:text
-	 * which contains a w:hyperlink will prevent Word 2007 from
-	 * opening the docx.
 	 * 
 	 * Due to the architecture of this class, this is a static flag changing the
 	 * behavior of all following calls to {@link #applyBindings}.

@@ -112,8 +112,7 @@ public class ContentControlBindingExtensions {
 		
 		reverter(inputfilepath, filepathprefix + "_bound.docx");
 //		
-//		// Strip content controls: you MUST do this 
-//		// if you are processing hyperlinks
+//		// Strip content controls
 //		startTime = System.currentTimeMillis();
 //		RemovalHandler rh = new RemovalHandler();
 //		rh.removeSDTs(wordMLPackage, Quantifier.ALL);

@@ -96,8 +96,7 @@ public class ContentControlsApplyBindings {
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
 		
-		// Strip content controls: you MUST do this 
-		// if you are processing hyperlinks
+		// Strip content controls
 		if (hyperlinkStyle!=null) {
 			RemovalHandler rh = new RemovalHandler(); // NB: this only removes if OpenDoPE tags are present (they aren't in binding-simple.docx)
 			rh.removeSDTs(wordMLPackage, Quantifier.ALL);		

@@ -214,7 +214,7 @@ public class OpenDoPEReverter {
 						repeatSdtsByID.put(repeatId, o);
 					} else if (instanceCountOnly) {
 						
-						String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION);
+						String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION_FALSE);
 						String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
 						String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);
 						
@@ -449,7 +449,7 @@ public class OpenDoPEReverter {
 					HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 
 					String conditionId = map.get(OpenDoPEHandler.BINDING_ROLE_CONDITIONAL);
-					String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION);
+					String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION_FALSE);
 					String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
 					String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);
 

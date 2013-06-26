@@ -114,7 +114,7 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 
 	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
-	public final static String BINDING_RESULT_CONDITION = "od:resultConditionFalse";
+	public final static String BINDING_RESULT_CONDITION_FALSE = "od:resultConditionFalse";
 
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_RESULT_RPTD_ZERO = "od:resultRepeatZero";
@@ -790,7 +790,7 @@ public class OpenDoPEHandler {
 			log.fatal("Cannot find condition tag in sdtPr/tag while setting conditionFalse; something is wrong with " + tagVal);
 			return newContent;
 		}
-		final String emptyConditionValue = BINDING_RESULT_CONDITION + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		final String emptyConditionValue = BINDING_RESULT_CONDITION_FALSE + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyConditionValue);	
 		
 		// Lock it
