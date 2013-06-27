@@ -140,28 +140,31 @@ public class OpenDoPEHandler {
 	private org.opendope.xpaths.Xpaths xPaths;
 	private org.opendope.components.Components components;
 
-	private boolean removeSdtCellsOnFailedCondition;
-
-	/**
-	 * Configure, how the preprocessor handles conditions on table cells.
-	 *
-	 * If set to <code>false</code>, conditional SDT cells are replaced by empty
-	 * cells. This is the default behavior.
-	 *
-	 * If set to <code>true</code>, conditional SDT cells are removed entirely.
-	 * Note that the table geometry is not changed; hence this works better
-	 * without dynamic table widths / no global width settings.
-	 *
-	 * This affects all future calls on the {@link #preprocess} method for this
-     * instance.
-	 *
-	 * @param removeSdtCellsOnFailedCondition
-	 *            The new value for the cell removal flag.
-	 */
-	public void setRemoveSdtCellsOnFailedCondition(
-			boolean removeSdtCellsOnFailedCondition) {
-		this.removeSdtCellsOnFailedCondition = removeSdtCellsOnFailedCondition;
-	}
+// TODO consider whether to reinstate.  User would need to choose between 	
+//  conditional SDT removal, and reverting functionality.
+	
+//	private boolean removeSdtCellsOnFailedCondition;
+//
+//	/**
+//	 * Configure, how the preprocessor handles conditions on table cells.
+//	 *
+//	 * If set to <code>false</code>, conditional SDT cells are replaced by empty
+//	 * cells. This is the default behavior.
+//	 *
+//	 * If set to <code>true</code>, conditional SDT cells are removed entirely.
+//	 * Note that the table geometry is not changed; hence this works better
+//	 * without dynamic table widths / no global width settings.
+//	 *
+//	 * This affects all future calls on the {@link #preprocess} method for this
+//     * instance.
+//	 *
+//	 * @param removeSdtCellsOnFailedCondition
+//	 *            The new value for the cell removal flag.
+//	 */
+//	public void setRemoveSdtCellsOnFailedCondition(
+//			boolean removeSdtCellsOnFailedCondition) {
+//		this.removeSdtCellsOnFailedCondition = removeSdtCellsOnFailedCondition;
+//	}
 
 	/**
 	 * Preprocess content controls which have tag
@@ -769,6 +772,14 @@ public class OpenDoPEHandler {
 	private List<Object> conditionFalse(Object sdt) {
 
 		List<Object> newContent = new ArrayList<Object>();
+		
+//		if (removeSdtCellsOnFailedCondition) {
+//		// backward compatibility
+//		// NB this is not compatible with reverting functionality, and
+//		// will break if the result is an empty tc
+//		return newContent;
+//	}
+		
 		newContent.add(sdt);
 
 		// Change the tag to od:resultConditionFalse
@@ -800,88 +811,77 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-		((SdtElement)sdt).getSdtContent().getContent().clear();
-		// TODO: adapt eventuallyEmptyList to handle the case where
-		// a tc contains an empty sdt, or an sdtcell is empty?
+        if (sdt instanceof CTSdtCell) {
+        	minimiseContentOfSdtCell((CTSdtCell)sdt);
+        } else {
+        	((SdtElement)sdt).getSdtContent().getContent().clear();
+        }
 		
 		return newContent;		
 	}
 
 	/**
-	 * Under normal instances, return an empty list in order to remove content.
+	 * Under normal instances, the sdt placeholder has <sdtContent/>
 	 *
-	 * If, however, this would produce a table cell without a content, add an
-	 * empty content node to this table cell.
-	 *
-	 * For backward compatibility, also replace a cell to be removed upon a condition
-	 * or due to a zero item repeat with an empty cell according to this
-	 * condition, unless the global flag
-	 * {@link #removeSdtCellsOnFailedCondition} is set.
+	 * But that is no good in the following case:
+	 * <w:tr>
+        <w:sdt>
+          <w:sdtPr>
+            : 
+          </w:sdtPr>
+          <w:sdtContent>
+            <w:tc>
+            ...
+            
+	 * 
+	 * Here it is not ok to remove the tc, or for it to be empty.
 	 *
 	 * @param sdt
 	 *            The SDT node currently being processed.
 	 * @return The "eventually empty" node list to replace the content of
 	 *         <code>sdt</code>.
 	 */
-	private List<Object> eventuallyEmptyList(final Object sdt) {
-
-		final boolean sdtIsCell = sdt instanceof CTSdtCell;
+	private void minimiseContentOfSdtCell(final CTSdtCell sdt) {
 
 		final Object parent = obtainParent(sdt);
 		final int contentChildCount = countContentChildren(parent);
-		final boolean sdtIsSingleCellChild = parent instanceof Tc
-				&& contentChildCount == 1;
 
 		final List<Object> newContent;
 
-		if (sdtIsCell && !removeSdtCellsOnFailedCondition) {
 
-			final CTSdtContentCell sdtCellContent = (CTSdtContentCell) ((org.docx4j.wml.CTSdtCell) sdt)
-					.getSdtContent();
+		final CTSdtContentCell sdtCellContent = (CTSdtContentCell) sdt.getSdtContent();
 
-			// This sdt would ordinarily contain a tc, but that tc could be
-			// nested in yet another sdt
-			Object sdtContent0 = XmlUtils.unwrap(sdtCellContent.getContent().get(0));
-			Tc tc = null;
-			if (sdtContent0 instanceof Tc) {
+		// This sdt would ordinarily contain a tc, but that tc could be
+		// nested in yet another sdt
+		Object sdtContent0 = XmlUtils.unwrap(sdtCellContent.getContent().get(0));
+		Tc tc = null;
+		if (sdtContent0 instanceof Tc) {
 
-				tc = (Tc) sdtContent0;
+			tc = (Tc) sdtContent0;
 
-			} else if (sdtContent0 instanceof CTSdtCell) {
+		} else if (sdtContent0 instanceof CTSdtCell) {
 
-				Object innerSdtContent0 = XmlUtils.unwrap(((CTSdtCell)sdtContent0).getSdtContent().getContent().get(0));
-				if (innerSdtContent0 instanceof Tc) {
-					tc = (Tc) innerSdtContent0;
-				} else {
-					log.debug("Fallback handling for " + innerSdtContent0.getClass().getName());
-					tc = Context.getWmlObjectFactory().createTc();
-				}
-				// replace innerSdt with this tc
-				sdtCellContent.getContent().clear();
-				sdtCellContent.getContent().add(tc);
-
+			Object innerSdtContent0 = XmlUtils.unwrap(((CTSdtCell)sdtContent0).getSdtContent().getContent().get(0));
+			if (innerSdtContent0 instanceof Tc) {
+				tc = (Tc) innerSdtContent0;
 			} else {
-				log.error("Fallback handling for " + sdtContent0.getClass().getName());
+				log.debug("Fallback handling for " + innerSdtContent0.getClass().getName());
 				tc = Context.getWmlObjectFactory().createTc();
-				sdtCellContent.getContent().clear();
-				sdtCellContent.getContent().add(tc);
 			}
-
-			tc.getContent().clear();
-			final P p = Context.getWmlObjectFactory().createP();
-			tc.getContent().add(p);
-			newContent = Arrays.asList((Object) tc);
-
-		} else if (sdtIsSingleCellChild) {
-
-			final Object p = Context.getWmlObjectFactory().createP();
-			newContent = Arrays.asList(p);
+			// replace innerSdt with this tc
+			sdtCellContent.getContent().clear();
+			sdtCellContent.getContent().add(tc);
 
 		} else {
-			newContent = Arrays.asList();
+			log.error("Fallback handling for " + sdtContent0.getClass().getName());
+			tc = Context.getWmlObjectFactory().createTc();
+			sdtCellContent.getContent().clear();
+			sdtCellContent.getContent().add(tc);
 		}
 
-		return newContent;
+		tc.getContent().clear();
+		final P p = Context.getWmlObjectFactory().createP();
+		tc.getContent().add(p);
 	}
 
 	private Object obtainParent(Object sdt) {
@@ -912,6 +912,7 @@ public class OpenDoPEHandler {
 				+ (unwrapped == null ? "null" : unwrapped.getClass().getName()));
 		return Collections.emptyList();
 	}
+	 
 
 
 	private List<Object> processRepeat(Object sdt,
@@ -1003,6 +1004,14 @@ public class OpenDoPEHandler {
 	private List<Object> repeatZero(Object sdt) {
 
 		List<Object> newContent = new ArrayList<Object>();
+		
+//		if (removeSdtCellsOnFailedCondition) {
+//			// backward compatibility
+//			// NB this is not compatible with reverting functionality, and
+//			// will break if the result is an empty tc
+//			return newContent;
+//		}
+		
 		newContent.add(sdt);
 
 		// Change the tag to od:resultRepeatZero
@@ -1034,9 +1043,11 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-		((SdtElement)sdt).getSdtContent().getContent().clear();
-		// TODO: adapt eventuallyEmptyList to handle the case where
-		// a tc contains an empty sdt, or an sdtcell is empty?
+        if (sdt instanceof CTSdtCell) {
+        	minimiseContentOfSdtCell((CTSdtCell)sdt);
+        } else {
+        	((SdtElement)sdt).getSdtContent().getContent().clear();
+        }
 		
 		return newContent;
 	}
