@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -21,12 +20,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.ImmutablePropertyResolver;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -41,15 +40,14 @@ import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
-import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.SdtPr;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
+
 
 public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
@@ -110,9 +108,14 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		}
 	}
 	
-	public static void log(String message ) {
+	public static void log(ExpressionContext expressionContext, String message ) {
 		
-		log.info(message);
+		//log.info( com.sun.org.apache.xalan.internal.lib.NodeInfo.lineNumber(expressionContext ) + "  " +  message);
+			// com.sun.org.apache hell 
+		// but that only gives line number of input XML anyway, whereas more useful is
+		// currently executing line number of XSLT.  ErrorListener seems to know this?  Explore some time...
+		
+		log.info( message);
 	}
 
 	public static void log(NodeIterator nodeIterator ) {

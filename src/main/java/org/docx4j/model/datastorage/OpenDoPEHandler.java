@@ -1067,26 +1067,11 @@ public class OpenDoPEHandler {
 			// original) to have the same tag (which I've changed
 			// to od:rptd).
 
-
-			// the first sdt is just copied to the output, the rest has a
-			// removed repeat value and no binding
-			//if (i > 0) {
-
-				// This needs to be done only once, as we're operating on this
-				// same object tree.
-				//if (i == 1) {
-
-					//emptyRepeatTagValue(sdtPr.getTag());
-
-//					if (binding != null) {  // Shouldn't be a binding anyway
-//						sdtPr.getRPrOrAliasOrLock().remove(binding);
-//					}
-
-					// Change ID
-					sdtPr.setId();
-				//}
-			//}
-
+			if (i > 0) {
+				// Change ID
+				sdtPr.setId();
+			} // preserve ID on index 0, important for OpenDoPEReverter!
+			
 			// Clone
 			newContent.add(XmlUtils.deepCopy(sdt));
 		}

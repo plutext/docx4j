@@ -19,28 +19,38 @@
  **/
 package org.docx4j.model.datastorage;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTSdtText;
 import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.opendope.xpaths.Xpaths.Xpath;
 
 
 
@@ -98,10 +108,13 @@ public class OpenDoPEReverter {
 		
 		So have a sanity check that count of repeats and conditions in result matches what we
 		have in the original template.
+		
+		A user could also delete a condition/repeat sdt entirely, in which case it won't get reverted.
+		Add option to lock it to prevent this from happening?
 	 */
 
-	Map<String, Object> templateConditionSdtsByID = new HashMap<String, Object>();  
-	Map<String, Object> templateRepeatSdtsByID = new HashMap<String, Object>();  
+	Map<BigInteger, Object> templateConditionSdtsByID = new HashMap<BigInteger, Object>();  
+	Map<BigInteger, Object> templateRepeatSdtsByID = new HashMap<BigInteger, Object>();  
 	
 	public boolean revert() throws Docx4JException {
 		
@@ -133,7 +146,7 @@ public class OpenDoPEReverter {
 		int expectedRepeats = templateRepeatSdtsByID.size();
 		
 		TopLevelSdtTemplateFinder sdtPrFinder = new TopLevelSdtTemplateFinder(true);
-		findSdtsInTemplate(instancePkg, sdtPrFinder); // feed the instance through here to count
+		findSdtsInTemplate(instancePkg, sdtPrFinder); // feed the instance through here to count (not bothering to count plain binds)
 		
 		boolean resultC = sdtPrFinder.conditionSdtsByID.size() == expectedConditions;
 		if (!resultC) {
@@ -180,9 +193,10 @@ public class OpenDoPEReverter {
 			this.instanceCountOnly = instanceCountOnly;
 		}
 		
-		// Separate map for each, in case a condition and a repeat have the same ID
-		Map<String, Object> conditionSdtsByID = new HashMap<String, Object>();  
-		Map<String, Object> repeatSdtsByID = new HashMap<String, Object>();  
+		// Separate map for each
+		// Maps are by SDT ID, since 2 distinct SDT could use the one condition or repeat
+		Map<BigInteger, Object> conditionSdtsByID = new HashMap<BigInteger, Object>();  
+		Map<BigInteger, Object> repeatSdtsByID = new HashMap<BigInteger, Object>();  
 		
 		@Override
 		public List<Object> apply(Object o) {
@@ -207,11 +221,12 @@ public class OpenDoPEReverter {
 
 					if (conditionId != null) {
 
-						conditionSdtsByID.put(conditionId, o);
+						conditionSdtsByID.put(sdtPr.getId().getVal(), o);
 
 					} else if (repeatId != null) {
 
-						repeatSdtsByID.put(repeatId, o);
+						repeatSdtsByID.put(sdtPr.getId().getVal(), o);
+						
 					} else if (instanceCountOnly) {
 						
 						String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION_FALSE);
@@ -220,17 +235,18 @@ public class OpenDoPEReverter {
 						
 						if (resultConditionId != null) {
 
-							conditionSdtsByID.put(resultConditionId, o);
+							conditionSdtsByID.put(sdtPr.getId().getVal(), o);
 							
 						} else if (resultRptdZeroId != null) {
 
-							repeatSdtsByID.put(resultRptdZeroId, o);
+							repeatSdtsByID.put(sdtPr.getId().getVal(), o);
 							
 						} else if (resultRepeatId != null) {
 
-							repeatSdtsByID.put(resultRepeatId, o);
+							repeatSdtsByID.put(sdtPr.getId().getVal(), o);
 						} 						
 					}
+					// not bothering to count plain binds
 				}
 			}			
 			return null; 
@@ -280,6 +296,8 @@ public class OpenDoPEReverter {
 		replaceConditions();
 		
 		handleRepeats();
+		
+		repairBoundSdts();
 	}	
 	
 	private void replaceConditions() {
@@ -295,14 +313,14 @@ public class OpenDoPEReverter {
 		 * template docx, to get the replacement content controls.
 		 */
 		
-		for ( Entry<String, Object> entry : instanceSdtPrFinder.sdtsByConditionIDtoReplace.entrySet() ) {
+		for ( Object entry : instanceSdtPrFinder.sdtsByConditionIDtoReplace ) {
 			
-			String key = entry.getKey();
+			BigInteger key = OpenDoPEHandler.getSdtPr(entry).getId().getVal(); 
 			
 			Object replacement = templateConditionSdtsByID.get(key);
 			
 			// ok, replace
-			Child child = (Child)entry.getValue();
+			Child child = (Child)entry;
 			Object parent = child.getParent();
 			log.info("parent: " + parent.getClass().getName() );
 			
@@ -338,9 +356,14 @@ public class OpenDoPEReverter {
 		// the sdts to replace
 		for ( Object entry : instanceSdtPrFinder.repeatSdtToReplace ) {
 			
-			String key = getRptdId( OpenDoPEHandler.getSdtPr(entry) ); 
-			log.debug("repeat id: " + key);
+//			String key = getRptdId( OpenDoPEHandler.getSdtPr(entry) ); 
+			BigInteger key = OpenDoPEHandler.getSdtPr(entry).getId().getVal(); 
+//			log.debug("repeat id: " + key);
 			Object replacement = templateRepeatSdtsByID.get(key);
+			if (replacement==null) {
+				// shouldn't happen provided OpenDoPEHandler preserved SDT ID on first instance of repeat
+				log.error( OpenDoPEHandler.getSdtPr(entry).getTag().getVal() + " - No replacement SDT with ID " + key.toString() );
+			}
 			
 			// ok, replace
 			Child child = (Child)entry;
@@ -389,7 +412,11 @@ public class OpenDoPEReverter {
 				int index = 0;
 				boolean found = false;
 				for (Object o : list) {
-					if (XmlUtils.unwrap(o).equals(child)) {
+					
+					if (o==null) {
+						log.error(list.getClass().getName() + " contained null entry at index " + index);	
+						// should not happen, provided replacements above are successful
+					} else if (XmlUtils.unwrap(o).equals(child)) {
 						found = true;
 						break;
 					}
@@ -397,6 +424,7 @@ public class OpenDoPEReverter {
 				}
 				if (found ) {
 					list.remove(index);
+					log.debug("removed entry at index " + index);	
 				} else {
 					log.error("Couldn't find repeat sdt to delete");
 				}
@@ -409,23 +437,85 @@ public class OpenDoPEReverter {
 	}
 	
 	
-	private String getRptdId(SdtPr sdtPr) {
-
-		Tag tag = sdtPr.getTag();
-		log.debug(tag.getVal());
-		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
-		String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
-		String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);	
+//	private String getRptdId(SdtPr sdtPr) {
+//
+//		Tag tag = sdtPr.getTag();
+//		log.debug(tag.getVal());
+//		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+//		String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
+//		String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);	
+//		
+//		return resultRepeatId==null ? resultRptdZeroId : resultRepeatId;		
+//	}
+	
+	/**
+	 * If an SDT contained a hyperlink, we will have removed its w:dataBinding and w:text.
+	 * So check SDT's and add back in if necessary.
+	 * @throws Docx4JException 
+	 */
+	private void repairBoundSdts() throws Docx4JException {
 		
-		return resultRepeatId==null ? resultRptdZeroId : resultRepeatId;		
+		// We need to lookup the XPaths part.
+		// In principle, that part should be identical in both 
+		// openDopePkg and instancePkg.
+		// We'll get it from instancePkg
+		XPathsPart xPathsPart = ((WordprocessingMLPackage)instancePkg).getMainDocumentPart().getXPathsPart();
+		if ( xPathsPart==null) {
+			throw new Docx4JException("OpenDoPE XPaths part missing");
+		} 
+		
+		for ( Object entry : instanceSdtPrFinder.boundSdtPotentialRepair ) {
+			
+			// If the SDT was made to contain a w:hyperlink, we had to remove:
+			//   <w:dataBinding w:storeItemID="{5448916C-134B-45E6-B8FE-88CC1FFC17C3}" w:xpath="/myxml[1]/element2[1]" w:prefixMappings=""/>
+			//   <w:text w:multiLine="true"/>
+			// Now we need to add those back in
+			SdtElement sdt = (SdtElement)entry;
+			SdtPr sdtPr = sdt.getSdtPr();
+			
+			if (sdtPr.getDataBinding()==null ) {
+				
+				// Identify xpathId
+				Tag tag = sdtPr.getTag();
+				HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+				String xpathId= map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+				
+				// Look up - throws InputIntegrityException if not found
+				Xpath xp = xPathsPart.getXPathById(xpathId);
+			    
+			    // Create object for dataBinding
+			    CTDataBinding databinding = Context.getWmlObjectFactory().createCTDataBinding(); 
+			    sdtPr.setDataBinding(databinding); 
+			        databinding.setXpath( xp.getDataBinding().getXpath()); 
+			        databinding.setPrefixMappings( xp.getDataBinding().getPrefixMappings()); 
+			        databinding.setStoreItemID( xp.getDataBinding().getStoreItemID() );		
+			        
+			    // Create object for text (wrapped in JAXBElement) 
+			    CTSdtText sdttext = Context.getWmlObjectFactory().createCTSdtText(); 
+			    sdttext.setMultiLine(true);
+			    JAXBElement<org.docx4j.wml.CTSdtText> sdttextWrapped = Context.getWmlObjectFactory().createSdtPrText(sdttext); 
+			    sdtPr.getRPrOrAliasOrLock().add( sdttextWrapped);
+			
+			    // Empty the content
+			    sdt.getSdtContent().getContent().clear();
+			    	// TODO resolve the binding sans hyperlink?
+			    	// TODO eventuallyEmptyList stuff
+			}
+
+		}
 	}
 	
 	private static class TopLevelSdtInstanceFinder extends CallbackImpl {
 		
-		Map<String, Object> sdtsByConditionIDtoReplace = new HashMap<String, Object>();  
+		// not maps, since the one repeat (or condition) might occur twice
 		
-		List<Object> repeatSdtToReplace = new ArrayList<Object>(); // not a map, since the one repeat might occur twice
+		List<Object> sdtsByConditionIDtoReplace = new ArrayList<Object>();  
+		
+		List<Object> repeatSdtToReplace = new ArrayList<Object>(); 
 		List<Object> repeatSdtToDelete = new ArrayList<Object>();
+		
+		// If an SDT contained a hyperlink, we will have removed its w:dataBinding and w:text
+		List<Object> boundSdtPotentialRepair = new ArrayList<Object>();
 		
 		// in order to distinguish between instances of a repeat which is used twice
 		String previousRepeatID = null;
@@ -444,40 +534,54 @@ public class OpenDoPEReverter {
 					log.debug("Processing " + OpenDoPEHandler.getSdtPr(o).getId().getVal());
 					Tag tag = sdtPr.getTag();
 
-					log.debug(tag.getVal());
-
-					HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
-
-					String conditionId = map.get(OpenDoPEHandler.BINDING_ROLE_CONDITIONAL);
-					String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION_FALSE);
-					String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
-					String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);
-
-					if (conditionId != null ) {
-
-						sdtsByConditionIDtoReplace.put(conditionId, o);
-						previousRepeatID = null; 
+					if (tag!=null) {
 						
-					} else if (resultConditionId != null) {
-
-						sdtsByConditionIDtoReplace.put(resultConditionId, o);
-						previousRepeatID = null; 
+						log.debug(tag.getVal());
+	
+						HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 						
-					} else if (resultRptdZeroId != null) {
-
-						repeatSdtToReplace.add( o);
-						previousRepeatID = null; 
+						String conditionId = map.get(OpenDoPEHandler.BINDING_ROLE_CONDITIONAL);
+						String resultConditionId = map.get(OpenDoPEHandler.BINDING_RESULT_CONDITION_FALSE);
+						String resultRepeatId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD);
+						String resultRptdZeroId = map.get(OpenDoPEHandler.BINDING_RESULT_RPTD_ZERO);
+	
+						String xpathId= map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
 						
-					} else if (resultRepeatId != null) {
-
-						if (previousRepeatID!=null && previousRepeatID.equals(resultRepeatId)) {
-							// it is second or subsequent
-							repeatSdtToDelete.add( o);
+						if (conditionId != null ) {
+	
+							sdtsByConditionIDtoReplace.add(o);
+							previousRepeatID = null; 
+							
+						} else if (resultConditionId != null) { 
+	
+							sdtsByConditionIDtoReplace.add(o);
+							previousRepeatID = null; 
+							
+						} else if (resultRptdZeroId != null) {
+	
+							repeatSdtToReplace.add( o);
+							previousRepeatID = null; 
+							
+						} else if (resultRepeatId != null) {
+	
+							if (previousRepeatID!=null && previousRepeatID.equals(resultRepeatId)) {
+								// it is second or subsequent
+								repeatSdtToDelete.add( o);
+							} else {
+								repeatSdtToReplace.add( o);							
+							}
+							previousRepeatID = resultRepeatId; 
+							
+						} else if (xpathId != null) {
+							
+							boundSdtPotentialRepair.add(o);
+							
+						} else if (tag.getVal().contains("od:")){
+							log.info("Ignoring (!) tag: " + tag.getVal());
 						} else {
-							repeatSdtToReplace.add( o);							
+							log.debug("Ignoring tag: " + tag.getVal());
 						}
-						previousRepeatID = resultRepeatId; 
-					} 
+					}
 				}
 			} else {
 				previousRepeatID = null;

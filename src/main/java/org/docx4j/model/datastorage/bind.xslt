@@ -81,7 +81,7 @@
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
   			<!--  honour w:dataBinding -->
 			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
+			     <xsl:copy-of select="w:sdtPr"/>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -107,7 +107,7 @@
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
   			<!--  honour w:dataBinding -->
 			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
+			     <xsl:copy-of select="w:sdtPr"/>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -142,7 +142,7 @@
   				    			
   			 -->
 			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
+			     <xsl:copy-of select="w:sdtPr"/>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -441,7 +441,7 @@
 			</xsl:variable>
 			
 			<xsl:copy>
-			
+	  				
 				<!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
 			     <xsl:apply-templates select="w:sdtPr">
 					<xsl:with-param name="content" select="xalan:nodeset($content)"/>
@@ -598,8 +598,12 @@
   		
   		
   		<xsl:otherwise> <!--  no w:dataBinding, or one spec says to ignore -->  		
+			<xsl:variable name="dummy"
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( 
+							concat(' processing contents only of ', string(w:sdtPr/w:tag/@w:val) ) )" />  	
 		    <xsl:copy>
-		      <xsl:apply-templates select="@*|node()"/>
+			    <xsl:copy-of select="w:sdtPr"/>	<!--  avoid template match="w:sdtPr" -->	    
+		      	<xsl:apply-templates select="w:sdtContent"/>
 		    </xsl:copy>  		
   		</xsl:otherwise>  		
   	</xsl:choose>    
@@ -613,8 +617,13 @@
   <xsl:template match="w:sdtPr">  
   	<xsl:param name="content"></xsl:param>
   	
+		<xsl:variable name="dummy"
+	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( string(w:tag/@w:val) )" />  	
+  	
   	<xsl:choose>
   		<xsl:when test="count($content//w:hyperlink)>0">
+			<xsl:variable name="dummy2"
+			    select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( '.. stripping w:dataBinding and w:text' )" />  	
   			<w:sdtPr>
   				<xsl:apply-templates />
   			</w:sdtPr>

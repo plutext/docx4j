@@ -336,12 +336,25 @@ public class SdtPr
     
     public void setDataBinding(CTDataBinding value) {
         
-    	CTDataBinding existingBinding = getDataBinding(); 
+    	Object existingBinding = getDataBinding(); 
     	
     	if (existingBinding!=null) {
     		if (!existingBinding.equals(value)) {
     			log.debug("Changing DataBinding tag from " + existingBinding + " to " + value);
-        		rPrOrAliasOrLock.remove(existingBinding);
+    			
+        		//rPrOrAliasOrLock.remove(existingBinding);
+    			existingBinding = null;
+    			for (Object o : getRPrOrAliasOrLock() ) {
+    				Object unwrapped = XmlUtils.unwrap(o);
+    				if (unwrapped instanceof CTDataBinding) {
+    					existingBinding = o;
+    					break;
+    				}
+    			}
+    			if (existingBinding!=null) {
+    				getRPrOrAliasOrLock().remove(existingBinding);
+    			}
+    			
         		if (value!=null) {
         			rPrOrAliasOrLock.add(value);
         		}
