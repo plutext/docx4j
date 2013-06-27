@@ -578,6 +578,11 @@
 				  	</xsl:choose>    
 			     </w:sdtContent>
 			</xsl:variable>
+
+<!--   			
+			<xsl:variable name="dummy"
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.logXml( xalan:nodeset($content) )" />  	
+  	 -->		
   			
 			<xsl:copy>
 			

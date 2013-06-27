@@ -1185,7 +1185,7 @@ public class XmlUtils {
             	for (int i = 0 ; i < atts.getLength() ; i++ ) {
             		
             		Attr attr = (Attr)atts.item(i);
-            		
+
 //            		log.debug("attr.getNodeName(): " + attr.getNodeName());
 //            		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
 //            		log.debug("attr.getLocalName(): " + attr.getLocalName());
@@ -1210,6 +1210,24 @@ public class XmlUtils {
                 				attr.getName(), attr.getValue() );
             		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
                 		; // this is a namespace declaration. not our problem
+            		} else if ( attr.getNodeName()!=null ) {
+            				// && attr.getNodeName().equals("xml:space")) {
+            				// restrict this fix to xml:space only, if necessary
+
+            			// Necessary when invoked from BindingTraverserXSLT,
+            			// com.sun.org.apache.xerces.internal.dom.AttrNSImpl
+            			// otherwise it was becoming w:space="preserve"!
+            			
+						/* eg xml:space
+						 * 
+							attr.getNodeName(): xml:space
+							attr.getNamespaceURI(): http://www.w3.org/XML/1998/namespace
+							attr.getLocalName(): space
+							attr.getPrefix(): xml
+						 */
+            			
+                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
+                				attr.getNodeName(), attr.getValue() );	                			
             		} else  {
                 		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
                 				attr.getLocalName(), attr.getValue() );	                			

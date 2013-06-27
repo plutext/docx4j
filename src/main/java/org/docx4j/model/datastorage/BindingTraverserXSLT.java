@@ -115,15 +115,23 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		// but that only gives line number of input XML anyway, whereas more useful is
 		// currently executing line number of XSLT.  ErrorListener seems to know this?  Explore some time...
 		
-		log.info( message);
+		log.info( "[String] " + message);
 	}
 
+	/**
+	 * @param nodeIterator
+	 * @deprecated
+	 */
 	public static void log(NodeIterator nodeIterator ) {
-		
+	
 		Node n = nodeIterator.nextNode();		
 		log.info(XmlUtils.w3CDomNodeToString(n));
 	}
 	
+	public static void logXml(NodeIterator nodeIterator ) {
+		// Has different method, to prevent Xalan preferring the String log method
+		log(nodeIterator);
+	}
 	
 	//&lt;html&gt;&lt;body&gt;  &lt;p&gt;hello &lt;/p&gt; &lt;/body&gt;&lt;/html&gt;
 	
@@ -553,18 +561,20 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		run.getRunContent().add(text);
 		if (string.startsWith(" ") || string.endsWith(" ") ) {
 			// TODO: tab character?
+			log.debug("setting xml:space=preserve for '" + string + "'");
 			text.setSpace("preserve");
 		}
 		text.setValue(string);
 					
 		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
-		
+				
 		// avoid WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
 		// but  NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation. 
 		// at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
 		// docfrag.appendChild(fragdoc.importNode(document, true));
 		// so:			
-		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);
+				
 	}
 	
 	private static void addHyperlinkToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String url) throws JAXBException {
