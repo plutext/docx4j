@@ -825,7 +825,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			
 			String format = sdtDate.getDateFormat().getVal();
-			System.out.println("Using format: " + format);
+			log.debug("Using format: " + format);
 			
 			// C# dddd (eg "Monday') needs translation
 			// to "EEEE"

@@ -1199,7 +1199,7 @@ public class OpenDoPEHandler {
 
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 
-		System.out.println("newPath: " + newPath);
+//		System.out.println("newPath: " + newPath);
 
 		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
 			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);

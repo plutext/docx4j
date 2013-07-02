@@ -61,7 +61,7 @@ public class BindingHyperlinkResolver {
 	 */
 	public int getIndexOfURL(String text) {
 
-		System.out.println("processing " + text);		
+		log.debug("processing " + text);		
 		
 		int NOT_FOUND = 99999; // Since we'll calculate min, we don't want -1 for no match
 		int pos1 = text.indexOf("http://")==-1 ? NOT_FOUND : text.indexOf("http://");

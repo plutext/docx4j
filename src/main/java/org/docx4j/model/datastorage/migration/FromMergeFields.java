@@ -88,7 +88,7 @@ public class FromMergeFields extends AbstractMigrator {
 		createParts(pkgOut);
 		
 		FieldsPreprocessor.complexifyFields(pkgOut.getMainDocumentPart() );
-		System.out.println("complexified: " 
+		log.debug("complexified: " 
 				+ XmlUtils.marshaltoString(pkgOut.getMainDocumentPart().getJaxbElement(), true));
 		
 		// find fields
