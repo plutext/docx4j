@@ -834,7 +834,19 @@ public class OpenDoPEHandler {
             ...
             
 	 * 
-	 * Here it is not ok to remove the tc, or for it to be empty.
+	 * Here it is not ok to remove the tc, or for it to be empty, so we
+	 * create:
+	 * 
+	 * <w:tr>
+        <w:sdt>
+          <w:sdtPr>
+            : 
+          </w:sdtPr>
+          <w:sdtContent>
+            <w:tc>         |
+              <w:p/>       |
+            </w:tc>        |
+          </w:sdtContent>
 	 *
 	 * @param sdt
 	 *            The SDT node currently being processed.
