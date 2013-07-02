@@ -12,6 +12,7 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+	xmlns:xalan="http://xml.apache.org/xalan"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
         
@@ -95,5 +96,71 @@
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>
+  
+  <!-- w:tr/w:sdt must contain w:tc, and w:tc must be non-empty
+  
+       so match the deepest w:sdt containing w:tc, then check
+       
+       TODO: enhance to support nested table, by introducing count(ancestor::w:table)
+  
+   -->
+  <xsl:template match="w:sdt[ancestor::w:tr and count(ancestor::w:tc)=0 and count(descendant::w:sdt)=0]">
+  
+  	<xsl:variable name="results">
+		<xsl:apply-templates select="@*|node()"/>  	
+  	</xsl:variable>
+  
+  	<xsl:choose>
+  	
+  		<!--  the tc must contain block content (eg w:p or a nested table, and somewhere in that
+  			  there ought to be a w:p -->
+  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  ensuring deepest is fixed first -->
+  			<w:sdt>
+  				<xsl:copy-of select="w:sdtPr"/>
+  				<w:sdtContent>
+  					<w:tc>
+  						<w:p/>
+  					</w:tc>
+  				</w:sdtContent>
+  			</w:sdt>
+  		</xsl:when>
+  		<xsl:otherwise>
+		    <xsl:copy>
+		      <xsl:copy-of select="$results"/>
+		    </xsl:copy>  		
+  		</xsl:otherwise>
+  	</xsl:choose>
+  
+  </xsl:template>  
+  
+  <!--  w:tc/w:sdt must be non-empty  
+  
+  		
+  
+   -->
+  <xsl:template match="w:sdt[ancestor::w:tc and count(descendant::w:sdt)=0]">
+
+  	<xsl:variable name="results">
+		<xsl:apply-templates select="@*|node()"/>  	
+  	</xsl:variable>
+
+    <xsl:choose>
+  	
+  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  ensuring deepest is fixed first -->
+  			<w:sdt>
+  				<xsl:copy-of select="w:sdtPr"/>
+  				<w:sdtContent>
+  						<w:p/>
+  				</w:sdtContent>
+  			</w:sdt>
+  		</xsl:when>
+  		<xsl:otherwise>
+		    <xsl:copy>
+		      <xsl:copy-of select="$results"/>
+		    </xsl:copy>  		
+  		</xsl:otherwise>
+  	</xsl:choose>
+  
+  </xsl:template>  
    
 </xsl:stylesheet>

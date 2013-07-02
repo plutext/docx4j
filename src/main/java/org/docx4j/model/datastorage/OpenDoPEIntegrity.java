@@ -65,6 +65,16 @@ import org.w3c.dom.traversal.NodeIterator;
  * Bookmarks: duplicate, missing (or half missing) bookmarks
  * don't seem to trouble Word, so we don't check for these.
  * 
+ * Since docx4j 3.0, two content control integrity checks are
+ * also done here:
+ * 
+ * 1. w:tr/w:sdt must contain w:tc, and w:tc must be non-empty
+ * 
+ * 2. w:tc/w:sdt must be non-empty
+ * 
+ * Note that the w:sdts can be nested, so simple parent/child
+ * checks aren't sufficient.
+ * 
  * @author jharrop
  *
  */

@@ -811,119 +811,41 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-        if (sdt instanceof CTSdtCell) {
-        	minimiseContentOfSdtCell((CTSdtCell)sdt);
-        } else {
-        	((SdtElement)sdt).getSdtContent().getContent().clear();
-        }
+        ((SdtElement)sdt).getSdtContent().getContent().clear();
+        // .. OpenDoPEIntegrity fixes this where it is not OK
 		
 		return newContent;		
 	}
 
-	/**
-	 * Under normal instances, the sdt placeholder has <sdtContent/>
-	 *
-	 * But that is no good in the following case:
-	 * <w:tr>
-        <w:sdt>
-          <w:sdtPr>
-            : 
-          </w:sdtPr>
-          <w:sdtContent>
-            <w:tc>
-            ...
-            
-	 * 
-	 * Here it is not ok to remove the tc, or for it to be empty, so we
-	 * create:
-	 * 
-	 * <w:tr>
-        <w:sdt>
-          <w:sdtPr>
-            : 
-          </w:sdtPr>
-          <w:sdtContent>
-            <w:tc>         |
-              <w:p/>       |
-            </w:tc>        |
-          </w:sdtContent>
-	 *
-	 * @param sdt
-	 *            The SDT node currently being processed.
-	 * @return The "eventually empty" node list to replace the content of
-	 *         <code>sdt</code>.
-	 */
-	private void minimiseContentOfSdtCell(final CTSdtCell sdt) {
 
-		final Object parent = obtainParent(sdt);
-		final int contentChildCount = countContentChildren(parent);
+//	private Object obtainParent(Object sdt) {
+//		if (!(sdt instanceof Child))
+//			throw new IllegalArgumentException("Object of class "
+//					+ sdt.getClass().getName() + " is not a Child");
+//
+//		return ((Child) sdt).getParent();
+//	}
+//
+//	private int countContentChildren(final Object tc) {
+//		final List<Object> selfAndSiblings = obtainChildren(tc);
+//		int contentChildCount = 0;
+//		for (final Object child : selfAndSiblings)
+//			if (!(child instanceof TcPr))
+//				contentChildCount++;
+//		return contentChildCount;
+//	}
 
-		final List<Object> newContent;
-
-
-		final CTSdtContentCell sdtCellContent = (CTSdtContentCell) sdt.getSdtContent();
-
-		// This sdt would ordinarily contain a tc, but that tc could be
-		// nested in yet another sdt
-		Object sdtContent0 = XmlUtils.unwrap(sdtCellContent.getContent().get(0));
-		Tc tc = null;
-		if (sdtContent0 instanceof Tc) {
-
-			tc = (Tc) sdtContent0;
-
-		} else if (sdtContent0 instanceof CTSdtCell) {
-
-			Object innerSdtContent0 = XmlUtils.unwrap(((CTSdtCell)sdtContent0).getSdtContent().getContent().get(0));
-			if (innerSdtContent0 instanceof Tc) {
-				tc = (Tc) innerSdtContent0;
-			} else {
-				log.debug("Fallback handling for " + innerSdtContent0.getClass().getName());
-				tc = Context.getWmlObjectFactory().createTc();
-			}
-			// replace innerSdt with this tc
-			sdtCellContent.getContent().clear();
-			sdtCellContent.getContent().add(tc);
-
-		} else {
-			log.error("Fallback handling for " + sdtContent0.getClass().getName());
-			tc = Context.getWmlObjectFactory().createTc();
-			sdtCellContent.getContent().clear();
-			sdtCellContent.getContent().add(tc);
-		}
-
-		tc.getContent().clear();
-		final P p = Context.getWmlObjectFactory().createP();
-		tc.getContent().add(p);
-	}
-
-	private Object obtainParent(Object sdt) {
-		if (!(sdt instanceof Child))
-			throw new IllegalArgumentException("Object of class "
-					+ sdt.getClass().getName() + " is not a Child");
-
-		return ((Child) sdt).getParent();
-	}
-
-	private int countContentChildren(final Object tc) {
-		final List<Object> selfAndSiblings = obtainChildren(tc);
-		int contentChildCount = 0;
-		for (final Object child : selfAndSiblings)
-			if (!(child instanceof TcPr))
-				contentChildCount++;
-		return contentChildCount;
-	}
-
-	private List<Object> obtainChildren(Object element) {
-		Object unwrapped = XmlUtils.unwrap(element);
-		if (unwrapped instanceof ContentAccessor) {
-			return ((ContentAccessor) unwrapped).getContent();
-		} else if (unwrapped instanceof SdtElement) {
-			return ((SdtElement) unwrapped).getSdtContent().getContent();
-		}
-		log.warn("Don't know how to access the children of "
-				+ (unwrapped == null ? "null" : unwrapped.getClass().getName()));
-		return Collections.emptyList();
-	}
+//	private List<Object> obtainChildren(Object element) {
+//		Object unwrapped = XmlUtils.unwrap(element);
+//		if (unwrapped instanceof ContentAccessor) {
+//			return ((ContentAccessor) unwrapped).getContent();
+//		} else if (unwrapped instanceof SdtElement) {
+//			return ((SdtElement) unwrapped).getSdtContent().getContent();
+//		}
+//		log.warn("Don't know how to access the children of "
+//				+ (unwrapped == null ? "null" : unwrapped.getClass().getName()));
+//		return Collections.emptyList();
+//	}
 	 
 
 
@@ -1055,11 +977,8 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-        if (sdt instanceof CTSdtCell) {
-        	minimiseContentOfSdtCell((CTSdtCell)sdt);
-        } else {
-        	((SdtElement)sdt).getSdtContent().getContent().clear();
-        }
+        ((SdtElement)sdt).getSdtContent().getContent().clear();
+        // .. OpenDoPEIntegrity fixes this where it is not OK
 		
 		return newContent;
 	}
