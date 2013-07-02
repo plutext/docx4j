@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +66,6 @@ import org.docx4j.org.xhtmlrenderer.docx.DocxRenderer;
 import org.docx4j.org.xhtmlrenderer.layout.Styleable;
 import org.docx4j.org.xhtmlrenderer.newtable.TableBox;
 import org.docx4j.org.xhtmlrenderer.newtable.TableCellBox;
-import org.docx4j.org.xhtmlrenderer.newtable.TableSectionBox;
 import org.docx4j.org.xhtmlrenderer.render.AnonymousBlockBox;
 import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
@@ -972,14 +971,39 @@ public class XHTMLImporter {
 		if (parent instanceof TableBox
 				|| parent.getElement().getNodeName().equals("table") ) {
 			log.warn("table: Constructing missing w:tr/w:td..");
+			
+			//if table was with caption move P (generated for caption) to nested column
+			P captionP = null;
+			Iterator<Object> contentIterator = contentContext.iterator();
+			Object next;
+			while(contentIterator.hasNext()){
+			    next = contentIterator.next();
+			    if(next instanceof P){
+			        captionP = (P)XmlUtils.deepCopy((P)next);
+			        contentIterator.remove();
+			        break;
+			    }
+			}
+			
+			TblPr tblPr = Context.getWmlObjectFactory().createTblPr();
 
+            TblStyle tblStyle = Context.getWmlObjectFactory().createCTTblPrBaseTblStyle();
+            tblStyle.setVal("none");
+            tblPr.setTblStyle(tblStyle);
+            contentContext.add(tblPr);
+			
 			Tr tr = Context.getWmlObjectFactory().createTr();
 			contentContext.add(tr);
 		    contentContext = tr.getContent();            			
 			
 			Tc tc = Context.getWmlObjectFactory().createTc();
 			contentContext.add(tc);
-		    contentContext = tc.getContent();            			
+		    contentContext = tc.getContent();
+		    
+		    //if caption was found add it
+		    if(captionP != null){
+		        contentContext.add(captionP);
+		    }
 		}
 		return contentContext;
 	}
