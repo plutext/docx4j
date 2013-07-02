@@ -97,15 +97,14 @@
   	</xsl:choose>    
   </xsl:template>
   
-  <!-- w:tr/w:sdt must contain w:tc, and w:tc must be non-empty
+  <!-- Integrity: w:tr/w:sdt must contain w:tc, and w:tc must be non-empty
   
-       so match the deepest w:sdt containing w:tc, then check
-       
-       TODO: enhance to support nested table, by introducing count(ancestor::w:table)
+       this matches an sdt surrounding a tc (with or without nested tables)
   
    -->
-  <xsl:template match="w:sdt[ancestor::w:tr and count(ancestor::w:tc)=0 and count(descendant::w:sdt)=0]">
+  <xsl:template match="w:sdt[count(ancestor::w:tr)=count(ancestor::w:tbl) and count(ancestor::w:tc)=(count(ancestor::w:tbl)-1) ]">
   
+  <!--  apply fix if necessary to deepest first -->
   	<xsl:variable name="results">
 		<xsl:apply-templates select="@*|node()"/>  	
   	</xsl:variable>
@@ -114,7 +113,7 @@
   	
   		<!--  the tc must contain block content (eg w:p or a nested table, and somewhere in that
   			  there ought to be a w:p -->
-  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  ensuring deepest is fixed first -->
+  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  still need to do something, in spite of fixing the deepest already -->
   			<w:sdt>
   				<xsl:copy-of select="w:sdtPr"/>
   				<w:sdtContent>
@@ -133,20 +132,25 @@
   
   </xsl:template>  
   
-  <!--  w:tc/w:sdt must be non-empty  
+  <!-- Integrity: w:tc/w:sdt must be non-empty  
   
-  		
+       this matches a block level sdt inside a tc (whether or not the table is nested)
+       
+       We don't attempt to fix the case of a w:tc containing nothing, since OpenDopE shouldn't introduce that. 
+       
+       This template populates a w:sdt, even where that would not be strictly necessary (ie there is sibling content)		
   
    -->
-  <xsl:template match="w:sdt[ancestor::w:tc and count(descendant::w:sdt)=0]">
+  <xsl:template match="w:sdt[count(ancestor::w:tc)=count(ancestor::w:tbl) and count(ancestor::w:p)=0 ]">
 
+  <!--  apply fix if necessary to deepest first -->
   	<xsl:variable name="results">
 		<xsl:apply-templates select="@*|node()"/>  	
   	</xsl:variable>
 
     <xsl:choose>
   	
-  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  ensuring deepest is fixed first -->
+  		<xsl:when test="count(xalan:nodeset($results)//w:p)=0"> <!--  still need to do something, in spite of fixing the deepest already -->
   			<w:sdt>
   				<xsl:copy-of select="w:sdtPr"/>
   				<w:sdtContent>
