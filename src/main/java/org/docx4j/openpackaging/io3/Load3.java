@@ -150,7 +150,15 @@ public class Load3 extends Load {
 		}
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
-		String pkgContentType = ctm.getContentType(new PartName("/" + mainPartName));
+		PartName mainPartNameObj;
+		if (mainPartName.startsWith("/")) {
+			// OpenXML SDK 2.0 writes Target="/word/document.xml" (note leading "/")
+			mainPartNameObj = new PartName(mainPartName);
+		} else { 
+			// Microsoft Word, docx4j etc write Target="word/document.xml" 
+			mainPartNameObj = new PartName("/" + mainPartName);
+		}
+		String pkgContentType = ctm.getContentType(mainPartNameObj);
 
 		// 2. Create a new Package; this'll return the appropriate subclass
 		OpcPackage p = ctm.createPackage(pkgContentType);
