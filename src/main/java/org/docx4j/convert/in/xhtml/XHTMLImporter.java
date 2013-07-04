@@ -41,6 +41,7 @@ import javax.xml.transform.Source;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
@@ -57,6 +58,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.org.xhtmlrenderer.css.constants.CSSName;
 import org.docx4j.org.xhtmlrenderer.css.constants.IdentValue;
+import org.docx4j.org.xhtmlrenderer.css.parser.FSColor;
+import org.docx4j.org.xhtmlrenderer.css.parser.FSRGBColor;
 import org.docx4j.org.xhtmlrenderer.css.style.CalculatedStyle;
 import org.docx4j.org.xhtmlrenderer.css.style.DerivedValue;
 import org.docx4j.org.xhtmlrenderer.css.style.FSDerivedValue;
@@ -80,6 +83,7 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
+import org.docx4j.wml.CTShd;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
@@ -329,7 +333,7 @@ public class XHTMLImporter {
         XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
-        
+                
         Document dom = XMLResource.load(source).getDocument();        
         importer.renderer.setDocument(dom, baseUrl);
 
@@ -677,6 +681,8 @@ public class XHTMLImporter {
             		org.docx4j.org.xhtmlrenderer.newtable.TableCellBox tcb = (org.docx4j.org.xhtmlrenderer.newtable.TableCellBox)box;
             		// tcb.getVerticalAlign()
             		
+            		
+            		
             		// rowspan support: vertically merged cells are
             		// represented as a top cell containing the actual content with a vMerge tag with "restart" attribute 
             		// and a series of dummy cells having a vMerge tag with no (or "continue") attribute.            		
@@ -756,6 +762,18 @@ public class XHTMLImporter {
             			
             			this.setCellWidthAuto(tcPr2);            			
             		}
+            		
+            		// BackgroundColor
+            		FSColor fsColor = tcb.getStyle().getBackgroundColor();
+            		if (fsColor != null
+            				&& fsColor instanceof FSRGBColor) {
+           				
+            				FSRGBColor rgbResult = (FSRGBColor)fsColor;
+            				CTShd shd = Context.getWmlObjectFactory().createCTShd();
+            				shd.setFill(
+            						UnitsOfMeasurement.rgbTripleToHex(rgbResult.getRed(), rgbResult.getGreen(), rgbResult.getBlue())  );
+            				tcPr.setShd(shd);
+            		}            		
             		
 					// search for vertically spanned cells to the right from current, and insert dummy cells after it
 					insertDummyVMergedCells(trContext, tcb, false);
@@ -1209,6 +1227,12 @@ public class XHTMLImporter {
                     	 */
             	
             	if (inlineBox.isStartsHere()) {
+            		
+            		String name = s.getElement().getAttribute("name");
+            		if (name!=null) {
+            			System.out.println("NAMED ANCHOR " + name);
+            		}
+            		
             		
                 	Hyperlink h = null;
                 	String linkText = inlineBox.getElement().getTextContent();
