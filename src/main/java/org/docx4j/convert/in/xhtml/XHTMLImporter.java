@@ -35,7 +35,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
@@ -74,6 +76,8 @@ import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
 import org.docx4j.org.xhtmlrenderer.render.InlineBox;
 import org.docx4j.org.xhtmlrenderer.resource.XMLResource;
+import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.CTTblLayoutType;
 import org.docx4j.wml.CTTblPrBase.TblStyle;
 import org.docx4j.wml.Numbering;
@@ -446,9 +450,9 @@ public class XHTMLImporter {
 
             } else  if (val!=null ) {
             	
-            	log.debug("Skipping " +  name.toString() + " .. " + val.getClass().getName() );
+//            	log.debug("Skipping " +  name.toString() + " .. " + val.getClass().getName() );
             } else {
-            	log.debug("Skipping " +  name.toString() + " .. (null value)" );            	
+//            	log.debug("Skipping " +  name.toString() + " .. (null value)" );            	
             }
         }
     	
@@ -1060,7 +1064,7 @@ public class XHTMLImporter {
 					return;
 				}
 				base64String = base64String.substring(commaPos + 1);
-				System.out.println(base64String);
+				log.debug(base64String);
 				imageBytes = Base64.decodeBase64(base64String.getBytes("UTF8"));
 			} else {
 				Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
@@ -1165,9 +1169,12 @@ public class XHTMLImporter {
 	// we hit that element.  No need to add its children again
 	private boolean inAlreadyProcessed = false; // TODO may need a stack of these.
 	
+	private AtomicInteger bookmarkId = new AtomicInteger();	
+	
     private void processInlineBox( InlineBox inlineBox, List<Object> contentContext) {
     	
     	log.debug(inlineBox.toString());
+    	
 
         // Doesn't extend box
         Styleable s = ((InlineBox)inlineBox );
@@ -1175,13 +1182,59 @@ public class XHTMLImporter {
         	log.error("getStyle returned null!");
         }
         
-    	if (inAlreadyProcessed) {
+
+    	if (s.getElement() !=null
+    			&& s.getElement().getNodeName().equals("a")
+    			&& inlineBox.isStartsHere()
+    			//&& inlineBox.isEndsHere() 
+    			&& !inlineBox.getElement().hasChildNodes()
+    			) {
+    		// self closing tag
+    		
+    		/* Don't use inlineBox.isEndsHere(), since it incorrectly
+    		 * returns true for opening anchor of:
+    		 * 
+    		 *    <a href="#_summary" class="report_table_of_content">Summary</a>
+    		 * 
+    		 */
+        
+    		String name = s.getElement().getAttribute("name");
+    		if (name!=null
+    				&& !name.trim().equals("")) {
+        		log.debug("[NAMED ANCHOR] " + name);
+    			
+    		    CTBookmark bookmark = Context.getWmlObjectFactory().createCTBookmark(); 
+    		    JAXBElement<org.docx4j.wml.CTBookmark> bookmarkWrapped = Context.getWmlObjectFactory().createPBookmarkStart(bookmark); 
+    		    currentP.getContent().add( bookmarkWrapped); 
+    		        bookmark.setName( name ); 
+    		        bookmark.setId( BigInteger.valueOf( bookmarkId.get()) ); 
+
+    		    CTMarkupRange markuprange = Context.getWmlObjectFactory().createCTMarkupRange(); 
+    		    JAXBElement<org.docx4j.wml.CTMarkupRange> markuprangeWrapped = Context.getWmlObjectFactory().createPBookmarkEnd(markuprange); 
+    		    currentP.getContent().add( markuprangeWrapped); 
+    		        markuprange.setId( BigInteger.valueOf(bookmarkId.getAndIncrement() ) );          		        
+    		}
+    		log.debug("anchor which starts and ends here");
+    		return;
+    		
+    	} else if (inAlreadyProcessed) {
     		log.debug(".. already done?!");
         	if (s.getElement() !=null
         			&& s.getElement().getNodeName().equals("a")
         			&& inlineBox.isEndsHere() ) {
         		// When we hit the end of the hyperlink
         		inAlreadyProcessed = false; // ready for next element
+        		
+        		String name = s.getElement().getAttribute("name");
+        		if (name!=null
+        				&& !name.trim().equals("")) {
+        			log.debug(".. /NAMED ANCHOR " + name);
+        			
+        		    CTMarkupRange markuprange = Context.getWmlObjectFactory().createCTMarkupRange(); 
+        		    JAXBElement<org.docx4j.wml.CTMarkupRange> markuprangeWrapped = Context.getWmlObjectFactory().createPBookmarkEnd(markuprange); 
+        		    currentP.getContent().add( markuprangeWrapped); 
+        		        markuprange.setId( BigInteger.valueOf( bookmarkId.getAndIncrement()) );      
+        		}
         	}                	
     		return; 
     	}
@@ -1229,45 +1282,62 @@ public class XHTMLImporter {
             	if (inlineBox.isStartsHere()) {
             		
             		String name = s.getElement().getAttribute("name");
-            		if (name!=null) {
-            			System.out.println("NAMED ANCHOR " + name);
+            		if (name!=null
+            				&& !name.trim().equals("")) {
+            			log.debug("NAMED ANCHOR " + name);
+            			
+            		    CTBookmark bookmark = Context.getWmlObjectFactory().createCTBookmark(); 
+            		    JAXBElement<org.docx4j.wml.CTBookmark> bookmarkWrapped = Context.getWmlObjectFactory().createPBookmarkStart(bookmark); 
+            		    currentP.getContent().add( bookmarkWrapped); 
+        		        bookmark.setName( name ); 
+        		        bookmark.setId( BigInteger.valueOf( bookmarkId.get()) );
+            		        
+	                	String theText = inlineBox.getElement().getTextContent();
+	                    addRun(cssMap, theText);
+
+	                	inAlreadyProcessed = true;
+        		        return;
             		}
             		
+            		String href = s.getElement().getAttribute("href"); 
+            		if (href!=null
+            				&& !href.trim().equals("")) {
+            			
+	                	Hyperlink h = null;
+	                	String linkText = inlineBox.getElement().getTextContent();
+	                	log.debug(linkText);
+	                	if (linkText!=null
+	                			&& !linkText.trim().equals("")) {
+	                		// Cases 1 & 2
+	                    	h = createHyperlink(
+	                    			href, 
+	                    			addRunProperties( cssMap ),
+	                    			linkText, rp);                                    	            		
+	                        currentP.getContent().add(h);
+	//                        if (inlineBox.getElement().getChildNodes().getLength()==1
+	//                        		&& inlineBox.getElement().getChildNodes().item(0).getNodeType()==Node.TEXT_NODE) {
+	//                        	// eg <a href="/wiki/Ecma_International" title="Ecma International">Ecma</a>
+	//                        	// endsHere incorrectly set to true in that case?
+	//                        	inAlreadyProcessed = true;                        	                        	
+	//                        } else 
+	                        
+	                        if (!inlineBox.isEndsHere() ) {
+	                        	inAlreadyProcessed = true;
+	                        }
+	                	} else {
+	                    	// Case 3           	
+	                    	h = createHyperlink(
+	                    			href, 
+	                    			addRunProperties( cssMap ),
+	                    			href, rp);                                    	            		
+	                        currentP.getContent().add(h);
+	                        // No need to set inAlreadyProcessed = true;
+	                        // since no children to process
+	                	}
+	                	return;
+            		}
             		
-                	Hyperlink h = null;
-                	String linkText = inlineBox.getElement().getTextContent();
-                	log.debug(linkText);
-                	if (linkText!=null
-                			&& !linkText.trim().equals("")) {
-                		// Cases 1 & 2
-                    	h = createHyperlink(
-                    			s.getElement().getAttribute("href"), 
-                    			addRunProperties( cssMap ),
-                    			linkText, rp);                                    	            		
-                        currentP.getContent().add(h);
-//                        if (inlineBox.getElement().getChildNodes().getLength()==1
-//                        		&& inlineBox.getElement().getChildNodes().item(0).getNodeType()==Node.TEXT_NODE) {
-//                        	// eg <a href="/wiki/Ecma_International" title="Ecma International">Ecma</a>
-//                        	// endsHere incorrectly set to true in that case?
-//                        	inAlreadyProcessed = true;                        	                        	
-//                        } else 
-                        	if (!inlineBox.isEndsHere() ) {
-                        	inAlreadyProcessed = true;
-                        }
-                        return;
-                	} else {
-                    	// Case 3           	
-                    	h = createHyperlink(
-                    			s.getElement().getAttribute("href"), 
-                    			addRunProperties( cssMap ),
-                    			s.getElement().getAttribute("href"), rp);                                    	            		
-                        currentP.getContent().add(h);
-                        // No need to set inAlreadyProcessed = true;
-                        // since no children to process
-                        return;
-                	}
-            		
-            	} 
+            	}
             	
             	
             } else if (s.getElement().getNodeName().equals("p")) {
@@ -1300,6 +1370,8 @@ public class XHTMLImporter {
 
 	private void processInlineBoxContent(InlineBox inlineBox, Styleable s,
 			Map<String, CSSValue> cssMap) {
+				
+		
 		if (inlineBox.getTextNode()==null) {
                 
             if (s.getElement().getNodeName().equals("br") ) {
@@ -1307,12 +1379,13 @@ public class XHTMLImporter {
                 R run = Context.getWmlObjectFactory().createR();
                 currentP.getContent().add(run);                
            		run.getContent().add(Context.getWmlObjectFactory().createBr());
-                
+            	
             } else {
             	log.debug("InlineBox has no TextNode, so skipping" );
             	
-            	// TODO .. a span in a span?
-            	// need to traverse
+            	// TODO .. a span in a span or a?
+            	// need to traverse, how?
+            	
             }
             
         } else  {
@@ -1323,20 +1396,7 @@ public class XHTMLImporter {
             
             paraStillEmpty = false;                                    
                         
-            R run = Context.getWmlObjectFactory().createR();
-            Text text = Context.getWmlObjectFactory().createText();
-            text.setValue( theText );
-            if (theText.startsWith(" ")
-            		|| theText.endsWith(" ") ) {
-            	text.setSpace("preserve");
-            }
-            run.getContent().add(text);
-            
-            currentP.getContent().add(run);
-            
-            // Run level styling
-            run.setRPr(
-            		addRunProperties( cssMap ));
+            addRun(cssMap, theText);
     	            
 //                                    else {
 //                                    	// Get it from the parent element eg p
@@ -1345,6 +1405,27 @@ public class XHTMLImporter {
 //                        	            		addRunProperties( cssMap ));                                    	                                    	
 //                                    }
         }
+	}
+
+	/**
+	 * @param cssMap
+	 * @param theText
+	 */
+	private void addRun(Map<String, CSSValue> cssMap, String theText) {
+		R run = Context.getWmlObjectFactory().createR();
+		Text text = Context.getWmlObjectFactory().createText();
+		text.setValue( theText );
+		if (theText.startsWith(" ")
+				|| theText.endsWith(" ") ) {
+			text.setSpace("preserve");
+		}
+		run.getContent().add(text);
+		
+		currentP.getContent().add(run);
+		
+		// Run level styling
+		run.setRPr(
+				addRunProperties( cssMap ));
 	}
     
     private PPr addParagraphProperties(Map cssMap) {
