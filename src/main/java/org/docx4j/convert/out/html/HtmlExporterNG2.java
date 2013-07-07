@@ -255,7 +255,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		log.debug("About to transform...");
 		org.docx4j.XmlUtils.transform(doc, xslt, conversionContext.getXsltParameters(),
 				result);
-		log.info("wordDocument transformed to xhtml ..");
+		log.info("wordDocument transformed ..");
 
 	}
         

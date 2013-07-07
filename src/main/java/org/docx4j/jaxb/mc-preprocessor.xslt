@@ -31,7 +31,8 @@
 		select="java:org.docx4j.utils.XSLTUtils.logWarn('Found some mc:AlternateContent')" />
 		
   	<xsl:choose>
-  	<!-- 
+  	<!-- See comment in SlidePart as to why we don't do this!
+  	
   		<xsl:when test="mc:Choice[@Requires='v']">
   		
   			<xsl:variable name="message" 

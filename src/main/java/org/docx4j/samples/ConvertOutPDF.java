@@ -20,6 +20,7 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,22 +68,17 @@ import org.docx4j.wml.PPr;
  *
  */
 public class ConvertOutPDF extends AbstractSample {
-	    
+	
 	// Config for non-command line use
 	static {
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	//inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
-    	//inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
-    	//inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/tables.docx";
-    	
-//		inputfilepath = System.getProperty("user.dir") + "/OpenXML_1ed_Part4_500_sections_1.docx";
-//		inputfilepath = System.getProperty("user.dir") + "/OpenXML_1ed_Part4_500_sections_every_50p_no_TOC.docx";
-		inputfilepath = System.getProperty("user.dir") + "/NoSectPr.docx";
+//    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 		
     	saveFO = false;
 	}
+	
 	
 	// For demo/debugging purposes, save the intermediate XSL FO
 	// Don't do this in production!
@@ -95,6 +91,7 @@ public class ConvertOutPDF extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 		}
+		
     	
 		System.out.println(inputfilepath);
 
@@ -122,11 +119,9 @@ public class ConvertOutPDF extends AbstractSample {
 		
 		
 		// Workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094 
-		// (apparently fixed post 1.1, but that's difficult to use right now)
+		// You can comment this out if you are using FOP post 1.1
+		// (see pom.xml for tips on how to configure that)
 		Object o = wordMLPackage.getMainDocumentPart().getContent().get(0);
-		
-		System.out.println("First block: " + o.getClass().getName() );
-		
 		if (o instanceof P
 				&& ((P)o).getPPr()!=null) {
 			PPr pPr = ((P)o).getPPr();
@@ -144,6 +139,7 @@ public class ConvertOutPDF extends AbstractSample {
 				= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
 		fontMapper.getFontMappings().put("Algerian", font);
 		
+		
 		// the PdfConversion object
 		org.docx4j.convert.out.pdf.PdfConversion c 
 //				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
@@ -160,7 +156,7 @@ public class ConvertOutPDF extends AbstractSample {
 		if (inputfilepath==null) {
 			outputfilepath = System.getProperty("user.dir") + "/OUT_FontContent.pdf";			
 		} else {
-			outputfilepath = inputfilepath + "2.pdf";
+			outputfilepath = inputfilepath + ".pdf";
 		}
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
