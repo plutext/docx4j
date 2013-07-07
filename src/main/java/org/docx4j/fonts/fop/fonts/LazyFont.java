@@ -35,8 +35,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.xml.sax.InputSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.docx4j.fonts.fop.apps.FOPException;
 
@@ -45,7 +45,7 @@ import org.docx4j.fonts.fop.apps.FOPException;
  */
 public class LazyFont extends Typeface implements FontDescriptor {
 
-    private static Log log = LogFactory.getLog(LazyFont.class);
+    private static Logger log = LoggerFactory.getLogger(LazyFont.class);
 
     private String metricsFileName = null;
     private String fontEmbedPath = null;

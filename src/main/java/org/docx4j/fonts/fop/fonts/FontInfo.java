@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The FontInfo holds font information for the layout and rendering of a fo document.
@@ -47,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
 public class FontInfo {
 
     /** logging instance */
-    protected static Log log = LogFactory.getLog(FontInfo.class);
+    protected static Logger log = LoggerFactory.getLogger(FontInfo.class);
 
     /** Map containing fonts that have been used */
     private Map/*<String,FontMetrics>*/ usedFonts = null; //(String = font key)
@@ -159,7 +159,7 @@ public class FontInfo {
     }
 
     /**
-     * Log warning about duplicate font triplets.
+     * Logger warning about duplicate font triplets.
      *
      * @param triplet the duplicate font triplet
      * @param replacing true iff the new font will replace the old one

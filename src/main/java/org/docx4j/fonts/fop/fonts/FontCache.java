@@ -39,8 +39,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.util.LogUtil;
@@ -57,7 +57,7 @@ public final class FontCache implements Serializable {
     private static final long serialVersionUID = 605232520271754719L;
 
     /** logging instance */
-    private static Log log = LogFactory.getLog(FontCache.class);
+    private static Logger log = LoggerFactory.getLogger(FontCache.class);
 
     /** FOP's user directory name */
     private static final String FOP_USER_DIR = ".docx4j";

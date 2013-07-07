@@ -34,8 +34,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -58,7 +58,7 @@ import org.docx4j.fonts.fop.fonts.truetype.TTFFontLoader;
 public class FontInfoFinder {
 
     /** logging instance */
-    private Log log = LogFactory.getLog(FontInfoFinder.class);
+    private Logger log = LoggerFactory.getLogger(FontInfoFinder.class);
 
     private FontEventListener eventListener;
 

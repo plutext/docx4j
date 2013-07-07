@@ -31,8 +31,8 @@ import java.util.List;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.base14.Courier;
 import org.docx4j.fonts.fop.fonts.base14.CourierBold;
 import org.docx4j.fonts.fop.fonts.base14.CourierBoldOblique;
@@ -62,7 +62,7 @@ public class FontSetup {
     /**
      * logging instance
      */
-    protected static Log log = LogFactory.getLog(FontSetup.class);
+    protected static Logger log = LoggerFactory.getLogger(FontSetup.class);
 
     /**
      * Sets up a font info

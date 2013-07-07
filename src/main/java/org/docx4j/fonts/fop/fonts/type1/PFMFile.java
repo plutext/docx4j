@@ -32,8 +32,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.fonts.Glyphs;
 
@@ -72,7 +72,7 @@ public class PFMFile {
     /**
      * logging instance
      */
-    protected Log log = LogFactory.getLog(PFMFile.class);
+    protected Logger log = LoggerFactory.getLogger(PFMFile.class);
 
     /**
      * Parses a PFM file

@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generic SingleByte font
@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 public class SingleByteFont extends CustomFont {
 
     /** logger */
-    private  static Log log = LogFactory.getLog(SingleByteFont.class);
+    private  static Logger log = LoggerFactory.getLogger(SingleByteFont.class);
 
     private SingleByteEncoding mapping;
     private boolean useNativeEncoding = false;

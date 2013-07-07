@@ -27,8 +27,8 @@ package org.docx4j.fonts.fop.fonts.substitute;
 
 import java.util.StringTokenizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates a range of font weight values
@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public class FontWeightRange {
 
     /** logging instance */
-    protected static Log log = LogFactory.getLog("org.apache.fop.render.fonts");
+    protected static Logger log = LoggerFactory.getLogger("org.apache.fop.render.fonts");
 
     /**
      * Returns an <code>FontWeightRange</code> object holding the

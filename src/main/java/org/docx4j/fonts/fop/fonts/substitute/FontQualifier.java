@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.Font;
 import org.docx4j.fonts.fop.fonts.FontInfo;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
@@ -43,7 +43,7 @@ import org.docx4j.fonts.fop.fonts.FontUtil;
 public class FontQualifier {
 
     /** logger instance */
-    private static Log log = LogFactory.getLog(FontQualifier.class);
+    private static Logger log = LoggerFactory.getLogger(FontQualifier.class);
 
     /** font family attribute value */
     private AttributeValue fontFamilyAttributeValue = null;

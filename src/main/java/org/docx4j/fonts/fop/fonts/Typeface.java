@@ -27,8 +27,8 @@ package org.docx4j.fonts.fop.fonts;
 
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlgraphics.fonts.Glyphs;
 
 /**
@@ -43,7 +43,7 @@ public abstract class Typeface implements FontMetrics {
     public static final char NOT_FOUND = '#';
 
     /** logger */
-    private static Log log = LogFactory.getLog(Typeface.class);
+    private static Logger log = LoggerFactory.getLogger(Typeface.class);
 
     /**
      * Used to identify whether a font has been used (a character map operation

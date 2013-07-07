@@ -37,8 +37,8 @@ import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helps to autodetect/locate available operating system fonts.
@@ -46,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
 public class FontFileFinder extends DirectoryWalker implements FontFinder {
 
     /** logging instance */
-    private final Log log = LogFactory.getLog(FontFileFinder.class);
+    private final Logger log = LoggerFactory.getLogger(FontFileFinder.class);
 
     /** default depth limit of recursion when searching for font files **/
     public static final int DEFAULT_DEPTH_LIMIT = -1;

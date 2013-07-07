@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.fonts.Glyphs;
 
@@ -135,7 +135,7 @@ public class TTFFile {
     /**
      * logging instance
      */
-    protected Log log = LogFactory.getLog(TTFFile.class);
+    protected Logger log = LoggerFactory.getLogger(TTFFile.class);
 
     /**
      * Key-value helper class
@@ -249,7 +249,7 @@ public class TTFFile {
         } else if (symbolMapOffset > 0) {
             return readUnicodeCmap(in, symbolMapOffset, 0);
         } else {
-            log.fatal("Unsupported TrueType font: No Unicode or Symbol cmap table"
+            log.error("Unsupported TrueType font: No Unicode or Symbol cmap table"
                     + " not present. Aborting");
             return false;
         }
