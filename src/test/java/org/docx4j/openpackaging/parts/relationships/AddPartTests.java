@@ -2,7 +2,8 @@ package org.docx4j.openpackaging.parts.relationships;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
@@ -14,7 +15,7 @@ import org.junit.Test;
 
 public class AddPartTests {
 	
-	protected static Logger log = Logger.getLogger(AlteredPartsTest.class);
+	protected static Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
 	
 	/**
 	 * @throws java.lang.Exception

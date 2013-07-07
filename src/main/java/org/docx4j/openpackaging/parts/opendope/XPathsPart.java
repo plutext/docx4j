@@ -2,7 +2,8 @@ package org.docx4j.openpackaging.parts.opendope;
 
 import javax.xml.bind.JAXBContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -11,7 +12,7 @@ import org.opendope.xpaths.Xpaths.Xpath;
 
 public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths.Xpaths> {
 	
-	private static Logger log = Logger.getLogger(XPathsPart.class);		
+	private static Logger log = LoggerFactory.getLogger(XPathsPart.class);		
 	
 	public XPathsPart(PartName partName) throws InvalidFormatException {
 		super(partName);

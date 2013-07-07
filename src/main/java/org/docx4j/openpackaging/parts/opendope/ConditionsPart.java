@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -15,7 +16,7 @@ import org.opendope.conditions.Condition;
 
 public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.conditions.Conditions> {
 	
-	private static Logger log = Logger.getLogger(ConditionsPart.class);		
+	private static Logger log = LoggerFactory.getLogger(ConditionsPart.class);		
 	
 	public ConditionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);

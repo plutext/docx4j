@@ -23,7 +23,8 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
@@ -37,7 +38,7 @@ import org.docx4j.wml.Hdr;
 
 public final class HeaderPart extends JaxbXmlPartAltChunkHost<Hdr> implements ContentAccessor {
 	
-	private static Logger log = Logger.getLogger(HeaderPart.class);			
+	private static Logger log = LoggerFactory.getLogger(HeaderPart.class);			
 	
 	public HeaderPart(PartName partName) throws InvalidFormatException {
 		super(partName);		

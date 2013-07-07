@@ -24,7 +24,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -69,7 +70,7 @@ import org.docx4j.wml.Tr;
  */
 public class Containerization {
 
-	private static Logger log = Logger.getLogger(Containerization.class);
+	private static Logger log = LoggerFactory.getLogger(Containerization.class);
 
 	public final static String TAG_SHADING = "XSLT_Shd";
 	public final static String TAG_BORDERS = "XSLT_PBdr";

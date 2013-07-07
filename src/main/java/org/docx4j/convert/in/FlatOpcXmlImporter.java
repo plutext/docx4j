@@ -33,7 +33,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -98,7 +99,7 @@ import org.w3c.dom.DOMException;
  */
 public class FlatOpcXmlImporter  {
 	
-	private static Logger log = Logger.getLogger(FlatOpcXmlImporter.class);
+	private static Logger log = LoggerFactory.getLogger(FlatOpcXmlImporter.class);
 
 	public FlatOpcXmlImporter(InputStream is) throws JAXBException {
 		

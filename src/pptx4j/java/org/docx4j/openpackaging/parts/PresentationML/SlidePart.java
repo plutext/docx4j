@@ -30,7 +30,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -50,7 +51,7 @@ import org.w3c.dom.Node;
 
 public final class SlidePart extends JaxbPmlPart<Sld> {
 	
-	protected static Logger log = Logger.getLogger(SlidePart.class);	
+	protected static Logger log = LoggerFactory.getLogger(SlidePart.class);	
 	
 	public SlidePart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -255,7 +256,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}	

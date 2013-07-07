@@ -20,13 +20,14 @@
 
 package org.pptx4j.model;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.pptx4j.pml.Shape;
 
 public class ShapeWrapper {
 	
-	private static Logger log = Logger.getLogger(ShapeWrapper.class);		
+	private static Logger log = LoggerFactory.getLogger(ShapeWrapper.class);		
 	
 	public ShapeWrapper(Shape sp, String phType, JaxbPmlPart owner) {
 		this.sp = sp;

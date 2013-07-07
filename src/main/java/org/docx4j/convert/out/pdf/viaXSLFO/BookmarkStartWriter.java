@@ -21,7 +21,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
 import org.docx4j.model.BookmarkStartModel;
@@ -36,7 +37,7 @@ import org.w3c.dom.Node;
  *  to the beginning of a paragraph, therefore a inline should allways work.
  */
 public class BookmarkStartWriter extends AbstractSimpleModelWriter<CTBookmark> {
-	private final static Logger log = Logger.getLogger(BookmarkStartWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(BookmarkStartWriter.class);
 	
 	public BookmarkStartWriter() {
 		super(BookmarkStartModel.MODEL_ID);

@@ -26,7 +26,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -63,7 +64,7 @@ public class PartsStrip {
 	static boolean keepStyles = true;
 	static boolean defaultToDelete = false;
 	
-	private static Logger log = Logger.getLogger(PartsStrip.class);						
+	private static Logger log = LoggerFactory.getLogger(PartsStrip.class);						
 	
 	/**
 	 * @param args

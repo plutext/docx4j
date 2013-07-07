@@ -25,7 +25,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -45,7 +46,7 @@ import org.docx4j.relationships.Relationship;
 
 public class Patcher {
 
-	private static Logger log = Logger.getLogger(Patcher.class);
+	private static Logger log = LoggerFactory.getLogger(Patcher.class);
 	
 	
 	public static void apply(WordprocessingMLPackage otherPackage, 

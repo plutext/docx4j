@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
@@ -33,7 +34,7 @@ import org.w3c.dom.Node;
  */
 public class LayoutMasterSetBuilder {
 
-	protected static Logger log = Logger.getLogger(LayoutMasterSetBuilder.class);
+	protected static Logger log = LoggerFactory.getLogger(LayoutMasterSetBuilder.class);
 	
 	private static org.plutext.jaxb.xslfo.ObjectFactory factory;
 		

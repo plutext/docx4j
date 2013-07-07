@@ -27,7 +27,8 @@ import java.util.Iterator;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -53,7 +54,7 @@ import org.docx4j.relationships.Relationship;
  */
 public class ContentControlsInfoParts extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(ContentControlsInfoParts.class);						
+	private static Logger log = LoggerFactory.getLogger(ContentControlsInfoParts.class);						
 
 	/**
 	 * @param args

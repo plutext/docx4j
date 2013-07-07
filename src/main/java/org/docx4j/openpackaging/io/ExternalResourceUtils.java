@@ -9,7 +9,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.ExternalTarget;
@@ -28,7 +29,7 @@ public class ExternalResourceUtils {
 	 * so that Load can load, even if the VFS jar is not present.
 	 */
 
-	private static Logger log = Logger.getLogger(ExternalResourceUtils.class);
+	private static Logger log = LoggerFactory.getLogger(ExternalResourceUtils.class);
 	protected static final Map<String, String> CONTENT_TYPE_MAP = new TreeMap<String, String>();
 	
 	static {

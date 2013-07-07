@@ -71,7 +71,7 @@ public class BinaryPart extends Part {
 			log.debug(".. done" );
 		} catch (IOException e) {
 			//e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} finally {
 			try {
 				log.debug("closing binary input stream");
@@ -79,7 +79,7 @@ public class BinaryPart extends Part {
 				log.info(".. closed.");
 			} catch (Exception nested) {
 				// ignored
-				log.error(nested);				
+				log.error(nested.getMessage(), nested);				
 			}
 		}
 	}	
@@ -152,9 +152,9 @@ public class BinaryPart extends Part {
 						this.bbRef = new SoftReference<ByteBuffer>(res);
 					}
 				} catch (Docx4JException e) {
-					log.error(e);
+					log.error(e.getMessage(), e);
 				} catch (IOException e) {
-					log.error(e);
+					log.error(e.getMessage(), e);
 				} finally {
 					IOUtils.closeQuietly(is);
 				}

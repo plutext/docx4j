@@ -21,7 +21,8 @@ package org.docx4j.model.properties.paragraph;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
@@ -34,7 +35,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class LineSpacing extends AbstractParagraphProperty {
 	
-	protected static Logger log = Logger.getLogger(LineSpacing.class);		
+	protected static Logger log = LoggerFactory.getLogger(LineSpacing.class);		
 	
 	public final static String CSS_NAME = "line-height"; //??  	
 	public final static String FO_NAME  = "line-height"; 

@@ -62,7 +62,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -124,7 +125,7 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  */
 public class ContentTypeManager  {
 	
-	protected static Logger log = Logger.getLogger(ContentTypeManager.class);
+	protected static Logger log = LoggerFactory.getLogger(ContentTypeManager.class);
 	
 	/**
 	 * Content type part name.
@@ -698,7 +699,7 @@ public class ContentTypeManager  {
 			}
 			
 		} catch (Exception e ) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw new InvalidFormatException("Bad [Content_Types].xml", e);
 		}
 		
@@ -758,7 +759,7 @@ public class ContentTypeManager  {
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
     }
@@ -776,7 +777,7 @@ public class ContentTypeManager  {
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}

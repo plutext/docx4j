@@ -60,7 +60,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xalan.trace.PrintTraceListener;
 import org.apache.xalan.trace.TraceManager;
 import org.apache.xalan.transformer.TransformerImpl;
@@ -81,7 +82,7 @@ import org.xml.sax.SAXException;
 
 public class XmlUtils {
 	
-	private static Logger log = Logger.getLogger(XmlUtils.class);	
+	private static Logger log = LoggerFactory.getLogger(XmlUtils.class);	
 		
 	// See http://www.edankert.com/jaxpimplementations.html for
 	// a helpful list.
@@ -1061,7 +1062,7 @@ public class XmlUtils {
             }
             return result;
         } catch (XPathExpressionException e) {
-            log.error(e);
+			log.error("Problem with '" + xpathExpression + "'", e);
             throw new RuntimeException(e);
         }
     }	

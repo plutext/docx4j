@@ -23,7 +23,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.convert.out.ConversionSectionWrappers;
@@ -63,7 +64,7 @@ import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
-	public static Logger log = Logger.getLogger(Conversion.class);
+	public static Logger log = LoggerFactory.getLogger(Conversion.class);
 	
 	
 	public static boolean isLoggingEnabled() {
@@ -651,9 +652,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			return docfrag;
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -842,9 +841,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			return docfrag;
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -974,9 +971,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			return docfrag;
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -1064,9 +1059,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
 		return ret;
 	}

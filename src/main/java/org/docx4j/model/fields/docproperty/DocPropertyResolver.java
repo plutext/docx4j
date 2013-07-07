@@ -1,6 +1,7 @@
 package org.docx4j.model.fields.docproperty;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.model.fields.FieldFormattingException;
 import org.docx4j.model.fields.FieldValueException;
@@ -9,7 +10,7 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 
 public class DocPropertyResolver {
 	
-	private static Logger log = Logger.getLogger(DocPropertyResolver.class);		
+	private static Logger log = LoggerFactory.getLogger(DocPropertyResolver.class);		
 	
 
 	/* Needs access to the following parts:

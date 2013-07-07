@@ -20,11 +20,12 @@
 
 package org.docx4j.utils;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceUtils {
 	
-	protected static Logger log = Logger.getLogger(ResourceUtils.class);	
+	protected static Logger log = LoggerFactory.getLogger(ResourceUtils.class);	
 	
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {

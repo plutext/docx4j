@@ -44,7 +44,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 //import org.apache.jackrabbit.core.TransientRepository;  // Testing only
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.docx4j.JcrNodeMapper.NodeMapper;
 import org.docx4j.jaxb.Context;
@@ -95,7 +96,7 @@ public class SaveToJCR {
 	 *
 	 */	
 	
-	private static Logger log = Logger.getLogger(SaveToJCR.class);		
+	private static Logger log = LoggerFactory.getLogger(SaveToJCR.class);		
 
 	
 	public SaveToJCR(OpcPackage p, NodeMapper nodeMapper, Session jcrSession) {

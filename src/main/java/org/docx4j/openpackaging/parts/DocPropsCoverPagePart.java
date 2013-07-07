@@ -21,7 +21,8 @@ package org.docx4j.openpackaging.parts;
 
 import javax.xml.bind.JAXBContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -42,7 +43,7 @@ public class DocPropsCoverPagePart extends JaxbCustomXmlDataStoragePart<CoverPag
 		</CoverPageProperties>	
 	 */
 	
-	private static Logger log = Logger.getLogger(DocPropsCoverPagePart.class);
+	private static Logger log = LoggerFactory.getLogger(DocPropsCoverPagePart.class);
 	
 	public DocPropsCoverPagePart(PartName partName) throws InvalidFormatException {
 		super(partName);

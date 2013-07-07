@@ -21,7 +21,8 @@ package org.docx4j.model.properties.paragraph;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -35,7 +36,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Indent extends AbstractParagraphProperty {
 	
-	protected static Logger log = Logger.getLogger(Indent.class);		
+	protected static Logger log = LoggerFactory.getLogger(Indent.class);		
 		
 	public final static String CSS_NAME = "margin-left";  // Use 'margin-left' instead of 'left' for CSS.
 	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.

@@ -23,7 +23,8 @@ import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -40,7 +41,7 @@ import org.xml.sax.InputSource;
  */
 public abstract class AbstractMessageWriter {
 
-	public static Logger log = Logger.getLogger(AbstractMessageWriter.class);
+	public static Logger log = LoggerFactory.getLogger(AbstractMessageWriter.class);
 	
 	public DocumentFragment notImplemented(NodeIterator nodes, String message) {
 

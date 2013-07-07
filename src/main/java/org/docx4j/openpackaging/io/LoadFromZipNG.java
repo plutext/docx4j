@@ -43,7 +43,8 @@ import java.util.zip.ZipInputStream;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -88,7 +89,7 @@ public class LoadFromZipNG extends Load {
 	
 	//public HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	
 	
-	private static Logger log = Logger.getLogger(LoadFromZipNG.class);
+	private static Logger log = LoggerFactory.getLogger(LoadFromZipNG.class);
 
 	// Testing
 	public static void main(String[] args) throws Exception {

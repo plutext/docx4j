@@ -30,7 +30,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrappers;
@@ -96,7 +97,7 @@ import org.w3c.dom.traversal.NodeIterator;
 public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	
 	
-	protected static Logger log = Logger.getLogger(HtmlExporterNG2.class);
+	protected static Logger log = LoggerFactory.getLogger(HtmlExporterNG2.class);
 	
 	public static void log(String message ) {
 		
@@ -456,9 +457,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			return docfrag;
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -566,9 +565,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			return docfrag;
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;

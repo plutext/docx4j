@@ -35,7 +35,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
@@ -80,7 +81,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class OpenDoPEIntegrity {
 	
-	private static Logger log = Logger.getLogger(OpenDoPEIntegrity.class);	
+	private static Logger log = LoggerFactory.getLogger(OpenDoPEIntegrity.class);	
 	
 	private HashMap<String, String> commentRangeStart;  // value doesn't matter
 	private HashMap<String, String> commentRangeEnd;

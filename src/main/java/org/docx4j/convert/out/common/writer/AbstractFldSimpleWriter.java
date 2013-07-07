@@ -26,7 +26,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
@@ -46,7 +47,7 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	
-	private static Logger log = Logger.getLogger(AbstractFldSimpleWriter.class);			
+	private static Logger log = LoggerFactory.getLogger(AbstractFldSimpleWriter.class);			
 	
 	public interface FldSimpleWriterHandler {
 		public String getName();

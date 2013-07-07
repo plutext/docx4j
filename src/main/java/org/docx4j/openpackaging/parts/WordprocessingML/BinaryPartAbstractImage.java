@@ -37,7 +37,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlgraphics.image.loader.ImageInfo;
 import org.apache.xmlgraphics.image.loader.ImageManager;
 import org.apache.xmlgraphics.image.loader.ImageSessionContext;
@@ -68,7 +69,7 @@ import org.pptx4j.pml.Presentation.SldSz;
 
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
-	protected static Logger log = Logger.getLogger(BinaryPartAbstractImage.class);
+	protected static Logger log = LoggerFactory.getLogger(BinaryPartAbstractImage.class);
 	final static String IMAGE_DIR_PREFIX = "/word/media/";
 	final static String IMAGE_NAME_PREFIX = "image";
 	

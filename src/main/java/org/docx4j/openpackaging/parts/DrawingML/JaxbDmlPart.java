@@ -81,7 +81,7 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 //			log.debug( this.getClass().getName() + " unmarshalled" );									
 //
 //		} catch (JAXBException e ) {
-//			log.error(e);
+//			log.error(e.getMessage(), e);
 //			throw e;
 //		}
 //		return jaxbElement;

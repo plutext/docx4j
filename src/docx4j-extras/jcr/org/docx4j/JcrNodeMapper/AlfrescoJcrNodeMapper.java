@@ -25,13 +25,14 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.utils.BufferUtil;
 import java.io.IOException;
 
 public class AlfrescoJcrNodeMapper implements NodeMapper {
 
-	private static Logger log = Logger.getLogger(AlfrescoJcrNodeMapper.class);	
+	private static Logger log = LoggerFactory.getLogger(AlfrescoJcrNodeMapper.class);	
 	
 	public  Node getContentNode(Node node)  throws PathNotFoundException, RepositoryException {
 		

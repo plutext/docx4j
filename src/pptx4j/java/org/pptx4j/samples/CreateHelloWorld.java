@@ -21,7 +21,8 @@
 package org.pptx4j.samples;
 
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -39,7 +40,7 @@ import org.pptx4j.pml.Shape;
  */
 public class CreateHelloWorld  {
 	
-	protected static Logger log = Logger.getLogger(CreateHelloWorld.class);
+	protected static Logger log = LoggerFactory.getLogger(CreateHelloWorld.class);
 		
 	public static void main(String[] args) throws Exception {
 

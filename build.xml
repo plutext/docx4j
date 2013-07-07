@@ -14,27 +14,32 @@
 	<property name="m2Repository" value="../../../.m2/repository"/>	
 	<!-- 
 	
-			org.docx4j:docx4j:jar:2.8.2-SNAPSHOT
+			org.docx4j:docx4j:jar:3.0.0-SNAPSHOT
+			+- javax.mail:mail:jar:1.4:compile
+			|  \- javax.activation:activation:jar:1.1:compile
 			+- org.docx4j:xhtmlrenderer:jar:1.0.0:compile
-			|  \- com.lowagie:itext:jar:2.1.7:compile
 			+- org.plutext:jaxb-svg11:jar:1.0.2:compile
 			+- org.plutext:jaxb-xslfo:jar:1.0.1:compile
 			+- org.plutext:jaxb-xmldsig-core:jar:1.0.0:compile
-			+- log4j:log4j:jar:1.2.15:compile
+			+- com.lowagie:itext:jar:2.1.7:compile
+			|  +- bouncycastle:bcmail-jdk14:jar:138:compile
+			|  +- bouncycastle:bcprov-jdk14:jar:138:compile
+			|  \- org.bouncycastle:bctsp-jdk14:jar:1.38:compile
+			|     +- org.bouncycastle:bcprov-jdk14:jar:1.38:compile
+			|     \- org.bouncycastle:bcmail-jdk14:jar:1.38:compile
+			+- org.slf4j:slf4j-api:jar:1.7.5:compile
 			+- commons-lang:commons-lang:jar:2.4:compile
 			+- commons-logging:commons-logging:jar:1.1.1:compile
 			+- commons-codec:commons-codec:jar:1.3:compile
+			+- commons-io:commons-io:jar:1.3.1:compile
 			+- org.apache.xmlgraphics:xmlgraphics-commons:jar:1.5:compile
-			|  \- commons-io:commons-io:jar:1.3.1:compile
 			+- org.apache.xmlgraphics:fop:jar:1.1:compile
 			|  +- org.apache.xmlgraphics:batik-svg-dom:jar:1.7:compile
 			|  |  +- org.apache.xmlgraphics:batik-anim:jar:1.7:compile
 			|  |  +- org.apache.xmlgraphics:batik-css:jar:1.7:compile
 			|  |  +- org.apache.xmlgraphics:batik-dom:jar:1.7:compile
 			|  |  +- org.apache.xmlgraphics:batik-parser:jar:1.7:compile
-			|  |  +- org.apache.xmlgraphics:batik-util:jar:1.7:compile
-			|  |  +- xml-apis:xml-apis:jar:1.3.04:compile
-			|  |  \- xml-apis:xml-apis-ext:jar:1.3.04:compile
+			|  |  \- org.apache.xmlgraphics:batik-util:jar:1.7:compile
 			|  +- org.apache.xmlgraphics:batik-bridge:jar:1.7:compile
 			|  |  +- org.apache.xmlgraphics:batik-script:jar:1.7:compile
 			|  |  \- org.apache.xmlgraphics:batik-xml:jar:1.7:compile
@@ -55,6 +60,7 @@
 			+- org.antlr:antlr-runtime:jar:3.3:compile
 			+- org.antlr:stringtemplate:jar:3.2.1:compile
 			|  \- antlr:antlr:jar:2.7.7:compile
+			\- junit:junit:jar:4.8:test
 
 		Optional:
 			+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.4.1:compile
@@ -63,6 +69,9 @@
 			|  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:3.2.0.v201206041011:compile				
 	 -->
     <path id="Maven Dependencies.libraryclasspath">
+    
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+    
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB -->
         <pathelement location="moxy/org.eclipse.persistence.moxy_2.5.0.v20130425-368d603.jar"/>
@@ -85,9 +94,7 @@
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xmldsig-core/1.0.0/jaxb-xmldsig-core-1.0.0.jar"/>
-        
-        <pathelement location="${m2Repository}/log4j/log4j/1.2.15/log4j-1.2.15.jar"/>
-        
+                
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
         <pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>

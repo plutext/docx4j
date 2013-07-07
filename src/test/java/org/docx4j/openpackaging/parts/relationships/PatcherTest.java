@@ -9,7 +9,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -24,7 +25,7 @@ import org.junit.Test;
 
 public class PatcherTest {
 
-	protected static Logger log = Logger.getLogger(PatcherTest.class);
+	protected static Logger log = LoggerFactory.getLogger(PatcherTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
 	

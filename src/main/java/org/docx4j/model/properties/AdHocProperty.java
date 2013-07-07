@@ -19,12 +19,13 @@
  */
 package org.docx4j.model.properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 public class AdHocProperty extends Property {
 	
-	protected static Logger log = Logger.getLogger(AdHocProperty.class);	
+	protected static Logger log = LoggerFactory.getLogger(AdHocProperty.class);	
 	
 	private String cssName;
 	private String cssValue;

@@ -22,7 +22,8 @@ package org.docx4j.model.datastorage;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.P.Hyperlink;
@@ -38,7 +39,7 @@ import org.docx4j.wml.P.Hyperlink;
  */
 public class BindingHyperlinkResolver {
 	
-	private static Logger log = Logger.getLogger(BindingHyperlinkResolver.class);		
+	private static Logger log = LoggerFactory.getLogger(BindingHyperlinkResolver.class);		
 	
 	public void setHyperlinkStyle (
 			String hyperlinkStyleID) {

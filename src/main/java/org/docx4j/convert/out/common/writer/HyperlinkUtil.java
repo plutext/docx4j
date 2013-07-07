@@ -2,7 +2,8 @@ package org.docx4j.convert.out.common.writer;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.model.fields.HyperlinkModel;
@@ -16,7 +17,7 @@ import org.w3c.dom.Node;
  *
  */
 public class HyperlinkUtil {
-	private final static Logger log = Logger.getLogger(HyperlinkUtil.class);
+	private final static Logger log = LoggerFactory.getLogger(HyperlinkUtil.class);
 	public static final int HTML_OUTPUT = 1;
 	public static final int FO_OUTPUT = 2;
 

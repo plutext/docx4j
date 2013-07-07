@@ -24,7 +24,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.BookmarkStartModel;
 import org.docx4j.model.Model;
@@ -67,7 +68,7 @@ import org.w3c.dom.NodeList;
  *  
  */
 public abstract class AbstractModelRegistry {
-	private final static Logger log = Logger.getLogger(AbstractModelRegistry.class);
+	private final static Logger log = LoggerFactory.getLogger(AbstractModelRegistry.class);
 	
 	private Map<String, Class> modelClasses = new HashMap<String, Class>();
 	private Map<String, ModelConverter> converterInstances = new HashMap<String, ModelConverter>();

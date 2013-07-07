@@ -22,7 +22,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
 import org.docx4j.fonts.PhysicalFont;
@@ -44,7 +45,7 @@ import org.w3c.dom.Text;
  *  
 */
 public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
-	private final static Logger log = Logger.getLogger(SymbolWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
 	
 	public SymbolWriter() {
 		super(SymbolModel.MODEL_ID);

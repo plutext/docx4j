@@ -31,7 +31,8 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.styles.StyleTree;
@@ -67,7 +68,7 @@ import org.pptx4j.pml.SldLayout;
  */
 public class PresentationMLPackage  extends OpcPackage {
 	
-	protected static Logger log = Logger.getLogger(PresentationMLPackage.class);
+	protected static Logger log = LoggerFactory.getLogger(PresentationMLPackage.class);
 		
 	
 	/**

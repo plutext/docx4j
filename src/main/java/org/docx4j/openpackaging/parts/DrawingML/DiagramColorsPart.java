@@ -25,7 +25,8 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.dml.diagram.CTColorTransform;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.ObjectFactory;
@@ -38,7 +39,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 public final class DiagramColorsPart extends JaxbDmlPart<CTColorTransform> {
 	// <xsd:element name="colorsDef" type="CT_ColorTransform">
 	
-	private static Logger log = Logger.getLogger(DiagramColorsPart.class);			
+	private static Logger log = LoggerFactory.getLogger(DiagramColorsPart.class);			
 	
 	public DiagramColorsPart(PartName partName) throws InvalidFormatException {
 		super(partName);

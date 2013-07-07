@@ -4,7 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
@@ -32,7 +33,7 @@ import org.w3c.dom.Document;
  */
 public class PartialDeepCopy {
 	
-	protected static Logger log = Logger.getLogger(PartialDeepCopy.class);
+	protected static Logger log = LoggerFactory.getLogger(PartialDeepCopy.class);
 	
 	
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {

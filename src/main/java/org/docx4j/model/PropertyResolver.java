@@ -9,7 +9,8 @@ import java.util.Stack;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
@@ -93,7 +94,7 @@ import org.docx4j.wml.TblPr;
  */
 public class PropertyResolver {
 	
-	private static Logger log = Logger.getLogger(PropertyResolver.class);
+	private static Logger log = LoggerFactory.getLogger(PropertyResolver.class);
 	
 	private DocDefaults docDefaults;	
 	private PPr documentDefaultPPr;

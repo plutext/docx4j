@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -41,7 +42,7 @@ import org.docx4j.wml.SectPr.PgSz;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class ConversionSectionWrapperFactory {
-	protected static Logger log = Logger.getLogger(ConversionSectionWrapperFactory.class);
+	protected static Logger log = LoggerFactory.getLogger(ConversionSectionWrapperFactory.class);
 	
 	protected static class SdtBlockFinder extends CallbackImpl {
 

@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.openpackaging.parts.Part;
@@ -20,7 +21,7 @@ import org.w3c.dom.Node;
  */
 public class HyperlinkModel extends Model {
 	
-	private static Logger log = Logger.getLogger(HyperlinkModel.class);
+	private static Logger log = LoggerFactory.getLogger(HyperlinkModel.class);
 	
 	public static final String MODEL_ID = "w:hyperlink";
 	

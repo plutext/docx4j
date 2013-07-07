@@ -38,7 +38,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
@@ -86,7 +87,7 @@ import org.w3c.dom.Document;
  */
 public class FlatOpcXmlCreator implements Output {
 	
-	private static Logger log = Logger.getLogger(FlatOpcXmlCreator.class);				
+	private static Logger log = LoggerFactory.getLogger(FlatOpcXmlCreator.class);				
 	
 	public FlatOpcXmlCreator(OpcPackage p) {
 		
@@ -244,7 +245,7 @@ public class FlatOpcXmlCreator implements Output {
 				log.info( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {
 				e.printStackTrace();
-				log.error(e);
+				log.error("Problem saving part " + partName, e);
 				throw new Docx4JException("Problem saving part " + partName, e);
 			} 		        
 		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
@@ -255,7 +256,7 @@ public class FlatOpcXmlCreator implements Output {
 				log.info("PUT SUCCESS: " + partName);
 			} catch (Exception e) {
 				e.printStackTrace();
-				log.error(e);
+				log.error("Problem saving part " + partName, e);
 				throw new Docx4JException("Problem saving part " + partName, e);
 			} 		        
 							
@@ -465,7 +466,7 @@ public class FlatOpcXmlCreator implements Output {
 					+ "</pkg:binaryData>" + "</pkg:part>";
 		} catch (UnsupportedEncodingException e) {
 			// I assume system supports UTF-8 !!
-			log.error(e);
+			log.error(e.getMessage(), e);
 			return null;
 		}
 		

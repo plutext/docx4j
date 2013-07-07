@@ -1,10 +1,11 @@
 package org.docx4j.model.listnumbering;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NumberFormatLowerLetter extends NumberFormat {
 	
-	protected static Logger log = Logger.getLogger(NumberFormatLowerLetter.class);
+	protected static Logger log = LoggerFactory.getLogger(NumberFormatLowerLetter.class);
 	
 	public String format( int in ) {
 		

@@ -15,7 +15,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -35,7 +36,7 @@ import org.docx4j.wml.Numbering.AbstractNum.MultiLevelType;
  */
 public class Word2003XmlConverter {
 	
-	private static Logger log = Logger.getLogger(Word2003XmlConverter.class);
+	private static Logger log = LoggerFactory.getLogger(Word2003XmlConverter.class);
 	
 	static Templates xslt;	
 	
@@ -52,10 +53,10 @@ public class Word2003XmlConverter {
 			
 		} catch (IOException e) {
 			e.printStackTrace();
-			log.error(e);
+			log.error("Couldn't setup 2003-import.xslt", e);
 		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();
-			log.error(e);
+			log.error("Couldn't setup 2003-import.xslt", e);
 		}
 	}	
 

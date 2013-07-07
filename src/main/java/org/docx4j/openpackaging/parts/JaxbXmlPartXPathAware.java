@@ -35,7 +35,8 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
@@ -65,7 +66,7 @@ import org.w3c.dom.Node;
 public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> 
 implements XPathEnabled<E> {
 	
-	protected static Logger log = Logger.getLogger(JaxbXmlPartXPathAware.class);
+	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPartXPathAware.class);
 
 	public JaxbXmlPartXPathAware(PartName partName)
 			throws InvalidFormatException {
@@ -120,9 +121,9 @@ implements XPathEnabled<E> {
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 			} catch (Docx4JException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 			} finally {
 				IOUtils.closeQuietly(is);
 			}		
@@ -384,7 +385,7 @@ implements XPathEnabled<E> {
 						
 					}
 				} else {
-					log.error(ue);
+					log.error(ue.getMessage(), ue);
 					log.error(".. and mark not supported");
 					throw ue;
 				}
@@ -444,7 +445,7 @@ implements XPathEnabled<E> {
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}

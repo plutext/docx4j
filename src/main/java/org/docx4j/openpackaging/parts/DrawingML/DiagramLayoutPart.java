@@ -39,7 +39,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTDiagramDefinition;
@@ -61,7 +62,7 @@ import org.xml.sax.InputSource;
 public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 	// <xsd:element name="layoutDef" type="CT_DiagramDefinition">
 	
-	private static Logger log = Logger.getLogger(DiagramLayoutPart.class);			
+	private static Logger log = LoggerFactory.getLogger(DiagramLayoutPart.class);			
 	
 	public DiagramLayoutPart(PartName partName) throws InvalidFormatException {
 		super(partName);

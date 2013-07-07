@@ -38,7 +38,8 @@ import java.util.regex.Pattern;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -79,7 +80,7 @@ import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {
 
-	private static Logger log = Logger.getLogger(OpenDoPEHandler.class);
+	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandler.class);
 
 	public OpenDoPEHandler(WordprocessingMLPackage wordMLPackage)
 			throws Docx4JException {
@@ -583,7 +584,7 @@ public class OpenDoPEHandler {
 	 */
 	private class ShallowTraversor implements TraversalUtil.Callback {
 
-		// private static Logger log = Logger.getLogger(ShallowTraversor.class);
+		// private static Logger log = LoggerFactory.getLogger(ShallowTraversor.class);
 
 		WordprocessingMLPackage wordMLPackage;
 
@@ -798,7 +799,7 @@ public class OpenDoPEHandler {
 		final Matcher stripPatternMatcher = stripConditionArgPattern
 				.matcher(tagVal);
 		if (!stripPatternMatcher.matches()) {
-			log.fatal("Cannot find condition tag in sdtPr/tag while setting conditionFalse; something is wrong with " + tagVal);
+			log.error("Cannot find condition tag in sdtPr/tag while setting conditionFalse; something is wrong with " + tagVal);
 			return newContent;
 		}
 		final String emptyConditionValue = BINDING_RESULT_CONDITION_FALSE + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
@@ -964,7 +965,7 @@ public class OpenDoPEHandler {
 		final Matcher stripPatternMatcher = stripRepeatArgPattern
 				.matcher(tagVal);
 		if (!stripPatternMatcher.matches()) {
-			log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
+			log.error("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
 			return newContent;
 		}
 		final String emptyRepeatValue = BINDING_RESULT_RPTD_ZERO + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
@@ -1029,7 +1030,7 @@ public class OpenDoPEHandler {
 		final Matcher stripPatternMatcher = stripRepeatArgPattern
 				.matcher(tagVal);
 		if (!stripPatternMatcher.matches()) {
-			log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
+			log.error("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
 			return;
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
@@ -1040,7 +1041,7 @@ public class OpenDoPEHandler {
 
 	class DeepTraversor implements TraversalUtil.Callback {
 
-		// private static Logger log = Logger.getLogger(DeepTraversor.class);
+		// private static Logger log = LoggerFactory.getLogger(DeepTraversor.class);
 
 		int index = 0;
 		String xpathBase = null;
@@ -1367,7 +1368,7 @@ public class OpenDoPEHandler {
 		try {
 			return part.xpathGetNodes(xpath, prefixMappings);
 		} catch (Docx4JException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}

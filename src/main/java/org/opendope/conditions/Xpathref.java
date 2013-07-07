@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.sdt.QueryString;
@@ -48,7 +49,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 @XmlRootElement(name = "xpathref")
 public class Xpathref implements Evaluable {
 
-	private static Logger log = Logger.getLogger(Xpathref.class);
+	private static Logger log = LoggerFactory.getLogger(Xpathref.class);
 	
     @XmlAttribute(required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)

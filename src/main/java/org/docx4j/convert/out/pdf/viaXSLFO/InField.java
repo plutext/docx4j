@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.STFldCharType;
@@ -10,7 +11,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
 public class InField {
-	protected static Logger log = Logger.getLogger(InField.class);		
+	protected static Logger log = LoggerFactory.getLogger(InField.class);		
 	
 	private boolean inField = false;
 	

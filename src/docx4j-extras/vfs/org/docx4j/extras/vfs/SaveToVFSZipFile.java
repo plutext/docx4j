@@ -26,7 +26,8 @@ import java.io.OutputStream;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.VFS;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -42,7 +43,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
  *
  */
 public class SaveToVFSZipFile {
-	private static Logger log = Logger.getLogger(SaveToVFSZipFile.class);				
+	private static Logger log = LoggerFactory.getLogger(SaveToVFSZipFile.class);				
 	
 	private SaveToZipFile _saveToZipFile;
 	

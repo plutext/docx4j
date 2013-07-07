@@ -24,7 +24,8 @@ limitations under the License.
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -42,7 +43,7 @@ import org.docx4j.wml.SectPr;
 
 public class HeaderFooterPolicy {
 
-	protected static Logger log = Logger.getLogger(HeaderFooterPolicy.class);	
+	protected static Logger log = LoggerFactory.getLogger(HeaderFooterPolicy.class);	
 	
 	private HeaderPart firstHeaderActive;
 	private HeaderPart firstHeader;  // Need this so it can be copied in next section, even if not used in this one

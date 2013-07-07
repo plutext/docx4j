@@ -42,7 +42,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
@@ -147,7 +148,7 @@ import org.xml.sax.InputSource;
  */
 public class XHTMLImporter {
 	
-	public static Logger log = Logger.getLogger(XHTMLImporter.class);		
+	public static Logger log = LoggerFactory.getLogger(XHTMLImporter.class);		
 	    
 	/**
 	 * Configure, how the Importer styles hyperlinks
@@ -1135,7 +1136,7 @@ public class XHTMLImporter {
 		} catch (JAXBException je) {
 			// Shouldn't happen
 			je.printStackTrace();
-			log.error(e);
+			log.error(je.getMessage(), je);
 		}
 
 		if (num==null) {

@@ -3,12 +3,13 @@ package org.docx4j;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.utils.ResourceUtils;
 
 public class Docx4jProperties {
 	
-	protected static Logger log = Logger.getLogger(Docx4jProperties.class);
+	protected static Logger log = LoggerFactory.getLogger(Docx4jProperties.class);
 	
 	private static Properties properties;
 	

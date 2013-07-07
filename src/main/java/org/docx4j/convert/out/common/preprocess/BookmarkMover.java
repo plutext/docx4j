@@ -28,7 +28,8 @@ import java.util.TreeSet;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -50,7 +51,7 @@ import org.docx4j.wml.P;
  */
 public class BookmarkMover {
 	
-	protected static Logger log = Logger.getLogger(BookmarkMover.class);	
+	protected static Logger log = LoggerFactory.getLogger(BookmarkMover.class);	
 	
 	
 	/** Move bookmarks into a paragraph

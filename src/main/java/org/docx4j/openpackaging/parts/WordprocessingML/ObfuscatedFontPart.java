@@ -20,7 +20,8 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EncodingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
@@ -40,7 +41,7 @@ import java.net.MalformedURLException;
 
 public class ObfuscatedFontPart extends BinaryPart {
 
-	private static Logger log = Logger.getLogger(ObfuscatedFontPart.class);		
+	private static Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);		
 	
     /** docx4j's user directory name */
     private static final String DOCX4J_USER_DIR = ".docx4all"; 

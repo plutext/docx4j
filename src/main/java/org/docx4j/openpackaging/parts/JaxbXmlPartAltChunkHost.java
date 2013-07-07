@@ -34,7 +34,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
@@ -63,7 +64,7 @@ import org.w3c.dom.Node;
  */
 public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E> implements AltChunkInterface {
 	
-	protected static Logger log = Logger.getLogger(JaxbXmlPartAltChunkHost.class);
+	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPartAltChunkHost.class);
 
 	public JaxbXmlPartAltChunkHost(PartName partName)
 			throws InvalidFormatException {

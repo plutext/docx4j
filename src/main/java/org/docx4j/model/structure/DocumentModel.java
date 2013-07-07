@@ -23,7 +23,8 @@ package org.docx4j.model.structure;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
@@ -52,7 +53,7 @@ import org.docx4j.wml.SectPr;
  */
 public class DocumentModel {
 	
-	protected static Logger log = Logger.getLogger(DocumentModel.class);		
+	protected static Logger log = LoggerFactory.getLogger(DocumentModel.class);		
 	
 	private List<SectionWrapper> sections; 	
 	private WordprocessingMLPackage wordMLPackage;

@@ -10,7 +10,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -84,7 +85,7 @@ import org.docx4j.wml.Text;
  */
 public class MailMerger {
 
-	private static Logger log = Logger.getLogger(MailMerger.class);		
+	private static Logger log = LoggerFactory.getLogger(MailMerger.class);		
 
 	/**
 	 * A "poor man's" approach, which generates the mail merge  

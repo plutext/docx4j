@@ -32,7 +32,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -54,7 +55,7 @@ import org.w3c.dom.Node;
 
 public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 	
-	protected static Logger log = Logger.getLogger(JaxbPmlPart.class);
+	protected static Logger log = LoggerFactory.getLogger(JaxbPmlPart.class);
 	
 	
 	public final static String COMMON_SLIDE_DATA = 

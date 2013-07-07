@@ -5,7 +5,8 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -36,7 +37,7 @@ import org.docx4j.wml.Text;
  */
 public class FieldUpdater {
 	
-	private static Logger log = Logger.getLogger(FieldUpdater.class);			
+	private static Logger log = LoggerFactory.getLogger(FieldUpdater.class);			
 	
 	WordprocessingMLPackage wordMLPackage;
 	DocPropertyResolver docPropertyResolver;

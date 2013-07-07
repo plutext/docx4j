@@ -6,7 +6,8 @@ package org.docx4j.model.fields;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 
 /**
@@ -19,7 +20,7 @@ import org.docx4j.Docx4jProperties;
  */
 public class DateFormatInferencer {
 	
-	private static Logger log = Logger.getLogger(DateFormatInferencer.class);		
+	private static Logger log = LoggerFactory.getLogger(DateFormatInferencer.class);		
 	
 	private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>();
 	

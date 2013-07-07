@@ -20,7 +20,8 @@
 
 package org.docx4j.openpackaging.parts;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -63,7 +64,7 @@ import org.apache.log4j.Logger;
  */
 public final class ExternalTarget {
 
-	private static Logger log = Logger.getLogger(ExternalTarget.class);	
+	private static Logger log = LoggerFactory.getLogger(ExternalTarget.class);	
 	
 	String target;
 	public String getValue() {

@@ -25,7 +25,8 @@ import java.util.List;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.fop.apps.MimeConstants;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -127,7 +128,7 @@ public class XSLFOExporterNonXSLT {
 	 * - w:customXml
 	 */
 
-	private static Logger log = Logger.getLogger(XSLFOExporterNonXSLT.class);
+	private static Logger log = LoggerFactory.getLogger(XSLFOExporterNonXSLT.class);
 		
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
@@ -564,9 +565,7 @@ public class XSLFOExporterNonXSLT {
         
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     }
 
@@ -660,9 +659,7 @@ public class XSLFOExporterNonXSLT {
 			
 						
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
     }
@@ -792,7 +789,7 @@ public class XSLFOExporterNonXSLT {
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //			System.out.println(e.toString() );
-//			log.error(e);
+//			log.error(e.getMessage(), e);
 //		} 
 //    	
 //    	return null;

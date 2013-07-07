@@ -23,7 +23,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
@@ -89,7 +90,7 @@ public class PropertyFactory {
 	 * a Property object is paragraph or run level.
 	 */
 	
-	protected static Logger log = Logger.getLogger(PropertyFactory.class);
+	protected static Logger log = LoggerFactory.getLogger(PropertyFactory.class);
 	
 	public static List<Property> createProperties(CTTblPrBase  tblPr) {
 		

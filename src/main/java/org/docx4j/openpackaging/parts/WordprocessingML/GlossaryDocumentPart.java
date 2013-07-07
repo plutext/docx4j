@@ -24,7 +24,8 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -35,7 +36,7 @@ import org.docx4j.wml.GlossaryDocument;
 public final class GlossaryDocumentPart extends DocumentPart<GlossaryDocument> {
 
 	
-	private static Logger log = Logger.getLogger(GlossaryDocumentPart.class);
+	private static Logger log = LoggerFactory.getLogger(GlossaryDocumentPart.class);
 	
 	public GlossaryDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);

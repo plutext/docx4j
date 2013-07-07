@@ -29,7 +29,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -60,7 +61,7 @@ public class BestMatchingMapper extends Mapper {
 	
 	
 	
-	protected static Logger log = Logger.getLogger(BestMatchingMapper.class);
+	protected static Logger log = LoggerFactory.getLogger(BestMatchingMapper.class);
 
 	public BestMatchingMapper() {
 		super();

@@ -30,7 +30,8 @@ import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.FileTypeSelector;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.provider.local.LocalFile;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.extras.vfs.VFSUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.Load;
@@ -46,7 +47,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
  */
 public class LoadFromVFSZipFile extends Load {
 	
-	private static Logger log = Logger.getLogger(LoadFromVFSZipFile.class);
+	private static Logger log = LoggerFactory.getLogger(LoadFromVFSZipFile.class);
 
 	// Testing
 	public static void main(String[] args) throws Exception {

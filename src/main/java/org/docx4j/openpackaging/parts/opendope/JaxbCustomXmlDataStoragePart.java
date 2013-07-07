@@ -77,7 +77,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		try {
 			this.unmarshal(doc.getDocumentElement() );
 		} catch (JAXBException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 		}
 	}
 	

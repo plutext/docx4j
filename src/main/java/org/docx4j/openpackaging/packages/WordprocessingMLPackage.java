@@ -33,7 +33,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
@@ -98,7 +99,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 	 * word/document.xml
 	 */
 	
-	protected static Logger log = Logger.getLogger(WordprocessingMLPackage.class);
+	protected static Logger log = LoggerFactory.getLogger(WordprocessingMLPackage.class);
 		
 	
 	// Main document
@@ -465,7 +466,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		} catch (Exception e) {
 			// TODO: handle exception
 			//e.printStackTrace();	
-			log.error(e);
+			log.error(e.getMessage(), e);
 		}
 		
 		// Metadata: docx4j 2.7.1 can populate some of this from docx4j.properties

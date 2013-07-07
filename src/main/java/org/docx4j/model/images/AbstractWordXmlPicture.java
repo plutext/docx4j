@@ -3,7 +3,8 @@ package org.docx4j.model.images;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -23,7 +24,7 @@ import org.w3c.dom.Text;
  */
 public abstract class AbstractWordXmlPicture {
 	
-	protected static Logger log = Logger.getLogger(AbstractWordXmlPicture.class);
+	protected static Logger log = LoggerFactory.getLogger(AbstractWordXmlPicture.class);
 	
 	WordprocessingMLPackage wmlPackage;
     protected Dimensions dimensions;
@@ -78,7 +79,7 @@ public abstract class AbstractWordXmlPicture {
 				
 			}
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			 try {
 				d = factory.newDocumentBuilder().newDocument();
@@ -168,7 +169,7 @@ public abstract class AbstractWordXmlPicture {
             
         } catch (Exception e) {
         	e.printStackTrace();
-        	log.error(e);
+        	log.error(e.getMessage(), e);
             return null;
         }
         
@@ -244,7 +245,7 @@ public abstract class AbstractWordXmlPicture {
             return document;
             
         } catch (Exception e) {
-        	log.error(e);
+        	log.error(e.getMessage(), e);
             return null;
         }
         

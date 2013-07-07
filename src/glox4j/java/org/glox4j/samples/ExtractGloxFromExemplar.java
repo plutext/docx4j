@@ -4,7 +4,8 @@ import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTDescription;
@@ -43,7 +44,7 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  */
 public class ExtractGloxFromExemplar extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(ExtractGloxFromExemplar.class);						
+	private static Logger log = LoggerFactory.getLogger(ExtractGloxFromExemplar.class);						
 
 	/**
 	 * @param args

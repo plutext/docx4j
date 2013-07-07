@@ -15,7 +15,8 @@ import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /* For FOP 1.1 and earlier,
  * 
@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
  */
 public class FopFactoryUtil {
 	
-	protected static Logger log = Logger.getLogger(FopFactoryUtil.class);
+	protected static Logger log = LoggerFactory.getLogger(FopFactoryUtil.class);
 	//used as a ThreadLocal
 	protected static Map<Long, FopFactory> fopFactories = new TreeMap<Long, FopFactory>();
 	// Any reason for many FopFactory?  See http://wiki.apache.org/xmlgraphics-fop/FopFactoryConfiguration
@@ -130,7 +131,7 @@ public class FopFactoryUtil {
 			
 		} catch (Exception e) {
 			log.warn("Can't set up FOP svn; " + e.getMessage() );
-			log.debug(e);
+			log.debug(e.getMessage(), e);
 			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
 			
 			// legacy FOP 1.0 or 1.1 config.

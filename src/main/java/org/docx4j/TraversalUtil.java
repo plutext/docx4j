@@ -25,7 +25,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
@@ -77,7 +78,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 public class TraversalUtil {
 
-	private static Logger log = Logger.getLogger(TraversalUtil.class);
+	private static Logger log = LoggerFactory.getLogger(TraversalUtil.class);
 	
 	public interface Callback {
 

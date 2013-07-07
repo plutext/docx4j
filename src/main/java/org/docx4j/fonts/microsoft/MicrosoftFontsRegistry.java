@@ -7,13 +7,14 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFonts;
 
 public class MicrosoftFontsRegistry {
 
-	protected static Logger log = Logger.getLogger(MicrosoftFontsRegistry.class);
+	protected static Logger log = LoggerFactory.getLogger(MicrosoftFontsRegistry.class);
 
 	private static HashMap<String, MicrosoftFonts.Font> msFontsByName;
 	public final static Map<String, MicrosoftFonts.Font> getMsFonts() {

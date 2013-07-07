@@ -29,7 +29,8 @@ import java.io.OutputStream;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -53,7 +54,7 @@ import org.w3c.dom.Document;
  */
 public class UnzippedPartStore implements PartStore {
 
-	private static Logger log = Logger.getLogger(Load3.class);
+	private static Logger log = LoggerFactory.getLogger(Load3.class);
 
 
 	private File dir;

@@ -1,6 +1,7 @@
 package org.glox4j.openpackaging.packages;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -22,7 +23,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  */
 public class GloxPackage  extends OpcPackage {
 	
-	protected static Logger log = Logger.getLogger(GloxPackage.class);
+	protected static Logger log = LoggerFactory.getLogger(GloxPackage.class);
 		
 	
 	/**

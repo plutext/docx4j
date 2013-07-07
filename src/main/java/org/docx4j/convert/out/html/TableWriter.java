@@ -2,7 +2,8 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
@@ -22,7 +23,7 @@ import org.docx4j.model.styles.StyleTree.AugmentedStyle;
  *  
 */
 public class TableWriter extends AbstractTableWriter {
-	protected final static Logger logger = Logger.getLogger(TableWriter.class);
+	protected final static Logger logger = LoggerFactory.getLogger(TableWriter.class);
 	
 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
 	protected final static String TABLE_INDENT = "margin-left"; 

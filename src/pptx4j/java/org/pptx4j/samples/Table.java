@@ -24,7 +24,8 @@ package org.pptx4j.samples;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPoint2D;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -52,7 +53,7 @@ import org.pptx4j.pml.CTGraphicalObjectFrame;
  */
 public class Table  {
 	
-	protected static Logger log = Logger.getLogger(Table.class);
+	protected static Logger log = LoggerFactory.getLogger(Table.class);
 		
 	public static void main(String[] args) throws Exception {
 

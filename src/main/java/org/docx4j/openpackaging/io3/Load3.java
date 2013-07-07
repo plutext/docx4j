@@ -32,7 +32,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -86,7 +87,7 @@ import org.docx4j.relationships.Relationship;
  */
 public class Load3 extends Load {
 		
-	private static Logger log = Logger.getLogger(Load3.class);
+	private static Logger log = LoggerFactory.getLogger(Load3.class);
 
 
 	private PartStore partStore;	

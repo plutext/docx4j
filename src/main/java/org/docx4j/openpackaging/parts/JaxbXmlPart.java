@@ -34,7 +34,8 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -69,7 +70,7 @@ import org.docx4j.wml.Numbering;
  * */
 public abstract class JaxbXmlPart<E> extends Part {
 	
-	protected static Logger log = Logger.getLogger(JaxbXmlPart.class);
+	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPart.class);
 	
 	// This class is abstract
 	// Most applications ought to be able to instantiate
@@ -126,9 +127,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 			} catch (Docx4JException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 			} finally {
 				IOUtils.closeQuietly(is);
 			}			
@@ -256,7 +257,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 
 		} catch (JAXBException e) {
 //			e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}
@@ -304,7 +305,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}
@@ -362,7 +363,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 					}
 											
 				} else {
-					log.error(ue);
+					log.error(ue.getMessage(), ue);
 					log.error(".. and mark not supported");
 					throw ue;
 				}
@@ -370,7 +371,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 			
 
 		} catch (JAXBException e ) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
     	
@@ -416,7 +417,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}	

@@ -24,7 +24,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
@@ -72,7 +73,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	
-	protected static Logger log = Logger.getLogger(WordXmlPictureE10.class);
+	protected static Logger log = LoggerFactory.getLogger(WordXmlPictureE10.class);
 	
 	Pict pict;
 	    
@@ -247,7 +248,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 				d = factory.newDocumentBuilder().newDocument();
 	    		return d.createDocumentFragment();
 			} catch (ParserConfigurationException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 				return null;
 			}  
 			
@@ -290,7 +291,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 				d = factory.newDocumentBuilder().newDocument();
 	    		return d.createDocumentFragment();
 			} catch (ParserConfigurationException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 				return null;
 			}  
 			
@@ -401,11 +402,11 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	if (val.endsWith("pt") ) {
     		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="pt";
-    		log.debug(f);    		
+    		log.debug(f +"pt");    		
     	} else if (val.endsWith("in") ) {
     		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="in";
-    		log.debug(f);    		
+    		log.debug(f + "in");    		
 
     	} else {
     		// Unknown units

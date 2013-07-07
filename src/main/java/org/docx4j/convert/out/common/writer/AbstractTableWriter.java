@@ -27,7 +27,8 @@ import java.util.TreeMap;
 import javax.xml.bind.JAXBElement;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;

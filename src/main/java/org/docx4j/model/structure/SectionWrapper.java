@@ -20,14 +20,15 @@
 package org.docx4j.model.structure;
 
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.SectPr;
 
 public class SectionWrapper {
 	
-	protected static Logger log = Logger.getLogger(SectionWrapper.class);		
+	protected static Logger log = LoggerFactory.getLogger(SectionWrapper.class);		
 	
 	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) {
 		// This should work even if sectPr is null

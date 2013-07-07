@@ -31,7 +31,8 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.JcrNodeMapper.NodeMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
@@ -64,7 +65,7 @@ import org.docx4j.relationships.Relationship;
  */
 public class LoadFromJCR extends Load {
 	
-	private static Logger log = Logger.getLogger(LoadFromJCR.class);	
+	private static Logger log = LoggerFactory.getLogger(LoadFromJCR.class);	
 
 //	// Testing - Jackrabbit only
 //	public static void main(String[] args) throws Exception {

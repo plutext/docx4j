@@ -24,7 +24,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author jharrop, azerolo
@@ -32,7 +33,7 @@ import org.apache.log4j.Logger;
  */
 public class UnitsOfMeasurement {
 	
-	private final static Logger log = Logger.getLogger(UnitsOfMeasurement.class);
+	private final static Logger log = LoggerFactory.getLogger(UnitsOfMeasurement.class);
 	
 	public final static DecimalFormat format2DP;
 	public final static int DPI;

@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -31,7 +32,7 @@ import org.docx4j.wml.NumberFormat;
  */
 public class FormattingSwitchHelper {
 	
-	private static Logger log = Logger.getLogger(FormattingSwitchHelper.class);		
+	private static Logger log = LoggerFactory.getLogger(FormattingSwitchHelper.class);		
 
 	/* http://office.microsoft.com/en-us/word-help/insert-and-format-field-codes-in-word-2010-HA101830917.aspx
 	 * Switches:

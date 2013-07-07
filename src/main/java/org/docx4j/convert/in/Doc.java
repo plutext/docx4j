@@ -24,7 +24,8 @@ package org.docx4j.convert.in;
 import java.io.FileInputStream;
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.LineSpacingDescriptor;
@@ -49,7 +50,7 @@ import org.docx4j.wml.STLineSpacingRule;
  */
 public class Doc {
 
-	private static Logger log = Logger.getLogger(Doc.class);
+	private static Logger log = LoggerFactory.getLogger(Doc.class);
 
 	/**
 	 * @param in doc file

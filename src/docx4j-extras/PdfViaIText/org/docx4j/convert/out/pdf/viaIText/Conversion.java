@@ -9,7 +9,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
@@ -42,7 +43,7 @@ import com.lowagie.text.pdf.PdfWriter;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
-	protected static Logger log = Logger.getLogger(Conversion.class);	
+	protected static Logger log = LoggerFactory.getLogger(Conversion.class);	
 	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);

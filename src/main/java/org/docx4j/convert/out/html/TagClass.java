@@ -26,7 +26,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Id;
@@ -51,7 +52,7 @@ import org.xml.sax.SAXException;
  */
 public class TagClass extends SdtTagHandler {
 
-	private static Logger log = Logger.getLogger(TagClass.class);
+	private static Logger log = LoggerFactory.getLogger(TagClass.class);
 
 	/* replaces XSLT:
 	 * 
@@ -137,9 +138,7 @@ public class TagClass extends SdtTagHandler {
 			return attachContents(docfrag, xhtmlDiv, childResults);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(e.toString());
-			log.error(e);
+			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 
@@ -161,9 +160,7 @@ public class TagClass extends SdtTagHandler {
 				return attachContents(docfrag, xhtmlDiv, resultSoFar);
 				
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println(e.toString());
-				log.error(e);
+				log.error(e.getMessage(), e);
 				throw new TransformerException(e);
 			}
 		}

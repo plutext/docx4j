@@ -19,7 +19,8 @@
  */
 package org.docx4j.model.properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
@@ -43,7 +44,7 @@ import org.w3c.dom.css.CSSValueList;
  */
 public abstract class Property {
 	
-	protected static Logger log = Logger.getLogger(Property.class);	
+	protected static Logger log = LoggerFactory.getLogger(Property.class);	
 	
 	protected Object object;
 	/**

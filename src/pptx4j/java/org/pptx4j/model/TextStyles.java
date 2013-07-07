@@ -24,7 +24,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextListStyle;
@@ -53,7 +54,7 @@ import org.pptx4j.pml.CTSlideMasterTextStyles;
 
 public class TextStyles {
 	
-	private final static Logger log = Logger.getLogger(TextStyles.class);
+	private final static Logger log = LoggerFactory.getLogger(TextStyles.class);
 	
 	
 	/*

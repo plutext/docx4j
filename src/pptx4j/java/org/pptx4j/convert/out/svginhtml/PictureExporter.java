@@ -2,7 +2,8 @@ package org.pptx4j.convert.out.svginhtml;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTPoint2D;
@@ -54,7 +55,7 @@ public class PictureExporter extends AbstractWordXmlPicture {
             
             	 */
 
-	protected static Logger log = Logger.getLogger(PictureExporter.class);	
+	protected static Logger log = LoggerFactory.getLogger(PictureExporter.class);	
 
 	public static DocumentFragment createHtmlImg(
 			SvgConversionContext context,

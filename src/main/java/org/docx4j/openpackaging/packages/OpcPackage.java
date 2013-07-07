@@ -41,7 +41,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
@@ -81,7 +82,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  */
 public class OpcPackage extends Base {
 
-	private static Logger log = Logger.getLogger(OpcPackage.class);
+	private static Logger log = LoggerFactory.getLogger(OpcPackage.class);
 
 	/**
 	 * This HashMap is intended to prevent loops during the loading 
@@ -223,7 +224,7 @@ public class OpcPackage extends Base {
 		try {
 			return OpcPackage.load(new FileInputStream(docxFile), password );
 		} catch (final FileNotFoundException e) {
-			OpcPackage.log.error(e);
+			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
 	}
@@ -371,7 +372,7 @@ public class OpcPackage extends Base {
 			FlatOpcXmlImporter xmlPackage = new FlatOpcXmlImporter(is); 
 			return xmlPackage.get(); 
 		} catch (final Exception e) {
-			OpcPackage.log.error(e);
+			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load xml from stream ",e);
 		} 
 	}
@@ -541,7 +542,7 @@ public class OpcPackage extends Base {
 				core.setJaxbElement(coreFactory.createCoreProperties() );
 				this.addTargetPart(core);			
 			} catch (InvalidFormatException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 			}
 		}
 		
@@ -567,7 +568,7 @@ public class OpcPackage extends Base {
 		 try {
 			TextUtils.extractText(sl, sw, Context.jcDocPropsCore);
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage(), e);
 		}
 		return sw.toString();				
 	}

@@ -7,7 +7,8 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.Output;
 import org.docx4j.fonts.Mapper;
@@ -34,7 +35,7 @@ import org.w3c.dom.traversal.NodeIterator;
 public abstract class AbstractHtmlExporter implements Output {
 	
 	
-	protected static Logger log = Logger.getLogger(AbstractHtmlExporter.class);
+	protected static Logger log = LoggerFactory.getLogger(AbstractHtmlExporter.class);
 	
 	
 	// Implement the interface.  
@@ -135,7 +136,7 @@ public abstract class AbstractHtmlExporter implements Output {
 		} catch (Exception e) {
 			e.printStackTrace();
 			// System.out.println(e.toString() );
-			log.error(e);
+			log.error(e.getMessage(), e);
 		} 
     	
 		return "?  ";
@@ -165,7 +166,7 @@ public abstract class AbstractHtmlExporter implements Output {
 //            docfrag.appendChild(d.getDocumentElement());        
 //            return docfrag;
 //        } catch (Exception e) {
-//        	log.error(e);
+//        	log.error(e.getMessage(), e);
 //            return null;
 //        }
 //    }    

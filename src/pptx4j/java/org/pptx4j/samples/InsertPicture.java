@@ -25,7 +25,8 @@ import java.io.File;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
@@ -44,7 +45,7 @@ import org.pptx4j.pml.Pic;
  */
 public class InsertPicture  {
 	
-	protected static Logger log = Logger.getLogger(InsertPicture.class);
+	protected static Logger log = LoggerFactory.getLogger(InsertPicture.class);
 		
 	public static void main(String[] args) throws Exception {
 

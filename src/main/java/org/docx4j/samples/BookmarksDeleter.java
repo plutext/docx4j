@@ -4,7 +4,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -20,7 +21,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class BookmarksDeleter {
 	
-	protected static Logger log = Logger.getLogger(BookmarksDeleter.class);
+	protected static Logger log = LoggerFactory.getLogger(BookmarksDeleter.class);
 	
 
 	public static void main(String[] args) throws Exception {
@@ -72,7 +73,7 @@ public class BookmarksDeleter {
 					theList.remove(deleteMe);						
 				}
 			} catch (ClassCastException cce) {
-				log.error(cce);
+				log.error(cce.getMessage(), cce);
 			}
 		}
 
@@ -98,7 +99,7 @@ public class BookmarksDeleter {
 				}
 			} catch (ClassCastException cce) {
 				log.info(mr.getParent().getClass().getName());
-				log.error(cce);
+				log.error(cce.getMessage(), cce);
 			}
 		}
 		

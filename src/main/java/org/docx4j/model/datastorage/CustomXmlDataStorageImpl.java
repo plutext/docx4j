@@ -25,7 +25,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -46,7 +47,7 @@ public class CustomXmlDataStorageImpl extends XmlPart implements CustomXmlDataSt
 		// TODO Auto-generated constructor stub
 	}
 
-	private static Logger log = Logger.getLogger(CustomXmlDataStorageImpl.class);	
+	private static Logger log = LoggerFactory.getLogger(CustomXmlDataStorageImpl.class);	
 	
 	/* (non-Javadoc)
 	 * @see org.docx4j.model.datastorage.CustomXmlDataStorage#factory()

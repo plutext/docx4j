@@ -30,14 +30,15 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 
 
 public class JaxbValidationEventHandler implements 
 ValidationEventHandler{
     
-	private static Logger log = Logger.getLogger(JaxbValidationEventHandler.class);		
+	private static Logger log = LoggerFactory.getLogger(JaxbValidationEventHandler.class);		
 	
 	private boolean shouldContinue = true;
 	public void setContinue(boolean val) {
@@ -57,10 +58,10 @@ ValidationEventHandler{
 								"org/docx4j/jaxb/mc-preprocessor.xslt"));
 				mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Problem setting up  mc-preprocessor.xslt", e);
 				throw(e);
 			} catch (TransformerConfigurationException e) {
-				log.error(e);
+				log.error("Problem setting up  mc-preprocessor.xslt", e);
 				throw(e);
 			}
 		}

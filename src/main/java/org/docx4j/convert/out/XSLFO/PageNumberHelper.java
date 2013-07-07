@@ -2,14 +2,15 @@ package org.docx4j.convert.out.XSLFO;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.SectPr;
 
 public class PageNumberHelper {
 	
-	public static Logger log = Logger.getLogger(PageNumberHelper.class);	
+	public static Logger log = LoggerFactory.getLogger(PageNumberHelper.class);	
 	
 
     public static String getPageNumberFormat(SectPr sectPr) {

@@ -24,7 +24,8 @@ import java.util.Map;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -40,7 +41,7 @@ import org.docx4j.wml.CTDataBinding;
 
 public class BindingHandler {
 	
-	private static Logger log = Logger.getLogger(BindingHandler.class);		
+	private static Logger log = LoggerFactory.getLogger(BindingHandler.class);		
 	
 //	static Templates xslt;			
 	private static XPathFactory xPathFactory;
@@ -252,7 +253,7 @@ public class BindingHandler {
 					return r;
 				}
 			} catch (Docx4JException e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 //				return null;
 				throw new InputIntegrityException(e.getMessage());
 			}

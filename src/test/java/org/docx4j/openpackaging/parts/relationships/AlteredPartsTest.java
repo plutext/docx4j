@@ -4,7 +4,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -16,7 +17,7 @@ import org.junit.Test;
 
 public class AlteredPartsTest {
 
-	protected static Logger log = Logger.getLogger(AlteredPartsTest.class);
+	protected static Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
 	/* All of the docx in resourceDir have had their docprops parts stripped

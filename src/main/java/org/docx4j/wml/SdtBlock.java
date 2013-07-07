@@ -29,7 +29,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -66,7 +67,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class SdtBlock implements SdtElement, Child
 {
 
-	private static Logger log = Logger.getLogger(SdtBlock.class);		
+	private static Logger log = LoggerFactory.getLogger(SdtBlock.class);		
 	
 	protected SdtPr sdtPr;
     protected CTSdtEndPr sdtEndPr;

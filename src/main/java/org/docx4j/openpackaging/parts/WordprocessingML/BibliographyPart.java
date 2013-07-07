@@ -3,7 +3,8 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.bibliography.CTSourceType;
 import org.docx4j.bibliography.CTSources;
@@ -16,7 +17,7 @@ import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
  */
 public class BibliographyPart extends JaxbCustomXmlDataStoragePart<JAXBElement<org.docx4j.bibliography.CTSources>> {
 	
-	private static Logger log = Logger.getLogger(BibliographyPart.class);		
+	private static Logger log = LoggerFactory.getLogger(BibliographyPart.class);		
 
 	public BibliographyPart() throws InvalidFormatException {
 		super(new PartName("/customXml/item1.xml"));

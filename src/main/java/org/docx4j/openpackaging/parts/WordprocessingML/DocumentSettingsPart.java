@@ -20,7 +20,8 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
@@ -32,7 +33,7 @@ import org.docx4j.wml.CTSettings;
 
 public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings> { 
 	
-	private final static Logger log = Logger.getLogger(DocumentSettingsPart.class);
+	private final static Logger log = LoggerFactory.getLogger(DocumentSettingsPart.class);
 	
 	// This unmarshalls as a JAXBElement; so we override getJaxbElement()
 	

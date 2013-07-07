@@ -39,9 +39,12 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.text.StrTokenizer;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -65,7 +68,7 @@ import org.w3c.dom.Text;
  * */
 public abstract class XmlPart extends Part {
 	
-	protected static Logger log = Logger.getLogger(XmlPart.class);	
+	protected static Logger log = LoggerFactory.getLogger(XmlPart.class);	
 	
 	public XmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -131,7 +134,7 @@ public abstract class XmlPart extends Part {
 			getNamespaceContext().registerPrefixMappings(prefixMappings);
 			
 			String result = xPath.evaluate(xpathString, doc );
-			if (result.equals("") && log.isEnabledFor(Level.WARN)) {
+			if (result.equals("") && log.isWarnEnabled()) {
 				// Provide diagnostics as to cause of '' result 
 				NodeList nl = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET );
 				if (nl.getLength()==0) {

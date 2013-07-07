@@ -52,7 +52,8 @@ import javax.xml.stream.events.*;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
@@ -95,7 +96,7 @@ public class Differencer {
 	 *    
 	 */
 
-	protected static Logger log = Logger.getLogger(Differencer.class);
+	protected static Logger log = LoggerFactory.getLogger(Differencer.class);
 
 
 	// For XSLT

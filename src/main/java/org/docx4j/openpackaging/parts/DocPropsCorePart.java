@@ -29,7 +29,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.CoreProperties;
 import org.docx4j.jaxb.Context;
@@ -60,7 +61,7 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 	 */
 	
 	
-	private static Logger log = Logger.getLogger(DocPropsCorePart.class);
+	private static Logger log = LoggerFactory.getLogger(DocPropsCorePart.class);
 	
 	private static XPathFactory xPathFactory;
 	private static XPath xPath;

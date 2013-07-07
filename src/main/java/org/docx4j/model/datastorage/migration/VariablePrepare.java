@@ -27,7 +27,8 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -63,7 +64,7 @@ import org.docx4j.wml.Text;
  */
 public class VariablePrepare {
 	
-	private static Logger log = Logger.getLogger(VariablePrepare.class);			
+	private static Logger log = LoggerFactory.getLogger(VariablePrepare.class);			
 	
 	/**
 	 * @param wmlPackage

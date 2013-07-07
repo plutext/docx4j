@@ -22,7 +22,8 @@ package org.docx4j.model.structure;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.STPageOrientation;
@@ -45,7 +46,7 @@ import org.docx4j.wml.SectPr.PgSz;
  */
 public class PageDimensions {
 	
-	protected static Logger log = Logger.getLogger(PageDimensions.class);
+	protected static Logger log = LoggerFactory.getLogger(PageDimensions.class);
 	
 	
 	public PageDimensions() {

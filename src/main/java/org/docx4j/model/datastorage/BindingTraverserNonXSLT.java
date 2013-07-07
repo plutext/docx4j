@@ -28,7 +28,8 @@ import java.util.StringTokenizer;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -71,7 +72,7 @@ import org.w3c.dom.DocumentFragment;
 
 public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 	
-	private static Logger log = Logger.getLogger(BindingTraverserNonXSLT.class);		
+	private static Logger log = LoggerFactory.getLogger(BindingTraverserNonXSLT.class);		
 	
 	JaxbXmlPart part;
 	org.docx4j.openpackaging.packages.OpcPackage pkg;
@@ -457,7 +458,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				}				
 				
 			} catch (Exception e) {
-				log.error(e);
+				log.error(e.getMessage(), e);
 				return null;
 			}
 			

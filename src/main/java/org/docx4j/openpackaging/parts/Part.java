@@ -33,7 +33,8 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,7 +56,7 @@ public abstract class Part extends Base {
 	/**
 	 * Logger.
 	 */
-	protected static Logger log = Logger.getLogger(Part.class);
+	protected static Logger log = LoggerFactory.getLogger(Part.class);
 
 	
 	protected OpcPackage pack;

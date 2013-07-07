@@ -33,7 +33,8 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.Callback;
@@ -57,7 +58,7 @@ import org.docx4j.relationships.Relationship;
 
 public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	
-	private static Logger log = Logger.getLogger(DiagramDataPart.class);			
+	private static Logger log = LoggerFactory.getLogger(DiagramDataPart.class);			
 	
 	public DiagramDataPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -356,7 +357,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 					ddp.getPackage(), ddp, bytes);
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error(e);
+			log.error(e.getMessage(), e);
 
 			// Can't use this image, so insert a placeholder
 			log.info(".. attempting to use broken image placeholder");

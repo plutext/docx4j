@@ -19,7 +19,8 @@
  */
 package org.docx4j.model.properties.run;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.STTextStrikeType;
 import org.docx4j.jaxb.Context;
@@ -31,7 +32,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Strike extends AbstractRunProperty {
 	
-	protected static Logger log = Logger.getLogger(Strike.class);		
+	protected static Logger log = LoggerFactory.getLogger(Strike.class);		
 
 	public final static String CSS_NAME = "text-decoration"; 
 	public final static String FO_NAME  = "text-decoration"; 

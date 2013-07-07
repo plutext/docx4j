@@ -30,7 +30,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTGraphicalObjectFrameLocking;
 import org.docx4j.dml.CTHyperlink;
@@ -109,7 +110,7 @@ public class XHTMLImporter {
                     "  </p:txBody>" +
                     "</p:sp>";
 
-    private static final Logger LOG = Logger.getLogger(XHTMLImporter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XHTMLImporter.class);
         
     private PresentationMLPackage presentationMLPackage;
     private DocxRenderer renderer;

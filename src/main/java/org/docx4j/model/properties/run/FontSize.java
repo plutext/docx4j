@@ -21,7 +21,8 @@ package org.docx4j.model.properties.run;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
@@ -34,7 +35,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class FontSize extends AbstractRunProperty {
 	
-	protected static Logger log = Logger.getLogger(FontSize.class);		
+	protected static Logger log = LoggerFactory.getLogger(FontSize.class);		
 
 	public final static String CSS_NAME = "font-size"; 
 	public final static String FO_NAME  = "font-size"; 

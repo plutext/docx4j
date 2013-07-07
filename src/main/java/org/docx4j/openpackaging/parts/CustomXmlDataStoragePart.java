@@ -38,7 +38,8 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.customXmlProperties.SchemaRefs;
@@ -115,7 +116,7 @@ import org.w3c.dom.Node;
  */
 public final class CustomXmlDataStoragePart extends Part implements CustomXmlPart {
 	
-	private static Logger log = Logger.getLogger(CustomXmlDataStoragePart.class);		
+	private static Logger log = LoggerFactory.getLogger(CustomXmlDataStoragePart.class);		
 	
 	public CustomXmlDataStoragePart(PartName partName) throws InvalidFormatException {
 		super(partName);

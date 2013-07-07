@@ -33,7 +33,8 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -65,7 +66,7 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
 
 public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Numbering> {
 	
-	private static Logger log = Logger.getLogger(NumberingDefinitionsPart.class);	
+	private static Logger log = LoggerFactory.getLogger(NumberingDefinitionsPart.class);	
 	
 	public NumberingDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);

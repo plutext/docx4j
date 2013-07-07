@@ -20,7 +20,8 @@
 
 package org.docx4j.convert.out;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -43,7 +44,7 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class Converter {
-	private final static Logger log = Logger.getLogger(Converter.class);
+	private final static Logger log = LoggerFactory.getLogger(Converter.class);
 
 	private Converter() {
 	}

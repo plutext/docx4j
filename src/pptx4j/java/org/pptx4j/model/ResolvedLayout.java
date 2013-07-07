@@ -23,7 +23,8 @@ package org.pptx4j.model;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
@@ -63,7 +64,7 @@ import org.pptx4j.pml.Shape.NvSpPr;
  */
 public class ResolvedLayout implements Cloneable {
 	
-	protected static Logger log = Logger.getLogger(ResolvedLayout.class);
+	protected static Logger log = LoggerFactory.getLogger(ResolvedLayout.class);
 	
 	private CTBackground bg;
 	/**

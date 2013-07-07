@@ -7,14 +7,15 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;
 
 public abstract class AbstractConversionImageHandler implements ConversionImageHandler {
 	
-	protected static Logger log = Logger.getLogger(AbstractConversionImageHandler.class);
+	protected static Logger log = LoggerFactory.getLogger(AbstractConversionImageHandler.class);
 	protected String uuid = UUID.randomUUID().toString();
 	protected Map<String, String> handledImagesMap = new TreeMap<String, String>();
 	protected String imageDirPath = null;

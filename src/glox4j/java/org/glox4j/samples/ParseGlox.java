@@ -1,13 +1,14 @@
 package org.glox4j.samples;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.samples.AbstractSample;
 import org.glox4j.openpackaging.packages.GloxPackage;
 
 public class ParseGlox extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(ParseGlox.class);						
+	private static Logger log = LoggerFactory.getLogger(ParseGlox.class);						
 
 	/**
 	 * @param args

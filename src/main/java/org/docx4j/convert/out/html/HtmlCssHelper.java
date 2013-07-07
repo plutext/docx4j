@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
  */
 public class HtmlCssHelper {
 
-	private static Logger log = Logger.getLogger(HtmlCssHelper.class);
+	private static Logger log = LoggerFactory.getLogger(HtmlCssHelper.class);
 	
 	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
 	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();

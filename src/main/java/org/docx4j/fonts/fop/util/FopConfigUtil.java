@@ -24,7 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -42,7 +43,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
  */
 public class FopConfigUtil {
 	
-	protected static Logger log = Logger.getLogger(FopConfigUtil.class);
+	protected static Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
 
 	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 //  public static Configuration createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {

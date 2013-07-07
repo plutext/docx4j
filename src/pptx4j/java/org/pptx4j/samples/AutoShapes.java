@@ -23,7 +23,8 @@ package org.pptx4j.samples;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.pptx4j.jaxb.Context;
 import org.docx4j.dml.STShapeType;
@@ -51,7 +52,7 @@ import org.pptx4j.pml.Shape;
  */
 public class AutoShapes  {
 	
-	protected static Logger log = Logger.getLogger(AutoShapes.class);
+	protected static Logger log = LoggerFactory.getLogger(AutoShapes.class);
 		
 	public static void main(String[] args) throws Exception {
 

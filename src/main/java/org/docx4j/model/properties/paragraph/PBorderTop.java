@@ -19,7 +19,8 @@
  */
 package org.docx4j.model.properties.paragraph;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.wml.CTBorder;
@@ -29,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PBorderTop extends AbstractPBorder {
 	
-	protected static Logger log = Logger.getLogger(PBorderTop.class);		
+	protected static Logger log = LoggerFactory.getLogger(PBorderTop.class);		
 	
 	private final static String CSS_NAME_BASE = "border-top"; 
 	

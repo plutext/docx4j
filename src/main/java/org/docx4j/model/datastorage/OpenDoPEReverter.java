@@ -29,7 +29,8 @@ import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -78,7 +79,7 @@ import org.opendope.xpaths.Xpaths.Xpath;
  */
 public class OpenDoPEReverter {
 
-	private static Logger log = Logger.getLogger(OpenDoPEReverter.class);	
+	private static Logger log = LoggerFactory.getLogger(OpenDoPEReverter.class);	
 	
 	
 	private WordprocessingMLPackage openDopePkg;

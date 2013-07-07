@@ -25,7 +25,8 @@ import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
@@ -57,7 +58,7 @@ import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts.Identifie
  */
 public class DiagramDataUnflatten {
 	
-	private static Logger log = Logger.getLogger(DiagramDataUnflatten.class);	
+	private static Logger log = LoggerFactory.getLogger(DiagramDataUnflatten.class);	
 	
 	protected static String PRESNAME_FOR_IMAGE = "image"; 
 

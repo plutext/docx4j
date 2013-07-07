@@ -24,7 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -46,7 +47,7 @@ import org.apache.log4j.Logger;
  */
 public class QueryString {
 	
-	private static Logger log = Logger.getLogger(QueryString.class);
+	private static Logger log = LoggerFactory.getLogger(QueryString.class);
 	
 	/**
 	 * Encode the map as a query string, suitable for storing

@@ -27,7 +27,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -44,7 +45,7 @@ import org.xlsx4j.sml.Worksheet;
 
 public class PartsList {
 	
-	private static Logger log = Logger.getLogger(PartsList.class);						
+	private static Logger log = LoggerFactory.getLogger(PartsList.class);						
 
 	private static List<WorksheetPart> worksheets = new ArrayList<WorksheetPart>();
 	

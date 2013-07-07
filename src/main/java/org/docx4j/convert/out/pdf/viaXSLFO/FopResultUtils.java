@@ -37,14 +37,15 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FormattingResults;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.w3c.dom.Document;
 
 public class FopResultUtils {
 	
-	protected static Logger log = Logger.getLogger(FopResultUtils.class);
+	protected static Logger log = LoggerFactory.getLogger(FopResultUtils.class);
 
 	
 	protected static Result createResult(String userConfiguration, String outputFormat, OutputStream outputStream) throws FOPException {

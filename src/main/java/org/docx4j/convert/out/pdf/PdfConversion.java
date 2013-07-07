@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf;
 
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -32,7 +33,7 @@ public abstract class PdfConversion  {
 	// so instead, have something similar:	
 	public abstract void output(OutputStream os, PdfSettings settings) throws Docx4JException;
 		
-	protected static Logger log = Logger.getLogger(PdfConversion.class);	
+	protected static Logger log = LoggerFactory.getLogger(PdfConversion.class);	
 	
 	// For XSLT logging
 	public static void log(String message ) {

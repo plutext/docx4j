@@ -35,7 +35,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 
 /**
@@ -137,7 +138,7 @@ import org.docx4j.XmlUtils;
 public class SdtPr
     implements Child
 {
-	private static Logger log = Logger.getLogger(SdtPr.class);
+	private static Logger log = LoggerFactory.getLogger(SdtPr.class);
 
     @XmlElementRefs({
         @XmlElementRef(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),

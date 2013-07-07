@@ -8,7 +8,8 @@ import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -78,7 +79,7 @@ import org.opendope.xpaths.Xpaths.Xpath.DataBinding;
  */
 public class FromVariableReplacement extends AbstractMigrator {
 	
-	private static Logger log = Logger.getLogger(FromVariableReplacement.class);
+	private static Logger log = LoggerFactory.getLogger(FromVariableReplacement.class);
 		
 	public WordprocessingMLPackage migrate(WordprocessingMLPackage pkgIn) throws Exception {
 		

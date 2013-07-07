@@ -16,7 +16,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -47,7 +48,7 @@ import org.docx4j.wml.Text;
  */
 public class FieldsPreprocessor {
 	
-	private static Logger log = Logger.getLogger(FieldsPreprocessor.class);		
+	private static Logger log = LoggerFactory.getLogger(FieldsPreprocessor.class);		
 
     private final static QName _RInstrText_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", 
     		"instrText");
@@ -193,7 +194,7 @@ public class FieldsPreprocessor {
 			} else {
 				// its not something we're interested in
 				
-				log.debug(XmlUtils.unwrap(o));
+				log.debug(XmlUtils.unwrap(o).getClass().getName());
 
 				attachmentPoint.getContent().add(o);
 
@@ -531,7 +532,7 @@ public class FieldsPreprocessor {
 								
 				return true;
 			} else {
-				log.debug(fldChar.getFldCharType());				
+				log.debug(fldChar.getFldCharType().toString());				
 			}
 		}
 		return false;

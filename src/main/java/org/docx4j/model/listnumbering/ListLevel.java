@@ -85,7 +85,8 @@ package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
@@ -107,7 +108,7 @@ public class ListLevel {
 	 * 
 	 */
 	
-	protected static Logger log = Logger.getLogger(ListLevel.class);
+	protected static Logger log = LoggerFactory.getLogger(ListLevel.class);
 	
 	private Lvl jaxbAbstractLvl;
 	public Lvl getJaxbAbstractLvl() {

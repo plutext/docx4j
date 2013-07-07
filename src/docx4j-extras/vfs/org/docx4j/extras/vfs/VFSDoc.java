@@ -28,7 +28,8 @@ import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.FileTypeSelector;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.provider.local.LocalFile;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.convert.in.Doc;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -38,7 +39,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *
  */
 public class VFSDoc {
-	private static Logger log = Logger.getLogger(VFSDoc.class);
+	private static Logger log = LoggerFactory.getLogger(VFSDoc.class);
 	
 //	public static boolean convert(org.apache.commons.vfs.FileObject in,
 //	WordprocessingMLPackage out) throws Exception {

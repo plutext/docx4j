@@ -1,6 +1,7 @@
 package org.glox4j.samples;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTElemPropSet;
@@ -24,7 +25,7 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  */
 public class AddGloxToDocx extends AbstractSample {
 
-	private static Logger log = Logger.getLogger(AddGloxToDocx.class);
+	private static Logger log = LoggerFactory.getLogger(AddGloxToDocx.class);
 
 	/**
 	 * @param args
