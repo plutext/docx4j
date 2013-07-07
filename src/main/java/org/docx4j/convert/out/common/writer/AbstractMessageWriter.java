@@ -40,7 +40,7 @@ import org.xml.sax.InputSource;
  */
 public abstract class AbstractMessageWriter {
 
-	protected static Logger log = Logger.getLogger(AbstractMessageWriter.class);
+	public static Logger log = Logger.getLogger(AbstractMessageWriter.class);
 	
 	public DocumentFragment notImplemented(NodeIterator nodes, String message) {
 

@@ -46,7 +46,7 @@ public class Log4jConfigurator {
 	        log.info("Don't want this?  Set docx4j property: docx4j.Log4j.Configurator.disabled=true");
 	        
 	        try {
-	        	org.docx4j.convert.out.pdf.viaXSLFO.Conversion.log.setLevel(Level.DEBUG);
+	        	org.docx4j.convert.out.common.writer.AbstractMessageWriter.log.setLevel(Level.DEBUG);
 	        } catch (NoClassDefFoundError n) {
 	        	// If FOP jar is not available
 	        }
