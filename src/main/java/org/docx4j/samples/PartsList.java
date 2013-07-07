@@ -21,6 +21,7 @@
 package org.docx4j.samples;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBElement;
@@ -31,6 +32,8 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
@@ -103,6 +106,24 @@ public class PartsList extends AbstractSample {
 				sb.append(" containing JaxbElement:"  + o.getClass().getName() );
 			}
 		}
+		
+		sb.append("\n content type: " + p.getContentType() + "\n");
+//		sb.append("\n reltype: " + p.getRelationshipType() + "\n");
+		
+		if (p instanceof OleObjectBinaryPart) {
+			
+			try {
+				((OleObjectBinaryPart)p).viewFile(false);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if (p instanceof VbaDataPart) {
+			System.out.println( ((VbaDataPart)p).getXML() );
+		}
+		
 	}
 	
 	/**
