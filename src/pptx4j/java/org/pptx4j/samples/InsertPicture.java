@@ -23,17 +23,18 @@ package org.pptx4j.samples;
 
 import java.io.File;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.relationships.Relationship;
+import org.pptx4j.jaxb.Context;
 import org.pptx4j.pml.Pic;
-import org.pptx4j.pml.Shape;
 
 
 
@@ -71,23 +72,19 @@ public class InsertPicture  {
         BinaryPartAbstractImage imagePart 
         	= BinaryPartAbstractImage.createImagePart(presentationMLPackage, slidePart, file);
 		
-		// Create p:pic  		
-        java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
-        
-        mappings.put("id1", "4");
-        mappings.put("name", "Picture 3");
-        mappings.put("descr", "greentick.png");
-        mappings.put("rEmbedId", imagePart.getSourceRelationship().getId() );
-        mappings.put("offx", Long.toString(4214812));
-        mappings.put("offy", Long.toString(3071812));
-        mappings.put("extcx", Long.toString(714375));
-        mappings.put("extcy", Long.toString(714375));
-        
-        Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(SAMPLE_PICTURE, 
-        		mappings, Context.jcPML, Pic.class ) ;        
 		        
         // Add p:pic to slide
-		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(o);
+		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(
+				createPicture(imagePart.getSourceRelationship().getId()));
+		
+
+		// Do it again on another slide
+		SlidePart slidePart2 = presentationMLPackage.createSlidePart(pp, layoutPart, 
+				new PartName("/ppt/slides/slide2.xml"));
+		Relationship rel = slidePart2.addTargetPart(imagePart);
+		
+		slidePart2.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(
+				createPicture(rel.getId()));
 		
 		// All done: save it
 		presentationMLPackage.save(new java.io.File(outputfilepath));
@@ -95,6 +92,26 @@ public class InsertPicture  {
 		System.out.println("\n\n done .. saved " + outputfilepath);
 		
 	}	
+	
+	private static Object createPicture(String relId) throws JAXBException {
+		
+		// Create p:pic  		
+        java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
+        
+        mappings.put("id1", "4");
+        mappings.put("name", "Picture 3");
+        mappings.put("descr", "greentick.png");
+        mappings.put("rEmbedId", relId );
+        mappings.put("offx", Long.toString(4214812));
+        mappings.put("offy", Long.toString(3071812));
+        mappings.put("extcx", Long.toString(714375));
+        mappings.put("extcy", Long.toString(714375));
+        
+        return org.docx4j.XmlUtils.unmarshallFromTemplate(SAMPLE_PICTURE, 
+        		mappings, Context.jcPML, Pic.class ) ;   
+        
+		
+	}
 	
 	
 	private static String SAMPLE_PICTURE = 			
