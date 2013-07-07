@@ -63,8 +63,9 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice0.docx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice2.docx";
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/Conditional cell formatting.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
@@ -110,19 +111,21 @@ public class ContentControlBindingExtensions {
 		saver.save(filepathprefix + "_bound.docx");
 		System.out.println("Saved: " + filepathprefix + "_bound.docx");
 		
-		reverter(inputfilepath, filepathprefix + "_bound.docx");
+		// Either demonstrate reverter, or stripping of controls;
+		// you can't do both. So comment out one or the other.
+//		reverter(inputfilepath, filepathprefix + "_bound.docx");
 //		
-//		// Strip content controls
-//		startTime = System.currentTimeMillis();
-//		RemovalHandler rh = new RemovalHandler();
-//		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
-//		endTime = System.currentTimeMillis();
-//		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
-//
-//		saver.save(filepathprefix + "_stripped.docx");
-//		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
-//		
-//		System.out.println(timingSummary);
+		// Strip content controls
+		startTime = System.currentTimeMillis();
+		RemovalHandler rh = new RemovalHandler();
+		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
+
+		saver.save(filepathprefix + "_stripped.docx");
+		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
+		
+		System.out.println(timingSummary);
 	}	
 	
 	public static void reverter(String inputfilepath, String instancePath) throws Docx4JException {

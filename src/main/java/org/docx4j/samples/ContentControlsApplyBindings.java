@@ -97,10 +97,7 @@ public class ContentControlsApplyBindings {
 				);
 		
 		// Strip content controls
-		if (hyperlinkStyle!=null) {
-			RemovalHandler rh = new RemovalHandler(); // NB: this only removes if OpenDoPE tags are present (they aren't in binding-simple.docx)
-			rh.removeSDTs(wordMLPackage, Quantifier.ALL);		
-		}
+		// RemovalHandler rh = new RemovalHandler(); // NB: this only removes if OpenDoPE tags are present (they aren't in binding-simple.docx)
 		
 		wordMLPackage.save(new java.io.File(outputfilepath) );
 	}
