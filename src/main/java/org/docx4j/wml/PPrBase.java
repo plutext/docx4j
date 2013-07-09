@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
@@ -27,6 +29,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
@@ -292,7 +295,7 @@ public class PPrBase implements Child
     protected PPrBase.OutlineLvl outlineLvl;
     protected PPrBase.DivId divId;
     protected CTCnf cnfStyle;
-    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2012/wordml", required = true)
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2012/wordml", required = false)
     protected BooleanDefaultTrue collapsed;
     @XmlTransient
     private Object parent;
@@ -1251,7 +1254,9 @@ public class PPrBase implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Ind implements Child
+    @XmlRootElement(name = "ind")        
+    public static class Ind
+        implements Child
     {
 
         @XmlAttribute(name = "left", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -1549,7 +1554,9 @@ public class PPrBase implements Child
         "numberingChange",
         "ins"
     })
-    public static class NumPr implements Child
+    @XmlRootElement(name = "numPr")    
+    public static class NumPr
+        implements Child
     {
 
         protected PPrBase.NumPr.Ilvl ilvl;
@@ -1878,7 +1885,9 @@ public class PPrBase implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class OutlineLvl implements Child
+    @XmlRootElement(name = "outlineLvl")        
+    public static class OutlineLvl
+        implements Child
     {
 
         @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
@@ -1972,7 +1981,9 @@ public class PPrBase implements Child
         "between",
         "bar"
     })
-    public static class PBdr implements Child
+    @XmlRootElement(name = "pBdr")        
+    public static class PBdr
+        implements Child
     {
 
         protected CTBorder top;
@@ -2263,7 +2274,9 @@ public class PPrBase implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Spacing implements Child
+    @XmlRootElement(name = "spacing")        
+    public static class Spacing
+        implements Child
     {
 
         @XmlAttribute(name = "before", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -2343,7 +2356,7 @@ public class PPrBase implements Child
          */
         public boolean isBeforeAutospacing() {
             if (beforeAutospacing == null) {
-                return true;
+                return false;
             } else {
                 return beforeAutospacing;
             }
@@ -2419,7 +2432,7 @@ public class PPrBase implements Child
          */
         public boolean isAfterAutospacing() {
             if (afterAutospacing == null) {
-                return true;
+                return false;
             } else {
                 return afterAutospacing;
             }

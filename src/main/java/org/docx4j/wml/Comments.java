@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -255,6 +257,13 @@ public class Comments implements Child
                 content = new ArrayList<Object>();
             }
             return this.content;
+        }
+        
+        /**
+         * @deprecated
+         */
+        public List<Object> getEGBlockLevelElts() {
+        	return getContent();
         }
 
         /**

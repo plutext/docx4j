@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +62,8 @@ import org.docx4j.math.CTOMathPara;
     "content"
 })
 @XmlRootElement(name = "ftr")
-public class Ftr implements Child
+public class Ftr
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -155,6 +158,11 @@ public class Ftr implements Child
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated        
+    public List<Object> getEGBlockLevelElts() {
+    	return getContent();
     }
 
     /**

@@ -19,7 +19,7 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; import org.jvnet.jaxb2_commons.ppp.Child;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;

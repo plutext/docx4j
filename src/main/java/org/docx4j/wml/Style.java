@@ -21,6 +21,8 @@
 
 package org.docx4j.wml;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;

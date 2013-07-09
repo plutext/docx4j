@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +32,16 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.w14.CTSdtCheckbox;
 import org.docx4j.w15.CTSdtAppearance;
 import org.docx4j.w15.CTSdtRepeatedSection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.docx4j.XmlUtils;
 
 /**
  * <p>Java class for CT_SdtPr complex type.
@@ -141,8 +147,11 @@ import org.docx4j.w15.CTSdtRepeatedSection;
 @XmlType(name = "CT_SdtPr", propOrder = {
     "rPrOrAliasOrLock"
 })
-public class SdtPr implements Child
+@XmlRootElement(name = "sdtPr")
+public class SdtPr
+    implements Child
 {
+	private static Logger log = LoggerFactory.getLogger(SdtPr.class);
 
     @XmlElementRefs({
         @XmlElementRef(name = "placeholder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -239,6 +248,159 @@ public class SdtPr implements Child
     }
 
     /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Id }
+     *     
+     */
+    public Id getId() {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if ( o instanceof Id ) {
+    			log.debug("found id");
+    			return (Id)o;
+    		} 
+    	}
+    	
+        return null;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Id }
+     *     
+     */
+    public void setId(Id value) {
+    	
+    	Id existingId = getId(); 
+    	
+    	if (existingId!=null) {
+    		if (!existingId.equals(value)) {
+    			log.debug("Changing SDT ID from " + existingId + " to " + value);
+        		rPrOrAliasOrLock.remove(existingId);
+        		if (value!=null) {
+        			rPrOrAliasOrLock.add(value);
+        		}
+    		}    	
+    		// else - they are the same, so do nothing
+    	} else if (value!=null) {
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
+    	}
+    }
+    
+    // Not generated!
+    public java.math.BigInteger setId() {
+
+    	Id id = new Id();
+    	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
+    	id.setVal( newIdVal );
+    	setId(id);    	
+		log.debug("Generated random id: " + newIdVal.toString() );
+		return newIdVal;
+    }
+
+    /**
+     * Gets the value of the tag property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link SdtPr.Tag }
+     *     
+     */
+    public Tag getTag() {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if ( o instanceof Tag ) {
+    			log.debug("found tag");
+    			return (Tag)o;
+    		} 
+    	}
+    	
+        return null;
+    }
+
+    /**
+     * Sets the value of the tag property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link SdtPr.Tag }
+     *     
+     */
+    public void setTag(Tag value) {
+        
+    	Tag existingTag = getTag(); 
+    	
+    	if (existingTag!=null) {
+    		if (!existingTag.equals(value)) {
+    			log.debug("Changing SDT tag from " + existingTag + " to " + value);
+        		rPrOrAliasOrLock.remove(existingTag);
+        		if (value!=null) {
+        			rPrOrAliasOrLock.add(value);
+        		}
+    		}
+    		// else - they are the same, so do nothing
+    	} else if (value!=null) {
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
+    	}
+    }
+    
+    public CTDataBinding getDataBinding() {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		o = XmlUtils.unwrap(o);
+    		log.debug("inspecting " + o.getClass().getName() );
+    		if ( o instanceof CTDataBinding ) {
+    			return (CTDataBinding)o;
+    		} 
+    	}
+        return null;
+    }
+    
+    public void setDataBinding(CTDataBinding value) {
+        
+    	Object existingBinding = getDataBinding(); 
+    	
+    	if (existingBinding!=null) {
+    		if (!existingBinding.equals(value)) {
+    			log.debug("Changing DataBinding tag from " + existingBinding + " to " + value);
+    			
+        		//rPrOrAliasOrLock.remove(existingBinding);
+    			existingBinding = null;
+    			for (Object o : getRPrOrAliasOrLock() ) {
+    				Object unwrapped = XmlUtils.unwrap(o);
+    				if (unwrapped instanceof CTDataBinding) {
+    					existingBinding = o;
+    					break;
+    				}
+    			}
+    			if (existingBinding!=null) {
+    				getRPrOrAliasOrLock().remove(existingBinding);
+    			}
+    			
+        		if (value!=null) {
+        			rPrOrAliasOrLock.add(value);
+        		}
+    		}
+    		// else - they are the same, so do nothing
+    	} else if (value!=null) {
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
+    	}
+    }
+    
+
+    /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
      * @return
@@ -284,7 +446,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Alias implements Child
+    @XmlRootElement(name = "alias")
+    public static class Alias
+        implements Child
     {
 
         @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -363,7 +527,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Bibliography implements Child
+    @XmlRootElement(name = "bibliography")
+    public static class Bibliography
+        implements Child
     {
 
         @XmlTransient
@@ -416,7 +582,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Citation implements Child
+    @XmlRootElement(name = "citation")
+    public static class Citation
+        implements Child
     {
 
         @XmlTransient
@@ -469,7 +637,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Equation implements Child
+    @XmlRootElement(name = "equation")
+    public static class Equation
+        implements Child
     {
 
         @XmlTransient
@@ -522,7 +692,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Group implements Child
+    @XmlRootElement(name = "group")
+    public static class Group
+        implements Child
     {
 
         @XmlTransient
@@ -575,7 +747,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Picture implements Child
+    @XmlRootElement(name = "picture")
+    public static class Picture
+        implements Child
     {
 
         @XmlTransient
@@ -628,7 +802,9 @@ public class SdtPr implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class RichText implements Child
+    @XmlRootElement(name = "richText")
+    public static class RichText
+        implements Child
     {
 
         @XmlTransient

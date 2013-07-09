@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
@@ -63,7 +66,9 @@ import org.docx4j.math.CTOMathPara;
     "smartTagPr",
     "content"
 })
-public class CTSmartTagRun implements Child
+@XmlRootElement(name = "smartTag")
+public class CTSmartTagRun
+    implements Child, ContentAccessor
 {
 
     protected CTSmartTagPr smartTagPr;
@@ -184,7 +189,7 @@ public class CTSmartTagRun implements Child
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
@@ -193,6 +198,11 @@ public class CTSmartTagRun implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getParagraphContent() {
+        return getContent();
+    }
+    
     /**
      * Gets the value of the uri property.
      * 

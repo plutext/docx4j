@@ -21,6 +21,8 @@
 
 package org.docx4j.wml;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
@@ -56,7 +58,8 @@ import org.docx4j.math.CTOMathPara;
 @XmlType(name = "CT_TxbxContent", propOrder = {
     "content"
 })
-public class CTTxbxContent implements Child
+public class CTTxbxContent
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -151,6 +154,11 @@ public class CTTxbxContent implements Child
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated
+    public List<Object> getEGBlockLevelElts() {
+    	return getContent();
     }
 
     /**

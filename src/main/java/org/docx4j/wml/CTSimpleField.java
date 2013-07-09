@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
@@ -64,7 +67,9 @@ import org.docx4j.math.CTOMathPara;
     "fldData",
     "content"
 })
-public class CTSimpleField implements Child
+@XmlRootElement(name = "fldSimple")
+public class CTSimpleField
+    implements Child, ContentAccessor
 {
 
     protected Text fldData;
@@ -187,13 +192,18 @@ public class CTSimpleField implements Child
      * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
      * {@link JAXBElement }{@code <}{@link CTCustomXmlRun }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated
+    public List<Object> getParagraphContent() {
+    	return getContent();
     }
 
     /**

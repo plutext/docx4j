@@ -19,7 +19,8 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ import org.docx4j.math.CTOMathPara;
     "customXmlPr",
     "content"
 })
-public class CTCustomXmlRow implements Child
+public class CTCustomXmlRow implements CTCustomXmlElement
 {
 
     protected CTCustomXmlPr customXmlPr;
@@ -114,7 +115,10 @@ public class CTCustomXmlRow implements Child
      *     
      */
     public CTCustomXmlPr getCustomXmlPr() {
-        return customXmlPr;
+        if(this.customXmlPr == null) {
+            this.customXmlPr = new CTCustomXmlPr();
+        }
+        return this.customXmlPr;
     }
 
     /**
@@ -176,7 +180,7 @@ public class CTCustomXmlRow implements Child
      * {@link JAXBElement }{@code <}{@link CTMoveFromRangeEnd }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
@@ -185,6 +189,11 @@ public class CTCustomXmlRow implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getEGContentRowContent() {
+    	return getContent();
+    }
+    
     /**
      * Gets the value of the uri property.
      * 

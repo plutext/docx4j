@@ -21,6 +21,8 @@
 
 package org.docx4j.wml;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -663,7 +665,12 @@ public class Styles implements Child
              *     
              */
             public Boolean isQFormat() {
-                return qFormat;
+            	
+            	if (qFormat==null) {
+            		return ((Styles.LatentStyles)this.parent).isDefQFormat();
+            	} else {            	
+            		return qFormat;
+            	}
             }
 
             /**

@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
@@ -61,6 +63,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_TblWidth")
 public class TblWidth implements Child
 {
+	
+	public final static String TYPE_AUTO = "auto";
+	public final static String TYPE_DXA = "dxa"; // twips	
 
     @XmlAttribute(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger w;

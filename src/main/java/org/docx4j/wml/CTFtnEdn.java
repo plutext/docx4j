@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -163,6 +165,10 @@ public class CTFtnEdn implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getEGBlockLevelElts() {
+    	return getContent();
+    }
     /**
      * Gets the value of the type property.
      * 

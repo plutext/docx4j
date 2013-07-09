@@ -19,13 +19,14 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -63,6 +64,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_PermStart")
+@XmlRootElement(name = "permStart")
 public class RangePermissionStart
     extends CTPerm
 {

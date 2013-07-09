@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
@@ -81,7 +84,9 @@ import javax.xml.bind.annotation.XmlType;
     "footnoteColumns",
     "sectPrChange"
 })
-public class SectPr implements Child
+@XmlRootElement(name = "sectPr")
+public class SectPr
+    implements Child
 {
 
     @XmlElements({

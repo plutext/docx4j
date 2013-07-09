@@ -19,7 +19,7 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;

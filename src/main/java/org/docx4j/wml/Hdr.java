@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +62,8 @@ import org.docx4j.math.CTOMathPara;
     "content"
 })
 @XmlRootElement(name = "hdr")
-public class Hdr implements Child
+public class Hdr
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -148,13 +151,18 @@ public class Hdr implements Child
      * {@link JAXBElement }{@code <}{@link CTMoveToRangeEnd }{@code >}
      * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated    
+    public List<Object> getEGBlockLevelElts() {
+    	return getContent();
     }
 
     /**

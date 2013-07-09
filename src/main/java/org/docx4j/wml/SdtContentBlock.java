@@ -19,7 +19,8 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,14 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
 import org.docx4j.math.CTOMathPara;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -56,8 +61,11 @@ import org.docx4j.math.CTOMathPara;
 @XmlType(name = "CT_SdtContentBlock", propOrder = {
     "content"
 })
-public class SdtContentBlock implements Child
+@XmlRootElement(name = "sdtContent")
+public class SdtContentBlock
+    implements Child, ContentAccessor
 {
+	private static Logger log = LoggerFactory.getLogger(SdtContentBlock.class);	
 
     @XmlElementRefs({
         @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -142,7 +150,7 @@ public class SdtContentBlock implements Child
      * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
@@ -151,6 +159,10 @@ public class SdtContentBlock implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getEGContentBlockContent() {
+    	return getContent();
+    }
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
@@ -177,4 +189,39 @@ public class SdtContentBlock implements Child
         setParent(parent);
     }
 
+    public void replaceElement(Object current, List insertions) {
+
+    	int index = getContent().indexOf(current);    	
+    	if (index > -1 ) {    		
+    		getContent().addAll(index+1, insertions);  
+    		Object removed = getContent().remove(index);
+    		// sanity check
+    		if (!current.equals(removed)) {
+    			log.error("removed wrong object?");
+    		}    		
+    	} else {
+    		// Not found
+    		log.error("Couldn't find replacement target.");
+    	}
+
+/*    	
+    	List<Object> newList = new ArrayList<Object>();
+    	
+    	for (Object o : getBlockLevelElements() ) {
+    		
+    		if (o.equals(current)) {
+    			log.debug(".. found target ");
+    			for (Object o2 : insertions ) {
+    				newList.add(o2);
+        			log.debug(".. .. inserted ");
+    			}
+    		} else {
+				newList.add(o);
+    		}
+    	}
+    	
+    	blockLevelElements = newList;
+    	*/ 
+    }
+    
 }

@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
@@ -114,4 +116,20 @@ public class Id implements Child
         setParent(parent);
     }
 
+    public boolean equals(Object obj) {
+    	if (obj instanceof Id) {
+	    		return val.equals( ((Id)obj).getVal() ); 
+	    	} else {
+	    		return false;
+	    	}
+	    }
+	   
+	    public int hashCode() {
+	    	
+	    	// Natural and good enough...
+	    	return val.intValue();	    	
+	    }
+        
+    
+    
 }

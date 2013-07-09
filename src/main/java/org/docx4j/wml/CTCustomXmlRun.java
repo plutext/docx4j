@@ -19,7 +19,8 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ import org.docx4j.math.CTOMathPara;
     "customXmlPr",
     "content"
 })
-public class CTCustomXmlRun implements Child
+public class CTCustomXmlRun implements CTCustomXmlElement, ContentAccessor // Why does this implement ContentAccessor when the others don't?  Leave as is for backwards compat.
 {
 
     protected CTCustomXmlPr customXmlPr;
@@ -118,7 +119,10 @@ public class CTCustomXmlRun implements Child
      *     
      */
     public CTCustomXmlPr getCustomXmlPr() {
-        return customXmlPr;
+        if(this.customXmlPr == null) {
+            this.customXmlPr = new CTCustomXmlPr();
+        }
+        return this.customXmlPr;
     }
 
     /**
@@ -191,6 +195,11 @@ public class CTCustomXmlRun implements Child
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated
+    public List<Object> getParagraphContent() {
+    	return getContent();
     }
 
     /**

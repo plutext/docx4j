@@ -19,11 +19,12 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -50,6 +51,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_TblGrid", propOrder = {
     "tblGridChange"
 })
+@XmlRootElement(name="tblGrid")
 public class TblGrid
     extends TblGridBase
 {

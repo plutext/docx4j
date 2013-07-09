@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
@@ -56,7 +59,9 @@ import org.docx4j.math.CTOMathPara;
 @XmlType(name = "CT_SdtContentCell", propOrder = {
     "content"
 })
-public class CTSdtContentCell implements Child
+@XmlRootElement(name = "sdtContent")
+public class CTSdtContentCell
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -140,8 +145,8 @@ public class CTSdtContentCell implements Child
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMoveFromRangeEnd }{@code >}
      * 
-     * 
-     */
+     * @since 2.7
+     **/
     public List<Object> getContent() {
         if (content == null) {
             content = new ArrayList<Object>();
@@ -149,6 +154,11 @@ public class CTSdtContentCell implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getEGContentCellContent() {
+        
+        return getContent();
+    }    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

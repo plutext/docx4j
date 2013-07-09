@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +72,7 @@ import org.docx4j.math.CTOMathPara;
     "content"
 })
 @XmlRootElement(name = "tr")
-public class Tr implements Child
+public class Tr implements Child, ContentAccessor
 {
 
     protected CTTblPrEx tblPrEx;
@@ -216,7 +218,7 @@ public class Tr implements Child
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
@@ -225,6 +227,11 @@ public class Tr implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getEGContentCellContent() {
+    	return getContent();
+    }
+    
     /**
      * Gets the value of the rsidRPr property.
      * 

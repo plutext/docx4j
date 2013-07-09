@@ -19,7 +19,7 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
@@ -51,12 +51,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_BookmarkRange")
 public class CTBookmarkRange
     extends CTMarkupRange
+
 {
 
     @XmlAttribute(name = "colFirst", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger colFirst;
     @XmlAttribute(name = "colLast", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger colLast;
+
 
     /**
      * Gets the value of the colFirst property.
@@ -105,6 +107,7 @@ public class CTBookmarkRange
     public void setColLast(BigInteger value) {
         this.colLast = value;
     }
+
 
     /**
      * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.

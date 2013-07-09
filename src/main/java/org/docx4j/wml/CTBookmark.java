@@ -25,6 +25,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -47,6 +49,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Bookmark")
+@XmlRootElement(name = "bookmarkStart")
 public class CTBookmark
     extends CTBookmarkRange
 {

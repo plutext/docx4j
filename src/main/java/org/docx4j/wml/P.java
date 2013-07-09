@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
 import org.docx4j.math.CTOMathPara;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 /**
@@ -69,8 +74,9 @@ import org.docx4j.math.CTOMathPara;
     "content"
 })
 @XmlRootElement(name = "p")
-public class P implements Child
+public class P implements Child, ContentAccessor
 {
+	private static Logger log = LoggerFactory.getLogger(P.class);	
 
     protected PPr pPr;
     @XmlElementRefs({
@@ -209,6 +215,10 @@ public class P implements Child
         return this.content;
     }
 
+    @Deprecated
+    public List<Object> getParagraphContent() {
+    	return getContent();
+    }
     /**
      * Gets the value of the rsidRPr property.
      * 
@@ -537,7 +547,7 @@ public class P implements Child
          * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
          * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
          * 
-         * 
+         * @since 2.7
          */
         public List<Object> getContent() {
             if (content == null) {
@@ -545,6 +555,11 @@ public class P implements Child
             }
             return this.content;
         }
+        
+        @Deprecated
+        public List<Object> getParagraphContent() {
+        	return getContent();
+        }        
 
         /**
          * Gets the value of the tgtFrame property.
@@ -724,4 +739,56 @@ public class P implements Child
 
     }
 
+    // Not generated
+    /** Get the text content of all runs in the P.  WARNING: this only gets ./w:r/w:t.
+     *  That is incomplete.  Try org.docx4j.TextUtils.extractText instead.  */
+    @Deprecated
+    public String toString() {
+
+    	StringBuilder result = new StringBuilder();
+    	
+    	List<Object> children = getParagraphContent();
+    	
+//    	System.out.println("p.toString");
+    	
+		for (Object o : children ) {					
+//			System.out.println("  " + o.getClass().getName() );
+			if ( o instanceof org.docx4j.wml.R) {
+//		    	System.out.println("Hit R");
+				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
+		    	List runContent = run.getContent();
+				for (Object o2 : runContent ) {					
+					if ( o2 instanceof javax.xml.bind.JAXBElement) {
+						// TODO - unmarshall directly to Text.
+						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
+//					    	System.out.println("Found Text");
+							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
+							result.append( t.getValue() );					
+						}
+					} else {
+//				    	System.out.println(o2.getClass().getName());						
+					}
+				}
+			} 
+		}
+		return result.toString();
+    	
+    }
+
+    public void replaceElement(Object current, List insertions) {
+
+    	int index = content.indexOf(current);    	
+    	if (index > -1 ) {    		
+    		content.addAll(index+1, insertions);  
+    		Object removed = content.remove(index);
+    		// sanity check
+    		if (!current.equals(removed)) {
+    			log.error("removed wrong object?");
+    		}    		
+    	} else {
+    		// Not found
+    		log.error("Couldn't find replacement target.");
+    	}
+    }    
+    
 }

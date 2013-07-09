@@ -19,8 +19,10 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
 
+
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -28,6 +30,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 /**
  * <p>Java class for sdt element declaration.
@@ -59,9 +64,11 @@ import javax.xml.bind.annotation.XmlType;
     "sdtContent"
 })
 @XmlRootElement(name = "sdt")
-public class SdtBlock implements Child
+public class SdtBlock implements SdtElement, Child
 {
 
+	private static Logger log = LoggerFactory.getLogger(SdtBlock.class);		
+	
     protected SdtPr sdtPr;
     protected CTSdtEndPr sdtEndPr;
     protected SdtContentBlock sdtContent;
@@ -124,7 +131,7 @@ public class SdtBlock implements Child
      *     {@link SdtContentBlock }
      *     
      */
-    public SdtContentBlock getSdtContent() {
+    public ContentAccessor getSdtContent() {
         return sdtContent;
     }
 
@@ -166,4 +173,103 @@ public class SdtBlock implements Child
         setParent(parent);
     }
 
+    /* Replace any nested content controls with their content. */
+    public void flatten() {
+    	 
+		/*    	
+		<w:sdt xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+			<w:sdtPr><w:tag w:val="30" /><w:id w:val="871785936" /></w:sdtPr>
+			<w:sdtContent>
+				<w:p w:rsidR="00283267" w:rsidRDefault="00E8712C">
+					<w:r><w:t>S</w:t></w:r>
+					<w:sdt><w:sdtPr><w:tag w:val="0" /><w:id w:val="589321610" /></w:sdtPr><w:sdtContent><w:r><w:t>Para1</w:t></w:r></w:sdtContent></w:sdt>
+				</w:p>
+			</w:sdtContent>
+		</w:sdt>
+		*/
+    	
+		log.info("Flattening sdt: " + sdtPr.getId().toString() );
+		boolean startAgain;
+    	do {
+        	startAgain = false;
+//        	java.util.Iterator it = sdtContent.getBlockLevelElements().iterator();
+//	    	while ( it.hasNext() ) {
+//	    		
+//	    		Object o = it.next();
+	    		
+	    	for (Object o : sdtContent.getEGContentBlockContent() ) {
+	    		
+	    		if (o instanceof SdtBlock) { // A block level SDT - but this doesn't happen
+	    			log.debug("Interesting .. detected BLOCK level nested sdt: " + ((SdtBlock)o).sdtPr.getId().toString() );
+	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getContent() );
+	    			// need to refresh the list we are iterating
+	    			startAgain = true;
+	    			break;
+	    		} else if ( o instanceof org.docx4j.wml.P ) {
+    				log.debug( "Paragraph object: ");
+    				org.docx4j.wml.P p = (org.docx4j.wml.P)o;   				
+    				flattenP(p);
+ 	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
+	    			
+//	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
+//	    				log.debug( "Paragraph object: ");
+//	    				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
+//	    				
+//	    				flattenP(p);
+//	    				// Is this necessary?
+//	    				((JAXBElement)o).setValue(p);
+//	    			} else {
+	    				
+	    				log.debug( "JAXB: " + ((JAXBElement)o).getValue().getClass().getName() );
+	    				
+//	    			}
+	    				
+	    		} else {
+	    			log.debug(o.getClass().getName() + ".. not an sdt");
+	    		}
+	    	}
+    	} while (startAgain);
+    }
+    	
+    public void flattenP(org.docx4j.wml.P p) {
+    	
+		/*    	
+				<w:p w:rsidR="00283267" w:rsidRDefault="00E8712C">
+					<w:r><w:t>S</w:t></w:r>
+					<w:sdt><w:sdtPr><w:tag w:val="0" /><w:id w:val="589321610" /></w:sdtPr><w:sdtContent><w:r><w:t>Para1</w:t></w:r></w:sdtContent></w:sdt>
+				</w:p>
+		*/
+    	
+		log.info("Flattening nested p " );
+		boolean startAgain;
+    	do {
+        	startAgain = false;
+	    	for (Object o : p.getContent() ) {
+	    		
+	    		if (o instanceof SdtRun) {  // This code path not used
+	    			log.debug(".. detected nested sdt " );
+	    			p.replaceElement(o, ((SdtRun)o).getSdtContent().getContent() );
+	    			// need to refresh the list we are iterating
+	    			startAgain = true;
+	    			break;
+	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
+	    			
+	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
+	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");
+	    				org.docx4j.wml.SdtRun sdtRun = (org.docx4j.wml.SdtRun)((JAXBElement)o).getValue();
+	    				p.replaceElement(o, sdtRun.getSdtContent().getContent() );
+	    			} else {
+	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");	    				
+	    			}
+	    				
+	    		} else {
+	    			log.debug(o.getClass().getName() + ".. not an sdt");
+	    		}
+	    	}
+    	} while (startAgain);
+    	
+    	
+    }
+    
+    
 }

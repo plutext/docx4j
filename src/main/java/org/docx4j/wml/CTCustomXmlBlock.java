@@ -19,7 +19,8 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ import org.docx4j.math.CTOMathPara;
     "customXmlPr",
     "content"
 })
-public class CTCustomXmlBlock implements Child
+public class CTCustomXmlBlock implements CTCustomXmlElement
 {
 
     protected CTCustomXmlPr customXmlPr;
@@ -178,13 +179,18 @@ public class CTCustomXmlBlock implements Child
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated
+    public List<Object> getEGContentBlockContent() {
+    	return getContent();
     }
 
     /**

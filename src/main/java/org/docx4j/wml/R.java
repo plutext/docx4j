@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.wml;
+package org.docx4j.wml; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ import javax.xml.bind.annotation.XmlType;
     "content"
 })
 @XmlRootElement(name = "r")
-public class R implements Child
+public class R implements Child, ContentAccessor
 {
 
     protected RPr rPr;
@@ -188,13 +190,18 @@ public class R implements Child
      * {@link DelText }
      * {@link JAXBElement }{@code <}{@link R.DayLong }{@code >}
      * 
-     * 
+     * @since 2.7
      */
     public List<Object> getContent() {
         if (content == null) {
             content = new ArrayList<Object>();
         }
         return this.content;
+    }
+    
+    @Deprecated
+    public List<Object> getRunContent() {
+    	return getContent();
     }
 
     /**
@@ -314,7 +321,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class AnnotationRef implements Child
+    @XmlRootElement(name = "annotationRef")
+    public static class AnnotationRef
+        implements Child
     {
 
         @XmlTransient
@@ -368,7 +377,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class CommentReference implements Child
+    @XmlRootElement(name = "commentReference")    
+    public static class CommentReference
+        implements Child
     {
 
         @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
@@ -447,7 +458,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ContinuationSeparator implements Child
+    @XmlRootElement(name = "continuationSeparator")
+    public static class ContinuationSeparator
+        implements Child
     {
 
         @XmlTransient
@@ -500,7 +513,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Cr implements Child
+    @XmlRootElement(name = "cr")    
+    public static class Cr
+        implements Child
     {
 
         @XmlTransient
@@ -553,7 +568,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DayLong implements Child
+    @XmlRootElement(name = "dayLong")    
+    public static class DayLong
+        implements Child
     {
 
         @XmlTransient
@@ -606,7 +623,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DayShort implements Child
+    @XmlRootElement(name = "dayShort")    
+    public static class DayShort
+        implements Child
     {
 
         @XmlTransient
@@ -659,7 +678,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class EndnoteRef implements Child
+    @XmlRootElement(name = "endnoteRef")    
+    public static class EndnoteRef
+        implements Child
     {
 
         @XmlTransient
@@ -712,7 +733,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class FootnoteRef implements Child
+    @XmlRootElement(name = "footnoteRef")    
+    public static class FootnoteRef
+        implements Child
     {
 
         @XmlTransient
@@ -765,7 +788,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class LastRenderedPageBreak implements Child
+    @XmlRootElement(name = "lastRenderedPageBreak")    
+    public static class LastRenderedPageBreak
+        implements Child
     {
 
         @XmlTransient
@@ -818,7 +843,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class MonthLong implements Child
+    @XmlRootElement(name = "monthLong")    
+    public static class MonthLong
+        implements Child
     {
 
         @XmlTransient
@@ -871,7 +898,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class MonthShort implements Child
+    @XmlRootElement(name = "monthShort")        
+    public static class MonthShort
+        implements Child
     {
 
         @XmlTransient
@@ -924,7 +953,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class NoBreakHyphen implements Child
+    @XmlRootElement(name = "noBreakHyphen")        
+    public static class NoBreakHyphen
+        implements Child
     {
 
         @XmlTransient
@@ -977,7 +1008,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PgNum implements Child
+    @XmlRootElement(name = "pgNum")            
+    public static class PgNum
+        implements Child
     {
 
         @XmlTransient
@@ -1033,14 +1066,16 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Ptab implements Child
+    @XmlRootElement(name = "ptab")            
+    public static class Ptab
+        implements Child
     {
 
-        @XmlAttribute(name = "alignment", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabAlignment alignment;
-        @XmlAttribute(name = "relativeTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabRelativeTo relativeTo;
-        @XmlAttribute(name = "leader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabLeader leader;
         @XmlTransient
         private Object parent;
@@ -1164,7 +1199,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Separator implements Child
+    @XmlRootElement(name = "separator")            
+    public static class Separator
+        implements Child
     {
 
         @XmlTransient
@@ -1217,7 +1254,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class SoftHyphen implements Child
+    @XmlRootElement(name = "softHyphen")            
+    public static class SoftHyphen
+        implements Child
     {
 
         @XmlTransient
@@ -1272,10 +1311,12 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Sym implements Child
+    @XmlRootElement(name = "sym")            
+    public static class Sym
+        implements Child
     {
 
-        @XmlAttribute(name = "font", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String font;
         @XmlAttribute(name = "char", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String _char;
@@ -1377,7 +1418,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Tab implements Child
+    @XmlRootElement(name = "tab")            
+    public static class Tab
+        implements Child
     {
 
         @XmlTransient
@@ -1430,7 +1473,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class YearLong implements Child
+    @XmlRootElement(name = "yearLong")            
+    public static class YearLong
+        implements Child
     {
 
         @XmlTransient
@@ -1483,7 +1528,9 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class YearShort implements Child
+    @XmlRootElement(name = "yearShort")            
+    public static class YearShort
+        implements Child
     {
 
         @XmlTransient
