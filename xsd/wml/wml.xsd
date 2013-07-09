@@ -29,6 +29,8 @@ REVISION HISTORY
 20120105 - add element name="compatSetting" and type="CT_CompatSetting" from 2ed, so Word 2010 can detect docx as native
 
 20130401 - CT_TblLook from transitional 4ed; fixes https://github.com/plutext/docx4j/issues/53 
+
+20130709 - [MS-DOCX] w14, w15 - most bits, but not rPr extensions, conflict extensions, or calendar type extensions
 	
 USAGE INSTRUCTIONS
 	  
@@ -38,7 +40,7 @@ USAGE INSTRUCTIONS
 	
   And the parent-pointer-plugin.  See http://fisheye5.cenqua.com/browse/jaxb2-commons/parent-pointer-plugin
 	
-  We have a copy of this in thealib dir.  Or you can build it yourself:
+  We have a copy of this in the lib dir.  Or you can build it yourself:
 	
 	cvs -d :pserver:$DEV_JAVA_NET_USERNAME@cvs.dev.java.net:/cvs checkout -P jaxb2-commons
 	 
@@ -63,19 +65,16 @@ USAGE INSTRUCTIONS
   
   You can't just use the xjc included in Java 6, since it says unrecognized parameter -Xparent-pointer
 	
-  (Note that we generate package.xsd - every time - otherwise it gets left out of object factory
-  
-  	?? 2009 09 02 ?? so do
-  
- 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
-  
-  )
   
   Windows:
-  
-     C:>\Java\jaxb-ri-20110601\bin\xjc.bat -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d t2 -no-header -target 2.0
-  or
-     C:>\Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d tmp -no-header -target 2.0
+    
+     \Java\jaxb-ri-20110601\bin\xjc  -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
+ 
+    previously:
+          C:>\Java\jaxb-ri-20110601\bin\xjc.bat -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d t2 -no-header -target 2.0
+    or
+          C:>\Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d tmp -no-header -target 2.0
+     
 	
 	cd to the directory containing the new sources
 	
@@ -92,6 +91,10 @@ USAGE INSTRUCTIONS
 	#- - -end of sed script- - - 
 	
 	and header.txt contains the copyright notice.	
+	
+	On Windows:
+	
+        "c:\Program Files (x86)\GnuWin32\bin\sed.exe" -s -i -f script *.java	
 	
   Then apply our patches:	
 	
@@ -132,12 +135,15 @@ PRINCIPLES:
 	elementFormDefault="qualified" attributeFormDefault="qualified"
 	blockDefault="#all"
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"	
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
   	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"	
 	xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	targetNamespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"	
+	xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"	
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
 <!-- 	jaxb:extensionBindingPrefixes="xjc" -->
@@ -169,6 +175,14 @@ PRINCIPLES:
 	
 	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd"/>
+
+	<!-- since docx4j 3.0 -->
+	<xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
+	<xsd:import id="w14" namespace="http://schemas.microsoft.com/office/word/2010/wordml"
+		schemaLocation="w14_word_2010_wordml.xsd"/>	
+	<xsd:import id="w15" namespace="http://schemas.microsoft.com/office/word/2012/wordml"
+		schemaLocation="w15_word_2012_wordml.xsd"/>
 	
 	<xsd:annotation>
 		<xsd:appinfo>
@@ -207,51 +221,69 @@ PRINCIPLES:
 	</xsd:annotation>
 	
 	<xsd:complexType name="CT_Empty"></xsd:complexType>
-	
-	<!--	
-	<xsd:simpleType name="ST_OnOff" default="true"">
-	<xsd:annotation>
-	<xsd:documentation>On/Off Value</xsd:documentation>
-	</xsd:annotation>
-	<xsd:restriction base="xsd:string">
-	<xsd:enumeration value="true">
-	<xsd:annotation>
-	<xsd:documentation>True</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	<xsd:enumeration value="false">
-	<xsd:annotation>
-	<xsd:documentation>False</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	<xsd:enumeration value="on">
-	<xsd:annotation>
-	<xsd:documentation>True</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	<xsd:enumeration value="off">
-	<xsd:annotation>
-	<xsd:documentation>False</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	<xsd:enumeration value="0">
-	<xsd:annotation>
-	<xsd:documentation>False</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	<xsd:enumeration value="1">
-	<xsd:annotation>
-	<xsd:documentation>True</xsd:documentation>
-	</xsd:annotation>
-	</xsd:enumeration>
-	</xsd:restriction>
+
+	<!--  Only used once, from word_2010_wordml.xsd.
+	      Would prefer to comment this out... -->
+	<xsd:simpleType name="ST_OnOff" > <!--  default="true"  not allowed in simple type -->
+		<xsd:annotation>
+			<xsd:documentation>On/Off Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="true">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="false">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="on">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="off">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
 	</xsd:simpleType>
+
+	<!-- used from w15_word2012_wordml.xsd -->
+	<xsd:complexType name="CT_String">
+		<xsd:attribute name="val" type="ST_String" use="required">
+			<xsd:annotation>
+				<xsd:documentation>String Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_DecimalNumber">
+		<xsd:attribute name="val" type="ST_DecimalNumber" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Decimal Number Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	  <xsd:complexType name="CT_Color">
+	    <xsd:attribute name="val" type="ST_HexColor" use="required"/>
+	    <xsd:attribute name="themeColor" type="ST_ThemeColor" use="optional"/>
+	    <xsd:attribute name="themeTint" type="ST_UcharHexNumber" use="optional"/>
+	    <xsd:attribute name="themeShade" type="ST_UcharHexNumber" use="optional"/>
+	  </xsd:complexType>	
 	
-	replaced with 
-	
-	type="xsd:boolean" default="true"
-	
-	-->
 	
 	<xsd:complexType name="BooleanDefaultTrue">
 		<!--
@@ -393,13 +425,6 @@ PRINCIPLES:
 		</xsd:annotation>
 		<xsd:restriction base="xsd:integer"/>
 	</xsd:simpleType>
-	<!--	<xsd:complexType name="CT_DecimalNumber">
-	<xsd:attribute name="val" type="ST_DecimalNumber" use="required">
-	<xsd:annotation>
-	<xsd:documentation>Decimal Number Value</xsd:documentation>
-	</xsd:annotation>
-	</xsd:attribute>
-	</xsd:complexType> -->
 	<xsd:simpleType name="ST_UnsignedDecimalNumber">
 		<xsd:annotation>
 			<xsd:documentation>Unsigned Decimal Number Value</xsd:documentation>
@@ -524,13 +549,6 @@ PRINCIPLES:
 		</xsd:annotation>
 		<xsd:restriction base="xsd:string"/>
 	</xsd:simpleType>
-	<!--	<xsd:complexType name="CT_String">
-	<xsd:attribute name="val" type="ST_String" use="required">
-	<xsd:annotation>
-	<xsd:documentation>String Value</xsd:documentation>
-	</xsd:annotation>
-	</xsd:attribute>
-	</xsd:complexType> -->
 	<xsd:simpleType name="ST_TextScale">
 		<xsd:annotation>
 			<xsd:documentation>Text Expansion/Compression
@@ -3337,9 +3355,6 @@ PRINCIPLES:
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	<!-- The next 2 types TO BE created, so CT_MarkupRange is only
-	     used by bookmarkEnd, so it can have @XmlRootElement -->
-	<!-- 
 	<xsd:complexType name="CT_MoveFromRangeEnd">
 		<xsd:complexContent>
 			<xsd:extension base="CT_Markup">
@@ -3366,7 +3381,6 @@ PRINCIPLES:
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	 -->
 	<xsd:complexType name="CT_BookmarkRange">
 		<xsd:complexContent>
 			<xsd:extension base="CT_MarkupRange">
@@ -3684,20 +3698,6 @@ PRINCIPLES:
 						Start</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="moveFromRangeEnd" type="CT_MarkupRange">
-				<xsd:annotation>
-					<xsd:documentation>Move Source Location Container -
-						End</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="moveToRangeEnd" type="CT_MarkupRange">
-				<xsd:annotation>
-					<xsd:documentation>Move Destination Location Container -
-						End</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<!--  TODO swith to these -->
-			<!-- 
 			<xsd:element name="moveFromRangeEnd" type="CT_MoveFromRangeEnd">
 				<xsd:annotation>
 					<xsd:documentation>Move Source Location Container -
@@ -3710,7 +3710,6 @@ PRINCIPLES:
 						End</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>			
-			 -->
 			<xsd:element name="moveToRangeStart" type="CT_MoveBookmark">
 				<xsd:annotation>
 					<xsd:documentation>Move Destination Location Container -
@@ -4312,6 +4311,8 @@ PRINCIPLES:
 						Formatting</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			
+			<xsd:element ref="w15:collapsed" /> <!--  experimentation shows that Word places this before w:pPr/w:rPr -->
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -4440,6 +4441,7 @@ PRINCIPLES:
 							Height</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
+				<xsd:attribute ref="w14:anchorId" use="optional"/>
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
@@ -4464,7 +4466,8 @@ PRINCIPLES:
 						</xsd:annotation>
 					</xsd:element>
 				</xsd:sequence>
-			</xsd:extension>
+				<xsd:attribute ref="w14:anchorId" use="optional"/>
+			</xsd:extension>			
 		</xsd:complexContent>
 	</xsd:complexType>
 	
@@ -5923,6 +5926,7 @@ PRINCIPLES:
 						Data</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			<xsd:element ref="w15:footnoteColumns" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:group>
 	<xsd:attributeGroup name="AG_SectPrAttributes">
@@ -7925,6 +7929,15 @@ PRINCIPLES:
 					<xsd:complexType/>
 				</xsd:element>
 			</xsd:choice>
+			<xsd:element ref="w14:checkbox"  minOccurs="0"/>
+			<xsd:element ref="w14:entityPicker"  minOccurs="0"/>
+			<xsd:element ref="w15:appearance"  minOccurs="0"/>
+			<xsd:element ref="w15:color"  minOccurs="0"/>
+			<xsd:element ref="w15:dataBinding"  minOccurs="0"/>
+			<xsd:element ref="w15:repeatingSection"  minOccurs="0"/>
+			<xsd:element ref="w15:repeatingSectionItem"  minOccurs="0"/>
+			<xsd:element ref="w15:webExtensionCreated"  minOccurs="0"/>
+			<xsd:element ref="w15:webExtensionLinked"  minOccurs="0"/>
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="CT_SdtEndPr">
@@ -8048,6 +8061,8 @@ PRINCIPLES:
 						Properties</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attributeGroup ref="w14:AG_Parids"  />
+			
 		</xsd:complexType>
 		
 	</xsd:element>
@@ -8523,6 +8538,8 @@ PRINCIPLES:
 						Runs</xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			<xsd:attributeGroup ref="w14:AG_Parids"  />
+			
 		</xsd:complexType>
 	</xsd:element>
 	
@@ -11636,7 +11653,17 @@ PRINCIPLES:
 				</xsd:complexType>
 				
 			</xsd:element>
+			
+	        <xsd:element ref="w15:chartTrackingRefBased" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w14:docId" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w15:docId" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w14:conflictMode" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w14:discardImageEditingData" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w14:defaultImageDpi" minOccurs="0" maxOccurs="1"/>
+        			
 		</xsd:sequence>
+		<xsd:attribute ref="mc:Ignorable" use="optional" />
+		
 	</xsd:complexType>
 	<xsd:complexType name="CT_WebSettings">
 		<xsd:sequence>
@@ -14280,6 +14307,7 @@ PRINCIPLES:
 				</xsd:element>
 				<xsd:element ref="body" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
+			<xsd:attribute ref="mc:Ignorable" use="optional" />
 		</xsd:complexType>
 	</xsd:element>
 	

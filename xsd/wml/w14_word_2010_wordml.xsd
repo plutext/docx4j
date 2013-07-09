@@ -1,13 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main" elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns="http://schemas.microsoft.com/office/word/2010/wordml" targetNamespace="http://schemas.microsoft.com/office/word/2010/wordml">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	blockDefault="#all"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns="http://schemas.microsoft.com/office/word/2010/wordml"
+	targetNamespace="http://schemas.microsoft.com/office/word/2010/wordml"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+
+	  <xsd:import id="w" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="wml.xsd"/>
+	
+	<!--  NOT USED.  (Why are they here??) 
   <xsd:import id="rel" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
-  <xsd:import id="w" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="word12.xsd"/>
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartsplineproperties.xsd"/>
+   -->
+   
+	<xsd:import id="dml" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" 
+		schemaLocation="../dml/dml__ROOT.xsd" />
+   
+   
   <!-- From [MS-DOCX] — v20121003
 Word Extensions to the Office Open XML (.docx) File Format
 Copyright © 2012 Microsoft Corporation.
 Release: October 8, 2012 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.w14"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+
   <xsd:complexType name="CT_LongHexNumber">
     <xsd:attribute name="val" type="w:ST_LongHexNumber" use="required"/>
   </xsd:complexType>
@@ -22,13 +55,19 @@ Release: October 8, 2012 -->
   <xsd:complexType name="CT_OnOff">
     <xsd:attribute name="val" type="ST_OnOff"/>
   </xsd:complexType>
+  
   <xsd:element name="docId" type="CT_LongHexNumber"/>
+  
   <xsd:element name="conflictMode" type="CT_OnOff"/>
+  
+  
   <xsd:attributeGroup name="AG_Parids">
-    <xsd:attribute name="paraId" type="w:ST_LongHexNumber"/>
-    <xsd:attribute name="textId" type="w:ST_LongHexNumber"/>
+    <xsd:attribute name="paraId" type="w:ST_LongHexNumber" use="optional" />
+    <xsd:attribute name="textId" type="w:ST_LongHexNumber" use="optional" />
   </xsd:attributeGroup>
+  
   <xsd:attribute name="anchorId" type="w:ST_LongHexNumber"/>
+  
   <xsd:attribute name="noSpellErr" type="w:ST_OnOff"/>
   <xsd:element name="customXmlConflictInsRangeStart" type="w:CT_TrackChange"/>
   <xsd:element name="customXmlConflictInsRangeEnd" type="w:CT_Markup"/>
@@ -545,15 +584,18 @@ Release: October 8, 2012 -->
     </xsd:sequence>
   </xsd:group>
   <xsd:element name="discardImageEditingData" type="CT_OnOff"/>
+  
   <xsd:element name="defaultImageDpi" type="CT_DefaultImageDpi"/>
   <xsd:complexType name="CT_DefaultImageDpi">
     <xsd:attribute name="val" type="w:ST_DecimalNumber" use="required"/>
   </xsd:complexType>
+  
   <xsd:element name="entityPicker" type="w:CT_Empty"/>
   <xsd:complexType name="CT_SdtCheckboxSymbol">
     <xsd:attribute name="font" type="w:ST_String"/>
     <xsd:attribute name="val" type="w:ST_ShortHexNumber"/>
   </xsd:complexType>
+  
   <xsd:complexType name="CT_SdtCheckbox">
     <xsd:sequence>
       <xsd:element name="checked" type="CT_OnOff" minOccurs="0"/>
@@ -562,4 +604,5 @@ Release: October 8, 2012 -->
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="checkbox" type="CT_SdtCheckbox"/>
+  
 </xsd:schema>

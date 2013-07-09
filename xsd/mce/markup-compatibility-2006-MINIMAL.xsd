@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:tns="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	attributeFormDefault="unqualified" elementFormDefault="qualified"
+	targetNamespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">           
+           
+  <!--  This XSD is for the sole purpose of round tripping @mc:Ignorable
+  
+		<w:document 
+		            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		            xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+		            mc:Ignorable="w14 w15 wp14">  
+		            
+		See further ECMA-376, 4th Edition, Office Open XML File Formats 
+		Part 3 : Markup Compatibility and Extensibility		            
+		            
+   --> 
+   
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.mce"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+   
+           
+  <xsd:attribute name="Ignorable" type="xsd:string" />
+  
+  
+</xsd:schema>
