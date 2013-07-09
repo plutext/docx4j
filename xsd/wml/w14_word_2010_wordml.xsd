@@ -56,7 +56,7 @@ Release: October 8, 2012 -->
     <xsd:attribute name="val" type="ST_OnOff"/>
   </xsd:complexType>
   
-  <xsd:element name="docId" type="CT_LongHexNumber"/>
+  <xsd:element name="docId" type="CT_LongHexNumber" />
   
   <xsd:element name="conflictMode" type="CT_OnOff"/>
   

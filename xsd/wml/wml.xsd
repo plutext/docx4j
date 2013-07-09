@@ -69,6 +69,7 @@ USAGE INSTRUCTIONS
   Windows:
     
      \Java\jaxb-ri-20110601\bin\xjc  -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
+     [TODO FIXME that parent-pointer-plugin-1.2.jar generates a Child class in the package, which is not what we want for backwards compat]
  
     previously:
           C:>\Java\jaxb-ri-20110601\bin\xjc.bat -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d t2 -no-header -target 2.0
@@ -4312,7 +4313,7 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			
-			<xsd:element ref="w15:collapsed" /> <!--  experimentation shows that Word places this before w:pPr/w:rPr -->
+			<xsd:element ref="w15:collapsed" minOccurs="0"  /> <!--  experimentation shows that Word places this before w:pPr/w:rPr -->
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -11655,8 +11656,22 @@ PRINCIPLES:
 			</xsd:element>
 			
 	        <xsd:element ref="w15:chartTrackingRefBased" minOccurs="0" maxOccurs="1"/>
-	        <xsd:element ref="w14:docId" minOccurs="0" maxOccurs="1"/>
-	        <xsd:element ref="w15:docId" minOccurs="0" maxOccurs="1"/>
+	        <xsd:element ref="w14:docId" minOccurs="0" maxOccurs="1">
+		       <xsd:annotation>
+		          <xsd:appinfo>
+		             <jaxb:property name="docId14"/>
+		          </xsd:appinfo>
+		       </xsd:annotation>
+		   </xsd:element>
+   	        
+	        <xsd:element ref="w15:docId" minOccurs="0" maxOccurs="1">
+		       <xsd:annotation>
+		          <xsd:appinfo>
+		             <jaxb:property name="docId15" />
+		          </xsd:appinfo>
+		       </xsd:annotation>
+		   </xsd:element>
+	        
 	        <xsd:element ref="w14:conflictMode" minOccurs="0" maxOccurs="1"/>
 	        <xsd:element ref="w14:discardImageEditingData" minOccurs="0" maxOccurs="1"/>
 	        <xsd:element ref="w14:defaultImageDpi" minOccurs="0" maxOccurs="1"/>
