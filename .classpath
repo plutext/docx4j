@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="org/docx4j/document/wordprocessingml/Constants.java" including="**/*.cbf|**/*.java" kind="src" output="bin" path="src/main/java"/>
+	<classpathentry kind="src" path="src/samples/glox4j"/>
+	<classpathentry kind="src" path="src/samples/docx4j"/>
+	<classpathentry kind="src" path="src/samples/pptx4j"/>
+	<classpathentry kind="src" path="src/samples/xlsx4j"/>
 	<classpathentry kind="src" output="bin" path="src/pptx4j/java"/>
 	<classpathentry kind="src" output="bin" path="src/main/resources"/>
 	<classpathentry kind="src" output="bin" path="src/test/java"/>

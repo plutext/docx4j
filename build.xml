@@ -316,6 +316,8 @@
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/spreadsheetDrawing/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/vml/wordprocessingDrawing/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/wml/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/w14/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/w15/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/xmlPackage/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/components/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/conditions/jaxb.properties"/>
@@ -367,6 +369,8 @@
 		<delete file="src/main/java/org/docx4j/vml/spreadsheetDrawing/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/vml/wordprocessingDrawing/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/wml/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/w14/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/w15/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/xmlPackage/jaxb.properties"/>
 		<delete file="src/main/java/org/opendope/components/jaxb.properties"/>
 		<delete file="src/main/java/org/opendope/conditions/jaxb.properties"/>
