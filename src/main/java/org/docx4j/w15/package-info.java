@@ -19,4 +19,4 @@
  */
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.microsoft.com/office/word/2012/wordml", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package org.docx4j.w15;
+package org.docx4j.w15; 

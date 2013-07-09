@@ -19,7 +19,9 @@
  */
 
 
-package org.docx4j.w14;
+package org.docx4j.w14; 
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.docx4j.wml.Child;
+
 
 
 /**
