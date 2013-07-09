@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -26,10 +26,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -211,6 +210,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *           &lt;/complexType>
  *         &lt;/element>
  *         &lt;element name="cnfStyle" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Cnf" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}collapsed"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -253,10 +253,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "textboxTightWrap",
     "outlineLvl",
     "divId",
-    "cnfStyle"
+    "cnfStyle",
+    "collapsed"
 })
-public class PPrBase
-    implements Child
+public class PPrBase implements Child
 {
 
     protected PPrBase.PStyle pStyle;
@@ -292,6 +292,8 @@ public class PPrBase
     protected PPrBase.OutlineLvl outlineLvl;
     protected PPrBase.DivId divId;
     protected CTCnf cnfStyle;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2012/wordml", required = true)
+    protected BooleanDefaultTrue collapsed;
     @XmlTransient
     private Object parent;
 
@@ -1088,6 +1090,30 @@ public class PPrBase
     }
 
     /**
+     * Gets the value of the collapsed property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getCollapsed() {
+        return collapsed;
+    }
+
+    /**
+     * Sets the value of the collapsed property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setCollapsed(BooleanDefaultTrue value) {
+        this.collapsed = value;
+    }
+
+    /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
      * @return
@@ -1138,11 +1164,10 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DivId
-        implements Child
+    public static class DivId implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -1226,26 +1251,24 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "ind")        
-    public static class Ind
-        implements Child
+    public static class Ind implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "left", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger left;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "leftChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger leftChars;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "right", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger right;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "rightChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger rightChars;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "hanging", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger hanging;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "hangingChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger hangingChars;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "firstLine", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger firstLine;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "firstLineChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger firstLineChars;
         @XmlTransient
         private Object parent;
@@ -1526,9 +1549,7 @@ public class PPrBase
         "numberingChange",
         "ins"
     })
-    @XmlRootElement(name = "numPr")    
-    public static class NumPr
-        implements Child
+    public static class NumPr implements Child
     {
 
         protected PPrBase.NumPr.Ilvl ilvl;
@@ -1685,11 +1706,10 @@ public class PPrBase
          */
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "")
-        public static class Ilvl
-            implements Child
+        public static class Ilvl implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
             protected BigInteger val;
             @XmlTransient
             private Object parent;
@@ -1771,11 +1791,10 @@ public class PPrBase
          */
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "")
-        public static class NumId
-            implements Child
+        public static class NumId implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
             protected BigInteger val;
             @XmlTransient
             private Object parent;
@@ -1859,12 +1878,10 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "outlineLvl")        
-    public static class OutlineLvl
-        implements Child
+    public static class OutlineLvl implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -1955,9 +1972,7 @@ public class PPrBase
         "between",
         "bar"
     })
-    @XmlRootElement(name = "pBdr")        
-    public static class PBdr
-        implements Child
+    public static class PBdr implements Child
     {
 
         protected CTBorder top;
@@ -2161,11 +2176,10 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PStyle
-        implements Child
+    public static class PStyle implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -2249,26 +2263,24 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "spacing")        
-    public static class Spacing
-        implements Child
+    public static class Spacing implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "before", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger before;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "beforeLines", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger beforeLines;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "beforeAutospacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean beforeAutospacing;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "after", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger after;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "afterLines", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger afterLines;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "afterAutospacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean afterAutospacing;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "line", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger line;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "lineRule", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STLineSpacingRule lineRule;
         @XmlTransient
         private Object parent;
@@ -2331,7 +2343,7 @@ public class PPrBase
          */
         public boolean isBeforeAutospacing() {
             if (beforeAutospacing == null) {
-                return false;
+                return true;
             } else {
                 return beforeAutospacing;
             }
@@ -2407,7 +2419,7 @@ public class PPrBase
          */
         public boolean isAfterAutospacing() {
             if (afterAutospacing == null) {
-                return false;
+                return true;
             } else {
                 return afterAutospacing;
             }
@@ -2531,11 +2543,10 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class TextAlignment
-        implements Child
+    public static class TextAlignment implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected String val;
         @XmlTransient
         private Object parent;

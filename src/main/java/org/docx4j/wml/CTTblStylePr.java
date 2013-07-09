@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -62,8 +61,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "trPr",
     "tcPr"
 })
-public class CTTblStylePr
-    implements Child
+public class CTTblStylePr implements Child
 {
 
     protected PPr pPr;
@@ -71,7 +69,7 @@ public class CTTblStylePr
     protected CTTblPrBase tblPr;
     protected TrPr trPr;
     protected TcPr tcPr;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "type", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected STTblStyleOverrideType type;
     @XmlTransient
     private Object parent;

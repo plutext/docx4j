@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,10 +24,7 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -53,15 +50,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_TblPr", propOrder = {
     "tblPrChange"
 })
-@XmlRootElement(name = "tblPr")
 public class TblPr
     extends CTTblPrBase
-    implements Child
 {
 
     protected CTTblPrChange tblPrChange;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the tblPrChange property.
@@ -85,20 +78,6 @@ public class TblPr
      */
     public void setTblPrChange(CTTblPrChange value) {
         this.tblPrChange = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

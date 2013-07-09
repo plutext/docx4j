@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -64,39 +63,38 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_FramePr")
-public class CTFramePr
-    implements Child
+public class CTFramePr implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "dropCap", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STDropCap dropCap;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "lines", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger lines;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger w;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "h", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger h;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "vSpace", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger vSpace;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hSpace", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger hSpace;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "wrap", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STWrap wrap;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hAnchor", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STHAnchor hAnchor;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "vAnchor", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STVAnchor vAnchor;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "x", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger x;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "xAlign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STXAlign xAlign;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "y", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger y;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "yAlign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STYAlign yAlign;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hRule", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STHeightRule hRule;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "anchorLock", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean anchorLock;
     @XmlTransient
     private Object parent;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -54,19 +53,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_EastAsianLayout")
-public class CTEastAsianLayout
-    implements Child
+public class CTEastAsianLayout implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger id;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "combine", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean combine;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "combineBrackets", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STCombineBrackets combineBrackets;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "vert", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean vert;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "vertCompress", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean vertCompress;
     @XmlTransient
     private Object parent;

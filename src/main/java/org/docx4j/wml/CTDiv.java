@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -72,8 +71,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "divBdr",
     "divsChild"
 })
-public class CTDiv
-    implements Child
+public class CTDiv implements Child
 {
 
     protected BooleanDefaultTrue blockQuote;
@@ -88,7 +86,7 @@ public class CTDiv
     protected CTSignedTwipsMeasure marBottom;
     protected CTDivBdr divBdr;
     protected List<CTDivs> divsChild;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected BigInteger id;
     @XmlTransient
     private Object parent;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -19,8 +19,4 @@
  */
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-@javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters
-({
-    @javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter(value=org.docx4j.wml.BigIntegerAdapter.class,type=java.math.BigInteger.class)
-})
 package org.docx4j.wml;

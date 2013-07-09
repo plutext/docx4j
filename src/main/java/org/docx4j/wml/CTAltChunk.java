@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,10 +25,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -55,13 +53,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_AltChunk", propOrder = {
     "altChunkPr"
 })
-@XmlRootElement(name = "altChunk")
-public class CTAltChunk
-    implements Child
+public class CTAltChunk implements Child
 {
 
     protected CTAltChunkPr altChunkPr;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String id;
     @XmlTransient
     private Object parent;

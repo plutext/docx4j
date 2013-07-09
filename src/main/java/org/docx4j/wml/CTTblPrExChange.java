@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,9 +25,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -55,13 +53,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 public class CTTblPrExChange
     extends CTTrackChange
-    implements Child
 {
 
     @XmlElement(required = true)
     protected CTTblPrExBase tblPrEx;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the tblPrEx property.
@@ -85,20 +80,6 @@ public class CTTblPrExChange
      */
     public void setTblPrEx(CTTblPrExBase value) {
         this.tblPrEx = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

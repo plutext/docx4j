@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,9 +24,7 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -58,14 +56,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 public class TrPr
     extends CTTrPrBase
-    implements Child
 {
 
     protected CTTrackChange ins;
     protected CTTrackChange del;
     protected CTTrPrChange trPrChange;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the ins property.
@@ -137,20 +132,6 @@ public class TrPr
      */
     public void setTrPrChange(CTTrPrChange value) {
         this.trPrChange = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

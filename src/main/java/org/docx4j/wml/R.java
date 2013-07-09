@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -63,53 +62,53 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "rPr",
-    "runContent"
+    "content"
 })
 @XmlRootElement(name = "r")
-public class R implements Child, ContentAccessor
+public class R implements Child
 {
 
     protected RPr rPr;
     @XmlElementRefs({
-        @XmlElementRef(name = "fldChar", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "endnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "footnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ptab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "yearLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dayShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "noBreakHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "endnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "separator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "endnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "pgNum", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "ruby", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "yearShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "pict", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "tab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "drawing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class),
+        @XmlElementRef(name = "separator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "lastRenderedPageBreak", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "object", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "endnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "instrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "footnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "monthShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "monthLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "continuationSeparator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ruby", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "annotationRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "cr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "yearShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "fldChar", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "commentReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "monthLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "ptab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "footnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "instrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lastRenderedPageBreak", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "object", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "monthShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "pict", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class),
-        @XmlElementRef(name = "annotationRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "dayShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "cr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "yearLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "continuationSeparator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "drawing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class),
-        @XmlElementRef(name = "dayLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "dayLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class)
     })
-    protected List<Object> runContent;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected List<Object> content;
+    @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidRPr;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidDel", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidDel;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidR", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidR;
     @XmlTransient
     private Object parent;
@@ -139,77 +138,65 @@ public class R implements Child, ContentAccessor
     }
 
     /**
-     * Gets the value of the runContent property.
+     * Gets the value of the content property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the runContent property.
+     * This is why there is not a <CODE>set</CODE> method for the content property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getRunContent().add(newItem);
+     *    getContent().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link FldChar }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.EndnoteRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.SoftHyphen }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.Ptab }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.YearLong }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.DayShort }{@code >}
      * {@link JAXBElement }{@code <}{@link R.NoBreakHyphen }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.Separator }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.EndnoteRef }{@code >}
      * {@link JAXBElement }{@code <}{@link R.PgNum }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRuby }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.YearShort }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.SoftHyphen }{@code >}
+     * {@link JAXBElement }{@code <}{@link Pict }{@code >}
      * {@link JAXBElement }{@code <}{@link R.Tab }{@code >}
+     * {@link JAXBElement }{@code <}{@link Drawing }{@code >}
+     * {@link Br }
+     * {@link JAXBElement }{@code <}{@link R.Separator }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.LastRenderedPageBreak }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTObject }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.MonthShort }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.MonthLong }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.ContinuationSeparator }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRuby }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.AnnotationRef }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.Cr }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.YearShort }{@code >}
+     * {@link JAXBElement }{@code <}{@link FldChar }{@code >}
+     * {@link JAXBElement }{@code <}{@link R.Sym }{@code >}
      * {@link JAXBElement }{@code <}{@link R.CommentReference }{@code >}
      * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.MonthLong }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.Ptab }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.Sym }{@code >}
      * {@link JAXBElement }{@code <}{@link R.FootnoteRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.LastRenderedPageBreak }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTObject }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.MonthShort }{@code >}
-     * {@link JAXBElement }{@code <}{@link Pict }{@code >}
-     * {@link Br }
-     * {@link JAXBElement }{@code <}{@link R.AnnotationRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.DayShort }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.Cr }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.YearLong }{@code >}
-     * {@link JAXBElement }{@code <}{@link Drawing }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.ContinuationSeparator }{@code >}
-     * {@link JAXBElement }{@code <}{@link R.DayLong }{@code >}
      * {@link DelText }
+     * {@link JAXBElement }{@code <}{@link R.DayLong }{@code >}
      * 
      * 
      */
-    @Deprecated
-    public List<Object> getRunContent() {
-        if (runContent == null) {
-            runContent = new ArrayList<Object>();
+    public List<Object> getContent() {
+        if (content == null) {
+            content = new ArrayList<Object>();
         }
-        return this.runContent;
+        return this.content;
     }
 
-    /**
-     * Get the content of this element.
-     * @since 2.7
-     */    
-    public List<Object> getContent() {
-        if (runContent == null) {
-            runContent = new ArrayList<Object>();
-        }
-        return this.runContent;
-    }
-    
     /**
      * Gets the value of the rsidRPr property.
      * 
@@ -327,9 +314,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "annotationRef")
-    public static class AnnotationRef
-        implements Child
+    public static class AnnotationRef implements Child
     {
 
         @XmlTransient
@@ -383,12 +368,10 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "commentReference")    
-    public static class CommentReference
-        implements Child
+    public static class CommentReference implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger id;
         @XmlTransient
         private Object parent;
@@ -464,9 +447,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "continuationSeparator")
-    public static class ContinuationSeparator
-        implements Child
+    public static class ContinuationSeparator implements Child
     {
 
         @XmlTransient
@@ -519,9 +500,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "cr")    
-    public static class Cr
-        implements Child
+    public static class Cr implements Child
     {
 
         @XmlTransient
@@ -574,9 +553,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "dayLong")    
-    public static class DayLong
-        implements Child
+    public static class DayLong implements Child
     {
 
         @XmlTransient
@@ -629,9 +606,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "dayShort")    
-    public static class DayShort
-        implements Child
+    public static class DayShort implements Child
     {
 
         @XmlTransient
@@ -684,9 +659,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "endnoteRef")    
-    public static class EndnoteRef
-        implements Child
+    public static class EndnoteRef implements Child
     {
 
         @XmlTransient
@@ -739,9 +712,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "footnoteRef")    
-    public static class FootnoteRef
-        implements Child
+    public static class FootnoteRef implements Child
     {
 
         @XmlTransient
@@ -794,9 +765,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "lastRenderedPageBreak")    
-    public static class LastRenderedPageBreak
-        implements Child
+    public static class LastRenderedPageBreak implements Child
     {
 
         @XmlTransient
@@ -849,9 +818,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "monthLong")    
-    public static class MonthLong
-        implements Child
+    public static class MonthLong implements Child
     {
 
         @XmlTransient
@@ -904,9 +871,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "monthShort")        
-    public static class MonthShort
-        implements Child
+    public static class MonthShort implements Child
     {
 
         @XmlTransient
@@ -959,9 +924,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "noBreakHyphen")        
-    public static class NoBreakHyphen
-        implements Child
+    public static class NoBreakHyphen implements Child
     {
 
         @XmlTransient
@@ -1014,9 +977,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "pgNum")            
-    public static class PgNum
-        implements Child
+    public static class PgNum implements Child
     {
 
         @XmlTransient
@@ -1072,16 +1033,14 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "ptab")            
-    public static class Ptab
-        implements Child
+    public static class Ptab implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "alignment", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabAlignment alignment;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "relativeTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabRelativeTo relativeTo;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "leader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected STPTabLeader leader;
         @XmlTransient
         private Object parent;
@@ -1205,9 +1164,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "separator")            
-    public static class Separator
-        implements Child
+    public static class Separator implements Child
     {
 
         @XmlTransient
@@ -1260,9 +1217,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "softHyphen")            
-    public static class SoftHyphen
-        implements Child
+    public static class SoftHyphen implements Child
     {
 
         @XmlTransient
@@ -1317,12 +1272,10 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "sym")            
-    public static class Sym
-        implements Child
+    public static class Sym implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "font", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String font;
         @XmlAttribute(name = "char", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String _char;
@@ -1424,9 +1377,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "tab")            
-    public static class Tab
-        implements Child
+    public static class Tab implements Child
     {
 
         @XmlTransient
@@ -1479,9 +1430,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "yearLong")            
-    public static class YearLong
-        implements Child
+    public static class YearLong implements Child
     {
 
         @XmlTransient
@@ -1534,9 +1483,7 @@ public class R implements Child, ContentAccessor
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "yearShort")            
-    public static class YearShort
-        implements Child
+    public static class YearShort implements Child
     {
 
         @XmlTransient

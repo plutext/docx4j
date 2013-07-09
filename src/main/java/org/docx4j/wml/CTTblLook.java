@@ -18,6 +18,7 @@
 
  */
 
+
 package org.docx4j.wml;
 
 import javax.xml.bind.Unmarshaller;
@@ -27,7 +28,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.sharedtypes.STOnOff;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -55,8 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_TblLook")
-public class CTTblLook
-    implements Child
+public class CTTblLook implements Child
 {
 
     @XmlAttribute(name = "firstRow", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -62,23 +61,23 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class RFonts implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hint", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STHint hint;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "ascii", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String ascii;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hAnsi", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String hAnsi;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "eastAsia", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String eastAsia;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String cs;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "asciiTheme", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STTheme asciiTheme;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hAnsiTheme", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STTheme hAnsiTheme;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "eastAsiaTheme", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STTheme eastAsiaTheme;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cstheme", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STTheme cstheme;
     @XmlTransient
     private Object parent;

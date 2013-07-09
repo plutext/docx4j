@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -29,7 +29,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -60,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class Id implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected BigInteger val;
     @XmlTransient
     private Object parent;
@@ -115,20 +114,4 @@ public class Id implements Child
         setParent(parent);
     }
 
-    public boolean equals(Object obj) {
-    	if (obj instanceof Id) {
-	    		return val.equals( ((Id)obj).getVal() ); 
-	    	} else {
-	    		return false;
-	    	}
-	    }
-	   
-	    public int hashCode() {
-	    	
-	    	// Natural and good enough...
-	    	return val.intValue();	    	
-	    }
-        
-    
-    
 }

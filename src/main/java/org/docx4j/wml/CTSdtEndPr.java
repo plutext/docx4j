@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -54,8 +53,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_SdtEndPr", propOrder = {
     "rPr"
 })
-public class CTSdtEndPr
-    implements Child
+public class CTSdtEndPr implements Child
 {
 
     protected List<RPr> rPr;

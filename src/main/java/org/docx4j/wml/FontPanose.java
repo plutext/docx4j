@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -29,7 +29,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -51,11 +50,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Panose")
-public class FontPanose
-    implements Child
+public class FontPanose implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     @XmlJavaTypeAdapter(HexBinaryAdapter.class)
     protected byte[] val;
     @XmlTransient
@@ -82,7 +80,7 @@ public class FontPanose
      *     
      */
     public void setVal(byte[] value) {
-        this.val = ((byte[]) value);
+        this.val = value;
     }
 
     /**

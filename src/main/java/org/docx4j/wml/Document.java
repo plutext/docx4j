@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,16 +21,13 @@
 
 package org.docx4j.wml;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -44,8 +41,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="background" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Background" minOccurs="0"/>
- *         &lt;element name="body" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Body" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}body" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -59,12 +57,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "body"
 })
 @XmlRootElement(name = "document")
-public class Document
-    implements Child, ContentAccessor
+public class Document implements Child
 {
 
     protected CTBackground background;
     protected Body body;
+    @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String ignorable;
     @XmlTransient
     private Object parent;
 
@@ -103,15 +102,6 @@ public class Document
     public Body getBody() {
         return body;
     }
-    
-    /**
-     * Convenience method to getBody().getContent()
-     * @since 2.7
-     */
-    public List<Object> getContent() {
-        return getBody().getContent();
-    }
-    
 
     /**
      * Sets the value of the body property.
@@ -123,6 +113,30 @@ public class Document
      */
     public void setBody(Body value) {
         this.body = value;
+    }
+
+    /**
+     * Gets the value of the ignorable property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getIgnorable() {
+        return ignorable;
+    }
+
+    /**
+     * Sets the value of the ignorable property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setIgnorable(String value) {
+        this.ignorable = value;
     }
 
     /**

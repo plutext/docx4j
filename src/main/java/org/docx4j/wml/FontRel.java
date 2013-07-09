@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,11 +25,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -54,16 +52,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_FontRel")
 public class FontRel
     extends CTRel
-    implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "fontKey", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String fontKey;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "subsetted", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean subsetted;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the fontKey property.
@@ -115,20 +110,6 @@ public class FontRel
      */
     public void setSubsetted(Boolean value) {
         this.subsetted = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

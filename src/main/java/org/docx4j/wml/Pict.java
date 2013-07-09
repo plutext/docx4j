@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,10 +24,8 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -43,6 +41,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="movie" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Rel" minOccurs="0"/>
  *         &lt;element name="control" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Control" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute ref="{http://schemas.microsoft.com/office/word/2010/wordml}anchorId"/>
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -51,20 +50,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "CT_Picture", propOrder = {
+@XmlType(name = "CT_Picture", propOrder = {
     "movie",
     "control"
 })
-@XmlRootElement(name = "pict")
 public class Pict
     extends CTPictureBase
-    implements Child
 {
 
     protected CTRel movie;
     protected CTControl control;
-    @XmlTransient
-    private Object parent;
+    @XmlAttribute(name = "anchorId", namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected String anchorId;
 
     /**
      * Gets the value of the movie property.
@@ -115,17 +112,27 @@ public class Pict
     }
 
     /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * Gets the value of the anchorId property.
      * 
      * @return
-     *     The parent object.
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public Object getParent() {
-        return this.parent;
+    public String getAnchorId() {
+        return anchorId;
     }
 
-    public void setParent(Object parent) {
-        this.parent = parent;
+    /**
+     * Sets the value of the anchorId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAnchorId(String value) {
+        this.anchorId = value;
     }
 
     /**

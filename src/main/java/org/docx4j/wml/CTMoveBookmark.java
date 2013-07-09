@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,10 +25,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -53,15 +51,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_MoveBookmark")
 public class CTMoveBookmark
     extends CTBookmark
-    implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "author", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected String author;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    @XmlAttribute(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected XMLGregorianCalendar date;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the author property.
@@ -109,20 +104,6 @@ public class CTMoveBookmark
      */
     public void setDate(XMLGregorianCalendar value) {
         this.date = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

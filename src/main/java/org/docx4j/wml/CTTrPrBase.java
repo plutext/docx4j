@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -109,23 +108,22 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_TrPrBase", propOrder = {
     "cnfStyleOrDivIdOrGridBefore"
 })
-public class CTTrPrBase
-    implements Child
+public class CTTrPrBase implements Child
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "gridAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "cantSplit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "wBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "jc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "cnfStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "divId", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "gridBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "hidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "trHeight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "wBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tblCellSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "gridAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "wAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "divId", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "trHeight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "cnfStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "cantSplit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "tblHeader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "tblCellSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "gridBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "jc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore;
     @XmlTransient
@@ -149,18 +147,18 @@ public class CTTrPrBase
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridAfter }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
-     * {@link JAXBElement }{@code <}{@link Jc }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTCnf }{@code >}
+     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridAfter }{@code >}
      * {@link JAXBElement }{@code <}{@link CTTrPrBase.DivId }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridBefore }{@code >}
+     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCnf }{@code >}
      * {@link JAXBElement }{@code <}{@link CTHeight }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
-     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridBefore }{@code >}
+     * {@link JAXBElement }{@code <}{@link Jc }{@code >}
      * 
      * 
      */
@@ -225,7 +223,7 @@ public class CTTrPrBase
     public static class DivId implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -310,7 +308,7 @@ public class CTTrPrBase
     public static class GridAfter implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -395,7 +393,7 @@ public class CTTrPrBase
     public static class GridBefore implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;

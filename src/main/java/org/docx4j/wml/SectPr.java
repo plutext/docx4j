@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,17 +24,14 @@ package org.docx4j.wml;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -81,11 +78,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "rtlGutter",
     "docGrid",
     "printerSettings",
+    "footnoteColumns",
     "sectPrChange"
 })
-@XmlRootElement(name = "sectPr")
-public class SectPr
-    implements Child
+public class SectPr implements Child
 {
 
     @XmlElements({
@@ -112,14 +108,16 @@ public class SectPr
     protected BooleanDefaultTrue rtlGutter;
     protected CTDocGrid docGrid;
     protected CTRel printerSettings;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2012/wordml")
+    protected CTDecimalNumber footnoteColumns;
     protected CTSectPrChange sectPrChange;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidRPr;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidDel", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidDel;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidR", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidR;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidSect", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidSect;
     @XmlTransient
     private Object parent;
@@ -611,6 +609,30 @@ public class SectPr
     }
 
     /**
+     * Gets the value of the footnoteColumns property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTDecimalNumber }
+     *     
+     */
+    public CTDecimalNumber getFootnoteColumns() {
+        return footnoteColumns;
+    }
+
+    /**
+     * Sets the value of the footnoteColumns property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTDecimalNumber }
+     *     
+     */
+    public void setFootnoteColumns(CTDecimalNumber value) {
+        this.footnoteColumns = value;
+    }
+
+    /**
      * Gets the value of the sectPrChange property.
      * 
      * @return
@@ -789,19 +811,18 @@ public class SectPr
         "bottom",
         "right"
     })
-    public static class PgBorders
-        implements Child
+    public static class PgBorders implements Child
     {
 
         protected CTBorder top;
         protected CTBorder left;
         protected CTBorder bottom;
         protected CTBorder right;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "zOrder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STPageBorderZOrder zOrder;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "display", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STPageBorderDisplay display;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "offsetFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STPageBorderOffset offsetFrom;
         @XmlTransient
         private Object parent;
@@ -1028,23 +1049,22 @@ public class SectPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PgMar
-        implements Child
+    public static class PgMar implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "top", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger top;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "right", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger right;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "bottom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger bottom;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "left", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger left;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "header", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger header;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "footer", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger footer;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "gutter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger gutter;
         @XmlTransient
         private Object parent;
@@ -1268,17 +1288,16 @@ public class SectPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PgSz
-        implements Child
+    public static class PgSz implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger w;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "h", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger h;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "orient", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STPageOrientation orient;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "code", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger code;
         @XmlTransient
         private Object parent;
@@ -1437,11 +1456,10 @@ public class SectPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Type
-        implements Child
+    public static class Type implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -29,7 +29,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,8 +56,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "caption",
     "autoCaptions"
 })
-public class CTCaptions
-    implements Child
+public class CTCaptions implements Child
 {
 
     @XmlElement(required = true)

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -53,17 +52,16 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_LineNumber")
-public class CTLineNumber
-    implements Child
+public class CTLineNumber implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "countBy", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger countBy;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "start", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger start;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "distance", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger distance;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "restart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STLineNumberRestart restart;
     @XmlTransient
     private Object parent;

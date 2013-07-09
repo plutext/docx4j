@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -30,14 +30,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.docx4j.w14.CTSdtCheckbox;
+import org.docx4j.w15.CTSdtAppearance;
+import org.docx4j.w15.CTSdtRepeatedSection;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
 
 /**
  * <p>Java class for CT_SdtPr complex type.
@@ -122,6 +120,15 @@ import org.docx4j.XmlUtils;
  *             &lt;/complexType>
  *           &lt;/element>
  *         &lt;/choice>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}checkbox" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}entityPicker" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}appearance" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}color" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}dataBinding" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}repeatingSection" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}repeatingSectionItem" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}webExtensionCreated" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}webExtensionLinked" minOccurs="0"/>
  *       &lt;/choice>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -134,34 +141,40 @@ import org.docx4j.XmlUtils;
 @XmlType(name = "CT_SdtPr", propOrder = {
     "rPrOrAliasOrLock"
 })
-@XmlRootElement(name = "sdtPr")
-public class SdtPr
-    implements Child
+public class SdtPr implements Child
 {
-	private static Logger log = LoggerFactory.getLogger(SdtPr.class);
 
     @XmlElementRefs({
-        @XmlElementRef(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "dataBinding", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "docPartList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "richText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lock", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "showingPlcHdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "group", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Id.class),
-        @XmlElementRef(name = "citation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "text", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "placeholder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "picture", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "temporary", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dataBinding", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
         @XmlElementRef(name = "alias", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "checkbox", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "showingPlcHdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "webExtensionCreated", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "citation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dataBinding", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "temporary", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "repeatingSectionItem", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "tag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Tag.class),
+        @XmlElementRef(name = "bibliography", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "entityPicker", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "lock", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "docPartList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Id.class),
+        @XmlElementRef(name = "text", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "color", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
         @XmlElementRef(name = "equation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "docPartObj", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "tag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Tag.class),
+        @XmlElementRef(name = "webExtensionLinked", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "appearance", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
         @XmlElementRef(name = "dropDownList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bibliography", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "picture", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "repeatingSection", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "group", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "richText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> rPrOrAliasOrLock;
     @XmlTransient
@@ -185,27 +198,36 @@ public class SdtPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTSdtDate }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtComboBox }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.RichText }{@code >}
-     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTLock }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Group }{@code >}
-     * {@link Id }
-     * {@link JAXBElement }{@code <}{@link SdtPr.Citation }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Picture }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPlaceholder }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtText }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
      * {@link JAXBElement }{@code <}{@link SdtPr.Alias }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Equation }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtDropDownList }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtCheckbox }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtComboBox }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Citation }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEmpty }{@code >}
      * {@link Tag }
      * {@link JAXBElement }{@code <}{@link SdtPr.Bibliography }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEmpty }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLock }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
+     * {@link Id }
+     * {@link JAXBElement }{@code <}{@link CTSdtText }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDate }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTColor }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Equation }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtAppearance }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDropDownList }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Picture }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtRepeatedSection }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Group }{@code >}
+     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.RichText }{@code >}
      * 
      * 
      */
@@ -215,159 +237,6 @@ public class SdtPr
         }
         return this.rPrOrAliasOrLock;
     }
-    
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Id }
-     *     
-     */
-    public Id getId() {
-    	
-    	for (Object o : getRPrOrAliasOrLock()) {
-    		if ( o instanceof Id ) {
-    			log.debug("found id");
-    			return (Id)o;
-    		} 
-    	}
-    	
-        return null;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Id }
-     *     
-     */
-    public void setId(Id value) {
-    	
-    	Id existingId = getId(); 
-    	
-    	if (existingId!=null) {
-    		if (!existingId.equals(value)) {
-    			log.debug("Changing SDT ID from " + existingId + " to " + value);
-        		rPrOrAliasOrLock.remove(existingId);
-        		if (value!=null) {
-        			rPrOrAliasOrLock.add(value);
-        		}
-    		}    	
-    		// else - they are the same, so do nothing
-    	} else if (value!=null) {
-    		//ObjectFactory factory = new ObjectFactory();
-    		//JAXBElement idWrapper = factory.createSdtPrId(value);
-    		rPrOrAliasOrLock.add(value);
-    	}
-    }
-    
-    // Not generated!
-    public java.math.BigInteger setId() {
-
-    	Id id = new Id();
-    	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
-    	id.setVal( newIdVal );
-    	setId(id);    	
-		log.debug("Generated random id: " + newIdVal.toString() );
-		return newIdVal;
-    }
-
-    /**
-     * Gets the value of the tag property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SdtPr.Tag }
-     *     
-     */
-    public Tag getTag() {
-    	
-    	for (Object o : getRPrOrAliasOrLock()) {
-    		if ( o instanceof Tag ) {
-    			log.debug("found tag");
-    			return (Tag)o;
-    		} 
-    	}
-    	
-        return null;
-    }
-
-    /**
-     * Sets the value of the tag property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SdtPr.Tag }
-     *     
-     */
-    public void setTag(Tag value) {
-        
-    	Tag existingTag = getTag(); 
-    	
-    	if (existingTag!=null) {
-    		if (!existingTag.equals(value)) {
-    			log.debug("Changing SDT tag from " + existingTag + " to " + value);
-        		rPrOrAliasOrLock.remove(existingTag);
-        		if (value!=null) {
-        			rPrOrAliasOrLock.add(value);
-        		}
-    		}
-    		// else - they are the same, so do nothing
-    	} else if (value!=null) {
-    		//ObjectFactory factory = new ObjectFactory();
-    		//JAXBElement idWrapper = factory.createSdtPrId(value);
-    		rPrOrAliasOrLock.add(value);
-    	}
-    }
-    
-    public CTDataBinding getDataBinding() {
-    	
-    	for (Object o : getRPrOrAliasOrLock()) {
-    		o = XmlUtils.unwrap(o);
-    		log.debug("inspecting " + o.getClass().getName() );
-    		if ( o instanceof CTDataBinding ) {
-    			return (CTDataBinding)o;
-    		} 
-    	}
-        return null;
-    }
-    
-    public void setDataBinding(CTDataBinding value) {
-        
-    	Object existingBinding = getDataBinding(); 
-    	
-    	if (existingBinding!=null) {
-    		if (!existingBinding.equals(value)) {
-    			log.debug("Changing DataBinding tag from " + existingBinding + " to " + value);
-    			
-        		//rPrOrAliasOrLock.remove(existingBinding);
-    			existingBinding = null;
-    			for (Object o : getRPrOrAliasOrLock() ) {
-    				Object unwrapped = XmlUtils.unwrap(o);
-    				if (unwrapped instanceof CTDataBinding) {
-    					existingBinding = o;
-    					break;
-    				}
-    			}
-    			if (existingBinding!=null) {
-    				getRPrOrAliasOrLock().remove(existingBinding);
-    			}
-    			
-        		if (value!=null) {
-        			rPrOrAliasOrLock.add(value);
-        		}
-    		}
-    		// else - they are the same, so do nothing
-    	} else if (value!=null) {
-    		//ObjectFactory factory = new ObjectFactory();
-    		//JAXBElement idWrapper = factory.createSdtPrId(value);
-    		rPrOrAliasOrLock.add(value);
-    	}
-    }
-    
 
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
@@ -415,12 +284,10 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "alias")
-    public static class Alias
-        implements Child
+    public static class Alias implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -496,9 +363,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "bibliography")
-    public static class Bibliography
-        implements Child
+    public static class Bibliography implements Child
     {
 
         @XmlTransient
@@ -551,9 +416,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "citation")
-    public static class Citation
-        implements Child
+    public static class Citation implements Child
     {
 
         @XmlTransient
@@ -606,9 +469,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "equation")
-    public static class Equation
-        implements Child
+    public static class Equation implements Child
     {
 
         @XmlTransient
@@ -661,9 +522,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "group")
-    public static class Group
-        implements Child
+    public static class Group implements Child
     {
 
         @XmlTransient
@@ -716,9 +575,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "picture")
-    public static class Picture
-        implements Child
+    public static class Picture implements Child
     {
 
         @XmlTransient
@@ -771,9 +628,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    @XmlRootElement(name = "richText")
-    public static class RichText
-        implements Child
+    public static class RichText implements Child
     {
 
         @XmlTransient

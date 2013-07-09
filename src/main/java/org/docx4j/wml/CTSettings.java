@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,17 +24,21 @@ package org.docx4j.wml;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.customxml.SchemaLibrary;
 import org.docx4j.math.CTMathPr;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.docx4j.w14.CTDefaultImageDpi;
+import org.docx4j.w14.CTLongHexNumber;
+import org.docx4j.w14.CTOnOff;
+import org.docx4j.w15.CTGuid;
 
 
 /**
@@ -258,7 +262,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}chartTrackingRefBased" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}docId" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2012/wordml}docId" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}conflictMode" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}discardImageEditingData" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordml}defaultImageDpi" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -268,2604 +279,289 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Settings", propOrder = {
-    "writeProtection",
-    "view",
-    "zoom",
-    "removePersonalInformation",
-    "removeDateAndTime",
-    "doNotDisplayPageBoundaries",
-    "displayBackgroundShape",
-    "printPostScriptOverText",
-    "printFractionalCharacterWidth",
-    "printFormsData",
-    "embedTrueTypeFonts",
-    "embedSystemFonts",
-    "saveSubsetFonts",
-    "saveFormsData",
-    "mirrorMargins",
-    "alignBordersAndEdges",
-    "bordersDoNotSurroundHeader",
-    "bordersDoNotSurroundFooter",
-    "gutterAtTop",
-    "hideSpellingErrors",
-    "hideGrammaticalErrors",
-    "activeWritingStyle",
-    "proofState",
-    "formsDesign",
-    "attachedTemplate",
-    "linkStyles",
-    "stylePaneFormatFilter",
-    "stylePaneSortMethod",
-    "documentType",
-    "mailMerge",
-    "revisionView",
-    "trackRevisions",
-    "doNotTrackMoves",
-    "doNotTrackFormatting",
-    "documentProtection",
-    "autoFormatOverride",
-    "styleLockTheme",
-    "styleLockQFSet",
-    "defaultTabStop",
-    "autoHyphenation",
-    "consecutiveHyphenLimit",
-    "hyphenationZone",
-    "doNotHyphenateCaps",
-    "showEnvelope",
-    "summaryLength",
-    "clickAndTypeStyle",
-    "defaultTableStyle",
-    "evenAndOddHeaders",
-    "bookFoldRevPrinting",
-    "bookFoldPrinting",
-    "bookFoldPrintingSheets",
-    "drawingGridHorizontalSpacing",
-    "drawingGridVerticalSpacing",
-    "displayHorizontalDrawingGridEvery",
-    "displayVerticalDrawingGridEvery",
-    "doNotUseMarginsForDrawingGridOrigin",
-    "drawingGridHorizontalOrigin",
-    "drawingGridVerticalOrigin",
-    "doNotShadeFormData",
-    "noPunctuationKerning",
-    "characterSpacingControl",
-    "printTwoOnOne",
-    "strictFirstAndLastChars",
-    "noLineBreaksAfter",
-    "noLineBreaksBefore",
-    "savePreviewPicture",
-    "doNotValidateAgainstSchema",
-    "saveInvalidXml",
-    "ignoreMixedContent",
-    "alwaysShowPlaceholderText",
-    "doNotDemarcateInvalidXml",
-    "saveXmlDataOnly",
-    "useXSLTWhenSaving",
-    "saveThroughXslt",
-    "showXMLTags",
-    "alwaysMergeEmptyNamespace",
-    "updateFields",
-    "hdrShapeDefaults",
-    "footnotePr",
-    "endnotePr",
-    "compat",
-    "docVars",
-    "rsids",
-    "mathPr",
-    "uiCompat97To2003",
-    "attachedSchema",
-    "themeFontLang",
-    "clrSchemeMapping",
-    "doNotIncludeSubdocsInStats",
-    "doNotAutoCompressPictures",
-    "forceUpgrade",
-    "captions",
-    "readModeInkLockDown",
-    "smartTagType",
-    "schemaLibrary",
-    "shapeDefaults",
-    "doNotEmbedSmartTags",
-    "decimalSymbol",
-    "listSeparator"
+    "content"
 })
-@XmlRootElement(name = "settings")
-public class CTSettings
-    implements Child
+public class CTSettings implements Child
 {
 
-    protected CTWriteProtection writeProtection;
-    protected CTView view;
-    protected CTZoom zoom;
-    protected BooleanDefaultTrue removePersonalInformation;
-    protected BooleanDefaultTrue removeDateAndTime;
-    protected BooleanDefaultTrue doNotDisplayPageBoundaries;
-    protected BooleanDefaultTrue displayBackgroundShape;
-    protected BooleanDefaultTrue printPostScriptOverText;
-    protected BooleanDefaultTrue printFractionalCharacterWidth;
-    protected BooleanDefaultTrue printFormsData;
-    protected BooleanDefaultTrue embedTrueTypeFonts;
-    protected BooleanDefaultTrue embedSystemFonts;
-    protected BooleanDefaultTrue saveSubsetFonts;
-    protected BooleanDefaultTrue saveFormsData;
-    protected BooleanDefaultTrue mirrorMargins;
-    protected BooleanDefaultTrue alignBordersAndEdges;
-    protected BooleanDefaultTrue bordersDoNotSurroundHeader;
-    protected BooleanDefaultTrue bordersDoNotSurroundFooter;
-    protected BooleanDefaultTrue gutterAtTop;
-    protected BooleanDefaultTrue hideSpellingErrors;
-    protected BooleanDefaultTrue hideGrammaticalErrors;
-    protected List<CTWritingStyle> activeWritingStyle;
-    protected CTProof proofState;
-    protected BooleanDefaultTrue formsDesign;
-    protected CTRel attachedTemplate;
-    protected BooleanDefaultTrue linkStyles;
-    protected CTShortHexNumber stylePaneFormatFilter;
-    protected CTShortHexNumber stylePaneSortMethod;
-    protected CTDocType documentType;
-    protected CTMailMerge mailMerge;
-    protected CTTrackChangesView revisionView;
-    protected BooleanDefaultTrue trackRevisions;
-    protected BooleanDefaultTrue doNotTrackMoves;
-    protected BooleanDefaultTrue doNotTrackFormatting;
-    protected CTDocProtect documentProtection;
-    protected BooleanDefaultTrue autoFormatOverride;
-    protected BooleanDefaultTrue styleLockTheme;
-    protected BooleanDefaultTrue styleLockQFSet;
-    protected CTTwipsMeasure defaultTabStop;
-    protected BooleanDefaultTrue autoHyphenation;
-    protected CTSettings.ConsecutiveHyphenLimit consecutiveHyphenLimit;
-    protected CTTwipsMeasure hyphenationZone;
-    protected BooleanDefaultTrue doNotHyphenateCaps;
-    protected BooleanDefaultTrue showEnvelope;
-    protected CTSettings.SummaryLength summaryLength;
-    protected CTSettings.ClickAndTypeStyle clickAndTypeStyle;
-    protected CTSettings.DefaultTableStyle defaultTableStyle;
-    protected BooleanDefaultTrue evenAndOddHeaders;
-    protected BooleanDefaultTrue bookFoldRevPrinting;
-    protected BooleanDefaultTrue bookFoldPrinting;
-    protected CTSettings.BookFoldPrintingSheets bookFoldPrintingSheets;
-    protected CTTwipsMeasure drawingGridHorizontalSpacing;
-    protected CTTwipsMeasure drawingGridVerticalSpacing;
-    protected CTSettings.DisplayHorizontalDrawingGridEvery displayHorizontalDrawingGridEvery;
-    protected CTSettings.DisplayVerticalDrawingGridEvery displayVerticalDrawingGridEvery;
-    protected BooleanDefaultTrue doNotUseMarginsForDrawingGridOrigin;
-    protected CTTwipsMeasure drawingGridHorizontalOrigin;
-    protected CTTwipsMeasure drawingGridVerticalOrigin;
-    protected BooleanDefaultTrue doNotShadeFormData;
-    protected BooleanDefaultTrue noPunctuationKerning;
-    protected CTCharacterSpacing characterSpacingControl;
-    protected BooleanDefaultTrue printTwoOnOne;
-    protected BooleanDefaultTrue strictFirstAndLastChars;
-    protected CTKinsoku noLineBreaksAfter;
-    protected CTKinsoku noLineBreaksBefore;
-    protected BooleanDefaultTrue savePreviewPicture;
-    protected BooleanDefaultTrue doNotValidateAgainstSchema;
-    protected BooleanDefaultTrue saveInvalidXml;
-    protected BooleanDefaultTrue ignoreMixedContent;
-    protected BooleanDefaultTrue alwaysShowPlaceholderText;
-    protected BooleanDefaultTrue doNotDemarcateInvalidXml;
-    protected BooleanDefaultTrue saveXmlDataOnly;
-    protected BooleanDefaultTrue useXSLTWhenSaving;
-    protected CTSaveThroughXslt saveThroughXslt;
-    protected BooleanDefaultTrue showXMLTags;
-    protected BooleanDefaultTrue alwaysMergeEmptyNamespace;
-    protected BooleanDefaultTrue updateFields;
-    protected CTShapeDefaults hdrShapeDefaults;
-    protected CTFtnDocProps footnotePr;
-    protected CTEdnDocProps endnotePr;
-    protected CTCompat compat;
-    protected CTDocVars docVars;
-    protected CTDocRsids rsids;
-    @XmlElement(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
-    protected CTMathPr mathPr;
-    protected BooleanDefaultTrue uiCompat97To2003;
-    protected List<CTSettings.AttachedSchema> attachedSchema;
-    protected CTLanguage themeFontLang;
-    protected CTColorSchemeMapping clrSchemeMapping;
-    protected BooleanDefaultTrue doNotIncludeSubdocsInStats;
-    protected BooleanDefaultTrue doNotAutoCompressPictures;
-    protected CTSettings.ForceUpgrade forceUpgrade;
-    protected CTCaptions captions;
-    protected CTReadingModeInkLockDown readModeInkLockDown;
-    protected List<CTSmartTagType> smartTagType;
-    @XmlElement(namespace = "http://schemas.openxmlformats.org/schemaLibrary/2006/main")
-    protected SchemaLibrary schemaLibrary;
-    protected CTShapeDefaults shapeDefaults;
-    protected BooleanDefaultTrue doNotEmbedSmartTags;
-    protected CTSettings.DecimalSymbol decimalSymbol;
-    protected CTSettings.ListSeparator listSeparator;
+    @XmlElementRefs({
+        @XmlElementRef(name = "drawingGridVerticalOrigin", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hideSpellingErrors", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "saveThroughXslt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "docVars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "clickAndTypeStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotHyphenateCaps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "shapeDefaults", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "compat", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "revisionView", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "drawingGridVerticalSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "saveFormsData", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotTrackMoves", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "displayBackgroundShape", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "summaryLength", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotShadeFormData", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bordersDoNotSurroundFooter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "autoHyphenation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "printFractionalCharacterWidth", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hideGrammaticalErrors", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "defaultTableStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "styleLockTheme", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "defaultImageDpi", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "chartTrackingRefBased", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "styleLockQFSet", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "decimalSymbol", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "noLineBreaksAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "showXMLTags", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "readModeInkLockDown", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "saveXmlDataOnly", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "embedTrueTypeFonts", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hyphenationZone", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "useXSLTWhenSaving", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotDisplayPageBoundaries", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "forceUpgrade", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "drawingGridHorizontalSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "removeDateAndTime", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "embedSystemFonts", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "footnotePr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotEmbedSmartTags", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "strictFirstAndLastChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "schemaLibrary", namespace = "http://schemas.openxmlformats.org/schemaLibrary/2006/main", type = SchemaLibrary.class),
+        @XmlElementRef(name = "evenAndOddHeaders", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "displayHorizontalDrawingGridEvery", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "documentProtection", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "defaultTabStop", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "documentType", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "drawingGridHorizontalOrigin", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "clrSchemeMapping", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookFoldPrintingSheets", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hdrShapeDefaults", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "formsDesign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "printTwoOnOne", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotTrackFormatting", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "autoFormatOverride", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "alignBordersAndEdges", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "savePreviewPicture", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotValidateAgainstSchema", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "attachedSchema", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "mirrorMargins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "saveSubsetFonts", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "uiCompat97To2003", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotUseMarginsForDrawingGridOrigin", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "docId", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "endnotePr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "themeFontLang", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "showEnvelope", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "proofState", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "rsids", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "alwaysMergeEmptyNamespace", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "smartTagType", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "mailMerge", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "removePersonalInformation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "gutterAtTop", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "displayVerticalDrawingGridEvery", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookFoldRevPrinting", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "listSeparator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "discardImageEditingData", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "printPostScriptOverText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "activeWritingStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "consecutiveHyphenLimit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "docId", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "captions", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "trackRevisions", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotIncludeSubdocsInStats", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "view", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotDemarcateInvalidXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "noLineBreaksBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bordersDoNotSurroundHeader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "attachedTemplate", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "mathPr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "linkStyles", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "updateFields", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ignoreMixedContent", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "noPunctuationKerning", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "characterSpacingControl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "doNotAutoCompressPictures", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "saveInvalidXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "printFormsData", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "stylePaneFormatFilter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "zoom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookFoldPrinting", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "conflictMode", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+        @XmlElementRef(name = "stylePaneSortMethod", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "writeProtection", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "alwaysShowPlaceholderText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+    })
+    protected List<Object> content;
+    @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String ignorable;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the writeProtection property.
+     * Gets the rest of the content model. 
      * 
-     * @return
-     *     possible object is
-     *     {@link CTWriteProtection }
-     *     
-     */
-    public CTWriteProtection getWriteProtection() {
-        return writeProtection;
-    }
-
-    /**
-     * Sets the value of the writeProtection property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTWriteProtection }
-     *     
-     */
-    public void setWriteProtection(CTWriteProtection value) {
-        this.writeProtection = value;
-    }
-
-    /**
-     * Gets the value of the view property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTView }
-     *     
-     */
-    public CTView getView() {
-        return view;
-    }
-
-    /**
-     * Sets the value of the view property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTView }
-     *     
-     */
-    public void setView(CTView value) {
-        this.view = value;
-    }
-
-    /**
-     * Gets the value of the zoom property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTZoom }
-     *     
-     */
-    public CTZoom getZoom() {
-        return zoom;
-    }
-
-    /**
-     * Sets the value of the zoom property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTZoom }
-     *     
-     */
-    public void setZoom(CTZoom value) {
-        this.zoom = value;
-    }
-
-    /**
-     * Gets the value of the removePersonalInformation property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getRemovePersonalInformation() {
-        return removePersonalInformation;
-    }
-
-    /**
-     * Sets the value of the removePersonalInformation property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setRemovePersonalInformation(BooleanDefaultTrue value) {
-        this.removePersonalInformation = value;
-    }
-
-    /**
-     * Gets the value of the removeDateAndTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getRemoveDateAndTime() {
-        return removeDateAndTime;
-    }
-
-    /**
-     * Sets the value of the removeDateAndTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setRemoveDateAndTime(BooleanDefaultTrue value) {
-        this.removeDateAndTime = value;
-    }
-
-    /**
-     * Gets the value of the doNotDisplayPageBoundaries property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotDisplayPageBoundaries() {
-        return doNotDisplayPageBoundaries;
-    }
-
-    /**
-     * Sets the value of the doNotDisplayPageBoundaries property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotDisplayPageBoundaries(BooleanDefaultTrue value) {
-        this.doNotDisplayPageBoundaries = value;
-    }
-
-    /**
-     * Gets the value of the displayBackgroundShape property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDisplayBackgroundShape() {
-        return displayBackgroundShape;
-    }
-
-    /**
-     * Sets the value of the displayBackgroundShape property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDisplayBackgroundShape(BooleanDefaultTrue value) {
-        this.displayBackgroundShape = value;
-    }
-
-    /**
-     * Gets the value of the printPostScriptOverText property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getPrintPostScriptOverText() {
-        return printPostScriptOverText;
-    }
-
-    /**
-     * Sets the value of the printPostScriptOverText property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setPrintPostScriptOverText(BooleanDefaultTrue value) {
-        this.printPostScriptOverText = value;
-    }
-
-    /**
-     * Gets the value of the printFractionalCharacterWidth property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getPrintFractionalCharacterWidth() {
-        return printFractionalCharacterWidth;
-    }
-
-    /**
-     * Sets the value of the printFractionalCharacterWidth property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setPrintFractionalCharacterWidth(BooleanDefaultTrue value) {
-        this.printFractionalCharacterWidth = value;
-    }
-
-    /**
-     * Gets the value of the printFormsData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getPrintFormsData() {
-        return printFormsData;
-    }
-
-    /**
-     * Sets the value of the printFormsData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setPrintFormsData(BooleanDefaultTrue value) {
-        this.printFormsData = value;
-    }
-
-    /**
-     * Gets the value of the embedTrueTypeFonts property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getEmbedTrueTypeFonts() {
-        return embedTrueTypeFonts;
-    }
-
-    /**
-     * Sets the value of the embedTrueTypeFonts property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setEmbedTrueTypeFonts(BooleanDefaultTrue value) {
-        this.embedTrueTypeFonts = value;
-    }
-
-    /**
-     * Gets the value of the embedSystemFonts property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getEmbedSystemFonts() {
-        return embedSystemFonts;
-    }
-
-    /**
-     * Sets the value of the embedSystemFonts property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setEmbedSystemFonts(BooleanDefaultTrue value) {
-        this.embedSystemFonts = value;
-    }
-
-    /**
-     * Gets the value of the saveSubsetFonts property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getSaveSubsetFonts() {
-        return saveSubsetFonts;
-    }
-
-    /**
-     * Sets the value of the saveSubsetFonts property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setSaveSubsetFonts(BooleanDefaultTrue value) {
-        this.saveSubsetFonts = value;
-    }
-
-    /**
-     * Gets the value of the saveFormsData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getSaveFormsData() {
-        return saveFormsData;
-    }
-
-    /**
-     * Sets the value of the saveFormsData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setSaveFormsData(BooleanDefaultTrue value) {
-        this.saveFormsData = value;
-    }
-
-    /**
-     * Gets the value of the mirrorMargins property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getMirrorMargins() {
-        return mirrorMargins;
-    }
-
-    /**
-     * Sets the value of the mirrorMargins property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setMirrorMargins(BooleanDefaultTrue value) {
-        this.mirrorMargins = value;
-    }
-
-    /**
-     * Gets the value of the alignBordersAndEdges property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getAlignBordersAndEdges() {
-        return alignBordersAndEdges;
-    }
-
-    /**
-     * Sets the value of the alignBordersAndEdges property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setAlignBordersAndEdges(BooleanDefaultTrue value) {
-        this.alignBordersAndEdges = value;
-    }
-
-    /**
-     * Gets the value of the bordersDoNotSurroundHeader property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getBordersDoNotSurroundHeader() {
-        return bordersDoNotSurroundHeader;
-    }
-
-    /**
-     * Sets the value of the bordersDoNotSurroundHeader property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setBordersDoNotSurroundHeader(BooleanDefaultTrue value) {
-        this.bordersDoNotSurroundHeader = value;
-    }
-
-    /**
-     * Gets the value of the bordersDoNotSurroundFooter property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getBordersDoNotSurroundFooter() {
-        return bordersDoNotSurroundFooter;
-    }
-
-    /**
-     * Sets the value of the bordersDoNotSurroundFooter property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setBordersDoNotSurroundFooter(BooleanDefaultTrue value) {
-        this.bordersDoNotSurroundFooter = value;
-    }
-
-    /**
-     * Gets the value of the gutterAtTop property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getGutterAtTop() {
-        return gutterAtTop;
-    }
-
-    /**
-     * Sets the value of the gutterAtTop property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setGutterAtTop(BooleanDefaultTrue value) {
-        this.gutterAtTop = value;
-    }
-
-    /**
-     * Gets the value of the hideSpellingErrors property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getHideSpellingErrors() {
-        return hideSpellingErrors;
-    }
-
-    /**
-     * Sets the value of the hideSpellingErrors property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setHideSpellingErrors(BooleanDefaultTrue value) {
-        this.hideSpellingErrors = value;
-    }
-
-    /**
-     * Gets the value of the hideGrammaticalErrors property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getHideGrammaticalErrors() {
-        return hideGrammaticalErrors;
-    }
-
-    /**
-     * Sets the value of the hideGrammaticalErrors property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setHideGrammaticalErrors(BooleanDefaultTrue value) {
-        this.hideGrammaticalErrors = value;
-    }
-
-    /**
-     * Gets the value of the activeWritingStyle property.
+     * <p>
+     * You are getting this "catch-all" property because of the following reason: 
+     * The field name "DocId" is used by two different parts of a schema. See: 
+     * line 11661 of file:/C:/Users/jharrop/git/plutext/docx4jGREAT/xsd/wml/wml.xsd
+     * line 11660 of file:/C:/Users/jharrop/git/plutext/docx4jGREAT/xsd/wml/wml.xsd
+     * <p>
+     * To get rid of this property, apply a property customization to one 
+     * of both of the following declarations to change their names: 
+     * Gets the value of the content property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the activeWritingStyle property.
+     * This is why there is not a <CODE>set</CODE> method for the content property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getActiveWritingStyle().add(newItem);
+     *    getContent().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTWritingStyle }
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSaveThroughXslt }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDocVars }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.ClickAndTypeStyle }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShapeDefaults }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCompat }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChangesView }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.SummaryLength }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.DefaultTableStyle }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDefaultImageDpi }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.DecimalSymbol }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTKinsoku }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTReadingModeInkLockDown }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.ForceUpgrade }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFtnDocProps }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link SchemaLibrary }
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.DisplayHorizontalDrawingGridEvery }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDocProtect }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDocType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTColorSchemeMapping }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.BookFoldPrintingSheets }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShapeDefaults }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.AttachedSchema }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLongHexNumber }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEdnDocProps }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLanguage }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTProof }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTDocRsids }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSmartTagType }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMailMerge }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.DisplayVerticalDrawingGridEvery }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.ListSeparator }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTOnOff }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTWritingStyle }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSettings.ConsecutiveHyphenLimit }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTGuid }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCaptions }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTView }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTKinsoku }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMathPr }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCharacterSpacing }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShortHexNumber }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTZoom }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTOnOff }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShortHexNumber }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTWriteProtection }{@code >}
      * 
      * 
      */
-    public List<CTWritingStyle> getActiveWritingStyle() {
-        if (activeWritingStyle == null) {
-            activeWritingStyle = new ArrayList<CTWritingStyle>();
+    public List<Object> getContent() {
+        if (content == null) {
+            content = new ArrayList<Object>();
         }
-        return this.activeWritingStyle;
+        return this.content;
     }
 
     /**
-     * Gets the value of the proofState property.
+     * Gets the value of the ignorable property.
      * 
      * @return
      *     possible object is
-     *     {@link CTProof }
+     *     {@link String }
      *     
      */
-    public CTProof getProofState() {
-        return proofState;
+    public String getIgnorable() {
+        return ignorable;
     }
 
     /**
-     * Sets the value of the proofState property.
+     * Sets the value of the ignorable property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTProof }
+     *     {@link String }
      *     
      */
-    public void setProofState(CTProof value) {
-        this.proofState = value;
-    }
-
-    /**
-     * Gets the value of the formsDesign property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getFormsDesign() {
-        return formsDesign;
-    }
-
-    /**
-     * Sets the value of the formsDesign property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setFormsDesign(BooleanDefaultTrue value) {
-        this.formsDesign = value;
-    }
-
-    /**
-     * Gets the value of the attachedTemplate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTRel }
-     *     
-     */
-    public CTRel getAttachedTemplate() {
-        return attachedTemplate;
-    }
-
-    /**
-     * Sets the value of the attachedTemplate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTRel }
-     *     
-     */
-    public void setAttachedTemplate(CTRel value) {
-        this.attachedTemplate = value;
-    }
-
-    /**
-     * Gets the value of the linkStyles property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getLinkStyles() {
-        return linkStyles;
-    }
-
-    /**
-     * Sets the value of the linkStyles property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setLinkStyles(BooleanDefaultTrue value) {
-        this.linkStyles = value;
-    }
-
-    /**
-     * Gets the value of the stylePaneFormatFilter property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTShortHexNumber }
-     *     
-     */
-    public CTShortHexNumber getStylePaneFormatFilter() {
-        return stylePaneFormatFilter;
-    }
-
-    /**
-     * Sets the value of the stylePaneFormatFilter property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTShortHexNumber }
-     *     
-     */
-    public void setStylePaneFormatFilter(CTShortHexNumber value) {
-        this.stylePaneFormatFilter = value;
-    }
-
-    /**
-     * Gets the value of the stylePaneSortMethod property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTShortHexNumber }
-     *     
-     */
-    public CTShortHexNumber getStylePaneSortMethod() {
-        return stylePaneSortMethod;
-    }
-
-    /**
-     * Sets the value of the stylePaneSortMethod property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTShortHexNumber }
-     *     
-     */
-    public void setStylePaneSortMethod(CTShortHexNumber value) {
-        this.stylePaneSortMethod = value;
-    }
-
-    /**
-     * Gets the value of the documentType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTDocType }
-     *     
-     */
-    public CTDocType getDocumentType() {
-        return documentType;
-    }
-
-    /**
-     * Sets the value of the documentType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTDocType }
-     *     
-     */
-    public void setDocumentType(CTDocType value) {
-        this.documentType = value;
-    }
-
-    /**
-     * Gets the value of the mailMerge property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTMailMerge }
-     *     
-     */
-    public CTMailMerge getMailMerge() {
-        return mailMerge;
-    }
-
-    /**
-     * Sets the value of the mailMerge property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTMailMerge }
-     *     
-     */
-    public void setMailMerge(CTMailMerge value) {
-        this.mailMerge = value;
-    }
-
-    /**
-     * Gets the value of the revisionView property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTrackChangesView }
-     *     
-     */
-    public CTTrackChangesView getRevisionView() {
-        return revisionView;
-    }
-
-    /**
-     * Sets the value of the revisionView property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTrackChangesView }
-     *     
-     */
-    public void setRevisionView(CTTrackChangesView value) {
-        this.revisionView = value;
-    }
-
-    /**
-     * Gets the value of the trackRevisions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getTrackRevisions() {
-        return trackRevisions;
-    }
-
-    /**
-     * Sets the value of the trackRevisions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setTrackRevisions(BooleanDefaultTrue value) {
-        this.trackRevisions = value;
-    }
-
-    /**
-     * Gets the value of the doNotTrackMoves property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotTrackMoves() {
-        return doNotTrackMoves;
-    }
-
-    /**
-     * Sets the value of the doNotTrackMoves property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotTrackMoves(BooleanDefaultTrue value) {
-        this.doNotTrackMoves = value;
-    }
-
-    /**
-     * Gets the value of the doNotTrackFormatting property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotTrackFormatting() {
-        return doNotTrackFormatting;
-    }
-
-    /**
-     * Sets the value of the doNotTrackFormatting property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotTrackFormatting(BooleanDefaultTrue value) {
-        this.doNotTrackFormatting = value;
-    }
-
-    /**
-     * Gets the value of the documentProtection property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTDocProtect }
-     *     
-     */
-    public CTDocProtect getDocumentProtection() {
-        return documentProtection;
-    }
-
-    /**
-     * Sets the value of the documentProtection property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTDocProtect }
-     *     
-     */
-    public void setDocumentProtection(CTDocProtect value) {
-        this.documentProtection = value;
-    }
-
-    /**
-     * Gets the value of the autoFormatOverride property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getAutoFormatOverride() {
-        return autoFormatOverride;
-    }
-
-    /**
-     * Sets the value of the autoFormatOverride property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setAutoFormatOverride(BooleanDefaultTrue value) {
-        this.autoFormatOverride = value;
-    }
-
-    /**
-     * Gets the value of the styleLockTheme property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getStyleLockTheme() {
-        return styleLockTheme;
-    }
-
-    /**
-     * Sets the value of the styleLockTheme property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setStyleLockTheme(BooleanDefaultTrue value) {
-        this.styleLockTheme = value;
-    }
-
-    /**
-     * Gets the value of the styleLockQFSet property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getStyleLockQFSet() {
-        return styleLockQFSet;
-    }
-
-    /**
-     * Sets the value of the styleLockQFSet property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setStyleLockQFSet(BooleanDefaultTrue value) {
-        this.styleLockQFSet = value;
-    }
-
-    /**
-     * Gets the value of the defaultTabStop property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getDefaultTabStop() {
-        return defaultTabStop;
-    }
-
-    /**
-     * Sets the value of the defaultTabStop property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setDefaultTabStop(CTTwipsMeasure value) {
-        this.defaultTabStop = value;
-    }
-
-    /**
-     * Gets the value of the autoHyphenation property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getAutoHyphenation() {
-        return autoHyphenation;
-    }
-
-    /**
-     * Sets the value of the autoHyphenation property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setAutoHyphenation(BooleanDefaultTrue value) {
-        this.autoHyphenation = value;
-    }
-
-    /**
-     * Gets the value of the consecutiveHyphenLimit property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.ConsecutiveHyphenLimit }
-     *     
-     */
-    public CTSettings.ConsecutiveHyphenLimit getConsecutiveHyphenLimit() {
-        return consecutiveHyphenLimit;
-    }
-
-    /**
-     * Sets the value of the consecutiveHyphenLimit property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.ConsecutiveHyphenLimit }
-     *     
-     */
-    public void setConsecutiveHyphenLimit(CTSettings.ConsecutiveHyphenLimit value) {
-        this.consecutiveHyphenLimit = value;
-    }
-
-    /**
-     * Gets the value of the hyphenationZone property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getHyphenationZone() {
-        return hyphenationZone;
-    }
-
-    /**
-     * Sets the value of the hyphenationZone property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setHyphenationZone(CTTwipsMeasure value) {
-        this.hyphenationZone = value;
-    }
-
-    /**
-     * Gets the value of the doNotHyphenateCaps property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotHyphenateCaps() {
-        return doNotHyphenateCaps;
-    }
-
-    /**
-     * Sets the value of the doNotHyphenateCaps property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotHyphenateCaps(BooleanDefaultTrue value) {
-        this.doNotHyphenateCaps = value;
-    }
-
-    /**
-     * Gets the value of the showEnvelope property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getShowEnvelope() {
-        return showEnvelope;
-    }
-
-    /**
-     * Sets the value of the showEnvelope property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setShowEnvelope(BooleanDefaultTrue value) {
-        this.showEnvelope = value;
-    }
-
-    /**
-     * Gets the value of the summaryLength property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.SummaryLength }
-     *     
-     */
-    public CTSettings.SummaryLength getSummaryLength() {
-        return summaryLength;
-    }
-
-    /**
-     * Sets the value of the summaryLength property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.SummaryLength }
-     *     
-     */
-    public void setSummaryLength(CTSettings.SummaryLength value) {
-        this.summaryLength = value;
-    }
-
-    /**
-     * Gets the value of the clickAndTypeStyle property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.ClickAndTypeStyle }
-     *     
-     */
-    public CTSettings.ClickAndTypeStyle getClickAndTypeStyle() {
-        return clickAndTypeStyle;
-    }
-
-    /**
-     * Sets the value of the clickAndTypeStyle property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.ClickAndTypeStyle }
-     *     
-     */
-    public void setClickAndTypeStyle(CTSettings.ClickAndTypeStyle value) {
-        this.clickAndTypeStyle = value;
-    }
-
-    /**
-     * Gets the value of the defaultTableStyle property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.DefaultTableStyle }
-     *     
-     */
-    public CTSettings.DefaultTableStyle getDefaultTableStyle() {
-        return defaultTableStyle;
-    }
-
-    /**
-     * Sets the value of the defaultTableStyle property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.DefaultTableStyle }
-     *     
-     */
-    public void setDefaultTableStyle(CTSettings.DefaultTableStyle value) {
-        this.defaultTableStyle = value;
-    }
-
-    /**
-     * Gets the value of the evenAndOddHeaders property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getEvenAndOddHeaders() {
-        return evenAndOddHeaders;
-    }
-
-    /**
-     * Sets the value of the evenAndOddHeaders property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setEvenAndOddHeaders(BooleanDefaultTrue value) {
-        this.evenAndOddHeaders = value;
-    }
-
-    /**
-     * Gets the value of the bookFoldRevPrinting property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getBookFoldRevPrinting() {
-        return bookFoldRevPrinting;
-    }
-
-    /**
-     * Sets the value of the bookFoldRevPrinting property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setBookFoldRevPrinting(BooleanDefaultTrue value) {
-        this.bookFoldRevPrinting = value;
-    }
-
-    /**
-     * Gets the value of the bookFoldPrinting property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getBookFoldPrinting() {
-        return bookFoldPrinting;
-    }
-
-    /**
-     * Sets the value of the bookFoldPrinting property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setBookFoldPrinting(BooleanDefaultTrue value) {
-        this.bookFoldPrinting = value;
-    }
-
-    /**
-     * Gets the value of the bookFoldPrintingSheets property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.BookFoldPrintingSheets }
-     *     
-     */
-    public CTSettings.BookFoldPrintingSheets getBookFoldPrintingSheets() {
-        return bookFoldPrintingSheets;
-    }
-
-    /**
-     * Sets the value of the bookFoldPrintingSheets property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.BookFoldPrintingSheets }
-     *     
-     */
-    public void setBookFoldPrintingSheets(CTSettings.BookFoldPrintingSheets value) {
-        this.bookFoldPrintingSheets = value;
-    }
-
-    /**
-     * Gets the value of the drawingGridHorizontalSpacing property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getDrawingGridHorizontalSpacing() {
-        return drawingGridHorizontalSpacing;
-    }
-
-    /**
-     * Sets the value of the drawingGridHorizontalSpacing property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setDrawingGridHorizontalSpacing(CTTwipsMeasure value) {
-        this.drawingGridHorizontalSpacing = value;
-    }
-
-    /**
-     * Gets the value of the drawingGridVerticalSpacing property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getDrawingGridVerticalSpacing() {
-        return drawingGridVerticalSpacing;
-    }
-
-    /**
-     * Sets the value of the drawingGridVerticalSpacing property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setDrawingGridVerticalSpacing(CTTwipsMeasure value) {
-        this.drawingGridVerticalSpacing = value;
-    }
-
-    /**
-     * Gets the value of the displayHorizontalDrawingGridEvery property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.DisplayHorizontalDrawingGridEvery }
-     *     
-     */
-    public CTSettings.DisplayHorizontalDrawingGridEvery getDisplayHorizontalDrawingGridEvery() {
-        return displayHorizontalDrawingGridEvery;
-    }
-
-    /**
-     * Sets the value of the displayHorizontalDrawingGridEvery property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.DisplayHorizontalDrawingGridEvery }
-     *     
-     */
-    public void setDisplayHorizontalDrawingGridEvery(CTSettings.DisplayHorizontalDrawingGridEvery value) {
-        this.displayHorizontalDrawingGridEvery = value;
-    }
-
-    /**
-     * Gets the value of the displayVerticalDrawingGridEvery property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.DisplayVerticalDrawingGridEvery }
-     *     
-     */
-    public CTSettings.DisplayVerticalDrawingGridEvery getDisplayVerticalDrawingGridEvery() {
-        return displayVerticalDrawingGridEvery;
-    }
-
-    /**
-     * Sets the value of the displayVerticalDrawingGridEvery property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.DisplayVerticalDrawingGridEvery }
-     *     
-     */
-    public void setDisplayVerticalDrawingGridEvery(CTSettings.DisplayVerticalDrawingGridEvery value) {
-        this.displayVerticalDrawingGridEvery = value;
-    }
-
-    /**
-     * Gets the value of the doNotUseMarginsForDrawingGridOrigin property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotUseMarginsForDrawingGridOrigin() {
-        return doNotUseMarginsForDrawingGridOrigin;
-    }
-
-    /**
-     * Sets the value of the doNotUseMarginsForDrawingGridOrigin property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotUseMarginsForDrawingGridOrigin(BooleanDefaultTrue value) {
-        this.doNotUseMarginsForDrawingGridOrigin = value;
-    }
-
-    /**
-     * Gets the value of the drawingGridHorizontalOrigin property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getDrawingGridHorizontalOrigin() {
-        return drawingGridHorizontalOrigin;
-    }
-
-    /**
-     * Sets the value of the drawingGridHorizontalOrigin property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setDrawingGridHorizontalOrigin(CTTwipsMeasure value) {
-        this.drawingGridHorizontalOrigin = value;
-    }
-
-    /**
-     * Gets the value of the drawingGridVerticalOrigin property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public CTTwipsMeasure getDrawingGridVerticalOrigin() {
-        return drawingGridVerticalOrigin;
-    }
-
-    /**
-     * Sets the value of the drawingGridVerticalOrigin property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTwipsMeasure }
-     *     
-     */
-    public void setDrawingGridVerticalOrigin(CTTwipsMeasure value) {
-        this.drawingGridVerticalOrigin = value;
-    }
-
-    /**
-     * Gets the value of the doNotShadeFormData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotShadeFormData() {
-        return doNotShadeFormData;
-    }
-
-    /**
-     * Sets the value of the doNotShadeFormData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotShadeFormData(BooleanDefaultTrue value) {
-        this.doNotShadeFormData = value;
-    }
-
-    /**
-     * Gets the value of the noPunctuationKerning property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getNoPunctuationKerning() {
-        return noPunctuationKerning;
-    }
-
-    /**
-     * Sets the value of the noPunctuationKerning property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setNoPunctuationKerning(BooleanDefaultTrue value) {
-        this.noPunctuationKerning = value;
-    }
-
-    /**
-     * Gets the value of the characterSpacingControl property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTCharacterSpacing }
-     *     
-     */
-    public CTCharacterSpacing getCharacterSpacingControl() {
-        return characterSpacingControl;
-    }
-
-    /**
-     * Sets the value of the characterSpacingControl property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTCharacterSpacing }
-     *     
-     */
-    public void setCharacterSpacingControl(CTCharacterSpacing value) {
-        this.characterSpacingControl = value;
-    }
-
-    /**
-     * Gets the value of the printTwoOnOne property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getPrintTwoOnOne() {
-        return printTwoOnOne;
-    }
-
-    /**
-     * Sets the value of the printTwoOnOne property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setPrintTwoOnOne(BooleanDefaultTrue value) {
-        this.printTwoOnOne = value;
-    }
-
-    /**
-     * Gets the value of the strictFirstAndLastChars property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getStrictFirstAndLastChars() {
-        return strictFirstAndLastChars;
-    }
-
-    /**
-     * Sets the value of the strictFirstAndLastChars property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setStrictFirstAndLastChars(BooleanDefaultTrue value) {
-        this.strictFirstAndLastChars = value;
-    }
-
-    /**
-     * Gets the value of the noLineBreaksAfter property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTKinsoku }
-     *     
-     */
-    public CTKinsoku getNoLineBreaksAfter() {
-        return noLineBreaksAfter;
-    }
-
-    /**
-     * Sets the value of the noLineBreaksAfter property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTKinsoku }
-     *     
-     */
-    public void setNoLineBreaksAfter(CTKinsoku value) {
-        this.noLineBreaksAfter = value;
-    }
-
-    /**
-     * Gets the value of the noLineBreaksBefore property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTKinsoku }
-     *     
-     */
-    public CTKinsoku getNoLineBreaksBefore() {
-        return noLineBreaksBefore;
-    }
-
-    /**
-     * Sets the value of the noLineBreaksBefore property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTKinsoku }
-     *     
-     */
-    public void setNoLineBreaksBefore(CTKinsoku value) {
-        this.noLineBreaksBefore = value;
-    }
-
-    /**
-     * Gets the value of the savePreviewPicture property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getSavePreviewPicture() {
-        return savePreviewPicture;
-    }
-
-    /**
-     * Sets the value of the savePreviewPicture property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setSavePreviewPicture(BooleanDefaultTrue value) {
-        this.savePreviewPicture = value;
-    }
-
-    /**
-     * Gets the value of the doNotValidateAgainstSchema property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotValidateAgainstSchema() {
-        return doNotValidateAgainstSchema;
-    }
-
-    /**
-     * Sets the value of the doNotValidateAgainstSchema property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotValidateAgainstSchema(BooleanDefaultTrue value) {
-        this.doNotValidateAgainstSchema = value;
-    }
-
-    /**
-     * Gets the value of the saveInvalidXml property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getSaveInvalidXml() {
-        return saveInvalidXml;
-    }
-
-    /**
-     * Sets the value of the saveInvalidXml property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setSaveInvalidXml(BooleanDefaultTrue value) {
-        this.saveInvalidXml = value;
-    }
-
-    /**
-     * Gets the value of the ignoreMixedContent property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getIgnoreMixedContent() {
-        return ignoreMixedContent;
-    }
-
-    /**
-     * Sets the value of the ignoreMixedContent property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setIgnoreMixedContent(BooleanDefaultTrue value) {
-        this.ignoreMixedContent = value;
-    }
-
-    /**
-     * Gets the value of the alwaysShowPlaceholderText property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getAlwaysShowPlaceholderText() {
-        return alwaysShowPlaceholderText;
-    }
-
-    /**
-     * Sets the value of the alwaysShowPlaceholderText property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setAlwaysShowPlaceholderText(BooleanDefaultTrue value) {
-        this.alwaysShowPlaceholderText = value;
-    }
-
-    /**
-     * Gets the value of the doNotDemarcateInvalidXml property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotDemarcateInvalidXml() {
-        return doNotDemarcateInvalidXml;
-    }
-
-    /**
-     * Sets the value of the doNotDemarcateInvalidXml property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotDemarcateInvalidXml(BooleanDefaultTrue value) {
-        this.doNotDemarcateInvalidXml = value;
-    }
-
-    /**
-     * Gets the value of the saveXmlDataOnly property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getSaveXmlDataOnly() {
-        return saveXmlDataOnly;
-    }
-
-    /**
-     * Sets the value of the saveXmlDataOnly property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setSaveXmlDataOnly(BooleanDefaultTrue value) {
-        this.saveXmlDataOnly = value;
-    }
-
-    /**
-     * Gets the value of the useXSLTWhenSaving property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getUseXSLTWhenSaving() {
-        return useXSLTWhenSaving;
-    }
-
-    /**
-     * Sets the value of the useXSLTWhenSaving property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setUseXSLTWhenSaving(BooleanDefaultTrue value) {
-        this.useXSLTWhenSaving = value;
-    }
-
-    /**
-     * Gets the value of the saveThroughXslt property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSaveThroughXslt }
-     *     
-     */
-    public CTSaveThroughXslt getSaveThroughXslt() {
-        return saveThroughXslt;
-    }
-
-    /**
-     * Sets the value of the saveThroughXslt property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSaveThroughXslt }
-     *     
-     */
-    public void setSaveThroughXslt(CTSaveThroughXslt value) {
-        this.saveThroughXslt = value;
-    }
-
-    /**
-     * Gets the value of the showXMLTags property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getShowXMLTags() {
-        return showXMLTags;
-    }
-
-    /**
-     * Sets the value of the showXMLTags property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setShowXMLTags(BooleanDefaultTrue value) {
-        this.showXMLTags = value;
-    }
-
-    /**
-     * Gets the value of the alwaysMergeEmptyNamespace property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getAlwaysMergeEmptyNamespace() {
-        return alwaysMergeEmptyNamespace;
-    }
-
-    /**
-     * Sets the value of the alwaysMergeEmptyNamespace property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setAlwaysMergeEmptyNamespace(BooleanDefaultTrue value) {
-        this.alwaysMergeEmptyNamespace = value;
-    }
-
-    /**
-     * Gets the value of the updateFields property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getUpdateFields() {
-        return updateFields;
-    }
-
-    /**
-     * Sets the value of the updateFields property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setUpdateFields(BooleanDefaultTrue value) {
-        this.updateFields = value;
-    }
-
-    /**
-     * Gets the value of the hdrShapeDefaults property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTShapeDefaults }
-     *     
-     */
-    public CTShapeDefaults getHdrShapeDefaults() {
-        return hdrShapeDefaults;
-    }
-
-    /**
-     * Sets the value of the hdrShapeDefaults property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTShapeDefaults }
-     *     
-     */
-    public void setHdrShapeDefaults(CTShapeDefaults value) {
-        this.hdrShapeDefaults = value;
-    }
-
-    /**
-     * Gets the value of the footnotePr property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTFtnDocProps }
-     *     
-     */
-    public CTFtnDocProps getFootnotePr() {
-        return footnotePr;
-    }
-
-    /**
-     * Sets the value of the footnotePr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTFtnDocProps }
-     *     
-     */
-    public void setFootnotePr(CTFtnDocProps value) {
-        this.footnotePr = value;
-    }
-
-    /**
-     * Gets the value of the endnotePr property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTEdnDocProps }
-     *     
-     */
-    public CTEdnDocProps getEndnotePr() {
-        return endnotePr;
-    }
-
-    /**
-     * Sets the value of the endnotePr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTEdnDocProps }
-     *     
-     */
-    public void setEndnotePr(CTEdnDocProps value) {
-        this.endnotePr = value;
-    }
-
-    /**
-     * Gets the value of the compat property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTCompat }
-     *     
-     */
-    public CTCompat getCompat() {
-        return compat;
-    }
-
-    /**
-     * Sets the value of the compat property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTCompat }
-     *     
-     */
-    public void setCompat(CTCompat value) {
-        this.compat = value;
-    }
-
-    /**
-     * Gets the value of the docVars property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTDocVars }
-     *     
-     */
-    public CTDocVars getDocVars() {
-        return docVars;
-    }
-
-    /**
-     * Sets the value of the docVars property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTDocVars }
-     *     
-     */
-    public void setDocVars(CTDocVars value) {
-        this.docVars = value;
-    }
-
-    /**
-     * Gets the value of the rsids property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTDocRsids }
-     *     
-     */
-    public CTDocRsids getRsids() {
-        return rsids;
-    }
-
-    /**
-     * Sets the value of the rsids property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTDocRsids }
-     *     
-     */
-    public void setRsids(CTDocRsids value) {
-        this.rsids = value;
-    }
-
-    /**
-     * properties of math in the document
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTMathPr }
-     *     
-     */
-    public CTMathPr getMathPr() {
-        return mathPr;
-    }
-
-    /**
-     * Sets the value of the mathPr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTMathPr }
-     *     
-     */
-    public void setMathPr(CTMathPr value) {
-        this.mathPr = value;
-    }
-
-    /**
-     * Gets the value of the uiCompat97To2003 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getUiCompat97To2003() {
-        return uiCompat97To2003;
-    }
-
-    /**
-     * Sets the value of the uiCompat97To2003 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setUiCompat97To2003(BooleanDefaultTrue value) {
-        this.uiCompat97To2003 = value;
-    }
-
-    /**
-     * Gets the value of the attachedSchema property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the attachedSchema property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAttachedSchema().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CTSettings.AttachedSchema }
-     * 
-     * 
-     */
-    public List<CTSettings.AttachedSchema> getAttachedSchema() {
-        if (attachedSchema == null) {
-            attachedSchema = new ArrayList<CTSettings.AttachedSchema>();
-        }
-        return this.attachedSchema;
-    }
-
-    /**
-     * Gets the value of the themeFontLang property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTLanguage }
-     *     
-     */
-    public CTLanguage getThemeFontLang() {
-        return themeFontLang;
-    }
-
-    /**
-     * Sets the value of the themeFontLang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTLanguage }
-     *     
-     */
-    public void setThemeFontLang(CTLanguage value) {
-        this.themeFontLang = value;
-    }
-
-    /**
-     * Gets the value of the clrSchemeMapping property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTColorSchemeMapping }
-     *     
-     */
-    public CTColorSchemeMapping getClrSchemeMapping() {
-        return clrSchemeMapping;
-    }
-
-    /**
-     * Sets the value of the clrSchemeMapping property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTColorSchemeMapping }
-     *     
-     */
-    public void setClrSchemeMapping(CTColorSchemeMapping value) {
-        this.clrSchemeMapping = value;
-    }
-
-    /**
-     * Gets the value of the doNotIncludeSubdocsInStats property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotIncludeSubdocsInStats() {
-        return doNotIncludeSubdocsInStats;
-    }
-
-    /**
-     * Sets the value of the doNotIncludeSubdocsInStats property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotIncludeSubdocsInStats(BooleanDefaultTrue value) {
-        this.doNotIncludeSubdocsInStats = value;
-    }
-
-    /**
-     * Gets the value of the doNotAutoCompressPictures property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotAutoCompressPictures() {
-        return doNotAutoCompressPictures;
-    }
-
-    /**
-     * Sets the value of the doNotAutoCompressPictures property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotAutoCompressPictures(BooleanDefaultTrue value) {
-        this.doNotAutoCompressPictures = value;
-    }
-
-    /**
-     * Gets the value of the forceUpgrade property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.ForceUpgrade }
-     *     
-     */
-    public CTSettings.ForceUpgrade getForceUpgrade() {
-        return forceUpgrade;
-    }
-
-    /**
-     * Sets the value of the forceUpgrade property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.ForceUpgrade }
-     *     
-     */
-    public void setForceUpgrade(CTSettings.ForceUpgrade value) {
-        this.forceUpgrade = value;
-    }
-
-    /**
-     * Gets the value of the captions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTCaptions }
-     *     
-     */
-    public CTCaptions getCaptions() {
-        return captions;
-    }
-
-    /**
-     * Sets the value of the captions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTCaptions }
-     *     
-     */
-    public void setCaptions(CTCaptions value) {
-        this.captions = value;
-    }
-
-    /**
-     * Gets the value of the readModeInkLockDown property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTReadingModeInkLockDown }
-     *     
-     */
-    public CTReadingModeInkLockDown getReadModeInkLockDown() {
-        return readModeInkLockDown;
-    }
-
-    /**
-     * Sets the value of the readModeInkLockDown property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTReadingModeInkLockDown }
-     *     
-     */
-    public void setReadModeInkLockDown(CTReadingModeInkLockDown value) {
-        this.readModeInkLockDown = value;
-    }
-
-    /**
-     * Gets the value of the smartTagType property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the smartTagType property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getSmartTagType().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CTSmartTagType }
-     * 
-     * 
-     */
-    public List<CTSmartTagType> getSmartTagType() {
-        if (smartTagType == null) {
-            smartTagType = new ArrayList<CTSmartTagType>();
-        }
-        return this.smartTagType;
-    }
-
-    /**
-     * Custom XML Schema List
-     * 
-     * @return
-     *     possible object is
-     *     {@link SchemaLibrary }
-     *     
-     */
-    public SchemaLibrary getSchemaLibrary() {
-        return schemaLibrary;
-    }
-
-    /**
-     * Sets the value of the schemaLibrary property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SchemaLibrary }
-     *     
-     */
-    public void setSchemaLibrary(SchemaLibrary value) {
-        this.schemaLibrary = value;
-    }
-
-    /**
-     * Gets the value of the shapeDefaults property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTShapeDefaults }
-     *     
-     */
-    public CTShapeDefaults getShapeDefaults() {
-        return shapeDefaults;
-    }
-
-    /**
-     * Sets the value of the shapeDefaults property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTShapeDefaults }
-     *     
-     */
-    public void setShapeDefaults(CTShapeDefaults value) {
-        this.shapeDefaults = value;
-    }
-
-    /**
-     * Gets the value of the doNotEmbedSmartTags property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public BooleanDefaultTrue getDoNotEmbedSmartTags() {
-        return doNotEmbedSmartTags;
-    }
-
-    /**
-     * Sets the value of the doNotEmbedSmartTags property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BooleanDefaultTrue }
-     *     
-     */
-    public void setDoNotEmbedSmartTags(BooleanDefaultTrue value) {
-        this.doNotEmbedSmartTags = value;
-    }
-
-    /**
-     * Gets the value of the decimalSymbol property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.DecimalSymbol }
-     *     
-     */
-    public CTSettings.DecimalSymbol getDecimalSymbol() {
-        return decimalSymbol;
-    }
-
-    /**
-     * Sets the value of the decimalSymbol property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.DecimalSymbol }
-     *     
-     */
-    public void setDecimalSymbol(CTSettings.DecimalSymbol value) {
-        this.decimalSymbol = value;
-    }
-
-    /**
-     * Gets the value of the listSeparator property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTSettings.ListSeparator }
-     *     
-     */
-    public CTSettings.ListSeparator getListSeparator() {
-        return listSeparator;
-    }
-
-    /**
-     * Sets the value of the listSeparator property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTSettings.ListSeparator }
-     *     
-     */
-    public void setListSeparator(CTSettings.ListSeparator value) {
-        this.listSeparator = value;
+    public void setIgnorable(String value) {
+        this.ignorable = value;
     }
 
     /**
@@ -2914,11 +610,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class AttachedSchema
-        implements Child
+    public static class AttachedSchema implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -3000,11 +695,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class BookFoldPrintingSheets
-        implements Child
+    public static class BookFoldPrintingSheets implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -3081,11 +775,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ClickAndTypeStyle
-        implements Child
+    public static class ClickAndTypeStyle implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -3167,11 +860,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ConsecutiveHyphenLimit
-        implements Child
+    public static class ConsecutiveHyphenLimit implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -3248,11 +940,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DecimalSymbol
-        implements Child
+    public static class DecimalSymbol implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -3329,11 +1020,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DefaultTableStyle
-        implements Child
+    public static class DefaultTableStyle implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -3415,11 +1105,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DisplayHorizontalDrawingGridEvery
-        implements Child
+    public static class DisplayHorizontalDrawingGridEvery implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -3501,11 +1190,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DisplayVerticalDrawingGridEvery
-        implements Child
+    public static class DisplayVerticalDrawingGridEvery implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -3581,8 +1269,7 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ForceUpgrade
-        implements Child
+    public static class ForceUpgrade implements Child
     {
 
         @XmlTransient
@@ -3636,11 +1323,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ListSeparator
-        implements Child
+    public static class ListSeparator implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -3722,11 +1408,10 @@ public class CTSettings
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class SummaryLength
-        implements Child
+    public static class SummaryLength implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;

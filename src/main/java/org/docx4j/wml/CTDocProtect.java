@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -53,39 +52,38 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_DocProtect")
-public class CTDocProtect
-    implements Child
+public class CTDocProtect implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "edit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STDocProtect edit;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "formatting", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean formatting;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "enforcement", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean enforcement;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptProviderType", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STCryptProv cryptProviderType;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptAlgorithmClass", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STAlgClass cryptAlgorithmClass;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptAlgorithmType", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STAlgType cryptAlgorithmType;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptAlgorithmSid", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger cryptAlgorithmSid;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptSpinCount", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger cryptSpinCount;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptProvider", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String cryptProvider;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "algIdExt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String algIdExt;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "algIdExtSource", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String algIdExtSource;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptProviderTypeExt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String cryptProviderTypeExt;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "cryptProviderTypeExtSource", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String cryptProviderTypeExtSource;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hash", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected byte[] hash;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "salt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected byte[] salt;
     @XmlTransient
     private Object parent;
@@ -429,7 +427,7 @@ public class CTDocProtect
      *     byte[]
      */
     public void setHash(byte[] value) {
-        this.hash = ((byte[]) value);
+        this.hash = value;
     }
 
     /**
@@ -451,7 +449,7 @@ public class CTDocProtect
      *     byte[]
      */
     public void setSalt(byte[] value) {
-        this.salt = ((byte[]) value);
+        this.salt = value;
     }
 
     /**

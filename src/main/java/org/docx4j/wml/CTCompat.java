@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2012, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -116,7 +115,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "CT_Compat", propOrder = {
+@XmlType(name = "CT_Compat", propOrder = {
     "useSingleBorderforContiguousCells",
     "wpJustification",
     "noTabHangInd",
@@ -184,8 +183,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "cachedColBalance",
     "compatSetting"
 })
-public class CTCompat
-    implements Child
+public class CTCompat implements Child
 {
 
     protected BooleanDefaultTrue useSingleBorderforContiguousCells;

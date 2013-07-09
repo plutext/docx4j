@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -76,8 +75,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "pPrDefault"
 })
 @XmlRootElement(name = "docDefaults")
-public class DocDefaults
-    implements Child
+public class DocDefaults implements Child
 {
 
     protected DocDefaults.RPrDefault rPrDefault;
@@ -183,8 +181,7 @@ public class DocDefaults
     @XmlType(name = "", propOrder = {
         "pPr"
     })
-    public static class PPrDefault
-        implements Child
+    public static class PPrDefault implements Child
     {
 
         protected PPr pPr;
@@ -267,8 +264,7 @@ public class DocDefaults
     @XmlType(name = "", propOrder = {
         "rPr"
     })
-    public static class RPrDefault
-        implements Child
+    public static class RPrDefault implements Child
     {
 
         protected RPr rPr;

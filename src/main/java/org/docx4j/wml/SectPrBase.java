@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,9 +25,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -70,10 +70,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "bidi",
     "rtlGutter",
     "docGrid",
-    "printerSettings"
+    "printerSettings",
+    "footnoteColumns"
 })
-public class SectPrBase
-    implements Child
+public class SectPrBase implements Child
 {
 
     protected CTFtnProps footnotePr;
@@ -95,13 +95,15 @@ public class SectPrBase
     protected BooleanDefaultTrue rtlGutter;
     protected CTDocGrid docGrid;
     protected CTRel printerSettings;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2012/wordml")
+    protected CTDecimalNumber footnoteColumns;
+    @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidRPr;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidDel", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidDel;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidR", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidR;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "rsidSect", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidSect;
     @XmlTransient
     private Object parent;
@@ -560,6 +562,30 @@ public class SectPrBase
      */
     public void setPrinterSettings(CTRel value) {
         this.printerSettings = value;
+    }
+
+    /**
+     * Gets the value of the footnoteColumns property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTDecimalNumber }
+     *     
+     */
+    public CTDecimalNumber getFootnoteColumns() {
+        return footnoteColumns;
+    }
+
+    /**
+     * Sets the value of the footnoteColumns property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTDecimalNumber }
+     *     
+     */
+    public void setFootnoteColumns(CTDecimalNumber value) {
+        this.footnoteColumns = value;
     }
 
     /**

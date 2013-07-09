@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -60,18 +59,17 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Columns", propOrder = {
     "col"
 })
-public class CTColumns
-    implements Child
+public class CTColumns implements Child
 {
 
     protected List<CTColumn> col;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "equalWidth", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean equalWidth;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "space", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger space;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "num", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger num;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "sep", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean sep;
     @XmlTransient
     private Object parent;

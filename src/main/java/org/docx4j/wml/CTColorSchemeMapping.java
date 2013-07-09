@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -60,33 +59,32 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_ColorSchemeMapping")
-public class CTColorSchemeMapping
-    implements Child
+public class CTColorSchemeMapping implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "bg1", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex bg1;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "t1", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex t1;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "bg2", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex bg2;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "t2", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex t2;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent1", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent1;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent2", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent2;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent3", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent3;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent4", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent4;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent5", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent5;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "accent6", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex accent6;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex hyperlink;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "followedHyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STColorSchemeIndex followedHyperlink;
     @XmlTransient
     private Object parent;

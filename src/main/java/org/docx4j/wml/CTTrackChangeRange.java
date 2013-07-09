@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -25,9 +25,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -51,13 +49,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_TrackChangeRange")
 public class CTTrackChangeRange
     extends CTTrackChange
-    implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    @XmlAttribute(name = "displacedByCustomXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STDisplacedByCustomXml displacedByCustomXml;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the displacedByCustomXml property.
@@ -81,20 +76,6 @@ public class CTTrackChangeRange
      */
     public void setDisplacedByCustomXml(STDisplacedByCustomXml value) {
         this.displacedByCustomXml = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

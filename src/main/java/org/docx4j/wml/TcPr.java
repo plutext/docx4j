@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,9 +24,7 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -54,12 +52,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 public class TcPr
     extends TcPrInner
-    implements Child
 {
 
     protected CTTcPrChange tcPrChange;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the tcPrChange property.
@@ -83,20 +78,6 @@ public class TcPr
      */
     public void setTcPrChange(CTTcPrChange value) {
         this.tcPrChange = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
     }
 
     /**

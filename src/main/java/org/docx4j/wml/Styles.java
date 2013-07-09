@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -91,8 +90,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "style"
 })
 @XmlRootElement(name = "styles")
-public class Styles
-    implements Child
+public class Styles implements Child
 {
 
     protected DocDefaults docDefaults;
@@ -247,22 +245,21 @@ public class Styles
     @XmlType(name = "", propOrder = {
         "lsdException"
     })
-    public static class LatentStyles
-        implements Child
+    public static class LatentStyles implements Child
     {
 
         protected List<Styles.LatentStyles.LsdException> lsdException;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "defLockedState", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defLockedState;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "defUIPriority", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger defUIPriority;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "defSemiHidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defSemiHidden;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "defUnhideWhenUsed", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defUnhideWhenUsed;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "defQFormat", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defQFormat;
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "count", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger count;
         @XmlTransient
         private Object parent;
@@ -507,21 +504,20 @@ public class Styles
          */
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "")
-        public static class LsdException
-            implements Child
+        public static class LsdException implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(name = "name", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
             protected String name;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlAttribute(name = "locked", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected Boolean locked;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlAttribute(name = "uiPriority", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected BigInteger uiPriority;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlAttribute(name = "semiHidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected Boolean semiHidden;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlAttribute(name = "unhideWhenUsed", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected Boolean unhideWhenUsed;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlAttribute(name = "qFormat", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected Boolean qFormat;
             @XmlTransient
             private Object parent;
@@ -667,12 +663,7 @@ public class Styles
              *     
              */
             public Boolean isQFormat() {
-            	
-            	if (qFormat==null) {
-            		return ((Styles.LatentStyles)this.parent).isDefQFormat();
-            	} else {            	
-            		return qFormat;
-            	}
+                return qFormat;
             }
 
             /**

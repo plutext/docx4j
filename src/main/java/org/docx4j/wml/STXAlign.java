@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "ST_XAlign")
+@XmlType(name = "ST_XAlign")
 @XmlEnum
 public enum STXAlign {
 
