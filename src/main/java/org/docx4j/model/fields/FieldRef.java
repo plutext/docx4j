@@ -277,7 +277,7 @@ import org.docx4j.wml.Text;
  */
 public class FieldRef {
 	
-	private static Logger log = Logger.getLogger(FieldRef.class);			
+	private static Logger log = LoggerFactory.getLogger(FieldRef.class);			
 	
 	public FieldRef(FldChar fldCharBegin) {
 		this.fldCharBegin = fldCharBegin;
