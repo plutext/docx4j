@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
@@ -29,7 +28,6 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
-import org.docx4j.wml.Text;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -307,7 +305,7 @@ public class FieldsPreprocessor {
 			} else if (isCharType(o2, STFldCharType.SEPARATE)) {
 				
 				currentField.setSeenSeparate(true);
-
+				
 				if (inParentResult()) {
 
 					if (preserveParentResult()) {
@@ -419,8 +417,11 @@ public class FieldsPreprocessor {
 						}					
 						
 						// set up results slot - only for top-level fields
-						newR = Context.getWmlObjectFactory().createR();
-						currentField.setResultsSlot(newR); 						
+						newR = currentField.getResultsSlot(); // MERGEFORMAT processing below may have set this already
+						if (newR==null) {
+							newR = Context.getWmlObjectFactory().createR();
+							currentField.setResultsSlot(newR);
+						}
 						newAttachPoint.getContent().add(newR);
 						
 						
@@ -477,7 +478,20 @@ public class FieldsPreprocessor {
 			} else if (preserveResult(currentField)) {
 				newR.getContent().add(o2);					
 			} else {
-				// result content .. can ignore
+				// result content .. can ignore unless it has \* MERGEFORMAT
+				
+				// if \* MERGEFORMAT, attach the rPr of first run in the result
+				if (o2 instanceof R
+						&& currentField.isMergeFormat() 
+						&& currentField.getResultsSlot()==null) {
+
+					R resultR = Context.getWmlObjectFactory().createR();
+					currentField.setResultsSlot(resultR);
+					resultR.setRPr(((R)o2).getRPr()); // could be null, but that's ok
+					log.debug("MERGEFORMAT Set rPr");
+				}
+				
+				
 				
 				// TODO: a TOC field usually has a PAGEREF wrapped in a hyperlink in its
 				// result part.  We should either keep the entire result, or empty it.
