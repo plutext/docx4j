@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 2.8.1.6 (12 July 2013)
+- backport 3.0 snapshot field processing code 
+  up to https://github.com/plutext/docx4j/commit/6be807ba1beeaf2fad7c877bda2333693d1320ef
+- implement simple support for \* MERGEFORMAT  
+
 Version 2.8.1.5 (18 June 2013)
 - backport 3.0 snapshot field processing code 
   up to https://github.com/plutext/docx4j/commit/bacbcedd45be6229bcbc967f01b20f272b9c3243

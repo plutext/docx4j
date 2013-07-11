@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
@@ -27,6 +28,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -168,8 +170,9 @@ public class FieldsPreprocessor {
 		
 		for (Object o : objects ) {
 
-			// Handling for hyperlink in field result, which might contain another
-			// nested field. Since this is in the result, we drop it.
+			// Handling for hyperlink (can occur in field result, and might contain another
+			// nested field).  Since at present the field processing here is for
+			// MERGEFIELD and DOCPROPERTY fields, this is currently just handled by else below.
 			
 			//	if ( o instanceof P.Hyperlink
 			//			|| ((o instanceof JAXBElement
@@ -190,15 +193,13 @@ public class FieldsPreprocessor {
 			} else {
 				// its not something we're interested in
 				
-				log.debug(XmlUtils.unwrap(o));
-
-				// Add the previous run, if necessary
-				if (newR.getContent().size() > 0) {
-					attachmentPoint.getContent().add(newR);
-					newR = Context.getWmlObjectFactory().createR();
-				}
+				log.debug(XmlUtils.unwrap(o).getClass().getName());
 
 				attachmentPoint.getContent().add(o);
+
+				// prepare new run
+				newR = Context.getWmlObjectFactory().createR();
+				
 			}
 
 //			if (newR.getContent().size() > 0 && !attachmentPoint.getContent().contains(newR)) {
@@ -273,7 +274,7 @@ public class FieldsPreprocessor {
 				// Setup a FieldRef object 
 				currentField = new FieldRef((FldChar)XmlUtils.unwrap(o2));							
 				currentField.setParent(newAttachPoint);							
-				currentField.setBeginRun(newR);
+				currentField.setBeginRun(newR); // may as well do this
 				
 				stack.push(currentField);
 				
@@ -291,8 +292,8 @@ public class FieldsPreprocessor {
 					
 						newR = Context.getWmlObjectFactory().createR();
 						newR.getContent().add(o2);					
-
-						currentField.setBeginRun(newR);
+						
+						currentField.setBeginRun(newR); // IMPORTANT, so we can delete it when we perform mail merge
 						
 						fieldRefs.add(currentField);					
 					} else {
@@ -305,7 +306,7 @@ public class FieldsPreprocessor {
 			} else if (isCharType(o2, STFldCharType.SEPARATE)) {
 				
 				currentField.setSeenSeparate(true);
-
+				
 				if (inParentResult()) {
 
 					if (preserveParentResult()) {
@@ -338,7 +339,54 @@ public class FieldsPreprocessor {
 				if (inParentResult()) {
 
 					if (preserveParentResult()) {
+						
 						newR.getContent().add(o2);
+
+						if (currentField.getFldName().equals("FORMTEXT")) {
+							/*
+							 * Workaround for a bug in Word 2010.
+							 * 
+							 * If you have multiple FORMTEXT in a single run,
+							 * for example:
+							 * 
+							 *      <w:fldChar w:fldCharType="begin">
+							          <w:ffData>
+							            <w:name w:val="Text12"/>
+							            <w:enabled/>
+							            <w:calcOnExit w:val="false"/>
+							            <w:textInput/>
+							          </w:ffData>
+							        </w:fldChar>
+							        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+							        <w:fldChar w:fldCharType="separate"/>
+							        <w:t> </w:t>
+							        <w:fldChar w:fldCharType="end"/>
+							        <w:fldChar w:fldCharType="begin">
+							          <w:ffData>
+							            <w:name w:val="Text12"/>
+							            <w:enabled/>
+							            <w:calcOnExit w:val="false"/>
+							            <w:textInput/>
+							          </w:ffData>
+							        </w:fldChar>
+							        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+							        <w:fldChar w:fldCharType="separate"/>
+							        <w:t> </w:t>
+							        <w:fldChar w:fldCharType="end"/>						
+							 *
+							 * Word 2010 does not display all the w:t elements (ie spaces appear to
+							 * be missing).
+							 * 
+							 * Adding w:t/@xml:space="preserve" doesn't help.
+							 * 
+							 * So the workaround here is to start a new run after each END tag.
+							 */
+							if (!newAttachPoint.getContent().contains(newR)) {
+								newAttachPoint.getContent().add(newR);
+								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+							}
+							newR = Context.getWmlObjectFactory().createR();						
+						}						
 					} else {
 						log.debug(".. but in result, so don't add to run");
 					}
@@ -370,8 +418,11 @@ public class FieldsPreprocessor {
 						}					
 						
 						// set up results slot - only for top-level fields
-						newR = Context.getWmlObjectFactory().createR();
-						currentField.setResultsSlot(newR); 						
+						newR = currentField.getResultsSlot(); // MERGEFORMAT processing below may have set this already
+						if (newR==null) {
+							newR = Context.getWmlObjectFactory().createR();
+							currentField.setResultsSlot(newR);
+						}
 						newAttachPoint.getContent().add(newR);
 						
 						
@@ -385,7 +436,9 @@ public class FieldsPreprocessor {
 						newR = Context.getWmlObjectFactory().createR();
 						
 					} else {
-						newR.getContent().add(o2);							
+						newR.getContent().add(o2);	
+						
+
 					}
 					
 				}
@@ -426,7 +479,20 @@ public class FieldsPreprocessor {
 			} else if (preserveResult(currentField)) {
 				newR.getContent().add(o2);					
 			} else {
-				// result content .. can ignore
+				// result content .. can ignore unless it has \* MERGEFORMAT
+				
+				// if \* MERGEFORMAT, attach the rPr of first run in the result
+				if (o2 instanceof R
+						&& currentField.isMergeFormat() 
+						&& currentField.getResultsSlot()==null) {
+
+					R resultR = Context.getWmlObjectFactory().createR();
+					currentField.setResultsSlot(resultR);
+					resultR.setRPr(((R)o2).getRPr()); // could be null, but that's ok
+					log.debug("MERGEFORMAT Set rPr");
+				}
+				
+				
 				
 				// TODO: a TOC field usually has a PAGEREF wrapped in a hyperlink in its
 				// result part.  We should either keep the entire result, or empty it.
@@ -438,6 +504,14 @@ public class FieldsPreprocessor {
 				log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
 				
 			} 
+
+			// Doesn't solve the problem of Word failing to display some spaces.
+//			if ( o2 instanceof Text
+//					|| ((o2 instanceof JAXBElement
+//							&& ((JAXBElement)o2).getName().equals(_RT_QNAME)) )	) {
+//				Text t = (Text)XmlUtils.unwrap(o2);
+//				t.setSpace("preserve");
+//			}
 			
 			if (newR.getContent().size() > 0 && !newAttachPoint.getContent().contains(newR)) {
 				newAttachPoint.getContent().add(newR);
@@ -446,6 +520,9 @@ public class FieldsPreprocessor {
 		} // end for (Object o2 : existingRun.getContent() )
 		
 	}
+		
+	    private final static QName _RT_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t");
+		
 	
 //	public static boolean containsCharType(Object o, STFldCharType charType) {
 //		
@@ -470,7 +547,7 @@ public class FieldsPreprocessor {
 								
 				return true;
 			} else {
-				log.debug(fldChar.getFldCharType());				
+				log.debug(fldChar.getFldCharType().toString());				
 			}
 		}
 		return false;

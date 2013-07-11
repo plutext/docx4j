@@ -346,6 +346,29 @@ public class FieldRef {
 		lock = fldCharBegin.isFldLock();
 	}
 	
+	private Boolean mergeFormat;
+	/**
+	 * @return whether \* MERGEFORMAT is set
+	 */
+	public Boolean isMergeFormat() {
+		
+		if (mergeFormat==null) {
+			//Work it out. Assume for now that this is contained in instructions.get(0).
+			mergeFormat = Boolean.FALSE;
+			Object o = XmlUtils.unwrap(instructions.get(0));
+			if (o instanceof Text) {
+				String instr = ((Text)o).getValue();
+				if (instr.contains("MERGEFORMAT")) {
+					mergeFormat = Boolean.TRUE;
+				}
+			} else {
+				log.error("TODO: extract field name from " + o.getClass().getName() );
+				log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );				
+			}
+		}
+		return mergeFormat;
+	}
+
 	private boolean dirty;
 
 	/**
