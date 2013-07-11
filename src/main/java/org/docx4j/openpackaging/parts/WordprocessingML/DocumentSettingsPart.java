@@ -20,6 +20,8 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -27,6 +29,11 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.w14.CTDefaultImageDpi;
+import org.docx4j.w14.CTLongHexNumber;
+import org.docx4j.w14.CTOnOff;
+import org.docx4j.w15.CTGuid;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTSettings;
 
 
@@ -58,4 +65,38 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 				
 	}
 		
+	@Override
+	protected void setMceIgnorable() {
+
+		boolean needW14 = false;
+		if (this.jaxbElement.getDocId14()!=null) {
+			needW14 = true;
+		} else if (this.jaxbElement.getConflictMode() !=null) {
+			needW14 = true;
+		} else if (this.jaxbElement.getDiscardImageEditingData() !=null) {
+			needW14 = true;
+		} else if (this.jaxbElement.getDefaultImageDpi() !=null) {
+			needW14 = true;
+		}
+		
+		boolean needW15 = false;		
+		if (this.jaxbElement.getChartTrackingRefBased()!=null) {
+			needW15 = true;
+		} else if (this.jaxbElement.getDocId15() !=null) {
+			needW15 = true;
+		}
+		
+		String mceIgnorableVal = "";
+		if (needW14) {
+			mceIgnorableVal = "w14";
+		}
+		
+		if (needW15) {
+			mceIgnorableVal += " w15";
+		} 
+		log.warn(mceIgnorableVal);
+		
+		this.jaxbElement.setIgnorable(mceIgnorableVal);
+    }
+
 }

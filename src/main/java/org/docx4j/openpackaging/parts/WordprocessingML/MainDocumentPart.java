@@ -49,6 +49,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Comments;
@@ -59,7 +60,10 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.SdtElement;
+import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 
@@ -90,6 +94,17 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.DOCUMENT);
 	}	
+	
+	@Override
+	protected void setMceIgnorable() {
+
+		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
+		this.jaxbElement.setIgnorable(
+				helper.getMceIgnorable(this.getJaxbElement().getBody()));
+	}
+		
+    
+    
 
     /**
      * Convenience method to getJaxbElement().getBody().getContent()

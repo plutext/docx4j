@@ -43,6 +43,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.Numbering;
 
 /** OPC Parts are either XML, or binary (or text) documents.
@@ -249,10 +250,12 @@ public abstract class JaxbXmlPart<E> extends Part {
     public void marshal(org.w3c.dom.Node node, 
     		Object namespacePrefixMapper) throws JAXBException {
 
+    	
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getJaxbElement();
+	    	setMceIgnorable();
 			marshaller.marshal(jaxbElement, node);
 
 		} catch (JAXBException e) {
@@ -291,6 +294,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 	 */
     public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
 
+    	
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
@@ -301,6 +305,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 				log.error("No JAXBElement has been created for this part, yet!");
 				throw new JAXBException("No JAXBElement has been created for this part, yet!");
 			}
+	    	setMceIgnorable();
 			marshaller.marshal(jaxbElement, os);
 
 		} catch (JAXBException e) {
@@ -309,6 +314,49 @@ public abstract class JaxbXmlPart<E> extends Part {
 			throw e;
 		}
 	}
+    
+    /**
+     * Where the mc:Ignorable attribute is present,
+     * ensure its contents matches the ignorable namespaces
+     * actually present.
+     */
+    protected void setMceIgnorable() {
+    /*	
+    	ECMA-376, Office Open XML File Formats, Part 3 deals with "Markup Compatibility and Extensibility", 
+    	and specifies mc:Ignorable.
+
+    	@mc:Ignorable, for example, in:
+
+	    	<Circles xmlns="http://schemas.openxmlformats.org/Circles/v1"
+	    	xmlns:mc="http://schemas.openxmlformats.org/markupcompatibility/
+	    	2006"
+	    	xmlns:v2="http://schemas.openxmlformats.org/Circles/v2"
+	    	xmlns:v3="http://schemas.openxmlformats.org/Circles/v3"
+	    	mc:Ignorable="v2 v3">
+	    	:
+
+    	is a whitespace-delimited list of namespace prefixes, where each namespace prefix identifies an 
+    	ignorable namespace.
+
+    	JAXB might not include a namespace declaration using prefix "v2", unless that namespace is required 
+    	in the resulting XML document.
+
+    	The problem is that if "v2" is included in the value of @mc:Ignorable, and there is no declaration 
+    	of that prefix, then Microsoft Word 2010 will report the document to be corrupt.
+
+    	So the challenge is, when marshalling, how to populate the mc:Ignorable attribute, and guarantee 
+    	a matching set of namespace declarations will be present.
+    	
+    	Suppose I have a set of ignorable prefixes (known a priori), some or all of which are used in the
+    	XML document. I want to either set the value of @mc:ignorable to the ignorable prefixes actually 
+    	used in the XML document (in which case JAXB will provide a matching set of namespace declarations), 
+    	or set the value of @mc:ignorable to the entire set of ignorable prefixes and force JAXB to declare 
+    	each of those prefixes. 
+    	
+    	Either approach is OK. In the Document Settings part, we use the first approach.  In the Main 
+    	Document Part, we use a hybrid approach.
+    */	    	
+    }
     
     /**
 	 * Unmarshal XML data from the specified InputStream and return the

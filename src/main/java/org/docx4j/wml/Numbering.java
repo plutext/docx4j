@@ -421,7 +421,9 @@ public class Numbering implements Child
         "numStyleLink",
         "lvl"
     })
-    public static class AbstractNum implements Child
+    @XmlRootElement(name = "abstractNum")    
+    public static class AbstractNum
+        implements Child
     {
 
         protected CTLongHexNumber nsid;
@@ -1293,7 +1295,9 @@ public class Numbering implements Child
             "startOverride",
             "lvl"
         })
-        public static class LvlOverride implements Child
+        @XmlRootElement(name = "lvlOverride")
+        public static class LvlOverride
+            implements Child
         {
 
             protected Numbering.Num.LvlOverride.StartOverride startOverride;
