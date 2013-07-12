@@ -25,8 +25,7 @@ import java.util.List;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.fop.apps.MimeConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -44,7 +43,6 @@ import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.fields.HyperlinkModel;
-import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -60,10 +58,10 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Br;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
-import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBrType;
@@ -128,8 +126,9 @@ public class XSLFOExporterNonXSLT {
 	 * - w:customXml
 	 */
 
-	private static Logger log = LoggerFactory.getLogger(XSLFOExporterNonXSLT.class);
+	private static Logger log = Logger.getLogger(XSLFOExporterNonXSLT.class);
 		
+	private static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
 	org.w3c.dom.Document document;
@@ -407,7 +406,8 @@ public class XSLFOExporterNonXSLT {
 //		return createBlock(pPrDirect, pStyleVal, childResults, false);
 //	}
     
-    protected void handlePPr(XSLFOConversionContextNonXSLT conversionContext, PPr pPrDirect, boolean sdt, Element currentEl) {
+    protected Element handlePPr(XSLFOConversionContextNonXSLT conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) {
+    	Element ret = currentParent;
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
     	
@@ -457,7 +457,7 @@ public class XSLFOExporterNonXSLT {
 
 				Element foListBlock = document.createElementNS(XSL_FO, 
 						"list-block");
-				currentEl.appendChild(foListBlock);
+				currentParent.appendChild(foListBlock);
 								
 				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
 				
@@ -545,6 +545,8 @@ public class XSLFOExporterNonXSLT {
 				foBlockElement = document.createElementNS(XSL_FO, 
 						"block");
 				foListItemBody.appendChild(foBlockElement);
+				//If we have list items the parent for spans changes (currentP)
+				ret = foBlockElement;
 				
 			} else {
 
@@ -556,17 +558,21 @@ public class XSLFOExporterNonXSLT {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
 
-				createFoAttributes(conversionContext, pPr, currentEl, inlist, ignoreBorders );
+				createFoAttributes(conversionContext, pPr, currentParent, inlist, ignoreBorders );
 			}
 			
 			if (rPr!=null) {											
-				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentEl );
+				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
 	        }
         
 						
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
 		} 
+        
+        return ret;
     }
 
 	protected void createFoAttributes(XSLFOConversionContextNonXSLT conversionContext, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
@@ -659,7 +665,9 @@ public class XSLFOExporterNonXSLT {
 			
 						
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
 		} 
     	
     }
@@ -789,7 +797,7 @@ public class XSLFOExporterNonXSLT {
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //			System.out.println(e.toString() );
-//			log.error(e.getMessage(), e);
+//			log.error(e);
 //		} 
 //    	
 //    	return null;
@@ -869,29 +877,40 @@ public class XSLFOExporterNonXSLT {
 				}
 				
 				pPr = ((P)o).getPPr();
-				handlePPr(conversionContext, pPr, false, currentP);
+				currentP = handlePPr(conversionContext, pPr, false, currentP);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
-
-				// Convert run to span
-				Element spanEl = document.createElementNS(XSL_FO, "inline");
-				if (currentP==null) {
-					// Hyperlink special case
-					parentNode.appendChild(spanEl);
-				} else {
-					currentP.appendChild( spanEl  );
+				if (!conversionContext.isInComplexFieldDefinition()) {
+					// Convert run to span
+					Element spanEl = document.createElementNS(XSL_FO, "inline");
+					if (currentP==null) {
+						// Hyperlink special case
+						parentNode.appendChild(spanEl);
+					} else {
+						currentP.appendChild( spanEl  );
+					}
+					currentSpan = spanEl;
+					
+					RPr rPr = ((R)o).getRPr();
+					if ( rPr!=null ) {
+						handleRPr(conversionContext, pPr, rPr, currentSpan);
+					}
 				}
-				currentSpan = spanEl;
 				
-				RPr rPr = ((R)o).getRPr();
-				if ( rPr!=null ) {
-					handleRPr(conversionContext, pPr, rPr, currentSpan);
-				}
-								
-			} else if (o instanceof org.docx4j.wml.Text) {
-				getCurrentParent().appendChild(document.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+			} else if (o instanceof org.docx4j.wml.FldChar) {
+				conversionContext.updateComplexFieldDefinition(((org.docx4j.wml.FldChar)o).getFldCharType());
 
+			} else if (o instanceof org.docx4j.wml.Text) {
+				if (!conversionContext.isInComplexFieldDefinition()) {
+					getCurrentParent().appendChild(document.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));
+				}
+
+			} else if (o instanceof org.docx4j.wml.R.Tab) {
+				if (!conversionContext.isInComplexFieldDefinition()) {
+					getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));
+				}
+				
 			} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
 				convertToNode(conversionContext, 
@@ -900,8 +919,6 @@ public class XSLFOExporterNonXSLT {
 				
 			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
 				
-				System.out.println("Handling hyperlink..");
-
 				convertToNode(conversionContext, 
 							  o, HyperlinkModel.MODEL_ID,
 							  document, getCurrentParent());
@@ -989,6 +1006,12 @@ public class XSLFOExporterNonXSLT {
 					currentP.setAttribute("white-space-treatment", "preserve");
 				}
 				
+			} else if ((o instanceof org.docx4j.wml.ProofErr) ||
+					   (o instanceof org.docx4j.wml.R.LastRenderedPageBreak) ||
+					   (o instanceof org.docx4j.wml.CTMarkupRange)) {
+			//Ignore theese types, they don't need to be outputed/handled
+			//CTMarkupRange is the w:bookmarkEnd
+				
 			} else {
 				log.warn("Need to handle " + o.getClass().getName() );				
 			}
@@ -1036,7 +1059,8 @@ public class XSLFOExporterNonXSLT {
 		public boolean shouldTraverse(Object o) {
     		if ((o instanceof org.docx4j.wml.Tbl) ||
     			(o instanceof org.docx4j.wml.P.Hyperlink) ||
-    			(o instanceof org.docx4j.wml.CTSimpleField)) {
+    			(o instanceof org.docx4j.wml.CTSimpleField) ||
+    			(o instanceof org.docx4j.wml.FldChar)) {
     			return false;
     		} else {
     			return true;

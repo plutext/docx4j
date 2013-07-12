@@ -25,8 +25,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -42,12 +41,12 @@ import org.docx4j.wml.Text;
 
 /** This class is something like the opposite to the FieldsPreprocessor. It will 
  *  combine complex fields to simple fields. If there are nested fields, then it 
- *  won't try any combination. 
+ *  will try to combine the inner fields without touching the outer ones. 
  * 
  */
 public class FieldsCombiner {
 	
-	private static Logger log = LoggerFactory.getLogger(FieldsCombiner.class);		
+	private static Logger log = Logger.getLogger(FieldsCombiner.class);		
 	
 	protected static final CombineVisitor COMBINE_VISITOR = new CombineVisitor();
 	
@@ -91,7 +90,6 @@ public class FieldsCombiner {
 		int level = 0;
 		int state = STATE_EXPECT_BEGIN;
 		int markIdx = -1;
-		boolean rollback = false;
 		List<Object> resultList = new ArrayList<Object>(2);
 		StringBuilder instrTextBuffer = new StringBuilder(128);
 		String tmpInstrText = null;
@@ -106,32 +104,31 @@ public class FieldsCombiner {
 							if (STFldCharType.BEGIN.equals(fldCharType)) {
 								level++;
 								state = STATE_EXPECT_INSTR;
-								if (level == 1) {
-									markIdx = i;
+								if (markIdx > -1) {
+									copyItems(pContent, markIdx, i, pResult);
+									instrTextBuffer.setLength(0);
+									resultList.clear();
 								}
-								else {
-									rollback = true;
-								}
+								markIdx = i;
 							}
 							else if (STFldCharType.SEPARATE.equals(fldCharType)) {
 								state = STATE_EXPECT_RESULT;
 							}
 							else if (STFldCharType.END.equals(fldCharType)) {
-								level--;
-								if (level == 0) {
+								if (level > 0) {
 									state = STATE_EXPECT_BEGIN;
-									if (rollback) {
-										copyItems(pContent, markIdx, i, pResult);
-									}
-									else if ((instrTextBuffer.length() > 0) && 
-											 (!resultList.isEmpty())) {
+									//Having empty (eg. XE) fldSimple causes interesting effects to the
+									//layout in word - for the conversion process it probably makes sense,
+									//but if you try to open the resulting document in word it's pure chaos.
+									if ((!resultList.isEmpty()) &&
+										(instrTextBuffer.length() > 0)) {
 										pResult.add(createFldSimple(instrTextBuffer.toString(), resultList));
 										haveChanges = true;
 									}
+									markIdx = -1;
 									instrTextBuffer.setLength(0);
 									resultList.clear();
-									markIdx = -1;
-									rollback = false;
+									level--;
 								}
 							}
 						}
@@ -154,12 +151,14 @@ public class FieldsCombiner {
 					}
 					else if ((item instanceof JAXBElement) &&
 							 (((JAXBElement)item).getValue() instanceof CTSimpleField)){
-						if (level > 0) {
-							rollback = true;
+						if (markIdx > -1) {
+							copyItems(pContent, markIdx, i, pResult);
 						}
-						else {
-							pResult.add(item);
-						}
+						pResult.add(item);
+						instrTextBuffer.setLength(0);
+						resultList.clear();
+						markIdx = -1;
+						state = STATE_EXPECT_BEGIN;
 					}
 					else if ((item instanceof JAXBElement) &&
 							 (((JAXBElement)item).getValue() instanceof P.Hyperlink)){
@@ -202,13 +201,15 @@ public class FieldsCombiner {
 		private Object createFldSimple(String instrText, List<Object> resultList) {
 		CTSimpleField fldSimple = Context.getWmlObjectFactory().createCTSimpleField();
 			fldSimple.setInstr(instrText);
-			fldSimple.getContent().addAll(resultList);
+			if ((resultList != null) && (!resultList.isEmpty())) {
+				fldSimple.getContent().addAll(resultList);
+			}
 			return fldSimple;
 		}
 
 
 		private void copyItems(List<Object> source, int startIdx, int endIdx, List<Object> destination) {
-			for (int i=startIdx; i<=endIdx; i++) {
+			for (int i=startIdx; i<endIdx; i++) {
 				destination.add(source.get(i));
 			}
 		}

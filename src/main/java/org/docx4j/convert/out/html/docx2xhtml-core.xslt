@@ -141,7 +141,7 @@
 
 			<!--  Info -->
 			<xsl:copy-of
-				select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.common.writer.AbstractMessageWriter ' )" />
+				select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.Converter ' )" />
 
 			<xsl:call-template name="pretty-print-block" />
 
@@ -306,18 +306,39 @@
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
 
   <xsl:template match="w:r">  	
-  		
-		<xsl:variable name="childResults">
-			<xsl:apply-templates/>
-		</xsl:variable>
-		
-		<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
-		
-		<xsl:variable name="rPrNode" select="w:rPr" />  	
 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
-	  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
-	  		
+  
+  	<xsl:choose>
+  		<xsl:when test="java:org.docx4j.convert.out.Converter.isInComplexFieldDefinition($conversionContext)" >
+  			<!-- in a field, so ignore, unless this run contains fldChar -->
+		  	<xsl:if test="w:fldChar"><xsl:apply-templates/></xsl:if>
+  			
+  		</xsl:when>
+  		<xsl:otherwise>
+  		
+		  	<xsl:choose>
+  				<xsl:when test="w:rPr">
+					<xsl:variable name="childResults">
+						<xsl:apply-templates/>
+					</xsl:variable>
+					
+					<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
+					
+					<xsl:variable name="rPrNode" select="w:rPr" />  	
+			
+				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
+				  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
+				  		
+			  	</xsl:when>
+	  			<xsl:otherwise>
+		        	<xsl:apply-templates/>
+	  			</xsl:otherwise>
+			  </xsl:choose>					
+  		
+  		</xsl:otherwise>
+  		
+  	</xsl:choose>
+    	
 		
   </xsl:template>
 
@@ -653,13 +674,11 @@
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode(
 	  			$conversionContext,., $childResults)"/>	  		
   </xsl:template>
+
+  <!--  Complex fields: update complex field definition level -->
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., '' )" />  	
-  </xsl:template>
-  <xsl:template match="w:instrText" >
-		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., 'no support for fields' )" />  	
+			select="java:org.docx4j.convert.out.Converter.updateComplexFieldDefinition($conversionContext, .)" />  	
   </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->

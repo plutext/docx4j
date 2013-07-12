@@ -1,0 +1,1028 @@
+diff --git a/src/main/java/org/docx4j/convert/out/AbstractModelRegistry.java b/src/main/java/org/docx4j/convert/out/AbstractModelRegistry.java
+index 5ac463c..c9961c8 100644
+--- a/src/main/java/org/docx4j/convert/out/AbstractModelRegistry.java
++++ b/src/main/java/org/docx4j/convert/out/AbstractModelRegistry.java
+@@ -24,7 +24,8 @@ import java.util.Map;
+ 
+ import javax.xml.bind.JAXBException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.model.BookmarkStartModel;
+ import org.docx4j.model.Model;
+@@ -67,7 +68,7 @@ import org.w3c.dom.NodeList;
+  *  
+  */
+ public abstract class AbstractModelRegistry {
+-	private final static Logger log = Logger.getLogger(AbstractModelRegistry.class);
++	private final static Logger log = LoggerFactory.getLogger(AbstractModelRegistry.class);
+ 	
+ 	private Map<String, Class> modelClasses = new HashMap<String, Class>();
+ 	private Map<String, ModelConverter> converterInstances = new HashMap<String, ModelConverter>();
+diff --git a/src/main/java/org/docx4j/convert/out/Converter.java b/src/main/java/org/docx4j/convert/out/Converter.java
+index 3c323e7..ed311af 100644
+--- a/src/main/java/org/docx4j/convert/out/Converter.java
++++ b/src/main/java/org/docx4j/convert/out/Converter.java
+@@ -20,7 +20,8 @@
+ 
+ package org.docx4j.convert.out;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+@@ -43,7 +44,7 @@ import org.w3c.dom.traversal.NodeIterator;
+  *  
+  */
+ public class Converter {
+-	private final static Logger log = Logger.getLogger(Converter.class);
++	private final static Logger log = LoggerFactory.getLogger(Converter.class);
+ 
+ 	private Converter() {
+ 	}
+diff --git a/src/main/java/org/docx4j/convert/out/XSLFO/PageNumberHelper.java b/src/main/java/org/docx4j/convert/out/XSLFO/PageNumberHelper.java
+index 9e958e4..7328cad 100644
+--- a/src/main/java/org/docx4j/convert/out/XSLFO/PageNumberHelper.java
++++ b/src/main/java/org/docx4j/convert/out/XSLFO/PageNumberHelper.java
+@@ -2,14 +2,15 @@ package org.docx4j.convert.out.XSLFO;
+ 
+ import java.math.BigInteger;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.wml.CTPageNumber;
+ import org.docx4j.wml.NumberFormat;
+ import org.docx4j.wml.SectPr;
+ 
+ public class PageNumberHelper {
+ 	
+-	public static Logger log = Logger.getLogger(PageNumberHelper.class);	
++	public static Logger log = LoggerFactory.getLogger(PageNumberHelper.class);	
+ 	
+ 
+     public static String getPageNumberFormat(SectPr sectPr) {
+diff --git a/src/main/java/org/docx4j/convert/out/XSLFO/XSLFOExporterNonXSLT.java b/src/main/java/org/docx4j/convert/out/XSLFO/XSLFOExporterNonXSLT.java
+index c412339..0608431 100644
+--- a/src/main/java/org/docx4j/convert/out/XSLFO/XSLFOExporterNonXSLT.java
++++ b/src/main/java/org/docx4j/convert/out/XSLFO/XSLFOExporterNonXSLT.java
+@@ -25,7 +25,8 @@ import java.util.List;
+ 
+ import org.apache.avalon.framework.configuration.Configuration;
+ import org.apache.fop.apps.MimeConstants;
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.TraversalUtil;
+ import org.docx4j.TraversalUtil.CallbackImpl;
+ import org.docx4j.XmlUtils;
+@@ -127,7 +128,7 @@ public class XSLFOExporterNonXSLT {
+ 	 * - w:customXml
+ 	 */
+ 
+-	private static Logger log = Logger.getLogger(XSLFOExporterNonXSLT.class);
++	private static Logger log = LoggerFactory.getLogger(XSLFOExporterNonXSLT.class);
+ 		
+ 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
+ 
+@@ -564,9 +565,7 @@ public class XSLFOExporterNonXSLT {
+         
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     }
+ 
+@@ -660,9 +659,7 @@ public class XSLFOExporterNonXSLT {
+ 			
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     }
+@@ -792,7 +789,7 @@ public class XSLFOExporterNonXSLT {
+ //		} catch (Exception e) {
+ //			e.printStackTrace();
+ //			System.out.println(e.toString() );
+-//			log.error(e);
++//			log.error(e.getMessage(), e);
+ //		} 
+ //    	
+ //    	return null;
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/BookmarkMover.java b/src/main/java/org/docx4j/convert/out/common/preprocess/BookmarkMover.java
+index f4e7b1a..d857269 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/BookmarkMover.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/BookmarkMover.java
+@@ -28,7 +28,8 @@ import java.util.TreeSet;
+ import javax.xml.bind.JAXBElement;
+ import javax.xml.namespace.QName;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.TraversalUtil;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+@@ -50,7 +51,7 @@ import org.docx4j.wml.P;
+  */
+ public class BookmarkMover {
+ 	
+-	protected static Logger log = Logger.getLogger(BookmarkMover.class);	
++	protected static Logger log = LoggerFactory.getLogger(BookmarkMover.class);	
+ 	
+ 	
+ 	/** Move bookmarks into a paragraph
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/Containerization.java b/src/main/java/org/docx4j/convert/out/common/preprocess/Containerization.java
+index 8a911ca..e7c18a5 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/Containerization.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/Containerization.java
+@@ -24,7 +24,8 @@ import java.util.List;
+ 
+ import javax.xml.bind.JAXBElement;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+@@ -69,7 +70,7 @@ import org.docx4j.wml.Tr;
+  */
+ public class Containerization {
+ 
+-	private static Logger log = Logger.getLogger(Containerization.class);
++	private static Logger log = LoggerFactory.getLogger(Containerization.class);
+ 
+ 	public final static String TAG_SHADING = "XSLT_Shd";
+ 	public final static String TAG_BORDERS = "XSLT_PBdr";
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/ConversionSectionWrapperFactory.java b/src/main/java/org/docx4j/convert/out/common/preprocess/ConversionSectionWrapperFactory.java
+index 55e36ff..def4314 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/ConversionSectionWrapperFactory.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/ConversionSectionWrapperFactory.java
+@@ -23,7 +23,8 @@ import java.util.ArrayList;
+ import java.util.LinkedList;
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.TraversalUtil;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.TraversalUtil.CallbackImpl;
+@@ -41,7 +42,7 @@ import org.docx4j.wml.SectPr.PgSz;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
+ public class ConversionSectionWrapperFactory {
+-	protected static Logger log = Logger.getLogger(ConversionSectionWrapperFactory.class);
++	protected static Logger log = LoggerFactory.getLogger(ConversionSectionWrapperFactory.class);
+ 	
+ 	protected static class SdtBlockFinder extends CallbackImpl {
+ 
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/FieldsCombiner.java b/src/main/java/org/docx4j/convert/out/common/preprocess/FieldsCombiner.java
+index 55aec52..709de72 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/FieldsCombiner.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/FieldsCombiner.java
+@@ -25,7 +25,8 @@ import java.util.List;
+ import javax.xml.bind.JAXBElement;
+ import javax.xml.namespace.QName;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.TraversalUtil;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+@@ -46,7 +47,7 @@ import org.docx4j.wml.Text;
+  */
+ public class FieldsCombiner {
+ 	
+-	private static Logger log = Logger.getLogger(FieldsCombiner.class);		
++	private static Logger log = LoggerFactory.getLogger(FieldsCombiner.class);		
+ 	
+ 	protected static final CombineVisitor COMBINE_VISITOR = new CombineVisitor();
+ 	
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/PageBreak.java b/src/main/java/org/docx4j/convert/out/common/preprocess/PageBreak.java
+index b3ca56d..bab0545 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/PageBreak.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/PageBreak.java
+@@ -21,7 +21,8 @@ package org.docx4j.convert.out.common.preprocess;
+ 
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+ import org.docx4j.wml.Body;
+ import org.docx4j.wml.BooleanDefaultTrue;
+@@ -37,7 +38,7 @@ import org.docx4j.wml.STBrType;
+  */
+ public class PageBreak {
+ 	
+-	private static Logger log = Logger.getLogger(PageBreak.class);
++	private static Logger log = LoggerFactory.getLogger(PageBreak.class);
+ 	
+ 	/**
+ 	 * If a page-break w:br w:type="page" is found within a run with some formatting applied to it
+diff --git a/src/main/java/org/docx4j/convert/out/common/preprocess/PartialDeepCopy.java b/src/main/java/org/docx4j/convert/out/common/preprocess/PartialDeepCopy.java
+index 3cf6c6d..e7d2464 100644
+--- a/src/main/java/org/docx4j/convert/out/common/preprocess/PartialDeepCopy.java
++++ b/src/main/java/org/docx4j/convert/out/common/preprocess/PartialDeepCopy.java
+@@ -4,7 +4,8 @@ import java.nio.ByteBuffer;
+ import java.util.List;
+ import java.util.Set;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.model.datastorage.CustomXmlDataStorage;
+ import org.docx4j.openpackaging.Base;
+@@ -32,7 +33,7 @@ import org.w3c.dom.Document;
+  */
+ public class PartialDeepCopy {
+ 	
+-	protected static Logger log = Logger.getLogger(PartialDeepCopy.class);
++	protected static Logger log = LoggerFactory.getLogger(PartialDeepCopy.class);
+ 	
+ 	
+ 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
+diff --git a/src/main/java/org/docx4j/convert/out/common/writer/AbstractFldSimpleWriter.java b/src/main/java/org/docx4j/convert/out/common/writer/AbstractFldSimpleWriter.java
+index b30a171..09d3771 100644
+--- a/src/main/java/org/docx4j/convert/out/common/writer/AbstractFldSimpleWriter.java
++++ b/src/main/java/org/docx4j/convert/out/common/writer/AbstractFldSimpleWriter.java
+@@ -26,7 +26,8 @@ import java.util.Map;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.ModelConverter;
+ import org.docx4j.model.Model;
+@@ -46,7 +47,7 @@ import org.w3c.dom.Node;
+ 
+ public abstract class AbstractFldSimpleWriter implements ModelConverter {
+ 	
+-	private static Logger log = Logger.getLogger(AbstractFldSimpleWriter.class);			
++	private static Logger log = LoggerFactory.getLogger(AbstractFldSimpleWriter.class);			
+ 	
+ 	public interface FldSimpleWriterHandler {
+ 		public String getName();
+diff --git a/src/main/java/org/docx4j/convert/out/common/writer/AbstractMessageWriter.java b/src/main/java/org/docx4j/convert/out/common/writer/AbstractMessageWriter.java
+index f667fe3..6f3bdf5 100644
+--- a/src/main/java/org/docx4j/convert/out/common/writer/AbstractMessageWriter.java
++++ b/src/main/java/org/docx4j/convert/out/common/writer/AbstractMessageWriter.java
+@@ -23,7 +23,8 @@ import java.io.StringReader;
+ 
+ import javax.xml.parsers.DocumentBuilderFactory;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.w3c.dom.Document;
+ import org.w3c.dom.DocumentFragment;
+@@ -40,7 +41,7 @@ import org.xml.sax.InputSource;
+  */
+ public abstract class AbstractMessageWriter {
+ 
+-	public static Logger log = Logger.getLogger(AbstractMessageWriter.class);
++	public static Logger log = LoggerFactory.getLogger(AbstractMessageWriter.class);
+ 	
+ 	public DocumentFragment notImplemented(NodeIterator nodes, String message) {
+ 
+diff --git a/src/main/java/org/docx4j/convert/out/common/writer/AbstractTableWriter.java b/src/main/java/org/docx4j/convert/out/common/writer/AbstractTableWriter.java
+index 7d5a896..c9752ef 100644
+--- a/src/main/java/org/docx4j/convert/out/common/writer/AbstractTableWriter.java
++++ b/src/main/java/org/docx4j/convert/out/common/writer/AbstractTableWriter.java
+@@ -27,7 +27,8 @@ import java.util.TreeMap;
+ import javax.xml.bind.JAXBElement;
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.UnitsOfMeasurement;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+diff --git a/src/main/java/org/docx4j/convert/out/common/writer/HyperlinkUtil.java b/src/main/java/org/docx4j/convert/out/common/writer/HyperlinkUtil.java
+index 977ffe4..cfb5892 100644
+--- a/src/main/java/org/docx4j/convert/out/common/writer/HyperlinkUtil.java
++++ b/src/main/java/org/docx4j/convert/out/common/writer/HyperlinkUtil.java
+@@ -2,7 +2,8 @@ package org.docx4j.convert.out.common.writer;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.model.fields.HyperlinkModel;
+@@ -16,7 +17,7 @@ import org.w3c.dom.Node;
+  *
+  */
+ public class HyperlinkUtil {
+-	private final static Logger log = Logger.getLogger(HyperlinkUtil.class);
++	private final static Logger log = LoggerFactory.getLogger(HyperlinkUtil.class);
+ 	public static final int HTML_OUTPUT = 1;
+ 	public static final int FO_OUTPUT = 2;
+ 
+diff --git a/src/main/java/org/docx4j/convert/out/flatOpcXml/FlatOpcXmlCreator.java b/src/main/java/org/docx4j/convert/out/flatOpcXml/FlatOpcXmlCreator.java
+index 93d41ae..c828230 100644
+--- a/src/main/java/org/docx4j/convert/out/flatOpcXml/FlatOpcXmlCreator.java
++++ b/src/main/java/org/docx4j/convert/out/flatOpcXml/FlatOpcXmlCreator.java
+@@ -38,7 +38,8 @@ import javax.xml.transform.TransformerFactory;
+ import javax.xml.transform.dom.DOMSource;
+ import javax.xml.transform.stream.StreamResult;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.Output;
+ import org.docx4j.jaxb.Context;
+@@ -86,7 +87,7 @@ import org.w3c.dom.Document;
+  */
+ public class FlatOpcXmlCreator implements Output {
+ 	
+-	private static Logger log = Logger.getLogger(FlatOpcXmlCreator.class);				
++	private static Logger log = LoggerFactory.getLogger(FlatOpcXmlCreator.class);				
+ 	
+ 	public FlatOpcXmlCreator(OpcPackage p) {
+ 		
+@@ -244,7 +245,7 @@ public class FlatOpcXmlCreator implements Output {
+ 				log.info( "PUT SUCCESS: " + partName);		
+ 			} catch (Exception e) {
+ 				e.printStackTrace();
+-				log.error(e);
++				log.error("Problem saving part " + partName, e);
+ 				throw new Docx4JException("Problem saving part " + partName, e);
+ 			} 		        
+ 		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
+@@ -255,7 +256,7 @@ public class FlatOpcXmlCreator implements Output {
+ 				log.info("PUT SUCCESS: " + partName);
+ 			} catch (Exception e) {
+ 				e.printStackTrace();
+-				log.error(e);
++				log.error("Problem saving part " + partName, e);
+ 				throw new Docx4JException("Problem saving part " + partName, e);
+ 			} 		        
+ 							
+@@ -465,7 +466,7 @@ public class FlatOpcXmlCreator implements Output {
+ 					+ "</pkg:binaryData>" + "</pkg:part>";
+ 		} catch (UnsupportedEncodingException e) {
+ 			// I assume system supports UTF-8 !!
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 			return null;
+ 		}
+ 		
+diff --git a/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java b/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java
+index ca85fbc..9dc64f5 100644
+--- a/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java
++++ b/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java
+@@ -7,7 +7,8 @@ import java.util.List;
+ import javax.xml.bind.JAXBException;
+ import javax.xml.bind.Unmarshaller;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractConversionSettings;
+ import org.docx4j.convert.out.Output;
+ import org.docx4j.fonts.Mapper;
+@@ -34,7 +35,7 @@ import org.w3c.dom.traversal.NodeIterator;
+ public abstract class AbstractHtmlExporter implements Output {
+ 	
+ 	
+-	protected static Logger log = Logger.getLogger(AbstractHtmlExporter.class);
++	protected static Logger log = LoggerFactory.getLogger(AbstractHtmlExporter.class);
+ 	
+ 	
+ 	// Implement the interface.  
+@@ -135,7 +136,7 @@ public abstract class AbstractHtmlExporter implements Output {
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			// System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+ 		return "?  ";
+@@ -165,7 +166,7 @@ public abstract class AbstractHtmlExporter implements Output {
+ //            docfrag.appendChild(d.getDocumentElement());        
+ //            return docfrag;
+ //        } catch (Exception e) {
+-//        	log.error(e);
++//        	log.error(e.getMessage(), e);
+ //            return null;
+ //        }
+ //    }    
+diff --git a/src/main/java/org/docx4j/convert/out/html/BookmarkStartWriter.java b/src/main/java/org/docx4j/convert/out/html/BookmarkStartWriter.java
+index a671c85..e50e08f 100644
+--- a/src/main/java/org/docx4j/convert/out/html/BookmarkStartWriter.java
++++ b/src/main/java/org/docx4j/convert/out/html/BookmarkStartWriter.java
+@@ -21,7 +21,8 @@ package org.docx4j.convert.out.html;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+ import org.docx4j.model.BookmarkStartModel;
+@@ -36,7 +37,7 @@ import org.w3c.dom.Node;
+  *  to the beginning of a paragraph, therefore a inline should allways work.
+  */
+ public class BookmarkStartWriter extends AbstractSimpleModelWriter<CTBookmark> {
+-	private final static Logger log = Logger.getLogger(BookmarkStartWriter.class);
++	private final static Logger log = LoggerFactory.getLogger(BookmarkStartWriter.class);
+ 	
+ 	public BookmarkStartWriter() {
+ 		super(BookmarkStartModel.MODEL_ID);
+diff --git a/src/main/java/org/docx4j/convert/out/html/HtmlCssHelper.java b/src/main/java/org/docx4j/convert/out/html/HtmlCssHelper.java
+index d61935f..8c400f9 100644
+--- a/src/main/java/org/docx4j/convert/out/html/HtmlCssHelper.java
++++ b/src/main/java/org/docx4j/convert/out/html/HtmlCssHelper.java
+@@ -23,7 +23,8 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.TreeMap;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.model.properties.Property;
+ import org.docx4j.model.properties.PropertyFactory;
+ import org.docx4j.model.properties.paragraph.PBorderBottom;
+@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
+  */
+ public class HtmlCssHelper {
+ 
+-	private static Logger log = Logger.getLogger(HtmlCssHelper.class);
++	private static Logger log = LoggerFactory.getLogger(HtmlCssHelper.class);
+ 	
+ 	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
+ 	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();
+diff --git a/src/main/java/org/docx4j/convert/out/html/HtmlExporterNG2.java b/src/main/java/org/docx4j/convert/out/html/HtmlExporterNG2.java
+index d8f8c13..b275be0 100644
+--- a/src/main/java/org/docx4j/convert/out/html/HtmlExporterNG2.java
++++ b/src/main/java/org/docx4j/convert/out/html/HtmlExporterNG2.java
+@@ -30,7 +30,8 @@ import javax.xml.transform.TransformerException;
+ import javax.xml.transform.URIResolver;
+ import javax.xml.transform.stream.StreamSource;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.Docx4jProperties;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.ConversionSectionWrappers;
+@@ -96,7 +97,7 @@ import org.w3c.dom.traversal.NodeIterator;
+ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
+ 	
+ 	
+-	protected static Logger log = Logger.getLogger(HtmlExporterNG2.class);
++	protected static Logger log = LoggerFactory.getLogger(HtmlExporterNG2.class);
+ 	
+ 	public static void log(String message ) {
+ 		
+@@ -255,7 +256,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
+ 		log.debug("About to transform...");
+ 		org.docx4j.XmlUtils.transform(doc, xslt, conversionContext.getXsltParameters(),
+ 				result);
+-		log.info("wordDocument transformed to xhtml ..");
++		log.info("wordDocument transformed ..");
+ 
+ 	}
+         
+@@ -456,9 +457,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
+ 			return docfrag;
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     	return null;
+@@ -566,9 +565,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
+ 			return docfrag;
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     	return null;
+diff --git a/src/main/java/org/docx4j/convert/out/html/HtmlExporterNonXSLT.java b/src/main/java/org/docx4j/convert/out/html/HtmlExporterNonXSLT.java
+index 0c4d923..07da0ab 100644
+--- a/src/main/java/org/docx4j/convert/out/html/HtmlExporterNonXSLT.java
++++ b/src/main/java/org/docx4j/convert/out/html/HtmlExporterNonXSLT.java
+@@ -5,7 +5,8 @@ package org.docx4j.convert.out.html;
+ 
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.TraversalUtil;
+ import org.docx4j.TraversalUtil.CallbackImpl;
+ import org.docx4j.XmlUtils;
+@@ -57,7 +58,7 @@ import org.w3c.dom.Node;
+  */
+ public class HtmlExporterNonXSLT {
+ 
+-	private static Logger log = Logger.getLogger(HtmlExporterNonXSLT.class);
++	private static Logger log = LoggerFactory.getLogger(HtmlExporterNonXSLT.class);
+ 
+ 	protected static String inputfilepath;	
+ 	protected static String outputfilepath;
+diff --git a/src/main/java/org/docx4j/convert/out/html/SdtTagHandler.java b/src/main/java/org/docx4j/convert/out/html/SdtTagHandler.java
+index 3f89c30..385749f 100644
+--- a/src/main/java/org/docx4j/convert/out/html/SdtTagHandler.java
++++ b/src/main/java/org/docx4j/convert/out/html/SdtTagHandler.java
+@@ -23,7 +23,8 @@ import java.util.HashMap;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+ import org.docx4j.wml.SdtPr;
+@@ -35,7 +36,7 @@ import org.w3c.dom.traversal.NodeIterator;
+ 
+ public abstract class SdtTagHandler {
+ 	
+-	private static Logger log = Logger.getLogger(SdtTagHandler.class);
++	private static Logger log = LoggerFactory.getLogger(SdtTagHandler.class);
+ 	
+ 	public abstract Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
+ 			HashMap<String, String> tagMap,
+diff --git a/src/main/java/org/docx4j/convert/out/html/SdtWriter.java b/src/main/java/org/docx4j/convert/out/html/SdtWriter.java
+index 5a8ee2c..d3c0b97 100644
+--- a/src/main/java/org/docx4j/convert/out/html/SdtWriter.java
++++ b/src/main/java/org/docx4j/convert/out/html/SdtWriter.java
+@@ -27,7 +27,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+ import org.docx4j.model.sdt.QueryString;
+@@ -40,7 +41,7 @@ import org.w3c.dom.traversal.NodeIterator;
+ 
+ public class SdtWriter {
+ 	
+-	private static Logger log = Logger.getLogger(SdtWriter.class);		
++	private static Logger log = LoggerFactory.getLogger(SdtWriter.class);		
+ 	
+ 	private static Map<String, SdtTagHandler> handlers = new HashMap<String, SdtTagHandler>();
+ 	
+diff --git a/src/main/java/org/docx4j/convert/out/html/SymbolWriter.java b/src/main/java/org/docx4j/convert/out/html/SymbolWriter.java
+index 64488f7..ad72c29 100644
+--- a/src/main/java/org/docx4j/convert/out/html/SymbolWriter.java
++++ b/src/main/java/org/docx4j/convert/out/html/SymbolWriter.java
+@@ -21,7 +21,8 @@ package org.docx4j.convert.out.html;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+ import org.docx4j.fonts.PhysicalFont;
+@@ -47,7 +48,7 @@ public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
+ 		super(SymbolModel.MODEL_ID);
+ 	}
+ 
+-	private final static Logger log = Logger.getLogger(SymbolWriter.class);
++	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
+ 
+ 
+ 	@Override
+diff --git a/src/main/java/org/docx4j/convert/out/html/TableWriter.java b/src/main/java/org/docx4j/convert/out/html/TableWriter.java
+index 2dfdc99..1e16096 100644
+--- a/src/main/java/org/docx4j/convert/out/html/TableWriter.java
++++ b/src/main/java/org/docx4j/convert/out/html/TableWriter.java
+@@ -2,7 +2,8 @@ package org.docx4j.convert.out.html;
+ 
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.UnitsOfMeasurement;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractTableWriter;
+@@ -22,7 +23,7 @@ import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+  *  
+ */
+ public class TableWriter extends AbstractTableWriter {
+-	protected final static Logger logger = Logger.getLogger(TableWriter.class);
++	protected final static Logger logger = LoggerFactory.getLogger(TableWriter.class);
+ 	
+ 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
+ 	protected final static String TABLE_INDENT = "margin-left"; 
+diff --git a/src/main/java/org/docx4j/convert/out/html/TagClass.java b/src/main/java/org/docx4j/convert/out/html/TagClass.java
+index 812078f..5d8c42e 100644
+--- a/src/main/java/org/docx4j/convert/out/html/TagClass.java
++++ b/src/main/java/org/docx4j/convert/out/html/TagClass.java
+@@ -26,7 +26,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+ import org.docx4j.wml.Id;
+@@ -51,7 +52,7 @@ import org.xml.sax.SAXException;
+  */
+ public class TagClass extends SdtTagHandler {
+ 
+-	private static Logger log = Logger.getLogger(TagClass.class);
++	private static Logger log = LoggerFactory.getLogger(TagClass.class);
+ 
+ 	/* replaces XSLT:
+ 	 * 
+@@ -137,9 +138,7 @@ public class TagClass extends SdtTagHandler {
+ 			return attachContents(docfrag, xhtmlDiv, childResults);
+ 			
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString());
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 			throw new TransformerException(e);
+ 		}
+ 
+@@ -161,9 +160,7 @@ public class TagClass extends SdtTagHandler {
+ 				return attachContents(docfrag, xhtmlDiv, resultSoFar);
+ 				
+ 			} catch (Exception e) {
+-				e.printStackTrace();
+-				System.out.println(e.toString());
+-				log.error(e);
++				log.error(e.getMessage(), e);
+ 				throw new TransformerException(e);
+ 			}
+ 		}
+diff --git a/src/main/java/org/docx4j/convert/out/html/TagSingleBox.java b/src/main/java/org/docx4j/convert/out/html/TagSingleBox.java
+index 2163426..bf9f488 100644
+--- a/src/main/java/org/docx4j/convert/out/html/TagSingleBox.java
++++ b/src/main/java/org/docx4j/convert/out/html/TagSingleBox.java
+@@ -27,7 +27,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+@@ -68,7 +69,7 @@ import org.xml.sax.SAXException;
+  */
+ public class TagSingleBox extends SdtTagHandler {
+ 
+-	private static Logger log = Logger.getLogger(TagSingleBox.class);
++	private static Logger log = LoggerFactory.getLogger(TagSingleBox.class);
+ 
+ 	private Element createDiv(Document document, DocumentFragment docfrag, 
+ 			Node n) throws ParserConfigurationException, IOException, SAXException, JAXBException {
+@@ -125,8 +126,7 @@ public class TagSingleBox extends SdtTagHandler {
+ 			return attachContents(docfrag, xhtmlDiv, contents);
+ 			
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 			throw new TransformerException(e);
+ 		}
+ 
+@@ -155,9 +155,7 @@ public class TagSingleBox extends SdtTagHandler {
+ 				return attachContents(docfrag, xhtmlDiv, contents);
+ 				
+ 			} catch (Exception e) {
+-				e.printStackTrace();
+-				System.out.println(e.toString());
+-				log.error(e);
++				log.error(e.getMessage(), e);
+ 				throw new TransformerException(e);
+ 			}
+ 		}
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/PdfConversion.java b/src/main/java/org/docx4j/convert/out/pdf/PdfConversion.java
+index 4b087e9..ab44289 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/PdfConversion.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/PdfConversion.java
+@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf;
+ 
+ import java.io.OutputStream;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
+ import org.docx4j.openpackaging.exceptions.Docx4JException;
+ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+@@ -32,7 +33,7 @@ public abstract class PdfConversion  {
+ 	// so instead, have something similar:	
+ 	public abstract void output(OutputStream os, PdfSettings settings) throws Docx4JException;
+ 		
+-	protected static Logger log = Logger.getLogger(PdfConversion.class);	
++	protected static Logger log = LoggerFactory.getLogger(PdfConversion.class);	
+ 	
+ 	// For XSLT logging
+ 	public static void log(String message ) {
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/BookmarkStartWriter.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/BookmarkStartWriter.java
+index 5c8ef4f..307504f 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/BookmarkStartWriter.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/BookmarkStartWriter.java
+@@ -21,7 +21,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+ import org.docx4j.model.BookmarkStartModel;
+@@ -36,7 +37,7 @@ import org.w3c.dom.Node;
+  *  to the beginning of a paragraph, therefore a inline should allways work.
+  */
+ public class BookmarkStartWriter extends AbstractSimpleModelWriter<CTBookmark> {
+-	private final static Logger log = Logger.getLogger(BookmarkStartWriter.class);
++	private final static Logger log = LoggerFactory.getLogger(BookmarkStartWriter.class);
+ 	
+ 	public BookmarkStartWriter() {
+ 		super(BookmarkStartModel.MODEL_ID);
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/Conversion.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/Conversion.java
+index 5a7c85f..ec9280d 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/Conversion.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/Conversion.java
+@@ -23,7 +23,8 @@ import org.apache.commons.io.FileUtils;
+ import org.apache.fop.apps.FormattingResults;
+ import org.apache.fop.apps.MimeConstants;
+ import org.apache.fop.apps.PageSequenceResults;
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.ConversionSectionWrapper;
+ import org.docx4j.convert.out.ConversionSectionWrappers;
+@@ -63,7 +64,7 @@ import org.w3c.dom.Text;
+ import org.w3c.dom.traversal.NodeIterator;
+ 
+ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+-	public static Logger log = Logger.getLogger(Conversion.class);
++	public static Logger log = LoggerFactory.getLogger(Conversion.class);
+ 	
+ 	
+ 	public static boolean isLoggingEnabled() {
+@@ -651,9 +652,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+ 			return docfrag;
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     	return null;
+@@ -842,9 +841,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+ 			return docfrag;
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     	return null;
+@@ -974,9 +971,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+ 			return docfrag;
+ 						
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+     	
+     	return null;
+@@ -1064,9 +1059,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+ 				}
+ 			}
+ 		} catch (Exception e) {
+-			e.printStackTrace();
+-			System.out.println(e.toString() );
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 		} 
+ 		return ret;
+ 	}
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopFactoryUtil.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopFactoryUtil.java
+index 13577d8..1f0b289 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopFactoryUtil.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopFactoryUtil.java
+@@ -15,7 +15,8 @@ import org.apache.fop.apps.FOPException;
+ import org.apache.fop.apps.Fop;
+ import org.apache.fop.apps.FopFactory;
+ import org.apache.fop.apps.MimeConstants;
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ 
+ /* For FOP 1.1 and earlier,
+  * 
+@@ -31,7 +32,7 @@ import org.apache.log4j.Logger;
+  */
+ public class FopFactoryUtil {
+ 	
+-	protected static Logger log = Logger.getLogger(FopFactoryUtil.class);
++	protected static Logger log = LoggerFactory.getLogger(FopFactoryUtil.class);
+ 	//used as a ThreadLocal
+ 	protected static Map<Long, FopFactory> fopFactories = new TreeMap<Long, FopFactory>();
+ 	// Any reason for many FopFactory?  See http://wiki.apache.org/xmlgraphics-fop/FopFactoryConfiguration
+@@ -130,7 +131,7 @@ public class FopFactoryUtil {
+ 			
+ 		} catch (Exception e) {
+ 			log.warn("Can't set up FOP svn; " + e.getMessage() );
+-			log.debug(e);
++			log.debug(e.getMessage(), e);
+ 			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
+ 			
+ 			// legacy FOP 1.0 or 1.1 config.
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopResultUtils.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopResultUtils.java
+index 7f2f14d..494e12d 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopResultUtils.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/FopResultUtils.java
+@@ -37,14 +37,15 @@ import org.apache.commons.io.output.NullOutputStream;
+ import org.apache.fop.apps.FOPException;
+ import org.apache.fop.apps.Fop;
+ import org.apache.fop.apps.FormattingResults;
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.openpackaging.exceptions.Docx4JException;
+ import org.w3c.dom.Document;
+ 
+ public class FopResultUtils {
+ 	
+-	protected static Logger log = Logger.getLogger(FopResultUtils.class);
++	protected static Logger log = LoggerFactory.getLogger(FopResultUtils.class);
+ 
+ 	
+ 	protected static Result createResult(String userConfiguration, String outputFormat, OutputStream outputStream) throws FOPException {
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/InField.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/InField.java
+index 600242b..8157c5b 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/InField.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/InField.java
+@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ 
+ import javax.xml.bind.JAXBException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.jaxb.Context;
+ import org.docx4j.wml.STFldCharType;
+@@ -10,7 +11,7 @@ import org.w3c.dom.Node;
+ import org.w3c.dom.traversal.NodeIterator;
+ 
+ public class InField {
+-	protected static Logger log = Logger.getLogger(InField.class);		
++	protected static Logger log = LoggerFactory.getLogger(InField.class);		
+ 	
+ 	private boolean inField = false;
+ 	
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/LayoutMasterSetBuilder.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/LayoutMasterSetBuilder.java
+index c1c9178..e112ddd 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/LayoutMasterSetBuilder.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/LayoutMasterSetBuilder.java
+@@ -2,7 +2,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ 
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.UnitsOfMeasurement;
+ import org.docx4j.XmlUtils;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+@@ -33,7 +34,7 @@ import org.w3c.dom.Node;
+  */
+ public class LayoutMasterSetBuilder {
+ 
+-	protected static Logger log = Logger.getLogger(LayoutMasterSetBuilder.class);
++	protected static Logger log = LoggerFactory.getLogger(LayoutMasterSetBuilder.class);
+ 	
+ 	private static org.plutext.jaxb.xslfo.ObjectFactory factory;
+ 		
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/PDFConversionImageHandler.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/PDFConversionImageHandler.java
+index adf9327..2e09d3b 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/PDFConversionImageHandler.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/PDFConversionImageHandler.java
+@@ -3,14 +3,15 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ import java.io.File;
+ import java.net.MalformedURLException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.model.images.FileConversionImageHandler;
+ 
+ /** This is a File-based ImageHandler, for generating images used in FO/PDF-documents
+  */
+ public class PDFConversionImageHandler extends FileConversionImageHandler {
+ 	
+-	private final static Logger log = Logger.getLogger(PDFConversionImageHandler.class);
++	private final static Logger log = LoggerFactory.getLogger(PDFConversionImageHandler.class);
+ 	
+ 
+ 	/** Create a PDFConversionImageHandler, 
+@@ -35,7 +36,7 @@ public class PDFConversionImageHandler extends FileConversionImageHandler {
+ 		try {
+ 			return imageFile.toURI().toURL().toString();
+ 		} catch (MalformedURLException e) {
+-			log.error(e);
++			log.error(e.getMessage(), e);
+ 			return imageFile.getName();
+ 		}
+ 	}
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/SymbolWriter.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/SymbolWriter.java
+index 16b9222..4129966 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/SymbolWriter.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/SymbolWriter.java
+@@ -22,7 +22,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ 
+ import javax.xml.transform.TransformerException;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+ import org.docx4j.fonts.PhysicalFont;
+@@ -44,7 +45,7 @@ import org.w3c.dom.Text;
+  *  
+ */
+ public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
+-	private final static Logger log = Logger.getLogger(SymbolWriter.class);
++	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
+ 	
+ 	public SymbolWriter() {
+ 		super(SymbolModel.MODEL_ID);
+diff --git a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/TableWriter.java b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/TableWriter.java
+index ec05441..066d8a1 100644
+--- a/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/TableWriter.java
++++ b/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/TableWriter.java
+@@ -21,7 +21,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
+ 
+ import java.util.List;
+ 
+-import org.apache.log4j.Logger;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ import org.docx4j.UnitsOfMeasurement;
+ import org.docx4j.convert.out.AbstractWmlConversionContext;
+ import org.docx4j.convert.out.common.writer.AbstractTableWriter;
+@@ -37,7 +38,7 @@ import org.w3c.dom.Element;
+  *  
+ */
+ public class TableWriter extends AbstractTableWriter {
+-	protected final static Logger logger = Logger.getLogger(TableWriter.class);
++	protected final static Logger logger = LoggerFactory.getLogger(TableWriter.class);
+ 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
+ 	
+ 	@Override

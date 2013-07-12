@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
@@ -23,8 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.convert.out.ConversionSectionWrappers;
@@ -46,7 +44,6 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.PPr;
@@ -64,7 +61,7 @@ import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
-	public static Logger log = LoggerFactory.getLogger(Conversion.class);
+	public static Logger log = Logger.getLogger(Conversion.class);
 	
 	
 	public static boolean isLoggingEnabled() {
@@ -652,7 +649,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			return docfrag;
 						
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
 		} 
     	
     	return null;
@@ -841,7 +840,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			return docfrag;
 						
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
 		} 
     	
     	return null;
@@ -859,158 +860,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		
 	}
 	
-
-    public static DocumentFragment createBlockForFldSimple( 
-    		PdfConversionContext context,
-    		NodeIterator fldSimpleNodeIt,
-    		NodeIterator childResults ) {
-    	
-    	/* Support page numbering.
-    	 * 
-    	 * Word 2007 emits:
-    	 * 
-    	 *  <w:fldSimple w:instr=" PAGE   \* MERGEFORMAT ">
-	          <w:r>
-	            <w:rPr>
-	              <w:noProof/>
-	            </w:rPr>
-	            <w:t>- 1 -</w:t>
-	          </w:r>
-	        </w:fldSimple>
-	        
-	        could also include:
-	        
-				{ PAGE \* Arabic }
-				{ PAGE \* alphabetic }
-				{ PAGE \* ALPHABETIC }
-				{ PAGE \* roman }
-				{ PAGE \* ROMAN }	        
-
-		    <w:sectPr>
-		      <w:pgNumType w:fmt="numberInDash"/>
-		      
-		    could also include start at value.
-		    
-		 *
-		 * Word 2003 emits:
-		 * 
-		 *       <w:instrText xml:space="preserve">PAGE  </w:instrText>
-
-    	 */
-    	
-
-    	CTSimpleField field = null;
-    	
-		try {
-			field = (CTSimpleField)XmlUtils.unmarshal(
-						fldSimpleNodeIt.nextNode(), 
-						Context.jc, 
-						CTSimpleField.class);
-		} catch (JAXBException e1) {
-			e1.printStackTrace();
-		}
-			
-		String instr = field.getInstr();			
-
-		return handleField(context, instr, childResults);
-        	
-   	}
-    	
-   	private static DocumentFragment handleField(PdfConversionContext context, String instr, NodeIterator childResults) {
-    		
-    		try {
-    			
-            // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			
-			//log.info("Document: " + document.getClass().getName() );
-
-			
-			if ( !instr.toLowerCase().contains( "page") ) {
-				
-				if (log.isDebugEnabled() ) {
-					return context.getMessageWriter().message("no support for complex field " + instr);
-				} else {
-					
-					// Try this
-					Node foInlineElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");			
-					document.appendChild(foInlineElement);
-					
-					Node n = childResults.nextNode();
-					XmlUtils.treeCopy( n,  foInlineElement );
-					
-					DocumentFragment docfrag = document.createDocumentFragment();
-					docfrag.appendChild(document.getDocumentElement());
-
-					return docfrag;					
-				}
-			}
-
-			// Its a PAGE numbering field
-			
-			/*
-			 * For XSL FO page numbering, see generally
-			 * http://www.dpawson.co.uk/xsl/sect3/N8703.html
-			 * 
-			 * In summary, 
-			 * 
-			 * <fo:page-sequence master-name="blagh" 
-			 * 				format="i"
-			 * 				initial-page-number="1"> ....
-			 * 
-			 */
-
-			Node foPageNumber = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
-					"fo:page-number");			
-			document.appendChild(foPageNumber);
-						
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
-
-			return docfrag;
-						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} 
-    	
-    	return null;
-    	
-    }
-
-    public static DocumentFragment createBlockForInstrText( 
-    		PdfConversionContext context,
-    		NodeIterator fldSimpleNodeIt,
-    		NodeIterator childResults ) {
-    	
-    	/* Support page numbering.
-    	 * 
-		 * Word 2003 emits :
-		 * 
-		 * 		 <w:fldChar w:fldCharType="begin"/>
-		 * 
-		 *       <w:instrText xml:space="preserve">PAGE  </w:instrText>
-
-				 <w:fldChar w:fldCharType="end"/>
-    	 */
-    	
-    	org.docx4j.wml.Text field = null;
-    	
-		try {
-			field = 
-				(org.docx4j.wml.Text)XmlUtils.unmarshal(
-						fldSimpleNodeIt.nextNode(), 
-						Context.jc, 
-						org.docx4j.wml.Text.class);
-		} catch (JAXBException e1) {
-			e1.printStackTrace();
-		}			
-    	
-		return handleField(context, field.getValue(), childResults);
-    	
-    }
-    
-    
     public static String getPageNumberFormat(PdfConversionContext context) {
     	String pageFormat = 
     			context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
@@ -1029,14 +878,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public static boolean hasPgNumTypeStart(PdfConversionContext context) {
     	return (context.getSections().getCurrentSection().getPageNumberInformation().getPageStart() > -1);
     }
-	
-	public static void inFieldUpdateState(PdfConversionContext context, NodeIterator fldCharNodeIt) {
-		context.inFieldUpdateState(fldCharNodeIt);
-	}
-	
-	public static boolean inFieldGetState(PdfConversionContext context) {
-		return context.inFieldGetState();
-	}
 	
 	public static DocumentFragment create2PassParameters(PdfConversionContext context) {
     	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -1059,7 +900,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
 		} 
 		return ret;
 	}

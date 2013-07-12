@@ -5,8 +5,7 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -58,7 +57,8 @@ import org.w3c.dom.Node;
  */
 public class HtmlExporterNonXSLT {
 
-	private static Logger log = LoggerFactory.getLogger(HtmlExporterNonXSLT.class);
+	private static Logger log = Logger.getLogger(HtmlExporterNonXSLT.class);
+	private static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";
 
 	protected static String inputfilepath;	
 	protected static String outputfilepath;
@@ -105,6 +105,11 @@ public class HtmlExporterNonXSLT {
 	    	// head
 	    	headEl = htmlDoc.createElement("head");
 	    	htmlEl.appendChild(headEl);
+	    	
+	    	Element meta = htmlDoc.createElement("meta");
+	    	meta.setAttribute("http-equiv", "Content-Type");
+	    	meta.setAttribute("content", "text/html; charset=utf-8");
+	    	headEl.appendChild(meta);
 	    	    	    	
 	    	// body
 	    	bodyEl = htmlDoc.createElement("body");
@@ -214,26 +219,37 @@ public class HtmlExporterNonXSLT {
 				handlePPr(pPr, currentP);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
-				
-				RPr rPr = ((R)o).getRPr();
-
-				if ( rPr!=null ) {
-					// Convert run to span
-					Element spanEl = htmlDoc.createElement("span");
-					if (currentP==null) {
-						// Hyperlink special case
-						parentNode.appendChild(spanEl);
-					} else {
-						currentP.appendChild( spanEl  );
-					}
-					currentSpan = spanEl;
+				if (!conversionContext.isInComplexFieldDefinition()) {
 					
-					handleRPr(rPr, currentSpan);
+					RPr rPr = ((R)o).getRPr();
+	
+					if ( rPr!=null ) {
+						// Convert run to span
+						Element spanEl = htmlDoc.createElement("span");
+						if (currentP==null) {
+							// Hyperlink special case
+							parentNode.appendChild(spanEl);
+						} else {
+							currentP.appendChild( spanEl  );
+						}
+						currentSpan = spanEl;
+						
+						handleRPr(rPr, currentSpan);
+					}
 				}
+				
+			} else if (o instanceof org.docx4j.wml.FldChar) {
+				conversionContext.updateComplexFieldDefinition(((org.docx4j.wml.FldChar)o).getFldCharType());
 								
 			} else if (o instanceof org.docx4j.wml.Text) {
-				getCurrentParent().appendChild(htmlDoc.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+				if (!conversionContext.isInComplexFieldDefinition()) {
+					getCurrentParent().appendChild(htmlDoc.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));
+				}
+			} else if (o instanceof org.docx4j.wml.R.Tab) {
+				if (!conversionContext.isInComplexFieldDefinition()) {
+					getCurrentParent().appendChild(htmlDoc.createTextNode(TAB_DUMMY));
+				}
 			} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
 				convertToNode(conversionContext, 
@@ -259,7 +275,6 @@ public class HtmlExporterNonXSLT {
 				convertToNode(conversionContext, 
 							  o, TableModel.MODEL_ID,
 							  htmlDoc, (currentP != null ? currentP : parentNode));
-				System.out.println("currentP cleared");
 				currentP=null;
 				currentSpan=null;
 				
@@ -306,8 +321,13 @@ public class HtmlExporterNonXSLT {
 				
 				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
 				
+			} else if ((o instanceof org.docx4j.wml.ProofErr) ||
+					   (o instanceof org.docx4j.wml.R.LastRenderedPageBreak) ||
+					   (o instanceof org.docx4j.wml.CTMarkupRange)) {
+			//Ignore theese types, they don't need to be outputed/handled
+			//CTMarkupRange is the w:bookmarkEnd
 			} else {
-				log.info("Encountered " + o.getClass().getName() );				
+				log.warn("Need to handle " + o.getClass().getName() );				
 			}
 			
 			return null;
@@ -353,7 +373,8 @@ public class HtmlExporterNonXSLT {
 		public boolean shouldTraverse(Object o) {
     		if ((o instanceof org.docx4j.wml.Tbl) ||
     			(o instanceof org.docx4j.wml.P.Hyperlink) ||
-    			(o instanceof org.docx4j.wml.CTSimpleField)) {
+    			(o instanceof org.docx4j.wml.CTSimpleField) ||
+    			(o instanceof org.docx4j.wml.FldChar)) {
     			return false;
     		} else {
     			return true;

@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.wml.STFldCharType;
 
 /**
  * See /docs/developer/Convert_Out.docx for an overview of
@@ -44,6 +45,9 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	//The part for the part tracker 
 	protected Part currentPart = null;
+	
+	//The level of the current complex field definitions
+	protected int complexFieldDefinitionLevel = 0;
 	
 	//The counters for the footnote and endnote number 
 	protected int footnoteNumberCounter = 0;
@@ -122,4 +126,27 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), getCurrentPart());
 	}
 	
+	public void updateComplexFieldDefinition(STFldCharType fieldCharType) {
+		//If the level == 1 then separate or end will reduce the level
+		//If the level > 1 then only end will reduce the level
+		//The level won't go below 0
+		if (fieldCharType == STFldCharType.BEGIN) {
+			complexFieldDefinitionLevel++;
+		}
+		else if (fieldCharType == STFldCharType.SEPARATE) {
+			if (complexFieldDefinitionLevel == 1) complexFieldDefinitionLevel--; 
+		}
+		else if (fieldCharType == STFldCharType.END) {
+			if (complexFieldDefinitionLevel > 0) complexFieldDefinitionLevel--;
+		}
+	}
+	
+	/** Returns true, if it is inside of the outmost any complex field 
+	 *  definition (i.e. between the BEGIN and SEPARATE).
+	 * 
+	 * @return
+	 */
+	public boolean isInComplexFieldDefinition() {
+		return (complexFieldDefinitionLevel > 0);
+	}
 }
