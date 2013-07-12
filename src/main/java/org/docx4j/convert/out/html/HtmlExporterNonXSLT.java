@@ -5,7 +5,8 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -57,7 +58,7 @@ import org.w3c.dom.Node;
  */
 public class HtmlExporterNonXSLT {
 
-	private static Logger log = Logger.getLogger(HtmlExporterNonXSLT.class);
+	private static Logger log = LoggerFactory.getLogger(HtmlExporterNonXSLT.class);
 	private static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";
 
 	protected static String inputfilepath;	
