@@ -39,7 +39,6 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class PdfConversionContext extends AbstractWmlConversionContext {
 
-	protected InField inFieldTracker = new InField();
 	protected boolean requires2PassChecked = false;
 	protected boolean requires2Pass = false;
 	
@@ -89,17 +88,6 @@ public class PdfConversionContext extends AbstractWmlConversionContext {
 		return handler;
 	}
 	
-	protected InField getInFieldTracker() {
-		return inFieldTracker;
-	}
-	
-	public void inFieldUpdateState(NodeIterator fldCharNodeIt) {
-		getInFieldTracker().updateState(fldCharNodeIt);
-	}
-	
-	public boolean inFieldGetState() {
-		return getInFieldTracker().getState();
-	}
 	
 	/** If it is a 2 pass generation, the xslfo document can't be generated independently of 
 	 *  a rendering step. Some APIs return a xslfo document without rendering it (XSLFOExporterNonXSLT,
