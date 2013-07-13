@@ -443,7 +443,9 @@ public class P implements Child, ContentAccessor
     @XmlType(name = "", propOrder = {
         "content"
     })
-    public static class Hyperlink implements Child
+    @XmlRootElement(name = "hyperlink")    
+    public static class Hyperlink
+        implements Child, ContentAccessor
     {
 
         @XmlElementRefs({
