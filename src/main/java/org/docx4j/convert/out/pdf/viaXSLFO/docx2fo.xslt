@@ -286,7 +286,7 @@
 
 					<!--  Info -->
 					<xsl:copy-of 
-						select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.Converter ' )" />  	  		
+						select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF debug level logging for org.docx4j.convert.out.common.writer.AbstractMessageWriter ' )" />  	  		
 
 					<!--<xsl:apply-templates select="w:body/*" />-->
 					<xsl:apply-templates select="*" />
