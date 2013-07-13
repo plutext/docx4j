@@ -58,15 +58,18 @@ public class Font extends AbstractRunProperty {
 	}
 
 	public Font(CSSValue value) {
-	    RFonts rFonts = Context.getWmlObjectFactory().createRFonts();
-	    CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
+
+		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
 	    String[] fonts = cssPrimitiveValue.getStringValue().split(",");
 	    //try first font
 	    if(fonts.length > 0){
 	        if(!fonts[0].isEmpty()){
-	            rFonts.setAscii(fonts[0]);
-	            rFonts.setHAnsi(fonts[0]);
-	            this.setObject(rFonts);
+	        	
+	        	log.debug("TODO: map " + fonts[0] + " to a usable font.");
+//	    	    RFonts rFonts = Context.getWmlObjectFactory().createRFonts();
+//	    	    rFonts.setAscii(fonts[0]);
+//	            rFonts.setHAnsi(fonts[0]);
+//	            this.setObject(rFonts);
 	        }
 	    }
 		debug(CSS_NAME, value);
