@@ -37,10 +37,7 @@
  	on 2011-06-18 from 
  	http://blog.jwbroek.com/2010/07/antlr-grammar-for-parsing-xpath-10.html
  	That page said "Do with this code as you will." 
- 	
- 	The jar containing package org.docx4j.org.xhtmlrenderer is an LGPL library.
- 	Source may be found at https://github.com/plutext/flyingsaucer
- 	
+ 	 	
  	Some of the package org.docx4j.model.listnumbering is a translation into 
  	Java of a portion of Program.cs from Microsoft's OpenXmlViewer, which 
  	is (c) Microsoft Corporation and was made available to the project under the 

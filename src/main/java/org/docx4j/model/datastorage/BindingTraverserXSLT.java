@@ -1,6 +1,7 @@
 package org.docx4j.model.datastorage;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -24,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -142,6 +142,9 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	 *
 	 * Note that the input XHTML must be suitable for the context 
 	 * ie you can't insert block level stuff (eg p) into a run level sdt.
+	 * 
+	 * This method requires docx4j-XHTMLImport.jar (LGPL) and its dependencies
+	 * in order to function.
 	 */
 	public static DocumentFragment convertXHTML(
 			WordprocessingMLPackage pkg, 
@@ -155,6 +158,15 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			String tag) {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
+		
+		Class<?> xhtmlImporterClass;
+	    try {
+	        xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporter");
+	    } catch (ClassNotFoundException e) {
+	        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
+			log.error(e.getMessage(), e);
+			return null;
+	    }		
 		
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag, true);
@@ -187,12 +199,18 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
-			XHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			// XHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
+	        setHyperlinkStyleMethod.invoke(null, 
+	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 			
 			String baseUrl = null;
 			List<Object> results = null;
 			try {
-				results = XHTMLImporter.convert(r, baseUrl, pkg );
+				//results = XHTMLImporter.convert(r, baseUrl, pkg );
+		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class, WordprocessingMLPackage.class );
+		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl, pkg);
+		        
 			} catch (Exception e) {
 				if (e instanceof NullPointerException) {
 					((NullPointerException)e).printStackTrace();

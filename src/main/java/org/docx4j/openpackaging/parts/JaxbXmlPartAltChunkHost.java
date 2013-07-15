@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -170,6 +169,9 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 	/* (non-Javadoc)
 	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#processAltChunksOfTypeHTML()
 	 */
+	/**
+	 * To convert an altChunk of type XHTML, this method requires docx4j-XHTMLImport.jar (LGPL) and its dependencies.
+	 * */
 	@Override
 	public WordprocessingMLPackage convertAltChunks() throws Docx4JException {
 		
@@ -202,15 +204,27 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 
 			if (type.equals(AltChunkType.Xhtml) ) {
 				
+				Class<?> xhtmlImporterClass;
 	            List<Object> results = null;
-				try {
-					results = XHTMLImporter.convert(toString(afip.getBuffer()), 
-							null, clonePkg);
-				} catch (UnsupportedEncodingException e) {
+			    try {
+			        xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporter");
+			    } catch (ClassNotFoundException e) {
+			        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 					log.error(e.getMessage(), e);
 					// Skip this one
 					continue;
-				}
+			    }				
+				try {
+					
+					// results = XHTMLImporter.convert(toString(afip.getBuffer()), null, clonePkg);
+			        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class, WordprocessingMLPackage.class );
+			        results = (List<Object>)convertMethod.invoke(null, toString(afip.getBuffer()), null, clonePkg);
+					
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+					// Skip this one
+					continue;
+				} 
 				
 				int index = locatedChunk.getIndex(); 
 				locatedChunk.getContentList().remove(index); // handles case where it is nested eg in a tc

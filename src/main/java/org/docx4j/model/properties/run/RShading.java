@@ -19,15 +19,13 @@
  */
 package org.docx4j.model.properties.run;
 
+import java.lang.reflect.Method;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
-import org.docx4j.org.xhtmlrenderer.css.parser.FSColor;
-import org.docx4j.org.xhtmlrenderer.css.parser.FSRGBColor;
-import org.docx4j.org.xhtmlrenderer.css.parser.PropertyValue;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
@@ -71,19 +69,20 @@ public class RShading extends AbstractRunProperty {
 	                .getFloatValue(ignored);
 	        fBlue = cssPrimitiveValue.getRGBColorValue().getBlue()
 	                .getFloatValue(ignored);
+		    shd.setFill(UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue)  );
+		    
 	    } catch (UnsupportedOperationException e) {
-	        if (!(cssPrimitiveValue instanceof PropertyValue))
-	            throw e;
-	        final FSColor fsColor = ((PropertyValue) cssPrimitiveValue)
-	                .getFSColor();
-	        if (!(fsColor instanceof FSRGBColor))
-	            throw e;
-	        fRed = ((FSRGBColor) fsColor).getRed();
-	        fGreen = ((FSRGBColor) fsColor).getGreen();
-	        fBlue = ((FSRGBColor) fsColor).getBlue();
-	    }
-
-	    shd.setFill(UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue)  );
+	    	
+		    try {
+		    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.FSColorToHexString");
+		        Method rgbToHexMethod = xhtmlImporterClass.getMethod("rgbToHexMethod", CSSPrimitiveValue.class);
+		        shd.setFill((String)rgbToHexMethod.invoke(null, cssPrimitiveValue));
+		    } catch (Exception e2) {
+		        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
+				log.error(e2.getMessage(), e2);
+				throw e; // same as before
+			}  
+        }
 
 	    this.setObject( shd  );
 	}

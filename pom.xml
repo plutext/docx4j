@@ -318,8 +318,6 @@
 				<directory>src/main/resources</directory>
 				<includes>
 					<include>docx4j.properties</include>
-					<include>XhtmlNamespaceHandler.css</include>
-					<include>xhtmlrenderer.conf</include>
 				</includes>
 			</resource>
 			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
@@ -429,19 +427,6 @@
 
 		<!--  New for docx4j 2.8.0 -->
 		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>xhtmlrenderer</artifactId><!--  supports xhtml import -->
-			<version>1.0.0</version>
-			<!-- currently itext is required (fonts for width calculations)
-				<exclusions>
-					<exclusion>
-						<groupId>com.lowagie</groupId>
-						<artifactId>itext</artifactId>
-					</exclusion>
-				</exclusions>
-				 -->
-		</dependency>
-		<dependency>
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
 			<version>1.0.2</version>
@@ -498,12 +483,13 @@
 		</dependency>
 		
 		<!--  Uncomment this to have docx4j log using log4j, just like docx4j 2.8.1 and earlier.  
-		<dependency>
+		 -->
+		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
 		  <version>1.7.5</version>
 		</dependency>		
-		 -->
+
 		 
 		<dependency>
 			<!--  required for our diffx -->
