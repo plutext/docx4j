@@ -43,18 +43,18 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_COMBINE_FIELDS = "pp.common.combinefields";
 
-	/** The page number formatting might be stored in different places, the section pointer and the 
+	/** The page number formatting might be stored in different places, the section properties and the 
 	 *  field definition. If the document contains page count fields (NUMPAGES, SECTIONPAGES) it might
 	 *  be necessary to do a two pass conversion. This step collects the necessary information.  
 	 *  A two pass conversion will only be done in PDF. This step isn't necessary if no page numbers are
 	 *  used or no custom formatting has been applied to the page number field and if no page count fields 
 	 *  got used.<br>
-	 *  If this step is ommitted then <code>PP_COMMON_DUMMY_PAGE_NUMBERING</code> will be used.
+	 *  If this step is omitted then <code>PP_COMMON_DUMMY_PAGE_NUMBERING</code> will be used.
 	 */
 	public static final String PP_COMMON_PAGE_NUMBERING = "pp.common.pagenumbering";
 
 	/** This step defines some dummy page number information. The required data will be taken only 
-	 *  from the section pointers. In PDF the conversion will always be one pass. The use of 
+	 *  from the section properties. In PDF the conversion will always be one pass. The use of 
 	 *  <code>PP_COMMON_PAGE_NUMBERING</code> in HTML doesn't offer any advantage. 
 	 */
 	public static final String PP_COMMON_DUMMY_PAGE_NUMBERING = "pp.common.dummypagenumbering";
@@ -63,7 +63,7 @@ public interface ConversionFeatures {
 	 *  such things as headers and footers. This step does this processing. If the document only contains
 	 *  one section this processing isn't necessary. In the conversion to HTML the document will be treated 
 	 *  as if it only has one section, therefore this step isn't needed in HTML.<br>
-	 *  If this step is ommitted then <code>PP_COMMON_DUMMY_CREATE_SECTIONS</code> will be used.
+	 *  If this step is omitted then <code>PP_COMMON_DUMMY_CREATE_SECTIONS</code> will be used.
 	 */
 	public static final String PP_COMMON_CREATE_SECTIONS = "pp.common.createsections";
 
