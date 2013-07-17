@@ -109,6 +109,16 @@ public class Converter {
 		context.setCurrentPartMainDocument();
 	}
 
+	public static void setCurrentPartDefaultHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		context.setCurrentPart(currentSection.getHeaderFooterPolicy().getDefaultHeader());
+	}
+	
+	public static void setCurrentPartDefaultFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		context.setCurrentPart(currentSection.getHeaderFooterPolicy().getDefaultFooter());
+	}
+	
     //=====================================================
     // Keeping track of headers and footers 
     //=====================================================

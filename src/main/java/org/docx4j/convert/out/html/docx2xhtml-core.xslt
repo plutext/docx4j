@@ -134,8 +134,12 @@
 			<xsl:if
 				test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
 				<div class="header">
+					<xsl:variable name="setCurrentPartDefaultHeader"
+						select="java:org.docx4j.convert.out.Converter.setCurrentPartDefaultHeader($conversionContext)" />
 					<xsl:apply-templates
 						select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext)" />
+					<xsl:variable name="backagain"
+						select="java:org.docx4j.convert.out.Converter.setCurrentPartMainDocument($conversionContext)" />
 				</div>
 			</xsl:if>
 
@@ -174,9 +178,14 @@
 
 			<xsl:if
 				test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
+				
 				<div class="footer">
+					<xsl:variable name="setCurrentPartDefaultFooter"
+						select="java:org.docx4j.convert.out.Converter.setCurrentPartDefaultFooter($conversionContext)" />
 					<xsl:apply-templates
 						select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext)" />
+					<xsl:variable name="backagain"
+						select="java:org.docx4j.convert.out.Converter.setCurrentPartMainDocument($conversionContext)" />
 				</div>
 			</xsl:if>
 			

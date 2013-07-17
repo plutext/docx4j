@@ -313,8 +313,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		AbstractWmlConversionContext context,
     		Object wpInline) {
 
+    	Part sourcePart = context.getCurrentPart();
+    	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
-        		 context.getImageHandler(), wpInline, context.getWmlPackage().getMainDocumentPart() );
+        		 context.getImageHandler(), wpInline, sourcePart );
     	
     	return getHtmlDocumentFragment(converter);
     }

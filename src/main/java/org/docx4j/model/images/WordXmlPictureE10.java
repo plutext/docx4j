@@ -207,10 +207,11 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		AbstractWmlConversionContext context,
     		Object wpict) {
     	
+    	Part sourcePart = context.getCurrentPart();
 
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10(context.getWmlPackage(),
         		 context.getImageHandler(),
-        		 wpict, context.getWmlPackage().getMainDocumentPart());
+        		 wpict, sourcePart);
     	
     	return getHtmlDocumentFragment(converter);
     }
