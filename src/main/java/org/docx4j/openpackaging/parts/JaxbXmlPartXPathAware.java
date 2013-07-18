@@ -20,10 +20,6 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import javax.xml.bind.Binder;
@@ -35,28 +31,15 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.XHTMLImporter;
-import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface;
-import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.utils.AltChunkFinder;
-import org.docx4j.utils.AltChunkFinder.LocatedChunk;
-import org.docx4j.wml.CTAltChunk;
-import org.docx4j.wml.ContentAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 /**
