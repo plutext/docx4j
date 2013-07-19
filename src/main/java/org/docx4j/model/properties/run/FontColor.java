@@ -74,7 +74,7 @@ public class FontColor extends AbstractRunProperty {
         	
 		    try {
 		    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.FSColorToHexString");
-		        Method rgbToHexMethod = xhtmlImporterClass.getMethod("rgbToHexMethod", CSSPrimitiveValue.class);
+		        Method rgbToHexMethod = xhtmlImporterClass.getMethod("rgbToHex", CSSPrimitiveValue.class);
 		        color.setVal((String)rgbToHexMethod.invoke(null, cssPrimitiveValue));
 		    } catch (Exception e2) {
 		        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
