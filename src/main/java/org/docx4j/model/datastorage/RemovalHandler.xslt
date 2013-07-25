@@ -75,7 +75,7 @@
       <xsl:apply-templates select="@* | node()" />
       <!-- if somewhere in the process, the paragraph was lost, add an empty
         one, cf. http://www.docx4java.org/forums/data-binding-java-f16/what-remained-when-removesdtcellsonfailedcondition-went-t1593.html -->
-      <xsl:if test="not(w:p)">
+      <xsl:if test="not(.//w:p)">
         <w:p />
       </xsl:if>
     </xsl:copy>
