@@ -535,21 +535,6 @@ public class FieldRef {
 			}
 			text.setValue(line);
 		}
-		
-//		Text t = null;
-//		if (resultsSlot.getContent().size()==0) {
-//			t = Context.getWmlObjectFactory().createText();
-//			resultsSlot.getContent().add(t);
-////		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof FldChar ) { // Shouldn't happen; neither separate nor end should be in this run
-////			t = Context.getWmlObjectFactory().createText();
-////			resultsSlot.getContent().add(0, t);
-//		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof Text ) {
-//			t = (Text)XmlUtils.unwrap(resultsSlot.getContent().get(0));
-//		} else {
-//			log.warn("Couldn't setResult '" + val + "' at " + resultsSlot.getContent().get(0).getClass().getName() );
-//			return;
-//		}
-//		t.setValue(val);		
 	}
 
 }
