@@ -2,6 +2,7 @@ package org.docx4j.model.fields;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBElement;
 
@@ -512,20 +513,43 @@ public class FieldRef {
 	
 	public void setResult(String val) {
 		
-		Text t = null;
-		if (resultsSlot.getContent().size()==0) {
-			t = Context.getWmlObjectFactory().createText();
-			resultsSlot.getContent().add(t);
-//		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof FldChar ) { // Shouldn't happen; neither separate nor end should be in this run
-//			t = Context.getWmlObjectFactory().createText();
-//			resultsSlot.getContent().add(0, t);
-		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof Text ) {
-			t = (Text)XmlUtils.unwrap(resultsSlot.getContent().get(0));
-		} else {
-			log.warn("Couldn't setResult '" + val + "' at " + resultsSlot.getContent().get(0).getClass().getName() );
-			return;
+		resultsSlot.getContent().clear();
+		StringTokenizer st = new StringTokenizer(val, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
+		
+		// our docfrag may contain several runs
+		boolean firsttoken = true;
+		while (st.hasMoreTokens()) {						
+			String line = (String) st.nextToken();
+			
+			if (firsttoken) {
+				firsttoken = false;
+			} else {
+				resultsSlot.getContent().add(Context.getWmlObjectFactory().createBr());
+			}
+			
+			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+			resultsSlot.getContent().add(text);
+			if (line.startsWith(" ") || line.endsWith(" ") ) {
+				// TODO: tab character?
+				text.setSpace("preserve");
+			}
+			text.setValue(line);
 		}
-		t.setValue(val);		
+		
+//		Text t = null;
+//		if (resultsSlot.getContent().size()==0) {
+//			t = Context.getWmlObjectFactory().createText();
+//			resultsSlot.getContent().add(t);
+////		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof FldChar ) { // Shouldn't happen; neither separate nor end should be in this run
+////			t = Context.getWmlObjectFactory().createText();
+////			resultsSlot.getContent().add(0, t);
+//		} else if (XmlUtils.unwrap(resultsSlot.getContent().get(0)) instanceof Text ) {
+//			t = (Text)XmlUtils.unwrap(resultsSlot.getContent().get(0));
+//		} else {
+//			log.warn("Couldn't setResult '" + val + "' at " + resultsSlot.getContent().get(0).getClass().getName() );
+//			return;
+//		}
+//		t.setValue(val);		
 	}
 
 }
