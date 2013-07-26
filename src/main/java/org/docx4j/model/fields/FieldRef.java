@@ -283,7 +283,7 @@ public class FieldRef {
 	}
 	
 	private FldChar fldCharBegin;
-	
+
 	protected String fldName = null;
 	/**
 	 * The name of the (outer most) field, for example DATE, MERGEFIELD.
