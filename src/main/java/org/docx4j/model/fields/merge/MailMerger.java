@@ -46,13 +46,12 @@ import org.docx4j.wml.CTFFTextType;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
-import org.docx4j.wml.FldChar;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
-import org.docx4j.wml.RFonts;
 import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Text;
+
 
 
 /**
@@ -514,7 +513,7 @@ public class MailMerger {
 					fr.setResult(val);
 				}
 				
-				if (convertToFORMTEXTfield) {
+				if (fieldFate.equals(OutputField.AS_FORMTEXT_REGULAR)) {
 					
 					log.debug(gFormat);
 					// TODO if we're going to use gFormat, setup FSM irrespective of whether we can find key 
@@ -552,7 +551,7 @@ public class MailMerger {
 					setFormFieldProperties(fr, fieldName, null);
 					
 					
-				} else if (!retainMergeField) {
+				} else if (!fieldFate.equals(OutputField.KEEP_MERGEFIELD)) {
 					// If doing an actual mail merge, the begin-separate run is removed, as is the end run				
 					fr.getParent().getContent().remove(fr.getBeginRun());
 					fr.getParent().getContent().remove(fr.getEndRun());
@@ -607,45 +606,42 @@ public class MailMerger {
 	}
 	
 	
-	private static boolean retainMergeField = false;
 	
-
-	/**
-	 * Whether to leave the MERGEFIELD in the output, or to
-	 * get rid of it.  Keeping it will allow you to perform
-	 * another merge on the output document.  Default is to remove. 
-	 * Trumped by convertToFORMTEXTfield.
+	private static OutputField fieldFate = OutputField.REMOVED;
+    /**
+     * What to do with the MERGEFIELD in the output docx.
+     * 
+     * Default is REMOVED.
+     * 
+     * KEEP_MERGEFIELD will allow you to perform
+	 * another merge on the output document.
 	 * 
-	 * @since 3.0.0
-	 * 
-	 * @param retainMergeField the retainMergeField to set
-	 */
-	public static void keepMERGEFIELD(boolean retainMergeField) {
-		MailMerger.retainMergeField = retainMergeField;
-	}
-
-	private static boolean convertToFORMTEXTfield = false;
-	
-	/**
-	 * Whether to convert the MERGEFIELD to a FORMTEXT field
-	 * or not.  This is convenient if you want users to
+	 * The AS_FORMTEXT options convert the MERGEFIELD to a FORMTEXT field.
+	 * This is convenient if you want users to
 	 * be able to edit the field, where editing is restricted
-	 * to forms.  Default is false. If true, overrides  
-	 * keepMERGEFIELD setting.
+	 * to forms. 
 	 * 
-	 * @since 3.0.0
-	 * @param convertToFormText the convertToFormText to set
-	 */
-	public static void convertToFORMTEXTfield(boolean convertToFORMTEXTfield) {
-		MailMerger.convertToFORMTEXTfield = convertToFORMTEXTfield;
-	}
+     * @param fieldFate
+     */
+    public static void setMERGEFIELDInOutput(OutputField fieldFate) {
+    	MailMerger.fieldFate = fieldFate;
+    }
+
+	
+	  public enum OutputField {
+
+		    DEFAULT,
+		    REMOVED,
+		    KEEP_MERGEFIELD,
+		    AS_FORMTEXT_REGULAR;
+//		    AS_FORMTEXT_TYPED,
+//		    AS_FORMTEXT_TYPED_FORMATTED;
+	  } 	
+	
 
 	private static void setFormFieldProperties(FieldRef fr, String ffName, String ffTextInputFormat) {
 		
 		ObjectFactory wmlObjectFactory = Context.getWmlObjectFactory();
-		
-//	    FldChar fldchar = wmlObjectFactory.createFldChar(); 
-//	    JAXBElement<org.docx4j.wml.FldChar> fldcharWrapped = wmlObjectFactory.createRFldChar(fldchar);
 		
 	        // Create object for ffData
 	        CTFFData ffdata = wmlObjectFactory.createCTFFData(); 

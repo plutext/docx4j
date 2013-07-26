@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+Version 2.8.1.7 (snapshot)
+- MailMerger: ability to convert MERGEFIELD to FORMTEXT field (so the field can be edited when editing is restricted to forms)
+- MailMerger: replace keepMERGEFIELD option with more general setMERGEFIELDInOutput option
+
 Version 2.8.1.6 (12 July 2013)
 - backport 3.0 snapshot field processing code 
   up to https://github.com/plutext/docx4j/commit/6be807ba1beeaf2fad7c877bda2333693d1320ef
