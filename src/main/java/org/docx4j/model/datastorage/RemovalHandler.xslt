@@ -70,30 +70,4 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="w:tc">
-    <xsl:copy>
-      <xsl:apply-templates select="@* | node()" />
-      <!-- if somewhere in the process, the paragraph was lost, add an empty
-        one, cf. http://www.docx4java.org/forums/data-binding-java-f16/what-remained-when-removesdtcellsonfailedcondition-went-t1593.html -->
-      <xsl:if test="not(.//w:p)">
-        <w:p />
-      </xsl:if>
-    </xsl:copy>
-  </xsl:template>
-
-  <xsl:template match="w:tbl">
-    <xsl:choose>
-      <xsl:when
-        test="w:tr/w:tc/w:sdt and count(.//w:tc) = 1 and string(.//w:t) = ''">
-        <!-- if the table has a cell level SDT and contains only one cell and
-          that is empty, remove the entire table this works around Word behaviour when
-          instrumenting single cell tables, cf. http://www.docx4java.org/forums/data-binding-java-f16/what-remained-when-removesdtcellsonfailedcondition-went-t1593.html -->
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:copy>
-          <xsl:apply-templates select="@* | node()" />
-        </xsl:copy>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
 </xsl:stylesheet>
