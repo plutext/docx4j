@@ -47,7 +47,7 @@ import org.w3c.dom.Document;
 
 /**
  * Tool to remove Structured Document Tags from an OpenXML document part.
- * 
+ *
  * <p>
  * This tool removes SDTs tagged with a certain quantifier from the document part. It supports to remove any set of
  * <code>od:xpath</code>, <code>od:repeat</code> and <code>od:condition</code> tags.
@@ -64,117 +64,121 @@ import org.w3c.dom.Document;
  * not supported, that is, when you tag <code>od:repeat=/this&amp;od:xpath=/that</code>, the SDT is removed whenever you
  * specify to remove either repeat or bind tags.</li>
  * </ul>
- * 
+ *
  * @author Karsten Tinnefeld
  * @version $Revision: $ $Date: $
  */
 public class RemovalHandler {
 
-	private static final String templateFile = RemovalHandler.class.getName()
-			.replace('.', '/')
-			+ ".xslt";
+        private static final String templateFile = RemovalHandler.class.getName()
+                        .replace('.', '/')
+                        + ".xslt";
 
-	private final Templates removalTemplate;
+        private final Templates removalTemplate;
 
-	/**
-	 * Initializes the removal handler.
-	 * 
-	 * This tool is thread safe and should be reused, as initialization is
-	 * relatively expensive.
-	 */
-	public RemovalHandler() {
+        /**
+         * Initializes the removal handler.
+         *
+         * This tool is thread safe and should be reused, as initialization is
+         * relatively expensive.
+         */
+        public RemovalHandler() {
 
-		final InputStream templateStream = getClass().getClassLoader()
-				.getResourceAsStream(templateFile);
-		final Source templateSource = new StreamSource(templateStream);
-		try {
-			this.removalTemplate = getTransformerTemplate(templateSource);
+                final InputStream templateStream = getClass().getClassLoader()
+                                .getResourceAsStream(templateFile);
+                final Source templateSource = new StreamSource(templateStream);
+                try {
+                        this.removalTemplate = getTransformerTemplate(templateSource);
 
-		} catch (TransformerConfigurationException e) {
-			throw new IllegalStateException(
-					"Error instantiating SDT removal stylesheet", e);
-		}
-	}
+                } catch (TransformerConfigurationException e) {
+                        throw new IllegalStateException(
+                                        "Error instantiating SDT removal stylesheet", e);
+                }
+        }
 
-	public void removeSDTs(WordprocessingMLPackage wordMLPackage,
-			final Quantifier quantifier, final String... keys) throws Docx4JException {
+        public void removeSDTs(WordprocessingMLPackage wordMLPackage,
+                        final Quantifier quantifier, final String... keys) throws Docx4JException {
 
-		// A component can apply in both the main document part,
-		// and in headers/footers. See further
-		// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
-		
+                // A component can apply in both the main document part,
+                // and in headers/footers. See further
+                // http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
 
-		removeSDTs(wordMLPackage.getMainDocumentPart(), quantifier, keys);
 
-		// Add headers/footers
-		RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
-				.getRelationshipsPart();
-		for (Relationship r : rp.getRelationships().getRelationship()) {
+                removeSDTs(wordMLPackage.getMainDocumentPart(), quantifier, keys);
 
-			if (r.getType().equals(Namespaces.HEADER)) {
-				removeSDTs((HeaderPart) rp.getPart(r), quantifier, keys);
-			} else if (r.getType().equals(Namespaces.FOOTER)) {
-				removeSDTs((FooterPart) rp.getPart(r), quantifier, keys);
-			}
-		}
-	}
-	
-	/**
-	 * Removes Structured Document Tags from a document part, preserving their
-	 * contents.
-	 * 
-	 * @param part
-	 *            The document part to modify (in situ).
-	 * @param quantifier
-	 *            The quantifier regarding which kinds of parts are to be
-	 *            removed.
-	 * @param keys
-	 *            In case of {@link Quantifier#NAMED}, quantifier names. All
-	 *            strings expect "xpath", "condition", "repeat" are ignored.
-	 * @throws Docx4JException
-	 *             In case any transformation error occurs.
-	 */
-	public void removeSDTs(final JaxbXmlPart<? extends Object> part,
-			final Quantifier quantifier, final String... keys)
-			throws Docx4JException {
+                // Add headers/footers
+                RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
+                                .getRelationshipsPart();
+                for (Relationship r : rp.getRelationships().getRelationship()) {
 
-		final Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put("all", quantifier == ALL);
-		if (quantifier == NAMED)
-			parameters.put("types", ArrayUtils.toString(keys));
+                        if (r.getType().equals(Namespaces.HEADER)) {
+                                removeSDTs((HeaderPart) rp.getPart(r), quantifier, keys);
+                        } else if (r.getType().equals(Namespaces.FOOTER)) {
+                                removeSDTs((FooterPart) rp.getPart(r), quantifier, keys);
+                        }
+                }
+        }
 
-		final Document partDOM = marshaltoW3CDomDocument(part.getJaxbElement());
-		final JAXBResult result = prepareJAXBResult(Context.jc);
+        /**
+         * Removes Structured Document Tags from a document part, preserving their
+         * contents.
+         *
+         * In case key "empty" is specified, value bindings (xpath) are removed only
+         * if they have void contents (e.g. the XML points nowhere).
+         *
+         * @param part
+         *            The document part to modify (in situ).
+         * @param quantifier
+         *            The quantifier regarding which kinds of parts are to be
+         *            removed.
+         * @param keys
+         *            In case of {@link Quantifier#NAMED}, quantifier names. All
+         *            strings expect "xpath", "condition", "repeat", "empty" are
+         *            ignored.
+         * @throws Docx4JException
+         *             In case any transformation error occurs.
+         */
+        public void removeSDTs(final JaxbXmlPart<? extends Object> part,
+                        final Quantifier quantifier, final String... keys)
+                        throws Docx4JException {
 
-		transform(partDOM, removalTemplate, parameters, result);
+                final Map<String, Object> parameters = new HashMap<String, Object>();
+                parameters.put("all", quantifier == ALL);
+                if (quantifier == NAMED)
+                        parameters.put("types", ArrayUtils.toString(keys));
 
-		try {
-			part.setJaxbElement(result);
+                final Document partDOM = marshaltoW3CDomDocument(part.getJaxbElement());
+                final JAXBResult result = prepareJAXBResult(Context.jc);
 
-		} catch (JAXBException e) {
-			throw new Docx4JException(
-					"Error unmarshalling document part for SDT removal", e);
-		}
-	}
+                transform(partDOM, removalTemplate, parameters, result);
 
-	/**
-	 * A quantifier specifying kinds of SDTs.
-	 */
-	public static enum Quantifier {
+                try {
+                        part.setJaxbElement(result);
 
-		/**
-		 * Every SDT shall be removed.
-		 */
-		ALL,
+                } catch (JAXBException e) {
+                        throw new Docx4JException(
+                                        "Error unmarshalling document part for SDT removal", e);
+                }
+        }
 
-		/**
-		 * Named SDTs shall be removed, the names given separately.
-		 */
-		NAMED,
+        /**
+         * A quantifier specifying kinds of SDTs.
+         */
+        public static enum Quantifier {
 
-		/**
-		 * The default SDTs shall be removed, that is, condition and repeat.
-		 */
-		DEFAULT;
-	}
+                /**
+                 * Every SDT shall be removed.
+                 */
+                ALL,
+
+                /**
+                 * Named SDTs shall be removed, the names given separately.
+                 */
+                NAMED,
+
+                /**
+                 * The default SDTs shall be removed, that is, condition and repeat.
+                 */
+                DEFAULT;
+        }
 }
