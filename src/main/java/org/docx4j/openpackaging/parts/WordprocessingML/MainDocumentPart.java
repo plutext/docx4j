@@ -90,6 +90,22 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
+		
+		/*
+		 * From [MS-OE376]
+		 * 
+		 * 2.1.8 Part 1 Section 11.3.10, Main Document Part
+		 * 
+		 * a. The standard states that the content type for the Main Document part is: 
+		 * 
+		 *        application/vnd.openxmlformats-officedocument.wordprocessingml.main+xml.
+		 *        
+		 *    Office uses the following content type for the Main Document part: 
+		 *    
+		 *        application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml.
+		 *        
+		 * This note applies to the following products: 2007, 2007 SP1, 2007 SP2.
+		 */
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.DOCUMENT);
@@ -631,6 +647,25 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			return null;
 		}
 				
+	}
+	
+	GlossaryDocumentPart glossaryDocumentPart;
+	/**
+	 * @since 3.0.0
+	 */
+	public GlossaryDocumentPart getGlossaryDocumentPart() {
+		return glossaryDocumentPart;
+	}
+
+	@Override
+	public boolean setPartShortcut(Part part, String relationshipType) {
+
+		if (relationshipType.equals(Namespaces.GLOSSARY_DOCUMENT)) {
+			glossaryDocumentPart = (GlossaryDocumentPart)part;
+			return true;			
+		} else {
+			return super.setPartShortcut(part, relationshipType);
+		}
 	}
 	
 }
