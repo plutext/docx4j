@@ -27,6 +27,7 @@
   xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
   xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
   xmlns:w10="urn:schemas-microsoft-com:office:word"
+	xmlns:xalan="http://xml.apache.org/xalan"  
   exclude-result-prefixes="a aml java o pic pkg r v w wp WX w10">
 
   <xsl:param name="all" select="false" />
@@ -70,4 +71,44 @@
     </xsl:choose>
   </xsl:template>
 
+	<!--  Ensure tc has content.  
+	      Although we do something similar in OpenDoPEIntegrity, removing od:resultRepeatZero 
+	      or od:resultConditionFalse w:sdt via this stylesheet might mean that content is now gone. -->
+	<xsl:template match="w:tc">
+
+		<xsl:variable name="results">
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:variable>
+
+		<xsl:copy>
+			<xsl:choose>
+				<xsl:when test="count(xalan:nodeset($results)//w:p)=0">
+					<w:p />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:copy-of select="$results" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:copy>
+
+	</xsl:template>
+
+  <!-- A table may contain zero rows, but a row may not contain zero cells -->
+	<xsl:template match="w:tr">
+
+		<xsl:variable name="results">
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:variable>
+
+		<xsl:choose>
+			<xsl:when test="count(xalan:nodeset($results)/w:tc)=0" /> <!--  remove this row -->
+			<xsl:otherwise>
+				<xsl:copy>
+					<xsl:copy-of select="$results" />
+				</xsl:copy>
+			</xsl:otherwise>
+		</xsl:choose>
+
+	</xsl:template>
+   
 </xsl:stylesheet>
