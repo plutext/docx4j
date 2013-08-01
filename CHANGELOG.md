@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 2.8.1.7 (snapshot)
+Version 2.8.1.7 (1 August 2013)
 - MailMerger: ability to convert MERGEFIELD to FORMTEXT field (so the field can be edited when editing is restricted to forms)
 - MailMerger: replace keepMERGEFIELD option with more general setMERGEFIELDInOutput option
 

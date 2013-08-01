@@ -524,7 +524,8 @@ public class FieldRef {
 			log.warn("Couldn't setResult '" + val + "' at " + resultsSlot.getContent().get(0).getClass().getName() );
 			return;
 		}
-		t.setValue(val);		
+		t.setValue(val);
+		t.setSpace("preserve");
 	}
 
 }
