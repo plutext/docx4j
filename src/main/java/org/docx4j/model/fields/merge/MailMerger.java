@@ -48,6 +48,7 @@ import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Text;
@@ -549,6 +550,15 @@ public class MailMerger {
 					String fieldName = formTextFieldNames.generateName(datafieldName);
 					log.debug("Field name normalisation: " + datafieldName + " -> " + fieldName);
 					setFormFieldProperties(fr, fieldName, null);
+					
+					// remove <w:highlight w:val="lightGray"/>, if present
+					// (corresponds in Word to clicking Legacy Forms > Form Field Shading)
+					// so that the result is not printed in grey
+					R resultR = fr.getResultsSlot();
+					if (resultR.getRPr()!=null
+							&& resultR.getRPr().getHighlight()!=null) {
+						resultR.getRPr().setHighlight(null);
+					}
 					
 					
 				} else if (!fieldFate.equals(OutputField.KEEP_MERGEFIELD)) {

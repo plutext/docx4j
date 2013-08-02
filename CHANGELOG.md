@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+
+Version 2.8.1.8 (3 August 2013)
+- MailMerger: when converting MERGEFIELD to FORMTEXT field, drop w:highlight if present
+ (so the field is not highlighted in grey when printed)
+
 Version 2.8.1.7 (1 August 2013)
 - MailMerger: ability to convert MERGEFIELD to FORMTEXT field (so the field can be edited when editing is restricted to forms)
 - MailMerger: replace keepMERGEFIELD option with more general setMERGEFIELDInOutput option
