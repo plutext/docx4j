@@ -83,6 +83,7 @@
 		<xsl:copy>
 			<xsl:choose>
 				<xsl:when test="count(xalan:nodeset($results)//w:p)=0">
+					<xsl:copy-of select="w:tcPr" />				
 					<w:p />
 				</xsl:when>
 				<xsl:otherwise>
