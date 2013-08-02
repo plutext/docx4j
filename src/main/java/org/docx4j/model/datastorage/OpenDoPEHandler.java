@@ -44,6 +44,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
+import org.docx4j.model.table.TcFinder;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -812,8 +813,21 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-        ((SdtElement)sdt).getSdtContent().getContent().clear();
-        // .. OpenDoPEIntegrity fixes this where it is not OK
+        // .. OpenDoPEIntegrity fixes this where it is not OK, but
+        // where it needs to insert a tc, it has no way of adding original tcPr, so
+        // we handle this here
+		TcFinder tcFinder = new TcFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
+		if (tcFinder.tcList.size()>0) {
+			Tc tc = tcFinder.tcList.get(0);
+			tc.getContent().clear();
+			P p = Context.getWmlObjectFactory().createP();
+			tc.getContent().add(p);			
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
+		} else {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+		}
 		
 		return newContent;		
 	}
@@ -978,8 +992,22 @@ public class OpenDoPEHandler {
         sdtPr.getRPrOrAliasOrLock().add( lockWrapped); // assumes no lock is there already
 
 		// Empty the content
-        ((SdtElement)sdt).getSdtContent().getContent().clear();
-        // .. OpenDoPEIntegrity fixes this where it is not OK
+        // .. OpenDoPEIntegrity fixes this where it is not OK, but
+        // where it needs to insert a tc, it has no way of adding original tcPr, so
+        // we handle this here
+		TcFinder tcFinder = new TcFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
+		if (tcFinder.tcList.size()>0) {
+			Tc tc = tcFinder.tcList.get(0);
+			tc.getContent().clear();
+			P p = Context.getWmlObjectFactory().createP();
+			tc.getContent().add(p);
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
+		} else {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+		}
+        
 		
 		return newContent;
 	}

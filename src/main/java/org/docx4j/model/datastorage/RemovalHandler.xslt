@@ -45,12 +45,31 @@
       <xsl:apply-templates select="@* | node()" />
     </xsl:copy>
   </xsl:template>
+  
+  <!-- 
+  
+	  NOTE: The location path //para[1] does not mean the same as the location path /descendant::para[1]. 
+	  
+	             //para[1] selects all descendant para elements that are the first para children of their parents.
+	  /descendant::para[1] selects the first descendant para element; 
+   -->
 
   <xsl:template match="w:sdt">
     <xsl:choose>
-      <!-- if we are to remove SDTs referencing empty XML nodes, remove the resulting element entirely -->
+      <!-- if we are to remove SDTs referencing empty XML nodes, remove the resulting element entirely
+           EXCEPT for a tc, which we keep.  Consider a parameter which allows for the tc to be removed? -->
       <xsl:when
-        test="$empty and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=') and string(w:sdtContent//w:t) = ''" />
+        test="$empty and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=') and string(w:sdtContent//w:t) = ''">
+
+		  <!--  A normal bind can be wrapped around a tc (!); assume nothing more complex -->
+          	<xsl:if test="./descendant::w:tc">
+          		<w:tc>
+					<xsl:copy-of select="./descendant::w:tcPr[1]" />				
+					<w:p />
+          		</w:tc>
+          	</xsl:if>
+        
+        </xsl:when>
       <xsl:when
         test="$xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=')
             or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:repeat=')
@@ -62,7 +81,17 @@
       <xsl:when
         test="$repeat and contains(w:sdtPr/w:tag/@w:val, 'od:resultRepeatZero=')
             or $condition and contains(w:sdtPr/w:tag/@w:val, 'od:resultConditionFalse=')
-            " />
+            " >
+
+		  <!--  A normal bind can be wrapped around a tc (!); assume nothing more complex -->
+          	<xsl:if test="./descendant::w:tc">
+          		<w:tc>
+					<xsl:copy-of select="./descendant::w:tcPr[1]" />				
+					<w:p />
+          		</w:tc>
+          	</xsl:if>
+            
+      </xsl:when>
       <xsl:otherwise>
         <xsl:copy>
           <xsl:apply-templates select="@* | node()" />
@@ -70,6 +99,9 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+  
+
+  
 
 	<!--  Ensure tc has content.  
 	      Although we do something similar in OpenDoPEIntegrity, removing od:resultRepeatZero 

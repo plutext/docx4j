@@ -413,28 +413,7 @@ public class TableModel extends Model {
 		}
 	}
 	
-	static class TcFinder extends CallbackImpl {
-		
-		List<Tc> tcList = new ArrayList<Tc>();  
-				
-		@Override
-		public List<Object> apply(Object o) {
-			
-			if (o instanceof Tc ) {
-				
-				tcList.add((Tc)o);
-			}			
-			return null; 
-		}
-		
-		@Override
-		public boolean shouldTraverse(Object o) {
-			
-			// Yes, unless its a nested Tbl
-			return !(o instanceof Tbl); 
-		}
-	}
-	
+
 	/*
 	 * TrFinder and TcFinder can find tr and tc in a complex
 	 * case such as the following:

@@ -280,6 +280,10 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				// Importer class always returns run-level content wrapped in a w:p 
 				// so extract contents
 				
+				if (results.size()>1) {
+					log.warn("In paragraph context, so extra block-level content is being discarded!");
+				}
+				
 				RPr rPrSDT = null;
 				Node rPrNode = rPrNodeIt.nextNode();
 				if (rPrNode!=null) {

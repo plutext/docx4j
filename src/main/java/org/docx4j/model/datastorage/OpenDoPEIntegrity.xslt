@@ -117,7 +117,8 @@
   			<w:sdt>
   				<xsl:copy-of select="w:sdtPr"/>
   				<w:sdtContent>
-  					<w:tc>
+  					<w:tc> 
+						<xsl:copy-of select="./descendant::w:tcPr[1]" />					  					
   						<w:p/>
   					</w:tc>
   				</w:sdtContent>
@@ -131,6 +132,8 @@
   	</xsl:choose>
   
   </xsl:template>  
+  
+  
   
   <!-- Integrity: w:tc/w:sdt must be non-empty  
   
