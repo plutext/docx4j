@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
@@ -49,10 +50,10 @@ public class BookmarksDeleter {
 	private static void fixRange(List<Object> paragraphs, String startElement,
 			String endElement) throws Exception {
 
-		RangeTraverser rt = new RangeTraverser(startElement, endElement);
+		RangeFinder rt = new RangeFinder(startElement, endElement);
 		new TraversalUtil(paragraphs, rt);
 		
-		for (CTBookmark bm : rt.starts) {
+		for (CTBookmark bm : rt.getStarts()) {
 			try {
 				// Can't just remove the object from the parent,
 				// since in the parent, it may be wrapped in a JAXBElement
@@ -77,7 +78,7 @@ public class BookmarksDeleter {
 			}
 		}
 
-		for (CTMarkupRange mr : rt.ends) {
+		for (CTMarkupRange mr : rt.getEnds()) {
 			try {
 				// Can't just remove the object from the parent,
 				// since in the parent, it may be wrapped in a JAXBElement
@@ -139,79 +140,4 @@ public class BookmarksDeleter {
 		return false;
 	}
 	
-    static class RangeTraverser extends CallbackImpl {
-		
-    	List<CTBookmark> starts = new ArrayList<CTBookmark>();
-    	List<CTMarkupRange> ends   = new ArrayList<CTMarkupRange>();
-    	List<Text> refs   = new ArrayList<Text>();
-    	
-    	String startElement; 
-    	String endElement; 
-    	
-    	RangeTraverser(String startElement, String endElement) {
-    		
-    		this.startElement = "org.docx4j.wml." + startElement;
-    		this.endElement   = "org.docx4j.wml." + endElement;
-    	}
-
-    	@Override
-		public List<Object> apply(Object o) {
-    		
-			if (o.getClass().getName().equals(startElement)) {
-				if (o instanceof CTBookmark) { 
-					CTBookmark bookmark = (CTBookmark)o;
-						starts.add(bookmark);
-				} 
-			}
-			
-			if (o.getClass().getName().equals(endElement)) {
-				if (o instanceof CTMarkupRange) { 
-					CTMarkupRange bookmark = (CTMarkupRange)o;
-						ends.add(bookmark);
-				} 
-			}
-
-			if (startElement.equals("org.docx4j.wml.CTBookmark") 
-					&& o instanceof javax.xml.bind.JAXBElement
-					&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
-				refs.add( (Text)XmlUtils.unwrap(o) );
-			}
-			
-			return null;
-		}
-    	
-    	@Override // to setParent
-		public void walkJAXBElements(Object parent) {
-    		
-//    		System.out.println("parent is " + parent.getClass().getName() );
-			
-			List children = getChildren(parent);
-			if (children != null) {
-
-				for (Object o : children) {
-					
-					if (o instanceof javax.xml.bind.JAXBElement
-							&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
-						// preserve this, but set its parent
-						Text t = (Text)XmlUtils.unwrap(o);
-						t.setParent(parent);
-					} else {    					
-						o = XmlUtils.unwrap(o);
-					}
-					
-					// workaround for broken getParent (since 3.0.0)
-					if (o instanceof Child) {
-						((Child)o).setParent(parent);
-					}
-					
-					this.apply(o);
-
-					if (this.shouldTraverse(o)) {
-						walkJAXBElements(o);
-					}
-
-				}
-			}
-		}        	
-	}
 }

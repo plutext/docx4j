@@ -1,4 +1,4 @@
-package org.docx4j.model.table;
+package org.docx4j.finders;
 
 import java.util.ArrayList;
 import java.util.List;

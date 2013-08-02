@@ -6,6 +6,7 @@ import java.util.List;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.finders.ClassFinder;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.CTFFCheckBox;
@@ -26,10 +27,10 @@ public class TraverseFind {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 				
-    	Finder finder = new Finder(FldChar.class); // <----- change this to suit
+		ClassFinder finder = new ClassFinder(FldChar.class); // <----- change this to suit
 		new TraversalUtil(documentPart.getContent(), finder);
 		
-		System.out.println("got " + finder.results.size() + " of type " +  finder.typeToFind.getName() );
+		System.out.println("got " + finder.results.size()  );
 		
 		for (Object o : finder.results) {
 						
@@ -53,25 +54,5 @@ public class TraverseFind {
 								
 	}
 	
-	  public static class Finder extends CallbackImpl {
-		  
-		  protected Class<?> typeToFind;
-		  
-		  protected Finder(Class<?> typeToFind) {
-			  this.typeToFind = typeToFind;
-		  }
-			
-			public List<Object> results = new ArrayList<Object>(); 
-			
-			@Override
-			public List<Object> apply(Object o) {
-				
-				// Adapt as required
-				if (o.getClass().equals(typeToFind)) {
-					results.add(o);
-				}
-				return null;
-			}
-	  }
 		
 }
