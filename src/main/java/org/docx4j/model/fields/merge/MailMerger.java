@@ -473,16 +473,18 @@ public class MailMerger {
 		for( P p : fl.getStarts() ) {
 			int index;
 			if (p.getParent() instanceof ContentAccessor) {
+				// 2.8.1
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
 				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
 				
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-//			} else if (p.getParent() instanceof java.util.List) {
-//				index = ((java.util.List)p.getParent()).indexOf(p);
-//				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-//				log.debug("NewP length: " + newP.getContent().size() );
-//				((java.util.List)p.getParent()).set(index, newP);				
+			} else if (p.getParent() instanceof java.util.List) {
+				// 3.0
+				index = ((java.util.List)p.getParent()).indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				log.debug("NewP length: " + newP.getContent().size() );
+				((java.util.List)p.getParent()).set(index, newP);				
 			} else {
 				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
 			}

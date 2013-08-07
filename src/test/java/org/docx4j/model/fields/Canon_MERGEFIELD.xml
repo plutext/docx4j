@@ -1,0 +1,15 @@
+  <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" >
+      <w:pPr>
+          <w:jc w:val="left"/>
+      </w:pPr>
+      <w:r>
+          <w:rPr>
+              <w:noProof/>
+          </w:rPr>
+          <w:fldChar w:fldCharType="begin"/>
+          <w:instrText xml:space="preserve"> MERGEFIELD  CLIENTNAME </w:instrText>
+          <w:fldChar w:fldCharType="separate"/>
+          <w:t>«CLIENTNAME»</w:t>
+          <w:fldChar w:fldCharType="end"/>
+      </w:r>
+  </w:p>

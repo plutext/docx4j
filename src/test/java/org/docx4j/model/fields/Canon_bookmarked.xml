@@ -1,0 +1,41 @@
+   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" >
+      <w:r w:rsidRPr="00153C8B">
+        <w:t>Dear</w:t>
+      </w:r>
+      <w:r w:rsidR="00D71B1F" w:rsidRPr="00153C8B">
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r w:rsidR="00291A30">
+        <w:fldChar w:fldCharType="begin">
+          <w:ffData>
+            <w:name w:val="Text4"/>
+            <w:enabled/>
+            <w:calcOnExit w:val="false"/>
+            <w:textInput>
+              <w:default w:val="(Customer)"/>
+              <w:maxLength w:val="35"/>
+            </w:textInput>
+          </w:ffData>
+        </w:fldChar>
+      </w:r>
+      <w:bookmarkStart w:name="Text4" w:id="0"/>
+      <w:r w:rsidR="00153C8B">
+        <w:instrText xml:space="preserve"> FORMTEXT </w:instrText>
+      </w:r>
+      <w:r w:rsidR="00291A30">
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+      <w:r w:rsidR="001A400E">
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:t>(Customer)</w:t>
+      </w:r>
+      <w:r w:rsidR="00291A30">
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+      <w:bookmarkEnd w:id="0"/>
+      <w:r w:rsidRPr="00153C8B">
+        <w:t>,</w:t>
+      </w:r>
+    </w:p>
