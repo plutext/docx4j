@@ -391,7 +391,7 @@ public class FieldsPreprocessor {
 						log.debug(".. but in result, so don't add to run");
 					}
 
-				} else {
+				} else {  // still in END processing
 
 					if ( fieldIsTopLevel() ) {
 					
@@ -423,7 +423,10 @@ public class FieldsPreprocessor {
 							newR = Context.getWmlObjectFactory().createR();
 							currentField.setResultsSlot(newR);
 						}
-						newAttachPoint.getContent().add(newR);
+						if (!newAttachPoint.getContent().contains(newR)) { // test, since this is also done immediately before each loop ends
+							newAttachPoint.getContent().add(newR);
+							log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+						}
 						
 						
 						// create a run specifically for end char
@@ -477,7 +480,16 @@ public class FieldsPreprocessor {
 				}
 
 			} else if (preserveResult(currentField)) {
-				newR.getContent().add(o2);					
+				// ie locked, or not MERGEFIELD, or DOCPROPERTY
+				log.debug("preserveResult-> adding");
+				newR.getContent().add(o2);	
+				
+				if (currentField.getResultsSlot()==null) {
+					currentField.setResultsSlot(newR);  // no harm in doing this - same as in SEPARATE processing?
+				} else if (currentField.getResultsSlot()!=newR) {
+					log.warn("Multiple runs in results slot?");
+				}
+				
 			} else {
 				// result content .. can ignore unless it has \* MERGEFORMAT
 				
