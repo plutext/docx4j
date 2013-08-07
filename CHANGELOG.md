@@ -1,6 +1,8 @@
 CHANGELOG
 =========
 
+Version 2.8.1.9 (7 August 2013)
+- Field canonicalisation: fix for duplicate results (eg for FORMTEXT)
 
 Version 2.8.1.8 (3 August 2013)
 - MailMerger: when converting MERGEFIELD to FORMTEXT field, drop w:highlight if present
