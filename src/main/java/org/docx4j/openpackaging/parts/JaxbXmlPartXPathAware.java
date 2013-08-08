@@ -110,6 +110,16 @@ implements XPathEnabled<E> {
 			} finally {
 				IOUtils.closeQuietly(is);
 			}		
+		} else if (binder==null) {
+			// User might have set jaxb element, without creating a binder	
+			try {
+				log.debug("creating binder for " + this.getJaxbElement().getClass().getName());
+				org.w3c.dom.Document doc =  XmlUtils.neww3cDomDocument();
+				this.marshal(doc);
+				unmarshal( doc.getDocumentElement() );
+			} catch (JAXBException e) {
+				log.error(e.getMessage(), e);
+			} 
 		}
 		
 		return binder;
@@ -165,8 +175,9 @@ implements XPathEnabled<E> {
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
+		Binder<Node> binder = getBinder();
 		E el = getJaxbElement();
-		return XmlUtils.getJAXBNodesViaXPath(getBinder(), el, xpathExpr, refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(binder, el, xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
