@@ -83,6 +83,7 @@ import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.STTblOverlap;
 import org.docx4j.wml.STTblStyleOverrideType;
 import org.docx4j.wml.STTextEffect;
+import org.docx4j.wml.STTheme;
 import org.docx4j.wml.STThemeColor;
 import org.docx4j.wml.STVAnchor;
 import org.docx4j.wml.STVerticalAlignRun;
@@ -234,6 +235,8 @@ public class StyleUtil {
 				 areEqual(rPr1.getEm(), rPr2.getEm()) &&
 				 areEqual(rPr1.getSpecVanish(), rPr2.getSpecVanish()) &&
 				 areEqual(rPr1.getOMath(), rPr2.getOMath())
+				 
+				 // rPr1.getLang()  ??
 				 )
 			    );
 	}
@@ -1005,7 +1008,7 @@ public class StyleUtil {
 			   (bool2 != null ? bool2.booleanValue() : false);
 	}
 
-	protected static boolean areEqual(BigInteger val1, BigInteger val2) {
+	public static boolean areEqual(BigInteger val1, BigInteger val2) {
 		return (val1 == val2) ||
 		       ((val1 != null) && (val1.equals(val2)));
 	}
@@ -1381,11 +1384,21 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(RFonts rFonts) {
-		//Comparing the ascii version should be enough in most cases 
 		return (rFonts == null) ||
-		       isEmpty(rFonts.getAscii());
+				(isEmpty(rFonts.getAscii())
+						&& isEmpty(rFonts.getAsciiTheme())
+						&& isEmpty(rFonts.getCs())
+						&& isEmpty(rFonts.getCstheme())
+						&& isEmpty(rFonts.getEastAsia())
+						&& isEmpty(rFonts.getEastAsiaTheme())
+						&& isEmpty(rFonts.getHAnsi())
+						&& isEmpty(rFonts.getHAnsiTheme()));
 	}
 
+	public static boolean isEmpty(STTheme stTheme) {
+		return (stTheme == null) ;
+	}
+	
 	public static boolean isEmpty(RStyle rStyle) {
 		return (rStyle == null) ||
 	       isEmpty(rStyle.getVal());
@@ -1560,7 +1573,8 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(BooleanDefaultTrue booleanDefaultTrue) {
-		return (booleanDefaultTrue == null) || (!booleanDefaultTrue.isVal());
+		return (booleanDefaultTrue == null);  // we want to apply eg <w:i w:val="0"/>
+		//|| (!booleanDefaultTrue.isVal());
 	}
 
 	public static boolean isEmpty(Boolean bool) {
@@ -1605,6 +1619,9 @@ public class StyleUtil {
 			destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
 			destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
 			apply(source.getTblStylePr(), destination.getTblStylePr());
+			
+			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
 		}
 	}
 
@@ -1661,6 +1678,8 @@ public class StyleUtil {
 		if (!isEmpty(source)) {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createRPr();
+			
+			// getLang TODO
 			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
@@ -2140,6 +2159,11 @@ public class StyleUtil {
 			destination.setCs(source.getCs());
 			destination.setEastAsia(source.getEastAsia());
 			destination.setHAnsi(source.getHAnsi());
+
+			destination.setAsciiTheme(source.getAsciiTheme());
+			destination.setCstheme(source.getCstheme());
+			destination.setEastAsiaTheme(source.getEastAsiaTheme());
+			destination.setHAnsiTheme(source.getHAnsiTheme());
 		}
 		return destination;
 	}
