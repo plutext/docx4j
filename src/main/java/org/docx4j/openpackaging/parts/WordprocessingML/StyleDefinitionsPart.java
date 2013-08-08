@@ -165,6 +165,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		
     }
 
+	/**
+	 * Returns a map of styles defined in docx4j's KnownStyles.xml
+	 * (not styles defined in your pkg)
+	 * @return
+	 */
 	public static java.util.Map<String, org.docx4j.wml.Style> getKnownStyles() {
 		if (knownStyles==null) {
 			initKnownStyles();
@@ -191,6 +196,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 				</w:pPr>
 			</w:pPrDefault>
 		</w:docDefaults>
+		
+		BEWARE: in a table, paragraph style ppr trumps table style ppr.
+		The effect of including w:docDefaults in the style hierarchy
+		is that they trump table style ppr, but they should not!
 
 	 */
     public void createVirtualStylesForDocDefaults() throws Docx4JException {
@@ -206,6 +215,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		DocDefaults docDefaults = this.getJaxbElement().getDocDefaults(); 		
 		
 		if (docDefaults == null) {
+			log.warn("No DocDefaults present");
 			// The only way this can happen is if the
 			// styles definition part is missing the docDefaults element
 			// (these are present in docs created from Word, and
@@ -224,6 +234,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Setup documentDefaultPPr
 		PPr documentDefaultPPr;
 		if (docDefaults.getPPrDefault() == null) {
+			log.warn("No PPrDefault present");
 			try {
 				documentDefaultPPr = (PPr) XmlUtils
 						.unmarshalString(pPrDefaultsString);
@@ -252,6 +263,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Setup documentDefaultRPr
 		RPr documentDefaultRPr;
 		if (docDefaults.getRPrDefault() == null) {
+			log.warn("No RPrDefault present");
 			try {
 				documentDefaultRPr = (RPr) XmlUtils
 						.unmarshalString(rPrDefaultsString);
@@ -290,6 +302,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Finally, add it to styles
 		this.getJaxbElement().getStyle().add(pDefault);
 		log.debug("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
+		
+		System.out.println(XmlUtils.marshaltoString(pDefault, true, true));
 		
 		
     	
@@ -366,6 +380,19 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	
 		return defaultParagraphStyle;
     }
+    
+    private Style defaultTableStyle;
+    /**
+     * @since 3.0
+     */
+    public Style getDefaultTableStyle() {
+    	
+    	if (defaultTableStyle==null) {
+    		defaultTableStyle = getDefaultStyle("table");
+    	}
+		return defaultTableStyle;
+    }
+    
     private Style getDefaultStyle(String type) {
     	
 		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
