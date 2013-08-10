@@ -8,6 +8,7 @@ import javax.xml.transform.TransformerException;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.ObjectFactory;
@@ -28,7 +29,6 @@ public class AbstractFormattingSwitchTest {
 	 * @throws Docx4JException
 	 */
 	public static void main(String[] args) throws Docx4JException {
-//		generateSampleDocx();
 
 		AbstractFormattingSwitchTest nfst = new AbstractFormattingSwitchTest();
 		nfst.testFormatting();
@@ -38,10 +38,13 @@ public class AbstractFormattingSwitchTest {
 	public void testFormatting() throws Docx4JException {
 
 		StringBuffer sb = new StringBuffer();
+		
+		NumberExtractor nex = new NumberExtractor(".");		
 
+		int i = 1;
 		for (SwitchTestQuad tt : quads) {
 
-			CTSimpleField simpleField = createSimpleField(tt);
+			CTSimpleField simpleField = createSimpleField(tt, "myvar" +i, false);
 
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 			sb.append("\n\n" + simpleField.getInstr());
@@ -89,26 +92,64 @@ public class AbstractFormattingSwitchTest {
 //			String key = params.get(0);
 //
 //			System.out.println(dpr.getValue(key));
+			
+			if (formattingSwitch.equals("\\#")) {
+				try {
+					System.out.println(tt.val + " is " + nex.extractNumber(tt.val));									
+				} catch (java.lang.IllegalStateException e) {
+					System.out.println(e.getMessage());	
+				}
+			}
 
+			
+			i++;
 		}
 
 		System.out.println(sb.toString() );
-
+		
 	}
 
 
 	public void generateSampleDocx(String filename) throws Docx4JException {
+		
+		// Also create mailmerge data source
+		StringBuilder fieldname = new StringBuilder();
+		StringBuilder row1 = new StringBuilder();
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 
+		org.docx4j.openpackaging.parts.DocPropsCustomPart docPropsCustomPart = new DocPropsCustomPart();
+		wordMLPackage.addTargetPart(docPropsCustomPart);
+		org.docx4j.docProps.custom.ObjectFactory cpfactory = new org.docx4j.docProps.custom.ObjectFactory();
+		org.docx4j.docProps.custom.Properties customProps = cpfactory.createProperties(); 
+		docPropsCustomPart.setJaxbElement(customProps);
+		
 
 		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 
+		int i = 1;
 		for (SwitchTestQuad tt : quads) {
-			org.docx4j.wml.P  p = factory.createP();
-			p.getContent().add(createSimpleField(tt));
-			mdp.getContent().add(p);
+			//org.docx4j.wml.P  p = factory.createP();
+			org.docx4j.wml.P  p = mdp.addParagraphOfText(tt.val  +" " +  tt.format + " --> ");
+			
+			p.getContent().add(createSimpleField(tt, "myvar"+i, true));
+			
+			// Ok, let's add a custom property.
+			org.docx4j.docProps.custom.Properties.Property newProp = cpfactory.createPropertiesProperty();
+			newProp.setName("myvar"+i);
+			newProp.setFmtid(docPropsCustomPart.fmtidValLpwstr ); // Magic string
+			newProp.setPid( customProps.getNextId() ); 
+			newProp.setLpwstr(tt.val);
+			
+			// .. add it
+			customProps.getProperty().add(newProp);
+			
+			// For mailmerge
+			fieldname.append("\"myvar" + i + "\",");
+			row1.append("\"" + tt.val + "\",");
+			
+			i++;
 		}
 
 
@@ -120,18 +161,36 @@ public class AbstractFormattingSwitchTest {
 		String path = System.getProperty("user.dir") + "/" + filename;
 		wordMLPackage.save(new java.io.File(path) );
 		System.out.println("Saved " + path);
+		
+		System.out.println(fieldname.toString());
+		System.out.println(row1.toString());
 	}
 
-	private CTSimpleField createSimpleField(SwitchTestQuad triple) {
+	private CTSimpleField createSimpleField(SwitchTestQuad triple, String varname, boolean useVarname) {
 
 		ObjectFactory wmlObjectFactory = Context.getWmlObjectFactory();
 
 		CTSimpleField field = wmlObjectFactory.createCTSimpleField();
 		String instr = null;
-		if (triple.format==null || triple.format.equals("")) {
-			instr = instruction + triple.val;
+		if (triple.format==null ) { 
+			if (useVarname && (instruction.equals("DOCPROPERTY ") 
+					|| instruction.equals("MERGEFIELD "))) {
+				instr = instruction + varname;				
+			} else {
+				instr = instruction +triple.val;
+			}
 		} else {
-			instr = instruction + triple.val + " " + formattingSwitch + " " + triple.format;
+			if (useVarname && (instruction.equals("DOCPROPERTY ") 
+					|| instruction.equals("MERGEFIELD "))) {
+				if (triple.format.equals("")) {
+					instr = instruction + varname ;
+				} else
+				{
+					instr = instruction + varname + " " + formattingSwitch + " " + triple.format;
+				}
+			} else {
+				instr = instruction + triple.val + " " + formattingSwitch + " " + triple.format;
+			}
 		}
 
 		field.setInstr(instr);
