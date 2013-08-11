@@ -11,7 +11,7 @@ public class NumericFormattingSwitchTests extends AbstractFormattingSwitchTest {
 		formattingSwitch = "\\#"; 
 		
 		//initEqual();
-		//initMERGEFIELD();
+//		initMERGEFIELD();
 		initDOCPROPERTY();
 	}
 		
@@ -571,6 +571,8 @@ public class NumericFormattingSwitchTests extends AbstractFormattingSwitchTest {
 
 		NumericFormattingSwitchTests nfst = new NumericFormattingSwitchTests();
 
+//		nfst.generateJUnitTest();
+		
 		
 		nfst.testFormatting();
 		

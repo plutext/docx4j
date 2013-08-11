@@ -51,44 +51,44 @@ private void initDOCPROPERTY() {
 	quads.add(new SwitchTestQuad("\"Mary Smith\" Capoop", "Upper", "\"MARY SMITH\" CAPOOP"));
 	
 	// Without instruction, there is no change
-	quads.add(new SwitchTestQuad("\"Mary SmiTH\"", "", "\"Mary SmiTH\""));
-	quads.add(new SwitchTestQuad("\"mary SmiTH\"", "", "\"mary SmiTH\""));
+	quads.add(new SwitchTestQuad("\"Mary SmiTH\"", "MERGEFORMAT", "\"Mary SmiTH\""));
+	quads.add(new SwitchTestQuad("\"mary SmiTH\"", "MERGEFORMAT", "\"mary SmiTH\""));
 
 	// TODO literals, punctuation characters
 
 	// Without quotes..
 	quads.add(new SwitchTestQuad("mary smith", "Upper", "MARY SMITH")); // no quotes
-	quads.add(new SwitchTestQuad("Mary SmiTH", "", "Mary SmiTH"));
+	quads.add(new SwitchTestQuad("Mary SmiTH", "MERGEFORMAT", "Mary SmiTH"));
 
 	quads.add(new SwitchTestQuad("\"mary smith\"", "madeupswitch", "Error! Unknown switch argument"));
 
-	quads.add(new SwitchTestQuad("01", "", "01")); // do not treat as a number
-	quads.add(new SwitchTestQuad("0.1", "", "0.1")); 
-	quads.add(new SwitchTestQuad("0.0", "", "0.0")); // FIXME
-	quads.add(new SwitchTestQuad("0.00", "", "0.00")); 
-	quads.add(new SwitchTestQuad("0.", "", "0.")); // do not treat as a number
+	quads.add(new SwitchTestQuad("01", "MERGEFORMAT", "01")); // do not treat as a number
+	quads.add(new SwitchTestQuad("0.1", "MERGEFORMAT", "0.1")); 
+	quads.add(new SwitchTestQuad("0.0", "MERGEFORMAT", "0.0")); // FIXME
+	quads.add(new SwitchTestQuad("0.00", "MERGEFORMAT", "0.00")); 
+	quads.add(new SwitchTestQuad("0.", "MERGEFORMAT", "0.")); // do not treat as a number
 
 
-	quads.add(new SwitchTestQuad("\"0.1 A\"", "", "\"0.1 A\"")); 
-	quads.add(new SwitchTestQuad("\"0.1 1\"", "", "\"0.1 1\"")); 
-	quads.add(new SwitchTestQuad("\"0.1 .\"", "", "\"0.1 .\"")); 
-	quads.add(new SwitchTestQuad("\"0.00 0\"", "", "\"0.00 0\"")); 
-	quads.add(new SwitchTestQuad("\"0.00 1\"", "", "\"0.00 1\"")); 
-	quads.add(new SwitchTestQuad("\"0.00 A\"", "", "\"0.00 A\"")); 
+	quads.add(new SwitchTestQuad("\"0.1 A\"", "MERGEFORMAT", "\"0.1 A\"")); 
+	quads.add(new SwitchTestQuad("\"0.1 1\"", "MERGEFORMAT", "\"0.1 1\"")); 
+	quads.add(new SwitchTestQuad("\"0.1 .\"", "MERGEFORMAT", "\"0.1 .\"")); 
+	quads.add(new SwitchTestQuad("\"0.00 0\"", "MERGEFORMAT", "\"0.00 0\"")); 
+	quads.add(new SwitchTestQuad("\"0.00 1\"", "MERGEFORMAT", "\"0.00 1\"")); 
+	quads.add(new SwitchTestQuad("\"0.00 A\"", "MERGEFORMAT", "\"0.00 A\"")); 
 	
 	// No quotes...
-	quads.add(new SwitchTestQuad("0.1 A", "", "0.1 A")); 
-	quads.add(new SwitchTestQuad("0.1 1", "", "0.1 1")); 
-	quads.add(new SwitchTestQuad("0.1 .", "", "0.1 .")); 
-	quads.add(new SwitchTestQuad("0.00 0", "", "0.00 0")); 
-	quads.add(new SwitchTestQuad("0.00 1", "", "0.00 1")); 
-	quads.add(new SwitchTestQuad("0.00 A", "", "0.00 A")); 
+	quads.add(new SwitchTestQuad("0.1 A", "MERGEFORMAT", "0.1 A")); 
+	quads.add(new SwitchTestQuad("0.1 1", "MERGEFORMAT", "0.1 1")); 
+	quads.add(new SwitchTestQuad("0.1 .", "MERGEFORMAT", "0.1 .")); 
+	quads.add(new SwitchTestQuad("0.00 0", "MERGEFORMAT", "0.00 0")); 
+	quads.add(new SwitchTestQuad("0.00 1", "MERGEFORMAT", "0.00 1")); 
+	quads.add(new SwitchTestQuad("0.00 A", "MERGEFORMAT", "0.00 A")); 
 	
-	quads.add(new SwitchTestQuad("0000123456", "", "0000123456")); // do not treat as a number
-	quads.add(new SwitchTestQuad("000012345.006", "", "000012345.006")); // do not treat as a number
+	quads.add(new SwitchTestQuad("0000123456", "MERGEFORMAT", "0000123456")); // do not treat as a number
+	quads.add(new SwitchTestQuad("000012345.006", "MERGEFORMAT", "000012345.006")); // do not treat as a number
 	
-	quads.add(new SwitchTestQuad("0000123AA456", "", "0000123AA456"));
-	quads.add(new SwitchTestQuad("0000123AA45.006", "", "0000123AA45.006")); 
+	quads.add(new SwitchTestQuad("0000123AA456", "MERGEFORMAT", "0000123AA456"));
+	quads.add(new SwitchTestQuad("0000123AA45.006", "MERGEFORMAT", "0000123AA45.006")); 
 	
 }
 
@@ -158,6 +158,8 @@ private void initMERGEFIELD() {
 	 */
 	public static void main(String[] args) throws Docx4JException {
 		GeneralStringFormattingSwitchTests fst = new GeneralStringFormattingSwitchTests();
+		
+//		fst.generateJUnitTest();
 		
 		fst.testFormatting();
 		

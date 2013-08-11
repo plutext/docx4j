@@ -510,7 +510,9 @@ public class MailMerger {
 						fsm.build(instr);
 						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
 						
-						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);		
+						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
+						// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
+						// We are in fact applying all formatting switches above.
 						
 					} catch (TransformerException e) {
 						log.warn("Can't format the field", e);
@@ -606,6 +608,24 @@ public class MailMerger {
 		
 		if (instructions.size()!=1) {
 			log.error("TODO MERGEFIELD field contained complex instruction");
+			/* eg
+			 * 
+			 *    <w:r>
+			        <w:instrText xml:space="preserve"> MERGEFIELD  lasauv</w:instrText>
+			      </w:r>
+			      <w:r>
+			        <w:instrText xml:space="preserve">egarde  \* MERGEFORMAT </w:instrText>
+			      </w:r>
+			      
+				for (Object i : instructions) {
+					i = XmlUtils.unwrap(i);
+					if (i instanceof Text) {
+						log.error( ((Text)i).getValue());
+					} else {
+						log.error(XmlUtils.marshaltoString(i, true, true) );
+					}
+				}
+			 */
 			return null;
 		}
 		

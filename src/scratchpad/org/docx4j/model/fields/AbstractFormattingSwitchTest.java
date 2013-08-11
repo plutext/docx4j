@@ -16,6 +16,16 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
 import org.junit.Ignore;
 
+/**
+ * Please note, these aren't tests as such, but rather
+ * code which helps you to understand how Word formats
+ * fields, how it compares to what docx4j does, and 
+ * opportunities to improve docx4j's ability to mimic 
+ * Word.
+ * 
+ * Real JUnit tests can be found in src/test/java.
+ *
+ */
 @Ignore
 public class AbstractFormattingSwitchTest {
 
@@ -109,6 +119,65 @@ public class AbstractFormattingSwitchTest {
 		
 	}
 
+//	public void generateJUnitTestGeneral() throws Docx4JException {
+//
+//		StringBuffer sb = new StringBuffer();
+//		for (SwitchTestQuad tt : quads) {
+//			
+//			// public void testApplyFormattingSwitch() throws TransformerException, Docx4JException {
+//			if (this.formattingSwitch.equals("\\*")) {
+//				sb.append("public void test" + this.instruction.trim().toLowerCase() + "String" + tt.format + "() throws TransformerException, Docx4JException {" );
+//			} else if (this.formattingSwitch.equals("\\@")) {
+//					sb.append("public void test" + this.instruction.trim().toLowerCase() + "Date" + tt.format + "() throws TransformerException, Docx4JException {" );
+//			} else if (this.formattingSwitch.equals("\\#")) {
+//				sb.append("public void test" + this.instruction.trim().toLowerCase() + "Number" + tt.format + "() throws TransformerException, Docx4JException {" );
+//			}
+//			sb.append("\n");
+//			
+//			// SwitchTestData triple = new SwitchTestData("MERGEFIELD", "\\* Upper", "Mary", "MARY");
+//			sb.append("   SwitchTestData triple = new SwitchTestData(\"" + this.instruction + "\", \"\\" + this.formattingSwitch + " " + tt.format + "\", \"" + escape(tt.val) + "\", \"" + escape(tt.expectedResult.toString()) + "\");" );			
+//			sb.append("\n");
+//			sb.append("\n");
+//		}
+//		System.out.println(sb.toString() );
+//	}
+
+	public void generateJUnitTest() throws Docx4JException {
+
+		StringBuffer sb = new StringBuffer();
+		int i=1;
+		for (SwitchTestQuad tt : quads) {
+			
+			sb.append("@Test\n");
+			sb.append("public void testDate" + i + "() throws TransformerException, Docx4JException {" );
+			sb.append("\n");
+			
+			// SwitchTestData triple = new SwitchTestData("\\* Upper", "Mary");
+			sb.append("   SwitchTestData data = new SwitchTestData(\"\\" + this.formattingSwitch + " " + tt.format + "\", \"" + escape(tt.val.toString()) + "\");" );			
+			sb.append("\n");
+
+			// doit("MERGEFIELD", data, "Mary Smith"); 
+			sb.append("   doit(\"MERGEFIELD\", data, \"" + escape(tt.expectedResult.toString()) + "\");" );			
+			sb.append("\n");
+			
+			// doit("DOCPROPERTY", data, "Mary Smith");
+			sb.append("   doit(\"DOCPROPERTY\", data, \"" + escape(tt.expectedResult.toString()) + "\");" );			
+			sb.append("\n");
+			
+			
+			
+			sb.append("} \n \n");
+			i++;
+		}
+
+		System.out.println(sb.toString() );
+		
+	}
+
+	
+	private String escape(String input) {
+		return input.replace("\"", "\\\"");
+	}
 
 	public void generateSampleDocx(String filename) throws Docx4JException {
 		
@@ -175,15 +244,15 @@ public class AbstractFormattingSwitchTest {
 		if (triple.format==null ) { 
 			if (useVarname && (instruction.equals("DOCPROPERTY ") 
 					|| instruction.equals("MERGEFIELD "))) {
-				instr = instruction + varname;				
+				instr = instruction + varname + " " + formattingSwitch;				
 			} else {
-				instr = instruction +triple.val;
+				instr = instruction +triple.val + " " + formattingSwitch;
 			}
 		} else {
 			if (useVarname && (instruction.equals("DOCPROPERTY ") 
 					|| instruction.equals("MERGEFIELD "))) {
 				if (triple.format.equals("")) {
-					instr = instruction + varname ;
+					instr = instruction + varname  + " " + formattingSwitch;
 				} else
 				{
 					instr = instruction + varname + " " + formattingSwitch + " " + triple.format;

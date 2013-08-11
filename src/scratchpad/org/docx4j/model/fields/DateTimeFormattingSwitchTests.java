@@ -23,6 +23,8 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 		
 		// This date needs to be parsed using US formatting
 		// docx4j.Fields.Dates.DateFormatInferencer.USA=true
+
+		quads.add(new SwitchTestQuad("4/15/2013", " ", "4/15/2013", "4/15/2013"));
 		
 		// Examples from 4ed spec
 		quads.add(new SwitchTestQuad("4/15/2013", "M/d/yyyy", "4/15/2013", "4/15/2013"));
@@ -70,6 +72,8 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 		
 		// This date needs to be parsed using US formatting
 		// docx4j.Fields.Dates.DateFormatInferencer.USA=true
+
+		quads.add(new SwitchTestQuad("4/15/2013", " ", "4/15/2013", "4/15/2013"));
 		
 		// Examples from 4ed spec
 		quads.add(new SwitchTestQuad("4/15/2013", "M/d/yyyy", "4/15/2013", "4/15/2013"));
@@ -224,17 +228,19 @@ public class DateTimeFormattingSwitchTests extends AbstractFormattingSwitchTest 
 		DateTimeFormattingSwitchTests fst = new DateTimeFormattingSwitchTests();
 //		fst.generateSampleDocx("test_DateTimeFormatting.docx");
 		
-		fst.testFormatting();
+		fst.generateJUnitTest();
 		
-		if (fst.instruction.equals("DATE ") ) {
-			fst.generateSampleDocx("test_DATE_DateFormatting.docx");
-		} else if (fst.instruction.equals("DOCPROPERTY ") ) {
-			fst.generateSampleDocx("test_DOCPROPERTY_DateFormatting.docx");
-		} else if (fst.instruction.equals("MERGEFIELD ") ) {
-			fst.generateSampleDocx("test_MERGEFIELD_DateFormatting.docx");
-		} else {
-			fst.generateSampleDocx("test_DateFormatting.docx");			
-		}
+//		fst.testFormatting();
+//		
+//		if (fst.instruction.equals("DATE ") ) {
+//			fst.generateSampleDocx("test_DATE_DateFormatting.docx");
+//		} else if (fst.instruction.equals("DOCPROPERTY ") ) {
+//			fst.generateSampleDocx("test_DOCPROPERTY_DateFormatting.docx");
+//		} else if (fst.instruction.equals("MERGEFIELD ") ) {
+//			fst.generateSampleDocx("test_MERGEFIELD_DateFormatting.docx");
+//		} else {
+//			fst.generateSampleDocx("test_DateFormatting.docx");			
+//		}
 		
 	}
 
