@@ -57,4 +57,12 @@ public class Docx4jProperties {
 		return properties;		
 	}
 	
+	public static void setProperty(String key, Boolean defaultValue) {
+		
+		if (properties==null) {init();}
+				
+		properties.setProperty(key, defaultValue.toString());		
+	}
+	
+	
 }

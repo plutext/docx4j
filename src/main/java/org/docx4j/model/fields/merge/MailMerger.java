@@ -78,15 +78,13 @@ import org.docx4j.wml.Text;
  * will continue, as will footnotes/endnotes. 
  * 
  * From 3.0, there is some support for formatting switches
- * (date/time, numeric, and general).
+ * (date/time, numeric, and general), and basic 
+ * support for MERGEFORMAT.
  *  
  * LIMITATIONS:
  * - no support for text before (\b) and text after (\f)
  *   switches
  * - no support for \m and \v switches
- * - no support formatting (date/time, numeric, or general), 
- *   including MERGEFORMAT (which means preserve
- *   the formatting of any existing field result)
  * - no support for multiple MERGEFIELD in a single
  *   instruction (eg MERGEFIELD CoutesyTitle \f " " MERGEFIELD FirstName \f " " MERGEFIELD LastName ) 
  * 
@@ -131,10 +129,12 @@ public class MailMerger {
 		
 		FormTextFieldNames formTextFieldNames = new FormTextFieldNames(); 		
 		
+		// create contents destined for the main document part
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
 		log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
-		List<List<Object>> results = performOverList(input, input.getMainDocumentPart().getContent(), data, formTextFieldNames );
+		List<List<Object>> mdpResults = performOverList(input, input.getMainDocumentPart().getContent(), data, formTextFieldNames );
 
+		// headers/footers
 		Map<CTRel, JaxbXmlPart> hfTemplates = null;
 		BooleanDefaultTrue titlePage = null;
 		if (processHeadersAndFooters) {
@@ -162,18 +162,17 @@ public class MailMerger {
 			}
 		}
 		
-		// Prepare for cloning
+		// Create WordprocessingMLPackage target, by cloning
 		OpcPackage result = null;
-		
-		// Zip it up
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		SaveToZipFile saver = new SaveToZipFile(input);
 		saver.save(baos);
 		byte[] template = baos.toByteArray();
-
-		
 		WordprocessingMLPackage target = WordprocessingMLPackage.load(
 				new ByteArrayInputStream(template));
+		
+		
+		// populate main document part
 		SectPr documentSeparator = getDocumentSeparator(target);
 		if (processHeadersAndFooters) {
 			if (titlePage!=null
@@ -201,11 +200,12 @@ public class MailMerger {
 		 */
 		
 		int i = 0;
-		for (List<Object> content : results) {
+		for (List<Object> content : mdpResults) {
+			
 						
 			// now inject the content
 			target.getMainDocumentPart().getContent().addAll(content);
-			
+
 			// add sectPr to final paragraph
 			Object last = content.get( content.size()-1);
 			P lastP = null;
@@ -470,16 +470,18 @@ public class MailMerger {
 		for( P p : fl.getStarts() ) {
 			int index;
 			if (p.getParent() instanceof ContentAccessor) {
+				// 2.8.1
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
 				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
 				
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-//			} else if (p.getParent() instanceof java.util.List) {
-//				index = ((java.util.List)p.getParent()).indexOf(p);
-//				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-//				log.debug("NewP length: " + newP.getContent().size() );
-//				((java.util.List)p.getParent()).set(index, newP);				
+			} else if (p.getParent() instanceof java.util.List) {
+				// 3.0
+				index = ((java.util.List)p.getParent()).indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				log.debug("NewP length: " + newP.getContent().size() );
+				((java.util.List)p.getParent()).set(index, newP);				
 			} else {
 				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
 			}
@@ -505,7 +507,9 @@ public class MailMerger {
 						fsm.build(instr);
 						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
 						
-						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);		
+						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
+						// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
+						// We are in fact applying all formatting switches above.
 						
 					} catch (TransformerException e) {
 						log.warn("Can't format the field", e);
@@ -560,7 +564,6 @@ public class MailMerger {
 						resultR.getRPr().setHighlight(null);
 					}
 					
-					
 				} else if (!fieldFate.equals(OutputField.KEEP_MERGEFIELD)) {
 					// If doing an actual mail merge, the begin-separate run is removed, as is the end run				
 					fr.getParent().getContent().remove(fr.getBeginRun());
@@ -602,6 +605,24 @@ public class MailMerger {
 		
 		if (instructions.size()!=1) {
 			log.error("TODO MERGEFIELD field contained complex instruction");
+			/* eg
+			 * 
+			 *    <w:r>
+			        <w:instrText xml:space="preserve"> MERGEFIELD  lasauv</w:instrText>
+			      </w:r>
+			      <w:r>
+			        <w:instrText xml:space="preserve">egarde  \* MERGEFORMAT </w:instrText>
+			      </w:r>
+			      
+				for (Object i : instructions) {
+					i = XmlUtils.unwrap(i);
+					if (i instanceof Text) {
+						log.error( ((Text)i).getValue());
+					} else {
+						log.error(XmlUtils.marshaltoString(i, true, true) );
+					}
+				}
+			 */
 			return null;
 		}
 		

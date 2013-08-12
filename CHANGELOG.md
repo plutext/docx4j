@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 2.8.1.10 (12 August 2013)
+- Preserve leading zeros in MERGEFIELD with formatting switch \* MERGEFORMAT
+  (backport 3.0 snapshot field processing code 
+   up to https://github.com/plutext/docx4j/commit/5add31fbddb04f39e3d031805da17d1ceea8150a ) 
+  
 Version 2.8.1.9 (7 August 2013)
 - Field canonicalisation: fix for duplicate results (eg for FORMTEXT)
 

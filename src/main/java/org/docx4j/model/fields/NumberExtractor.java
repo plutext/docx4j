@@ -71,8 +71,24 @@ public class NumberExtractor {
 		try {
 			Matcher makeMatch = pattern.matcher(
 					prepare(string));
-			makeMatch.find();
-			return makeMatch.group();
+			if (makeMatch.find() ) {
+				
+				String matchingSubstring = makeMatch.group();
+				
+				// Check that there is no 
+//				int pos = string.indexOf(matchingSubstring) + matchingSubstring.length()-1;
+//				int pos2 = string.indexOf(' ', pos);
+//				
+//				if (pos2>pos
+//						|| (pos2<0 && (string.length() - pos > 0) )) {
+//					// there are alpha chars on the end of the number
+//					throw new java.lang.IllegalStateException("Not a number");
+//				} 
+				return matchingSubstring;
+			} else {
+				throw new java.lang.IllegalStateException( string + " does not contain a number");				
+			}
+			
 		} catch (java.lang.IllegalStateException noMatch) {
 			// This is what Word does
 			return string;

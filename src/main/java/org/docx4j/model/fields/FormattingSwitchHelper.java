@@ -197,12 +197,19 @@ public class FormattingSwitchHelper {
 		public FieldResultIsNotADateOrTimeException(){
 			super();
 		}
+		public FieldResultIsNotADateOrTimeException(String string) {
+			super(string);
+		}
 	}
 	
 	private static class FieldResultIsNotANumberException extends Exception {
 
 		public FieldResultIsNotANumberException(){
 			super();
+		}
+
+		public FieldResultIsNotANumberException(String string) {
+			super(string);
 		}
 	}
 	
@@ -211,18 +218,29 @@ public class FormattingSwitchHelper {
 		// date-and-time-formatting-switch: \@ 
 		Date date = null;
 		try {
-			date = getDate(model, value );
 			String dtFormat = findFirstSwitchValue("\\@", model.getFldParameters(), true);
-			log.debug("Applying date format " + dtFormat + " to " + value);
-			
-			
 			if (dtFormat==null) {
 				// SPECIFICATION: If no date-and-time-formatting-switch is present, 
 				// a date or time result is formatted in an implementation-defined manner.
 				
 				// TODO .. analyse what Word does
 				// for now, just leave as is
+			} else if (dtFormat.equals("")) {
+				// Verified with Word 2010 sp1 for DOCPROPERTY (very likely others are the same)
+				return "Error! Switch argument not specified.";
 			} else {
+				log.debug("Applying date format " + dtFormat + " to " + value);
+				date = getDate(model, value );
+				
+				// For \@ date formatting, Word seems to give same results for
+				// DATE, DOCPROPERTY, and MERGEFIELD,
+				// but to have a different code path for =
+				
+				// OK, its a date
+				if ( model.fldName.equals("=")) {
+					// For =, today's date is used!
+					date = new Date();
+				}
 				value = formatDate(model, dtFormat, date);
 			}
 			
@@ -232,42 +250,54 @@ public class FormattingSwitchHelper {
 		}
 		
 		// numeric-formatting-switch: \#
-		double number;
+		double number=-1;
 		if (date==null) {
 			// It is not a date, so see whether it is a number
 			
-			try {
-				number = getNumber(model, value);
-				String nFormat = findFirstSwitchValue("\\#", model.getFldParameters(), true);
-				log.debug("Applying number format " + nFormat + " to " + number);
+			String nFormat = findFirstSwitchValue("\\#", model.getFldParameters(), true);
+			if (nFormat!=null) {
 				
-				if (nFormat==null) {
-					// SPECIFICATION: If no numeric-formatting-switch is present, 
-					// a numeric result is formatted without leading spaces or
-					// trailing fractional zeros.  
-					// If the result is negative, a leading minus sign is present.  
-					// If the result is a whole number, no radix point is present.
+				if (nFormat.equals("") ) {
+					return "Error! Switch argument not specified.";
+					// Verified with Word 2010 sp1, for =, DOCPROPERTY, MERGEFIELD
+					// TODO unless it looks like a bookmark, eg {=AA \#} ?
 					
-					// We'll only honour this if the number is really a number.
-					// Not, for example, CL.87559-p
-					try {
-						number = Double.parseDouble(value);
-						value = formatNumber(model, "#.##########", number );
-					} catch (Exception e) {
-						log.debug(value + " is not a number");				
+				} else {				
+									
+					try {				
+						number = getNumber(model, value);
+					} catch (FieldResultIsNotANumberException e) {
+						// Is value a bookmark?
+						// If so TODO set value to bookmark contents
+						//Otherwise
+						log.debug(e.getMessage());
+						// Word 2010 produces something like: "!Syntax Error"
+						return "!Syntax Error";
 					}
 					
-					
-				} else {
 					value = formatNumber(model, nFormat, number );
+
+	
+						// SPECIFICATION: If no numeric-formatting-switch is present, 
+						// a numeric result is formatted without leading spaces or
+						// trailing fractional zeros.  
+						// If the result is negative, a leading minus sign is present.  
+						// If the result is a whole number, no radix point is present.
+	
+						// We'll only honour this if the number is really a number.
+						// Not, for example, CL.87559-p
+	//					try {
+	//						number = Double.parseDouble(value);
+	//						value = formatNumber(model, "#.##########", number );
+	//					} catch (Exception e) {
+	//						log.debug(value + " is not a number");				
+	//					}
+						
+						// That's commented out, because in reality (Word 2010 sp1), 
+						// if there is no '\#', it is not treated as a number
+					
 				}
-				
-			} catch (FieldResultIsNotANumberException e) {
-				// SPECIFICATION: If the result of a field is not a number,
-				// the numeric-formatting-switch has no effect
-				
 			}
-			
 		}
 		
 		// general-formatting-switch: \*
@@ -279,7 +309,7 @@ public class FormattingSwitchHelper {
 		//     \@ &quot;d 'de' MMMM 'de' yyyy  &quot; \* Upper"
 		// (ie \@ and \* at same time)
 		// but \@ must be before \*
-		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), true);		
+		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), false);		
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
@@ -331,9 +361,6 @@ public class FormattingSwitchHelper {
 
 	private static double getNumber( FldSimpleModel model, String value) throws FieldResultIsNotANumberException {
 		
-		// Hmm, Word seems to be happy to extract a number from a DOCPROPERTY string,
-		// but not from = ... so we should only use NumberExtractor for certain field types?
-
 		WordprocessingMLPackage pkg = model.getWordMLPackage();
 		String decimalSymbol=null;
 		if (pkg!=null
@@ -345,6 +372,10 @@ public class FormattingSwitchHelper {
 			}
 		}
 
+		// For DOCPROPERTY field, and possibly some others, but not "=",
+		// Word will parse "€180,000.00 EUR" as a number
+		if (model.fldName.equals("DOCPROPERTY")
+				|| model.fldName.equals("MERGEFIELD")) {
 		
 			// First, parse the value
 			NumberExtractor nex = new NumberExtractor(decimalSymbol);
@@ -354,14 +385,17 @@ public class FormattingSwitchHelper {
 				// There is no number in this string.
 				// In this case Word just inserts the non-numeric text,
 				// without attempting to format the number
-				throw new FieldResultIsNotANumberException();
+				throw new FieldResultIsNotANumberException("No number in " + value);
 			}
-
-			try {
-				return Double.parseDouble(value);
-			} catch (Exception e) {
-				throw new FieldResultIsNotANumberException();				
-			}
+		}
+		
+		try {
+			return Double.parseDouble(value);
+		} catch (Exception e) {
+			// TODO: is it a bookmark?
+			
+			throw new FieldResultIsNotANumberException();				
+		}
 	}
 	
 	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub) 
@@ -400,6 +434,10 @@ public class FormattingSwitchHelper {
 		char ch = '\0';
 		char lastCh = '\0';
 		boolean inLiteral = false;
+
+		if ((wordNumberPattern == null) || (wordNumberPattern.length() == 0)) {
+			wordNumberPattern = "#.##########";
+		}
 		
 		if ((wordNumberPattern != null) && (wordNumberPattern.length() > 0)) {
 			
@@ -530,11 +568,47 @@ public class FormattingSwitchHelper {
 			appendDateItem(buffer, wordNumberPattern.substring(valueStart));
 		}
 		
-		if (fillerBeforeDecimalPointCount<1) {
+		
+		if (fillerBeforeDecimalPointCount<1
+				&& (wordNumberPattern != null) && (wordNumberPattern.length() > 0))		
+		{
+			/*
+			 * Word loses the negative sign!
+			 * 
+				=-0.75 \# .###x
+				WORD: .75
+				
+				=-.75 \# .###x
+				WORD: .75
+				
+				=-0.75 \# .###
+				WORD: .75
+				
+				=-.75 \# .###
+				WORD: .75
+				
+				=-0.75 \# .000
+				WORD: .750
+				
+				=-.75 \# .000
+				WORD: .750
+				
+			 * Word returns the fractional part only!
+				
+				=95.4 \# .00
+				WORD: .40
+				
+				=95.4 \# .##
+				WORD: .4
+
+				=95.4 \# $###.00
+				 OK
+			 */
+
+			
 			if ( (dub<0) // Word loses the negative sign!
 					|| (dub>=1) ) // Word returns the fractional part only!
 				throw new FieldFormattingException("Refusing to replicate Word anomolous result. ");		
-			
 		}
 		
 		String javaFormatter = buffer.toString();
@@ -565,9 +639,13 @@ public class FormattingSwitchHelper {
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
 		
-		// Drop surrounding quotes.  TODO improve this
-		if (value.startsWith("\"")) value = value.substring(1);
-		if (value.endsWith("\"")) value = value.substring(0, value.length()-1);
+		if ( format.equals("")) {
+			return "Error! Switch argument not specified.";
+		}
+//		// so:
+//		if ( format.equals("")) {
+//			return value;
+//		}
 		
 		// TODO: handle the SMALLCAPS exception!
 		
@@ -613,6 +691,8 @@ public class FormattingSwitchHelper {
 			return "";
 		} else if (value.length()==1) {
 			return value.substring(0, 1).toUpperCase();
+		} else if (value.startsWith("\"")) { 
+			return "\"" +  value.substring(1, 2).toUpperCase() + value.substring(2).toLowerCase();
 		} else { // (value.length()>1) 
 			return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
 		}
@@ -870,6 +950,8 @@ public class FormattingSwitchHelper {
 					switchValue = getSwitchValue(pos + 1, fldParameters);
 				}
 			}
+			// switch was found, so return empty value
+			switchValue = switchValue==null ? "" : switchValue;
 		}
 		return switchValue;
 	}
