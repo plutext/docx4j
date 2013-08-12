@@ -58,4 +58,24 @@ public class Docx4jProperties {
 		return properties;		
 	}
 	
+	/**
+	 * Useful if a unit test requires a certain property value.
+	 * 
+	 * @since 3.0.0
+	 */
+	public static void setProperty(String key, Boolean value) {
+		if (properties==null) {init();}
+		properties.setProperty(key, value.toString());		
+	}	
+
+	/**
+	 * Useful if a unit test requires a certain property value.
+	 * 
+	 * @since 3.0.0
+	 */
+	public static void setProperty(String key, String value) {
+		if (properties==null) {init();}
+		properties.setProperty(key, value);		
+	}	
+	
 }

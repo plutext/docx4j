@@ -4,11 +4,27 @@ import static org.junit.Assert.assertTrue;
 
 import javax.xml.transform.TransformerException;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FormattingSwitchHelperDateTests {
 	
+	static boolean wasDateFormatInferencerUSA = false;
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		// Tests assume USA date format
+		wasDateFormatInferencerUSA = Docx4jProperties.getProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", false);		
+		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", true);
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", wasDateFormatInferencerUSA);
+	}
 	
 	@Test
 	public void testDate1() throws TransformerException, Docx4JException {
