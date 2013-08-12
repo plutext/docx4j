@@ -1,4 +1,3 @@
-
 package org.opendope.conditions;
 
 import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;

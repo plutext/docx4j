@@ -28,6 +28,10 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.SectPr;
 
+/**
+ * corresponds to a section in the xslt (ie excludes continuous sections).
+ *
+ */
 public class ConversionSectionWrapper extends SectionWrapper {
 	protected List<Object> content = null;
 	protected String id = null;

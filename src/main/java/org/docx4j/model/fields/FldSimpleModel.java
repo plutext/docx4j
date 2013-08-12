@@ -74,6 +74,7 @@ public class FldSimpleModel extends Model {
 	}
 
 	public static List<String> splitParameters(String text) {
+		
 		log.debug("splitParameters: " + text);
 		List<String> ret = Collections.EMPTY_LIST;
 		int valStart = -1;

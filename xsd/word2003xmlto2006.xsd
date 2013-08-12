@@ -30,7 +30,6 @@ JAXB INSTRUCTIONS
 			
  	 xjc  word2003xmlto2006.xsd -d temp -no-header -target 2.0 -extension
 	 
-
 -->
   <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	  schemaLocation="wml/wml.xsd" />

@@ -27,6 +27,6 @@ public abstract class AbstractRunProperty extends Property {
 	
 	public abstract void set(RPr rPr);
 
-    public abstract void set(CTTextCharacterProperties rPr);
+    public abstract void set(CTTextCharacterProperties rPr); // DrawingML
 
 }

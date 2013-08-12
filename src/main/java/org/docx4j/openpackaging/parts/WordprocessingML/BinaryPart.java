@@ -141,8 +141,7 @@ public class BinaryPart extends Part {
 								partStore.getPartSize( name.substring(1)));
 					} catch (UnsupportedOperationException uoe) {}
 					
-					is = partStore.loadPart( 
-							name.substring(1));
+					is = partStore.loadPart( name.substring(1));
 					if (is==null) {
 						log.warn(name + " missing from part store");
 					} else {

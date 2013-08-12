@@ -18,7 +18,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	protected static Logger log = LoggerFactory.getLogger(AbstractConversionImageHandler.class);
 	protected String uuid = UUID.randomUUID().toString();
 	protected Map<String, String> handledImagesMap = new TreeMap<String, String>();
-	protected String imageDirPath = null;
+	protected String imageDirPath = null;  // TODO FIXME should not be here; move to FileConversionImageHandler
 	protected boolean includeUUID = true;
 	
 	/** Creates an AbstractConversionImageHandler

@@ -174,7 +174,7 @@ public class ZipPartStore implements PartStore {
 
         ByteArray bytes = partByteArrays.get(partName);
         if (bytes == null) {
-        	log.debug("part '" + partName + "' not present in part store");
+        	log.warn("part '" + partName + "' not present in part store");
         	return null;
         	//throw new Docx4JException("part '" + partName + "' not found");
         }
@@ -191,7 +191,6 @@ public class ZipPartStore implements PartStore {
 		return bytes.getLength();
 	}
 	
-
 	
 	///// Save methods
 

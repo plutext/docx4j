@@ -177,9 +177,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		return knownStyles;
 	}
     
-	/*
-	 * Manufacture styles from the following, so they can be used as the 
-	 * roots of our style trees.
+	/**
+	 * Manufacture a paragraph style from the following, so it can be used as the 
+	 * root of our paragraph style tree.
 	 * 
 	 * 	<w:docDefaults>
 			<w:rPrDefault>
@@ -200,6 +200,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		BEWARE: in a table, paragraph style ppr trumps table style ppr.
 		The effect of including w:docDefaults in the style hierarchy
 		is that they trump table style ppr, but they should not!
+		
+	 * There is no need for a doc defaults character style.
+	 * The reason for this is that Word seems to ignore Default Paragraph Style!
+	 * So the run formatting comes from paragraph style + explicit character style (if any),
+	 * plus direct formatting.
+		
 
 	 */
     public void createVirtualStylesForDocDefaults() throws Docx4JException {

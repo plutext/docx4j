@@ -83,7 +83,14 @@ public interface PartStore {
 	 */
 	public long getPartSize(String partName) throws Docx4JException, java.lang.UnsupportedOperationException;
 
-//	public void finishLoad() throws Docx4JException;
+	/*
+	 * If the implementation closes resources here,
+	 * loadPart, if subsequently called, will need a way to re-open
+	 * them. So its better just to have a notion of package unload,
+	 * at which time resources are closed.
+	 * 
+	 * public void finishLoad() throws Docx4JException;
+	 */
 	
 	public void setOutputStream(OutputStream os) throws Docx4JException;
 
