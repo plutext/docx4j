@@ -219,23 +219,7 @@ public class FormattingSwitchHelper {
 		// date-and-time-formatting-switch: \@ 
 		Date date = null;
 		try {
-			
-			date = getDate(model, value );
-			
-			// For \@ date formatting, Word seems to give same results for
-			// DATE, DOCPROPERTY, and MERGEFIELD,
-			// but to have a different code path for =
-			
-			// OK, its a date
-			if ( model.fldName.equals("=")) {
-				// For =, today's date is used!
-				date = new Date();
-			}
-			
 			String dtFormat = findFirstSwitchValue("\\@", model.getFldParameters(), true);
-			log.debug("Applying date format " + dtFormat + " to " + value);
-			
-			
 			if (dtFormat==null) {
 				// SPECIFICATION: If no date-and-time-formatting-switch is present, 
 				// a date or time result is formatted in an implementation-defined manner.
@@ -246,6 +230,18 @@ public class FormattingSwitchHelper {
 				// Verified with Word 2010 sp1 for DOCPROPERTY (very likely others are the same)
 				return "Error! Switch argument not specified.";
 			} else {
+				log.debug("Applying date format " + dtFormat + " to " + value);
+				date = getDate(model, value );
+				
+				// For \@ date formatting, Word seems to give same results for
+				// DATE, DOCPROPERTY, and MERGEFIELD,
+				// but to have a different code path for =
+				
+				// OK, its a date
+				if ( model.fldName.equals("=")) {
+					// For =, today's date is used!
+					date = new Date();
+				}
 				value = formatDate(model, dtFormat, date);
 			}
 			
@@ -314,7 +310,7 @@ public class FormattingSwitchHelper {
 		//     \@ &quot;d 'de' MMMM 'de' yyyy  &quot; \* Upper"
 		// (ie \@ and \* at same time)
 		// but \@ must be before \*
-		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), true);		
+		String gFormat = findFirstSwitchValue("\\*", model.getFldParameters(), false);		
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
@@ -644,15 +640,13 @@ public class FormattingSwitchHelper {
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
 		
-		// FIXME since we don't know whether CHARFORMAT or MERGEFORMAT was actually
-		// present, we can't implement the following code which mirrors Word:		
-//		if ( format.equals("")) {
-//			return "Error! Switch argument not specified.";
-//		}
-		// so:
 		if ( format.equals("")) {
-			return value;
+			return "Error! Switch argument not specified.";
 		}
+//		// so:
+//		if ( format.equals("")) {
+//			return value;
+//		}
 		
 		// TODO: handle the SMALLCAPS exception!
 		

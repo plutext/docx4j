@@ -9,14 +9,14 @@ import org.junit.Test;
 
 public class FormattingSwitchHelperGeneralTests {
 	
-	// For DOCPROPERTY and MERGEFIELD, = (and presumably all others), \* without arg in Word 2010 sp1
-	// results in Error! Switch argument not specified, but implementing that is a TODO.
 
-//	@Test
-//	public void testStringNotSpecified() throws TransformerException, Docx4JException {
-//		   SwitchTestData triple = new SwitchTestData("\\* ", "mary smith", "Error! Switch argument not specified.");
-//		doit("MERGEFIELD", triple); doit("DOCPROPERTY", triple);
-//	}
+	@Test
+	public void testStringNotSpecified() throws TransformerException, Docx4JException {
+		// For DOCPROPERTY and MERGEFIELD, = (and presumably all others), \* without arg in Word 2010 sp1
+		// results in Error! Switch argument not specified, .
+		SwitchTestData triple = new SwitchTestData("\\* ", "mary smith", "Error! Switch argument not specified.");
+		doit("MERGEFIELD", triple); doit("DOCPROPERTY", triple);
+	}
 
 	@Test
 	public void testStringCaps() throws TransformerException, Docx4JException {
