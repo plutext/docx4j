@@ -88,6 +88,8 @@ public class ContentTypes {
 	
 	public final static String OFFICEDOCUMENT_THEME =
 		"application/vnd.openxmlformats-officedocument.theme+xml";
+
+	public final static String OFFICEDOCUMENT_THEME_OVERRIDE ="application/vnd.openxmlformats-officedocument.themeOverride+xml";
 	
 	public final static String OFFICEDOCUMENT_FONT =
 		"application/vnd.openxmlformats-officedocument.obfuscatedFont";

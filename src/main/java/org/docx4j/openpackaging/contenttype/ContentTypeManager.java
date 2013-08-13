@@ -431,12 +431,14 @@ public class ContentTypeManager  {
 			} catch (Exception e) {
 				return new BinaryPart( new PartName(partName));				
 			}
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME_OVERRIDE)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));		
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
 			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			
-			// WARNING: not currently used!  See OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
+			// Rarely (but sometimes) used, owing to OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
 			
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
