@@ -288,21 +288,47 @@ public class FieldRef {
 	/**
 	 * The name of the (outer most) field, for example DATE, MERGEFIELD.
 	 * 
-	 * Assume for now that this is contained in instructions.get(0).
-	 * 
 	 * @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/file_2.html">field syntax</a>
 	 * @return
 	 */
 	public String getFldName() {
-		Object o = XmlUtils.unwrap(instructions.get(0));
-		if (o instanceof Text) {
-			return FormattingSwitchHelper.getFldSimpleName( ((Text)o).getValue() );
-		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+		try {
+			String instr = getInstruction();
+			return FormattingSwitchHelper.getFldSimpleName( instr );
+		} catch (FieldInstructionException e) {
+			log.error(e );
 			return null;
 		}
-	}	
+	}
+	
+	public String getInstruction() throws FieldInstructionException {
+		// Usually the instruction will be in a single w:instrText,
+		// but it is possible that there'll be multiple, with the first
+		// containing eg just a space.
+		// Or it could be a nested field. For now, that will throw FieldInstructionException 
+		
+		if (instructions.size()==0) {
+			log.error("No instruction detected in:\n" + XmlUtils.marshaltoString(parent, true, true));			
+			return null;
+		}
+		
+		if (log.isDebugEnabled() && instructions.size()>0) {
+			log.debug("multi-instruction detected in:\n" + XmlUtils.marshaltoString(parent, true, true));			
+		}
+		
+		StringBuilder sb = new StringBuilder();
+
+		for (Object o : instructions) {
+			o = XmlUtils.unwrap(o);
+			if (o instanceof Text) {
+				sb.append( ((Text)o).getValue() );
+			} else {
+				log.error(XmlUtils.marshaltoString(parent, true, true));
+				throw new FieldInstructionException("Encountered " + o.getClass().getName() + " in field instruction ");
+			}
+		}
+		return sb.toString();
+	}
 	
 	private ContentAccessor parent;
 	public ContentAccessor getParent() {

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+Version 2.8.1.11 (SNAPSHOT)
+- Handle field instruction split across multiple elements
+- new sample FieldsReport
+
+
 Version 2.8.1.10 (12 August 2013)
 - Preserve leading zeros in MERGEFIELD with formatting switch \* MERGEFORMAT
   (backport 3.0 snapshot field processing code 

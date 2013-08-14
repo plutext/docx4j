@@ -492,7 +492,7 @@ public class MailMerger {
 			
 			if ( fr.getFldName().equals("MERGEFIELD") ) {
 				
-				String instr = extractInstr(fr.getInstructions() );
+				String instr = fr.getInstruction();
 				String datafieldName = getDatafieldNameFromInstr(instr);
 				String val = datamap.get( new DataFieldName(datafieldName));
 				String gFormat = null; // required only for FORMTEXT conversion
@@ -600,41 +600,41 @@ public class MailMerger {
 		
 	}
 	
-	private static String extractInstr(List<Object> instructions) {
-		// For MERGEFIELD, expect the list to contain a simple string
-		
-		if (instructions.size()!=1) {
-			log.error("TODO MERGEFIELD field contained complex instruction");
-			/* eg
-			 * 
-			 *    <w:r>
-			        <w:instrText xml:space="preserve"> MERGEFIELD  lasauv</w:instrText>
-			      </w:r>
-			      <w:r>
-			        <w:instrText xml:space="preserve">egarde  \* MERGEFORMAT </w:instrText>
-			      </w:r>
-			      
-				for (Object i : instructions) {
-					i = XmlUtils.unwrap(i);
-					if (i instanceof Text) {
-						log.error( ((Text)i).getValue());
-					} else {
-						log.error(XmlUtils.marshaltoString(i, true, true) );
-					}
-				}
-			 */
-			return null;
-		}
-		
-		Object o = XmlUtils.unwrap(instructions.get(0));
-		if (o instanceof Text) {
-			return ((Text)o).getValue();
-		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
-			return null;
-		}
-	}
+//	private static String extractInstr(List<Object> instructions) {
+//		// For MERGEFIELD, expect the list to contain a simple string
+//		
+//		if (instructions.size()!=1) {
+//			log.error("TODO MERGEFIELD field contained complex instruction");
+//			/* eg
+//			 * 
+//			 *    <w:r>
+//			        <w:instrText xml:space="preserve"> MERGEFIELD  lasauv</w:instrText>
+//			      </w:r>
+//			      <w:r>
+//			        <w:instrText xml:space="preserve">egarde  \* MERGEFORMAT </w:instrText>
+//			      </w:r>
+//			      
+//				for (Object i : instructions) {
+//					i = XmlUtils.unwrap(i);
+//					if (i instanceof Text) {
+//						log.error( ((Text)i).getValue());
+//					} else {
+//						log.error(XmlUtils.marshaltoString(i, true, true) );
+//					}
+//				}
+//			 */
+//			return null;
+//		}
+//		
+//		Object o = XmlUtils.unwrap(instructions.get(0));
+//		if (o instanceof Text) {
+//			return ((Text)o).getValue();
+//		} else {
+//			log.error("TODO: extract field name from " + o.getClass().getName() );
+//			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+//			return null;
+//		}
+//	}
 	
 	
 	
