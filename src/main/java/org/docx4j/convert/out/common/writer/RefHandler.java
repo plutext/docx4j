@@ -2,7 +2,7 @@ package org.docx4j.convert.out.common.writer;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;

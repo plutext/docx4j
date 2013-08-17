@@ -23,7 +23,7 @@ import javax.xml.transform.TransformerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
 import org.docx4j.model.BookmarkStartModel;
 import org.docx4j.model.TransformState;

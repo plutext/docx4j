@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
@@ -12,6 +12,7 @@ import org.docx4j.convert.out.common.writer.RefHandler;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.properties.Property;
+import org.docx4j.utils.FoNumberFormatUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -26,7 +27,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
 		String pageFormat = context.getSections().getCurrentSection().getPageNumberInformation().getPageFormat();
 			pageFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageFormat);
-			return FormattingSwitchHelper.formatFoPageNumber(1, pageFormat);
+			return FoNumberFormatUtil.format(1, pageFormat);
 		}
 	}
 	
@@ -55,7 +56,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		Element ret = doc.createElement("span");
 		String pageNumberFormat = context.getSections().getCurrentSection().getPageNumberInformation().getNumpagesFormat();
 			pageNumberFormat = FormattingSwitchHelper.getFoPageNumberFormat(pageNumberFormat);
-			ret.appendChild(doc.createTextNode(FormattingSwitchHelper.formatFoPageNumber(1, pageNumberFormat)));
+			ret.appendChild(doc.createTextNode(FoNumberFormatUtil.format(1, pageNumberFormat)));
 			return ret;
 		}
 		
@@ -70,8 +71,8 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		super.registerHandlers();
 		registerHandler(new PageHandler());
 		//disabled until 2pass is implemented
-		//registerHandler(new NumpagesHandler());
-		//registerHandler(new SectionpagesHandler());
+		registerHandler(new NumpagesHandler());
+		registerHandler(new SectionpagesHandler());
 		registerHandler(new HyperlinkWriter());
 		registerHandler(new RefHandler(HyperlinkUtil.HTML_OUTPUT));
 		registerHandler(new PagerefHandler());

@@ -2,7 +2,7 @@ package org.docx4j.convert.out.html;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
 import org.docx4j.model.fields.HyperlinkModel;

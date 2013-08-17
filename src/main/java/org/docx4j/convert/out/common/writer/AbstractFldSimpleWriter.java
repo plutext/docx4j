@@ -28,8 +28,8 @@ import javax.xml.transform.TransformerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.ModelConverter;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.ModelConverter;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.fields.FieldValueException;

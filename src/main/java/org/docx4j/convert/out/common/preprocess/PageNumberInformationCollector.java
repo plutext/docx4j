@@ -22,7 +22,7 @@ package org.docx4j.convert.out.common.preprocess;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.convert.out.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.model.structure.HeaderFooterPolicy;

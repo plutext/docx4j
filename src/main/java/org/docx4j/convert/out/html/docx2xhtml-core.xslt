@@ -41,9 +41,9 @@
 <xsl:template match="/w:document">
 
 	<xsl:variable name="dummy"
-		select="java:org.docx4j.convert.out.html.HtmlExporterNG2.log('/pkg:package')" />
+		select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, '/pkg:package')" />
 	<xsl:variable name="dummy2"
-		select="java:org.docx4j.convert.out.Converter.moveNextSection($conversionContext)" />
+		select="java:org.docx4j.convert.out.common.XsltCommonFunctions.moveNextSection($conversionContext)" />
 		
 		
 	<html>
@@ -54,11 +54,11 @@
 					/*paged media */ div.header {display: none }
 					div.footer {display: none } /*@media print { */
 					<xsl:if
-						test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
+						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultHeader($conversionContext)">
 						div.header {display: block; position: running(header) }
 					</xsl:if>
 					<xsl:if
-						test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
+						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultFooter($conversionContext)">
 						div.footer {display: block; position: running(footer) }
 					</xsl:if>
 
@@ -83,13 +83,13 @@
 
 					/* Word style definitions */
 					<xsl:copy-of
-						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForStyles( 
+						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForStyles( 
 		  											$conversionContext)" />
 
 					/* TABLE CELL STYLES */
 					<xsl:variable name="tables" select="./w:body//w:tbl" />
 					<xsl:copy-of
-						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForTableCells( 
+						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForTableCells( 
 		  											$conversionContext, $tables)" />
 
 					
@@ -132,20 +132,20 @@
 				similar to the below already exist
 			-->
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
+				test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultHeader($conversionContext)">
 				<div class="header">
 					<xsl:variable name="setCurrentPartDefaultHeader"
-						select="java:org.docx4j.convert.out.Converter.setCurrentPartDefaultHeader($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartDefaultHeader($conversionContext)" />
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getDefaultHeader($conversionContext)" />
 					<xsl:variable name="backagain"
-						select="java:org.docx4j.convert.out.Converter.setCurrentPartMainDocument($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartMainDocument($conversionContext)" />
 				</div>
 			</xsl:if>
 
 			<!--  Info -->
 			<xsl:copy-of
-				select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF debug level logging for org.docx4j.convert.out.common.writer.AbstractMessageWriter ' )" />
+				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF debug level logging for org.docx4j.convert.out.common.writer.AbstractMessageWriter ' )" />
 
 			<xsl:call-template name="pretty-print-block" />
 
@@ -157,35 +157,35 @@
 
 			<!--  Footnotes and endnotes -->
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasFootnotesPart($conversionContext)">
+				test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasFootnotesPart($conversionContext)">
 				<div class="footnotes">
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getFootnotes($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getFootnotes($conversionContext)" />
 				</div>
 			</xsl:if>
 
 			<xsl:call-template name="pretty-print-block" />
 
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasEndnotesPart($conversionContext)">
+				test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasEndnotesPart($conversionContext)">
 				<div class="endnotes">
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getEndnotes($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getEndnotes($conversionContext)" />
 				</div>
 			</xsl:if>
 
 			<xsl:call-template name="pretty-print-block" />
 
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
+				test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultFooter($conversionContext)">
 				
 				<div class="footer">
 					<xsl:variable name="setCurrentPartDefaultFooter"
-						select="java:org.docx4j.convert.out.Converter.setCurrentPartDefaultFooter($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartDefaultFooter($conversionContext)" />
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getDefaultFooter($conversionContext)" />
 					<xsl:variable name="backagain"
-						select="java:org.docx4j.convert.out.Converter.setCurrentPartMainDocument($conversionContext)" />
+						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartMainDocument($conversionContext)" />
 				</div>
 			</xsl:if>
 			
@@ -247,7 +247,7 @@
 				<xsl:when test="count(child::node())=1 and count(w:pPr)=1">
 					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
 					<xsl:value-of select="
-						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
+						java:org.docx4j.convert.out.html.XsltHTMLFunctions.getNumberXmlNode( 
 					  					$conversionContext, $pPrNode, $pStyleVal, $numId, $levelId)"/>
 					<!--  Don't apply templates, since there is nothing to do. -->
 				</xsl:when>				
@@ -255,7 +255,7 @@
 					<!--  At present, this doesn't use HTML OL|UL and LI;
 					      we'll do that when we have a document model to work from -->								
 					<xsl:value-of select="
-						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
+						java:org.docx4j.convert.out.html.XsltHTMLFunctions.getNumberXmlNode( 
 					  					$conversionContext, $pPrNode, $pStyleVal, $numId, $levelId)" />		
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
@@ -264,7 +264,7 @@
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  
 		
-		<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
+		<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForPPr( 
 	 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
 			
 		
@@ -318,7 +318,7 @@
 
   
   	<xsl:choose>
-  		<xsl:when test="java:org.docx4j.convert.out.Converter.isInComplexFieldDefinition($conversionContext)" >
+  		<xsl:when test="java:org.docx4j.convert.out.common.XsltCommonFunctions.isInComplexFieldDefinition($conversionContext)" >
   			<!-- in a field, so ignore, unless this run contains fldChar -->
 		  	<xsl:if test="w:fldChar"><xsl:apply-templates/></xsl:if>
   			
@@ -335,7 +335,7 @@
 					
 					<xsl:variable name="rPrNode" select="w:rPr" />  	
 			
-				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
+				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForRPr( 
 				  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
 				  		
 			  	</xsl:when>
@@ -374,7 +374,7 @@
 		<xsl:variable name="currentNode" select="./w:sdtPr" />
 
 		<xsl:copy-of
-			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
+			select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.toSdtNode(
   			$conversionContext, $currentNode, 
   			$childResults)"  />
 
@@ -411,7 +411,7 @@
   		<xsl:otherwise>
   		
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., ' without pic:pic ' )" />  	  		
+				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., ' without pic:pic ' )" />  	  		
   		</xsl:otherwise>  	
   	</xsl:choose>
     
@@ -432,7 +432,7 @@
 			<xsl:otherwise>
 				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., ' without v:imagedata ' )" />  	  		
+				select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., ' without v:imagedata ' )" />  	  		
 			</xsl:otherwise>
 		</xsl:choose>  			
 	
@@ -477,7 +477,7 @@
   -->
   
 		<!--  Create the HTML table in Java --> 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, $childResults)"/>
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext, $currentNode, $childResults)"/>
 	  			  		
   </xsl:template>
 
@@ -507,22 +507,19 @@
 	<xsl:template match="w:noBreakHyphen">
 		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
 	</xsl:template>
-
-  <xsl:template match="w:br">
-    <br>
-      <xsl:attribute name="clear">
-        <xsl:choose>
-          <xsl:when test="@w:clear">
-            <xsl:value-of select="@w:clear"/>
-          </xsl:when>
-          <xsl:otherwise>all</xsl:otherwise>
-        </xsl:choose>
-      </xsl:attribute>
-      <xsl:if test="@w:type = 'page'">
-        <xsl:attribute name="style">page-break-before:always</xsl:attribute>
-      </xsl:if>
-    </br>
-  </xsl:template>
+	
+	<xsl:template match="w:br">
+	
+		<xsl:variable name="childResults">
+			<xsl:apply-templates /> 
+		</xsl:variable>
+	
+		<xsl:variable name="currentNode" select="." />  			
+	
+	     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext, $currentNode, 
+				$childResults)" />
+	  		  			
+	</xsl:template>
 
 <!--
   <xsl:template match="w:br[not(@w:type = 'page')]">
@@ -544,7 +541,7 @@
 
 	<xsl:variable name="currentNode" select="." />  			
 
-     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, 
+     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext, $currentNode, 
 			$childResults)" />
   		  			
 </xsl:template>
@@ -607,7 +604,7 @@
 
 	<xsl:variable name="currentNode" select="." />  			
 
-     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext,$currentNode, 
+     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext,$currentNode, 
 			$childResults)" />
   </xsl:template>
    
@@ -618,7 +615,7 @@
 
 	<xsl:variable name="currentNode" select="." />  			
 
-     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $currentNode, 
+     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext, $currentNode, 
 			$childResults)" />
   </xsl:template>
   
@@ -643,12 +640,12 @@
   </xsl:template>  	
   
   <xsl:template match="w:footnoteReference">  
-    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.Converter.getNextFootnoteNumber($conversionContext)"/></xsl:variable>
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextFootnoteNumber($conversionContext)"/></xsl:variable>
   	<span style="vertical-align: top; font-size: xx-small">
   		<!--  Bidirectional --><a name="fs{$fn}"><a href="#fn{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
   </xsl:template>
   <xsl:template match="w:endnoteReference ">  
-    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.Converter.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
   	<span style="vertical-align: top; font-size: xx-small">
   		<!--  Bidirectional --><a name="es{$fn}"><a href="#en{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
   </xsl:template>
@@ -680,14 +677,14 @@
 			<xsl:apply-templates/>
 		</xsl:variable>
 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode(
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode(
 	  			$conversionContext,., $childResults)"/>	  		
   </xsl:template>
 
   <!--  Complex fields: update complex field definition level -->
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.Converter.updateComplexFieldDefinition($conversionContext, .)" />  	
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.updateComplexFieldDefinition($conversionContext, .)" />  	
   </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -696,7 +693,7 @@
 
   <xsl:template match="*[ancestor::w:body]" priority="-1"> <!--  ignore eg page number field in footer -->
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., '' )" />  	      		 
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.notImplemented($conversionContext,., '' )" />  	      		 
   </xsl:template>
    
 </xsl:stylesheet>

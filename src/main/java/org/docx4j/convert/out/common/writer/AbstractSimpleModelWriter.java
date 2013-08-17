@@ -2,8 +2,8 @@ package org.docx4j.convert.out.common.writer;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.ModelConverter;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.ModelConverter;
 import org.docx4j.model.AbstractSimpleModel;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;

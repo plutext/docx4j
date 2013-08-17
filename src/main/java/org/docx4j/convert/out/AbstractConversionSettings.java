@@ -15,6 +15,7 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	public static final String IMAGE_HANDLER = "imageHandler";
 	public static final String HYPERLINK_HANDLER = "hyperlinkHandler";
 	public static final String WML_PACKAGE = "wmlPackage";
+	public static final String CUSTOM_XSLT_TEMPLATES = "customXsltTemplates";
 
 	protected Map<String, Object> settings = new TreeMap<String, Object>();
 	protected Set<String> features = new TreeSet<String>();
@@ -72,9 +73,24 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	}
 	
 	public void setWmlPackage(OpcPackage wmlPackage) {
-		settings.put("wmlPackage", wmlPackage);
+		settings.put(WML_PACKAGE, wmlPackage);
 	}
 	public OpcPackage getWmlPackage() {
-		return (OpcPackage)settings.get("wmlPackage");
+		return (OpcPackage)settings.get(WML_PACKAGE);
 	}
+	
+	/** Pass a custom xslt template to do the transformation.<br> 
+	 * This template will only be used if you have selected an export that uses 
+	 * templates. The signature is defined as Object templates, to not introduce a 
+	 * dependency on javax.xml.transform - but don't expect it to work if you pass
+	 * something different than a javax.xml.transform.Templates. 
+	 * 
+	 */
+	public void setCustomXsltTemplates(Object templates) {
+		settings.put(CUSTOM_XSLT_TEMPLATES, templates);
+	}
+	public Object getCustomXsltTemplates() {
+		return settings.get(CUSTOM_XSLT_TEMPLATES);
+	}
+	
 }
