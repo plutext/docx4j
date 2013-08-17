@@ -27,7 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -272,8 +272,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createXslFoImgE10(
     		AbstractWmlConversionContext context,
-    		Object wpict,
-    		Part sourcePart) {
+    		Object wpict) {
+    	
+    	Part sourcePart = context.getCurrentPart();
     	
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10(
     			 context.getWmlPackage(),

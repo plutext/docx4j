@@ -26,7 +26,7 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -356,8 +356,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createXslFoImgE20(
     		AbstractWmlConversionContext context,
-    		Object wpInline, 
-    		Part sourcePart) {
+    		Object wpInline) {
+
+    	Part sourcePart = context.getCurrentPart();
     	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
         		 context.getImageHandler(), wpInline, sourcePart);
