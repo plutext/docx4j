@@ -19,13 +19,10 @@
  */
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.convert.out.FOSettings;
 
-public class PdfSettings extends AbstractConversionSettings {
-
-	public PdfSettings() {
-		super();
-		addFeatures(DEFAULT_PDF_FEATURES);
-	}
-
+/**
+ * @deprecated
+ */
+public class PdfSettings extends FOSettings {
 }	

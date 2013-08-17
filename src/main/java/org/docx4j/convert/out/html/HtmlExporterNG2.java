@@ -19,41 +19,22 @@
  */
 package org.docx4j.convert.out.html;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.Docx4jProperties;
+import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.ConversionSectionWrappers;
-import org.docx4j.convert.out.Preprocess;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.paragraph.Indent;
-import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.model.styles.Tree;
+import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.Ind;
-import org.docx4j.wml.RPr;
-import org.docx4j.wml.Style;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.w3c.dom.traversal.NodeIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HtmlExporterNG (now removed - see 
@@ -92,20 +73,23 @@ import org.w3c.dom.traversal.NodeIterator;
  * 
  * 
  * @author jason
- *
+ * @deprecated 
  */
 public class HtmlExporterNG2 extends  AbstractHtmlExporter {
-	
-	
+	protected static final int DEFAULT_OUTPUT_SIZE = 102400;
 	protected static Logger log = LoggerFactory.getLogger(HtmlExporterNG2.class);
 	
-	public static void log(String message ) {
-		
-		log.info(message);
+	WordprocessingMLPackage wmlPackage;
+	public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
+		this.wmlPackage = wmlPackage;
 	}
 
-	static Templates xslt;		
+	HTMLSettings htmlSettings;
+	public void setHtmlSettings(HTMLSettings htmlSettings) {
+		this.htmlSettings = htmlSettings;
+	}
 	
+	static Templates xslt;		
 	/**
 	 * org/docx4j/convert/out/html/docx2xhtmlNG2.xslt will be used by default
 	 * to transform the docx to html.
@@ -116,44 +100,6 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		
 		HtmlExporterNG2.xslt = xslt;
 	}	
-	
-	static {
-		try {
-			XmlUtils.getTransformerFactory().setURIResolver(new OutHtmlURIResolver());
-			// TODO FIXME - not thread safe, which would be an issue
-			// if eg PDF output were to implement a URIResolver
-			Source xsltSource; 
-			if (Docx4jProperties.getProperty("docx4j.Convert.Out.HTML.OutputMethodXML", true)){
-				log.info("Outputting well-formed XHTML..");
-				xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/convert/out/html/docx2xhtml.xslt"));
-			} else {
-				log.info("Outputting HTML tag soup..");
-				xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/convert/out/html/docx2html.xslt"));				
-			}
-			xslt = XmlUtils.getTransformerTemplate(xsltSource);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (TransformerConfigurationException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	static class OutHtmlURIResolver implements URIResolver {
-		@Override
-		public Source resolve(String href, String base) throws TransformerException {
-		  try {
-			return new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/convert/out/html/" + href));
-		} catch (IOException e) {
-			throw new TransformerException(e);
-		}  
-		}
-	}
-	
-	
 	
 	// Implement the interface.  	
 	
@@ -166,7 +112,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		
 		if (htmlSettings==null) {
 			log.debug("Using empty HtmlSettings");
-			htmlSettings = new HtmlSettings();			
+			htmlSettings = new HTMLSettings();			
 		}		
 		
 		try {
@@ -178,407 +124,35 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	}
 	
 	// End interface
-	
-	/** Create an html version of the document, using CSS font family
-	 *  stacks.  This is appropriate if the HTML is intended for
-	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output (not that docx4j
-	 *  supports that approach anymore). 
-	 * 
-	 * @param result
-	 *            The javax.xml.transform.Result object to transform into 
-	 * 
-	 * */ 
-	@Override
-	@Deprecated	
-    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
-    		String imageDirPath) throws Exception {
-    	
-    	html(wmlPackage, result, true, imageDirPath);
-    }
-
-	@Override
-	@Deprecated
-    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack,
-    		String imageDirPath) throws Exception {
-
-		// Prep parameters
-    	HtmlSettings htmlSettings = new HtmlSettings();
-    	htmlSettings.setFontFamilyStack(fontFamilyStack);
-    	
-    	if (imageDirPath==null) {
-    		imageDirPath = "";
-    	}
-    	htmlSettings.setImageDirPath(imageDirPath);    	
-    	
-		html(wmlPackage, result, htmlSettings);
-    }
     
-	private HTMLConversionContext conversionContext;
-	
-	/**
-	 * @return the conversionContext
-	 */
-	public HTMLConversionContext getConversionContext() {
-		return conversionContext;
-	}
-
 	/** Create an html version of the document. 
 	 * 
 	 * @param result
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-	@Override
 	public void html(WordprocessingMLPackage wmlPackage,
-			javax.xml.transform.Result result, HtmlSettings htmlSettings)
+			javax.xml.transform.Result result, HTMLSettings htmlSettings)
 			throws Exception {
-		
-		conversionContext = null;
-		WordprocessingMLPackage localWmlPackage = wmlPackage;
-		ConversionSectionWrappers conversionSectionWrappers = null; 
-
-	
-		// Prep parameters
-		if (htmlSettings == null) {
-			htmlSettings = new HtmlSettings();
-			// ..Ensure that the font names in the XHTML have been mapped to
-			// these matches
-			// possibly via an extension function in the XSLT
+	ByteArrayOutputStream outStream = new ByteArrayOutputStream(DEFAULT_OUTPUT_SIZE);
+	Transformer transformer = null;
+		if ((xslt != null) && (htmlSettings.getCustomXsltTemplates() == null)) {
+			htmlSettings.setCustomXsltTemplates(xslt);
 		}
-	
-		localWmlPackage = Preprocess.process(localWmlPackage, htmlSettings.getFeatures());
-		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, htmlSettings.getFeatures()); 
-
-		htmlSettings.setWmlPackage(localWmlPackage);
-
-		org.w3c.dom.Document doc = 
-				XmlUtils.marshaltoW3CDomDocument(localWmlPackage.getMainDocumentPart().getJaxbElement());
-
-		// log.debug( XmlUtils.w3CDomNodeToString(doc));
-		
-		//Setup the context
-		conversionContext = new HTMLConversionContext(htmlSettings, conversionSectionWrappers);
-		conversionContext.setCurrentPartMainDocument();
-
-		// Now do the transformation
-		log.debug("About to transform...");
-		org.docx4j.XmlUtils.transform(doc, xslt, conversionContext.getXsltParameters(),
-				result);
-		log.info("wordDocument transformed ..");
-
+		if ((wmlPackage != null) && (htmlSettings.getWmlPackage() == null)) {
+			htmlSettings.setWmlPackage(wmlPackage);
+		}
+		Docx4J.toHTML(htmlSettings, outStream, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		outStream.close();
+		try {
+			transformer = XmlUtils.getTransformerFactory().newTransformer();
+		} catch (TransformerConfigurationException e) {
+			throw new Docx4JException("Exception creating identity transformer to output resutlt: " + e.getMessage(), e);
+		}
+		try {
+			transformer.transform(new StreamSource(new ByteArrayInputStream(outStream.toByteArray())), result);
+		} catch (TransformerException e) {
+			throw new Docx4JException("Exception dumping outputstream to output resutlt: " + e.getMessage(), e);
+		}
 	}
-        
-    /* ---------------Xalan XSLT Extension Functions ---------------- */
-    
-    public static DocumentFragment createBlockForSdt( 
-    		HTMLConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults, String tag) {
-    	
-    	DocumentFragment docfrag = createBlock( context,
-        		 pPrNodeIt,
-        		 pStyleVal,  childResults,
-        		 "div");
-    	    	    
-    	return docfrag;
-    }	    
-
-    public static DocumentFragment createBlockForPPr( 
-    		HTMLConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults ) {
-
-    	return createBlock( 
-        		 context,
-        		 pPrNodeIt,
-        		 pStyleVal,  childResults,
-        		  "p" );
-    	
-    }
-    
-    private static DocumentFragment createBlock( 
-    		HTMLConversionContext context,
-    		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults,
-    		String htmlElementName ) {
-    	
-
-		StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
-    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
-
-		Style defaultParagraphStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle() :
-				null);
-		
-    	String defaultParagraphStyleId;
-    	if (defaultParagraphStyle==null) // possible, for non MS source docx
-    		defaultParagraphStyleId = "Normal";
-    	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
-    	
-		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-//			pStyleVal = "Normal";
-			pStyleVal = defaultParagraphStyleId;
-		}
-    	log.debug("style '" + pStyleVal );     		
-    	
-//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-//    	log.info("childResults:" + childResults.getClass().getName() ); 
-
-    	
-        try {
-        	
-        	// Get the pPr node as a JAXB object,
-        	// so we can read it using our standard
-        	// methods.  Its a bit sad that we 
-        	// can't just adorn our DOM tree with the
-        	// original JAXB objects?
-        	PPr pPr = null;
-        	if (pPrNodeIt!=null) { //It is never null
-        		Node n = pPrNodeIt.nextNode();
-        		if (n!=null) {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-        			try {
-        				pPr =  (PPr)jaxb;
-        			} catch (ClassCastException e) {
-        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-        			}        	        			
-        		}
-        	}
-        	
-            // Create a DOM document to take the results			
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();			
-				//log.info("Document: " + document.getClass().getName() );
-			Element xhtmlBlock = document.createElement(htmlElementName);			
-			document.appendChild(xhtmlBlock);
-							
-			if (log.isDebugEnabled() && pPr!=null) {					
-				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
-			}				
-		    
-			// Set @class
-			log.debug(pStyleVal);
-			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-			xhtmlBlock.setAttribute("class", 
-					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
-			);
-		
-			
-			// Does our pPr contain anything else?
-			boolean ignoreBorders = (htmlElementName.equals("p"));
-			if (pPr!=null) {
-				
-				// Is there numbering indentation to honour?
-				if (pPr.getNumPr()!=null 
-						&& pPr.getNumPr().getNumId()!=null
-						&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
-						) {
-					Ind numInd = org.docx4j.model.listnumbering.Emulator.getInd(
-	        			context.getWmlPackage(), pStyleVal, 
-	        			pPr.getNumPr().getNumId().getVal().toString(), 
-	        			pPr.getNumPr().getIlvl().getVal().toString() ); 
-					if (numInd!=null) {
-		        		Indent indent = new Indent(pPr.getInd(), numInd);
-		        		pPr.setInd((Ind)indent.getObject());						
-					}
-				}
-				
-				StringBuffer inlineStyle =  new StringBuffer();
-				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
-				if (!inlineStyle.toString().equals("") ) {
-					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
-				}
-			}
-			
-						
-			// Our fo:block wraps whatever result tree fragment
-			// our style sheet produced when it applied-templates
-			// to the child nodes
-			// init
-			Node n = childResults.nextNode();
-			do {	
-				
-				// getNumberXmlNode creates a span node, which is empty
-				// if there is no numbering.
-				// Let's get rid of any such <span/>.
-				
-				// What we actually get is a document node
-				if (n.getNodeType()==Node.DOCUMENT_NODE) {
-					log.debug("handling DOCUMENT_NODE");
-					// Do just enough of the handling here
-	                NodeList nodes = n.getChildNodes();
-	                if (nodes != null) {
-	                    for (int i=0; i<nodes.getLength(); i++) {
-	                    	
-	        				if (((Node)nodes.item(i)).getLocalName().equals("span")
-	        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
-	        					// ignore
-	        					log.debug(".. ignoring <span/> ");
-	        				} else {
-	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
-	        				}
-	                    }
-	                }					
-				} else {
-					
-	//					log.info("Node we are importing: " + n.getClass().getName() );
-	//					foBlockElement.appendChild(
-	//							document.importNode(n, true) );
-					/*
-					 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-					 * which causes
-					 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-					 * 
-					 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-					 * 
-					 * So instead of importNode, use 
-					 */
-					XmlUtils.treeCopy( n,  xhtmlBlock );
-				}
-				// next 
-				n = childResults.nextNode();
-				
-			} while ( n !=null ); 
-			
-			if (xhtmlBlock.getNodeName().equals("p")
-					&& !xhtmlBlock.hasChildNodes() ) {
-				// browsers don't display an empty p, so add a space to it
-				
-				Text t = document.createTextNode("\u00A0"); //= &nbsp; = &#160;
-					// see notes in docx2xhtmlNG2.xslt as to why it is done this way!
-				xhtmlBlock.appendChild(t);
-			}
-			
-//			System.out.println(XmlUtils.w3CDomNodeToString(document));
-			
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
-
-			return docfrag;
-						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} 
-    	
-    	return null;
-    	
-    }
-
-    public static DocumentFragment createBlockForRPr( 
-    		HTMLConversionContext context,
-    		String pStyleVal,
-    		NodeIterator rPrNodeIt,
-    		NodeIterator childResults ) {
-
-		Style defaultRunStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
-				null);
-		
-    	String defaultCharacterStyleId;
-    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
-    		defaultCharacterStyleId = "DefaultParagraphFont";
-    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
-    	
-    	
-    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
-    	    	
-    	// Note that this is invoked for every paragraph with a pPr node.
-    	
-    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
-    	// which implements org.w3c.dom.traversal.NodeIterator
-
-    	
-//    	log.info("rPrNode:" + rPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-//    	log.info("childResults:" + childResults.getClass().getName() ); 
-    	
-    	
-        try {
-
-        	// Get the rPr node as a JAXB object,
-        	// so we can read it using our standard
-        	// methods.  Its a bit sad that we 
-        	// can't just adorn our DOM tree with the
-        	// original JAXB objects?
-			RPr rPr = null;
-        	if (rPrNodeIt!=null) { //It is never null
-        		Node n = rPrNodeIt.nextNode();
-        		if (n!=null) {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-        			try {
-        				rPr =  (RPr)jaxb;
-        			} catch (ClassCastException e) {
-        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
-        			}        	        			
-        		}
-        	}
-        	        	
-            // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			
-			//log.info("Document: " + document.getClass().getName() );
-
-			Node span = document.createElement("span");			
-			document.appendChild(span);
-			
-			// Set @class	
-			String rStyleVal = defaultCharacterStyleId;
-			if ( rPr!=null && rPr.getRStyle()!=null) {
-				rStyleVal = rPr.getRStyle().getVal();
-			}
-			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-			if (asn==null) {
-				log.warn("No style node for: " + rStyleVal);
-			} else {
-				((Element)span).setAttribute("class", 
-						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-				);		
-			}
-			
-			if (rPr!=null) {
-				
-				if (log.isDebugEnabled()) {					
-					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
-				}
-				
-				// Does our rPr contain anything else?
-				StringBuffer inlineStyle =  new StringBuffer();
-				HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
-				if (!inlineStyle.toString().equals("") ) {
-					((Element)span).setAttribute("style", inlineStyle.toString() );
-				}
-			}
-			
-			// Our fo:block wraps whatever result tree fragment
-			// our style sheet produced when it applied-templates
-			// to the child nodes
-			Node n = childResults.nextNode();
-			XmlUtils.treeCopy( n,  span );			
-			
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
-
-			return docfrag;
-						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} 
-    	
-    	return null;
-    	
-    }
-   
 }
