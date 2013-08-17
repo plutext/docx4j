@@ -1147,7 +1147,8 @@ public class XmlUtils {
     	
         switch (sourceNode.getNodeType() ) {
 
-        	case Node.DOCUMENT_NODE: // type 9
+	    	case Node.DOCUMENT_NODE: // type 9
+        	case Node.DOCUMENT_FRAGMENT_NODE: // type 11
         
 //        		log.debug("DOCUMENT:" + w3CDomNodeToString(sourceNode) );
 //        		if (sourceNode.getChildNodes().getLength()==0) {
