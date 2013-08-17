@@ -71,7 +71,7 @@ public class PartialDeepCopy {
 //		relationships
 		//is done in an another method
 //		userData
-		ret.setUserData(opcPackage.getUserData());
+		//isn't needed, and not readily available
 //		contentTypeManager
 		ret.setContentTypeManager(opcPackage.getContentTypeManager());
 //		customXmlDataStorageParts

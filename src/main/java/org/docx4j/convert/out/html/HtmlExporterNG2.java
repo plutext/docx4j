@@ -214,6 +214,15 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		html(wmlPackage, result, htmlSettings);
     }
     
+	private HTMLConversionContext conversionContext;
+	
+	/**
+	 * @return the conversionContext
+	 */
+	public HTMLConversionContext getConversionContext() {
+		return conversionContext;
+	}
+
 	/** Create an html version of the document. 
 	 * 
 	 * @param result
@@ -225,7 +234,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			javax.xml.transform.Result result, HtmlSettings htmlSettings)
 			throws Exception {
 		
-		HTMLConversionContext conversionContext = null;
+		conversionContext = null;
 		WordprocessingMLPackage localWmlPackage = wmlPackage;
 		ConversionSectionWrappers conversionSectionWrappers = null; 
 
