@@ -153,11 +153,11 @@ public class SvgExporter {
 		if (settings == null) {
 			settings = new SvgSettings();
 		}
-		settings.setWmlPackage(presentationMLPackage);
 		if ((settings.getImageDirPath() == null) && (imageDirPath != null)) {
 			settings.setImageDirPath(imageDirPath);
 		}
-		context = new SvgConversionContext(settings, layout);
+		
+		context = new SvgConversionContext(settings, presentationMLPackage, layout);
 		org.docx4j.XmlUtils.transform(doc, xslt, context.getXsltParameters(), result);
 	}
 
@@ -226,7 +226,7 @@ public class SvgExporter {
 			);
 			
 
-			StringBuffer inlineStyle =  new StringBuffer();
+			StringBuilder inlineStyle =  new StringBuilder();
 			// Do we have CTTextParagraphProperties
 			// <a:lvl?pPr>
 			// Convert it to a WordML pPr
@@ -381,7 +381,7 @@ public class SvgExporter {
 			RPr rPr = TextStyles.getWmlRPr(textCharProps);
 
 			// Does our rPr contain anything else?
-			StringBuffer inlineStyle = new StringBuffer();
+			StringBuilder inlineStyle = new StringBuilder();
 			HtmlCssHelper.createCss(context.getPmlPackage(), rPr, inlineStyle);
 			if (!inlineStyle.toString().equals("")) {
 				span.setAttribute("style", inlineStyle.toString());
@@ -430,7 +430,7 @@ public class SvgExporter {
 	
     public static String getCssForStyles(SvgConversionContext context) {
     	
-    	StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
     	
 		StyleTree styleTree=null;
 		try {
