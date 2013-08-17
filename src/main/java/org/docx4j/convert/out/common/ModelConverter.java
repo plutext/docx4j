@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out;
+package org.docx4j.convert.out.common;
 
 import javax.xml.transform.TransformerException;
 

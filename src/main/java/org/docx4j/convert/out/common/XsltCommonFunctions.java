@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.convert.out;
+package org.docx4j.convert.out.common;
 
 import javax.xml.bind.JAXBException;
 
@@ -42,14 +42,14 @@ import org.w3c.dom.traversal.NodeIterator;
 
 /** 
  * This class contains common static functions, that get called from the PDF and HTML xsl-transformations. 
- * Methods, that are specific to a certain conversion, get implemented in their corresponding Conversion classes.<br/>
+ * Methods, that are specific to a certain conversion, get implemented in their corresponding XsltxxxFunction classes.<br/>
  * The normal behaviour is to delegate this functions to the current context, that get's passed in.
  *  
  */
-public class Converter {
-	private final static Logger log = LoggerFactory.getLogger(Converter.class);
+public class XsltCommonFunctions {
+	private final static Logger log = LoggerFactory.getLogger(XsltCommonFunctions.class);
 
-	private Converter() {
+	private XsltCommonFunctions() {
 	}
 	
 	/** Conversion of Nodes via Models and Converters
@@ -298,4 +298,23 @@ public class Converter {
 		return context.getMessageWriter().message(message);
 	}
     
+	//=======================================================
+	// Logging support
+	//=======================================================
+	public static boolean isLoggingEnabled(AbstractConversionContext context) {
+		return context.getLog().isDebugEnabled();
+	}
+
+	public static void logDebug(AbstractConversionContext context, String message) {
+		context.getLog().debug(message);
+	}	
+	
+	public static void logInfo(AbstractConversionContext context, String message) {
+		context.getLog().info(message);
+	}	
+	
+	public static void logWarn(AbstractConversionContext context, String message) {
+		context.getLog().warn(message);
+	}
+	
 }
