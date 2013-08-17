@@ -28,7 +28,11 @@ import org.w3c.dom.Document;
  * as they may have some references to other parts. The data in the parts is 
  * only copied if the relationship type of the part is contained in the passed
  * relationshipTypes otherwise the new part contains a reference to the data 
- * of the old part.   
+ * of the old part.<br>
+ * If the passed relationship types is null, then it will do a complete deep copy.
+ * This is probably faster than storing and reading the document but it is restricted 
+ * to Parts of the types: BinaryPart, JaxbXmlPart, CustomXmlDataStoragePart, XmlPart.<br>
+ * If the passed relationship types is empty, then the passed Package is returned.  
  * 
  */
 public class PartialDeepCopy {
@@ -39,11 +43,8 @@ public class PartialDeepCopy {
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
 	OpcPackage ret = null;
 	RelationshipsPart relPart = null;
-		if (relationshipTypes == null) {
-			throw new IllegalArgumentException("relationshipTypes is null");
-		}
 		if (opcPackage != null) {
-			if (relationshipTypes.isEmpty()) {
+			if ((relationshipTypes != null) && (relationshipTypes.isEmpty())) {
 				ret = opcPackage;
 			}
 			else {
@@ -71,7 +72,7 @@ public class PartialDeepCopy {
 //		relationships
 		//is done in an another method
 //		userData
-		//isn't needed, and not readily available
+		ret.setUserData(opcPackage.getUserData());
 //		contentTypeManager
 		ret.setContentTypeManager(opcPackage.getContentTypeManager());
 //		customXmlDataStorageParts
@@ -148,8 +149,9 @@ public class PartialDeepCopy {
 		if (ret == null) {
 			//
 			ret = copyPart(sourcePart, 
-						   opcPackage, 
-						   relationshipTypes.contains(sourcePart.getRelationshipType()));
+						   opcPackage, ((relationshipTypes == null) || 
+								        relationshipTypes.contains(sourcePart.getRelationshipType()))
+						   );
 			opcPackage.getParts().put(ret);
 			targetParent.setPartShortcut(ret, ret.getRelationshipType());
 		}
