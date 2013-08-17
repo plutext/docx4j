@@ -73,6 +73,12 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_DUMMY_CREATE_SECTIONS = "pp.common.dummycreatesections";
 
+	/** This step removes a pagebreak before the first paragraph of the document. This is a 
+	 * workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094  
+     * You can disable this step if you are using FOP post 1.1 or another FO renderer.
+	 */
+	public static final String PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH = "pp.apachefop.disablepagebreakfirstparagraph";
+
 	
 	/** Default features, that get applied to a PDF conversion
 	 */
@@ -83,7 +89,8 @@ public interface ConversionFeatures {
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_PAGE_NUMBERING,
-		PP_COMMON_CREATE_SECTIONS
+		PP_COMMON_CREATE_SECTIONS,
+		PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH
 	};
 
 	/** Default features, that get applied to a HTML conversion
