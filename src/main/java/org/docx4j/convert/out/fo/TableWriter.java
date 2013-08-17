@@ -17,14 +17,14 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out.pdf.viaXSLFO;
+package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
@@ -82,7 +82,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	@Override
 	protected void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
-		Conversion.applyFoAttributes(properties, element);
+		XsltFOFunctions.applyFoAttributes(properties, element);
 	}
 	
 	@Override

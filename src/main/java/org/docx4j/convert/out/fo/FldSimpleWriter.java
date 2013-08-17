@@ -17,13 +17,14 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out.pdf.viaXSLFO;
+package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractPagerefHandler;
 import org.docx4j.convert.out.common.writer.HyperlinkUtil;
@@ -65,13 +66,13 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		@Override
 		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
 		Element ret = null;
-			if (((PdfConversionContext)context).isRequires2Pass()) {
-				ret = doc.createElementNS(XSL_NS, "xsl:value-of");
-				ret.setAttribute("select", "$" + getParameterName(context));
-				//output escaping shouldn't be relevant for a page number
+			if (((FOConversionContext)context).isRequires2Pass()) {
+				ret = doc.createElementNS(FO_NS, "fo:inline");
+				ret.appendChild(doc.createTextNode("${" + getParameterName(context) + "}"));
 			}
 			else {
 				ret = doc.createElementNS(FO_NS, "fo:page-number-citation-last");
+				String refId = getRefid(context);
 				ret.setAttribute("ref-id", getRefid(context));
 			}
 			return ret;
@@ -97,7 +98,13 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 
 		@Override
 		protected String getRefid(AbstractWmlConversionContext context) {
-			return "docroot";
+			/* Apache FOP ignores the id in the fo:root, for this reason 
+			 * we pass the id of the last section.
+			 * If it isn't a vanilla document then we have a 2 pass and this isn't
+			 * used.
+			 */
+			List<ConversionSectionWrapper> wrappers = context.getSections().getList();
+			return "section_" + wrappers.get(wrappers.size() - 1).getId();
 		}
 	}
 	
@@ -142,13 +149,12 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		registerHandler(new HyperlinkWriter());
 		registerHandler(new RefHandler(HyperlinkUtil.FO_OUTPUT));
 		registerHandler(new PagerefHandler());
-		//disabled until 2pass is implemented
-		//registerHandler(new NumpagesHandler());
-		//registerHandler(new SectionpagesHandler());
+		registerHandler(new NumpagesHandler());
+		registerHandler(new SectionpagesHandler());
 	}
 
 	@Override
 	protected void applyProperties(List<Property> properties, Node node) {
-		Conversion.applyFoAttributes(properties, (Element)node);
+		XsltFOFunctions.applyFoAttributes(properties, (Element)node);
 	}
 }

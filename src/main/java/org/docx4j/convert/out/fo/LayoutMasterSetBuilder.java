@@ -1,4 +1,4 @@
-package org.docx4j.convert.out.pdf.viaXSLFO;
+package org.docx4j.convert.out.fo;
 
 import java.util.List;
 
@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
