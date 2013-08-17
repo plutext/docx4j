@@ -1,0 +1,125 @@
+package org.docx4j.convert.out.html;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.stream.StreamSource;
+
+import org.docx4j.Docx4jProperties;
+import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.convert.out.common.Exporter;
+import org.docx4j.convert.out.common.WmlXsltExporterDelegate;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.w3c.dom.Document;
+
+public class HTMLExporterXslt extends AbstractHTMLExporter2 {
+	protected static final String PROPERTY_HTML_OUTPUT_TYPE = 
+			"docx4j.Convert.Out.HTML.OutputMethodXML";
+	
+	protected static final String XHTML_TEMPLATE_RESOURCE = 
+			"org/docx4j/convert/out/html/docx2xhtml.xslt";
+	protected static final String HTML_TEMPLATE_RESOURCE = 
+			"org/docx4j/convert/out/html/docx2html.xslt";
+	
+	protected static final String XSLT_RESOURCE_ROOT = 
+			"org/docx4j/convert/out/html/";
+	
+	protected static final URIResolver RESOURCES_URI_RESOLVER = 
+			new OutHtmlURIResolver();
+
+	protected static HTMLExporterXslt instance = null;
+	
+	protected static class OutHtmlURIResolver implements URIResolver {
+		@Override
+		public Source resolve(String href, String base) throws TransformerException {
+		  try {
+			return new StreamSource(
+						org.docx4j.utils.ResourceUtils.getResource(
+								XSLT_RESOURCE_ROOT + href));
+		} catch (IOException e) {
+			throw new TransformerException(e);
+		}  
+		}
+	}
+	
+	protected static class HTMLExporterXsltDelegate extends WmlXsltExporterDelegate<HTMLSettings, HTMLConversionContext> {
+		public HTMLExporterXsltDelegate() {
+			super(null);
+		}
+
+		@Override
+		protected Templates loadDefaultTemplates() throws Docx4JException {
+		Source xsltSource = null;
+		Templates ret = null;
+		URIResolver originalURIResolver = null;
+			try {
+				originalURIResolver = XmlUtils.getTransformerFactory().getURIResolver();
+				
+				// TODO FIXME - partially thread safe,
+				// loading of Templates in the delegates is synchronized on the 
+				// XmlUtils.getTransformerFactory() but other parts of the application
+				// are not.
+				XmlUtils.getTransformerFactory().setURIResolver(RESOURCES_URI_RESOLVER);
+				if (Docx4jProperties.getProperty(PROPERTY_HTML_OUTPUT_TYPE, true)){
+					log.info("Outputting well-formed XHTML..");
+					defaultTemplatesResource = XHTML_TEMPLATE_RESOURCE;
+				} else {
+					log.info("Outputting HTML tag soup..");
+					defaultTemplatesResource = HTML_TEMPLATE_RESOURCE;
+				}
+				xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils.getResource(
+						defaultTemplatesResource));				
+				ret = XmlUtils.getTransformerTemplate(xsltSource);
+			} catch (IOException e) {
+				throw new Docx4JException("Exception loading template \"" + defaultTemplatesResource + "\", " + e.getMessage(), e);
+			} catch (TransformerConfigurationException e) {
+				throw new Docx4JException("Exception loading template \"" + defaultTemplatesResource + "\", " + e.getMessage(), e);
+			}
+			finally {
+				XmlUtils.getTransformerFactory().setURIResolver(originalURIResolver);
+			}
+			return ret;
+		}
+
+		@Override
+		protected Document getSourceDocument(HTMLSettings conversionSettings, HTMLConversionContext conversionContext) throws Docx4JException {
+		WordprocessingMLPackage wmlPackage = conversionContext.getWmlPackage();
+			//TODO: the docx2xhtml-core.xslt only knows about the MainDocumentPart, therefore it's 
+			//unable to process any sections....
+			return XmlUtils.marshaltoW3CDomDocument(wmlPackage.getMainDocumentPart().getJaxbElement());
+		}
+
+		@Override
+		public void process(HTMLSettings conversionSettings, HTMLConversionContext conversionContext, OutputStream outputStream) throws Docx4JException {
+			//TODO: The docx2fo takes care of moving to the MainDocumentPart,
+			// docx2html-core doesn't, would make sense to have the same behaviour... 
+			conversionContext.setCurrentPartMainDocument();
+			super.process(conversionSettings, conversionContext, outputStream);
+		}
+		
+		
+		
+	}
+	
+	protected HTMLExporterXslt() {
+		super(new HTMLExporterXsltDelegate());
+	}
+
+	public static Exporter<HTMLSettings> getInstance() {
+		if (instance == null) {
+			synchronized(HTMLExporterXslt.class) {
+				if (instance == null) {
+					instance = new HTMLExporterXslt();
+				}
+			}
+		}
+		return instance;
+	}
+}
