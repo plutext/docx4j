@@ -23,9 +23,7 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import javax.xml.bind.JAXBContext;
-
-import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
@@ -42,8 +40,6 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  */
 public class OpenAndSaveRoundTripTest extends AbstractSample {
 	
-	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
-
 	public static void main(String[] args) throws Exception {
 
 		try {
@@ -55,13 +51,13 @@ public class OpenAndSaveRoundTripTest extends AbstractSample {
 		
 		
 		// Load the docx
-		WordprocessingMLPackage wordMLPackage = (WordprocessingMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
+		WordprocessingMLPackage wordMLPackage = Docx4J.load(new java.io.File(inputfilepath));
 				
 		// Save it
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_OpenAndSaveRoundTripTest.docx";
-		wordMLPackage.save(new File(outputfilepath));
-//		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-//		saver.save(outputfilepath);
+		Docx4J.save(wordMLPackage, new File(outputfilepath), Docx4J.FLAG_NONE); //(FLAG_NONE == default == zipped docx)
+		
+		System.out.println("Saved: " + outputfilepath);
 	}
 		
 

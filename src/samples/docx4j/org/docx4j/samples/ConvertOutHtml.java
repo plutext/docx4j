@@ -21,14 +21,11 @@
 package org.docx4j.samples;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 
-import org.docx4j.convert.out.common.preprocess.Containerization;
-import org.docx4j.convert.out.html.AbstractHtmlExporter;
-import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
-import org.docx4j.convert.out.html.HtmlExporterNG2;
-import org.docx4j.convert.out.html.SdtWriter;
-import org.docx4j.convert.out.html.TagSingleBox;
+import org.docx4j.Docx4J;
+import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -58,25 +55,34 @@ public class ConvertOutHtml extends AbstractSample {
 
     public static void main(String[] args)
             throws Exception {
-
+    	
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 		}
+		
+		// Document loading (required)
+		WordprocessingMLPackage wordMLPackage;
+		if (inputfilepath==null) {
+			// Create a docx
+			System.out.println("No imput path passed, creating dummy document");
+			 wordMLPackage = WordprocessingMLPackage.createPackage();
+			SampleDocument.createContent(wordMLPackage.getMainDocumentPart());	
+		} else {
+			System.out.println("Loading file from " + inputfilepath);
+			wordMLPackage = Docx4J.load(new java.io.File(inputfilepath));
+		}
 
-		System.out.println(inputfilepath);
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-
-		// HTML exporter setup
-		AbstractHtmlExporter exporter = new HtmlExporterNG2();
-
-		// .. the HtmlSettings object
-    	HtmlSettings htmlSettings = new HtmlSettings();
+		// HTML exporter setup (required)
+		// .. the HTMLSettings object
+    	HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
 
     	htmlSettings.setImageDirPath(inputfilepath + "_files");
     	htmlSettings.setImageTargetUri(inputfilepath.substring(inputfilepath.lastIndexOf("/")+1)
     			+ "_files");
+    	htmlSettings.setWmlPackage(wordMLPackage);
     	
+    	//Other settings (optional)
 //    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
 //    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
 		
@@ -89,20 +95,23 @@ public class ConvertOutHtml extends AbstractSample {
 //		SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox() );
 //		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
 		
-		// exporter writes to a Result object.		
+		// output to an OutputStream.		
 		OutputStream os; 
 		if (save) {
-			os = new java.io.FileOutputStream(inputfilepath + ".html");
+			os = new FileOutputStream(inputfilepath + ".html");
 		} else {
 			os = new ByteArrayOutputStream();
 		}
-		javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
 
-		// OK, do it
-		exporter.html(wordMLPackage, result, htmlSettings);
+		//Don't care what type of exporter you use
+		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_NONE);
+		//Prefer the exporter, that uses a xsl transformation
+		//Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
+		//Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
 
 		if (save) {
-			System.out.println("Saved: " + inputfilepath + ".html using " +  exporter.getClass().getName() );
+			System.out.println("Saved: " + inputfilepath + ".html ");
 		} else {
 			System.out.println( ((ByteArrayOutputStream)os).toString() );
 		}

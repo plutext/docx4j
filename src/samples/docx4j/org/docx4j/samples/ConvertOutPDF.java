@@ -20,25 +20,15 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
+import org.docx4j.Docx4J;
+import org.docx4j.convert.out.FOSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.P;
-import org.docx4j.wml.PPr;
 
 /**
  * Demo of PDF output.
@@ -74,7 +64,7 @@ public class ConvertOutPDF extends AbstractSample {
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-//    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 		
     	saveFO = false;
 	}
@@ -92,9 +82,7 @@ public class ConvertOutPDF extends AbstractSample {
 		} catch (IllegalArgumentException e) {
 		}
 		
-    	
-		System.out.println(inputfilepath);
-
+		// Font regex (optional)
 		// Set regex if you want to restrict to some defined subset of fonts
 		// Here we have to do this before calling createContent,
 		// since that discovers fonts
@@ -107,31 +95,20 @@ public class ConvertOutPDF extends AbstractSample {
 		// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
 		PhysicalFonts.setRegex(regex);
 
+		// Document loading (required)
 		WordprocessingMLPackage wordMLPackage;
 		if (inputfilepath==null) {
-			// Create a docx			
+			// Create a docx
+			System.out.println("No imput path passed, creating dummy document");
 			 wordMLPackage = WordprocessingMLPackage.createPackage();
-			createContent(wordMLPackage.getMainDocumentPart());	
+			 SampleDocument.createContent(wordMLPackage.getMainDocumentPart());	
 		} else {
 			// Load .docx or Flat OPC .xml
+			System.out.println("Loading file from " + inputfilepath);
 			wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		}
 		
-		
-		// Workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094 
-		// You can comment this out if you are using FOP post 1.1
-		// (see pom.xml for tips on how to configure that)
-		Object o = wordMLPackage.getMainDocumentPart().getContent().get(0);
-		if (o instanceof P
-				&& ((P)o).getPPr()!=null) {
-			PPr pPr = ((P)o).getPPr();
-			BooleanDefaultTrue val = new BooleanDefaultTrue();
-			val.setVal(Boolean.FALSE);
-			pPr.setPageBreakBefore(val);
-		}
-		
-		
-		// Set up font mapper
+		// Set up font mapper (optional)
 		Mapper fontMapper = new IdentityPlusMapper();
 		wordMLPackage.setFontMapper(fontMapper);
 		// .. example of mapping missing font Algerian to installed font Comic Sans MS
@@ -139,19 +116,23 @@ public class ConvertOutPDF extends AbstractSample {
 				= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
 		fontMapper.getFontMappings().put("Algerian", font);
 		
-		
-		// the PdfConversion object
-		org.docx4j.convert.out.pdf.PdfConversion c 
-//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
-			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
-//				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
-		
+
+		// FO exporter setup (required)
+		// .. the FOSettings object
+    	FOSettings foSettings = Docx4J.createFOSettings();
 		if (saveFO) {
-			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
-					new java.io.File(inputfilepath + ".fo"));
+			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
+		foSettings.setWmlPackage(wordMLPackage);
+		// Document format: 
+		// The default implementation of the FORenderer that uses Apache Fop will output
+		// a PDF document if nothing is passed via 
+		// foSettings.setApacheFopMime(apacheFopMime)
+		// apacheFopMime can be any of the output formats defined in org.apache.fop.apps.MimeConstants or
+		// FOSettings.INTERNAL_FO_MIME if you want the fo document as the result.
 		
-		// PdfConversion writes to an output stream
+		
+		// exporter writes to an OutputStream.		
 		String outputfilepath;
 		if (inputfilepath==null) {
 			outputfilepath = System.getProperty("user.dir") + "/OUT_FontContent.pdf";			
@@ -159,103 +140,17 @@ public class ConvertOutPDF extends AbstractSample {
 			outputfilepath = inputfilepath + ".pdf";
 		}
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
-		
-		// OK, do it...
-		c.output(os, new PdfSettings() );
-		System.out.println("Saved " + outputfilepath);
-    }
-	    
-    public static void createContent(MainDocumentPart wordDocumentPart ) {
-		/*
-		 * NB, this currently works nicely with
-		 * viaIText, and viaXSLFO (provided
-		 * you view with Acrobat Reader .. it
-		 * seems to overwhelm pdfviewer, which
-		 * is weird, since viaIText works in both).
-		 */
     	
-    	try {
-    		// Do this explicitly, since we need
-    		// it in order to create our content
-			PhysicalFonts.discoverPhysicalFonts(); 						
-															
-			Map<String, PhysicalFont> physicalFontMap = PhysicalFonts.getPhysicalFonts();			
-			Iterator physicalFontMapIterator = physicalFontMap.entrySet().iterator();
-			while (physicalFontMapIterator.hasNext()) {
-			    Map.Entry pairs = (Map.Entry)physicalFontMapIterator.next();
-			    if(pairs.getKey()==null) {
-			    	pairs = (Map.Entry)physicalFontMapIterator.next();
-			    }
-			    String fontName = (String)pairs.getKey();
-			    PhysicalFont pf = (PhysicalFont)pairs.getValue();
-			    
-			    System.out.println("Added paragraph for " + fontName);
-			    addObject(wordDocumentPart, sampleText, fontName );
 
-			    // bold, italic etc
-			    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
-			    if (pfVariation!=null) {
-				    addObject(wordDocumentPart, sampleTextBold, pfVariation.getName() );
-			    }
-			    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
-			    if (pfVariation!=null) {
-				    addObject(wordDocumentPart, sampleTextBoldItalic, pfVariation.getName() );
-			    }
-			    pfVariation = PhysicalFonts.getItalicForm(pf);
-			    if (pfVariation!=null) {
-				    addObject(wordDocumentPart, sampleTextItalic, pfVariation.getName() );
-			    }
-			    
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}    		    
+		//Don't care what type of exporter you use
+		Docx4J.toFO(foSettings, os, Docx4J.FLAG_NONE);
+		//Prefer the exporter, that uses a xsl transformation
+		//Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
+		//Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
+		System.out.println("Saved: " + outputfilepath);
     }
-    
-    static void addObject(MainDocumentPart wordDocumentPart, String template, String fontName ) throws JAXBException {
-    	
-	    HashMap substitution = new HashMap();
-	    substitution.put("fontname", fontName);
-	    Object o = XmlUtils.unmarshallFromTemplate(template, substitution);
-	    wordDocumentPart.addObject(o);    		    
-    	
-    }
-    
-    final static String sampleText = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
-		+"<w:r>"
-		+"<w:rPr>"
-			+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
-		+"</w:rPr>"
-		+"<w:t xml:space=\"preserve\">${fontname}</w:t>"
-	+"</w:r>"
-	+"</w:p>";
-    final static String sampleTextBold =	"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"	+"<w:r>"
-		+"<w:rPr>"
-			+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
-			+"<w:b />"
-		+"</w:rPr>"
-		+"<w:t>${fontname} bold;</w:t>"
-	+"</w:r>"
-	+"</w:p>";
-    final static String sampleTextItalic =	"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"	+"<w:r>"
-		+"<w:rPr>"
-			+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
-			+"<w:i />"
-		+"</w:rPr>"
-		+"<w:t>${fontname} italic; </w:t>"
-	+"</w:r>"
-	+"</w:p>";
-    final static String sampleTextBoldItalic ="<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
-    	+"<w:r>"
-		+"<w:rPr>"
-			+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
-			+"<w:b />"
-			+"<w:i />"
-		+"</w:rPr>"
-		+"<w:t>${fontname} bold italic</w:t>"
-	+"</w:r>"
-+"</w:p>";
     
     
 }

@@ -22,26 +22,11 @@ package org.docx4j.samples;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 
-import org.docx4j.XmlUtils;
-import org.docx4j.dml.CTBlip;
-import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.OpenDoPEHandler;
-import org.docx4j.model.datastorage.OpenDoPEIntegrity;
-import org.docx4j.model.datastorage.RemovalHandler;
-import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.samples.ImageConvertEmbeddedToLinked.TraversalUtilBlipVisitor;
-import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
-import org.docx4j.utils.TraversalUtilVisitor;
-import org.docx4j.wml.SdtElement;
 
 
 /** 
@@ -75,115 +60,28 @@ public class ContentControlsMergeXML {
 		String OUTPUT_DOCX = System.getProperty("user.dir") + "/OUT_ContentControlsMergeXML.docx";
 
 		// Load input_template.docx
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
-				new java.io.File(input_DOCX));
-		
-		// Find custom xml item id
-		String itemId = getCustomXmlItemId(wordMLPackage).toLowerCase();
-		System.out.println("Looking for item id: " + itemId);
-		
-		// Inject data_file.xml
-		// (this code assumes it is not a StandardisedAnswersPart)
-		CustomXmlDataStoragePart customXmlDataStoragePart 
-			= (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
-		if (customXmlDataStoragePart==null) {
-			System.out.println("Couldn't find CustomXmlDataStoragePart! exiting..");
-			return;			
-		}
-		System.out.println("Getting " + input_XML);
-		FileInputStream fis = new FileInputStream(new File(input_XML));
-		customXmlDataStoragePart.getData().setDocument(fis);
-		
-		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		try {
-			// Process conditionals and repeats
-			OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-			odh.preprocess();
+		WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(input_DOCX));
+
+		// Open the xml stream
+		FileInputStream xmlStream = new FileInputStream(new File(input_XML));
+
+		// Do the binding:
+		// FLAG_NONE means that all the steps of the binding will be done,
+		// otherwise you could pass a combination of the following flags:
+		// FLAG_BIND_INSERT_XML: inject the passed XML into the document
+		// FLAG_BIND_BIND_XML: bind the document and the xml (including any OpenDope handling)
+		// FLAG_BIND_REMOVE_SDT: remove the content controls from the document (only the content remains)
+		// FLAG_BIND_REMOVE_XML: remove the custom xml parts from the document 
 			
-			OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
-			odi.process(wordMLPackage);
-			
-			if (DEBUG) {
-				String save_preprocessed; 						
-				if (OUTPUT_DOCX.lastIndexOf(".")==-1) {
-					save_preprocessed = OUTPUT_DOCX + "_INT.docx"; 
-				} else {
-					save_preprocessed = OUTPUT_DOCX.substring(0, OUTPUT_DOCX.lastIndexOf(".") ) + "_INT.docx"; 
-				}
-//				System.out.println(
-//						XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-//						);		
-				saver.save(save_preprocessed);
-				System.out.println("Saved: " + save_preprocessed);
-			}
-			
-		} catch (Docx4JException d) {
-			// Probably this docx doesn't contain OpenDoPE convention parts
-			System.out.println(d.getMessage());
-		}
+		//Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_NONE);
+		//If a document doesn't include the Opendope definitions, eg. the XPathPart,
+		//then the only thing you can do is insert the xml
+		//the example document binding-simple.docx doesn't have an XPathPart....
+		Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_BIND_INSERT_XML);
 		
-		
-		// Apply the bindings
-		//BindingHandler.setHyperlinkStyle("Hyperlink");
-		BindingHandler.applyBindings(wordMLPackage);
-		// If you inspect the output, you should see your data in 2 places:
-		// 1. the custom xml part 
-		// 2. (more importantly) the main document part
-//		System.out.println(
-//				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-//				);
-		
-		// Strip content controls
-		RemovalHandler rh = new RemovalHandler();
-		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
-		
-		saver.save(OUTPUT_DOCX);
+		//Save the document 
+		Docx4J.save(wordMLPackage, new File(OUTPUT_DOCX), Docx4J.FLAG_NONE);
 		System.out.println("Saved: " + OUTPUT_DOCX);
 		
 	}
-	
-	/**
-	 * We need the item id of the custom xml part.  
-	 * 
-	 * There are several strategies we could use to find it,
-	 * including searching the docx for a bind element, but
-	 * here, we simply look in the xpaths part. 
-	 * 
-	 * @param wordMLPackage
-	 * @return
-	 */
-	private static String getCustomXmlItemId(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-		
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();			
-		if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
-			// Can't do it the easy way, so look up the binding on the first content control
-			TraversalUtilCCVisitor visitor = new TraversalUtilCCVisitor();
-			SingleTraversalUtilVisitorCallback ccFinder 
-			= new SingleTraversalUtilVisitorCallback(visitor);
-			ccFinder.walkJAXBElements(
-				wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
-			return visitor.storeItemID;
-			
-		} else {
-	
-			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
-			return xPaths.getXpath().get(0).getDataBinding().getStoreItemID();
-		}
-	}
-
-	public static class TraversalUtilCCVisitor extends TraversalUtilVisitor<SdtElement> {
-		
-		String storeItemID = null;
-		
-		@Override
-		public void apply(SdtElement element, Object parent, List<Object> siblings) {
-
-			if (element.getSdtPr()!=null
-					&& element.getSdtPr().getDataBinding()!=null) {
-				storeItemID = element.getSdtPr().getDataBinding().getStoreItemID();
-			}
-		}
-	
-	}
-	
 }

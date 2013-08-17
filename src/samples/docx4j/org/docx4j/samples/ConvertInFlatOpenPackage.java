@@ -23,10 +23,8 @@ package org.docx4j.samples;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /* 
@@ -53,15 +51,9 @@ public class ConvertInFlatOpenPackage extends AbstractSample {
 		
 		try {
 			// First, load Flat OPC Package from file
-			WordprocessingMLPackage wmlPackage = 
-					(WordprocessingMLPackage)OpcPackage.load(
-							new File(inputfilepath)); 
-			
-			// All done ..  save the WordprocessingMLPackage
-			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
-			saver.save(outputfilepath);
-			System.out.println( "\n\n .. written to " + outputfilepath);
-			
+			WordprocessingMLPackage wmlPackage = Docx4J.load(new File(inputfilepath));
+			Docx4J.save(wmlPackage, new File(outputfilepath), Docx4J.FLAG_SAVE_ZIP_FILE);
+			System.out.println("Saved: " + outputfilepath);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();

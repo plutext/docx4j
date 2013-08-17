@@ -24,12 +24,12 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.Docx4J;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
 /**
- * Convert a docx/pptx/xlsx to 'Flat OPC XML' format,
+ * Convert a docx to 'Flat OPC XML' format,
  * which Word/Powerpoint can happily read, and which 
  * is convenient for editing in an XML editor.
  * 
@@ -55,17 +55,13 @@ public class ConvertOutFlatOpenPackage extends AbstractSample {
 		outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertOutFlatOpenPackage.xml";
 		
 		// Open a document from the file system
-		OpcPackage wmlPackage = OpcPackage.load(new java.io.File(inputfilepath));
+		WordprocessingMLPackage wmlPackage = Docx4J.load(new java.io.File(inputfilepath));
 		
 		if (save) {
-			wmlPackage.save(new File(outputfilepath));
-			System.out.println( "\n\n .. written to " + outputfilepath);
+			Docx4J.save(wmlPackage, new File(outputfilepath), Docx4J.FLAG_SAVE_FLAT_XML);
+			System.out.println("Saved: " + outputfilepath);
 		} else {
-		   	// Create a org.docx4j.wml.Package object
-			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
-
-			// Display its contents 
-			worker.marshal(System.out);				
+			Docx4J.save(wmlPackage, System.out, Docx4J.FLAG_SAVE_FLAT_XML);
 		}
 		
 	}
