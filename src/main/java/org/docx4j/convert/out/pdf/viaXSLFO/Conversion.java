@@ -28,6 +28,16 @@ public class Conversion extends PdfConversion {
 		saveFO = save;
 	}
 	
+//	public void output(OutputStream os, FOSettings settings) throws Docx4JException {
+//		setupSettings(settings, FOSettings.INTERNAL_FO_MIME);
+//		Docx4J.toFO(settings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+//	}
+	
+	public void outputXSLFO(OutputStream os, PdfSettings settings) throws Docx4JException {
+		setupSettings(settings, FOSettings.MIME_PDF);
+		Docx4J.toFO(settings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+	}
+
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
 	 * @param os
@@ -36,14 +46,9 @@ public class Conversion extends PdfConversion {
 	 *            The configuration for the conversion 
 	 * 
 	 * */     
-	public void output(OutputStream os, FOSettings settings) throws Docx4JException {
+	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
 		setupSettings(settings, FOSettings.INTERNAL_FO_MIME);
-		Docx4J.toFO(settings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
-	}
-	
-	public void outputXSLFO(OutputStream os, PdfSettings settings) throws Docx4JException {
-		setupSettings(settings, FOSettings.MIME_PDF);
-		Docx4J.toFO(settings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		Docx4J.toPDF(wordMLPackage, os);
 	}
 	
 	protected void setupSettings(FOSettings settings, String mime) {

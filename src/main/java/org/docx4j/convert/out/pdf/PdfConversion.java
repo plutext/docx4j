@@ -1,5 +1,10 @@
 package org.docx4j.convert.out.pdf;
 
+import java.io.OutputStream;
+
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+
 
 /**
  * There are 3 ways a package can be converted to PDF:
@@ -21,5 +26,11 @@ package org.docx4j.convert.out.pdf;
  * @deprecated
  */
 public abstract class PdfConversion  {
+	
+	@Deprecated
+	public abstract void outputXSLFO(OutputStream os, PdfSettings settings) throws Docx4JException;	
 
+	@Deprecated
+	public abstract void output(OutputStream os, PdfSettings settings) throws Docx4JException;
+	
 }

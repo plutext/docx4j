@@ -21,11 +21,16 @@ package org.docx4j.convert.out.html;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.Docx4J;
@@ -35,6 +40,9 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * HtmlExporterNG (now removed - see 
@@ -143,16 +151,39 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			htmlSettings.setWmlPackage(wmlPackage);
 		}
 		Docx4J.toHTML(htmlSettings, outStream, Docx4J.FLAG_EXPORT_PREFER_XSL);
-		outStream.close();
 		try {
 			transformer = XmlUtils.getTransformerFactory().newTransformer();
 		} catch (TransformerConfigurationException e) {
-			throw new Docx4JException("Exception creating identity transformer to output resutlt: " + e.getMessage(), e);
+			throw new Docx4JException("Exception creating identity transformer to output result: " + e.getMessage(), e);
 		}
 		try {
-			transformer.transform(new StreamSource(new ByteArrayInputStream(outStream.toByteArray())), result);
+			
+			// Resolution of doctype eg
+			// <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+			// may be extremely slow, so instead of
+			// transformer.transform(new StreamSource(new ByteArrayInputStream(bytes)), result);
+			// use
+			
+		    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		    dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);	
+		    DocumentBuilder db = dbFactory.newDocumentBuilder();
+		    // that feature is enough; alternatively, the below also works.  Use both for good measure.
+		    db.setEntityResolver(new EntityResolver() {
+
+		        @Override
+		        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+		            return new InputSource(new StringReader("")); // Returns a valid dummy source
+		            // returning null here is no good; it seems to cause:
+		        	//    XMLEntityManager.reset(XMLComponentManager) 
+		        	//    XIncludeAwareParserConfiguration(XML11Configuration).resetCommon() 
+		            // with the result that this entity resolver is not used!
+		        }
+		    });			
+		    org.w3c.dom.Document doc = db.parse(new ByteArrayInputStream(outStream.toByteArray()));
+		    transformer.transform(new DOMSource(doc.getDocumentElement()), result);
+			
 		} catch (TransformerException e) {
-			throw new Docx4JException("Exception dumping outputstream to output resutlt: " + e.getMessage(), e);
+			throw new Docx4JException("Exception dumping outputstream to output result: " + e.getMessage(), e);
 		}
 	}
 }
