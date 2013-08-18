@@ -23,6 +23,12 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * The …ExporterGenerator is the visitor, that gets used in those cases where a document is done 
+ * as a NonXSLT.  (docx4j supports convert.out via both xslt and non-xslt based approaches)
+ * 
+ * @since 3.0
+ */
 public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlConversionContext> extends TraversalUtil.CallbackImpl {
 	private static Logger log = LoggerFactory.getLogger(AbstractVisitorExporterGenerator.class);
 	protected static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";

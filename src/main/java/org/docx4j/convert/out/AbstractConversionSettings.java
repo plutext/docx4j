@@ -8,6 +8,11 @@ import java.util.TreeSet;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 
+/**
+ * The Settings classes pass everything that’s needed to the conversion process. 
+ * 
+ * @since 3.0
+ */
 public abstract class AbstractConversionSettings implements ConversionFeatures {
 	
 	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
@@ -84,7 +89,6 @@ public abstract class AbstractConversionSettings implements ConversionFeatures {
 	 * templates. The signature is defined as Object templates, to not introduce a 
 	 * dependency on javax.xml.transform - but don't expect it to work if you pass
 	 * something different than a javax.xml.transform.Templates. 
-	 * 
 	 */
 	public void setCustomXsltTemplates(Object templates) {
 		settings.put(CUSTOM_XSLT_TEMPLATES, templates);

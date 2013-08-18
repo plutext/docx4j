@@ -9,6 +9,13 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Exporter are responsible to create the environment for the export process. 
+ * They take care of the pre- and post processing (FORenderer). 
+ * The conversion process itself is done with the …ExporterDelegate
+ * 
+ * @since 3.0
+ */
 public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC extends AbstractConversionContext, PK extends OpcPackage> implements Exporter<CS> {
 	protected static Logger log = LoggerFactory.getLogger(AbstractExporter.class);
 	

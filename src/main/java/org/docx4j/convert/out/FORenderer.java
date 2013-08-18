@@ -9,6 +9,21 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
  *  fo document into the requested format. The fo renderer is encapsulated in 
  *  this interface.<br> 
  *  
+ *  The FORenderer can be:
+ *  
+ *  1.	The default ApacheFORenderer that gets used if no custom FORenderer has been passed.
+ *  This renderer contains the functionality and replaces the classes FopFactoryUtil and FopResultUtils. 
+ *  The configuration and the result mime is passed via the FOSettings.
+ *  
+ *  2.	A custom implementation of the FORenderer interface that gets passed via the FOSettings to the 
+ *  conversion process.
+ *  
+ *  3.	The DummyFORenderer, that gets used if INTERNAL_FO_MIME has been selected as the output format 
+ *  in apacheFopMime.  Passing the INTERNAL_FO_MIME as the result mime acts as a flag, it selects the 
+ *  DummyFORenderer and ensures that the rendering is done as a one pass process (in this case, the 
+ *  result might not be correct, since a two pass conversion may be necessary). The DummyFORenderer itself 
+ *  just passes the generated fo to the output stream. 
+ *  
  *  The conversion process might need a two pass conversion, if this is the case, 
  *  then the body of some elements might contain a placeholder that needs to be 
  *  replaced with the page count in the document or the page count in the section. 
@@ -20,6 +35,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
  *  of the numbers is defined for the page count of the document by getDocumentPageCountFoFormat() and
  *  the one for the section by getSectionPageCountFoFormat(); 
  *  
+ *  @since 3.0
  */
 public interface FORenderer {
 	public static final String PLACEHOLDER_PREFIX = "${";

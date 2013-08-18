@@ -6,6 +6,14 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.w3c.dom.Document;
 
+/**
+ * The …ExporterDelegate generates the html/fo document from the WordprocessingMLPackage.
+ * Docx4j supports convert.out via both xslt and non-xslt based approaches.
+ * So some …ExporterDelegate use a Xslt transformation;
+ * the others use a visitor (…ExporterGenerator)
+ * 
+ * @since 3.0
+ */
 public class WmlXsltExporterDelegate<CS extends AbstractConversionSettings, CC extends AbstractWmlConversionContext> extends AbstractXsltExporterDelegate<CS, CC> {
 
 	public WmlXsltExporterDelegate(String defaultTemplatesResource) {

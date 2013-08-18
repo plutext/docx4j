@@ -16,6 +16,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * The …ExporterDelegate generates the html/fo document from the WordprocessingMLPackage.
+ * Docx4j supports convert.out via both xslt and non-xslt based approaches.
+ * So some …ExporterDelegate use a Xslt transformation;
+ * the others use a visitor (…ExporterGenerator)
+ * 
+ * @since 3.0
+ */
 public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConversionSettings, CC extends AbstractWmlConversionContext> extends AbstractExporterDelegate<CS, CC> {
 	public interface AbstractVisitorExporterGeneratorFactory<CC extends AbstractWmlConversionContext> {
 		public AbstractVisitorExporterGenerator<CC> createInstance(CC conversionContext, Document document, Node parentNode);

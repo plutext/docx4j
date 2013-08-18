@@ -52,6 +52,11 @@ public class FOSettings extends AbstractConversionSettings {
 		return (String)settings.get(APACHEFOP_CONFIGURATION);
 	}
 
+	/**
+	 * A String with the configuration of the Apache fop factory. If no configuration 
+	 * is passed then a default configuration will be generated for each document 
+	 * (and a new factory created). 
+	 */
 	public void setApacheFopConfiguration(String apacheFopConfiguration) {
 		settings.put(APACHEFOP_CONFIGURATION, apacheFopConfiguration);
 	}
@@ -60,6 +65,11 @@ public class FOSettings extends AbstractConversionSettings {
 		return (String)settings.get(APACHEFOP_MIME);
 	}
 
+	/**
+	 * The output format of the ApacheFORenderer. If no value is passed, then it will 
+	 * be a PDF document. If INTERNAL_FO_MIME is used then the fo document will be 
+	 * outputted to the OutputStream. 
+	 */
 	public void setApacheFopMime(String apacheFopMime) {
 		settings.put(APACHEFOP_MIME, apacheFopMime);
 	}
@@ -68,6 +78,10 @@ public class FOSettings extends AbstractConversionSettings {
 		return (FORenderer)settings.get(CUSTOM_FO_RENDERER);
 	}
 
+	/**
+	 * If the rendering should be done with a different fo renderer, then you need to 
+	 * pass here your custom implementation of the FORenderer interface. 
+	 */
 	public void setCustomFoRenderer(FORenderer customFoRenderer) {
 		settings.put(CUSTOM_FO_RENDERER, customFoRenderer);
 	}
@@ -76,6 +90,10 @@ public class FOSettings extends AbstractConversionSettings {
 		return (File)settings.get(FO_DUMP_FILE);
 	}
 	
+	/**
+	 * For testing and debugging you can pass here a File object. The intermediate fo document 
+	 * will be outputted here. The outputted fo may contain placeholder for the 2 pass conversion. 
+	 */
 	public void setFoDumpFile(File foFile) {
 		settings.put(FO_DUMP_FILE, foFile);
 	}

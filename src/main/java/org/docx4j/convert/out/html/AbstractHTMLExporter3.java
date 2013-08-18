@@ -6,9 +6,9 @@ import org.docx4j.convert.out.common.AbstractWmlExporter;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
-public abstract class AbstractHTMLExporter2 extends AbstractWmlExporter<HTMLSettings, HTMLConversionContext>{
+public abstract class AbstractHTMLExporter3 extends AbstractWmlExporter<HTMLSettings, HTMLConversionContext>{
 	
-	protected AbstractHTMLExporter2(AbstractExporterDelegate<HTMLSettings, HTMLConversionContext> exporterDelegate) {
+	protected AbstractHTMLExporter3(AbstractExporterDelegate<HTMLSettings, HTMLConversionContext> exporterDelegate) {
 		super(exporterDelegate);
 	}
 

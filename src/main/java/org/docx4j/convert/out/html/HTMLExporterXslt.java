@@ -19,7 +19,15 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Document;
 
-public class HTMLExporterXslt extends AbstractHTMLExporter2 {
+/**
+ * Converts the document to HTML with a xsl transformation.
+ * 
+ * Uses Delegate: org.docx4j.convert.out.html.HTMLExporterXslt.HTMLExporterXsltDelegate
+ * Uses Generator: None
+ * 
+ * @since 3.0
+ */
+public class HTMLExporterXslt extends AbstractHTMLExporter3 {
 	protected static final String PROPERTY_HTML_OUTPUT_TYPE = 
 			"docx4j.Convert.Out.HTML.OutputMethodXML";
 	

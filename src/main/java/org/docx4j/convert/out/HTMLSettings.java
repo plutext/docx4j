@@ -81,6 +81,9 @@ public class HTMLSettings extends AbstractConversionSettings {
 		return (String)settings.get(IMAGE_TARGET_URI);
 	}
 	
+	/**
+	 * How to generate the style element. The default implementation is inline.
+	 */
 	public void setStyleElementHandler(ConversionHTMLStyleElementHandler styleElementHandler) {
 		settings.put(STYLE_ELEMENT_HANDLER, styleElementHandler);
 	}
@@ -89,6 +92,9 @@ public class HTMLSettings extends AbstractConversionSettings {
 		return (ConversionHTMLStyleElementHandler)settings.get(STYLE_ELEMENT_HANDLER);
 	}
 	
+	/**
+	 * How to generate the script element. The default implementation is inline.
+	 */
 	public void setScriptElementHandler(ConversionHTMLScriptElementHandler scriptElementHandler) {
 		settings.put(SCRIPT_ELEMENT_HANDLER, scriptElementHandler);
 	}

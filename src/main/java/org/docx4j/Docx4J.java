@@ -58,7 +58,7 @@ import org.w3c.dom.Document;
  * <li>Loading a document</li> 
  * <li>Saving a document</li> 
  * <li>Binding xml to content controls in a document</li> 
- * <li>Exporting the document</li> 
+ * <li>Exporting the document (to HTML, or PDF and other formats supported by the FO renderer) </li> 
  * </ul>
  * 
  */
