@@ -47,8 +47,9 @@ import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
  *       &lt;/choice>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="descrption" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="description" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="source" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -77,10 +78,12 @@ public class Condition implements Evaluable {
     protected String id;
     @XmlAttribute(name = "name")
     protected String name;
-    @XmlAttribute(name = "descrption")
-    protected String descrption;
+    @XmlAttribute(name = "description")
+    protected String description;
     @XmlAttribute(name = "comments")
     protected String comments;
+    @XmlAttribute(name = "source")
+    protected String source;
 
     /**
      * Gets the value of the particle property.
@@ -212,27 +215,27 @@ public class Condition implements Evaluable {
     }
 
     /**
-     * Gets the value of the descrption property.
+     * Gets the value of the description property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getDescrption() {
-        return descrption;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * Sets the value of the descrption property.
+     * Sets the value of the description property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setDescrption(String value) {
-        this.descrption = value;
+    public void setDescription(String value) {
+        this.description = value;
     }
 
     /**
@@ -259,4 +262,28 @@ public class Condition implements Evaluable {
         this.comments = value;
     }
 
+    /**
+     * Gets the value of the source property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSource() {
+        return source;
+    }
+
+    /**
+     * Sets the value of the source property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSource(String value) {
+        this.source = value;
+    }
+    
 }

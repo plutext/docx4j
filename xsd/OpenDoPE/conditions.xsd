@@ -65,8 +65,10 @@ JAXB INSTRUCTIONS
         </xs:choice>
       <xs:attribute name="id" type="xs:ID" use="required" />
       <xs:attribute name="name" type="xs:string" />
-      <xs:attribute name="descrption" type="xs:string" />
+      <xs:attribute name="description" type="xs:string" />
       <xs:attribute name="comments" type="xs:string" />
+      <xs:attribute name="source" type="xs:string" use="optional" />
+      <!-- if this question is in the library, the store item id of the original question part -->      
     </xs:complexType>
   </xs:element>
 
