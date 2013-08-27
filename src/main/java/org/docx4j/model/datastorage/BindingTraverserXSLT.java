@@ -101,8 +101,17 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
-			//part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
-			return XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
+			if (log.isDebugEnabled()) {
+				
+				org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
+				
+				log.debug(XmlUtils.w3CDomNodeToString(docResult));
+				
+				return XmlUtils.unmarshal(docResult);
+			} else {
+				//part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
+				return XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
+			}
 			
 		} catch (Exception e) {
 			throw new Docx4JException("Problems applying bindings", e);			
@@ -629,7 +638,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			String contentChild,
 			String cx, String cy) {
 
-		log.debug("sdt's parent: " + sdtParent);
+		log.debug("parent: " + sdtParent);
+		log.debug("child: " + contentChild);
 		
 		// TODO: remove any images in package which are no longer used.
 		// Needs to be done once after BindingHandler has been done
@@ -642,7 +652,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		}
 		try {
 			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
-			log.debug(xpath + " yielded result " + xpResult);
+			log.debug(xpath + " yielded result length" + xpResult.length());
 			
 			// Base64 decode it
 			byte[] bytes = Base64.decodeBase64( xpResult.getBytes("UTF8") );
@@ -690,14 +700,15 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				tc.getContent().add(p);
 			}
 			org.docx4j.wml.R  run = factory.createR();		
+			org.docx4j.wml.Drawing drawing = factory.createDrawing();		
+			run.getContent().add(drawing);		
+			drawing.getAnchorOrInline().add(inline);
+
 			if (sdtParent.equals("body")
 					|| sdtParent.equals("tr") 
 					|| sdtParent.equals("tc") ) {
 				p.getContent().add(run);
-			}
-			org.docx4j.wml.Drawing drawing = factory.createDrawing();		
-			run.getContent().add(drawing);		
-			drawing.getAnchorOrInline().add(inline);
+			} 
 			
 			
 			/* return following node
@@ -709,24 +720,28 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			              	etc
 				 */
 			
-			//System.out.println(XmlUtils.marshaltoString(run, false));
 			
 			Document document = null;
 			
 			if (sdtParent.equals("body")
 					|| sdtParent.equals("tc") ) {
 				document = XmlUtils.marshaltoW3CDomDocument(p);
+				log.debug(XmlUtils.marshaltoString(p, true, true));
 			} else if ( sdtParent.equals("tr") ) {
 				document = XmlUtils.marshaltoW3CDomDocument(tc);
+				log.debug(XmlUtils.marshaltoString(tc, true, true));
 			} else if ( sdtParent.equals("p") ) {
 				document = XmlUtils.marshaltoW3CDomDocument(run);
+				log.debug(XmlUtils.marshaltoString(run, true, true));
 			} else if ( sdtParent.equals("sdtContent") ) {					
 				log.info("contentChild: " + contentChild);
 				if (contentChild.equals("p")) {
 					p.getContent().add(run);
 					document = XmlUtils.marshaltoW3CDomDocument(p);						
+					log.debug(XmlUtils.marshaltoString(p, true, true));
 				} else if (contentChild.equals("r")) {
 					document = XmlUtils.marshaltoW3CDomDocument(run);						
+					log.debug(XmlUtils.marshaltoString(run, true, true));
 				} else {
 					log.error("how to inject image for unexpected sdt's content: " + contentChild);					
 				}

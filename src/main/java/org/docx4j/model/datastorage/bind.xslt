@@ -75,6 +75,10 @@
   <xsl:template match="w:sdt">  
   
   	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
+
+	<xsl:variable name="parent" select="local-name(ancestor::*[self::w:body or self::w:hdr or self::w:ftr or self::w:p or self::w:r or self::w:tbl or self::w:tr or self::w:tc][1])" />
+	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
+	<!--  TODO: use throughout -->
   	
   	<xsl:choose>
 
@@ -86,6 +90,7 @@
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
 		     	</xsl:if>
+
 			     
 			     <w:sdtContent>
 							<xsl:copy-of
@@ -96,8 +101,8 @@
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										string(w:sdtContent//wp:extent[1]/@cx), 
 										string(w:sdtContent//wp:extent[1]/@cy))" />
 			     </w:sdtContent>
@@ -122,8 +127,8 @@
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtPr/w:date)" />
 			     </w:sdtContent>
 			</xsl:copy>
@@ -169,8 +174,8 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtPr/w:rPr,
 										$tag )" />
 				  		</xsl:when>				  		
@@ -188,8 +193,8 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtPr/w:rPr,
 										$tag )" />
 				  		</xsl:when>				  		
@@ -206,8 +211,8 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtPr/w:rPr,
 										$tag )" />
 				  		</xsl:when>				  		
@@ -226,8 +231,8 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtPr/w:rPr,
 										$tag )" />
 				  		</xsl:when>
@@ -245,8 +250,8 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsPart,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										w:sdtContent/w:r/w:rPr,
 										$tag )" />
 				  		</xsl:otherwise>  		
@@ -353,8 +358,8 @@
 														$customXmlDataStorageParts,
 														$xPathsPart,
 														w:sdtPr,
-														local-name(..),
-														local-name(w:sdtContent/*[1]),
+														$parent,
+														$child,
 														$multiLine)" />
 										</w:p>
 									</w:tc>
@@ -376,8 +381,8 @@
 													$customXmlDataStorageParts,
 													$xPathsPart,
 													w:sdtPr,
-													local-name(..),
-													local-name(w:sdtContent/*[1]),
+													$parent,
+													$child,
 													$multiLine)" />
 									</w:p>
 								</w:tc>
@@ -399,8 +404,8 @@
 												$customXmlDataStorageParts,
 												$xPathsPart,
 												w:sdtPr,
-												local-name(..),
-												local-name(w:sdtContent/*[1]),
+												$parent,
+												$child,
 												$multiLine)" />
 								</w:p>
 							</w:tc>
@@ -418,8 +423,8 @@
 											$customXmlDataStorageParts,
 											$xPathsPart,
 											w:sdtPr,
-											local-name(..),
-											local-name(w:sdtContent/*[1]),
+											$parent,
+											$child,
 											$multiLine)" />
 							</w:p>
 				  		</xsl:when>
@@ -432,8 +437,8 @@
 										$customXmlDataStorageParts,
 										$xPathsPart,
 										w:sdtPr,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										$multiLine)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
@@ -484,8 +489,8 @@
 														string(w:sdtPr/w:dataBinding/@w:xpath),
 														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 														w:sdtPr,
-														local-name(..),
-														local-name(w:sdtContent/*[1]),
+														$parent,
+														$child,
 														$multiLine)" />
 										</w:p>
 									</w:tc>
@@ -509,8 +514,8 @@
 													string(w:sdtPr/w:dataBinding/@w:xpath),
 													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 													w:sdtPr,
-													local-name(..),
-													local-name(w:sdtContent/*[1]),
+													$parent,
+													$child,
 													$multiLine)" />
 									</w:p>
 								</w:tc>
@@ -534,8 +539,8 @@
 												string(w:sdtPr/w:dataBinding/@w:xpath),
 												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 												w:sdtPr,
-												local-name(..),
-												local-name(w:sdtContent/*[1]),
+												$parent,
+												$child,
 												$multiLine)" />
 								</w:p>
 							</w:tc>
@@ -555,8 +560,8 @@
 											string(w:sdtPr/w:dataBinding/@w:xpath),
 											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 											w:sdtPr,
-											local-name(..),
-											local-name(w:sdtContent/*[1]),
+											$parent,
+											$child,
 											$multiLine)" />
 							</w:p>
 				  		</xsl:when>
@@ -571,8 +576,8 @@
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 										w:sdtPr,
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+										$parent,
+										$child,
 										$multiLine)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
