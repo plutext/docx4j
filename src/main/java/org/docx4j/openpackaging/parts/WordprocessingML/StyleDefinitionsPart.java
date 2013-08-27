@@ -177,6 +177,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		return knownStyles;
 	}
     
+	private Style styleDocDefaults;
+	
 	/**
 	 * Manufacture a paragraph style from the following, so it can be used as the 
 	 * root of our paragraph style tree.
@@ -210,16 +212,18 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	 */
     public void createVirtualStylesForDocDefaults() throws Docx4JException {
     	
-    	Style pDefault = Context.getWmlObjectFactory().createStyle();
+    	if (styleDocDefaults!=null) return; // been done already
+    	
+    	styleDocDefaults = Context.getWmlObjectFactory().createStyle();
     	
     	String ROOT_NAME = "DocDefaults";
     	
-    	pDefault.setStyleId(ROOT_NAME);
-    	pDefault.setType("paragraph");
+    	styleDocDefaults.setStyleId(ROOT_NAME);
+    	styleDocDefaults.setType("paragraph");
     	
 		org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
     	n.setVal(ROOT_NAME);
-    	pDefault.setName(n);
+    	styleDocDefaults.setName(n);
     			
 		// Initialise docDefaults		
 		DocDefaults docDefaults = this.getJaxbElement().getDocDefaults(); 		
@@ -288,8 +292,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			}
 		}
     	
-		pDefault.setPPr(documentDefaultPPr);
-		pDefault.setRPr(documentDefaultRPr);
+		styleDocDefaults.setPPr(documentDefaultPPr);
+		styleDocDefaults.setRPr(documentDefaultRPr);
 		
 		// Now point Normal at this
 		Style normal = getDefaultParagraphStyle();
@@ -310,10 +314,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		normal.setBasedOn(based);
 		
 		// Finally, add it to styles
-		this.getJaxbElement().getStyle().add(pDefault);
-		log.warn("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
+		this.getJaxbElement().getStyle().add(styleDocDefaults);
+		log.warn("Added virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
 		
-		log.warn(XmlUtils.marshaltoString(pDefault, true, true));
+		log.warn(XmlUtils.marshaltoString(styleDocDefaults, true, true));
 		
 		
     	

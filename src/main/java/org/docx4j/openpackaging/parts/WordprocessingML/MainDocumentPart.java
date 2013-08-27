@@ -198,6 +198,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      */
     public Set<String> fontsInUse() {
     	
+    	log.info("fontsInUse..");
+    	
+    	getPropertyResolver();  // this inits our virtual DocDefaults style
+    	
     // Setup 
     	
     	Set<String> fontsDiscovered = new java.util.HashSet<String>();

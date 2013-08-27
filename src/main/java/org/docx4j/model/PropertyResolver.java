@@ -177,17 +177,11 @@ public class PropertyResolver {
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-		// Initialise docDefaults - not required, since we have virtual styles for these		
-//		docDefaults = styles.getDocDefaults();
-//		if (docDefaults !=null
-//				&& docDefaults.getPPrDefault()!=null) {
-//			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
-//		}
-//		if (docDefaults !=null
-//				&& docDefaults.getRPrDefault()!=null) {
-//			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
-//		}
-		addNormalToResolvedStylePPrComponent();
+		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+		documentDefaultPPr = docDefaults.getPPr();
+		documentDefaultRPr = docDefaults.getRPr();
+
+			addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
 
@@ -1375,6 +1369,7 @@ public class PropertyResolver {
 		Map stylesDefined = new java.util.HashMap();
 	     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
 	            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
+	            log.debug("adding " + s.getStyleId());
 	            stylesDefined.put(s.getStyleId(), s);
 	     }
 	     
