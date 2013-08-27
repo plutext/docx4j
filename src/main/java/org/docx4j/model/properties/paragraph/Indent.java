@@ -97,25 +97,47 @@ public class Indent extends AbstractParagraphProperty {
 		Ind ind = Context.getWmlObjectFactory().createPPrBaseInd();
 		
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;	
+		
+		int twip = getTwip(cssPrimitiveValue);
+		ind.setLeft(BigInteger.valueOf(twip) );		
+		this.setObject(ind);
+	}
+	
+	public static int getTwip(CSSPrimitiveValue cssPrimitiveValue) {
+
 		short ignored = 1;
 		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
+		log.debug("margin-left: " + fVal);
 		if (fVal==0f) {
-			ind.setLeft(BigInteger.ZERO );		
-			this.setObject(ind);
-			return;
+			return 0;
 		}
 		
 		int twip;
 		
 		short type = cssPrimitiveValue.getPrimitiveType();		
-		if (CSSPrimitiveValue.CSS_IN == type) {
-			twip = UnitsOfMeasurement.inchToTwip(fVal);
-		} else if (CSSPrimitiveValue.CSS_MM == type) {
-			twip = UnitsOfMeasurement.mmToTwip(fVal);		
-		} else if (CSSPrimitiveValue.CSS_PT == type) {
-			twip = UnitsOfMeasurement.pointToTwip(fVal);	
-		} else if (CSSPrimitiveValue.CSS_PX == type) {
+		
+		// TODO
+//		CSSPrimitiveValue.CSS_EMS (Unit 3)
+//		(the 'font-size' of the relevant font)
+//		
+//		CSSPrimitiveValue.CSS_EMX (Unit 4)
+//		(the 'x-height' of the relevant font)		
+		
+		if (CSSPrimitiveValue.CSS_PX == type) {
+			// Unit 5
 			twip = UnitsOfMeasurement.pxToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_CM == type) { 
+			// Unit 6
+			twip = UnitsOfMeasurement.mmToTwip(fVal*10);		
+		} else if (CSSPrimitiveValue.CSS_MM == type) {
+			// Unit 7
+			twip = UnitsOfMeasurement.mmToTwip(fVal);		
+		} else if (CSSPrimitiveValue.CSS_IN == type) {
+			// Unit 8
+			twip = UnitsOfMeasurement.inchToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_PT == type) {
+			// Unit 9
+			twip = UnitsOfMeasurement.pointToTwip(fVal);	
 		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
 			log.error("Indent: No support for unspecified unit: CSS_NUMBER "); 
 			// http://stackoverflow.com/questions/11479985/what-is-the-default-unit-for-margin-left
@@ -129,9 +151,8 @@ public class Indent extends AbstractParagraphProperty {
 			log.error("Indent: No support for unit " + type);
 			twip = 0;
 		}
-		ind.setLeft(BigInteger.valueOf(twip) );		
-		this.setObject(ind);
 		
+		return twip;
 	}
 
 	@Override
