@@ -96,7 +96,7 @@ public class PropertyResolver {
 	
 	private static Logger log = LoggerFactory.getLogger(PropertyResolver.class);
 	
-	private DocDefaults docDefaults;	
+//	private DocDefaults docDefaults;	
 	private PPr documentDefaultPPr;
 	private RPr documentDefaultRPr;
 	
@@ -177,11 +177,16 @@ public class PropertyResolver {
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-		// Initialise docDefaults		
-		docDefaults = styles.getDocDefaults();
-		documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
-		documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
-
+		// Initialise docDefaults - not required, since we have virtual styles for these		
+//		docDefaults = styles.getDocDefaults();
+//		if (docDefaults !=null
+//				&& docDefaults.getPPrDefault()!=null) {
+//			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+//		}
+//		if (docDefaults !=null
+//				&& docDefaults.getRPrDefault()!=null) {
+//			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+//		}
 		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
