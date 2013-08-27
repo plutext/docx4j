@@ -35,7 +35,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-//In HTML there is only one page - therefore the result is allways a (more or less formatted) "1"
+//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.FldSimpleNodeWriterHandler {
 	protected int outputType = -1;
 	
@@ -130,7 +130,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 		if (textNode != null) {
 			//Apache FOP may remove any leading/trailing spaces if 
 			//a page-number-citation is at the end of a paragraph
-			//for this reson change the first/last one to a non breaking space.
+			//for this reason change the first/last one to a non breaking space.
 			if (text.charAt(text.length() - 1) == ' ') {
 				text = text.substring(0, text.length() - 1) + (char)160;
 			}

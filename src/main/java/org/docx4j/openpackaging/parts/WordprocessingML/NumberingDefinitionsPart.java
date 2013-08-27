@@ -339,7 +339,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	 * Add the specified definition, allocating it a new w:abstractNumId.
 	 * 
 	 * Also create and add an associated ListNumberingDefinition, and return
-	 * the w:numId of this associated ListNumberingDefinition (since that is
+	 * this associated ListNumberingDefinition (since that is
 	 * what you are likely to use in the document). 
 	 * 
 	 * @param abstractNum

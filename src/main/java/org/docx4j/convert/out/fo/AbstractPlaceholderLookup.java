@@ -27,6 +27,7 @@ import org.docx4j.convert.out.FORenderer;
 import org.docx4j.utils.FoNumberFormatUtil;
 
 public class AbstractPlaceholderLookup implements PlaceholderReplacementHandler.PlaceholderLookup {
+	
 	protected static final String PLACEHOLDER_PREFIX = FORenderer.PLACEHOLDER_PREFIX;
 	protected static final String PLACEHOLDER_SUFFIX = FORenderer.PLACEHOLDER_SUFFIX;
 	protected static final int PLACEHOLDER_PREFIX_LENGTH = PLACEHOLDER_PREFIX.length();

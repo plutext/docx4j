@@ -56,7 +56,6 @@ import org.slf4j.LoggerFactory;
 
 /** The Apache FO Renderer uses Apache FOP to render the fo document
  *  and is the default FO Renderer
- * 
  */
 public class ApacheFORenderer implements FORenderer {
 	
@@ -64,13 +63,16 @@ public class ApacheFORenderer implements FORenderer {
 	protected static ApacheFORenderer instance = null;
 	
 	protected static class FopPlaceholderLookup extends AbstractPlaceholderLookup {
+		
 		public FopPlaceholderLookup(List<SectionPageInformation> pageNumberInformation) {
 			super(pageNumberInformation);
 		}
 		
 		public void setResults(FormattingResults formattingResults) throws Docx4JException {
-		List<PageSequenceResults> resultList = null;
-		PageSequenceResults pageSequenceResults = null;
+			
+			List<PageSequenceResults> resultList = null;
+			PageSequenceResults pageSequenceResults = null;
+			
 			if (formattingResults == null) {
 				throw new Docx4JException("Apache fop returned no FormattingResults (null)");
 			}
@@ -97,12 +99,13 @@ public class ApacheFORenderer implements FORenderer {
 			boolean twoPass,
 			List<SectionPageInformation> pageNumberInformation,
 			OutputStream outputStream) throws Docx4JException {
-	String apacheFopConfiguration = setupApacheFopConfiguration(settings);
-	String apacheFopMime = setupApacheFopMime(settings);
-	StreamSource foDocumentSrc = new StreamSource(new StringReader(foDocument));
-	FopPlaceholderLookup placeholderLookup = null;
-	FormattingResults formattingResults = null;
-	FopFactory fopFactory = null;
+		
+		String apacheFopConfiguration = setupApacheFopConfiguration(settings);
+		String apacheFopMime = setupApacheFopMime(settings);
+		StreamSource foDocumentSrc = new StreamSource(new StringReader(foDocument));
+		FopPlaceholderLookup placeholderLookup = null;
+		FormattingResults formattingResults = null;
+		FopFactory fopFactory = null;
 		try {
 			fopFactory = getFopFactory(apacheFopConfiguration);
 		} catch (FOPException e) {
@@ -110,6 +113,7 @@ public class ApacheFORenderer implements FORenderer {
 		}
 		if (twoPass) {
 			//1st pass in 2 pass
+			log.debug("1st pass in 2 pass");
 			placeholderLookup = new FopPlaceholderLookup(pageNumberInformation);
 			formattingResults = calcResults(fopFactory, apacheFopMime, foDocumentSrc, placeholderLookup);
 			placeholderLookup.setResults(formattingResults);
@@ -175,6 +179,17 @@ public class ApacheFORenderer implements FORenderer {
 	}
 	
 	
+	/**
+	 * For first pass of two pass process, invoke org.apache.fop.apps.FormattingResults which can tell us the number of pages 
+	 * in each page sequence, and in the document as a whole.
+	 * 
+	 * @param fopFactory
+	 * @param outputFormat
+	 * @param foDocumentSrc
+	 * @param placeholderLookup
+	 * @return
+	 * @throws Docx4JException
+	 */
 	protected FormattingResults calcResults(FopFactory fopFactory, String outputFormat, Source foDocumentSrc, PlaceholderReplacementHandler.PlaceholderLookup placeholderLookup) throws Docx4JException {
 		Fop fop = null;
 		Result result = null;

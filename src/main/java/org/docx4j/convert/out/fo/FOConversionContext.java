@@ -143,10 +143,12 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * @return
 	 */
 	protected boolean checkRequires2Pass() {
-	boolean ret = false;
-	boolean sectionPagesUsed = false;
-	ConversionSectionWrapper wrapper = null;
-	List<ConversionSectionWrapper> wrapperList = getSections().getList();
+		
+		boolean ret = false;
+		boolean sectionPagesUsed = false;
+		ConversionSectionWrapper wrapper = null;
+		List<ConversionSectionWrapper> wrapperList = getSections().getList();
+		
 		for (int i=0; (!ret) && (i < wrapperList.size()); i++) {
 			wrapper = wrapperList.get(i);
 			if (wrapper.getPageNumberInformation().getPageStart() > -1) {

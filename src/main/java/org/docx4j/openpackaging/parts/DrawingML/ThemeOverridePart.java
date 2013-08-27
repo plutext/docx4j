@@ -35,6 +35,12 @@ import org.slf4j.LoggerFactory;
 /**
  * You get one of these if you paste a chart from Excel 2010 into a Powerpoint 2010
  * slide, choosing to "keep source formatting".
+ * 
+ * To create JAXBElement<CTBaseStylesOverride>:
+ * 
+ *    org.docx4j.dml.ObjectFactory of = new org.docx4j.dml.ObjectFactory();
+ *    org.docx4j.dml.CTBaseStylesOverride bso = of.createCTBaseStylesOverride();
+ *    JAXBElement<CTBaseStylesOverride> themeOverride = of.createThemeOverride(bso);
  */
 public final class ThemeOverridePart extends JaxbXmlPartXPathAware<JAXBElement<CTBaseStylesOverride>> {
 	
