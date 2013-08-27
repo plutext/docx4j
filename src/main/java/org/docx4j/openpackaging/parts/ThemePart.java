@@ -20,15 +20,12 @@
 
 package org.docx4j.openpackaging.parts;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.dml.Theme;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -56,7 +53,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.THEME);
 		
-		setJAXBContext(Context.jcThemePart);						
+//		setJAXBContext(Context.jc);						
 		
 		
 	}
@@ -74,42 +71,5 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		}
     	return fontScheme;
 	}
-
-	/**
-     * Unmarshal XML data from the specified InputStream and return the 
-     * resulting content tree.  Validation event location information may
-     * be incomplete when using this form of the unmarshal API.
-     *
-     * <p>
-     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
-     * 
-     * @param is the InputStream to unmarshal XML data from
-     * @return the newly created root object of the java content tree 
-     *
-     * @throws JAXBException 
-     *     If any unexpected errors occur while unmarshalling
-     */
-    @Override
-    public Theme unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		try {
-			
-			setJAXBContext(org.docx4j.jaxb.Context.jcThemePart);				
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			log.info("unmarshalling " + this.getClass().getName() );									
-			jaxbElement = (Theme) u.unmarshal( is );
-
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}
-    	
-		return jaxbElement;
-    	
-    }
 	
 }

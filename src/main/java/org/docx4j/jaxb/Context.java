@@ -39,7 +39,10 @@ import org.docx4j.utils.ResourceUtils;
 public class Context {
 	
 	public static JAXBContext jc;
+	
+	@Deprecated
 	public static JAXBContext jcThemePart;
+	
 	public static JAXBContext jcDocPropsCore;
 	public static JAXBContext jcDocPropsCustom;
 	public static JAXBContext jcDocPropsExtended;
