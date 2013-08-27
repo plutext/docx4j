@@ -231,6 +231,16 @@ public class Docx4jDriver {
 					Element e = (Element)xml1.getChildNodes().item(i);
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w",
 							"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp",
+							"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a",
+							"http://schemas.openxmlformats.org/drawingml/2006/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:pic",
+							"http://schemas.openxmlformats.org/drawingml/2006/picture");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:r",
+							"http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+					
+					
 					leftES.add(loader.process( e ));
 					//log("" + leftES.get( leftES.size()-1 ).hashCode() );
 				}
