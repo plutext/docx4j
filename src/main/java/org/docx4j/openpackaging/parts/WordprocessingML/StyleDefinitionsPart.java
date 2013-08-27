@@ -216,6 +216,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	
     	pDefault.setStyleId(ROOT_NAME);
     	pDefault.setType("paragraph");
+    	
+		org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
+    	n.setVal(ROOT_NAME);
+    	pDefault.setName(n);
     			
 		// Initialise docDefaults		
 		DocDefaults docDefaults = this.getJaxbElement().getDocDefaults(); 		
@@ -295,7 +299,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			normal.setType("paragraph");
 			normal.setStyleId("Normal");
 			
-			org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
+			n = Context.getWmlObjectFactory().createStyleName();
 			n.setVal("Normal");
 			normal.setName(n);
 			this.getJaxbElement().getStyle().add(normal);			
@@ -307,9 +311,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		
 		// Finally, add it to styles
 		this.getJaxbElement().getStyle().add(pDefault);
-		log.debug("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
+		log.warn("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
 		
-		System.out.println(XmlUtils.marshaltoString(pDefault, true, true));
+		log.warn(XmlUtils.marshaltoString(pDefault, true, true));
 		
 		
     	
@@ -365,6 +369,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	if (defaultParagraphStyle==null) {
     		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
     			if( s.getType().equals("paragraph")
+    					&& s.getName()!=null
     					&& s.getName().getVal().equals("Default") ) {
     				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
     				defaultParagraphStyle=s;
