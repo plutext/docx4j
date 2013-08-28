@@ -90,6 +90,7 @@ public class FieldUpdater {
 		
 		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
 		List contentList = ((ContentAccessor)part).getContent();
+		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)part.getPackage();
 		
 		// find fields
 		SimpleFieldLocator fl = new SimpleFieldLocator();
@@ -131,7 +132,7 @@ public class FieldUpdater {
 				} else {
 							//docPropsCustomPart.getProperty(key);
 	//				System.out.println(val);
-					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					val = FormattingSwitchHelper.applyFormattingSwitch(wmlPackage, fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( simpleField.getInstr() + "\n");
 					report.append( "--> " + val + "\n");
@@ -177,6 +178,7 @@ public class FieldUpdater {
 		
 		FldSimpleModel fsm = new FldSimpleModel(); //gets reused
 		List contentList = ((ContentAccessor)part).getContent();
+		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)part.getPackage();
 		
 		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(contentList, fl);
@@ -237,7 +239,7 @@ public class FieldUpdater {
 				} else {
 				
 	//				System.out.println(val);
-					val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+					val = FormattingSwitchHelper.applyFormattingSwitch(wmlPackage, fsm, val);
 	//				System.out.println("--> " + val);
 					report.append( instr + "\n");
 					report.append( "--> " + val + "\n");

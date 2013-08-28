@@ -22,26 +22,25 @@ package org.docx4j.convert.out.fo;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
-import org.docx4j.model.BrModel;
-import org.docx4j.model.TransformState;
+import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.STBrType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class BrWriter extends AbstractSimpleModelWriter<Br> {
+public class BrWriter extends AbstractBrWriter {
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
 	public BrWriter() {
-		super(BrModel.MODEL_ID);
+		super();
 	}
 	
 	@Override
-	protected Node toNode(AbstractWmlConversionContext context, Br modelData,
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
+	Br modelData = (Br)unmarshalledNode;
 	Element ret = doc.createElementNS(XSL_FO, "block");
 		
 		if (modelData.getType()!=null 

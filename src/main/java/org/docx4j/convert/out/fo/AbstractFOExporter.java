@@ -117,15 +117,15 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 			//if UTF-8 is unsupported, then anything will do... (java without utf-8??)
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString();
 		}
-		if (log.isDebugEnabled()) {
-			log.debug(foDocument);
+		if (conversionContext.getLog().isDebugEnabled()) {
+			conversionContext.getLog().debug(foDocument);
 		}
 		if (dumpFoFile != null) {
 			try {
 				FileUtils.writeStringToFile(dumpFoFile, foDocument, "UTF-8");
-				log.info("Saved " + dumpFoFile.getPath());
+				conversionContext.getLog().info("Saved " + dumpFoFile.getPath());
 			} catch (IOException e) {
-				log.warn("fo file couldn't be dumped to " + dumpFoFile.getPath() + ": " + e, e);
+				conversionContext.getLog().warn("fo file couldn't be dumped to " + dumpFoFile.getPath() + ": " + e, e);
 			}
 		}
 

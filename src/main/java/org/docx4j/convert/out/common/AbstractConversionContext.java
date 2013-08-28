@@ -26,7 +26,6 @@ import org.docx4j.Docx4J;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
-import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -49,9 +48,9 @@ public abstract class AbstractConversionContext {
 	
 	protected static final AbstractMessageWriter DUMMY_WRITER = new AbstractMessageWriter() {
 		@Override
-		public DocumentFragment notImplemented(NodeIterator nodes, String message) {return null;}
+		public DocumentFragment notImplemented(AbstractConversionContext context, NodeIterator nodes, String message) {return null;}
 		@Override
-		public DocumentFragment message(String message) {return null;}
+		public DocumentFragment message(AbstractConversionContext context, String message) {return null;}
 		@Override
 		protected String getOutputSuffix() {return null;}
 		@Override
@@ -60,7 +59,7 @@ public abstract class AbstractConversionContext {
 	
 	protected static final ConversionHyperlinkHandler DUMMY_HYPERLINK_HANDLER = new ConversionHyperlinkHandler() {
 		@Override
-		public void handleHyperlink(HyperlinkModel hyperlinkModel, OpcPackage opcPackage, Part currentPart) throws Docx4JException {
+		public void handleHyperlink(ConversionHyperlinkHandler.Model hyperlinkModel, OpcPackage opcPackage, Part currentPart) throws Docx4JException {
 			//do nothing
 		}
 	};
@@ -135,7 +134,7 @@ public abstract class AbstractConversionContext {
 		return hyperlinkHandler;
 	}
 
-	public void handleHyperlink(HyperlinkModel model) throws Docx4JException {
+	public void handleHyperlink(ConversionHyperlinkHandler.Model model) throws Docx4JException {
 		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), null);
 	}
 

@@ -24,10 +24,8 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.model.SymbolModel;
-import org.docx4j.model.TransformState;
 import org.docx4j.wml.R;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -42,20 +40,21 @@ import org.w3c.dom.Text;
  *  @author Jason Harrop
  *  
 */
-public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
+public class SymbolWriter extends AbstractSymbolWriter {
 	
 	public SymbolWriter() {
-		super(SymbolModel.MODEL_ID);
+		super();
 	}
 
 	private final static Logger log = LoggerFactory.getLogger(BrWriter.class);
 
 
 	@Override
-	protected Node toNode(AbstractWmlConversionContext context, R.Sym modelData, 
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
-    String value =  modelData.getChar(); 
+	R.Sym modelData = (R.Sym)unmarshalledNode;
+	String value =  modelData.getChar(); 
 
 	// Pre-process according to ECMA-376 2.3.3.29
 	if (value.startsWith("F0")

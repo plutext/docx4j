@@ -1,29 +1,26 @@
-package org.docx4j.model.fields;
+package org.docx4j.convert.out.common.writer;
 
 import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
-import org.docx4j.model.Model;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.convert.out.ConversionHyperlinkHandler;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.model.fields.FldSimpleModel;
+import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.P;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 /** Model for the hyperlink tag.<br>
- *  
- * 
  */
-public class HyperlinkModel extends Model {
+public class AbstractHyperlinkWriterModel implements ConversionHyperlinkHandler.Model {
 	
-	private static Logger log = LoggerFactory.getLogger(HyperlinkModel.class);
-	
-	public static final String MODEL_ID = "w:hyperlink";
+	private static Logger log = LoggerFactory.getLogger(AbstractHyperlinkWriterModel.class);
 	
 	protected Node content = null;
 
@@ -88,10 +85,9 @@ public class HyperlinkModel extends Model {
 //		return pHyperlink;
 //	}
 	
-	@Override
 	/** Default build method, get's called with a P.Hyperlink. 
 	 */
-	public void build(Object node, Node content) throws TransformerException {
+	public void build(AbstractWmlConversionContext conversionContext, Object node, Node content) throws TransformerException {
 		
 		Relationship relationship = null;
 		RelationshipsPart rPart = null;
@@ -105,11 +101,11 @@ public class HyperlinkModel extends Model {
 		setRId(pHyperlink.getId());
 		setTgtFrame(pHyperlink.getTgtFrame());
 		setTooltip(pHyperlink.getTooltip());
-		if (getCurrentPart() == null) {
+		if (conversionContext.getCurrentPart() == null) {
 			log.warn("set currentPart (via conversionContext)");
 		} else if ((getRId() != null) && 
 			(getRId().length() > 0) ) {
-			rPart = getCurrentPart().getRelationshipsPart();
+			rPart = conversionContext.getCurrentPart().getRelationshipsPart();
 			if (rPart == null) {
 				log.error("RelationshipsPart is missing!");				
 			} else {
@@ -124,31 +120,10 @@ public class HyperlinkModel extends Model {
 		}
 	}
 	
-	/** Read the relationship information from the relationships of
-	 *  the parent part. 
-	 * 
-	 * @param parentPart
-	 */
-	protected void updateRelationshipData(Part parentPart) {
-	RelationshipsPart rPart = (parentPart != null ?
-							   parentPart.getRelationshipsPart() : null);
-	Relationship relationship = null;
-		if ((getRId() != null) && 
-			(getRId().length() > 0) &&
-			(rPart != null)) {
-			relationship = rPart.getRelationshipByID(getRId());
-			if ((relationship != null) &&
-				(Namespaces.HYPERLINK.equals(relationship.getType()))) {
-				setTarget(relationship.getTarget());
-				setExternal("External".equals(relationship.getTargetMode()));
-			}
-		}
-	}
-	
 	/** Custom build method, get's used with a FldSimpleModel in those cases
 	 *  where the hyperlink is defined within a Field
 	 */
-	public void build(FldSimpleModel fldSimpleModel, Node content) throws TransformerException {
+	public void build(AbstractWmlConversionContext conversionContext, FldSimpleModel fldSimpleModel, Node content) throws TransformerException {
 		
 		int idx = 0;
 		List<String> parameters = fldSimpleModel.getFldParameters();
@@ -214,11 +189,6 @@ public class HyperlinkModel extends Model {
 			setExternal(true);
 		}
 	}
-
-	@Override
-	public Object toJAXB() {
-		return null;
-	}
 	
 	public String getExternalTarget() {
 		return (isExternal() ? getTarget() : null);
@@ -236,62 +206,77 @@ public class HyperlinkModel extends Model {
 		return ret;
 	}
 	
+	@Override
 	public String getTarget() {
 		return target;
 	}
 
+	@Override
 	public void setTarget(String target) {
 		this.target = target;
 	}
 
+	@Override
 	public boolean isExternal() {
 		return external;
 	}
 
+	@Override
 	public void setExternal(boolean external) {
 		this.external = external;
 	}
 
+	@Override
 	public String getAnchor() {
 		return anchor;
 	}
 
+	@Override
 	public void setAnchor(String anchor) {
 		this.anchor = anchor;
 	}
 
+	@Override
 	public String getDocLocation() {
 		return docLocation;
 	}
 
+	@Override
 	public void setDocLocation(String docLocation) {
 		this.docLocation = docLocation;
 	}
 
+	@Override
 	public String getRId() {
 		return rId;
 	}
 
+	@Override
 	public void setRId(String rId) {
 		this.rId = rId;
 	}
 
+	@Override
 	public String getTgtFrame() {
 		return tgtFrame;
 	}
 
+	@Override
 	public void setTgtFrame(String tgtFrame) {
 		this.tgtFrame = tgtFrame;
 	}
 
+	@Override
 	public String getTooltip() {
 		return tooltip;
 	}
 
+	@Override
 	public void setTooltip(String tooltip) {
 		this.tooltip = tooltip;
 	}
 	
+	@Override
 	public Node getContent() {
 		return content;
 	}

@@ -109,31 +109,6 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 	}
 	
 	protected static class SectionpagesHandler extends AbstractPagesHandler {
-		
-		/*
-			ECMA 376 says SECTIONPAGES .. Retrieves the number of the current page
-			within the current section.  See http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/SECTIONPAGES.html
-	
-			But Word's implementation is very different!
-	
-			[MS-OE376] says:
-	
-				2.1.526 Part 4 Section 2.16.5.62, SECTIONPAGES
-				
-				a. The standard says the SECTIONPAGES field value is the number of the
-				current page within the current section.
-				
-				In Word, the SECTIONPAGES field value is the number of pages in the
-				current section.
-				
-				b. The standard says that the only switches the SECTIONPAGES field can
-				take are general-formatting-switches.
-				
-				In Word, the SECTIONPAGES field can also take a numeric-formatting-switch.
-				
-			docx4j here mimics Word's behaviour, not ECMA 376.
-		*/		
-		
 		protected SectionpagesHandler() {
 			super("SECTIONPAGES");
 		}

@@ -9,7 +9,6 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.model.Model;
 import org.docx4j.wml.CTSimpleField;
 import org.w3c.dom.Node;
 
@@ -19,11 +18,9 @@ import org.w3c.dom.Node;
  *  @see <a href="http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/XML.html">the spec</a>
  * 
  */
-public class FldSimpleModel extends Model {
+public class FldSimpleModel {
 	
 	private static Logger log = LoggerFactory.getLogger(FldSimpleModel.class);		
-	
-	public static final String MODEL_ID = "w:fldSimple";
 	
 	protected CTSimpleField fldSimple = null;
 	protected Node content = null;
@@ -31,9 +28,8 @@ public class FldSimpleModel extends Model {
 	protected String fldParameterString = null;
 	protected List<String> fldParameters = null;
 	
-	@Override
-	public void build(Object node, Node content) throws TransformerException {
-		this.fldSimple = (CTSimpleField)node;
+	public void build(CTSimpleField fldSimple, Node content) throws TransformerException {
+		this.fldSimple = fldSimple;
 		log.debug("\n" + XmlUtils.marshaltoString(fldSimple, true, true));
 		this.content = content;
 		setupNameParameterString(fldSimple.getInstr());
@@ -161,11 +157,6 @@ public class FldSimpleModel extends Model {
 		fldName = null;
 		fldParameterString = null;
 		fldParameters = null;
-	}
-	
-	@Override
-	public Object toJAXB() {
-		return fldSimple;
 	}
 
 }

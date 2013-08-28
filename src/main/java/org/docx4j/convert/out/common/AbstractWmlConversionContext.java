@@ -22,10 +22,9 @@ package org.docx4j.convert.out.common;
 import java.util.Map;
 
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.TransformState;
-import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -42,8 +41,8 @@ import org.docx4j.wml.STFldCharType;
  */
 public abstract class AbstractWmlConversionContext extends AbstractConversionContext {
 	
-	private Map<String, TransformState> transformStates = null;
-	private AbstractModelRegistry modelRegistry = null;
+	private Map<String, Writer.TransformState> transformStates = null;
+	private AbstractWriterRegistry writerRegistry = null;
 	
 	//The part for the part tracker 
 	protected Part currentPart = null;
@@ -62,9 +61,9 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	protected StyleTree styleTree = null;
 	
 
-	protected AbstractWmlConversionContext(AbstractModelRegistry modelRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	protected AbstractWmlConversionContext(AbstractWriterRegistry modelRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
 		super(messageWriter, conversionSettings, wmlPackage);
-		this.modelRegistry = initializeModelRegistry(modelRegistry);
+		this.writerRegistry = initializeModelRegistry(modelRegistry);
 		this.transformStates = initializeTransformStates();
 		this.conversionSectionWrappers = conversionSectionWrappers;
 		this.styleTree = initializeStyleTree();
@@ -79,12 +78,12 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return ret;
 	}
 
-	protected AbstractModelRegistry initializeModelRegistry(AbstractModelRegistry registry) {
+	protected AbstractWriterRegistry initializeModelRegistry(AbstractWriterRegistry registry) {
 		return registry;
 	}
 	
-	protected Map<String, TransformState> initializeTransformStates() {
-		return getModelRegistry().createTransformStates();
+	protected Map<String, Writer.TransformState> initializeTransformStates() {
+		return getWriterRegistry().createTransformStates();
 	}
 
 	protected StyleTree initializeStyleTree() {
@@ -93,7 +92,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return getWmlPackage().getMainDocumentPart().getStyleTree();
 	}
 	
-	public TransformState getTransformState(String name) {
+	public Writer.TransformState getTransformState(String name) {
 		return (transformStates != null ? transformStates.get(name) : null);
 	}
 	
@@ -101,8 +100,8 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		return (WordprocessingMLPackage)getOpcPackage();
 	}
 	
-	public AbstractModelRegistry getModelRegistry() {
-		return modelRegistry;
+	public AbstractWriterRegistry getWriterRegistry() {
+		return writerRegistry;
 	}
 	
 	public PropertyResolver getPropertyResolver() {
@@ -138,7 +137,7 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	}
 	
 	@Override
-	public void handleHyperlink(HyperlinkModel model) throws Docx4JException {
+	public void handleHyperlink(ConversionHyperlinkHandler.Model model) throws Docx4JException {
 		getHyperlinkHandler().handleHyperlink(model, getOpcPackage(), getCurrentPart());
 	}
 	

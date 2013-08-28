@@ -23,8 +23,8 @@ import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHTMLScriptElementHandler;
 import org.docx4j.convert.out.ConversionHTMLStyleElementHandler;
 import org.docx4j.convert.out.HTMLSettings;
-import org.docx4j.convert.out.common.AbstractModelRegistry;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.fonts.Mapper;
@@ -77,16 +77,16 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	};
 	
 	//The model registry is per output type a singleton
-	protected static final AbstractModelRegistry HTML_MODEL_REGISTRY = 
-		new AbstractModelRegistry() {
+	protected static final AbstractWriterRegistry HTML_WRITER_REGISTRY = 
+		new AbstractWriterRegistry() {
 			@Override
-			protected void registerDefaultConverterInstances() {
-				registerConverter(new TableWriter());
-				registerConverter(new SymbolWriter());
-				registerConverter(new BrWriter());
-				registerConverter(new FldSimpleWriter());
-				registerConverter(new BookmarkStartWriter());
-				registerConverter(new HyperlinkWriter());
+			protected void registerDefaultWriterInstances() {
+				registerWriter(new TableWriter());
+				registerWriter(new SymbolWriter());
+				registerWriter(new BrWriter());
+				registerWriter(new FldSimpleWriter());
+				registerWriter(new BookmarkStartWriter());
+				registerWriter(new HyperlinkWriter());
 			}
 		};
 
@@ -105,7 +105,7 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 		};		
 	
 	public HTMLConversionContext(HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
-		super(HTML_MODEL_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
+		super(HTML_WRITER_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
 	}
 
 	@Override

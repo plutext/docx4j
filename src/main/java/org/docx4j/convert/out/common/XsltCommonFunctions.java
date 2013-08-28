@@ -22,8 +22,6 @@ package org.docx4j.convert.out.common;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -47,8 +45,6 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltCommonFunctions {
-	private final static Logger log = LoggerFactory.getLogger(XsltCommonFunctions.class);
-
 	private XsltCommonFunctions() {
 	}
 	
@@ -60,7 +56,7 @@ public class XsltCommonFunctions {
 	 * @return
 	 */
 	public static Node toNode(AbstractWmlConversionContext context, Node node, NodeList childResults) {
-		return context.getModelRegistry().toNode(context, node, childResults);
+		return context.getWriterRegistry().toNode(context, node, childResults);
 	}
 	
 	/** Next number of a footnote
@@ -81,7 +77,9 @@ public class XsltCommonFunctions {
 		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
 		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
 				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
-		log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		if (context.getLog().isDebugEnabled()) {
+			context.getLog().debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		}
 		return d;
 	}
 
@@ -274,8 +272,9 @@ public class XsltCommonFunctions {
 		STFldCharType fieldCharType = field.getFldCharType();
 		
 		if (fieldCharType==null) {
-			
-			log.debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
+			if (context.getLog().isDebugEnabled()) {
+				context.getLog().debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
+			}
 			
 		} else {
 			context.updateComplexFieldDefinition(fieldCharType);
@@ -291,11 +290,11 @@ public class XsltCommonFunctions {
 	// Output of (debug) messages into the generated document
 	//=======================================================
 	public static DocumentFragment notImplemented(AbstractConversionContext context, NodeIterator nodes, String message) {
-		return context.getMessageWriter().notImplemented(nodes, message);
+		return context.getMessageWriter().notImplemented(context, nodes, message);
 	}
 	
 	public static DocumentFragment message(AbstractConversionContext context, String message) {
-		return context.getMessageWriter().message(message);
+		return context.getMessageWriter().message(context, message);
 	}
     
 	//=======================================================

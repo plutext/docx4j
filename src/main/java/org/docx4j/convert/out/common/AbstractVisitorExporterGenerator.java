@@ -22,12 +22,12 @@ package org.docx4j.convert.out.common;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.model.BookmarkStartModel;
-import org.docx4j.model.BrModel;
-import org.docx4j.model.SymbolModel;
-import org.docx4j.model.fields.FldSimpleModel;
-import org.docx4j.model.fields.HyperlinkModel;
-import org.docx4j.model.table.TableModel;
+import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
+import org.docx4j.convert.out.common.writer.AbstractBrWriter;
+import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
+import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
+import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
+import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
@@ -119,7 +119,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		}
 		
 		Node resultNode = 
-			 conversionContext.getModelRegistry().toNode(
+			 conversionContext.getWriterRegistry().toNode(
 					 conversionContext, 
 					 unmarshalledNode, 
 					 modelId, 
@@ -183,26 +183,26 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
 			convertToNode(conversionContext, 
-						  o, FldSimpleModel.MODEL_ID,
+						  o, AbstractFldSimpleWriter.WRITER_ID,
 						  document, getCurrentParent());
 			
 		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
 			
 			convertToNode(conversionContext, 
-						  o, HyperlinkModel.MODEL_ID,
+						  o, AbstractHyperlinkWriter.WRITER_ID,
 						  document, getCurrentParent());
 			
 		} else if (o instanceof org.docx4j.wml.CTBookmark) {
 
 			convertToNode(conversionContext, 
-						  o, BookmarkStartModel.MODEL_ID,
+						  o, AbstractBookmarkStartWriter.WRITER_ID,
 						  document, getCurrentParent());
 			
 
 		} else if (o instanceof org.docx4j.wml.Tbl) {
 
 			convertToNode(conversionContext, 
-						  o, TableModel.MODEL_ID,
+						  o, AbstractTableWriter.WRITER_ID,
 						  document, (currentP != null ? currentP : parentNode));
 			
 			currentP=null;
@@ -254,7 +254,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		} else if (o instanceof org.docx4j.wml.Br) {
 
 			convertToNode(conversionContext, 
-						  o, BrModel.MODEL_ID,
+						  o, AbstractBrWriter.WRITER_ID,
 						  document, (currentP != null ? currentP : parentNode));
 			
 			currentSpan=null;
@@ -262,7 +262,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		} else if (o instanceof org.docx4j.wml.R.Sym) {
 
 			convertToNode(conversionContext, 
-						  o, SymbolModel.MODEL_ID,
+						  o, AbstractSymbolWriter.WRITER_ID,
 						  document, getCurrentParent());
 			
 		} else if ((o instanceof org.docx4j.wml.ProofErr) ||

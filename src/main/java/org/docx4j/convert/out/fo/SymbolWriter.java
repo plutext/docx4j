@@ -25,11 +25,9 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
+import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
-import org.docx4j.model.SymbolModel;
-import org.docx4j.model.TransformState;
 import org.docx4j.wml.R;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -44,11 +42,11 @@ import org.w3c.dom.Text;
  *  @author Jason Harrop, alberto
  *  
 */
-public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
+public class SymbolWriter extends AbstractSymbolWriter {
 	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
 	
 	public SymbolWriter() {
-		super(SymbolModel.MODEL_ID);
+		super();
 	}
 
 	/* 
@@ -88,9 +86,10 @@ public class SymbolWriter extends AbstractSimpleModelWriter<R.Sym> {
 	
 
 	@Override
-	protected Node toNode(AbstractWmlConversionContext context, R.Sym modelData, 
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
+		R.Sym modelData = (R.Sym)unmarshalledNode;
 		String fontName = modelData.getFont();
 		String textValue =  modelData.getChar();
 		PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);

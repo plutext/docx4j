@@ -24,9 +24,7 @@ import javax.xml.transform.TransformerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.convert.out.common.writer.AbstractSimpleModelWriter;
-import org.docx4j.model.BookmarkStartModel;
-import org.docx4j.model.TransformState;
+import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
 import org.docx4j.wml.CTBookmark;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,17 +34,18 @@ import org.w3c.dom.Node;
  *  The preprocessing step BookmarkMover should have moved any Bookmarks 
  *  to the beginning of a paragraph, therefore a inline should allways work.
  */
-public class BookmarkStartWriter extends AbstractSimpleModelWriter<CTBookmark> {
+public class BookmarkStartWriter extends AbstractBookmarkStartWriter {
 	private final static Logger log = LoggerFactory.getLogger(BookmarkStartWriter.class);
 	
 	public BookmarkStartWriter() {
-		super(BookmarkStartModel.MODEL_ID);
+		super();
 	}
 
 	@Override
-	protected Node toNode(AbstractWmlConversionContext context, CTBookmark modelData, 
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
+	CTBookmark modelData = (CTBookmark)unmarshalledNode;
 		Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
 		ret.setAttribute("id", modelData.getName());
 		return ret;

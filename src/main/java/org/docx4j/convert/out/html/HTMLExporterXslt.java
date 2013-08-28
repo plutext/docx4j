@@ -36,6 +36,8 @@ import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.WmlXsltExporterDelegate;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -47,6 +49,8 @@ import org.w3c.dom.Document;
  * @since 3.0
  */
 public class HTMLExporterXslt extends AbstractHTMLExporter3 {
+	private static final Logger log = LoggerFactory.getLogger(HTMLExporterXslt.class);
+	
 	protected static final String PROPERTY_HTML_OUTPUT_TYPE = 
 			"docx4j.Convert.Out.HTML.OutputMethodXML";
 	

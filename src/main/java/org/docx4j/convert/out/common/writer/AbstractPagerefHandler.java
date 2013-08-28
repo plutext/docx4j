@@ -29,13 +29,12 @@ import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
-import org.docx4j.model.fields.HyperlinkModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
+//In HTML there is only one page - therefore the result is allways a (more or less formatted) "1"
 public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.FldSimpleNodeWriterHandler {
 	protected int outputType = -1;
 	
@@ -56,7 +55,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	String bookmarkId = model.getFldParameters().get(0);
 	Node content = model.getContent();
 	Node literalNode = null;
-	HyperlinkModel hyperlinkModel = null;
+	AbstractHyperlinkWriterModel hyperlinkModel = null;
 	DocumentFragment docFrag = null;
 	String textcontent = null;
 	List<String> textcontentitems = null;
@@ -90,9 +89,8 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 			content.appendChild(createPageref(context, doc, bookmarkId));
 		}
 		if (FormattingSwitchHelper.hasSwitch("\\h", model.getFldParameters())) {
-			hyperlinkModel = new HyperlinkModel();
-			hyperlinkModel.setup(context.getWmlPackage(), context.getCurrentPart());
-			hyperlinkModel.build(model, content); //the bookmark is the target, \h gets ignored
+			hyperlinkModel = new AbstractHyperlinkWriterModel();
+			hyperlinkModel.build(context, model, content); //the bookmark is the target, \h gets ignored
 			content = HyperlinkUtil.toNode(outputType, context, hyperlinkModel, content, doc);
 		}
 		return content;
@@ -130,7 +128,7 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 		if (textNode != null) {
 			//Apache FOP may remove any leading/trailing spaces if 
 			//a page-number-citation is at the end of a paragraph
-			//for this reason change the first/last one to a non breaking space.
+			//for this reson change the first/last one to a non breaking space.
 			if (text.charAt(text.length() - 1) == ' ') {
 				text = text.substring(0, text.length() - 1) + (char)160;
 			}

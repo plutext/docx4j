@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.model.table;
+package org.docx4j.convert.out.common.writer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +56,11 @@ import org.w3c.dom.Node;
 	/**
  * A cell in the table holding its own content, too
  */
-public class Cell {
+public class AbstractTableWriterModelCell {
 	
-	private final static Logger logger = LoggerFactory.getLogger(Cell.class);
+	private final static Logger logger = LoggerFactory.getLogger(AbstractTableWriterModelCell.class);
 	
-	private TableModel table;
+	private AbstractTableWriterModel table;
 	private int row;
 	private int col;
 	protected int rowspan = 0;
@@ -79,14 +79,14 @@ public class Cell {
 	/**
 	 * Create a dummy cell without content
 	 */
-	public Cell(TableModel table, int row, int col) {
+	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col) {
 		this.table = table;
 		this.row = row;
 		this.col = col;
 		this.dummy = true;
 	}
 
-	public Cell(TableModel table, int row, int col, Tc tc, Node content) {
+	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col, Tc tc, Node content) {
 		this(table, row, col);
 		dummy = false;
 		this.content = content;

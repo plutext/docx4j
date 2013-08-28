@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @since 3.0
  */
 public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC extends AbstractConversionContext, PK extends OpcPackage> implements Exporter<CS> {
-	protected static Logger log = LoggerFactory.getLogger(AbstractExporter.class);
+	protected static Logger LocalLog = LoggerFactory.getLogger(AbstractExporter.class);
 	
 	protected AbstractExporter() {
 	}
@@ -49,21 +49,26 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	OutputStream intermediateOutputStream = null;
 	long startTime = System.currentTimeMillis();
 	long currentTime = startTime;
+	//TODO: The log of the conversionContext isn't avaiable until the
+	//context has been created. When the log gets passed via the setting
+	//use that one instead.
+	Logger log = LocalLog;
 	
 		try {
 			log.debug("Start conversion");
 			preprocessedPackage = preprocess(conversionSettings);
-			currentTime = logDebugStep("Preprocessing", currentTime);
+			currentTime = logDebugStep(log, "Preprocessing", currentTime);
 			sectionWrappers = createWrappers(conversionSettings, preprocessedPackage);
-			currentTime = logDebugStep("Create section wrappers", currentTime);
+			currentTime = logDebugStep(log, "Create section wrappers", currentTime);
 			conversionContext = createContext(conversionSettings, preprocessedPackage, sectionWrappers);
-			currentTime = logDebugStep("Create conversion context", currentTime);
+			log = conversionContext.getLog();
+			currentTime = logDebugStep(log, "Create conversion context", currentTime);
 			intermediateOutputStream = createIntermediateOutputStream(outputStream);
 			process(conversionSettings, conversionContext, intermediateOutputStream);
-			currentTime = logDebugStep("Processing", currentTime);
+			currentTime = logDebugStep(log, "Processing", currentTime);
 			postprocess(conversionSettings, conversionContext, intermediateOutputStream, outputStream);
-			currentTime = logDebugStep("Postprocessing", currentTime);
-			logDebugStep("Conversion done", startTime);
+			currentTime = logDebugStep(log, "Postprocessing", currentTime);
+			logDebugStep(log, "Conversion done", startTime);
 			
 		} catch (Exception e) {
 			log.error("Exception exporting package", e);
@@ -78,7 +83,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		}
 	}
 
-	protected long logDebugStep(String stepLabel, long startTime) {
+	protected long logDebugStep(Logger log, String stepLabel, long startTime) {
 	long currentTime = 0;
 		if (log.isDebugEnabled()) {
 			currentTime = System.currentTimeMillis();

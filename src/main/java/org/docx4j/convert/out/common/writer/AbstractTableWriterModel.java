@@ -18,42 +18,35 @@
 
  */
 
-package org.docx4j.model.table;
+package org.docx4j.convert.out.common.writer;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTrPrBase;
-import org.docx4j.wml.ObjectFactory;
-import org.docx4j.wml.P;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblGrid;
 import org.docx4j.wml.TblGridCol;
 import org.docx4j.wml.TblPr;
-import org.docx4j.wml.TblWidth;
 import org.docx4j.wml.Tc;
-import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TcPrInner.GridSpan;
-import org.docx4j.wml.TcPrInner.VMerge;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -90,14 +83,12 @@ import org.w3c.dom.NodeList;
  *  @author Jason Harrop
  * 
  */
-public class TableModel extends Model {
-	public static final String MODEL_ID = "w:tbl";
-	
-	private final static Logger log = LoggerFactory.getLogger(TableModel.class);
+public class AbstractTableWriterModel {
+	private final static Logger log = LoggerFactory.getLogger(AbstractTableWriterModel.class);
 
-	public TableModel() {
+	public AbstractTableWriterModel() {
 		resetIndexes();
-		cells = new ArrayList<TableModelRow>();
+		cells = new ArrayList<AbstractTableWriterModelRow>();
 		headerMaxRow = -1;
 	}
 
@@ -107,7 +98,7 @@ public class TableModel extends Model {
 	/**
 	 * A list of rows
 	 */
-	protected List<TableModelRow> cells;
+	protected List<AbstractTableWriterModelRow> cells;
 	
 	private int headerMaxRow;
 	
@@ -203,7 +194,7 @@ public class TableModel extends Model {
 	}
 
 	public void startRow(Tr tr) {
-		cells.add(new TableModelRow(tr));
+		cells.add(new AbstractTableWriterModelRow(tr));
 		row++;
 		col = -1;
 	}
@@ -213,7 +204,7 @@ public class TableModel extends Model {
 	 * <var>tc</var> to it.
 	 */
 	public void addCell(Tc tc, Node content) {
-		addCell(new Cell(this, row, ++col, tc, content));
+		addCell(new AbstractTableWriterModelCell(this, row, ++col, tc, content));
 	}
 
 	private void addDummyCell() {
@@ -221,18 +212,18 @@ public class TableModel extends Model {
 	}
 
 	private void addDummyCell(int colSpan) {
-		Cell cell = new Cell(this, row, ++col);
+		AbstractTableWriterModelCell cell = new AbstractTableWriterModelCell(this, row, ++col);
 		if (colSpan > 0) {
 			cell.colspan = colSpan;
 		}
 		addCell(cell);
 	}
 
-	private void addCell(Cell cell) {
+	private void addCell(AbstractTableWriterModelCell cell) {
 		cells.get(row).add(cell);
 	}
 	
-	public Cell getCell(int row, int col) {
+	public AbstractTableWriterModelCell getCell(int row, int col) {
 		return cells.get(row).get(col);
 	}
 
@@ -247,7 +238,7 @@ public class TableModel extends Model {
 		return cells.get(0).size();
 	}
 
-	public List<TableModelRow> getCells() {
+	public List<AbstractTableWriterModelRow> getCells() {
 		return cells;
 	}
 
@@ -259,8 +250,7 @@ public class TableModel extends Model {
 	 * Build a table representation from a <var>tbl</var> instance.
 	 * Remember to set wordMLPackage before using this method!
 	 */
-	@Override
-	public void build(Object node, Node content) throws TransformerException {
+	public void build(AbstractWmlConversionContext conversionContext, Object node, Node content) throws TransformerException {
 		Tbl tbl = null;
 		try {
 			tbl = (Tbl)node;
@@ -278,7 +268,7 @@ public class TableModel extends Model {
 		
 		this.tblPr = tbl.getTblPr();
 		
-		PropertyResolver pr = getWordMLPackage().getMainDocumentPart().getPropertyResolver();
+		PropertyResolver pr = conversionContext.getPropertyResolver();
 			
 		effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
 //	    if (tblPr!=null
@@ -708,151 +698,11 @@ public class TableModel extends Model {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.docx4j.model.Model#toJAXB()
-	 */
-	@Override
-	public Object toJAXB() {
-		
-		ObjectFactory factory = Context.getWmlObjectFactory();		
-		Tbl tbl = factory.createTbl();
-		
-		// <w:tblPr>
-		TblPr tblPr = null;
-		if (tblPr==null) {
-			log.warn("tblPr is null");
-			tblPr = factory.createTblPr();
-			
-			// Default to page width
-			TblWidth tblWidth = factory.createTblWidth();
-			tblWidth.setW(BigInteger.valueOf(DEFAULT_PAGE_WIDTH_TWIPS));
-				// TODO: shouldn't hard code that.  Pass it in?
-			tblWidth.setType("dxa"); // twips
-			tblPr.setTblW(tblWidth);			
-		} 
-		tbl.setTblPr(tblPr);
-		
-		// <w:tblGrid>
-		// This specifies the number of columns,
-		// and also their width
-		if (tblGrid==null) {
-			log.warn("tblGrid is null");
-			tblGrid = factory.createTblGrid();
-			// Default to equal width
-			int width = Math.round( tbl.getTblPr().getTblW().getW().floatValue()/getColCount() );
-			for (int i=0; i<getColCount(); i++) {
-				TblGridCol tblGridCol = factory.createTblGridCol();
-				tblGridCol.setW(BigInteger.valueOf(width)); // twips
-				tblGrid.getGridCol().add(tblGridCol);
-			}
-		} 
-		tbl.setTblGrid(tblGrid);
-		
-		// <w:tr>
-		// we need a table row, even if every entry is just a vertical span,
-		// so that is easy
-		for (int i=0; i<cells.size(); i++) {
-			Tr tr = factory.createTr();
-			tbl.getContent().add(tr);
-			
-			// populate the row
-			for(int j=0; j<getColCount(); j++) {
-				Tc tc = factory.createTc();
-				Cell cell = cells.get(i).get(j);
-				if (cell==null) {
-					// easy, nothing to do.
-					// this is just an empty tc	
-					tr.getContent().add(tc);
-				} else {
-					if (cell.isDummy() ) {
-						// we need to determine whether this is a result of 
-						// a vertical merge or a horizontal merge
-						if (j>0 && (cells.get(i).get(j-1).isDummy() 
-										|| cells.get(i).get(j-1).colspan >1 ) ) {
-							// Its a horizontal merge, so
-							// just leave it out
-						} else if (i>0 && (cells.get(i-1).get(j).isDummy() 
-								|| cells.get(i-1).get(j).rowspan >1 ) ) {
-							// Its a vertical merge
-							TcPr tcPr = factory.createTcPr();
-							VMerge vm = factory.createTcPrInnerVMerge();
-							tcPr.setVMerge( vm );
-							tc.setTcPr(tcPr);
-							tr.getContent().add(tc);
-							
-							// Must have an empty paragraph
-							P p = factory.createP();
-							tc.getContent().add(p);
-						} else {
-							log.error("Encountered phantom dummy cell at (" + i + "," + j + ") " );
-							log.debug(debugStr());
-						}
-						
-					} else { // a real cell
-						TcPr tcPr = factory.createTcPr();
-						
-						if (cell.colspan>1) {
-							// add <w:gridSpan>
-							GridSpan gridSpan = factory.createTcPrInnerGridSpan();
-							gridSpan.setVal(BigInteger.valueOf(cell.colspan));
-							tcPr.setGridSpan(gridSpan);
-							tc.setTcPr(tcPr);
-						}
-						if (cell.rowspan>1) {
-							// Its a vertical merge
-							VMerge vm = factory.createTcPrInnerVMerge();
-							vm.setVal("restart");
-							tcPr.setVMerge( vm );
-							tc.setTcPr(tcPr);
-						}
-						
-						if (cell.colspan>1 && cell.rowspan>1) {
-							log.warn("Both rowspan & colspan set; that will be interesting..");
-						}
-												
-						tr.getContent().add(tc);
-						
-						// Add the cell content, if we have it.
-						// We won't have compatible content if this model has
-						// been created via XSLT for an outward bound conversion.
-						// But in that case, this method isn't needed
-						// because the developer started with the JAXB model. 
-						Node foreign = cell.getContent(); // eg a <td>
-						for (int n = 0 ; n < foreign.getChildNodes().getLength(); n++) {						
-							Object o;
-							try {
-								o = XmlUtils.unmarshal(foreign.getChildNodes().item(n));
-								tc.getContent().add(o);
-							} catch (JAXBException e) {
-								e.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-			
-			
-		}
-		
-		return tbl;
-	}
-
-	private void debugCellContents(NodeList children) {
-
-		for (int i = 0; i < children.getLength(); i++) {
-
-			log.debug(i + " " + children.item(i).getTextContent());
-			log.debug(children.item(i).getLocalName());
-
-		}
-
-	}
-
 	public String debugStr() {
 		StringBuffer buf = new StringBuffer();
-		for (TableModelRow row : cells) {
-			List<Cell> rowContents = row.getRowContents();
-			for (Cell c : rowContents) {
+		for (AbstractTableWriterModelRow row : cells) {
+			List<AbstractTableWriterModelCell> rowContents = row.getRowContents();
+			for (AbstractTableWriterModelCell c : rowContents) {
 				if (c==null) {
 					buf.append("null     ");
 				} else {

@@ -26,10 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
-import org.docx4j.model.TransformState;
+import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
+import org.docx4j.convert.out.common.writer.AbstractTableWriterModel;
 import org.docx4j.model.properties.Property;
-import org.docx4j.model.table.Cell;
-import org.docx4j.model.table.TableModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -86,7 +85,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
 	
 	@Override
-	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
@@ -111,7 +110,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
 
 	@Override
-	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
+	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
         column.setAttribute("column-number", Integer.toString(columnIndex + 1));
 		if (columnWidth > -1) {
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
@@ -119,7 +118,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
   	
   	@Override
-	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, AbstractTableWriterModelCell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
   		if (isDummyCell) {
 			cellNode.setAttribute("border-style", "none");
 			cellNode.setAttribute("background-color", "transparent");

@@ -1,4 +1,4 @@
-package org.docx4j.model.table;
+package org.docx4j.convert.out.common.writer;
 
 import java.util.List;
 import java.util.Vector;
@@ -14,15 +14,15 @@ import org.docx4j.wml.TrPr;
  * @author jharrop
  *
  */
-public class TableModelRow {
+public class AbstractTableWriterModelRow {
 	
-	public TableModelRow(Tr tr) {
+	public AbstractTableWriterModelRow(Tr tr) {
 		
 		trPr = tr.getTrPr();
 		tblPrEx = tr.getTblPrEx();
 	}
 	
-	private List<Cell> rowContents = new Vector<Cell>();	
+	private List<AbstractTableWriterModelCell> rowContents = new Vector<AbstractTableWriterModelCell>();	
 	
 	private TrPr trPr;
 	private CTTblPrEx tblPrEx;
@@ -36,15 +36,15 @@ public class TableModelRow {
 	}
 	
 	
-	public List<Cell> getRowContents() {
+	public List<AbstractTableWriterModelCell> getRowContents() {
 		return rowContents;
 	}
 	
-	public void add(Cell newCell) {
+	public void add(AbstractTableWriterModelCell newCell) {
 		rowContents.add(newCell);
 	}
 	
-	public Cell get(int i) {
+	public AbstractTableWriterModelCell get(int i) {
 		return rowContents.get(i);
 	}
 	

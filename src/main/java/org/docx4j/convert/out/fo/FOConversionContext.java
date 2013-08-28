@@ -24,7 +24,7 @@ import java.util.List;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.common.AbstractModelRegistry;
+import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
@@ -46,16 +46,16 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	protected FORenderer foRenderer;
 	
 	//The model registry is per output type a singleton
-	protected static final AbstractModelRegistry FO_MODEL_REGISTRY = 
-		new AbstractModelRegistry() {
+	protected static final AbstractWriterRegistry FO_WRITER_REGISTRY = 
+		new AbstractWriterRegistry() {
 			@Override
-			protected void registerDefaultConverterInstances() {
-				registerConverter(new TableWriter());
-				registerConverter(new SymbolWriter());
-				registerConverter(new BrWriter());
-				registerConverter(new FldSimpleWriter());
-				registerConverter(new BookmarkStartWriter());
-				registerConverter(new HyperlinkWriter());
+			protected void registerDefaultWriterInstances() {
+				registerWriter(new TableWriter());
+				registerWriter(new SymbolWriter());
+				registerWriter(new BrWriter());
+				registerWriter(new FldSimpleWriter());
+				registerWriter(new BookmarkStartWriter());
+				registerWriter(new HyperlinkWriter());
 			}
 		};
 			
@@ -78,7 +78,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	};
 
 	public FOConversionContext(FOSettings settings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
-		super(FO_MODEL_REGISTRY, FO_MESSAGE_WRITER, settings, wmlPackage, conversionSectionWrappers);
+		super(FO_WRITER_REGISTRY, FO_MESSAGE_WRITER, settings, wmlPackage, conversionSectionWrappers);
 		this.foRenderer = initializeFoRenderer(settings);
 	}
 	
@@ -143,12 +143,10 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	 * @return
 	 */
 	protected boolean checkRequires2Pass() {
-		
-		boolean ret = false;
-		boolean sectionPagesUsed = false;
-		ConversionSectionWrapper wrapper = null;
-		List<ConversionSectionWrapper> wrapperList = getSections().getList();
-		
+	boolean ret = false;
+	boolean sectionPagesUsed = false;
+	ConversionSectionWrapper wrapper = null;
+	List<ConversionSectionWrapper> wrapperList = getSections().getList();
 		for (int i=0; (!ret) && (i < wrapperList.size()); i++) {
 			wrapper = wrapperList.get(i);
 			if (wrapper.getPageNumberInformation().getPageStart() > -1) {

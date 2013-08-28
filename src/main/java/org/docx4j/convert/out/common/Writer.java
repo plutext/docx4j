@@ -21,17 +21,21 @@ package org.docx4j.convert.out.common;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.model.Model;
-import org.docx4j.model.TransformState;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
- * Note that ModelConverter (aka Writers) must be 
- * registered in the corresponding instance (PDF, HTML...)
- * of the ModelRegistry
+ * Note that Writer(s) must be 
+ * registered in the corresponding instance (FO, HTML...)
+ * of the WriterRegistry. Writers are Singletons and shouldn't
+ * keep any state.
  */
-public interface ModelConverter {
+public interface Writer {
+	/** Tag interface for a transform state that may be used by the Writer 
+	 */
+	public interface TransformState {
+	}
+	
 	/** Return the common ID of the Model/Converter/TransformState.  
 	 * 
 	 * @return
@@ -47,7 +51,7 @@ public interface ModelConverter {
 	 * @return
 	 * @throws TransformerException
 	 */
-	public Node toNode(AbstractWmlConversionContext context, Model model, TransformState state, Document doc) throws TransformerException;
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content, TransformState state, Document doc) throws TransformerException;
 
 	/** Create a new instance of the TransformState it uses.<br>
 	 *  It may return <code>null</code>, then the passed value in toNode will be <code>null</code>.  

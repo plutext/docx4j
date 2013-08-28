@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
-import org.docx4j.model.fields.HyperlinkModel;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,7 +39,7 @@ public class HyperlinkUtil {
 	public static final int HTML_OUTPUT = 1;
 	public static final int FO_OUTPUT = 2;
 
-	public static Node toNode(int outputType, AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) throws TransformerException {
+	public static Node toNode(int outputType, AbstractWmlConversionContext context, AbstractHyperlinkWriterModel model, Node content, Document doc) throws TransformerException {
 	Node ret = content;
 		try {
 			context.handleHyperlink(model); // extension point: you can pass your own handler in settings
@@ -65,7 +64,7 @@ public class HyperlinkUtil {
 		return ret;
 	}
 
-	private static Node toFoNode(AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) {
+	private static Node toFoNode(AbstractWmlConversionContext context, AbstractHyperlinkWriterModel model, Node content, Document doc) {
 		
 		Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:basic-link");
 		String internalTarget = model.getInternalTarget();
@@ -95,7 +94,7 @@ public class HyperlinkUtil {
 		return ret;
 	}
 
-	private static Node toHtmlNode(AbstractWmlConversionContext context, HyperlinkModel model, Node content, Document doc) {
+	private static Node toHtmlNode(AbstractWmlConversionContext context, AbstractHyperlinkWriterModel model, Node content, Document doc) {
 		
 		Element ret = doc.createElement("a");
 		String internalTarget = model.getInternalTarget();
