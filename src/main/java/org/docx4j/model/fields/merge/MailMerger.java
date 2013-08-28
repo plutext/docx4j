@@ -508,7 +508,7 @@ public class MailMerger {
 					FldSimpleModel fsm = new FldSimpleModel();
 					try {
 						fsm.build(instr);
-						val = FormattingSwitchHelper.applyFormattingSwitch(fsm, val);
+						val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val);
 						
 						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
 						// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
