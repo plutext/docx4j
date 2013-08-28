@@ -123,13 +123,20 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static void setDensity(int density) {
 		BinaryPartAbstractImage.density = density;
 	}
+	
+	private static ImageManager imageManagerInstance;
+	private static Object imageManagerMutex = new Object();
 
-	static {
-		
-		imageManager = new ImageManager(new DefaultImageContext());
-		
+	protected static ImageManager getImageManager() {
+		if (imageManagerInstance == null) {
+			synchronized(imageManagerMutex) {
+				if (imageManagerInstance == null) {
+					imageManagerInstance = new ImageManager(new DefaultImageContext());
+				}
+			}
+		}
+		return imageManagerInstance;
 	}
-	static ImageManager imageManager;
 
 	/**
 	 * Create an image part from the provided byte array, attach it to the 
@@ -420,7 +427,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				fos = null;
 				
 				// We need to refresh image info 
-				imageManager.getCache().clearCache();
+				getImageManager().getCache().clearCache();
                 info = getImageInfo(new URL("file://" + imageFile.getAbsolutePath()));
 				
 				// Debug ...
@@ -694,9 +701,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// than say a byte array, byte buffer, or input stream.
 
 		ImageSessionContext sessionContext = new DefaultImageSessionContext(
-				imageManager.getImageContext(), null);
+				getImageManager().getImageContext(), null);
 
-		ImageInfo info = imageManager.getImageInfo(url.toString(), sessionContext);
+		ImageInfo info = getImageManager().getImageInfo(url.toString(), sessionContext);
 		
 		// Note that these figures do not appear to be reliable for EPS
 		// eg ImageMagick 6.2.4 10/02/07 Q16
