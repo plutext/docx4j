@@ -163,7 +163,7 @@ public class AbstractListNumberingDefinition {
                 this.readListLevelsFromAbsNode(abstractNumNode);
 
                 // find out whether there is a linked abstractNum definition that this needs to be populated from later on
-                //XmlNode linkedStyleNode = abstractNumNode.SelectSingleNode("./w:numStyleLink", nsm);                
+                // NDP.resolveLinkedAbstractNum
                 Numbering.AbstractNum.NumStyleLink linkedStyleNode = abstractNumNode.getNumStyleLink();
 
                 if (linkedStyleNode != null)
@@ -173,19 +173,8 @@ public class AbstractListNumberingDefinition {
             }
         }
 
-        /// <summary>
-        /// update the level definitions from a linked abstractNum node
-        /// </summary>
-        /// <param name="linkedNode">
-        /// </param>
-        /// <param name="nsm">
-        /// </param>
-        /// <id guid="36473168-7947-41ea-8210-839bf07eded7" />
-        /// <owner alias="ROrleth" />
-        public void UpdateDefinitionFromLinkedStyle(Numbering.AbstractNum linkedNode)
+        public void updateDefinitionFromLinkedStyle(Numbering.AbstractNum linkedNode)
         {
-        	// TODO - review this; it looks wrong!
-        	
             if (!this.hasLinkedStyle() )
                 return;
 
@@ -215,22 +204,10 @@ public class AbstractListNumberingDefinition {
         }
 
         private String linkedStyleId;
-
-        /// <summary>
-        /// returnts the ID of the linked style
-        /// </summary>
-        /// <id guid="ae2caeec-2d86-4e5f-b816-d508f6f2c893" />
-        /// <owner alias="ROrleth" />
-        public String getLinkedStyleId()
-        {
-                return this.linkedStyleId;
+        public String getLinkedStyleId() {
+            return this.linkedStyleId;
         }
 
-        /// <summary>
-        /// indicates whether there is a linked style
-        /// </summary>
-        /// <id guid="75d74788-9839-448e-ae23-02d40e013d98" />
-        /// <owner alias="ROrleth" />
         public boolean hasLinkedStyle()
         {
         	if (this.linkedStyleId!=null && !this.linkedStyleId.equals("")  ) {
@@ -238,7 +215,6 @@ public class AbstractListNumberingDefinition {
         	} else {
         		return false;
         	}
-                //return !String.IsNullOrEmpty(this.linkedStyleId);
         }
 
 

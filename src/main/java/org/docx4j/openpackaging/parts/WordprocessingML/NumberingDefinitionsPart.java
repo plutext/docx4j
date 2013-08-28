@@ -61,6 +61,7 @@ import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
+import org.docx4j.wml.Style;
 
 
 
@@ -128,21 +129,6 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 
             abstractListDefinitions.put(absNumDef.getID(), absNumDef);
 
-            // now go through the abstract list definitions and update those that are linked to other styles
-            if (absNumDef.hasLinkedStyle() )
-            {
-//                String linkStyleXPath = "/w:document/w:numbering/w:abstractNum/w:styleLink[@w:val=\"" + absNumDef.Value.LinkedStyleId + "\"]";
-//                XmlNode linkedStyleNode = mainDoc.SelectSingleNode(linkStyleXPath, nsm);
-//
-//                if (linkedStyleNode != null)
-//                {
-//                    absNumDef.Value.UpdateDefinitionFromLinkedStyle(linkedStyleNode.ParentNode, nsm);
-//                }
-                
-                // find the linked style
-                // TODO - review
-                absNumDef.UpdateDefinitionFromLinkedStyle(abstractNumNode);
-            }
         }
 
         // instantiate the list number definitions
@@ -155,6 +141,71 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 //            log.debug("Added list: " + listDef.getListNumberId() );
         }
 
+    }
+    
+    public void resolveLinkedAbstractNum(StyleDefinitionsPart sdp) {
+    	
+    	if (sdp==null) {
+    		log.warn("No StyleDefinitionsPart found");
+    		return;
+    	}
+    	
+        for (Numbering.AbstractNum abstractNum : getJaxbElement().getAbstractNum() ) {
+        	
+        	// <w:numStyleLink w:val="MyListStyle"/>
+        	if (abstractNum.getNumStyleLink()==null) continue;
+        	
+        	// there is also abstractNum.getStyleLink(), but ignore that
+        	
+        	String numStyleId = abstractNum.getNumStyleLink().getVal();
+        	
+        	Style s = sdp.getStyleById(numStyleId);
+        	if (s==null) {
+        		log.warn("For w:numStyleLink, couldn't find style " + numStyleId);
+        		continue;
+        	}
+        	if (s.getPPr()==null || s.getPPr().getNumPr()==null) {
+        		log.warn("For w:numStyleLink, style " + numStyleId + " has no w:numPr");
+        		continue;        		
+        	}
+        	
+        	NumPr styleNumPr = s.getPPr().getNumPr();
+        	
+        	// Get the concrete list this point to
+        	if (styleNumPr.getNumId()==null) {
+        		log.warn("For w:numStyleLink, style " + numStyleId + " w:numPr has no w:numId");
+        		continue;        		        		
+        	}
+        	BigInteger concreteListId = styleNumPr.getNumId().getVal();
+        	
+        	// Get the target abstract num
+        	ListNumberingDefinition lnd = getInstanceListDefinitions().get(concreteListId.toString());
+        	if (lnd==null) {
+        		log.warn("No ListNumberingDefinition entry with ID " + concreteListId.toString());
+        	}
+        	Numbering.AbstractNum linkedNum = lnd.getAbstractListDefinition().getAbstractNumNode();
+
+        	// OK, update
+            AbstractListNumberingDefinition absNumDef 
+            	= abstractListDefinitions.get(abstractNum.getAbstractNumId().toString());
+            
+            absNumDef.updateDefinitionFromLinkedStyle(linkedNum);
+            
+            // Also update the underlying abstract list
+            if (abstractNum.getLvl().size()>0) {
+            	log.warn("Cowardly refusing to overwrite existing List<Lvl>" );
+            } else {
+            	abstractNum.getLvl().clear();
+            	abstractNum.getLvl().addAll(linkedNum.getLvl());
+            		// This list is treated as a separate list by Word (ie its numbers are incremented
+            		// independently), and this code honours that.
+            }
+            
+            
+            log.info("Updated abstract list def " + abstractNum.getAbstractNumId().toString() + " based on w:numStyleLink " + numStyleId );
+        }
+    	
+    	
     }
     
     /**

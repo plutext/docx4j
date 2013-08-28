@@ -61,9 +61,9 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	protected StyleTree styleTree = null;
 	
 
-	protected AbstractWmlConversionContext(AbstractWriterRegistry modelRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
 		super(messageWriter, conversionSettings, wmlPackage);
-		this.writerRegistry = initializeModelRegistry(modelRegistry);
+		this.writerRegistry = initializeWriterRegistry(writerRegistry);
 		this.transformStates = initializeTransformStates();
 		this.conversionSectionWrappers = conversionSectionWrappers;
 		this.styleTree = initializeStyleTree();
@@ -75,15 +75,26 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		if (!(ret instanceof WordprocessingMLPackage)) {
 			throw new IllegalArgumentException("The opcPackage isn't a WordprocessingMLPackage, it is a " + ret.getClass().getName());
 		}
+		resolveLinkedAbstractNum((WordprocessingMLPackage)ret);
 		return ret;
 	}
 
-	protected AbstractWriterRegistry initializeModelRegistry(AbstractWriterRegistry registry) {
+	protected AbstractWriterRegistry initializeWriterRegistry(AbstractWriterRegistry registry) {
 		return registry;
 	}
 	
 	protected Map<String, Writer.TransformState> initializeTransformStates() {
 		return getWriterRegistry().createTransformStates();
+	}
+	
+	protected void resolveLinkedAbstractNum(WordprocessingMLPackage wmlPkg) {
+		
+		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart()!=null
+				&& wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart()!=null) {
+			
+			 wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().resolveLinkedAbstractNum(
+					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart());
+		}
 	}
 
 	protected StyleTree initializeStyleTree() {
