@@ -121,14 +121,6 @@ public class Docx4J {
 	 */
 	public static final int FLAG_BIND_REMOVE_XML = 8;
 	
-	protected static Exporter<FOSettings> foExporterXSL = null;
-	protected static Exporter<FOSettings> foExporterNonXSL = null;
-	protected static Exporter<FOSettings> foExporterDefault = null;
-	protected static Exporter<HTMLSettings> htmlExporterXSL = null;
-	protected static Exporter<HTMLSettings> htmlExporterNonXSL = null;
-	protected static Exporter<HTMLSettings> htmlExporterDefault = null;
-
-	
 	protected static class FindContentControlsVisitor extends TraversalUtilVisitor<SdtElement> {
 		public static class BreakException extends RuntimeException {
 		}
@@ -462,39 +454,13 @@ public class Docx4J {
 	}
 	
 	protected static Exporter<FOSettings> getFOExporter(int flags) {
-	Exporter<FOSettings> ret = null;
-		switch (flags) {
-			case FLAG_EXPORT_PREFER_XSL:
-				ret = foExporterXSL;
-				break;
-			case FLAG_EXPORT_PREFER_NONXSL:
-				ret = foExporterNonXSL;
-				break;
-			default:
-				ret = foExporterDefault;
-				break;
-		}
-		if (ret == null) {
-			ret = createFOExporter(flags);
-		}
-		return ret;
-	}
-	
-	protected static synchronized Exporter<FOSettings> createFOExporter(int flags) {
-	Exporter<FOSettings> ret = null;
 		switch (flags) {
 			case FLAG_EXPORT_PREFER_NONXSL:
-				ret = 
-				foExporterNonXSL = FOExporterVisitor.getInstance();
-				break;
+				return FOExporterVisitor.getInstance();
 			case FLAG_EXPORT_PREFER_XSL:
 			default:
-				ret = 
-				foExporterDefault = 
-				foExporterNonXSL = FOExporterXslt.getInstance();
-				break;
+				return FOExporterXslt.getInstance();
 		}
-		return ret;
 	}
 
 	/**
@@ -528,38 +494,12 @@ public class Docx4J {
 	}
 	
 	protected static Exporter<HTMLSettings> getHTMLExporter(int flags) {
-	Exporter<HTMLSettings>  ret = null;
-		switch (flags) {
-			case FLAG_EXPORT_PREFER_XSL:
-				ret = htmlExporterXSL;
-				break;
-			case FLAG_EXPORT_PREFER_NONXSL:
-				ret = htmlExporterNonXSL;
-				break;
-			default:
-				ret = htmlExporterDefault;
-				break;
-		}
-		if (ret == null) {
-			ret = createHTMLExporter(flags);
-		}
-		return ret;
-	}
-	
-	protected static synchronized Exporter<HTMLSettings> createHTMLExporter(int flags) {
-		Exporter<HTMLSettings> ret = null;
 		switch (flags) {
 			case FLAG_EXPORT_PREFER_NONXSL:
-				ret = 
-				htmlExporterNonXSL = HTMLExporterVisitor.getInstance();
-				break;
+				return HTMLExporterVisitor.getInstance();
 			case FLAG_EXPORT_PREFER_XSL:
 			default:
-				ret = 
-				htmlExporterDefault = 
-				htmlExporterNonXSL = HTMLExporterXslt.getInstance();
-				break;
+				return HTMLExporterXslt.getInstance();
 		}
-		return ret;
 	}
 }
