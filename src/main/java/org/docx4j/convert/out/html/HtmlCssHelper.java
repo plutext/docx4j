@@ -54,17 +54,7 @@ public class HtmlCssHelper {
 	
 	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
 	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();
-	
-	public static void createDefaultScript(StringBuilder result) {
-		result.append("function toggleDiv(divid){");
-		result.append("if(document.getElementById(divid).style.display == 'none'){");
-		result.append("document.getElementById(divid).style.display = 'block';");
-		result.append("}else{");
-		result.append("document.getElementById(divid).style.display = 'none';");
-		result.append("}");
-		result.append("}\n");
-	}
-	
+		
     public static void createDefaultCss(boolean hasDefaultHeader, boolean hasDefaultFooter, StringBuilder result) {
     	//TODO: This method needs to be replaced with something similar to the LayoutMasterSetBuilder of fo
 		result.append("/*paged media */ div.header {display: none }");
@@ -103,7 +93,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:table;" );
+    		result.append( "table."+ s.getStyleId()  + " {display:table;" );
     		
     		// TblPr
     		if (s.getTblPr()==null) {
@@ -165,7 +155,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );
+    		result.append( "p."+ s.getStyleId()  + " {display:block;" );
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
@@ -197,7 +187,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:inline;" );
+    		result.append( "span."+ s.getStyleId()  + " {display:inline;" );
         	if (s.getRPr()==null) {
         		log.warn("! null rPr for character style " + s.getStyleId());
         	} else {

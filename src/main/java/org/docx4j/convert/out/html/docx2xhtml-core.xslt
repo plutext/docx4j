@@ -21,6 +21,7 @@
 
 
 <xsl:param name="conversionContext"/> <!-- select="'passed in'"-->	
+
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="fontMapper"/> <!-- select="'passed in'"-->	
@@ -47,73 +48,8 @@
 		
 		
 	<html>
-		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-			<style>
-				<xsl:comment>
 
-					/*paged media */ div.header {display: none }
-					div.footer {display: none } /*@media print { */
-					<xsl:if
-						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultHeader($conversionContext)">
-						div.header {display: block; position: running(header) }
-					</xsl:if>
-					<xsl:if
-						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultFooter($conversionContext)">
-						div.footer {display: block; position: running(footer) }
-					</xsl:if>
-
-					@page { size: A4; margin: 10%; @top-center {
-					content: element(header) } @bottom-center {
-					content: element(footer) } }
-
-
-					/*font definitions*/
-
-					/*element styles*/ .del
-					{text-decoration:line-through;color:red;}
-					<xsl:choose>
-						<xsl:when test="/w:document/w:settings/w:trackRevisions">
-  					          .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
-						</xsl:when>
-						<xsl:otherwise>
-						  .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
-						</xsl:otherwise>
-					</xsl:choose>
-
-
-					/* Word style definitions */
-					<xsl:copy-of
-						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForStyles( 
-		  											$conversionContext)" />
-
-					/* TABLE CELL STYLES */
-					<xsl:variable name="tables" select="./w:body//w:tbl" />
-					<xsl:copy-of
-						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForTableCells( 
-		  											$conversionContext, $tables)" />
-
-					
-				</xsl:comment>
-			</style>
-
-			<xsl:value-of select="$userCSS" disable-output-escaping="yes" />
-
-			<script type="text/javascript">
-				<!-- For collapsible content controls -->
-				function toggleDiv(divid){
-					if(document.getElementById(divid).style.display == 'none'){
-						document.getElementById(divid).style.display = 'block';
-					}else{
-						document.getElementById(divid).style.display = 'none';
-					}
-				}
-								
-			</script>
-			
-			<!-- User script -->
-			<xsl:value-of select="$userScript" disable-output-escaping="yes" />
-			
-		</head>
+		<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.appendHeadElement($conversionContext)" />
 
 		<body>
 			<xsl:call-template name="pretty-print-block" />

@@ -82,7 +82,7 @@ public class HTMLExporterVisitorDelegate extends AbstractVisitorExporterDelegate
 			headEl.appendChild(element);
 		}
 		buffer.setLength(0);
-		HtmlCssHelper.createDefaultScript(buffer);
+		HtmlScriptHelper.createDefaultScript(buffer);
 		if ((userScript != null) && (userScript.length() > 0)) {
 			buffer.append(userScript);
 		}

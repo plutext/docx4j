@@ -26,9 +26,11 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -43,6 +45,7 @@ import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
@@ -65,8 +68,192 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltHTMLFunctions {
+	
+	/*
+		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+			<style>
+				<xsl:comment>
 
-    
+					/#paged media #/ div.header {display: none }
+					div.footer {display: none } /#@media print { #/
+					<xsl:if
+						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultHeader($conversionContext)">
+						div.header {display: block; position: running(header) }
+					</xsl:if>
+					<xsl:if
+						test="java:org.docx4j.convert.out.common.XsltCommonFunctions.hasDefaultFooter($conversionContext)">
+						div.footer {display: block; position: running(footer) }
+					</xsl:if>
+
+					@page { size: A4; margin: 10%; @top-center {
+					content: element(header) } @bottom-center {
+					content: element(footer) } }
+
+
+					/#font definitions#/
+
+					/#element styles#/ .del
+					{text-decoration:line-through;color:red;}
+					<xsl:choose>
+						<xsl:when test="/w:document/w:settings/w:trackRevisions">
+  					          .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
+						</xsl:when>
+						<xsl:otherwise>
+						  .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
+						</xsl:otherwise>
+					</xsl:choose>
+
+
+					/# Word style definitions #/
+					<xsl:copy-of
+						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForStyles( 
+		  											$conversionContext)" />
+
+					/# TABLE CELL STYLES #/
+					<xsl:variable name="tables" select="./w:body//w:tbl" />
+					<xsl:copy-of
+						select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.getCssForTableCells( 
+		  											$conversionContext, $tables)" />
+
+					
+				</xsl:comment>
+			</style>
+
+			<xsl:value-of select="$userCSS" disable-output-escaping="yes" />
+
+			<script type="text/javascript">
+				<!-- For collapsible content controls -->
+				function toggleDiv(divid){
+					if(document.getElementById(divid).style.display == 'none'){
+						document.getElementById(divid).style.display = 'block';
+					}else{
+						document.getElementById(divid).style.display = 'none';
+					}
+				}
+								
+			</script>
+			
+			<!-- User script -->
+			<xsl:value-of select="$userScript" disable-output-escaping="yes" />
+			
+		</head>
+	 */
+	
+	public static DocumentFragment appendHeadElement(HTMLConversionContext conversionContext) {
+		// There is a similar method for the non XSLT case, in HTMLExporterVisitorDelegate
+		
+        // Create a DOM document to take the results			
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		Document document;
+		try {
+			document = factory.newDocumentBuilder().newDocument();
+		
+		    Element	headEl = document.createElement("head");
+			Element meta = document.createElement("meta");
+			Element element = null;
+			StringBuilder buffer = new StringBuilder(10240);
+			
+	    	document.appendChild(headEl);   
+	    	
+	    	// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	    	meta.setAttribute("http-equiv", "Content-Type");
+	    	meta.setAttribute("content", "text/html; charset=utf-8");
+	    	headEl.appendChild(meta);
+	    	
+	    	// <style..
+	    	element = createStyleElement(conversionContext, document, buffer);
+			if (element != null) {
+				headEl.appendChild(element);
+			}
+
+			String userScript = conversionContext.getUserScript();
+			
+			buffer.setLength(0);
+			HtmlScriptHelper.createDefaultScript(buffer);
+			if ((userScript != null) && (userScript.length() > 0)) {
+				buffer.append(userScript);
+			}
+			element = conversionContext.createScriptElement(document, buffer.toString());
+			if (element != null) {
+				headEl.appendChild(element);
+			}
+			
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+	
+			return docfrag;
+			
+		} catch (ParserConfigurationException e) {
+			conversionContext.getLog().error(e.getMessage(), e);
+		}			
+		return null;
+	}
+
+	/**
+	 * A customised stylesheet might just want the <style> element, because it customises
+	 * the rest of the <head> element.
+	 * 
+	 * @param conversionContext
+	 * @return
+	 */
+	public static DocumentFragment appendStyleElement(HTMLConversionContext conversionContext) {
+		
+        // Create a DOM document to take the results			
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		Document document;
+		try {
+			document = factory.newDocumentBuilder().newDocument();
+
+			StringBuilder buffer = new StringBuilder(10240);
+			
+	    	// <style..
+	    	Element element = createStyleElement(conversionContext, document, buffer);
+			if (element == null) {
+				return null;
+			}
+			document.appendChild(element);
+		
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+	
+			return docfrag;
+			
+		} catch (ParserConfigurationException e) {
+			conversionContext.getLog().error(e.getMessage(), e);
+		}			
+		return null;
+
+	}
+	
+	private static Element createStyleElement(HTMLConversionContext conversionContext, Document document, StringBuilder buffer) {
+
+		String userCSS = conversionContext.getUserCSS();
+		
+		boolean hasDefaultHeader = false;
+		boolean hasDefaultFooter = false;
+
+		//TODO: This doesn't quite work as the defaultHeader and defaultFooter are per section,
+    	//but this definition is on the document level. 
+    	//To access the first section, we have to call first a next() and later return to start()
+    	try {
+//    		conversionContext.getSections().next(); // causes exception
+        	hasDefaultHeader = XsltCommonFunctions.hasDefaultHeader(conversionContext);
+        	hasDefaultFooter = XsltCommonFunctions.hasDefaultHeader(conversionContext);
+    	}
+    	finally {
+//    		conversionContext.getSections().start();
+    	}
+    	HtmlCssHelper.createDefaultCss(hasDefaultHeader, hasDefaultFooter, buffer);
+		HtmlCssHelper.createCssForStyles(conversionContext.getWmlPackage(), 
+										 conversionContext.getStyleTree(), 
+										 buffer);
+		if ((userCSS != null) && (userCSS.length() > 0)) {
+			buffer.append(userCSS);
+		}
+		return conversionContext.createStyleElement(document, buffer.toString());
+	}
+
+	
     /**
 	 * The method used by the XSLT extension function during HTML export.
 	 * 
@@ -139,6 +326,7 @@ public class XsltHTMLFunctions {
 		}
 
 		HtmlCssHelper.createCssForStyles(context.getWmlPackage(), styleTree, result);
+		
     	
     	if (context.getLog().isDebugEnabled()) {
     		return result.toString();
@@ -396,6 +584,8 @@ public class XsltHTMLFunctions {
 			// init
 			Node n = childResults.nextNode();
 			do {	
+				
+				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
 				
 				// getNumberXmlNode creates a span node, which is empty
 				// if there is no numbering.
