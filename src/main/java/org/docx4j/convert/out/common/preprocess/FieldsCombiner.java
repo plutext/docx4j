@@ -90,7 +90,7 @@ public class FieldsCombiner {
 		STFldCharType fldCharType = null;
 		int level = 0;
 		int state = STATE_EXPECT_BEGIN;
-		int markIdx = -1;
+		int markIdx = 0;
 		List<Object> resultList = new ArrayList<Object>(2);
 		StringBuilder instrTextBuffer = new StringBuilder(128);
 		String tmpInstrText = null;
@@ -105,7 +105,7 @@ public class FieldsCombiner {
 							if (STFldCharType.BEGIN.equals(fldCharType)) {
 								level++;
 								state = STATE_EXPECT_INSTR;
-								if (markIdx > -1) {
+								if (markIdx < i) {
 									copyItems(pContent, markIdx, i, pResult);
 									instrTextBuffer.setLength(0);
 									resultList.clear();
@@ -125,8 +125,8 @@ public class FieldsCombiner {
 										(instrTextBuffer.length() > 0)) {
 										pResult.add(createFldSimple(instrTextBuffer.toString(), resultList));
 										haveChanges = true;
+										markIdx = i + 1;
 									}
-									markIdx = -1;
 									instrTextBuffer.setLength(0);
 									resultList.clear();
 									level--;
@@ -135,9 +135,6 @@ public class FieldsCombiner {
 						}
 						else {
 							switch (state) {
-								case STATE_EXPECT_BEGIN:
-									pResult.add(item);
-									break;
 								case STATE_EXPECT_INSTR:
 									tmpInstrText = getInstrText((R)item);
 									if (tmpInstrText != null) {
@@ -152,30 +149,24 @@ public class FieldsCombiner {
 					}
 					else if ((item instanceof JAXBElement) &&
 							 (((JAXBElement)item).getValue() instanceof CTSimpleField)){
-						if (markIdx > -1) {
+						if (markIdx < i) {
 							copyItems(pContent, markIdx, i, pResult);
 						}
 						pResult.add(item);
 						instrTextBuffer.setLength(0);
 						resultList.clear();
-						markIdx = -1;
+						markIdx = i + 1;
 						state = STATE_EXPECT_BEGIN;
 					}
 					else if ((item instanceof JAXBElement) &&
 							 (((JAXBElement)item).getValue() instanceof P.Hyperlink)){
 						processContent(((P.Hyperlink)((JAXBElement)item).getValue()).getContent());
-						pResult.add(item);
-					}
-					else {
-						if (state == STATE_EXPECT_RESULT) {
-							resultList.add(item); //no R??
-						}
-						else {
-							pResult.add(item);
-						}
 					}
 				}
 				if (haveChanges) {
+					if (markIdx < pContent.size()) {
+						copyItems(pContent, markIdx, pContent.size(), pResult);
+					}
 					pContent.clear();
 					pContent.addAll(pResult);
 				}
