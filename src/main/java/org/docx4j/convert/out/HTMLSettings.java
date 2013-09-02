@@ -60,18 +60,34 @@ public class HTMLSettings extends AbstractConversionSettings {
 		return (Mapper)settings.get("fontMapper");
 	}
 	
+	/**
+	 * @see get/setStyleElementHandler
+	 */
+	@Deprecated
 	public String getUserCSS() {
 		return (String)settings.get(USER_CSS);
 	}
 			
+	/**
+	 * @see get/setStyleElementHandler
+	 */
+	@Deprecated
 	public void setUserCSS(String val) {
 		settings.put(USER_CSS, val);
 	}
 
+	/**
+	 * @see get/setScriptElementHandler
+	 */
+	@Deprecated
 	public String getUserScript() {
 		return (String)settings.get(USER_SCRIPT);
 	}
 
+	/**
+	 * @see get/setScriptElementHandler
+	 */
+	@Deprecated
 	public void setUserScript(String val) {
 		settings.put(USER_SCRIPT, val);
 	}

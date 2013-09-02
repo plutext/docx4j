@@ -166,14 +166,10 @@ public class XsltHTMLFunctions {
 				headEl.appendChild(element);
 			}
 
-			String userScript = conversionContext.getUserScript();
 			
+			// <script
 			buffer.setLength(0);
-			HtmlScriptHelper.createDefaultScript(buffer);
-			if ((userScript != null) && (userScript.length() > 0)) {
-				buffer.append(userScript);
-			}
-			element = conversionContext.createScriptElement(document, buffer.toString());
+			element = createScriptElement(conversionContext, document, buffer);
 			if (element != null) {
 				headEl.appendChild(element);
 			}
@@ -190,7 +186,7 @@ public class XsltHTMLFunctions {
 	}
 
 	/**
-	 * A customised stylesheet might just want the <style> element, because it customises
+	 * A customised XSLT might just want the <style> element, because it customises
 	 * the rest of the <head> element.
 	 * 
 	 * @param conversionContext
@@ -208,6 +204,44 @@ public class XsltHTMLFunctions {
 			
 	    	// <style..
 	    	Element element = createStyleElement(conversionContext, document, buffer);
+			if (element == null) {
+				return null;
+			}
+			document.appendChild(element);
+		
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+	
+			return docfrag;
+			
+		} catch (ParserConfigurationException e) {
+			conversionContext.getLog().error(e.getMessage(), e);
+		}			
+		return null;
+
+	}
+
+	/**
+	 * A customised XSLT might just want the <script> element, because it customises
+	 * the rest of the <head> element.
+	 * 
+	 * @param conversionContext
+	 * @return
+	 */
+	public static DocumentFragment appendScriptElement(HTMLConversionContext conversionContext) {
+		// This method is necessary, since it is how the customised XSLT
+		// actually invokes ConversionHTMLScriptElementHandler
+		
+        // Create a DOM document to take the results			
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		Document document;
+		try {
+			document = factory.newDocumentBuilder().newDocument();
+
+			StringBuilder buffer = new StringBuilder(10240);
+			
+	    	// <script..
+	    	Element element = createScriptElement(conversionContext, document, buffer);
 			if (element == null) {
 				return null;
 			}
@@ -253,6 +287,15 @@ public class XsltHTMLFunctions {
 		return conversionContext.createStyleElement(document, buffer.toString());
 	}
 
+	private static Element createScriptElement(HTMLConversionContext conversionContext, Document document, StringBuilder buffer) {
+		
+		String userScript = conversionContext.getUserScript();
+		HtmlScriptHelper.createDefaultScript(buffer);
+		if ((userScript != null) && (userScript.length() > 0)) {
+			buffer.append(userScript);
+		}
+		return conversionContext.createScriptElement(document, buffer.toString());
+	}
 	
     /**
 	 * The method used by the XSLT extension function during HTML export.

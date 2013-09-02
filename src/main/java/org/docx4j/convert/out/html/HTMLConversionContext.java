@@ -53,6 +53,11 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	protected static final ConversionHTMLStyleElementHandler DEFAULT_STYLE_ELEMENT_HANDLER = new ConversionHTMLStyleElementHandler() {
 		@Override
 		public Element createStyleElement(OpcPackage opcPackage, Document document, String styleDefinition) {
+			
+			// See XsltHTMLFunctions, which typically generates the String styleDefinition.
+			// In practice, the styles are coupled to the document content, so you're
+			// less likely to override their content; just whether they are linked or inline.
+			
 			Element ret = null;
 			if ((styleDefinition != null) && (styleDefinition.length() > 0)) {
 				ret = document.createElement("style");
