@@ -22,6 +22,9 @@
 package org.docx4j.openpackaging;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -41,27 +44,27 @@ public abstract class Base {
 
 	public abstract OpcPackage getPackage(); 
 	
-	private Object userData;
+	private Map<String, Object> userData = new HashMap<String, Object>();
 	/**
-	 * @return the userData
+	 * @param key
+	 * @return
 	 * @ since 3.0.0
 	 */
-	public Object getUserData() {
-		return userData;
+	public Object getUserData(String key) {
+		return userData.get(key);
 	}
-
 	/**
 	 * An object allowing the user of the docx4j
 	 * API to associate arbitrary data with this
 	 * package/part while the package is in memory. 
 	 * Note that the data is not saved when the package is
 	 * saved.
-	 * 
-	 * @param userData the userData to set
+	 * @param key
+	 * @param value
 	 * @ since 3.0.0
 	 */
-	public void setUserData(Object userData) {
-		this.userData = userData;
+	public void setUserData(String key, Object value) {
+		userData.put(key, value);
 	}
 
 	/**
