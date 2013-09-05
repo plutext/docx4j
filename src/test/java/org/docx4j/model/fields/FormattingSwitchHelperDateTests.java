@@ -276,7 +276,7 @@ public class FormattingSwitchHelperDateTests {
 			
 		FldSimpleModel fsm = new FldSimpleModel();
 		fsm.build(instr);
-		return FormattingSwitchHelper.applyFormattingSwitch(fsm, val);		
+		return FormattingSwitchHelper.applyFormattingSwitch(null, fsm, val);		
 	}
 		
 	private static class SwitchTestData {
