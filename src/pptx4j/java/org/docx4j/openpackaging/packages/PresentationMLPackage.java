@@ -41,6 +41,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -137,7 +138,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * @throws InvalidFormatException
 	 */
 	public static PresentationMLPackage createPackage() throws InvalidFormatException {
-
+		
 		String slideSize= Docx4jProperties.getProperties().getProperty("pptx4j.PageSize", "A4");
 		log.info("Using paper size: " + slideSize);
 		
@@ -210,7 +211,7 @@ public class PresentationMLPackage  extends OpcPackage {
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
 		
-		
+		pmlPack.setPartStore(new ZipPartStore());
 
 		// Return the new package
 		return pmlPack;
@@ -227,6 +228,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * @throws InvalidFormatException
 	 * @throws JAXBException
 	 */
+	@Deprecated
 	public static SlidePart createSlidePart(MainPresentationPart pp, SlideLayoutPart layoutPart, PartName partName) 
 		throws InvalidFormatException, JAXBException {
 		

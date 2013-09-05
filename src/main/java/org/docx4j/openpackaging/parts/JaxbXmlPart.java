@@ -115,8 +115,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 				String name = this.partName.getName();
 				
 				try {
-					this.setContentLengthAsLoaded(
-							partStore.getPartSize( name.substring(1)));
+					if (partStore!=null) {
+						this.setContentLengthAsLoaded(
+								partStore.getPartSize( name.substring(1)));
+					}
 				} catch (UnsupportedOperationException uoe) {}
 					
 				is = partStore.loadPart( 
@@ -137,8 +139,27 @@ public abstract class JaxbXmlPart<E> extends Part {
 		}
 		return jaxbElement;
 	}
+	
+	/**
+	 * Get the live contents of this part.
+	 * (Just an alias/synonym for getJaxbElement())
+	 * @return
+	 * @since 3.0
+	 */
+	public E getContents() {
+		return getJaxbElement();
+	}
 
 	public void setJaxbElement(E jaxbElement) {
+		this.jaxbElement = jaxbElement;
+	}
+	/**
+	 * Set the  contents of this part.
+	 * (Just an alias/synonym for setJaxbElement())
+	 * @param jaxbElement
+	 * @since 3.0
+	 */
+	public void setContents(E jaxbElement) {
 		this.jaxbElement = jaxbElement;
 	}
 	

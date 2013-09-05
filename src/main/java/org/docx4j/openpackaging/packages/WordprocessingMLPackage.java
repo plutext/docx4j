@@ -52,6 +52,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -445,7 +446,9 @@ public class WordprocessingMLPackage extends OpcPackage {
 		DocPropsExtendedPart app = new DocPropsExtendedPart();
 		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
 		app.setJaxbElement(extFactory.createProperties() );
-		wmlPack.addTargetPart(app);		
+		wmlPack.addTargetPart(app);	
+		
+		wmlPack.setPartStore(new ZipPartStore());
 		
 		// Return the new package
 		return wmlPack;
