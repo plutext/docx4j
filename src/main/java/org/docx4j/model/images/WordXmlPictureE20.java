@@ -313,14 +313,35 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		AbstractWmlConversionContext context,
     		Object wpInline) {
 
+    	
+    	return createHtmlImgE20(context, wpInline, null);
+    }
+
+    /** Extension function to create an HTML <img> element
+     * from "E2.0 images" 
+     *      //w:drawing/wp:inline
+     *     |//w:drawing/wp:anchor
+     * with a custom ID.
+     * @param context
+     * @param wpInline
+     * @return
+     */
+    public static DocumentFragment createHtmlImgE20(
+    		AbstractWmlConversionContext context,
+    		Object wpInline, String id) {
+
     	Part sourcePart = context.getCurrentPart();
     	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
         		 context.getImageHandler(), wpInline, sourcePart );
     	
+    	if (id!=null) {
+    		converter.setID(id);
+    	}
+    	
     	return getHtmlDocumentFragment(converter);
     }
-
+    
     /** Extension function to create an XSL FO <fo:external-graphic> element
      * from "E2.0 images" 
      *      //w:drawing/wp:inline

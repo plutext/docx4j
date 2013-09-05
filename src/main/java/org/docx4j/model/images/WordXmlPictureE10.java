@@ -194,18 +194,22 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     
     
     /** Extension function to create an <img> element
-     * from "E1.0 images"
-     *  
-     *      //w:pict
-     * @param wmlPackage
-     * @param imageDirPath
-     * @param shape
-     * @param imageData
-     * @return
+     * from "E1.0 images" //w:pict
      */
     public static DocumentFragment createHtmlImgE10(
     		AbstractWmlConversionContext context,
     		Object wpict) {
+    	
+    	return createHtmlImgE10(context, wpict, null);
+    }
+
+    /** Extension function to create an <img> element
+     * from "E1.0 images" ie //w:pict
+     * with a custom ID
+     */
+    public static DocumentFragment createHtmlImgE10(
+    		AbstractWmlConversionContext context,
+    		Object wpict, String id) {
     	
     	Part sourcePart = context.getCurrentPart();
 
@@ -213,9 +217,13 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
         		 context.getImageHandler(),
         		 wpict, sourcePart);
     	
+    	if (id!=null) {
+    		converter.setID(id);
+    	}
+    	
     	return getHtmlDocumentFragment(converter);
     }
-
+    
     /** Extension function to create an <img> element
      * from "E1.0 images"
      *  
