@@ -92,6 +92,7 @@ public class Docx4J {
 	/** If avaiable export the document using a xsl transformation
 	 */
 	public static final int FLAG_EXPORT_PREFER_XSL = 1;
+	
 	/** If avaiable export the document using a visitor
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
@@ -99,6 +100,7 @@ public class Docx4J {
 	/** Save the document in a zip container (default docx)
 	 */
 	public static final int FLAG_SAVE_ZIP_FILE = 1;
+	
 	/** Save the document as a flat xml document
 	 */
 	public static final int FLAG_SAVE_FLAT_XML = 2;
@@ -108,14 +110,17 @@ public class Docx4J {
 	 *  the document will be used.
 	 */
 	public static final int FLAG_BIND_INSERT_XML = 1;
+	
 	/** Insert the data of the xml in the content controls 
 	 *  Not needed, if the document will only be opened in word 
 	 *  and not converted to other formats.
 	 */
 	public static final int FLAG_BIND_BIND_XML = 2;
+	
 	/** Remove the content controls of the document
 	 */
 	public static final int FLAG_BIND_REMOVE_SDT = 4;
+	
 	/** Remove any xml parts from the document that 
 	 *  are used with the content controls.
 	 */
@@ -421,7 +426,7 @@ public class Docx4J {
 	}
 	
 	/**
-	 *  Dupplicate the document
+	 *  Duplicate the document
 	 */	
 	public static WordprocessingMLPackage clone(WordprocessingMLPackage wmlPackage) throws Docx4JException {
 		//Using the PartialDeepCopy is probably faster than serializing and deserializing the complete document.
