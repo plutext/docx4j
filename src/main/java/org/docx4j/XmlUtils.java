@@ -887,6 +887,8 @@ public class XmlUtils {
 					continue;
 				}
 
+				if (pairs.getKey().equals("customXsltTemplates")) continue;
+				
 				if (pairs.getValue() == null) {
 					log.warn("parameter '" + pairs.getKey() + "' was null.");
 				} else {
