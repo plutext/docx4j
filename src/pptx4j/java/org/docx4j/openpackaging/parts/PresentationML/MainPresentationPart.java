@@ -20,20 +20,26 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.util.List;
+
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.Pptx4jException;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
+import org.pptx4j.pml.Presentation.SldIdLst.SldId;
 
 
 
@@ -270,7 +276,8 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	
 	/**
 	 * @since 2.8.1
-	 */		
+	 */	
+	@Deprecated 
 	public Presentation.SldIdLst.SldId addSlideIdListEntry(SlidePart slidePart, AddPartBehaviour mode) 
 		throws InvalidFormatException {	
 
@@ -302,5 +309,145 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		return entry;
 			
 		}
+	
+	/**
+	 * Append the slide at the end of the presentation.
+	 * @param slidePart
+	 * @throws Pptx4jException
+	 * @since 3.0
+	 */
+	public boolean addSlide(SlidePart slidePart) throws Pptx4jException {
+		
+		/* Powerpoint 2010 can't open a pptx in which a slide appears
+		 * several times, for example:
+		 * 
+			  <p:sldIdLst>
+			    <p:sldId id="256" r:id="rId2"/>
+			    <p:sldId id="257" r:id="rId3"/>
+			    <p:sldId id="258" r:id="rId2"/> <----- can't use rId2 again
+			  </p:sldIdLst>		
+		 * 
+		 * Nor can 2 distinct relIds target the same part.
+		 */
+		
+		try {
+			Relationship rel = this.addTargetPart(slidePart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+			return this.getJaxbElement().getSldIdLst().getSldId().add(createSlideIdListEntry(rel));
+		} catch (InvalidFormatException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Inserts the slide at the specified position in the presentation. 
+	 * Shifts the element currently at that position (if any) and any subsequent elements to the 
+	 * right (adds one to their indices).
+	 * 
+	 * @param index
+	 * @param slidePart
+	 * @throws Pptx4jException
+	 * @since 3.0
+	 */
+	public void addSlide(int index, SlidePart slidePart) throws Pptx4jException {
+
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		int zeroBasedCount = sldIds.size(); 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Pptx4jException("Can't add slide at index " + index + ".  (There are " + sldIds.size() + " slides) ");			
+		}
+		
+		try {
+			Relationship rel = this.addTargetPart(slidePart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+			sldIds.add(index, createSlideIdListEntry(rel));
+		} catch (InvalidFormatException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}
+	}
+	
+	private Presentation.SldIdLst.SldId createSlideIdListEntry(Relationship rel) throws InvalidFormatException {	
+			
+		Presentation.SldIdLst.SldId entry = Context.getpmlObjectFactory().createPresentationSldIdLstSldId();
+		
+		entry.setId( this.getSlideId() );
+		entry.setRid(rel.getId());
+		
+		return entry;
+	}
+	
+	/**
+	 * @param index
+	 * @throws Pptx4jException 
+	 * @since 3.0
+	 */
+	public void removeSlide(int index) throws Pptx4jException {
+		
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		int zeroBasedCount = sldIds.size() -1; 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Pptx4jException("No slide at index " + index + ".  (There are " + sldIds.size() + " slides) ");			
+		}
+		
+		Presentation.SldIdLst.SldId entry = this.getJaxbElement().getSldIdLst().getSldId().remove(index);
+		
+		Relationship rel = this.getRelationshipsPart().getRelationshipByID(entry.getRid());
+		
+		Part part = this.getRelationshipsPart().getPart(rel);
+		
+		this.getPackage().getParts().remove(part.getPartName());
+		this.getRelationshipsPart().removeRelationship(rel);
+	}
+	
+	/**
+	 * @param rel
+	 * @throws Pptx4jException 
+	 * @since 3.0
+	 */
+	public void removeSlide(Relationship rel) throws Pptx4jException {
+		
+		if (rel==null) throw new Pptx4jException("Null relationship.");
+		
+		int index = -1;
+		int i=0;
+		for (Presentation.SldIdLst.SldId entry : this.getJaxbElement().getSldIdLst().getSldId()) {
+			
+			if (entry.getRid().equals(rel.getId())) {
+				index = i;
+				break;
+			}
+			i++;
+		}
+		
+		if (index>-1) {
+			removeSlide(index);
+		} else {
+			throw new Pptx4jException("No slide is the target of that relationship.");
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }

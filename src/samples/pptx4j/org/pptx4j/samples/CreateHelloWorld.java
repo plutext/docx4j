@@ -60,8 +60,13 @@ public class CreateHelloWorld  {
 				new PartName("/ppt/slideLayouts/slideLayout1.xml"));
 		
 		// OK, now we can create a slide
-		SlidePart slidePart = presentationMLPackage.createSlidePart(pp, layoutPart, 
-				new PartName("/ppt/slides/slide1.xml"));
+		SlidePart slidePart = new SlidePart(new PartName("/ppt/slides/slide1.xml"));
+		slidePart.setContents( SlidePart.createSld() );		
+		pp.addSlide(0, slidePart);
+		
+		// Slide layout part
+		slidePart.addTargetPart(layoutPart);
+		
 				
 		// Create and add shape
 		Shape sample = ((Shape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
