@@ -89,11 +89,11 @@ public class Docx4J {
 	 */
 	public static final int FLAG_NONE = 0;
 	
-	/** If avaiable export the document using a xsl transformation
+	/** If available export the document using a xsl transformation
 	 */
 	public static final int FLAG_EXPORT_PREFER_XSL = 1;
 	
-	/** If avaiable export the document using a visitor
+	/** If available export the document using a visitor
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
 
@@ -231,11 +231,21 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, String xmlDocument, int flags) throws Docx4JException {
-	ByteArrayInputStream xmlStream = null;
-		try {
-			xmlStream = new ByteArrayInputStream(xmlDocument.getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e1) {
-			xmlStream = new ByteArrayInputStream(xmlDocument.getBytes());
+		
+		ByteArrayInputStream xmlStream = null;
+		if (flags == FLAG_NONE) {
+			//do everything
+			flags = (FLAG_BIND_INSERT_XML |
+					 FLAG_BIND_BIND_XML |
+					 FLAG_BIND_REMOVE_SDT |
+					 FLAG_BIND_REMOVE_XML);
+		}
+		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
+			try {
+				xmlStream = new ByteArrayInputStream(xmlDocument.getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException e1) {
+				xmlStream = new ByteArrayInputStream(xmlDocument.getBytes());
+			}
 		}
         bind(wmlPackage, xmlStream, flags);
 	}
@@ -244,14 +254,23 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, InputStream xmlDocument, int flags) throws Docx4JException {
-    DocumentBuilder documentBuilder = null; 
-    Document xmlDoc = null;
-		try {
-            documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder(); 
-            xmlDoc = documentBuilder.parse(xmlDocument);
-		} catch (Exception e) {
-			throw new Docx4JException("Problems creating a org.w3c.dom.Document for the passed input stream.", e);
-		} 
+		if (flags == FLAG_NONE) {
+			//do everything
+			flags = (FLAG_BIND_INSERT_XML |
+					 FLAG_BIND_BIND_XML |
+					 FLAG_BIND_REMOVE_SDT |
+					 FLAG_BIND_REMOVE_XML);
+		}
+	    Document xmlDoc = null;
+		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
+		    DocumentBuilder documentBuilder = null; 
+				try {
+		            documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder(); 
+		            xmlDoc = documentBuilder.parse(xmlDocument);
+				} catch (Exception e) {
+					throw new Docx4JException("Problems creating a org.w3c.dom.Document for the passed input stream.", e);
+				}
+		}
         bind(wmlPackage, xmlDoc, flags);
 	}
 	
@@ -484,7 +503,7 @@ public class Docx4J {
 	}
 	
 	/**
-	 *  Convenience the document to HTML
+	 *  Convert the document to HTML
 	 */	
 	public static void toHTML(WordprocessingMLPackage wmlPackage, String imageDirPath, String imageTargetUri, OutputStream outputStream) throws Docx4JException {
 	HTMLSettings settings = createHTMLSettings();
