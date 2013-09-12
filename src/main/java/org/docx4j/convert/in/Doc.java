@@ -20,22 +20,12 @@
 
 package org.docx4j.convert.in;
 
-import java.awt.geom.Dimension2D;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.model.StyleDescription;
-import org.apache.poi.hwpf.model.io.HWPFOutputStream;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
-import org.apache.poi.hwpf.usermodel.LineSpacingDescriptor;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.Range;
@@ -43,22 +33,13 @@ import org.apache.poi.hwpf.usermodel.Section;
 import org.apache.poi.hwpf.usermodel.Table;
 import org.apache.poi.hwpf.usermodel.TableCell;
 import org.apache.poi.hwpf.usermodel.TableRow;
-import org.apache.xmlgraphics.image.loader.ImageInfo;
-import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.structure.PageDimensions;
-import org.docx4j.model.structure.SectionWrapper;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.CxCy;
-import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.Spacing;
-import org.docx4j.wml.STLineSpacingRule;
+
 
 /**
  * @author jason
@@ -137,8 +118,6 @@ public class Doc {
 			for (int y = 0; y < s.numParagraphs(); y++) {
 				Paragraph p = s.getParagraph(y);
 
-				System.out.println("p: " + p.text());
-
 				if (p.isInTable()) {
 					Table t = s.getTable(p);
 					int cl = numCol(t);
@@ -168,7 +147,7 @@ public class Doc {
 	}
 
 	private static int ID1 = 1;
-	private static int ID2 = 4000000;
+	private static int ID2 = 2;
 
 	private static org.docx4j.wml.P handleP(
 			WordprocessingMLPackage wordMLPackage, HWPFDocument doc,
