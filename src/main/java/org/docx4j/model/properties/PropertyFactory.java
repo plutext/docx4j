@@ -256,8 +256,13 @@ public class PropertyFactory {
 //			dest.setOutline(rPr.getOutline());
 //		if (rPr.getPosition() != null)
 //			dest.setPosition(rPr.getPosition());
-		if (rPr.getRFonts() != null)
-			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+		
+		
+		// RFonts is done at the w:t level, via RunFontSelector
+//		if (rPr.getRFonts() != null)
+//			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+		
+		
 //		if (rPr.getRPrChange() != null)
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)
@@ -344,8 +349,11 @@ public class PropertyFactory {
 //			dest.setOutline(rPr.getOutline());
 //		if (rPr.getPosition() != null)
 //			dest.setPosition(rPr.getPosition());
-		if (rPr.getRFonts() != null)
-			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+		
+		// RFonts is done at the w:t level, via RunFontSelector
+//		if (rPr.getRFonts() != null)
+//			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+		
 //		if (rPr.getRPrChange() != null)
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)

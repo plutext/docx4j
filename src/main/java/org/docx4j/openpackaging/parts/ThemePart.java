@@ -20,10 +20,20 @@
 
 package org.docx4j.openpackaging.parts;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.docx4j.dml.FontCollection;
+import org.docx4j.dml.FontCollection.Font;
+import org.docx4j.dml.TextFont;
 import org.docx4j.dml.Theme;
+import org.docx4j.fonts.LanguageTagToScriptMapping;
+import org.docx4j.fonts.UnicodeRange;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTLanguage;
+import org.docx4j.wml.STTheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,5 +81,326 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		}
     	return fontScheme;
 	}
+    
+    private Map<String,String> scriptToTypefaceMajor = null;
+    private Map<String,String> scriptToTypefaceMinor = null;
+    
+    private Map<String,String> getScriptToTypefaceMajor() {
+    	
+    	// init
+    	if (scriptToTypefaceMajor==null) {
+    		scriptToTypefaceMajor = new HashMap<String,String>();
+    		
+    		if (getMajorFontCollection()!=null) {
+				for( Font  f : majorFontCollection.getFont()) {
+    					scriptToTypefaceMajor.put(f.getScript(), f.getTypeface() );
+    			}
+    		}
+    	}
+    	
+    	return scriptToTypefaceMajor;
+    	
+    }
+    private Map<String,String> getScriptToTypefaceMinor() {
+    	
+    	// init
+    	if (scriptToTypefaceMinor==null) {
+    		scriptToTypefaceMinor = new HashMap<String,String>();
+    		
+    		if (getMinorFontCollection()!=null) {
+				for( Font  f : minorFontCollection.getFont()) {
+					scriptToTypefaceMinor.put(f.getScript(), f.getTypeface() );
+				}
+    		}
+    	}
+    	
+    	return scriptToTypefaceMinor;
+    	
+    }
+
+    private FontCollection majorFontCollection = null;
+    private boolean majorFontCollectionInitialised = false;
+    private FontCollection getMajorFontCollection() {
+    	
+    	if (majorFontCollectionInitialised) return majorFontCollection;
+    	
+		if (this.getContents().getThemeElements()!=null
+				&& this.getContents().getThemeElements().getFontScheme()!=null) {
+			
+			majorFontCollection = this.getContents().getThemeElements().getFontScheme().getMajorFont();
+		}
+		majorFontCollectionInitialised = true;
+		return majorFontCollection;
+    }
+    
+    private FontCollection minorFontCollection = null;
+    private boolean minorFontCollectionInitialised = false;
+    private FontCollection getMinorFontCollection() {
+    	
+    	if (minorFontCollectionInitialised) return minorFontCollection;
+    	
+		if (this.getContents().getThemeElements()!=null
+				&& this.getContents().getThemeElements().getFontScheme()!=null) {
+			
+			minorFontCollection = this.getContents().getThemeElements().getFontScheme().getMinorFont();
+		}
+		minorFontCollectionInitialised = true;
+		return minorFontCollection;
+    }
+
+    
+    /*
+      <a:majorFont>
+        <a:latin typeface="Cambria"/>
+        <a:ea typeface=""/>
+        <a:cs typeface=""/>
+        <a:font script="Jpan" typeface="ＭＳ ゴシック"/>
+		:
+      </a:majorFont>
+      <a:minorFont>
+        <a:latin typeface="Calibri"/>
+        <a:ea typeface=""/>
+        <a:cs typeface=""/>    
+     */
+    
+    private TextFont majorLatin = null;
+	private TextFont majorEastAsian = null;
+    private TextFont majorComplexScript = null;
+    private TextFont minorLatin = null;
+    private TextFont minorEastAsian = null;
+    private TextFont minorComplexScript = null;
+    
+    public TextFont getMajorLatin() {
+    	if (majorLatin==null
+    			&& getMajorFontCollection()!=null) {
+    		majorLatin = getMajorFontCollection().getLatin();
+    	}
+		return majorLatin;
+	}
+
+    private TextFont getMajorHighAnsi() {
+    	return getMajorLatin();
+    }    
+    
+    private TextFont getMajorEastAsian() {
+    	if (majorEastAsian==null
+    			&& getMajorFontCollection()!=null) {
+    		majorEastAsian = getMajorFontCollection().getEa();
+    	}
+		return majorEastAsian;
+	}
+
+    private TextFont getMajorComplexScript() {
+    	if (majorComplexScript==null
+    			&& getMajorFontCollection()!=null) {
+    		majorComplexScript = getMajorFontCollection().getCs();
+    	}
+		return majorComplexScript;
+	}
+
+    private TextFont getMinorLatin() {
+    	if (minorLatin==null
+    			&& getMinorFontCollection()!=null) {
+    		minorLatin = getMinorFontCollection().getLatin();
+    	}
+		return minorLatin;
+	}
+
+    private TextFont getMinorHighAnsi() {
+    	return getMinorLatin();
+    }    
+	
+    private TextFont getMinorEastAsian() {
+    	if (minorEastAsian==null
+    			&& getMinorFontCollection()!=null) {
+    		minorEastAsian = getMinorFontCollection().getEa();
+    	}
+		return minorEastAsian;
+	}
+
+    private TextFont getMinorComplexScript() {
+    	if (minorComplexScript==null
+    			&& getMinorFontCollection()!=null) {
+    		minorComplexScript = getMinorFontCollection().getCs();
+    	}
+		return minorComplexScript;
+	}
+
+	private TextFont getTextFontFromTheme(STTheme type) {
+
+		if (type.equals(STTheme.MAJOR_EAST_ASIA)) {
+			return getMajorEastAsian();
+		} else if (type.equals(STTheme.MINOR_EAST_ASIA)) {
+			return getMinorEastAsian();
+			
+		} else if (type.equals(STTheme.MAJOR_ASCII)) {
+			return getMajorLatin();
+		} else if (type.equals(STTheme.MINOR_ASCII)) {
+			return getMinorLatin();
+
+		} else if (type.equals(STTheme.MAJOR_BIDI)) {
+			return getMajorComplexScript();
+		} else if (type.equals(STTheme.MINOR_BIDI)) {
+			return getMinorComplexScript();
+
+		} else if (type.equals(STTheme.MAJOR_H_ANSI)) {
+			return getMajorHighAnsi();
+		} else if (type.equals(STTheme.MINOR_H_ANSI)) {
+			return getMinorHighAnsi();
+		}	
+		return getMinorLatin();
+	}
+    
+       
+	public String getFontFromTheme(STTheme type) {
+
+		TextFont textFont = getTextFontFromTheme(type);
+		if (textFont==null) {
+			
+			log.warn("No font specified for " + type.toString() );
+			return null;
+			
+		} else {
+			String typeface = textFont.getTypeface();
+    		if (typeface==null) {
+    			log.warn("Missing typeface in font for " + type.toString() );
+    			return null;
+    		} else {
+    			return typeface;
+    		}
+		}
+		
+	}
+	
+	
+    public String getFont(STTheme type, CTLanguage themeFontLang) {
+
+    	if (themeFontLang==null) {
+    		// then the default fonts for each region as specified by the latin, ea, and cs elements should be used
+    		
+    		return getFontFromTheme(type);
+    		
+    	} else {
+    	
+    		String lang = this.getLang(themeFontLang, type);
+    		if (lang==null) {
+        		return getFontFromTheme(type);
+    		}
+    		
+    		// need to convert
+    		String script = LanguageTagToScriptMapping.getScriptForLanguageTag(lang);
+    		
+    		if (script==null) {
+        		return getFontFromTheme(type);
+    		} else {
+    		
+	    		// now, lookup @typeface in the map
+	    		String typeface = null;
+	    		if (isMajor(type)) {
+	    			typeface = scriptToTypefaceMajor.get(script);
+	    		} else {
+	    			typeface = scriptToTypefaceMinor.get(script);	    			
+	    		}
+	    		
+	    		if (typeface==null) {
+	        		return getFontFromTheme(type);	    			
+	    		} else {
+	    			return typeface;
+	    		}
+    		}
+    	}
+    }
+    
+    private boolean isMajor(STTheme type) {
+    	
+    	if (type == STTheme.MAJOR_ASCII 
+    			|| type == STTheme.MAJOR_BIDI 
+    			|| type == STTheme.MAJOR_EAST_ASIA 
+    			|| type == STTheme.MAJOR_H_ANSI) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+    	
+    }
+    
+    /**
+     * @param themeFontLang
+     * @param range
+     * @since 3.0.0
+     */
+    private String getLang(CTLanguage themeFontLang, STTheme range) {
+    	
+    	/* 
+    	 * CTLanguage will be w:themeFontLang element from settings part,  
+    	 * for example:
+    	 * 
+    	 *     <w:themeFontLang w:val="en-US" w:eastAsia="ko-KR"/>
+    	 *     
+    	 * Per spec, see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/themeFontLang.html    
+    	 * These mappings are performed as follows:
+    	 * 
+			•	For majorAscii/majorHAnsi, locate the font element in the majorFont element
+			 	in the theme part for the language specified by the val attribute
+			 	
+			•	For majorBidi, locate the font element in the majorFont element in the theme part 
+				for the language specified by the bidi attribute
+				
+			•	For majorEastAsia, locate the font element in the majorFont element in the theme part
+			 	for the language specified by the eastAsia attribute
+			 	
+			•	For minorAscii/minorHAnsi, locate the font element in the minorFont element 
+				in the theme part for the language specified by the val attribute
+				
+			•	For minorBidi, locate the font element in the minorFont element in the theme part 
+				for the language specified by the bidi attribute
+				
+			•	For minorEastAsia, locate the font element in the minorFont element in the theme part 
+				for the language specified by the eastAsia attribute
+				
+			If this element is omitted, then the default fonts for each region as specified by the latin, ea, 
+			and cs elements should be used.
+			
+    	 */
+    	
+		if (range==STTheme.MAJOR_ASCII 
+				|| range==STTheme.MINOR_ASCII 
+						|| range==STTheme.MAJOR_H_ANSI 
+								|| range==STTheme.MINOR_H_ANSI ) {
+			if (themeFontLang.getVal()==null) {
+				// then the languages for the contents of this run using Latin characters 
+				// shall be automatically determined based on their contents using any appropriate method.
+				
+				return null;
+			} else {
+				return themeFontLang.getVal();
+			}
+		} else if (range==STTheme.MAJOR_BIDI || range==STTheme.MINOR_BIDI) // complex script
+				 {
+
+			if (themeFontLang.getBidi()==null) {
+				// then the languages for the contents of this run using complex script characters 
+				// shall be automatically determined based on their contents using any appropriate method.
+				
+				return null;
+			} else {
+				return themeFontLang.getBidi();
+			}
+			
+		} else //(range==UnicodeRange.EAST_ASIAN ) 
+			{
+
+			if (themeFontLang.getEastAsia()==null) {
+				// then the languages for the contents of this run using East Asian characters  
+				// shall be automatically determined based on their contents using any appropriate method.
+				
+				return null;
+			} else {
+				return themeFontLang.getEastAsia();
+			}
+			
+		}    		
+    	
+    }
 	
 }

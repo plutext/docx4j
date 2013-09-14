@@ -60,13 +60,16 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	//Shortcut to the style tree of the document 
 	protected StyleTree styleTree = null;
 	
-
+	private RunFontSelector runFontSelector = null;
+	
 	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
 		super(messageWriter, conversionSettings, wmlPackage);
 		this.writerRegistry = initializeWriterRegistry(writerRegistry);
 		this.transformStates = initializeTransformStates();
 		this.conversionSectionWrappers = conversionSectionWrappers;
 		this.styleTree = initializeStyleTree();
+		runFontSelector = new RunFontSelector(getWmlPackage(), this.getLog());
+		
 	}
 
 	@Override
@@ -145,6 +148,13 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 
 	public StyleTree getStyleTree() {
 		return styleTree;
+	}
+	
+	/**
+	 * @return the runFontSelector
+	 */
+	public RunFontSelector getRunFontSelector() {
+		return runFontSelector;
 	}
 	
 	@Override

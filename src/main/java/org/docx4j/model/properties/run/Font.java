@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
+@Deprecated
 public class Font extends AbstractRunProperty {
 	
 	protected static Logger log = LoggerFactory.getLogger(Font.class);		

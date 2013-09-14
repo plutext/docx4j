@@ -30,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.RunFontSelector;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -68,6 +69,32 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltHTMLFunctions {
+	
+    public static DocumentFragment fontSelector(HTMLConversionContext conversionContext, 
+    		NodeIterator rPrNodeIt,
+    		String text) {
+
+		RPr rPr = null;
+    	if (rPrNodeIt!=null) { //It is never null
+    		Node n = rPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				rPr =  (RPr)jaxb;
+    			} catch (ClassCastException e) {
+    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}        	        			
+    		}
+    	}
+    	
+    	return conversionContext.getRunFontSelector().fontSelector(rPr, text);
+
+    }
 	
 	/*
 		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -628,7 +655,7 @@ public class XsltHTMLFunctions {
 			Node n = childResults.nextNode();
 			do {	
 				
-				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
+//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
 				
 				// getNumberXmlNode creates a span node, which is empty
 				// if there is no numbering.

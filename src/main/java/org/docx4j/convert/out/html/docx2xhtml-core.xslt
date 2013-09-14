@@ -287,13 +287,31 @@
 		
   </xsl:template>
 
-  <xsl:template match="w:t[@xml:space='preserve']">
-  	<span style="white-space:pre-wrap;"><xsl:value-of select="."/></span>
-  	<!--  Good for FF3, and WebKit; not honoured by IE7 though.  Yawn. -->
-  </xsl:template>  	
 
-  <xsl:template match="w:t">  	
-  	<xsl:value-of select="."/>
+	<xsl:template match="w:t[parent::w:r]">
+	
+		<xsl:variable name="rPrNode" select="../w:rPr" />  	
+		<xsl:variable name="text" select="." />  	
+	
+	
+		<xsl:choose>
+			<xsl:when test="@xml:space='preserve'">
+				<span style="white-space:pre-wrap;">
+					AAA<xsl:value-of select="." />
+				</span>
+				<!-- Good for FF3, and WebKit; not honoured by IE7 though. Yawn. -->
+			</xsl:when>
+			<xsl:otherwise>
+			
+				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.fontSelector( 
+				  		$conversionContext, $rPrNode, $text)" />
+				
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+  <xsl:template match="w:t[not(parent::w:r)]">  	
+  	CC<xsl:value-of select="."/>
   </xsl:template>
 
 <!-- This is an extension point.
