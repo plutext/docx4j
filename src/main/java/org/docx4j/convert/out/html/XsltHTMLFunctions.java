@@ -22,6 +22,8 @@ package org.docx4j.convert.out.html;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -65,6 +67,8 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltHTMLFunctions {
+    private static final Pattern HEADING_PATTERN = Pattern.compile("heading\\s*(\\d)");
+    private static final Pattern HEADING_TAG_PATTERN = Pattern.compile("h\\d");
 
     
     /**
@@ -347,24 +351,31 @@ public class XsltHTMLFunctions {
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();			
 				//log.info("Document: " + document.getClass().getName() );
-			Element xhtmlBlock = document.createElement(htmlElementName);			
-			document.appendChild(xhtmlBlock);
+			
+            context.getLog().debug(pStyleVal);
+            Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();        
+            org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);			
 							
 			if (context.getLog().isDebugEnabled() && pPr!=null) {					
 				context.getLog().debug(XmlUtils.marshaltoString(pPr, true, true));					
 			}				
-		    
-			// Set @class
-			context.getLog().debug(pStyleVal);
-			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-			xhtmlBlock.setAttribute("class", 
-					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
-			);
-		
-			
+
+			// Check if heading
+			Matcher matcher = HEADING_PATTERN.matcher(asn.getData().getStyle().getName().getVal());
+            if(matcher.find()) {
+                htmlElementName="h"+Math.min(Integer.parseInt(matcher.group(1)),6);
+            }
+            Element xhtmlBlock = document.createElement(htmlElementName);           
+            document.appendChild(xhtmlBlock);
+            
+            // Set @class
+            xhtmlBlock.setAttribute("class", 
+                    StyleTree.getHtmlClassAttributeValue(pTree, asn)            
+            );
+            
 			// Does our pPr contain anything else?
-			boolean ignoreBorders = (htmlElementName.equals("p"));
+			boolean ignoreBorders = (htmlElementName.equals("p") || 
+                    HEADING_TAG_PATTERN.matcher(htmlElementName).matches());
 			if (pPr!=null) {
 				
 				// Is there numbering indentation to honour?
