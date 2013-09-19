@@ -78,7 +78,6 @@
 
 	<xsl:variable name="parent" select="local-name(ancestor::*[self::w:body or self::w:hdr or self::w:ftr or self::w:p or self::w:r or self::w:tbl or self::w:tr or self::w:tc][1])" />
 	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
-	<!--  TODO: use throughout -->
   	
   	<xsl:choose>
 
@@ -252,7 +251,7 @@
 										$xPathsPart,
 										$parent,
 										$child,
-										w:sdtContent/w:r/w:rPr,
+										w:sdtPr/w:rPr,
 										$tag )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    

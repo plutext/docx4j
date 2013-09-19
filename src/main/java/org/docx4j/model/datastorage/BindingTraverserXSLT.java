@@ -1,6 +1,7 @@
 package org.docx4j.model.datastorage;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.Format;
@@ -25,10 +26,15 @@ import org.slf4j.LoggerFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.in.xhtml.XHTMLImporter;
+import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
+import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.model.styles.Tree;
+import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -43,9 +49,11 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.Style;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -145,6 +153,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
 	//&lt;html&gt;&lt;body&gt;  &lt;p&gt;hello &lt;/p&gt; &lt;/body&gt;&lt;/html&gt;
 	
+	
 	/**
 	 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
 	 * can insert into XSLT output.
@@ -168,14 +177,19 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 		
-		Class<?> xhtmlImporterClass;
+		
+		
+		XHTMLImporter xHTMLImporter= null;
 	    try {
-	        xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporter");
-	    } catch (ClassNotFoundException e) {
+	    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
+		    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
+		    xHTMLImporter = (XHTMLImporter) ctor.newInstance(pkg);
+	    } catch (Exception e) {
 	        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 			log.error(e.getMessage(), e);
 			return null;
 	    }		
+	    
 		
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag, true);
@@ -200,25 +214,91 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		if (r==null) return null;
 		
 		try {
+			r = r.trim();
+//			log.debug(r);
 			//String unescaped = StringEscapeUtils.unescapeHtml(r);
 			//log.info("Unescaped: " + unescaped);
 			
 			// It comes to us unescaped, so the above is unnecessary.
 
+			RPr rPrSDT = null;
+			Node rPrNode = rPrNodeIt.nextNode();
+			if (rPrNode!=null) {
+				rPrSDT = (RPr)XmlUtils.unmarshal(rPrNode);
+			}
+			
+			if (r.startsWith("<span")) {
+				// Wrap the XHTML in a span element with @class, @style as appropriate
+				// so FS uses suitable CSS 
+				
+				// Code copied from XsltHTMLFunctions.createBlockForRPr
+				Style defaultRunStyle = 
+						(pkg.getMainDocumentPart().getStyleDefinitionsPart() != null ?
+								pkg.getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
+						null);
+				
+		    	String defaultCharacterStyleId;
+		    	if (defaultRunStyle.getStyleId()==null) // possible, for non MS source docx
+		    		defaultCharacterStyleId = "DefaultParagraphFont";
+		    	else defaultCharacterStyleId = defaultRunStyle.getStyleId();
+		    	
+		    	
+		    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
+				
+				// Set @class	
+				String classVal =null;
+				String rStyleVal = defaultCharacterStyleId;
+				if ( rPrSDT!=null && rPrSDT.getRStyle()!=null) {
+					rStyleVal = rPrSDT.getRStyle().getVal();
+				}
+				Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+				org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+				if (asn==null) {
+					log.warn("No style node for: " + rStyleVal);
+				} else {
+					classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);		
+				}
+		    	
+				
+				String css = null;
+				if ( rPrSDT!=null) {
+					StringBuilder result = new StringBuilder();
+					HtmlCssHelper.createCss(pkg, rPrSDT, result);
+					css = result.toString();
+					if (css.equals("")) {
+						css =null;
+					}
+				}
+				
+				if (css==null && classVal==null) {
+					// Do nothing
+				} else if (classVal==null) {
+					// just @style
+					r = "<span style=\"" + css + "\">" + r + "</span>"; 
+				} else if (css==null) {
+					// just @class
+					r = "<span class=\"" + classVal + "\">" + r + "</span>"; 
+				} else {
+					r = "<span style=\"" + css + "\" class=\"" + classVal + "\">" + r + "</span>"; 					
+				}
+				log.debug("\nenhanced with css: \n" + r);
+			}
+			
 			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
-			// XHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
-	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
-	        setHyperlinkStyleMethod.invoke(null, 
-	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			
+			xHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+//	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
+//	        setHyperlinkStyleMethod.invoke(null, 
+//	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 			
 			String baseUrl = null;
 			List<Object> results = null;
 			try {
-				//results = XHTMLImporter.convert(r, baseUrl, pkg );
-		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class, WordprocessingMLPackage.class );
-		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl, pkg);
+				results = xHTMLImporter.convert(r, baseUrl );
+//		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class, WordprocessingMLPackage.class );
+//		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl, pkg);
 		        
 			} catch (Exception e) {
 				if (e instanceof NullPointerException) {
@@ -293,53 +373,48 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					log.warn("In paragraph context, so extra block-level content is being discarded!");
 				}
 				
-				RPr rPrSDT = null;
-				Node rPrNode = rPrNodeIt.nextNode();
-				if (rPrNode!=null) {
-					rPrSDT = (RPr)XmlUtils.unmarshal(rPrNode);
-				}
 								
 				for (Object o : ((P)results.get(0)).getContent() ) {
 					
-					if (o instanceof R) {
-
-						// Start with rPrSDT,
-						// and then superimpose on top anything which comes
-						// from the CSS. 
-						
-						if (rPrSDT==null) {
-							// Leave the CSS rPr as it is
-						} else {
-							RPr cssRPR = ((R)o).getRPr(); 
-							if (cssRPR==null) {
-								((R)o).setRPr(rPrSDT);																
-							} else {
-								log.debug("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
-								RPr baseRPR = XmlUtils.deepCopy(rPrSDT);
-								
-								// We want to apply
-								// real CSS settings, but not the defaults eg those in 
-								// src/main/resources/XhtmlNamespaceHandler.css								
-								// CSS defaults are:
-								//  <w:color w:val="000000"/>
-								//  <w:sz w:val="22"/>	
-								// We want to ignore those.
-								if (rPrSDT.getColor()!=null
-										&& cssRPR.getColor()!=null
-										&& cssRPR.getColor().getVal().equals("000000")) {
-									cssRPR.setColor(null);
-								}
-								if (rPrSDT.getSz()!=null
-										&& cssRPR.getSz()!=null
-										&& cssRPR.getSz().getVal().toString().equals("22")) {
-									cssRPR.setSz(null);
-								}
-								
-								StyleUtil.apply(cssRPR, baseRPR);
-								((R)o).setRPr(baseRPR);								
-							}
-						}
-					}					
+//					if (o instanceof R) {
+//
+//						// Start with rPrSDT,
+//						// and then superimpose on top anything which comes
+//						// from the CSS. 
+//						
+//						if (rPrSDT==null) {
+//							// Leave the CSS rPr as it is
+//						} else {
+//							RPr cssRPR = ((R)o).getRPr(); 
+//							if (cssRPR==null) {
+//								((R)o).setRPr(rPrSDT);																
+//							} else {
+//								log.debug("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
+//								RPr baseRPR = XmlUtils.deepCopy(rPrSDT);
+//								
+//								// We want to apply
+//								// real CSS settings, but not the defaults eg those in 
+//								// src/main/resources/XhtmlNamespaceHandler.css								
+//								// CSS defaults are:
+//								//  <w:color w:val="000000"/>
+//								//  <w:sz w:val="22"/>	
+//								// We want to ignore those.
+//								if (rPrSDT.getColor()!=null
+//										&& cssRPR.getColor()!=null
+//										&& cssRPR.getColor().getVal().equals("000000")) {
+//									cssRPR.setColor(null);
+//								}
+//								if (rPrSDT.getSz()!=null
+//										&& cssRPR.getSz()!=null
+//										&& cssRPR.getSz().getVal().toString().equals("22")) {
+//									cssRPR.setSz(null);
+//								}
+//								
+//								StyleUtil.apply(cssRPR, baseRPR);
+//								((R)o).setRPr(baseRPR);								
+//							}
+//						}
+//					}					
 					
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													

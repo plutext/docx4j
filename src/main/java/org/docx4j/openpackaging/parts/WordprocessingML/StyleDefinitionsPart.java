@@ -441,7 +441,22 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	    + "</w:pPrDefault>"
 	  + "</w:docDefaults>";
 	
-    
+
+	/**
+	 * It is convenient to have a CSS representation of styles,
+	 * and this part is a natural place to store it.
+	 * 
+	 * HtmlCssHelper contains a method createCssForStyles which
+	 * relies on StyleTree to generate CSS.  
+	 */
+	private String css;
+	public String getCss() {
+		return css;
+	}
+	public void setCss(String css) {
+		this.css = css;
+	}
+	
     
 //	public static void main(String[] args) throws Exception {
 //		
