@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.WmlXsltExporterDelegate;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -49,7 +50,25 @@ import org.w3c.dom.Document;
  * @since 3.0
  */
 public class HTMLExporterXslt extends AbstractHTMLExporter3 {
+	
 	private static final Logger log = LoggerFactory.getLogger(HTMLExporterXslt.class);
+
+	/**
+	 * Usual use case.  Ordinarily you'd use the Docx4J facade,
+	 * rather than using this constructor directly.
+	 */
+	public HTMLExporterXslt() {
+		super(new HTMLExporterXsltDelegate());
+	}
+
+	/**
+	 * using a customised WriterRegistry
+	 * 
+	 * @param writerRegistry
+	 */
+	public HTMLExporterXslt(AbstractWriterRegistry writerRegistry) {
+		super(new HTMLExporterXsltDelegate(), writerRegistry);
+	}
 	
 	protected static final String PROPERTY_HTML_OUTPUT_TYPE = 
 			"docx4j.Convert.Out.HTML.OutputMethodXML";
@@ -65,7 +84,6 @@ public class HTMLExporterXslt extends AbstractHTMLExporter3 {
 	protected static final URIResolver RESOURCES_URI_RESOLVER = 
 			new OutHtmlURIResolver();
 
-	protected static HTMLExporterXslt instance = null;
 	
 	protected static class OutHtmlURIResolver implements URIResolver {
 		@Override
@@ -139,9 +157,7 @@ public class HTMLExporterXslt extends AbstractHTMLExporter3 {
 		
 	}
 	
-	protected HTMLExporterXslt() {
-		super(new HTMLExporterXsltDelegate());
-	}
+	protected static HTMLExporterXslt instance = null;
 
 	public static Exporter<HTMLSettings> getInstance() {
 		if (instance == null) {

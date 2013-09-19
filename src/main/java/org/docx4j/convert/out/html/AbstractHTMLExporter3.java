@@ -22,22 +22,45 @@ package org.docx4j.convert.out.html;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.AbstractExporterDelegate;
 import org.docx4j.convert.out.common.AbstractWmlExporter;
+import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public abstract class AbstractHTMLExporter3 extends AbstractWmlExporter<HTMLSettings, HTMLConversionContext>{
 	
+	protected AbstractWriterRegistry writerRegistry = null;
+	
+	/**
+	 * usual use case
+	 * 
+	 * @param exporterDelegate
+	 */
 	protected AbstractHTMLExporter3(AbstractExporterDelegate<HTMLSettings, HTMLConversionContext> exporterDelegate) {
 		super(exporterDelegate);
 	}
 
+	/**
+	 * using a customised WriterRegistry
+	 * 
+	 * @param exporterDelegate
+	 * @param writerRegistry
+	 */
+	protected AbstractHTMLExporter3(AbstractExporterDelegate<HTMLSettings, HTMLConversionContext> exporterDelegate, AbstractWriterRegistry writerRegistry) {
+		super(exporterDelegate);
+		this.writerRegistry = writerRegistry; 
+	}
+	
 
 	@Override
 	protected HTMLConversionContext createContext(
 			HTMLSettings conversionSettings, 
 			WordprocessingMLPackage preprocessedPackage,
 			ConversionSectionWrappers sectionWrappers) {
-		return new HTMLConversionContext(conversionSettings, preprocessedPackage, sectionWrappers);
+		 if (writerRegistry==null) {
+			 return new HTMLConversionContext(conversionSettings, preprocessedPackage, sectionWrappers);
+		 } else {
+			 return new HTMLConversionContext(writerRegistry, conversionSettings, preprocessedPackage, sectionWrappers);			 
+		 }
 	}
 	
 }

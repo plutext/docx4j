@@ -109,10 +109,29 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 			}
 		};		
 	
+	/**
+	 * HTMLConversionContext used by default
+	 * 
+	 * @param settings
+	 * @param preprocessedPackage
+	 * @param conversionSectionWrappers
+	 */
 	public HTMLConversionContext(HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
 		super(HTML_WRITER_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
 	}
 
+	/**
+	 * HTMLConversionContext using a customised WriterRegistry
+	 * 
+	 * @param writerRegistry
+	 * @param settings
+	 * @param preprocessedPackage
+	 * @param conversionSectionWrappers
+	 */
+	public HTMLConversionContext(AbstractWriterRegistry writerRegistry, HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
+		super(writerRegistry, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
+	}
+	
 	@Override
 	protected void initializeSettings(AbstractConversionSettings settings, OpcPackage localOpcPackage) {
 	HTMLSettings htmlSettings = null;

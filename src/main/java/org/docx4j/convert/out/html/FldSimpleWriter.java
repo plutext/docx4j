@@ -81,7 +81,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 		
 	}
 	
-	protected FldSimpleWriter() {
+	public FldSimpleWriter() {
 		super(null, "span");
 	}
 
