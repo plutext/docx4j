@@ -20,6 +20,7 @@
 
 package org.docx4j.convert.out.flatOpcXml;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,6 +41,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
@@ -384,7 +386,10 @@ public class FlatOpcXmlCreator implements Output {
 		handled.put(resolvedPartUri, resolvedPartUri);		
 		
 		// recurse via this parts relationships, if it has any
-		if (part.getRelationshipsPart()!= null ) {
+		if (part.getRelationshipsPart()!= null
+				&& part.getRelationshipsPart().getJaxbElement()!=null
+				&& part.getRelationshipsPart().getJaxbElement().getRelationship()!=null
+				&& part.getRelationshipsPart().getJaxbElement().getRelationship().size()>0) {
 			RelationshipsPart rrp = part.getRelationshipsPart();
 			log.info("Found relationships " + rrp.getPartName() );
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
@@ -519,8 +524,9 @@ public class FlatOpcXmlCreator implements Output {
 	
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+//		String inputfilepath = System.getProperty("user.dir") + "/ole_tests/OUT_wmv_f.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/ole_tests/wmv_CT.pptx";
+		OpcPackage wordMLPackage = OpcPackage.load(new java.io.File(inputfilepath));
 		
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
 		
@@ -529,10 +535,16 @@ public class FlatOpcXmlCreator implements Output {
 		boolean suppressDeclaration = true;
 		boolean prettyprint = true;
 		
-		System.out.println( 
+		
+		String data = 
 				org.docx4j.XmlUtils.
 					marshaltoString(result, suppressDeclaration, prettyprint, 
-							org.docx4j.jaxb.Context.jcXmlPackage) );
+							org.docx4j.jaxb.Context.jcXmlPackage);
+		
+		FileUtils.writeStringToFile(
+				new File(System.getProperty("user.dir") + "/ole_tests/wmv_CT.xml"), 
+				data);
+		
 		
 		// Note - We don't bother adding:
 		// 1. mso-application PI
