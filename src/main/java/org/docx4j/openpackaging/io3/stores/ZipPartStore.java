@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -45,6 +46,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -54,6 +56,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.w3c.dom.Document;
 
 /**
@@ -332,16 +335,14 @@ public class ZipPartStore implements PartStore {
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 
 		try {
-	        // Add ZIP entry to output stream.
-	        zos.putNextEntry(new ZipEntry(resolvedPartUri));
-
+			
+			byte[] bytes = null;
+			
 	        if (((BinaryPart)part).isLoaded() ) {
 
 	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	            byte[] bytes = null;
 	            bytes = new byte[bb.limit()];
 	            bb.get(bytes);
-		        zos.write( bytes );
 
 	        } else {
 
@@ -353,23 +354,40 @@ public class ZipPartStore implements PartStore {
 
 		        	// Just use the ByteArray
 		        	log.debug(part.getPartName() + " is clean" );
-		            ByteArray bytes = partByteArrays.get(
+		            ByteArray byteArray = partByteArrays.get(
 		            		part.getPartName().getName().substring(1) );
-		            if (bytes == null) throw new IOException("part '" + part.getPartName() + "' not found");
-			        zos.write( bytes.getBytes() );
+		            if (byteArray == null) throw new IOException("part '" + part.getPartName() + "' not found");
+		            bytes = byteArray.getBytes();
 
 	        	} else {
 
 	        		InputStream is = sourcePartStore.loadPart(part.getPartName().getName().substring(1));
-	        		int read = 0;
-	        		byte[] bytes = new byte[1024];
-
-	        		while ((read = is.read(bytes)) != -1) {
-	        			zos.write(bytes, 0, read);
-	        		}
-	        		is.close();
+	        		bytes = IOUtils.toByteArray(is);
 	        	}
 	        }
+			
+	        // Add ZIP entry to output stream.
+			if (part instanceof OleObjectBinaryPart) {
+				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
+				// (though 64-bit version is fine)
+				
+				ZipEntry ze = new ZipEntry(resolvedPartUri);
+				ze.setMethod(ZipOutputStream.STORED);
+				
+				// must set size, compressed size, and crc-32
+				ze.setSize(bytes.length);
+				ze.setCompressedSize(bytes.length);
+				
+			    CRC32 crc = new CRC32();
+			    crc.update(bytes);	
+			    ze.setCrc(crc.getValue());
+				
+				zos.putNextEntry(ze);				
+			} else {
+				zos.putNextEntry(new ZipEntry(resolvedPartUri));
+			}
+
+	        zos.write( bytes );
 
 			// Complete the entry
 	        zos.closeEntry();
