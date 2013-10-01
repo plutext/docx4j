@@ -28,8 +28,6 @@ import org.docx4j.dml.FontCollection.Font;
 import org.docx4j.dml.TextFont;
 import org.docx4j.dml.Theme;
 import org.docx4j.fonts.LanguageTagToScriptMapping;
-import org.docx4j.fonts.UnicodeRange;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTLanguage;
