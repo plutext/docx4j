@@ -22,7 +22,6 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,8 +31,6 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -49,7 +46,6 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Comments;
@@ -62,10 +58,11 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
-import org.docx4j.wml.SdtElement;
-import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -227,13 +224,14 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
+		List <Object> bodyChildren = body.getContent();
 		
 //		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
 		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
 		new TraversalUtil(bodyChildren, finder);
+		finder.finish();
 
 		// Add default font
 		fontsDiscovered.add(  ((WordprocessingMLPackage)pack).getDefaultFont() );
@@ -291,7 +289,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
+		List <Object> bodyChildren = body.getContent();
 		
 		Set<String> stylesInUse = new HashSet<String>();
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
@@ -299,7 +297,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		
 		new TraversalUtil(bodyChildren, finder);
-
+		finder.finish();
+		
 		// Styles in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
 		if (rp!=null) {
@@ -359,75 +358,70 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
         Style defaultCharacterStyle;
     	String defaultTableStyle = "TableNormal";
     	
-    	@Override
-		public List<Object> apply(Object o) {
-			
-			if (o instanceof org.docx4j.wml.P) {
-				
-				P p = (P)o;
-				if (stylesInUse !=null &&
-						(p.getPPr()==null
-						|| p.getPPr().getPStyle()==null)) {	
-					
-					// Add the default style
+    	private boolean defaultParagraphStyleUsed = false;
+    	private boolean defaultCharacterStyleUsed = false;
+
+    	
+    	public void finish() {
+    		if (stylesInUse != null) {
+    			if ((defaultParagraphStyleUsed) && (defaultParagraphStyle != null)) {
 					stylesInUse.add(defaultParagraphStyle.getStyleId() );
 					if (defaultParagraphStyle.getRPr()!=null
 							&& defaultParagraphStyle.getRPr().getRStyle()!=null ) {
 						
 						stylesInUse.add(defaultParagraphStyle.getRPr().getRStyle().getVal() );
 					}
-					
-					
-				} else {
-				
-		    		org.docx4j.wml.PPr pPr =  p.getPPr();
-					if (stylesInUse !=null && pPr.getPStyle() != null) {
-						// Note this paragraph style
-	//					log.debug("put style "
-	//							+ pPr.getPStyle().getVal());
-						stylesInUse.add(pPr.getPStyle().getVal());
-					}
-					
-					if (pPr.getRPr()!=null) {
-						
-			    		org.docx4j.wml.ParaRPr rPr =  pPr.getRPr();
-			    		
-			        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-			        		// 	Note the font - just Ascii for now
-			        		//log.debug("put font " + rPr.getRFonts().getAscii());
-			        		fontsDiscovered.add(rPr.getRFonts().getAscii());
-			        	}
-			        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
+    			}
+    			if ((defaultCharacterStyleUsed) && (defaultCharacterStyle != null)) {
+    				defaultCharacterStyle.getStyleId();
+    			}
+    		}
+    	}
+
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof org.docx4j.wml.P) {
+				PPr pPr = ((P)o).getPPr();
+				if (stylesInUse != null) { //do the styles
+					boolean customPStyle = false;
+					if (pPr != null) {
+						if (pPr.getPStyle() != null) {
+							// Note this paragraph style
+							// log.debug("put style " + pPr.getPStyle().getVal());
+							customPStyle = true;
+						}
+						if ((pPr.getRPr() != null) && (pPr.getRPr().getRStyle() != null)) {
 			        		// 	Note this run style
-			        		//log.debug("put style " + rPr.getRStyle().getVal() );
-			        		stylesInUse.add(rPr.getRStyle().getVal());
-			        	}
+			        		//log.debug("put style " + pPr.getRPr().getRStyle().getVal() );
+							stylesInUse.add(pPr.getRPr().getRStyle().getVal());
+						}
 					}
+					defaultParagraphStyleUsed = defaultParagraphStyleUsed && (!customPStyle);
+				}
+				if ((fontsDiscovered != null) && 
+					(pPr != null) && (pPr.getRPr() != null) && (pPr.getRPr().getRFonts() != null)) {
+	        		// 	Note the font - just Ascii for now
+	        		//log.debug("put font " + pPr.getRPr().getRFonts().getAscii());
+	        		fontsDiscovered.add(pPr.getRPr().getRFonts().getAscii());
 				}
 		
 			} else if ( o instanceof org.docx4j.wml.R) {
-				
-				R r = (R)o;
-				if (stylesInUse !=null &&
-						(r.getRPr()==null
-						|| r.getRPr().getRStyle()==null)) {
-
-					// Add the default style
-					stylesInUse.add(defaultCharacterStyle.getStyleId() );
-					
-				} else {
-					
-		    		org.docx4j.wml.RPr rPr =  r.getRPr();
-		        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-		        		// 	Note the font - just Ascii for now
-		        		//log.debug("put font " + rPr.getRFonts().getAscii());
-		        		fontsDiscovered.add(rPr.getRFonts().getAscii());
-		        	}
-		        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
-		        		// 	Note this run style
-		        		//log.debug("put style " + rPr.getRStyle().getVal() );
-		        		stylesInUse.add(rPr.getRStyle().getVal());
-		        	}
+				RPr rPr = ((R)o).getRPr();
+				if (stylesInUse != null) {
+					if (rPr != null) {
+						if (rPr.getRStyle() == null) {
+							defaultCharacterStyleUsed = true;
+						}
+						else {
+							stylesInUse.add(rPr.getRStyle().getVal());
+						}
+					}
+				}
+				if ((fontsDiscovered != null) && (rPr != null) && (rPr.getRFonts() != null)) {
+	        		// 	Note the font - just Ascii for now
+	        		//log.debug("put font " + rPr.getRFonts().getAscii());
+	        		fontsDiscovered.add(rPr.getRFonts().getAscii());
 				}
 				
 			} else if (o instanceof org.docx4j.wml.R.Sym ) { 
@@ -590,6 +584,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		
 		finder.walkJAXBElements(list);
+		finder.finish();
 		
 		for( String styleName : stylesInUse) {
 	        log.debug("Inspecting style: " + styleName );
