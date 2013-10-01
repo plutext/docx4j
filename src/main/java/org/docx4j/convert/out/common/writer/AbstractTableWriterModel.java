@@ -309,6 +309,11 @@ public class AbstractTableWriterModel {
 				startRow(tr);
 				handleRow(cellContents, tr, r);
 				r++;
+				if (cells.get(row).getRowContents().isEmpty()) {
+					cells.remove(row);
+					row--;
+					r--;
+				}
 		}
 		
 		CTTblPrBase tblPr = effectiveTableStyle.getTblPr();

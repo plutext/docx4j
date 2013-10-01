@@ -169,15 +169,23 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		return new TableModelTransformState();
 	}
 
-@Override
-  public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content, TransformState transformState, Document doc) throws TransformerException {
-    AbstractTableWriterModel table = new AbstractTableWriterModel();
-    
-    table.build(context, unmarshalledNode, content);
-    if (getLog().isDebugEnabled()) {
-        getLog().debug("Table asXML:\n" + table.debugStr());
-    }
-    
+	@Override
+	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, Node content, TransformState transformState, Document doc) throws TransformerException {
+		Node ret = null;
+	    AbstractTableWriterModel table = new AbstractTableWriterModel();
+	    
+	    table.build(context, unmarshalledNode, content);
+	    if (getLog().isDebugEnabled()) {
+	        getLog().debug("Table asXML:\n" + table.debugStr());
+	    }
+	    
+	    if (!table.getCells().isEmpty()) {
+	    	ret = toNode(context, table, transformState, doc);
+	    }
+	    return ret;
+	}
+
+  protected Node toNode(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Document doc) throws TransformerException {
 	DocumentFragment docfrag = doc.createDocumentFragment();
     Element tableRoot = createNode(doc, null, NODE_TABLE);
     List<Property> rowProperties = new ArrayList<Property>();
@@ -304,7 +312,6 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	protected void applyTableStyles(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
 	List<Property> tableProperties = null;
-	int tblCellSpacing = -1;
 	
 		// This handles:
 		// - position (tblPr/tblInd)
@@ -428,7 +435,6 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	protected void processAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
 	CTShd shd = null;
-	Shading shading = null;
 	int bgColor = 0xffffff; //the background color of the page is assumed as white
 	int fgColor = 0; //the default color of the font is assumed as black
 	int pctPattern = -1;
@@ -482,9 +488,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 	protected Property createShading(int fgColor, int bgColor, int pctFg) {
 	CTShd shd = null;
-	Shading ret = null;
 	int resColor = UnitsOfMeasurement.combineColors(fgColor, bgColor, pctFg);
-	String hResColor = UnitsOfMeasurement.toHexColor(resColor);
 		shd = Context.getWmlObjectFactory().createCTShd();
 		shd.setVal(STShd.CLEAR);
 		shd.setFill(calcHexColor(resColor));
