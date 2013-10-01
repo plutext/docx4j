@@ -243,6 +243,23 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 
 
 	public StyleDefinitionsPart getStyleDefinitionsPart() {
+		return getStyleDefinitionsPart(false);
+	}
+	
+	public StyleDefinitionsPart getStyleDefinitionsPart(boolean create) {
+		if (styleDefinitionsPart==null
+				&& create) {
+			// HTML, PDF output won't work without this
+			log.warn("No StyleDefinitionsPart detected. Adding default part.");
+			try {
+				styleDefinitionsPart = new StyleDefinitionsPart();
+				styleDefinitionsPart.unmarshalDefaultStyles();
+				this.addTargetPart(styleDefinitionsPart); 			
+				
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+		}
 		return styleDefinitionsPart;
 	}
 

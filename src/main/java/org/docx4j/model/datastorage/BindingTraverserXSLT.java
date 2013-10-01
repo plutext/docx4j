@@ -233,8 +233,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				
 				// Code copied from XsltHTMLFunctions.createBlockForRPr
 				Style defaultRunStyle = 
-						(pkg.getMainDocumentPart().getStyleDefinitionsPart() != null ?
-								pkg.getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
+						(pkg.getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+								pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultCharacterStyle() :
 						null);
 				
 		    	String defaultCharacterStyleId;

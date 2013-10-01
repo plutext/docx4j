@@ -101,7 +101,7 @@ public class Word2003XmlConverter {
 		if (!mainDocOnly) {
 		
 			// Styles
-			mdp.getStyleDefinitionsPart().setJaxbElement(transitionContainer.getStyles());
+			mdp.getStyleDefinitionsPart(true).setJaxbElement(transitionContainer.getStyles());
 			
 			// Numbering
 			try {

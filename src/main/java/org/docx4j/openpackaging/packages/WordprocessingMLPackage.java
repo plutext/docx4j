@@ -265,7 +265,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 //		} else {
 //			this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(wmlStyles);
 //		}
-		this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(
+		this.getMainDocumentPart().getStyleDefinitionsPart(true).setJaxbElement(
 				((JaxbXmlPart<Styles>) tmpStylesPart).getJaxbElement() );
     	
     }

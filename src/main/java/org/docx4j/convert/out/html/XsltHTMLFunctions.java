@@ -560,8 +560,8 @@ public class XsltHTMLFunctions {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
 		Style defaultParagraphStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle() :
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
 				null);
 		
     	String defaultParagraphStyleId;
@@ -730,8 +730,8 @@ public class XsltHTMLFunctions {
     		NodeIterator childResults ) {
 
 		Style defaultRunStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultCharacterStyle() :
 				null);
 		
     	String defaultCharacterStyleId;

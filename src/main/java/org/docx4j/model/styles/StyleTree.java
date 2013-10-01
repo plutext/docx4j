@@ -53,7 +53,7 @@ public class StyleTree {
 		return cTree;
 	}
 
-
+	
 	/**
 	 * Build a StyleTree for stylesInUse. 
 	 * 
@@ -186,7 +186,7 @@ public class StyleTree {
 
     	
 		Map<String, Style> allStyles = new HashMap<String, Style>();
-		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();		
+		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getJaxbElement();		
 		for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
 			allStyles.put(s.getStyleId(), s);	
 			log.debug("live style: " + s.getStyleId() );

@@ -92,11 +92,11 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	protected void resolveLinkedAbstractNum(WordprocessingMLPackage wmlPkg) {
 		
-		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart()!=null
+		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false)!=null
 				&& wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart()!=null) {
 			
 			 wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().resolveLinkedAbstractNum(
-					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart());
+					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false));
 		}
 	}
 

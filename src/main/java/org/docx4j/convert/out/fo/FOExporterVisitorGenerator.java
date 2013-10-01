@@ -102,9 +102,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     	
 
     	String defaultParagraphStyleId = "Normal";
-    	if (conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null) {
+    	if (conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
         	Style defaultParagraphStyle = 
-        			conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle();
+        			conversionContext.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle();
         	if (defaultParagraphStyle != null) {
         		defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
         	}
