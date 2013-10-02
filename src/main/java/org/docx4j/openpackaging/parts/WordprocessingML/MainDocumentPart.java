@@ -373,7 +373,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 					}
     			}
     			if ((defaultCharacterStyleUsed) && (defaultCharacterStyle != null)) {
-    				defaultCharacterStyle.getStyleId();
+    				stylesInUse.add(defaultCharacterStyle.getStyleId());
     			}
     		}
     	}
@@ -397,7 +397,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 							stylesInUse.add(pPr.getRPr().getRStyle().getVal());
 						}
 					}
-					defaultParagraphStyleUsed = defaultParagraphStyleUsed && (!customPStyle);
+					defaultParagraphStyleUsed = defaultParagraphStyleUsed || (!customPStyle);
 				}
 				if ((fontsDiscovered != null) && 
 					(pPr != null) && (pPr.getRPr() != null) && (pPr.getRPr().getRFonts() != null)) {

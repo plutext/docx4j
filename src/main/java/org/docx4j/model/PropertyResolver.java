@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.TextFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -28,6 +29,7 @@ import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -133,11 +135,16 @@ public class PropertyResolver {
 		
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
-		styleDefinitionsPart = mdp.getStyleDefinitionsPart();
+		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
 		themePart = mdp.getThemePart();
 		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
-		init();
+		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+		}
+		init();		
 	}
+	
+	CTLanguage themeFontLang = null;
 	
 //	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
 //							ThemePart themePart,
@@ -154,20 +161,6 @@ public class PropertyResolver {
 	
 	private void init() throws Docx4JException {
 
-		// Make sure we have a styles definitions part
-		try {
-			if (styleDefinitionsPart==null) {
-				styleDefinitionsPart = new StyleDefinitionsPart();
-				styleDefinitionsPart.unmarshalDefaultStyles();
-				
-				// For this case, should we provide a way
-				// to add this new part to the package?
-				
-			}
-		} catch (Exception e) {
-			throw new Docx4JException("Couldn't create default StyleDefinitionsPart", e);
-		}
-		
 		styleDefinitionsPart.createVirtualStylesForDocDefaults();
 		
 		defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
@@ -430,7 +423,36 @@ public class PropertyResolver {
 		
 		// NB Currently used in PDF viaXSLFO only
 		
-		log.debug("in getEffectiveRPr");
+		if (pPr==null) {
+			log.debug("pPr was null");
+		} else {
+			// At the pPr level, what rPr do we have?
+			// .. ascend the paragraph style tree
+			if (pPr.getPStyle()==null) {
+//					log.warn("No pstyle:");
+//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+			} else {
+				log.debug("pstyle:" + pPr.getPStyle().getVal());
+				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
+				// .. and apply those
+				
+				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
+			}
+			// Check Paragraph rPr (our special hack of using ParaRPr to format a fo:block)
+			// 2013 10 02: doubts whether this is right?
+			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
+				return getEffectiveRPrUsingPStyleRPr(expressRPr, 
+						StyleUtil.apply(pPr.getRPr(), Context.getWmlObjectFactory().createRPr()));
+			} 
+		}
+
+		return getEffectiveRPrUsingPStyleRPr( expressRPr, null);
+		
+	}
+
+	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr pPrLevelRunStyle) {
+		
+		log.debug("in getEffectiveRPrUsingPStyle");
 		
 //		Idea is that you pass pPr if you are using this for XSL FO,
 //		since we need to take account of rPr in paragraph styles
@@ -470,27 +492,8 @@ public class PropertyResolver {
 		// (this includes run properties defined in a paragraph style,
 		//  but not run properties directly included in a pPr in the
 		//  document (those only apply to a paragraph mark).
-			
-			if (pPr==null) {
-				log.debug("pPr was null");
-			} else {
-				// At the pPr level, what rPr do we have?
-				// .. ascend the paragraph style tree
-				if (pPr.getPStyle()==null) {
-//					log.warn("No pstyle:");
-//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
-				} else {
-					log.debug("pstyle:" + pPr.getPStyle().getVal());
-					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
-					// .. and apply those
-					applyRPr(pPrLevelRunStyle, effectiveRPr);
-				}
-				// Check Paragraph rPr (our special hack of using ParaRPr
-				// to format a fo:block) 
-				if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
-					applyRPr(pPr.getRPr(), effectiveRPr);
-				} 
-			}
+		applyRPr(pPrLevelRunStyle, effectiveRPr);
+					
 		//	Next, run properties are applied to each run with a specific character style 
 		//	applied. 		
 		RPr resolvedRPr = null;
@@ -1032,7 +1035,7 @@ public class PropertyResolver {
 			return;
 		}
 		rPrStack.push(style.getRPr());
-		log.debug("Added " + styleId + " to pPr stack");
+		log.debug("Added " + styleId + " to rPr stack");
 		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
@@ -1060,6 +1063,7 @@ public class PropertyResolver {
     }
 		
 
+	@Deprecated
 	public String getDefaultMajorFontLatin() {
 		
 		if (themePart==null) {
@@ -1067,12 +1071,8 @@ public class PropertyResolver {
 			log.info("No theme part - default to Cambria");								
 			return "Cambria"; 			
 		} else {
-			org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-			if (fontScheme.getMajorFont()!=null
-					&& fontScheme.getMajorFont().getLatin()!=null) {
-														
-				org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-				log.debug("majorFont/latin font is " + textFont.getTypeface() );
+			TextFont textFont = themePart.getMajorLatin();
+			if (textFont!=null) {
 				return textFont.getTypeface(); 
 			} else {
 				// No majorFont/latin in theme part - default to Cambria
@@ -1087,7 +1087,10 @@ public class PropertyResolver {
 	 * 
 	 * @return default document font. 
 	 */
+	@Deprecated
 	public String getDefaultFont() {
+		
+		// 2013 09 14.  This code is superseded by RunFontSelector
 		
 		// First look at the defaults
 		// 3 look at styles/rPrDefault 
@@ -1134,44 +1137,38 @@ public class PropertyResolver {
 			return "Times New Roman"; 						
 		} else {						
 			// Usual case
-			if (rFonts.getAsciiTheme()!=null ) {
-				// for example minorHAnsi, which I think translates to minorFont/latin 
-				if (rFonts.getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-					if (themePart!=null) {
-						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-						if (fontScheme.getMinorFont()!=null
-								&& fontScheme.getMinorFont().getLatin()!=null) {
-																	
-							org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-							log.debug("minorFont/latin font is " + textFont.getTypeface() );
-							return textFont.getTypeface(); 
-						} else {
+			if (rFonts.getAsciiTheme()==null ) {
+				
+				if (rFonts.getAscii()==null ) {
+					// TODO
+					log.error("Neither ascii or asciTheme.  What to do? ");
+					return "Times New Roman"; 						
+					
+				} else {
+					log.info("rPrDefault/rFonts referenced " + rFonts.getAscii());								
+					return rFonts.getAscii(); 							
+				}	
+				
+			} else {
+				if (themePart==null) {
+					// No theme part - default to Calibri
+					log.info("No theme part - default to Calibri");
+					return "Calibri"; 
+				} else {
+					String font = themePart.getFont(rFonts.getAsciiTheme(), themeFontLang);
+					if (font!=null) {
+						return font; 
+					} else {
 							// No minorFont/latin in theme part - default to Calibri
 							log.info("No minorFont/latin in theme part - default to Calibri");								
 							return "Calibri"; 
-						}
-					} else {
-						// No theme part - default to Calibri
-						log.info("No theme part - default to Calibri");
-						return "Calibri"; 
 					}
-				} else {
-					// TODO
-					log.error("Don't know how to handle: "
-							+ rFonts.getAsciiTheme());
-					return null;
 				}
-			} else if (rFonts.getAscii()!=null ) {
-				log.info("rPrDefault/rFonts referenced " + rFonts.getAscii());								
-				return rFonts.getAscii(); 							
-			} else {
-				// TODO
-				log.error("Neither ascii or asciTheme.  What to do? ");
-				return null;
-			}						
+			}  				
 		} 
 	}
 
+	@Deprecated
 	public String getDefaultFontEastAsia() {
 				
 		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();

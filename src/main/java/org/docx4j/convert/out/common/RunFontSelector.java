@@ -3,17 +3,23 @@ package org.docx4j.convert.out.common;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.docx4j.convert.out.html.HTMLConversionContext;
 import org.docx4j.dml.TextFont;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.jaxb.Context;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.wml.CTLanguage;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
 import org.docx4j.wml.STTheme;
+import org.docx4j.wml.Style;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -60,10 +66,52 @@ public class RunFontSelector {
 		return wordMLPackage.getMainDocumentPart().getThemePart();
 	}
 	
-    public DocumentFragment fontSelector(RPr rPr, String text) {
+	private Style defaultParagraphStyle;
+	
+    private Style getDefaultPStyle() {
+    	
+    	if (defaultParagraphStyle==null) {
+			defaultParagraphStyle = 
+					(wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+							wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
+					null);
+    	}
+		return defaultParagraphStyle;
+    }
+    
+    private DocumentFragment nullRPr(Document document, String text) {
+    	
+	    Element	span = document.createElement("span");
+    	// could a document fragment contain just a #text node?
+		document.appendChild(span);   
+		span.setTextContent(text);
+		return result(document);
+    }
+
+    private DocumentFragment span(Document document, String text, String styleVal) {
+    	
+	    Element	span = document.createElement("span");
+    	// could a document fragment contain just a #text node?
+		document.appendChild(span);   
+		span.setTextContent(text);
+    	span.setAttribute("style", styleVal);
+		return result(document);
+    }
+    
+    public DocumentFragment fontSelector(PPr pPr, RPr rPr, String text) {
     	// Do we need boolean major arg??
     	
-    	// TODO use effective rPr, but don't inherit theme val
+    	Style pStyle = null;
+    	if (pPr==null || pPr.getPStyle()==null) {
+    		pStyle = getDefaultPStyle();
+    	} else if (wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
+    		pStyle = wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getStyleById(pPr.getPStyle().getVal());
+    	}
+    	
+    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+    	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pStyle.getRPr());
+    	// TODO use effective rPr, but don't inherit theme val,
+    	// TODO, add cache?
     	
     	/* eg
     	 * 
@@ -80,10 +128,7 @@ public class RunFontSelector {
 		
 		// No rPr, so don't set the font
 		if (rPr==null) {
-		    Element	span = document.createElement("span");
-	    	document.appendChild(span);   
-	    	span.setTextContent(text);
-			return result(document);
+			return nullRPr(document, text);
 		}
 		
 		RFonts rFonts = rPr.getRFonts();
@@ -92,20 +137,14 @@ public class RunFontSelector {
     	/* If the run has the cs element ("[ISO/IEC-29500-1] §17.3.2.7; cs") 
     	 * or the rtl element ("[ISO/IEC-29500-1] §17.3.2.30; rtl"), 
     	 * then the cs (or cstheme if defined) font is used, 
-    	 * regardless of the Unicode character values of the run’s content.
+    	 * regardless of the Unicode character values of the run's content.
     	 */
     	if (rPr.getCs()!=null || rPr.getRtl()!=null ) {
     		
     		// use the cs (or cstheme if defined) font is used
     		if (rFonts==null) {
-    			// TODO inherit from styles
     			
-    			// What to do?  This'll do for now..
-    		    Element	span = document.createElement("span");
-    	    	document.appendChild(span);   
-    	    	span.setTextContent(text);
-    			return result(document);
-    			
+    			return nullRPr(document, text);
     			
     		} else if (rFonts.getCstheme()!=null) {
     			
@@ -121,21 +160,12 @@ public class RunFontSelector {
     				// then what?
     			}    		
     			
-    		    Element	span = document.createElement("span");
-    	    	document.appendChild(span);   
-    	    	span.setTextContent(text);
-    	    	span.setAttribute("style", getCssProperty(fontName));
-    			return result(document);
+    			return span(document, text, getCssProperty(fontName));
     			
     		} else if (rFonts.getCs()!=null) {
 
     			String fontName =rFonts.getCs();
-    					
-    		    Element	span = document.createElement("span");
-    	    	document.appendChild(span);   
-    	    	span.setTextContent(text);
-    	    	span.setAttribute("style", getCssProperty(fontName));
-    			return result(document);
+    			return span(document, text, getCssProperty(fontName));
     			
     		} else {
     			// No CS value.
@@ -185,11 +215,7 @@ public class RunFontSelector {
     				&& ascii.equals(hAnsi)) {
     			// use ascii
     			
-    		    Element	span = document.createElement("span");
-    	    	document.appendChild(span);   
-    	    	span.setTextContent(text);
-    	    	span.setAttribute("style", getCssProperty(ascii));
-    			return result(document);
+    			return span(document, text, getCssProperty(ascii));
     			
     		}
 		}
@@ -508,8 +534,12 @@ public class RunFontSelector {
 	
 	public String getCssProperty(String fontName) {
 		
-//		Throwable t = new Throwable();
-//		t.printStackTrace();
+		if (
+				log.isDebugEnabled() && 
+				fontName==null) {
+			Throwable t = new Throwable();
+			t.printStackTrace();
+		}
 		
 		String font = getPhysicalFont(fontName);
 		

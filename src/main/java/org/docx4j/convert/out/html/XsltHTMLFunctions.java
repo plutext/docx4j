@@ -71,11 +71,32 @@ import org.w3c.dom.traversal.NodeIterator;
 public class XsltHTMLFunctions {
 	
     public static DocumentFragment fontSelector(HTMLConversionContext conversionContext, 
+    		NodeIterator pPrNodeIt,
     		NodeIterator rPrNodeIt,
     		String text) {
 
+		PPr pPr = null;
 		RPr rPr = null;
-    	if (rPrNodeIt!=null) { //It is never null
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
+    		Node n = pPrNodeIt.nextNode(); //It is never null
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				pPr =  (PPr)jaxb;
+    			} catch (ClassCastException e) {
+    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				conversionContext.getLog().error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
     		Node n = rPrNodeIt.nextNode();
     		if (n!=null) {
     			try {
@@ -86,15 +107,15 @@ public class XsltHTMLFunctions {
     			} catch (ClassCastException e) {
     				conversionContext.getLog().error("Couldn't cast  to RPr!");
     			} catch (JAXBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+    				conversionContext.getLog().error(e.getMessage(), e);
 				}        	        			
     		}
     	}
     	
-    	return conversionContext.getRunFontSelector().fontSelector(rPr, text);
+    	return conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
 
     }
+    
 	
 	/*
 		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -791,7 +812,7 @@ public class XsltHTMLFunctions {
 			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
 			if (asn==null) {
-				context.getLog().warn("No style node for: " + rStyleVal);
+				context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
 			} else {
 				((Element)span).setAttribute("class", 
 						StyleTree.getHtmlClassAttributeValue(cTree, asn)			

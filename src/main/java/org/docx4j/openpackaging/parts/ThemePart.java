@@ -295,9 +295,9 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 	    		// now, lookup @typeface in the map
 	    		String typeface = null;
 	    		if (isMajor(type)) {
-	    			typeface = scriptToTypefaceMajor.get(script);
+	    			typeface = getScriptToTypefaceMajor().get(script);
 	    		} else {
-	    			typeface = scriptToTypefaceMinor.get(script);	    			
+	    			typeface = getScriptToTypefaceMinor().get(script);	    			
 	    		}
 	    		
 	    		if (typeface==null) {

@@ -290,6 +290,7 @@
 
 	<xsl:template match="w:t[parent::w:r]">
 	
+		<xsl:variable name="pPrNode" select="../../w:rPr" />  	
 		<xsl:variable name="rPrNode" select="../w:rPr" />  	
 		<xsl:variable name="text" select="." />  	
 	
@@ -304,7 +305,7 @@
 			<xsl:otherwise>
 			
 				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.fontSelector( 
-				  		$conversionContext, $rPrNode, $text)" />
+				  		$conversionContext, $pPrNode, $rPrNode, $text)" />
 				
 			</xsl:otherwise>
 		</xsl:choose>
