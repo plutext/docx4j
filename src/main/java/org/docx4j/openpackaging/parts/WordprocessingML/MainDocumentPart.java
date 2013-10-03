@@ -34,6 +34,9 @@ import javax.xml.bind.JAXBException;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.fonts.RunFontSelector;
+import org.docx4j.fonts.RunFontSelector.OutputType;
+import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
@@ -61,8 +64,12 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 
 
 /**
@@ -226,8 +233,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 		List <Object> bodyChildren = body.getContent();
 		
-//		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
-		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
+		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
+		
+		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
 		new TraversalUtil(bodyChildren, finder);
@@ -238,20 +247,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		fontsDiscovered.add( 
 				((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia() );
 		
-	// Add fonts used in the styles we discovered
-	    for(String styleName : stylesInUse) {
-	        log.debug("Inspecting style: " + styleName );
-            org.docx4j.wml.Style existingStyle = (org.docx4j.wml.Style)stylesDefined.get(styleName);
-            if (existingStyle!=null) {
-            	String fontName = getPropertyResolver().getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle);
-            	if (fontName!=null) {
-	            	log.debug(styleName + " uses font " + fontName);
-	            	fontsDiscovered.add(fontName);
-            	}
-            } else {
-            	log.error("Couldn't find used style " + styleName + "in styles part!");
-            }
-	    }
+		// Add fonts used in the styles we discovered
+		// .. 2013 03 10: no longer necessary
 	    
 	    // Fonts can also be used in the numbering part
 	    // For now, treat any font mentioned in that part as in use.
@@ -276,6 +273,37 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		return fontsDiscovered;
     }
     
+	private class FontDiscoveryCharacterVisitor implements RunFontCharacterVisitor {
+		
+		FontDiscoveryCharacterVisitor(Set<String> fontsDiscovered) {
+			this.fontsDiscovered = fontsDiscovered;
+		}
+			
+    	private Set<String> fontsDiscovered; // same set 
+
+    	// look here
+		public void fontAction(String fontname) {
+			fontsDiscovered.add(fontname); 
+		}
+
+		
+		private boolean spanReusable = true;
+		public boolean isReusable() {
+			return spanReusable;
+		}
+		public void setMustCreateNewFlag(boolean val) {
+			spanReusable = !val;
+		}
+
+		public void setDocument(Document document) {}
+		public void addCharacterToCurrent(char c) {}
+		public void finishPrevious() {}
+		public void createNew() {}
+		public void setRunFontSelector(RunFontSelector runFontSelector) {}
+		public Object getResult() {return null;}
+				
+	}
+    
 
 	/**
 	 * Traverse the document, and return a map of all styles which are used
@@ -292,7 +320,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		List <Object> bodyChildren = body.getContent();
 		
 		Set<String> stylesInUse = new HashSet<String>();
-		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		
@@ -349,7 +377,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	Set<String> fontsDiscovered;
     	Set<String> stylesInUse;
     	
-    	FontAndStyleFinder(Set<String> fontsDiscovered, Set<String> stylesInUse) {
+    	RunFontSelector runFontSelector;
+    	
+    	FontAndStyleFinder(RunFontSelector runFontSelector, 
+    			Set<String> fontsDiscovered, Set<String> stylesInUse) {
+    		
+    		this.runFontSelector = runFontSelector;
     		this.fontsDiscovered = fontsDiscovered;
     		this.stylesInUse = stylesInUse;
     	}
@@ -360,6 +393,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	
     	private boolean defaultParagraphStyleUsed = false;
     	private boolean defaultCharacterStyleUsed = false;
+    	
+    	private PPr pPr; 
+    	private RPr rPr;
 
     	
     	public void finish() {
@@ -382,7 +418,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof org.docx4j.wml.P) {
-				PPr pPr = ((P)o).getPPr();
+				pPr = ((P)o).getPPr();
 				if (stylesInUse != null) { //do the styles
 					boolean customPStyle = false;
 					if (pPr != null) {
@@ -399,15 +435,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 					}
 					defaultParagraphStyleUsed = defaultParagraphStyleUsed || (!customPStyle);
 				}
-				if ((fontsDiscovered != null) && 
-					(pPr != null) && (pPr.getRPr() != null) && (pPr.getRPr().getRFonts() != null)) {
-	        		// 	Note the font - just Ascii for now
-	        		//log.debug("put font " + pPr.getRPr().getRFonts().getAscii());
-	        		fontsDiscovered.add(pPr.getRPr().getRFonts().getAscii());
-				}
 		
 			} else if ( o instanceof org.docx4j.wml.R) {
-				RPr rPr = ((R)o).getRPr();
+				rPr = ((R)o).getRPr();
 				if (stylesInUse != null) {
 					if (rPr != null) {
 						if (rPr.getRStyle() == null) {
@@ -418,10 +448,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 						}
 					}
 				}
-				if ((fontsDiscovered != null) && (rPr != null) && (rPr.getRFonts() != null)) {
-	        		// 	Note the font - just Ascii for now
-	        		//log.debug("put font " + rPr.getRFonts().getAscii());
-	        		fontsDiscovered.add(rPr.getRFonts().getAscii());
+				
+			} else if ( o instanceof org.docx4j.wml.Text) {
+				
+				if (runFontSelector != null) {
+					// discover the fonts which apply to this text
+					runFontSelector.fontSelector(pPr, rPr, ((Text)o).getValue() );
 				}
 				
 			} else if (o instanceof org.docx4j.wml.R.Sym ) { 
@@ -574,12 +606,14 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		// If this object contains paragraphs, make sure any style used
 		// is activated
     	Set<String> stylesInUse = new java.util.HashSet<String>();
-    	Set<String> fontsDiscovered = new java.util.HashSet<String>(); // method requires this
+//    	Set<String> fontsDiscovered = new java.util.HashSet<String>(); 
 		List list = new java.util.ArrayList<Object>();
 		list.add(o);
 		
-//		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
-		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+//		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
+//		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
+		
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
 		

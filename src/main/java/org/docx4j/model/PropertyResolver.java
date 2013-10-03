@@ -1325,151 +1325,91 @@ public class PropertyResolver {
     	return liveStyles.get(styleId);
     }
 	
-// TODO - what follows is old code.  It is however necessary to be able to
-// get all fonts.  
-// 1.  can the above code be modified to just get a single property (ie fonts)?
-// 2.  we only really want to climb the hierarchy once per style, so 
-//     introduce an effectivePr map?
-    
-    /**
-     * Determine the font used in this style, using the inheritance rules.
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part - see getDefaultFont to do that).
-     * 
-     * @see getDefaultFont
-     */	
-    public String getFontnameFromStyle(org.docx4j.wml.Style style) {
-    	
-    	return getFontnameFromStyle(styleDefinitionsPart, themePart, style); 
-    	
-    }
-	
-    /**
-     * Determine the font used in this style, using the inheritance rules.
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part - see getDefaultFont to do that).
-     * 
-     * @see getDefaultFont
-     */	
-    public static String getFontnameFromStyle(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart,  org.docx4j.wml.Style style) {
+//		/*
+//		a paragraph style does not inherit anything from its linked character style.
+//
+//		A linked character style seems to be just a Word 2007 user interface
+//		hint.  ie if you select some characters in a paragraph and select to
+//		apply "Heading 1", what you are actually doing is applying "Heading 1
+//		char".  This is determined by looking at the definition of the
+//		"Heading 1" style to see what its linked style is.
+//		
+//		(Interestingly, in Word 2007, if you right click to modify something 
+//		 which is Heading 1 char, it modifies both the Heading 1 style and the
+//		 Heading 1 char style!.  Haven't looked to see what happens to Heading 1 char
+//		 style if you right click to modify a Heading 1 par.)
+//
+//		 The algorithm Word 2007 seems to use is:
+//		    look at the specified style:
+//		        1 does it have its own rPr which contains rFonts?
+//		        2 if not, what does this styles basedOn style say? (Ignore
+//		any linked char style)
+//				3 look at styles/rPrDefault 
+//				3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
+//				    in which case if there is no theme part, default to "internally stored settings"
+//					(there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
+//					in this case Calibri and Cambria)
+//				3.2 if there is no rFonts element, default to Times New Roman.
+//		
 
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
-//		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
-
-		// It is convenient to have a HashMap of styles
-		Map stylesDefined = new java.util.HashMap();
-	     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-	            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
-	            log.debug("adding " + s.getStyleId());
-	            stylesDefined.put(s.getStyleId(), s);
-	     }
-	     
-	    return getFontnameFromStyle(stylesDefined, themePart, style);
-    }
-    /**
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part).
-     */
-    public static String getFontnameFromStyle(Map stylesDefined, ThemePart themePart, org.docx4j.wml.Style style) {
-    	
-		/*
-		a paragraph style does not inherit anything from its linked character style.
-
-		A linked character style seems to be just a Word 2007 user interface
-		hint.  ie if you select some characters in a paragraph and select to
-		apply "Heading 1", what you are actually doing is applying "Heading 1
-		char".  This is determined by looking at the definition of the
-		"Heading 1" style to see what its linked style is.
-		
-		(Interestingly, in Word 2007, if you right click to modify something 
-		 which is Heading 1 char, it modifies both the Heading 1 style and the
-		 Heading 1 char style!.  Haven't looked to see what happens to Heading 1 char
-		 style if you right click to modify a Heading 1 par.)
-
-		 The algorithm Word 2007 seems to use is:
-		    look at the specified style:
-		        1 does it have its own rPr which contains rFonts?
-		        2 if not, what does this styles basedOn style say? (Ignore
-		any linked char style)
-				3 look at styles/rPrDefault 
-				3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
-				    in which case if there is no theme part, default to "internally stored settings"
-					(there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
-					in this case Calibri and Cambria)
-				3.2 if there is no rFonts element, default to Times New Roman.
-		
-		
-		For efficiency reasons, we don't do 3 in this method.
-		 */
-    	
-
-        // 1 does it have its own rPr which contains rFonts?
-    	org.docx4j.wml.RPr rPr = style.getRPr();
-    	if (rPr!=null && rPr.getRFonts()!=null) {
-    		if (rPr.getRFonts().getAscii()!=null) {
-        		return rPr.getRFonts().getAscii();
-    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
-    					&& themePart != null) {
-    			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
-    			
-				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
-				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
-						fontScheme = theme.getThemeElements().getFontScheme();
-						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-						log.info("minorFont/latin font is " + textFont.getTypeface());
-						return (textFont.getTypeface());
-					} else {
-						// No minorFont/latin in theme part - default to Calibri
-						log.info("No minorFont/latin in theme part - default to Calibri");
-						return ("Calibri");
-					}
-				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
-					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
-						fontScheme = theme.getThemeElements().getFontScheme();
-						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-						log.debug("majorFont/latin font is " + textFont.getTypeface());
-						return (textFont.getTypeface());
-					} else {
-						// No minorFont/latin in theme part - default to Cambria
-						log.info("No majorFont/latin in theme part - default to Cambria");
-						return ("Cambria");
-					}
-				} else {
-					log.error("Don't know how to handle: "
-							+ rPr.getRFonts().getAsciiTheme());
-				}
-    		}
-    	}
-        		
-        // 2 if not, what does this styles basedOn style say? (recursive)
-    	
-    	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();    		
-    		//log.debug("recursing into basedOn:" + basedOnStyleName);
-            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
-            if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
-            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
-            }
-    	     // If we get here the style is missing!
-     		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
-    	     return null;
-    	} else {
-    		//log.debug("No basedOn set for: " + style.getStyleId() );
-    		return null;
-    	}
-    	
-    }
-
+    //        // 1 does it have its own rPr which contains rFonts?
+//    	org.docx4j.wml.RPr rPr = style.getRPr();
+//    	if (rPr!=null && rPr.getRFonts()!=null) {
+//    		if (rPr.getRFonts().getAscii()!=null) {
+//        		return rPr.getRFonts().getAscii();
+//    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
+//    					&& themePart != null) {
+//    			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
+//    			
+//				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
+//				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+//				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
+//					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
+//						fontScheme = theme.getThemeElements().getFontScheme();
+//						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
+//						log.info("minorFont/latin font is " + textFont.getTypeface());
+//						return (textFont.getTypeface());
+//					} else {
+//						// No minorFont/latin in theme part - default to Calibri
+//						log.info("No minorFont/latin in theme part - default to Calibri");
+//						return ("Calibri");
+//					}
+//				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
+//					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
+//						fontScheme = theme.getThemeElements().getFontScheme();
+//						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
+//						log.debug("majorFont/latin font is " + textFont.getTypeface());
+//						return (textFont.getTypeface());
+//					} else {
+//						// No minorFont/latin in theme part - default to Cambria
+//						log.info("No majorFont/latin in theme part - default to Cambria");
+//						return ("Cambria");
+//					}
+//				} else {
+//					log.error("Don't know how to handle: "
+//							+ rPr.getRFonts().getAsciiTheme());
+//				}
+//    		}
+//    	}
+//        		
+//        // 2 if not, what does this styles basedOn style say? (recursive)
+//    	
+//    	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
+//        	String basedOnStyleName = style.getBasedOn().getVal();    		
+//    		//log.debug("recursing into basedOn:" + basedOnStyleName);
+//            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
+//            if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
+//            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
+//            }
+//    	     // If we get here the style is missing!
+//     		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
+//    	     return null;
+//    	} else {
+//    		//log.debug("No basedOn set for: " + style.getStyleId() );
+//    		return null;
+//    	}
+//    	
+//    }
+//
 	
 }

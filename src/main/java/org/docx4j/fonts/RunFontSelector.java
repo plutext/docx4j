@@ -37,14 +37,12 @@ public class RunFontSelector {
 
 	private WordprocessingMLPackage wordMLPackage;
 	private RunFontCharacterVisitor vis;
-	
-//	private String elementName; 
-//	private String attributeName;
-	
+		
 	private OutputType outputType;
 	public enum OutputType {
 		XSL_FO,
-		XHTML
+		XHTML,
+		NA
 	}
 	
 	public RunFontSelector(WordprocessingMLPackage wordMLPackage, RunFontCharacterVisitor visitor, 
