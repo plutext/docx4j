@@ -21,8 +21,10 @@
 package org.docx4j.convert.out.common;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.html.HTMLConversionContext;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -31,6 +33,8 @@ import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -45,8 +49,56 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltCommonFunctions {
+	
 	private XsltCommonFunctions() {
 	}
+	
+    public static DocumentFragment fontSelector(AbstractWmlConversionContext conversionContext, 
+    		NodeIterator pPrNodeIt,
+    		NodeIterator rPrNodeIt,
+    		String text) {
+
+		PPr pPr = null;
+		RPr rPr = null;
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
+    		Node n = pPrNodeIt.nextNode(); //It is never null
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				pPr =  (PPr)jaxb;
+    			} catch (ClassCastException e) {
+    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				conversionContext.getLog().error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
+    		Node n = rPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				rPr =  (RPr)jaxb;
+    			} catch (ClassCastException e) {
+    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				conversionContext.getLog().error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+    	
+    	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
+
+    }
+	
 	
 	/** Conversion of Nodes via Models and Converters
 	 * 

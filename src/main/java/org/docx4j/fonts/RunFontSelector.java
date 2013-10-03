@@ -1,16 +1,10 @@
-package org.docx4j.convert.out.common;
+package org.docx4j.fonts;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.docx4j.convert.out.html.HTMLConversionContext;
-import org.docx4j.dml.TextFont;
-import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
-import org.docx4j.model.styles.StyleUtil;
-import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.wml.CTLanguage;
@@ -18,9 +12,9 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
-import org.docx4j.wml.STTheme;
 import org.docx4j.wml.Style;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -38,13 +32,29 @@ import org.w3c.dom.Element;
  *
  */
 public class RunFontSelector {
+	
+	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class);	
 
 	private WordprocessingMLPackage wordMLPackage;
-	private Logger log;
+	private RunFontCharacterVisitor vis;
 	
-	protected RunFontSelector(WordprocessingMLPackage wordMLPackage, Logger logger) {
+//	private String elementName; 
+//	private String attributeName;
+	
+	private OutputType outputType;
+	public enum OutputType {
+		XSL_FO,
+		XHTML
+	}
+	
+	public RunFontSelector(WordprocessingMLPackage wordMLPackage, RunFontCharacterVisitor visitor, 
+			OutputType outputType) {
+		
 		this.wordMLPackage = wordMLPackage;
-		this.log = logger;
+		this.vis = visitor;
+		this.outputType = outputType;
+				
+		vis.setRunFontSelector(this);
 		
 		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
 			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
@@ -81,25 +91,35 @@ public class RunFontSelector {
     
     private DocumentFragment nullRPr(Document document, String text) {
     	
-	    Element	span = document.createElement("span");
+	    Element	span = createElement(document);
     	// could a document fragment contain just a #text node?
 		document.appendChild(span);   
 		span.setTextContent(text);
 		return result(document);
     }
 
-    private DocumentFragment span(Document document, String text, String styleVal) {
-    	
-	    Element	span = document.createElement("span");
-    	// could a document fragment contain just a #text node?
-		document.appendChild(span);   
-		span.setTextContent(text);
-    	span.setAttribute("style", styleVal);
-		return result(document);
+    public Element createElement(Document document) {
+    	Element el=null;
+    	if (outputType==OutputType.XHTML) {
+    		 el = document.createElement("span");
+    	} else if (outputType==OutputType.XSL_FO) {
+    		el = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+    	} 
+		document.appendChild(el);   
+    	return el;
     }
     
-    public DocumentFragment fontSelector(PPr pPr, RPr rPr, String text) {
-    	// Do we need boolean major arg??
+    public void setAttribute(Element el, String fontName) {
+    	
+    	// could a document fragment contain just a #text node?
+    	if (outputType==OutputType.XHTML) {
+        	el.setAttribute("style", getCssProperty(fontName));
+    	} else if (outputType==OutputType.XSL_FO) {
+        	el.setAttribute("font-family", getPhysicalFont(fontName) );
+    	} 
+    }
+    
+    public Object fontSelector(PPr pPr, RPr rPr, String text) {
     	
     	Style pStyle = null;
     	if (pPr==null || pPr.getPStyle()==null) {
@@ -107,6 +127,10 @@ public class RunFontSelector {
     	} else if (wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
     		pStyle = wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getStyleById(pPr.getPStyle().getVal());
     	}
+
+    	// Do we need boolean major??
+    	// Can work that out from pStyle
+
     	
     	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
     	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pStyle.getRPr());
@@ -160,12 +184,18 @@ public class RunFontSelector {
     				// then what?
     			}    		
     			
-    			return span(document, text, getCssProperty(fontName));
+    			Element	span = createElement(document);
+    			this.setAttribute(span, getCssProperty(fontName));
+    			span.setTextContent(text);    			
+    			return result(document);
     			
     		} else if (rFonts.getCs()!=null) {
 
     			String fontName =rFonts.getCs();
-    			return span(document, text, getCssProperty(fontName));
+    			Element	span = createElement(document);
+    			this.setAttribute(span, getCssProperty(fontName));
+    			span.setTextContent(text);    			
+    			return result(document);
     			
     		} else {
     			// No CS value.
@@ -215,7 +245,10 @@ public class RunFontSelector {
     				&& ascii.equals(hAnsi)) {
     			// use ascii
     			
-    			return span(document, text, getCssProperty(ascii));
+    			Element	span = createElement(document);
+    			this.setAttribute(span, getCssProperty(ascii));
+    			span.setTextContent(text);    			
+    			return result(document);
     			
     		}
 		}
@@ -229,17 +262,16 @@ public class RunFontSelector {
 			langEastAsia = rPr.getLang().getEastAsia();
 		}
 		
-		return unicodeRangeToFont( document,  text,  hint,  langEastAsia,
+		vis.setDocument(document);
+		return unicodeRangeToFont(text,  hint,  langEastAsia,
 	    		 eastAsia,  ascii,  hAnsi );
 //		return result(document);
     }
     	
-    
+        	
+    private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
+    		String eastAsia, String ascii, String hAnsi) {
     	
-    private DocumentFragment unicodeRangeToFont(Document document, String text, STHint hint, String langEastAsia,
-    		String eastAsia, String ascii, String hAnsi ) {
-    	
-    	DocumentFragment df = document.createDocumentFragment();
     	
     	// See http://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a
     	// and http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
@@ -251,36 +283,28 @@ public class RunFontSelector {
     	char currentRangeLower='\u0000';
     	char currentRangeUpper='\u0000';
     	
-    	StringBuilder sb = new StringBuilder(1024); 
-    	Element	span = document.createElement("span");
-    	
-    	boolean spanReusable = true;
     	
     	for (int i = 0; i < text.length(); i++){
     		
     	    char c = text.charAt(i);        
-    	    if (spanReusable && 
+    	    if (vis.isReusable() && 
     	    		c>=currentRangeLower && c<=currentRangeUpper) {
     	    	// Add it to existing
-    	    	sb.append(c);
+    	    	vis.addCharacterToCurrent(c);
     	    } else {
     	    	
     	    	// Populate previous span
-    	    	if (sb.length()>0) {
-        	    	df.appendChild(span);   
-        	    	span.setTextContent(sb.toString()); 
-        	    	log.info("span: " + sb.toString()); 
-        	    	sb.setLength(0);
-    	    	}
+    	    	vis.finishPrevious();
     	    	
     	    	// Create new span
-    		    span = document.createElement("span");
-    		    spanReusable = true; 
+    		    vis.createNew();
+    		    vis.setMustCreateNewFlag(false);
+    		    
     		    // .. Basic Latin
         	    if (c>='\u0000' && c<='\u007F') 
         	    {
-        	    	span.setAttribute("style", getCssProperty(ascii)); // TODO ascii or implementationDefault
-        	    	sb.append(c);
+        	    	vis.fontAction(ascii); // TODO ascii or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u0000';
         	    	currentRangeUpper = '\u007F';
@@ -289,9 +313,9 @@ public class RunFontSelector {
         	    if (c>='\u00A0' && c<='\u00FF') 
         	    {
         	    	/* hAnsi (or hAnsiTheme if defined), with the following exceptions:
-						If hint is eastAsia, the following characters use eastAsia (or eastAsiaTheme if defined): A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
-						If hint is eastAsia and the language of the run is either Chinese Traditional or Chinese Simplified, the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
-						*/
+    					If hint is eastAsia, the following characters use eastAsia (or eastAsiaTheme if defined): A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
+    					If hint is eastAsia and the language of the run is either Chinese Traditional or Chinese Simplified, the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
+    					*/
         	    	if (hint == STHint.EAST_ASIA) {
         	    		if (langEastAsia.equals("zh") ) {
         	    			// the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
@@ -301,10 +325,10 @@ public class RunFontSelector {
         	    					|| (c>='\u00F2' && c<='\u00F3')         	    					
         	    					|| (c>='\u00F9' && c<='\u00FA') 
         	    					|| c=='\u00FC') {
-        	    				span.setAttribute("style", getCssProperty(eastAsia));	
-        	    				spanReusable = false;
+        	    				vis.fontAction(eastAsia);
+        	    			    vis.setMustCreateNewFlag(true);
         	    			} else {
-        	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
+        	    				vis.fontAction(hAnsi);
         	    			}
         	    			
         	    		} else // A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
@@ -316,200 +340,195 @@ public class RunFontSelector {
     	    					|| (c>='\u00BC' && c<='\u00BF') 
     	    					|| c=='\u00D7' || c=='\u00F7' ) {
         	    				
-	    	    				span.setAttribute("style", getCssProperty(eastAsia));			
-	    	    				spanReusable = false;
-	    	    			}  else {
-	    	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
-	    	    			}
+        	    				vis.fontAction(eastAsia);
+        	    			    vis.setMustCreateNewFlag(true);
+        	    			}  else {
+        	    				vis.fontAction(hAnsi);
+        	    			}
         	    	} else {
-	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
+        				vis.fontAction(hAnsi);
         	    	}
-        	    	sb.append(c);
+        	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u0000';
         	    	currentRangeUpper = '\u007F';
         	    } else 
-			    // ..  Latin Extended-A, Latin Extended-B, IPA Extensions
-	    	    if (c>='\u0100' && c<='\u02AF') 
-	    	    {
-	    	    	/* hAnsi (or hAnsiTheme if defined), with the following exception:
-						If hint is eastAsia, and the language of the run is either Chinese Traditional or Chinese Simplified, 
-						or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312 
-						then eastAsia (or eastAsiaTheme if defined) font is used.
-						*/
+    		    // ..  Latin Extended-A, Latin Extended-B, IPA Extensions
+        	    if (c>='\u0100' && c<='\u02AF') 
+        	    {
+        	    	/* hAnsi (or hAnsiTheme if defined), with the following exception:
+    					If hint is eastAsia, and the language of the run is either Chinese Traditional or Chinese Simplified, 
+    					or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312 
+    					then eastAsia (or eastAsiaTheme if defined) font is used.
+    					*/
         	    	if (hint == STHint.EAST_ASIA) {
-	    	    		if ("zh".equals(langEastAsia) ) {
-	    	    				span.setAttribute("style", getCssProperty(eastAsia));	
-	    	    				spanReusable = false;
-	    	    			
-	    	    		// else TODO: "or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312" 
-	    	    		// fetch the character set!?
-	    	    			
-	    	    		} else {
-		    				span.setAttribute("style", getCssProperty(hAnsi));			
-		    				spanReusable = false;
-		    			} 
-	    	    	} else {
-	    	    		// Usual case
-	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
-	    	    	}
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u0100';
-	    	    	currentRangeUpper = '\u02AF';
+        	    		if ("zh".equals(langEastAsia) ) {
+    	    				vis.fontAction(eastAsia);
+    	    			    vis.setMustCreateNewFlag(true);
+        	    			
+        	    		// else TODO: "or the character set of the eastAsia (or eastAsiaTheme if defined) font is Chinese5 or GB2312" 
+        	    		// fetch the character set!?
+        	    			
+        	    		} else {
+    	    				vis.fontAction(hAnsi);
+    	    			    vis.setMustCreateNewFlag(true);
+    	    			} 
+        	    	} else {
+        	    		// Usual case
+        				vis.fontAction(hAnsi);
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u0100';
+        	    	currentRangeUpper = '\u02AF';
         	    } else 
-	    	    if (c>='\u02B0' && c<='\u04FF') 
-	    	    {
+        	    if (c>='\u02B0' && c<='\u04FF') 
+        	    {
         	    	if (hint == STHint.EAST_ASIA) {
-	    	    		span.setAttribute("style", getCssProperty(eastAsia));	
-	    	    	} else {
-	    	    		// Usual case
-	    				// TODO .. do what???      	    		
-	    	    	}
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u02B0';
-	    	    	currentRangeUpper = '\u04FF';
-	    	    }
-	    	    else if (c>='\u0590' && c<='\u07BF') 
-	    	    {
-        	    	span.setAttribute("style", getCssProperty(ascii)); // TODO ascii or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u0590';
-	    	    	currentRangeUpper = '\u07BF';
-	    	    }
-	    	    else if (c>='\u1100' && c<='\u11FF') 
-	    	    {
-        	    	span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u1100';
-	    	    	currentRangeUpper = '\u11FF';
-	    	    } else if (c>='\u1E00' && c<='\u1EFF') 
-	    	    {
+        				vis.fontAction(eastAsia);
+        	    	} else {
+        	    		// Usual case
+        				// TODO .. do what???      	    		
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u02B0';
+        	    	currentRangeUpper = '\u04FF';
+        	    }
+        	    else if (c>='\u0590' && c<='\u07BF') 
+        	    {
+    				vis.fontAction(ascii); // TODO ascii or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u0590';
+        	    	currentRangeUpper = '\u07BF';
+        	    }
+        	    else if (c>='\u1100' && c<='\u11FF') 
+        	    {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u1100';
+        	    	currentRangeUpper = '\u11FF';
+        	    } else if (c>='\u1E00' && c<='\u1EFF') 
+        	    {
         	    	if (hint == STHint.EAST_ASIA) {
-	    	    		if ("zh".equals(langEastAsia) ) {
-	    	    				span.setAttribute("style", getCssProperty(eastAsia));	
-	    	    		} else {
-		    				span.setAttribute("style", getCssProperty(hAnsi));			
-		    			} 
-	    	    	} else {
-	    	    		// Usual case
-	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
-	    	    	}
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u1E00';
-	    	    	currentRangeUpper = '\u1EFF';
-	    	    }
-	    	    else if (c>='\u2000' && c<='\u2EFF') 
-	    	    {
+        	    		if ("zh".equals(langEastAsia) ) {
+    	    				vis.fontAction(eastAsia);	
+        	    		} else {
+    	    				vis.fontAction(hAnsi);
+    	    			} 
+        	    	} else {
+        	    		// Usual case
+        				vis.fontAction(hAnsi);
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u1E00';
+        	    	currentRangeUpper = '\u1EFF';
+        	    }
+        	    else if (c>='\u2000' && c<='\u2EFF') 
+        	    {
         	    	if (hint == STHint.EAST_ASIA) {
-	        	    	span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	} else {
-	    	    		// Usual case
-	    				// TODO .. do what???      	    			    	    		
-	    	    	}
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u2000';
-	    	    	currentRangeUpper = '\u2EFF';
-	    	    }
-	    	    else if (c>='\u2F00' && c<='\uDFFF') 
-	    	    {
-	        	    span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\u2F00';
-	    	    	currentRangeUpper = '\uDFFF';
-	    	    }
-	    	    else if (c>='\uE000' && c<='\uF8FF') 
-	    	    {
+        				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	} else {
+        	    		// Usual case
+        				// TODO .. do what???      	    			    	    		
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u2000';
+        	    	currentRangeUpper = '\u2EFF';
+        	    }
+        	    else if (c>='\u2F00' && c<='\uDFFF') 
+        	    {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\u2F00';
+        	    	currentRangeUpper = '\uDFFF';
+        	    }
+        	    else if (c>='\uE000' && c<='\uF8FF') 
+        	    {
         	    	if (hint == STHint.EAST_ASIA) {
-	        	    	span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	} else {
-	    	    		// Usual case
-	    				// TODO .. do what???      	    			    	    		
-	    	    	}
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uE000';
-	    	    	currentRangeUpper = '\uF8FF';
-	    	    }
-	    	    else if (c>='\uF900' && c<='\uFAFF') 
-	    	    {
-	        	    span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uF900';
-	    	    	currentRangeUpper = '\uFAFF';
+        				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	} else {
+        	    		// Usual case
+        				// TODO .. do what???      	    			    	    		
+        	    	}
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uE000';
+        	    	currentRangeUpper = '\uF8FF';
+        	    }
+        	    else if (c>='\uF900' && c<='\uFAFF') 
+        	    {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uF900';
+        	    	currentRangeUpper = '\uFAFF';
         	    } else 
     		    // ..  Alphabetic Presentation Forms
         	    if (c>='\uFB00' && c<='\uFB4F') 
         	    {
         	    	/* hAnsi (or hAnsiTheme if defined), with the following exceptions:
         	    	 * 
-								If the hint is eastAsia then eastAsia (or eastAsiaTheme if defined) is used for characters in the range FB00 – FB1C.
-								For the range FB1D – FB4F, ascii (or asciiTheme if defined) is used.
-						*/
+    							If the hint is eastAsia then eastAsia (or eastAsiaTheme if defined) is used for characters in the range FB00 – FB1C.
+    							For the range FB1D – FB4F, ascii (or asciiTheme if defined) is used.
+    					*/
         	    	if (hint == STHint.EAST_ASIA) {
     	    			if ( c>='\uFB00' && c<='\uFB1C') {
-    	    				span.setAttribute("style", getCssProperty(eastAsia));	
-    	    				spanReusable = false;
+    	    				vis.fontAction(eastAsia);
+    	    			    vis.setMustCreateNewFlag(true);
     	    			} else {
-    	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
+    	    				vis.fontAction(hAnsi);
     	    			}
         	    			
         	    	} else if ( c>='\uFB1D' && c<='\uFB4F') {
         	    				
-	    				span.setAttribute("style", getCssProperty(ascii));			
-	    				spanReusable = false;
-	    				
+        				vis.fontAction(ascii);
+        			    vis.setMustCreateNewFlag(true);
+        				
         	    	} else {
-	    				span.setAttribute("style", getCssProperty(hAnsi));			        	    		
+        				vis.fontAction(hAnsi);
         	    	}
-        	    	sb.append(c);
+        	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFB00';
         	    	currentRangeUpper = '\uFB4F';
-	    	    } else if (c>='\uFB50' && c<='\uFDFF') {
-	        	    span.setAttribute("style", getCssProperty(ascii)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uFB50';
-	    	    	currentRangeUpper = '\uFDFF';	
-	    	    } else if (c>='\uFE30' && c<='\uFE6F') {
-	        	    span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uFE30';
-	    	    	currentRangeUpper = '\uFE6F';	
-	    	    } else if (c>='\uFE70' && c<='\uFEFE') {
-	        	    span.setAttribute("style", getCssProperty(ascii)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uFE70';
-	    	    	currentRangeUpper = '\uFEFE';	
-	    	    } else if (c>='\uFF00' && c<='\uFFEF') {
-	        	    span.setAttribute("style", getCssProperty(eastAsia)); // TODO  or implementationDefault
-	    	    	sb.append(c);
-	    	    	
-	    	    	currentRangeLower = '\uFF00';
-	    	    	currentRangeUpper = '\uFFEF';	
-	    	    }
+        	    } else if (c>='\uFB50' && c<='\uFDFF') {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uFB50';
+        	    	currentRangeUpper = '\uFDFF';	
+        	    } else if (c>='\uFE30' && c<='\uFE6F') {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uFE30';
+        	    	currentRangeUpper = '\uFE6F';	
+        	    } else if (c>='\uFE70' && c<='\uFEFE') {
+    				vis.fontAction(ascii); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uFE70';
+        	    	currentRangeUpper = '\uFEFE';	
+        	    } else if (c>='\uFF00' && c<='\uFFEF') {
+    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower = '\uFF00';
+        	    	currentRangeUpper = '\uFFEF';	
+        	    }
     	    }
     	} 
     	
     	// Handle final span
-    	if (sb.length()>0) {
-	    	df.appendChild(span);   
-	    	span.setTextContent(sb.toString());  
-    	}
-    	return df;
+    	vis.finishPrevious();
+    	return vis.getResult();
     }
-	
-    		
     	
 
     private DocumentFragment result(Document document) {
@@ -532,7 +551,7 @@ public class RunFontSelector {
     	
     }
 	
-	public String getCssProperty(String fontName) {
+	private String getCssProperty(String fontName) {
 		
 		if (
 				log.isDebugEnabled() && 
@@ -552,6 +571,7 @@ public class RunFontSelector {
 		
 	}
 
+	
 	private String getPhysicalFont(String fontName) {
 		
 		log.debug("looking for: " + fontName);
@@ -566,5 +586,26 @@ public class RunFontSelector {
 		}		
 	}	
 	
+	public interface RunFontCharacterVisitor {
+		
+		void setRunFontSelector(RunFontSelector runFontSelector);
+		
+		void setDocument(Document document);
+		
+		void addCharacterToCurrent(char c);
+
+		void finishPrevious();
+
+		void createNew();
+		
+		void setMustCreateNewFlag(boolean val);
+		
+		boolean isReusable();
+		
+		void fontAction(String fontname);	
+		
+		Object getResult();  // when used in output a DocumentFragment; when used to find fonts, a Set.
+
+	}
 
 }

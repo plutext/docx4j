@@ -383,10 +383,21 @@
 		
   </xsl:template>
 
-  <xsl:template match="w:t">
-  	<xsl:value-of select="."/>
-  </xsl:template>  	
+	<xsl:template match="w:t[parent::w:r]">
+	
+		<xsl:variable name="pPrNode" select="../../w:rPr" />  	
+		<xsl:variable name="rPrNode" select="../w:rPr" />  	
+		<xsl:variable name="text" select="." />  	
+	
+		<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector( 
+		  		$conversionContext, $pPrNode, $rPrNode, $text)" />
+				
+	</xsl:template>
 
+  <xsl:template match="w:t[not(parent::w:r)]">  	
+  	<xsl:value-of select="."/>
+  </xsl:template>
+  
   <xsl:template match="w:ins">
   	<fo:inline color="blue"
   			   text-decoration="underline">

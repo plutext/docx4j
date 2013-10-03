@@ -28,10 +28,14 @@ import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.RunFontSelector;
+import org.docx4j.fonts.RunFontSelector.OutputType;
+import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 /**
@@ -117,9 +121,73 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	 * @param conversionSectionWrappers
 	 */
 	public HTMLConversionContext(HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
-		super(HTML_WRITER_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
+		super(HTML_WRITER_REGISTRY, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers, createRunFontSelector(preprocessedPackage));
 	}
 
+	private static RunFontSelector createRunFontSelector(WordprocessingMLPackage wmlPackage) {
+		
+		return new RunFontSelector(wmlPackage, 
+				
+			new RunFontCharacterVisitor() {
+			
+	    		DocumentFragment df;			
+				StringBuilder sb = new StringBuilder(1024); 
+				Element span;
+				
+				private Document document;
+				@Override
+				public void setDocument(Document document) {
+					this.document = document;
+					 df = document.createDocumentFragment();
+				}
+				
+				private boolean spanReusable = true;
+				public boolean isReusable() {
+					return spanReusable;
+				}
+	
+				public void addCharacterToCurrent(char c) {
+			    	sb.append(c);		
+				}
+	
+				public void finishPrevious() {
+					
+			    	if (sb.length()>0) {
+				    	df.appendChild(span);   
+				    	span.setTextContent(sb.toString()); 
+//				    	log.info("span: " + sb.toString()); 
+				    	sb.setLength(0);
+			    	}		
+				}
+	
+				public void createNew() {
+					span = runFontSelector.createElement(document);			
+				}
+	
+				public void setMustCreateNewFlag(boolean val) {
+					spanReusable = !val;
+				}
+	
+				public void fontAction(String fontname) {
+					runFontSelector.setAttribute(span, fontname); 
+				}
+
+				@Override
+				public Object getResult() {
+					return df;
+				}
+
+				private RunFontSelector runFontSelector;
+				@Override
+				public void setRunFontSelector(RunFontSelector runFontSelector) {
+					this.runFontSelector = runFontSelector;
+				}
+
+				
+		}, OutputType.XHTML);
+
+	}
+	
 	/**
 	 * HTMLConversionContext using a customised WriterRegistry
 	 * 
@@ -129,7 +197,7 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	 * @param conversionSectionWrappers
 	 */
 	public HTMLConversionContext(AbstractWriterRegistry writerRegistry, HTMLSettings settings, WordprocessingMLPackage preprocessedPackage, ConversionSectionWrappers conversionSectionWrappers) {
-		super(writerRegistry, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers);
+		super(writerRegistry, HTML_MESSAGE_WRITER, settings, preprocessedPackage, conversionSectionWrappers, createRunFontSelector(preprocessedPackage));
 	}
 	
 	@Override

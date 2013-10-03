@@ -30,8 +30,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.common.RunFontSelector;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
+import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -70,51 +70,6 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class XsltHTMLFunctions {
 	
-    public static DocumentFragment fontSelector(HTMLConversionContext conversionContext, 
-    		NodeIterator pPrNodeIt,
-    		NodeIterator rPrNodeIt,
-    		String text) {
-
-		PPr pPr = null;
-		RPr rPr = null;
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = pPrNodeIt.nextNode(); //It is never null
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				pPr =  (PPr)jaxb;
-    			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				conversionContext.getLog().error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-    	
-//    	if (rPrNodeIt!=null) 
-		{ 
-    		Node n = rPrNodeIt.nextNode();
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				rPr =  (RPr)jaxb;
-    			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-    				conversionContext.getLog().error(e.getMessage(), e);
-				}        	        			
-    		}
-    	}
-    	
-    	return conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
-
-    }
     
 	
 	/*

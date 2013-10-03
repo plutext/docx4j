@@ -24,6 +24,8 @@ import java.util.Map;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
+import org.docx4j.fonts.RunFontSelector;
+import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -31,6 +33,9 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.wml.STFldCharType;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 
 /**
  * See /docs/developer/Convert_Out.docx for an overview of
@@ -62,14 +67,18 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	private RunFontSelector runFontSelector = null;
 	
-	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, 
+			AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, 
+			WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers,
+			RunFontSelector runFontSelector) {
+		
 		super(messageWriter, conversionSettings, wmlPackage);
+		
 		this.writerRegistry = initializeWriterRegistry(writerRegistry);
 		this.transformStates = initializeTransformStates();
 		this.conversionSectionWrappers = conversionSectionWrappers;
 		this.styleTree = initializeStyleTree();
-		runFontSelector = new RunFontSelector(getWmlPackage(), this.getLog());
-		
+		this.runFontSelector = runFontSelector; 		
 	}
 
 	@Override
