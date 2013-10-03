@@ -41,7 +41,6 @@ import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
-import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.HighlightColor;
@@ -509,10 +508,7 @@ public class PropertyFactory {
 		
 		try {
 			// Run properties
-			if (name.equals(Font.CSS_NAME )) {
-				// font-family
-				return new Font(value);
-			} else if (name.equals(Bold.CSS_NAME )) {
+			if (name.equals(Bold.CSS_NAME )) {
 				// font-weight
 				return new Bold(value);
 			} else if (name.equals(Italics.CSS_NAME )) {

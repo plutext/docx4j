@@ -29,7 +29,7 @@ import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.RunFontSelector;
-import org.docx4j.fonts.RunFontSelector.OutputType;
+import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -184,7 +184,7 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 				}
 
 				
-		}, OutputType.XHTML);
+		}, RunFontActionType.XHTML);
 
 	}
 	

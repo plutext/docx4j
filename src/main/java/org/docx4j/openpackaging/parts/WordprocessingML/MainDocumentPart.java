@@ -35,7 +35,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.RunFontSelector;
-import org.docx4j.fonts.RunFontSelector.OutputType;
+import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -234,18 +234,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		List <Object> bodyChildren = body.getContent();
 		
 		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
-		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
+		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, RunFontActionType.DISCOVERY); 
 		
 		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
 		new TraversalUtil(bodyChildren, finder);
 		finder.finish();
-
-		// Add default font
-		fontsDiscovered.add(  ((WordprocessingMLPackage)pack).getDefaultFont() );
-		fontsDiscovered.add( 
-				((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia() );
 		
 		// Add fonts used in the styles we discovered
 		// .. 2013 03 10: no longer necessary

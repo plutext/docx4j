@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.preprocess.Containerization;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FormattingSwitchHelper;
@@ -37,7 +38,6 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
-import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.CTTabStop;
@@ -343,9 +343,9 @@ public class XsltFOFunctions {
 	        		
 	        		// Set the font
 	        		if (triple.getNumFont()!=null) {
-	        			String font = Font.getPhysicalFont(context.getWmlPackage(), triple.getNumFont() );
+	        			String font = PhysicalFonts.getPhysicalFont(context.getWmlPackage(), triple.getNumFont() );
 	        			if (font!=null) {
-	        				foListItemLabelBody.setAttribute(Font.FO_NAME, font );
+	        				foListItemLabelBody.setAttribute("font-family", font );
 	        			}
 	        		}
 	        		

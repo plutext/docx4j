@@ -19,6 +19,8 @@ import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
 import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 
 //import com.lowagie.text.pdf.BaseFont;
@@ -498,6 +500,25 @@ public class PhysicalFonts {
 		}
 		
 	}
+	
+	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
+		
+		log.debug("looking for: " + fontName);
+
+		if (!(wmlPackage instanceof WordprocessingMLPackage)) {
+			log.error("Implement me for pptx4j");
+			return null;
+		}
+		PhysicalFont pf = ((WordprocessingMLPackage)wmlPackage).getFontMapper().getFontMappings().get(fontName);
+		if (pf!=null) {
+			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
+			return pf.getName();
+		} else {
+			log.warn("Font '" + fontName + "' is not mapped to a physical font. " );			
+			return null;
+		}		
+	}	
+	
 
 	public static void main(String[] args) throws Exception {
 

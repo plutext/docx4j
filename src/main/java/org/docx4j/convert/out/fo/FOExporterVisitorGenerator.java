@@ -25,6 +25,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -35,7 +36,6 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
-import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
@@ -206,9 +206,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        		
 	        		// Set the font
 	        		if (triple.getNumFont()!=null) {
-	        			String font = Font.getPhysicalFont(conversionContext.getWmlPackage(), triple.getNumFont() );
+	        			String font = PhysicalFonts.getPhysicalFont(conversionContext.getWmlPackage(), triple.getNumFont() );
 	        			if (font!=null) {
-	        				foListItemLabelBody.setAttribute(Font.FO_NAME, font );
+	        				foListItemLabelBody.setAttribute("font-family", font );
 	        			}
 	        		}
 	        		

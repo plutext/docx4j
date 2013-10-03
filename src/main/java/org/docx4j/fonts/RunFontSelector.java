@@ -3,6 +3,8 @@ package org.docx4j.fonts;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.docx4j.XmlUtils;
+import org.docx4j.dml.TextFont;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -28,6 +30,31 @@ import org.w3c.dom.Element;
  * 
  * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
  * 
+ * The ASCII font formats all characters in the ASCII range (character values 0–127). 
+ * This font is specified using the ascii attribute on the rFonts element.
+ * 
+ * The East Asian font formats all characters that belong to Unicode sub ranges for East Asian languages. 
+ * This font is specified using the eastAsia attribute on the rFonts element.
+ * 
+ * The complex script font formats all characters that belong to Unicode sub ranges for complex script languages. 
+ * This font is specified using the cs attribute on the rFonts element.
+ * 
+ * The high ANSI font formats all characters that belong to Unicode sub ranges other than those explicitly included 
+ * by one of the groups above. This font is specified using the hAnsi attribute on the rFonts element.	
+ * 
+ * Per Tristan Davis
+ * http://openxmldeveloper.org/discussions/formats/f/13/t/150.aspx
+ * 
+ * First, the characters are classified into the high ansi / east asian / complex script buckets [per above]
+ * 
+ * Next, we grab *one* theme font from the theme for each bucket - in the settings part, there's an element called themeFontLang
+ * The three attributes on that specify the language to use for the characters in each bucket
+ * 
+ * Then you take the language specified for each attribute and look out for the right language in the theme - and you use that font
+ * 
+ * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
+ * regarding what to do if the font is not available on the computer.
+ * 
  * @author jharrop
  *
  */
@@ -38,15 +65,15 @@ public class RunFontSelector {
 	private WordprocessingMLPackage wordMLPackage;
 	private RunFontCharacterVisitor vis;
 		
-	private OutputType outputType;
-	public enum OutputType {
+	private RunFontActionType outputType;
+	public enum RunFontActionType {
 		XSL_FO,
 		XHTML,
-		NA
+		DISCOVERY
 	}
 	
 	public RunFontSelector(WordprocessingMLPackage wordMLPackage, RunFontCharacterVisitor visitor, 
-			OutputType outputType) {
+			RunFontActionType outputType) {
 		
 		this.wordMLPackage = wordMLPackage;
 		this.vis = visitor;
@@ -87,20 +114,82 @@ public class RunFontSelector {
 		return defaultParagraphStyle;
     }
     
+    
+    private String defaultFont = null;
+	private String getDefaultFont() {
+		
+		if (defaultFont == null) {
+			
+	    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+			
+			org.docx4j.wml.RFonts rFonts = propertyResolver.getDocumentDefaultRPr().getRFonts();
+		
+			if (rFonts==null) {
+				log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to Times New Roman");
+				// Yes, Times New Roman is still buried in Word 2007
+				defaultFont = "Times New Roman"; 						
+			} else {						
+				// Usual case
+				if (rFonts.getAsciiTheme()==null ) {
+					
+					if (rFonts.getAscii()==null ) {
+						// TODO
+						log.error("Neither ascii or asciTheme.  What to do? ");
+						defaultFont = "Times New Roman"; 						
+						
+					} else {
+						log.info("rPrDefault/rFonts referenced " + rFonts.getAscii());								
+						defaultFont = rFonts.getAscii(); 							
+					}	
+					
+				} else {
+					if (getThemePart()==null) {
+						// No theme part - default to Calibri
+						log.info("No theme part - default to Calibri");
+						defaultFont= "Calibri"; 
+					} else {
+						String font = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+						if (font!=null) {
+							defaultFont= font; 
+						} else {
+								// No minorFont/latin in theme part - default to Calibri
+								log.info("No minorFont/latin in theme part - default to Calibri");								
+								defaultFont= "Calibri"; 
+						}
+					}
+				}  				
+			} 
+		}
+		System.out.println("!" + defaultFont);
+		return defaultFont;
+	}
+	
+	
     private DocumentFragment nullRPr(Document document, String text) {
     	
-	    Element	span = createElement(document);
-    	// could a document fragment contain just a #text node?
-		document.appendChild(span);   
-		span.setTextContent(text);
+		if (outputType== RunFontActionType.DISCOVERY) {
+			vis.fontAction(getDefaultFont());
+			return null;
+		} 
+
+		// TODO: At present, we set a font on each and every span; 
+		// if we set a default on eg body, this wouldn't be necessary.
+		// Similarly for the FO case.
+		Element	span = createElement(document);
+		this.setAttribute(span, getDefaultFont());
+		span.setTextContent(text);  
 		return result(document);
+			
+
     }
 
     public Element createElement(Document document) {
     	Element el=null;
-    	if (outputType==OutputType.XHTML) {
+		if (outputType== RunFontActionType.DISCOVERY) {
+			return null;
+		} else if (outputType==RunFontActionType.XHTML) {
     		 el = document.createElement("span");
-    	} else if (outputType==OutputType.XSL_FO) {
+    	} else if (outputType==RunFontActionType.XSL_FO) {
     		el = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
     	} 
 		document.appendChild(el);   
@@ -110,9 +199,9 @@ public class RunFontSelector {
     public void setAttribute(Element el, String fontName) {
     	
     	// could a document fragment contain just a #text node?
-    	if (outputType==OutputType.XHTML) {
+    	if (outputType==RunFontActionType.XHTML) {
         	el.setAttribute("style", getCssProperty(fontName));
-    	} else if (outputType==OutputType.XSL_FO) {
+    	} else if (outputType==RunFontActionType.XSL_FO) {
         	el.setAttribute("font-family", getPhysicalFont(fontName) );
     	} 
     }
@@ -148,13 +237,20 @@ public class RunFontSelector {
 
 		Document document = getDocument();
 		
-		// No rPr, so don't set the font
+		// No rPr .. only happens if no documentDefaultRPr
 		if (rPr==null) {
+			
+			log.warn("effective rPr is null");
 			return nullRPr(document, text);
 		}
 		
-		RFonts rFonts = rPr.getRFonts();
+		System.out.println(XmlUtils.marshaltoString(rPr, true, true));
 		
+		
+		RFonts rFonts = rPr.getRFonts();
+		if (rFonts==null) {
+			return nullRPr(document, text);
+		}		
     	
     	/* If the run has the cs element ("[ISO/IEC-29500-1] §17.3.2.7; cs") 
     	 * or the rtl element ("[ISO/IEC-29500-1] §17.3.2.30; rtl"), 
@@ -164,11 +260,7 @@ public class RunFontSelector {
     	if (rPr.getCs()!=null || rPr.getRtl()!=null ) {
     		
     		// use the cs (or cstheme if defined) font is used
-    		if (rFonts==null) {
-    			
-    			return nullRPr(document, text);
-    			
-    		} else if (rFonts.getCstheme()!=null) {
+    		if (rFonts.getCstheme()!=null) {
     			
     			String fontName = null; 
     			if (getThemePart()!=null) {
@@ -184,7 +276,12 @@ public class RunFontSelector {
     			
     			Element	span = createElement(document);
     			this.setAttribute(span, getCssProperty(fontName));
-    			span.setTextContent(text);    			
+    			span.setTextContent(text);  
+    			
+    			if (outputType== RunFontActionType.DISCOVERY) {
+    				vis.fontAction(fontName);
+    			}
+    			
     			return result(document);
     			
     		} else if (rFonts.getCs()!=null) {
@@ -192,7 +289,12 @@ public class RunFontSelector {
     			String fontName =rFonts.getCs();
     			Element	span = createElement(document);
     			this.setAttribute(span, getCssProperty(fontName));
-    			span.setTextContent(text);    			
+    			span.setTextContent(text);
+    			
+    			if (outputType== RunFontActionType.DISCOVERY) {
+    				vis.fontAction(fontName);
+    			}
+    			
     			return result(document);
     			
     		} else {
@@ -204,33 +306,32 @@ public class RunFontSelector {
 		String eastAsia = null;
 		String ascii = null;
 		String hAnsi = null;
-		STHint hint = null;
-
-		if (rFonts!=null) {
-			
-			hint = rFonts.getHint(); 
-			
-			if (rFonts.getEastAsiaTheme()!=null) {
-				eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
-			} else {
-				// No theme, so 
-	    		eastAsia = rFonts.getEastAsia();
-			}
-			
-			if (rFonts.getAsciiTheme()!=null) {
-				ascii = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
-			} else {
-				// No theme, so 
-				ascii = rFonts.getAscii();
-			}
-			
-			if (rFonts.getHAnsiTheme()!=null) {
-				hAnsi = getThemePart().getFont(rFonts.getHAnsiTheme(), themeFontLang);
-			} else {
-				// No theme, so 
-				hAnsi = rFonts.getHAnsi();
-			}
-    	}    	
+		
+		STHint hint = rFonts.getHint(); 
+		
+		if (rFonts.getEastAsiaTheme()!=null
+				&& getThemePart()!=null) {
+			eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
+		} else {
+			// No theme, so 
+    		eastAsia = rFonts.getEastAsia();
+		}
+		
+		if (rFonts.getAsciiTheme()!=null
+				&& getThemePart()!=null) {
+			ascii = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+		} else {
+			// No theme, so 
+			ascii = rFonts.getAscii();
+		}
+		
+		if (rFonts.getHAnsiTheme()!=null
+				&& getThemePart()!=null) {
+			hAnsi = getThemePart().getFont(rFonts.getHAnsiTheme(), themeFontLang);
+		} else {
+			// No theme, so 
+			hAnsi = rFonts.getHAnsi();
+		}
 		
     	/*
     	 * If the eastAsia (or eastAsiaTheme if defined) attribute’s value is “Times New Roman”
@@ -245,7 +346,12 @@ public class RunFontSelector {
     			
     			Element	span = createElement(document);
     			this.setAttribute(span, getCssProperty(ascii));
-    			span.setTextContent(text);    			
+    			span.setTextContent(text);    	
+    			
+    			if (outputType== RunFontActionType.DISCOVERY) {
+    				vis.fontAction(ascii);
+    			}
+    			
     			return result(document);
     			
     		}

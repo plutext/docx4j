@@ -30,7 +30,7 @@ import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.fonts.RunFontSelector;
-import org.docx4j.fonts.RunFontSelector.OutputType;
+import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -149,7 +149,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 				}
 
 				
-			}, OutputType.XSL_FO);
+			}, RunFontActionType.XSL_FO);
 
 	}
 	

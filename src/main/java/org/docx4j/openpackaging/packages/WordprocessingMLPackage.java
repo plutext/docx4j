@@ -349,25 +349,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 	private Mapper fontMapper;
 	
 	
-	private String defaultFont;
-	public String getDefaultFont() {
-		
-		if (defaultFont==null) {
-			defaultFont = mainDoc.getPropertyResolver().getDefaultFont();
-			log.debug("Identified default font: " + defaultFont);
-		}
-		return defaultFont;		
-	}
-    	
-	private String defaultMajorFont;
-	public String getDefaultMajorFont() {
-		
-		if (defaultMajorFont==null) {
-			defaultMajorFont = mainDoc.getPropertyResolver().getDefaultMajorFontLatin();
-			log.debug("Identified default major font: " + defaultMajorFont);
-		}
-		return defaultMajorFont;		
-	}
 
 	/**
 	 * Creates a WordprocessingMLPackage, using default page size and orientation.
