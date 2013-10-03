@@ -1,10 +1,12 @@
 CHANGELOG
 =========
 
-Version 2.8.1.11 (SNAPSHOT)
+Version 2.8.1.12 (4 October 2013)
+- OleObjectBinaryPart: Store, don't compress (workaround to support Powerpoint 2010, 32-bit) 
+
+Version 2.8.1.11 (13 August 2013)
 - Handle field instruction split across multiple elements
 - new sample FieldsReport
-
 
 Version 2.8.1.10 (12 August 2013)
 - Preserve leading zeros in MERGEFIELD with formatting switch \* MERGEFORMAT
@@ -31,7 +33,6 @@ Version 2.8.1.5 (18 June 2013)
 - backport 3.0 snapshot field processing code 
   up to https://github.com/plutext/docx4j/commit/bacbcedd45be6229bcbc967f01b20f272b9c3243
 - NamespacePrefixMapperUtils: change diagnostic log from ERROR to WARN  
-
 
 Version 2.8.1.4 (10 June 2013)
 - backport https://github.com/plutext/docx4j/commit/ea1d74164fc4abffb0debd1e5e28eb81cc298924

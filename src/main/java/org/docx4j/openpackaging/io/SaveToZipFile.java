@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -56,6 +57,7 @@ import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -448,14 +450,32 @@ public class SaveToZipFile {
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 
 		try {
-	        // Add ZIP entry to output stream.
-	        out.putNextEntry(new ZipEntry(resolvedPartUri));
-	        	        
             java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
             byte[] bytes = null;
             bytes = new byte[bb.limit()];
             bb.get(bytes);	        
-	        
+
+	        // Add ZIP entry to output stream.
+			if (part instanceof OleObjectBinaryPart) {
+				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
+				// (though 64-bit version is fine)
+				
+				ZipEntry ze = new ZipEntry(resolvedPartUri);
+				ze.setMethod(ZipOutputStream.STORED);
+				
+				// must set size, compressed size, and crc-32
+				ze.setSize(bytes.length);
+				ze.setCompressedSize(bytes.length);
+				
+			    CRC32 crc = new CRC32();
+			    crc.update(bytes);	
+			    ze.setCrc(crc.getValue());
+				
+			    out.putNextEntry(ze);				
+			} else {
+				out.putNextEntry(new ZipEntry(resolvedPartUri));
+			}
+	        	        
 	        out.write( bytes );
 
 			// Complete the entry
