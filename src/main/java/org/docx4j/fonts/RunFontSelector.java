@@ -160,7 +160,7 @@ public class RunFontSelector {
 				}  				
 			} 
 		}
-		System.out.println("!" + defaultFont);
+//		System.out.println("!" + defaultFont);
 		return defaultFont;
 	}
 	
@@ -244,7 +244,7 @@ public class RunFontSelector {
 			return nullRPr(document, text);
 		}
 		
-		System.out.println(XmlUtils.marshaltoString(rPr, true, true));
+//		System.out.println(XmlUtils.marshaltoString(rPr, true, true));
 		
 		
 		RFonts rFonts = rPr.getRFonts();
@@ -275,7 +275,7 @@ public class RunFontSelector {
     			}    		
     			
     			Element	span = createElement(document);
-    			this.setAttribute(span, getCssProperty(fontName));
+    			this.setAttribute(span, fontName);
     			span.setTextContent(text);  
     			
     			if (outputType== RunFontActionType.DISCOVERY) {
@@ -288,7 +288,7 @@ public class RunFontSelector {
 
     			String fontName =rFonts.getCs();
     			Element	span = createElement(document);
-    			this.setAttribute(span, getCssProperty(fontName));
+    			this.setAttribute(span, fontName);
     			span.setTextContent(text);
     			
     			if (outputType== RunFontActionType.DISCOVERY) {
@@ -345,7 +345,7 @@ public class RunFontSelector {
     			// use ascii
     			
     			Element	span = createElement(document);
-    			this.setAttribute(span, getCssProperty(ascii));
+    			this.setAttribute(span, ascii);
     			span.setTextContent(text);    	
     			
     			if (outputType== RunFontActionType.DISCOVERY) {
@@ -355,6 +355,11 @@ public class RunFontSelector {
     			return result(document);
     			
     		}
+		}
+		
+		if (ascii==null) {
+			log.warn("No value for ascii, using default font");
+			ascii = this.getDefaultFont();
 		}
     		    	
     	/* Otherwise, the following table is used. For all ranges not listed in the following table, 
