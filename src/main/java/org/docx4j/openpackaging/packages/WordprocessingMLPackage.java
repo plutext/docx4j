@@ -428,9 +428,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
 		app.setJaxbElement(extFactory.createProperties() );
 		wmlPack.addTargetPart(app);	
-		
-		wmlPack.setPartStore(new ZipPartStore());
-		
+				
 		// Return the new package
 		return wmlPack;
 		

@@ -127,7 +127,7 @@ public class BinaryPart extends Part {
 				return null;				
 			}
 			// no cached buffer, try to load part data now			
-			PartStore partStore = this.getPackage().getPartStore();
+			PartStore partStore = this.getPackage().getSourcePartStore();
 			if (partStore==null) {
 				log.warn("No PartStore configured for this package");
 				return null;

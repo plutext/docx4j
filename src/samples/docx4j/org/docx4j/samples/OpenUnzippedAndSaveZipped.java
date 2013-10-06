@@ -67,7 +67,7 @@ public class OpenUnzippedAndSaveZipped extends AbstractSample {
 		File docxFile = new File(System.getProperty("user.dir") + "/zip.docx"); 
 		
 		ZipPartStore zps = new ZipPartStore();
-		zps.setSourcePartStore(opc.getPartStore());
+		zps.setSourcePartStore(opc.getSourcePartStore());
 		
 		Save saver = new Save(opc, zps);
 		FileOutputStream fos = null;

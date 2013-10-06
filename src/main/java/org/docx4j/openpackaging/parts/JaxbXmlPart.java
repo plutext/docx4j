@@ -110,7 +110,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 		// Lazy unmarshal
 		InputStream is = null;
 		if (jaxbElement==null) {
-			PartStore partStore = this.getPackage().getPartStore();
+			PartStore partStore = this.getPackage().getSourcePartStore();
 			try {
 				String name = this.partName.getName();
 				
@@ -201,7 +201,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 		String wmlTemplateString = null;
 		if (jaxbElement==null) {
 
-			PartStore partStore = this.getPackage().getPartStore();
+			PartStore partStore = this.getPackage().getSourcePartStore();
 			String name = this.partName.getName();
 			InputStream is = partStore.loadPart( 
 					name.substring(1));

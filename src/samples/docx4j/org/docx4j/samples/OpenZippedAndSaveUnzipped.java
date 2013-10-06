@@ -59,7 +59,7 @@ public class OpenZippedAndSaveUnzipped extends AbstractSample {
 		baseDir.mkdir();
 		
 		UnzippedPartStore ups = new UnzippedPartStore(baseDir);
-		ups.setSourcePartStore(wordMLPackage.getPartStore());
+		ups.setSourcePartStore(wordMLPackage.getSourcePartStore());
 		Save saver = new Save(wordMLPackage, ups);
 		
 		saver.save(null);

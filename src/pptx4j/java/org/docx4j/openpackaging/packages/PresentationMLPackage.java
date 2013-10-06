@@ -211,8 +211,6 @@ public class PresentationMLPackage  extends OpcPackage {
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
 		
-		pmlPack.setPartStore(new ZipPartStore());
-
 		// Return the new package
 		return pmlPack;
 		

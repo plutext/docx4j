@@ -84,7 +84,7 @@ implements XPathEnabled<E> {
 			// below if jaxbElement has already been set
 			// using setJaxbElement (which doesn't create 
 			// binder)
-			PartStore partStore = this.getPackage().getPartStore();
+			PartStore partStore = this.getPackage().getSourcePartStore();
 			
 			InputStream is = null;
 			try {
@@ -125,15 +125,21 @@ implements XPathEnabled<E> {
 		return binder;
 	}
 
-	/* Don't override setJaxbElement(E jaxbElement) to create	  	
-	 * binder here, since that would set the
-	 * jaxbElement field to something different to
-	 * the object being passed in, leading to
-	 * calling code doing something different to what it thinks it 
-	 * is doing! (ie backwards compatibility would be broken).
+	/** You can't use this override to create/update a binder, since this would set the
+	 * jaxbElement field to something different to the object being passed in 
+	 * (as a consequence of the process to create a binder).
 	 * 
-	 * That's why we have this new method createBinderAndJaxbElement
+	 * We don't want that, because calling code may then continue to manipulate
+	 * the field, without effect..
+	 * 
+	 * See instead createBinderAndJaxbElement
 	 */
+	@Override
+	public void setJaxbElement(E jaxbElement) {
+		super.setJaxbElement(jaxbElement);
+		binder=null; // any existing binder is invalid
+	}
+	
 	
 	/**
 	 * Set the JAXBElement for this part, and a corresponding
@@ -149,7 +155,7 @@ implements XPathEnabled<E> {
 		
 		// In order to create binder:-
 		log.info("creating binder");
-		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement);
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(source);
 		unmarshal(doc.getDocumentElement());
 		// return the newly created object, so calling code can use it in place
 		// of their source object

@@ -148,8 +148,6 @@ public class SpreadsheetMLPackage extends OpcPackage {
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
 		
-		xlsPack.setPartStore(new ZipPartStore());
-
 		// Return the new package
 		return xlsPack;
 		

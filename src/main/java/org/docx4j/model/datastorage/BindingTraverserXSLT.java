@@ -3,6 +3,7 @@ package org.docx4j.model.datastorage;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -36,6 +37,7 @@ import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
@@ -734,6 +736,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			
 			// Create image part and add it
 	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
+	        
 			
 	        String filenameHint = null;
 	        String altText = null;
@@ -766,6 +769,18 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		        inline = imagePart.createImageInline( filenameHint, altText, 
 		    			id1, id2, cxl, cyl, false);		        	
 	        }
+
+	        // In certain circumstances, save it immediately
+	        if (wmlPackage.getTargetPartStore()!=null
+	        		&& wmlPackage.getTargetPartStore() instanceof UnzippedPartStore) {
+	        	log.debug("incrementally saving " + imagePart.getPartName().getName());  
+	        	((UnzippedPartStore)wmlPackage.getTargetPartStore()).saveBinaryPart(imagePart);
+	        	// remove it from memory
+	        	ByteBuffer bb = null;
+	        	imagePart.setBinaryData(bb);//new byte[0]);
+	        	imagePart.setImageInfo(null); // this might help as well
+	        }
+	        
 	        
 	        // Now add the inline in w:p/w:r/w:drawing
 			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();

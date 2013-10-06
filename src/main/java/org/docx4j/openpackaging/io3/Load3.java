@@ -164,7 +164,7 @@ public class Load3 extends Load {
 		// 2. Create a new Package; this'll return the appropriate subclass
 		OpcPackage p = ctm.createPackage(pkgContentType);
 		log.info("Instantiated package of type " + p.getClass().getName() );
-		p.setPartStore(partStore);
+		p.setSourcePartStore(partStore);
 
 		p.setRelationships(rp);
 		rp.setSourceP(p); //

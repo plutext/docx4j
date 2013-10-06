@@ -297,15 +297,15 @@ public class UnzippedPartStore implements PartStore {
 
 	        } else {
 
-	        	if (!file.exists()
-	        			&& this.sourcePartStore==null) {
+	        	if (file.exists() ) {
+
+		        	// No need to save .. 
+	        		// either source = target,
+	        		// or incrementally saved to target already
+	        	
+	        	} else if (this.sourcePartStore==null) {
 
 	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
-
-	        	} else if (file.exists()
-	        			&& this.sourcePartStore==this) {
-
-		        	// No need to save
 
 	        	} else {
 

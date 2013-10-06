@@ -65,43 +65,47 @@ public class Save {
 	public Save(OpcPackage p) {
 		
 		this.p = p;
-		sourcePartStore = p.getPartStore(); 
-		if (sourcePartStore==null) // eg a newly created package
+//		sourcePartStore = p.getSourcePartStore(); 
+		PartStore targetPartStore;
+		if (p.getSourcePartStore()==null) // eg a newly created package
 		{
 			log.warn("sourcePartStore undefined");
 			targetPartStore = new ZipPartStore();
-			p.setPartStore(targetPartStore);
 		} else {
-			targetPartStore = sourcePartStore;
-			targetPartStore.setSourcePartStore(sourcePartStore);
+			targetPartStore = p.getSourcePartStore();
+			targetPartStore.setSourcePartStore(p.getSourcePartStore());
 		}
+		p.setTargetPartStore(targetPartStore);
 		
 	}
 
 	public Save(OpcPackage p, PartStore targetPartStore) {
 		
 		this.p = p;
-		sourcePartStore = p.getPartStore(); 
-		if (sourcePartStore==null) {
+//		sourcePartStore = p.getSourcePartStore(); 
+		if (p.getSourcePartStore()==null) {
 			log.warn("sourcePartStore undefined");
+		} else {
+			targetPartStore.setSourcePartStore(p.getSourcePartStore());
 		}
-		this.targetPartStore = targetPartStore;
-		p.setPartStore(targetPartStore);
+//		this.targetPartStore = targetPartStore;
+		p.setTargetPartStore(targetPartStore);
+//		p.setSourcePartStore(targetPartStore);
 		
 	}
 	
 	// The package to save
 	public OpcPackage p;
 	
-	private PartStore sourcePartStore;	
-	private PartStore targetPartStore;	
-
-	/**
-	 * If we're writing to a different place
-	 */
-	public void setSourcePartStore(PartStore partStore) {
-		this.sourcePartStore = partStore;
-	}
+//	private PartStore sourcePartStore;	
+//	private PartStore targetPartStore;	
+//
+//	/**
+//	 * If we're writing to a different place
+//	 */
+//	public void setSourcePartStore(PartStore partStore) {
+//		this.sourcePartStore = partStore;
+//	}
 	
 	
 	/**
@@ -165,12 +169,12 @@ public class Save {
 		handled = new HashMap<String, String>();
 		 try {
 			 
-				p.getPartStore().setOutputStream(realOS);
+				p.getTargetPartStore().setOutputStream(realOS);
 			 
 
 			// 3. Save [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			p.getPartStore().saveContentTypes(ctm);
+			p.getTargetPartStore().saveContentTypes(ctm);
 			
 			// 4. Start with _rels/.rels
 
@@ -189,7 +193,7 @@ public class Save {
 			addPartsFromRelationships(rp );
 	    
 			
-			p.getPartStore().finishSave();
+			p.getTargetPartStore().finishSave();
 			
 //			if (realOS!=null) {
 //				realOS.close();
@@ -232,7 +236,7 @@ public class Save {
 							Docx4jProperties.getProperties().getProperty("docx4j.dc.write", "false"));
 					if (dcWrite) {	
 						
-						p.setPartStore(sourcePartStore);
+//						p.setSourcePartStore(sourcePartStore);
 						
 						CoreProperties cp = ((DocPropsCorePart)part).getJaxbElement();
 						
@@ -247,7 +251,7 @@ public class Save {
 						String modifier= Docx4jProperties.getProperties().getProperty("docx4j.dc.lastModifiedBy.value", "docx4j");
 						cp.setLastModifiedBy(modifier);
 						
-						p.setPartStore(targetPartStore);
+//						p.setSourcePartStore(targetPartStore);
 						
 					}
 				}				
@@ -255,7 +259,7 @@ public class Save {
 					boolean appWrite= Boolean.parseBoolean(
 							Docx4jProperties.getProperties().getProperty("docx4j.App.write", "false"));
 					if (appWrite) {
-						p.setPartStore(sourcePartStore);
+//						p.setSourcePartStore(sourcePartStore);
 
 						Properties cp = ((DocPropsExtendedPart)part).getJaxbElement();
 						
@@ -268,24 +272,24 @@ public class Save {
 							cp.setAppVersion(version);
 						}
 
-						p.setPartStore(targetPartStore);						
+//						p.setSourcePartStore(targetPartStore);						
 					}
 				}
 
-				p.getPartStore().saveJaxbXmlPart(
+				p.getTargetPartStore().saveJaxbXmlPart(
 						((JaxbXmlPart)part));
 //				log.info( "success writing part: " +  zipEntryName);		
 		        
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 
-				p.getPartStore().saveCustomXmlDataStoragePart(
+				p.getTargetPartStore().saveCustomXmlDataStoragePart(
 						(CustomXmlDataStoragePart)part);
 //				log.info( "success writing part: " +  zipEntryName);		
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
 
-				p.getPartStore().saveXmlPart(
+				p.getTargetPartStore().saveXmlPart(
 						(XmlPart)part);
 				
 //				log.info( "success writing part: " + zipEntryName);		
@@ -412,7 +416,7 @@ public class Save {
 				
 		if (part instanceof BinaryPart ) {
 			log.debug(".. saving binary stuff" );
-			p.getPartStore().saveBinaryPart( part );
+			p.getTargetPartStore().saveBinaryPart( part );
 			
 		} else {
 			log.debug(".. saving " );					

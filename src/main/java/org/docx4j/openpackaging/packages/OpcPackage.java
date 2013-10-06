@@ -135,24 +135,42 @@ public class OpcPackage extends Base {
 		this.contentTypeManager = contentTypeManager;
 	}
 	
-	private PartStore partStore;	
+	private PartStore sourcePartStore;	
 	
 	/**
 	 * @return the partStore
 	 * @since 3.0.
 	 */
-	public PartStore getPartStore() {
-		return partStore;
+	public PartStore getSourcePartStore() {
+		return sourcePartStore;
 	}
 
 	/**
 	 * @param partStore the partStore to set
 	 * @since 3.0.
 	 */
-	public void setPartStore(PartStore partStore) {
-		this.partStore = partStore;
+	public void setSourcePartStore(PartStore partStore) {
+		this.sourcePartStore = partStore;
 	}
 
+	private PartStore targetPartStore;	
+	
+	/**
+	 * @return the partStore
+	 * @since 3.0.
+	 */
+	public PartStore getTargetPartStore() {
+		return targetPartStore;
+	}
+
+	/**
+	 * @param partStore the partStore to set
+	 * @since 3.0.
+	 */
+	public void setTargetPartStore(PartStore partStore) {
+		this.targetPartStore = partStore;
+	}
+	
 	/**
 	 * Constructor.  Also creates a new content type manager
 	 * 
