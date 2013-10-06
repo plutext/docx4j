@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/office/drawing/2012/timeslicer" xmlns="http://schemas.microsoft.com/office/drawing/2012/timeslicer" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartdocprop.xsd"/>
+  <xsd:complexType name="CT_Timeline">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="timeslicer" type="CT_Timeline"/>
+</xsd:schema>

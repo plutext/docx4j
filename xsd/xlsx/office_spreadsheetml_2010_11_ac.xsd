@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac">
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:complexType name="CT_AbsolutePath">
+    <xsd:attribute name="url" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:element name="absPath" type="CT_AbsolutePath"/>
+</xsd:schema>

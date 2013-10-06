@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:attribute name="dyDescent" type="xsd:double"/>
+  <xsd:attribute name="knownFonts" type="xsd:boolean"/>
+</xsd:schema>
