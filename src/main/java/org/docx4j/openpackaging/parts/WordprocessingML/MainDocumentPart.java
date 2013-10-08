@@ -210,23 +210,23 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	
     	Set<String> fontsDiscovered = new java.util.HashSet<String>();
     	
-    	// Keep track of styles we encounter, so we can
-    	// inspect these for fonts
-    	Set<String> stylesInUse = new java.util.HashSet<String>();
-
-		org.docx4j.wml.Styles styles = null;
-		if (this.getStyleDefinitionsPart()!=null) {
-			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
-		}
-		// It is convenient to have a HashMap of styles
-		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
-		if (styles!=null) {
-		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
-		            Style s = iter.next();
-		            stylesDefined.put(s.getStyleId(), s);
-		     }
-		}
-    // We need to know what fonts and styles are used in the document
+//    	// Keep track of styles we encounter, so we can
+//    	// inspect these for fonts
+//    	Set<String> stylesInUse = new java.util.HashSet<String>();
+//
+//		org.docx4j.wml.Styles styles = null;
+//		if (this.getStyleDefinitionsPart()!=null) {
+//			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
+//		}
+//		// It is convenient to have a HashMap of styles
+//		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
+//		if (styles!=null) {
+//		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
+//		            Style s = iter.next();
+//		            stylesDefined.put(s.getStyleId(), s);
+//		     }
+//		}
+//    // We need to know what fonts and styles are used in the document
     	
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
@@ -236,11 +236,51 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
 		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, RunFontActionType.DISCOVERY); 
 		
-		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, null);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
 		new TraversalUtil(bodyChildren, finder);
-		finder.finish();
+//		finder.finish();
+		
+		fontsDiscovered.add(
+				runFontSelector.getDefaultFont() );
+		
+		// fonts in headers, footers?
+		RelationshipsPart rp = this.getRelationshipsPart();
+		if (rp!=null) {
+			for ( Relationship r : rp.getRelationships().getRelationship() ) {
+				Part part = rp.getPart(r);
+				if ( part instanceof FooterPart ) {
+					
+					Ftr ftr = ((FooterPart)part).getJaxbElement();
+					finder.walkJAXBElements(ftr);
+					
+				} else if (part instanceof HeaderPart) {
+					
+					Hdr hdr = ((HeaderPart)part).getJaxbElement();
+					finder.walkJAXBElements(hdr);
+				}
+			}
+		}
+		
+		// Styles in endnotes, footnotes?
+		if (this.getEndNotesPart()!=null) {
+			log.debug("Looking at endnotes");
+			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
+			finder.walkJAXBElements(endnotes);
+		}
+		if (this.getFootnotesPart()!=null) {
+			log.debug("Looking at footnotes");
+			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
+			finder.walkJAXBElements(footnotes);
+		}
+		
+		// Comments
+		if (this.getCommentsPart()!=null) {
+			log.debug("Looking at comments");			
+			Comments comments = this.getCommentsPart().getJaxbElement();
+			finder.walkJAXBElements(comments);
+		}
 		
 		// Add fonts used in the styles we discovered
 		// .. 2013 03 10: no longer necessary
@@ -296,6 +336,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		public void createNew() {}
 		public void setRunFontSelector(RunFontSelector runFontSelector) {}
 		public Object getResult() {return null;}
+		@Override
+		public void setFallbackFont(String fontname) {}
 				
 	}
     
@@ -445,7 +487,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				}
 				
 			} else if ( o instanceof org.docx4j.wml.Text) {
-				
+								
 				if (runFontSelector != null) {
 					// discover the fonts which apply to this text
 					runFontSelector.fontSelector(pPr, rPr, ((Text)o).getValue() );

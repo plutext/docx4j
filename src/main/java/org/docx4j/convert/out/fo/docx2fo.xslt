@@ -284,10 +284,10 @@
 					<xsl:variable name="partname" 
 						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.setCurrentPartMainDocument($conversionContext)" />
 
-					<!--  Info -->
+					<!--  Info 
 					<xsl:copy-of 
 						select="java:org.docx4j.convert.out.common.XsltCommonFunctions.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.Converter ' )" />  	  		
-
+ -->
 					<!--<xsl:apply-templates select="w:body/*" />-->
 					<xsl:apply-templates select="*" />
 
@@ -385,7 +385,7 @@
 
 	<xsl:template match="w:t[parent::w:r]">
 	
-		<xsl:variable name="pPrNode" select="../../w:rPr" />  	
+		<xsl:variable name="pPrNode" select="../../w:pPr" />  	
 		<xsl:variable name="rPrNode" select="../w:rPr" />  	
 		<xsl:variable name="text" select="." />  	
 	

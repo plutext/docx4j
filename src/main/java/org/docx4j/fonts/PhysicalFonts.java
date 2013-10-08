@@ -384,7 +384,7 @@ public class PhysicalFonts {
 
 				if (nameAsInFontTablePart != null && !physicalFontMap.containsKey(nameAsInFontTablePart)) {
 					physicalFontMap.put(nameAsInFontTablePart, pf);
-					log.debug("Added " + nameAsInFontTablePart + " -> " + pf.getEmbeddedFile());
+					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
 				}
 		    		
 		    		// We also need to add it to map by filename

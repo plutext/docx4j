@@ -457,6 +457,9 @@ public class PropertyResolver {
 	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr pPrLevelRunStyle) {
 		
 		log.debug("in getEffectiveRPrUsingPStyle");
+//		Throwable t = new Throwable();
+//		t.printStackTrace();
+		
 		
 //		Idea is that you pass pPr if you are using this for XSL FO,
 //		since we need to take account of rPr in paragraph styles
@@ -467,17 +470,28 @@ public class PropertyResolver {
 //		 * the class attribute).  But, in the CSS case, this
 		// function is not used - since the rPr is made into a style as well.
 		
+
+// Not necessary, since docdefaults are part of the stack		
+//		//	First, the document defaults are applied
+//		
+//			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+//			
+//			// Apply DefaultParagraphFont.  We only do it explicitly
+//			// here as per conditions, because if there is a run style,
+//			// walking the hierarchy will include this if it is needed
+//			if (expressRPr == null || expressRPr.getRStyle() == null ) {
+//				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
+//			}
 		
-		//	First, the document defaults are applied
+		RPr effectiveRPr = null;		
+		if (pPrLevelRunStyle==null) {
+			effectiveRPr = Context.getWmlObjectFactory().createRPr();
+		} else {
+			effectiveRPr=(RPr)XmlUtils.deepCopy(pPrLevelRunStyle);
+		}
 		
-			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
-			
-			// Apply DefaultParagraphFont.  We only do it explicitly
-			// here as per conditions, because if there is a run style,
-			// walking the hierarchy will include this if it is needed
-			if (expressRPr == null || expressRPr.getRStyle() == null ) {
-				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
-			}
+//    	System.out.println("start\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
+		
 		
 		//	Next, the table style properties are applied to each table in the document, 
 		//	following the conditional formatting inclusions and exclusions specified 
@@ -496,7 +510,7 @@ public class PropertyResolver {
 		// (this includes run properties defined in a paragraph style,
 		//  but not run properties directly included in a pPr in the
 		//  document (those only apply to a paragraph mark).
-		applyRPr(pPrLevelRunStyle, effectiveRPr);
+//		applyRPr(pPrLevelRunStyle, effectiveRPr);
 					
 		//	Next, run properties are applied to each run with a specific character style 
 		//	applied. 		
@@ -505,14 +519,18 @@ public class PropertyResolver {
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();
 			resolvedRPr = getEffectiveRPr(runStyleId);
-			applyRPr(resolvedRPr, effectiveRPr);  
+			StyleUtil.apply(resolvedRPr, effectiveRPr);
+//	    	System.out.println("resolved=\n" + XmlUtils.marshaltoString(resolvedRPr, true, true));
+			
 		}
+//    	System.out.println("effective is now\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
 				
 		//	Finally, we apply direct formatting (run properties not from 
 		//	styles).		
 		if (hasDirectRPrFormatting(expressRPr) ) {			
 			//effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);			
-			applyRPr(expressRPr, effectiveRPr);
+//	    	System.out.println("applying express\n" + XmlUtils.marshaltoString(expressRPr, true, true));
+			StyleUtil.apply(expressRPr, effectiveRPr);
 		} 
 		return effectiveRPr;
 		
@@ -904,13 +922,15 @@ public class PropertyResolver {
 			return;
 		}
 		
-    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-    	
-    	for( Property p :  properties ) {
-			if (p!=null) {    		
-				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+		StyleUtil.apply(rPrToApply, effectiveRPr);
+		
+//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+//    	
+//    	for( Property p :  properties ) {
+//			if (p!=null) {    		
+//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 		
 	}	
 	
@@ -919,14 +939,16 @@ public class PropertyResolver {
 		if (rPrToApply==null) {
 			return;
 		}
+
+		StyleUtil.apply(rPrToApply, effectiveRPr);
 		
-    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-    	
-    	for( Property p :  properties ) {
-			if (p!=null) {    		
-				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+//    	
+//    	for( Property p :  properties ) {
+//			if (p!=null) {    		
+//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 	}	
 	
 	

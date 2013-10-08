@@ -290,7 +290,7 @@
 
 	<xsl:template match="w:t[parent::w:r]">
 	
-		<xsl:variable name="pPrNode" select="../../w:rPr" />  	
+		<xsl:variable name="pPrNode" select="../../w:pPr" />  	
 		<xsl:variable name="rPrNode" select="../w:rPr" />  	
 		<xsl:variable name="text" select="." />  	
 	

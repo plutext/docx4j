@@ -134,6 +134,9 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 				StringBuilder sb = new StringBuilder(1024); 
 				Element span;
 				
+				String lastFont;
+				String fallbackFontName; 
+				
 				private Document document;
 				@Override
 				public void setDocument(Document document) {
@@ -153,6 +156,13 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 				public void finishPrevious() {
 					
 			    	if (sb.length()>0) {
+			    		if (span==null) { // init
+			    			span = runFontSelector.createElement(document);	
+			    			// so that spaces have correct font set
+			    			if (lastFont!=null) {
+								runFontSelector.setAttribute(span, lastFont); 			    				
+			    			}
+			    		}
 				    	df.appendChild(span);   
 				    	span.setTextContent(sb.toString()); 
 //				    	log.info("span: " + sb.toString()); 
@@ -169,11 +179,17 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 				}
 	
 				public void fontAction(String fontname) {
-					runFontSelector.setAttribute(span, fontname); 
+					if (fontname==null) {
+						runFontSelector.setAttribute(span, fallbackFontName); 						
+					} else {
+						runFontSelector.setAttribute(span, fontname); 
+						lastFont = fontname;
+					}
 				}
 
 				@Override
 				public Object getResult() {
+					span=null; // ready for next time					
 					return df;
 				}
 
@@ -183,6 +199,12 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 					this.runFontSelector = runFontSelector;
 				}
 
+				@Override
+				public void setFallbackFont(String fontname) {
+					fallbackFontName = fontname;
+					
+				}
+				
 				
 		}, RunFontActionType.XHTML);
 

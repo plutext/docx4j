@@ -80,6 +80,7 @@ public class RunFontSelector {
 		this.outputType = outputType;
 				
 		vis.setRunFontSelector(this);
+		vis.setFallbackFont(getDefaultFont());
 		
 		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
 			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
@@ -116,7 +117,7 @@ public class RunFontSelector {
     
     
     private String defaultFont = null;
-	private String getDefaultFont() {
+	public String getDefaultFont() {
 		
 		if (defaultFont == null) {
 			
@@ -217,21 +218,30 @@ public class RunFontSelector {
     
     public Object fontSelector(PPr pPr, RPr rPr, String text) {
     	
+//    	System.out.println(text);
+    	
+    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
+    	
     	Style pStyle = null;
+    	RPr pRPr = null;
     	if (pPr==null || pPr.getPStyle()==null) {
     		pStyle = getDefaultPStyle();
+        	log.debug("using default p style");
+        	pRPr = pStyle.getRPr();  // TODO pStyle.getRPr() should inherit from basedOn
     	} else if (wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
-    		pStyle = wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false).getStyleById(pPr.getPStyle().getVal());
+    		log.debug(pPr.getPStyle().getVal());
+    		pRPr = propertyResolver.getEffectiveRPr(pPr.getPStyle().getVal());
     	}
 
     	// Do we need boolean major??
     	// Can work that out from pStyle
 
     	
-    	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
-    	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pStyle.getRPr());
+    	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr); 
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
+    	
+    	log.debug("effective\n" + XmlUtils.marshaltoString(rPr, true, true));
     	
     	/* eg
     	 * 
@@ -321,6 +331,11 @@ public class RunFontSelector {
 		if (rFonts.getEastAsiaTheme()!=null
 				&& getThemePart()!=null) {
 			eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
+			
+			if (getPhysicalFont(eastAsia)==null) {
+				log.info("theme font for lang " + themeFontLang + " is " + eastAsia + ", but we don't have that");
+	    		eastAsia = rFonts.getEastAsia();
+			}
 		} else {
 			// No theme, so 
     		eastAsia = rFonts.getEastAsia();
@@ -401,13 +416,13 @@ public class RunFontSelector {
     	
     	char currentRangeLower='\u0000';
     	char currentRangeUpper='\u0000';
-    	
-    	
+    	    	
     	for (int i = 0; i < text.length(); i++){
     		
     	    char c = text.charAt(i);        
     	    if (vis.isReusable() && 
-    	    		c>=currentRangeLower && c<=currentRangeUpper) {
+    	    		(c==' ' ||
+    	    		(c>=currentRangeLower && c<=currentRangeUpper))) {
     	    	// Add it to existing
     	    	vis.addCharacterToCurrent(c);
     	    } else {
@@ -419,10 +434,12 @@ public class RunFontSelector {
     		    vis.createNew();
     		    vis.setMustCreateNewFlag(false);
     		    
+//    		    System.out.println(c);    		    
+    		    
     		    // .. Basic Latin
         	    if (c>='\u0000' && c<='\u007F') 
         	    {
-        	    	vis.fontAction(ascii); // TODO ascii or implementationDefault
+        	    	vis.fontAction(ascii); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u0000';
@@ -507,7 +524,7 @@ public class RunFontSelector {
         				vis.fontAction(eastAsia);
         	    	} else {
         	    		// Usual case
-        				// TODO .. do what???      	    		
+        	    		vis.fontAction(hAnsi); // checked with russian/cyrillic
         	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
@@ -516,7 +533,7 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u0590' && c<='\u07BF') 
         	    {
-    				vis.fontAction(ascii); // TODO ascii or implementationDefault
+    				vis.fontAction(ascii); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u0590';
@@ -524,7 +541,7 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u1100' && c<='\u11FF') 
         	    {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u1100';
@@ -549,7 +566,7 @@ public class RunFontSelector {
         	    else if (c>='\u2000' && c<='\u2EFF') 
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        				vis.fontAction(eastAsia); 
         	    	} else {
         	    		// Usual case
         				// TODO .. do what???      	    			    	    		
@@ -561,7 +578,8 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u2F00' && c<='\uDFFF') 
         	    {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        	    	// Japanese
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u2F00';
@@ -570,7 +588,7 @@ public class RunFontSelector {
         	    else if (c>='\uE000' && c<='\uF8FF') 
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
-        				vis.fontAction(eastAsia); // TODO  or implementationDefault
+        				vis.fontAction(eastAsia); 
         	    	} else {
         	    		// Usual case
         				// TODO .. do what???      	    			    	    		
@@ -582,7 +600,7 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\uF900' && c<='\uFAFF') 
         	    {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uF900';
@@ -617,25 +635,25 @@ public class RunFontSelector {
         	    	currentRangeLower = '\uFB00';
         	    	currentRangeUpper = '\uFB4F';
         	    } else if (c>='\uFB50' && c<='\uFDFF') {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFB50';
         	    	currentRangeUpper = '\uFDFF';	
         	    } else if (c>='\uFE30' && c<='\uFE6F') {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFE30';
         	    	currentRangeUpper = '\uFE6F';	
         	    } else if (c>='\uFE70' && c<='\uFEFE') {
-    				vis.fontAction(ascii); // TODO  or implementationDefault
+    				vis.fontAction(ascii); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFE70';
         	    	currentRangeUpper = '\uFEFE';	
         	    } else if (c>='\uFF00' && c<='\uFFEF') {
-    				vis.fontAction(eastAsia); // TODO  or implementationDefault
+    				vis.fontAction(eastAsia); 
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFF00';
@@ -721,7 +739,9 @@ public class RunFontSelector {
 		
 		boolean isReusable();
 		
-		void fontAction(String fontname);	
+		void fontAction(String fontname);
+		
+		void setFallbackFont(String fontname);
 		
 		Object getResult();  // when used in output a DocumentFragment; when used to find fonts, a Set.
 

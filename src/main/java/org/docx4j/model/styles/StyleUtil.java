@@ -78,6 +78,7 @@ import org.docx4j.wml.STDropCap;
 import org.docx4j.wml.STEm;
 import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STHeightRule;
+import org.docx4j.wml.STHint;
 import org.docx4j.wml.STShd;
 import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.STTblOverlap;
@@ -1384,6 +1385,7 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(RFonts rFonts) {
+				
 		return (rFonts == null) ||
 				(isEmpty(rFonts.getAscii())
 						&& isEmpty(rFonts.getAsciiTheme())
@@ -1392,7 +1394,12 @@ public class StyleUtil {
 						&& isEmpty(rFonts.getEastAsia())
 						&& isEmpty(rFonts.getEastAsiaTheme())
 						&& isEmpty(rFonts.getHAnsi())
-						&& isEmpty(rFonts.getHAnsiTheme()));
+						&& isEmpty(rFonts.getHAnsiTheme())
+						);
+	}
+
+	public static boolean isEmpty(STHint stHint) {
+		return (stHint == null) ;
 	}
 
 	public static boolean isEmpty(STTheme stTheme) {
@@ -1674,8 +1681,16 @@ public class StyleUtil {
 	}
 
 	public static RPr apply(RPr source, RPr destination) {
+		
+		boolean hint = false;
+		if (source.getRFonts()!=null
+				&& !isEmpty(source.getRFonts().getHint())) {
+			hint = true; 
+		}
 
-		if (!isEmpty(source)) {
+		if (isEmpty(source) && !hint ) {
+			
+		} else {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createRPr();
 			
@@ -2150,20 +2165,47 @@ public class StyleUtil {
 	}
 
 	public static RFonts apply(RFonts source, RFonts destination) {
-		if (!isEmpty(source)) {
-			if (destination == null)
-				destination = Context.getWmlObjectFactory().createRFonts();
-			
-			//i think, the values should be treated together
-			destination.setAscii(source.getAscii());
-			destination.setCs(source.getCs());
-			destination.setEastAsia(source.getEastAsia());
-			destination.setHAnsi(source.getHAnsi());
 
-			destination.setAsciiTheme(source.getAsciiTheme());
-			destination.setCstheme(source.getCstheme());
-			destination.setEastAsiaTheme(source.getEastAsiaTheme());
-			destination.setHAnsiTheme(source.getHAnsiTheme());
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createRFonts();
+		
+		if (isEmpty(source) ) {
+			
+			if (source!=null && source.getHint()!=null) {
+				destination.setHint(source.getHint());
+			}
+			
+		} else {
+			
+			if (source.getAscii() != null) {
+				destination.setAscii(source.getAscii());
+			}
+			if (source.getCs() != null) {
+				destination.setCs(source.getCs());
+			}
+			if (source.getEastAsia() != null) {
+				destination.setEastAsia(source.getEastAsia());
+			}
+			if (source.getHAnsi() != null) {
+				destination.setHAnsi(source.getHAnsi());
+			}
+
+			if (source.getAsciiTheme() != null) {
+				destination.setAsciiTheme(source.getAsciiTheme());
+			}
+			if (source.getCstheme() != null) {
+				destination.setCstheme(source.getCstheme());
+			}
+			if (source.getEastAsiaTheme() != null) {
+				destination.setEastAsiaTheme(source.getEastAsiaTheme());
+			}
+			if (source.getHAnsiTheme() != null) {
+				destination.setHAnsiTheme(source.getHAnsiTheme());
+			}
+
+			if (source.getHint() != null) {
+				destination.setHint(source.getHint());
+			}
 		}
 		return destination;
 	}
