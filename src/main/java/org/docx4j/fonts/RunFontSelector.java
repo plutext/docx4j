@@ -202,7 +202,16 @@ public class RunFontSelector {
     	if (outputType==RunFontActionType.XHTML) {
         	el.setAttribute("style", getCssProperty(fontName));
     	} else if (outputType==RunFontActionType.XSL_FO) {
-        	el.setAttribute("font-family", getPhysicalFont(fontName) );
+    		String val = getPhysicalFont(fontName);
+    		if (val==null) {
+    			// Avoid @font-family="", which FOP doesn't like
+    			if (log.isDebugEnabled() ) {
+    				Throwable t = new Throwable();
+    				t.printStackTrace();
+    			}    			
+    		} else {	
+    			el.setAttribute("font-family", getPhysicalFont(fontName) );
+    		}
     	} 
     }
     
@@ -345,12 +354,13 @@ public class RunFontSelector {
     			// use ascii
     			
     			Element	span = createElement(document);
+    			if (outputType== RunFontActionType.DISCOVERY) {
+    				vis.fontAction(ascii);
+        			return null; 
+    			}
     			this.setAttribute(span, ascii);
     			span.setTextContent(text);    	
     			
-    			if (outputType== RunFontActionType.DISCOVERY) {
-    				vis.fontAction(ascii);
-    			}
     			
     			return result(document);
     			
