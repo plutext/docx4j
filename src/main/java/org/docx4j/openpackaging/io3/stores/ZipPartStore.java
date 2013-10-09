@@ -340,9 +340,7 @@ public class ZipPartStore implements PartStore {
 			
 	        if (((BinaryPart)part).isLoaded() ) {
 
-	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	            bytes = new byte[bb.limit()];
-	            bb.get(bytes);
+	            bytes = ((BinaryPart)part).getBytes();
 
 	        } else {
 
@@ -440,8 +438,8 @@ public class ZipPartStore implements PartStore {
 
 		public ByteArray(ByteBuffer bb, String mimetype ) {
 
-			bb.clear();
-			bytes = new byte[bb.capacity()];
+			bb.rewind();
+			bytes = new byte[bb.limit()];
 			bb.get(bytes, 0, bytes.length);
 
 			this.mimetype = mimetype;

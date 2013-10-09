@@ -108,11 +108,7 @@ public class ObfuscatedFontPart extends BinaryPart {
 	 */
 	public void deObfuscate(String fontName, String fontKey ) {
 		
-		byte[] fontData = null;
-				
-		getBuffer().clear();
-        fontData = new byte[getBuffer().capacity()];
-        getBuffer().get(fontData, 0, fontData.length);
+		byte[] fontData = this.getBytes();
 		
 		log.debug("bytes: " + fontData.length);
 		

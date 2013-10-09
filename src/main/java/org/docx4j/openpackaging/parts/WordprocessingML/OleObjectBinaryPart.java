@@ -91,11 +91,7 @@ public class OleObjectBinaryPart extends BinaryPart {
 			// so, for now, brute force..
 
 			log.info("initing POIFSFileSystem from existing data");
-			getBuffer().clear();
-	        byte[] bytes = new byte[getBuffer().capacity()];
-	        getBuffer().get(bytes, 0, bytes.length);
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+			ByteArrayInputStream bais = new ByteArrayInputStream(this.getBytes());
 			fs = new POIFSFileSystem(bais);
 			
 		} else {

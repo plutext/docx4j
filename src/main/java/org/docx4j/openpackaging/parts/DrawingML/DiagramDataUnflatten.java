@@ -239,12 +239,7 @@ public class DiagramDataUnflatten {
 					image.setContentType(bpai.getContentType());
 					image.setId(imgPt.getModelId());
 					
-		            java.nio.ByteBuffer bb = bpai.getBuffer();
-		            byte[] bytes = null;
-		            bytes = new byte[bb.limit()];
-		            bb.get(bytes);	        
-					
-					image.setValue(bytes);
+					image.setValue(bpai.getBytes());
 					
 					images.getImage().add(image);
 					

@@ -166,12 +166,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 * @return
 	 */
 	protected byte[] getImageData(BinaryPart binaryPart) {
-	byte[] bytes = null;
-	ByteBuffer bb = binaryPart.getBuffer();
-		bb.clear();
-		bytes = new byte[bb.capacity()];
-		bb.get(bytes, 0, bytes.length);
-		return bytes;
+		return binaryPart.getBytes();
 	}
 
 	/**

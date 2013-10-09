@@ -109,7 +109,7 @@ public class PartialDeepCopy {
 //		parts
 		//is done in an another method
 //		partStore
-		ret.setPartStore(opcPackage.getPartStore());
+		ret.setSourcePartStore(opcPackage.getSourcePartStore());
 		return ret;
 	}
 
@@ -202,7 +202,7 @@ public class PartialDeepCopy {
 
 	protected static void deepCopyContent(Part source, Part destination) throws Docx4JException {
 		if (source instanceof BinaryPart) {
-			byte[] byteData = new byte[((BinaryPart)source).getBuffer().capacity()];
+			byte[] byteData = new byte[((BinaryPart)source).getBuffer().limit()]; // = remaining() when current pos = 0
 			((BinaryPart)source).getBuffer().get(byteData);
 			((BinaryPart)destination).setBinaryData(ByteBuffer.wrap(byteData));
 		}

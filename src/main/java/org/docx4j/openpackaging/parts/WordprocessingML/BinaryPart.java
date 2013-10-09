@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.zip.ZipFile;
 
 import javax.xml.bind.JAXBException;
@@ -174,13 +176,28 @@ public class BinaryPart extends Part {
 	 * @throws IOException
 	 */
 	public void writeDataToOutputStream(OutputStream out) throws IOException {
-		ByteBuffer buf = this.getBuffer();
 		
-        buf.clear();
-        byte[] bytes = new byte[buf.capacity()];
-        buf.get(bytes, 0, bytes.length);
-        	        
-        out.write( bytes );	    
+		ByteBuffer buf = this.getBuffer();
+		buf.rewind();
+
+		// Fix for https://github.com/plutext/docx4j/issues/80
+		// from http://stackoverflow.com/questions/579600/how-to-put-the-content-of-a-bytebuffer-into-an-outputstream
+        WritableByteChannel channel = Channels.newChannel(out);
+        channel.write(buf);        
+		buf.rewind();
+        
+	}
+	
+	public byte[] getBytes() {
+		
+		ByteBuffer bb = this.getBuffer();
+		bb.rewind();
+
+		byte[] bytes = new byte[bb.limit()];
+		bb.get(bytes, 0, bytes.length);
+		bb.rewind();
+		
+		return bytes;
 	}
 	
     public boolean isContentEqual(Part other) throws Docx4JException {

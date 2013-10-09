@@ -287,12 +287,7 @@ public class UnzippedPartStore implements PartStore {
 	        if (((BinaryPart)part).isLoaded() ) {
 
 	        	fos = new FileOutputStream(file);
-	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	            byte[] bytes = null;
-	            bytes = new byte[bb.limit()];
-	            bb.get(bytes);
-
-		        fos.write( bytes );
+		        fos.write( ((BinaryPart)part).getBytes() );
 			    fos.close();
 
 	        } else {

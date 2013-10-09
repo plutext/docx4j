@@ -794,16 +794,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				wmlPkg.getMainDocumentPart().getRelationshipsPart().getPart(rel);
 			if (part == null) {
 				log.error("Couldn't get Part!");
-			} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
+			} else if (part instanceof BinaryPart) {
 				log.debug("getting bytes...");
-				org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart binaryPart =
-					(org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) part;
-				java.nio.ByteBuffer bb = binaryPart.getBuffer();
-    	        bb.clear();
-    	        byte[] bytes = new byte[bb.capacity()];
-    	        bb.get(bytes, 0, bytes.length);
-
-				return bytes;
+				return ((BinaryPart)part).getBytes();
 			} else {				
                 log.error("Part was a " + part.getClass().getName());
 			}

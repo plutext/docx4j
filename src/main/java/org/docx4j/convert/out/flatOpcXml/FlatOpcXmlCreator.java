@@ -428,12 +428,7 @@ public class FlatOpcXmlCreator implements Output {
 
 			partResult.setCompression("store");
 	        
-            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-            byte[] bytes = null;
-            bytes = new byte[bb.limit()];
-            bb.get(bytes);	        
-
-			partResult.setBinaryData( bytes );
+			partResult.setBinaryData( ((BinaryPart)part).getBytes() );
 			
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			

@@ -451,13 +451,7 @@ public class SaveToZipFile {
 		try {
 	        // Add ZIP entry to output stream.
 	        out.putNextEntry(new ZipEntry(resolvedPartUri));
-	        	        
-            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-            byte[] bytes = null;
-            bytes = new byte[bb.limit()];
-            bb.get(bytes);	        
-	        
-	        out.write( bytes );
+	        out.write( ((BinaryPart)part).getBytes() );
 
 			// Complete the entry
 	        out.closeEntry();
