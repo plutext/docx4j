@@ -22,6 +22,7 @@ package org.docx4j.convert.out.common;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
 import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
@@ -34,6 +35,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -72,6 +74,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 	//current paragraph style to inherit styles in rPr
 	protected PPr pPr = null;
+	protected RPr rPr = null;
 	
 	// E20 image
 	protected Object anchorOrInline;
@@ -149,6 +152,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			currentP = handlePPr(conversionContext, pPr, false, currentP);
 			
 		} else if (o instanceof org.docx4j.wml.R) {
+			
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				// Convert run to span
 				Element spanEl = createNode(document, NODE_INLINE);
@@ -160,7 +164,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				}
 				currentSpan = spanEl;
 				
-				RPr rPr = ((R)o).getRPr();
+				rPr = ((R)o).getRPr();
 				if ( rPr!=null ) {
 					handleRPr(conversionContext, pPr, rPr, currentSpan);
 				}
@@ -170,9 +174,29 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			conversionContext.updateComplexFieldDefinition(((org.docx4j.wml.FldChar)o).getFldCharType());
 
 		} else if (o instanceof org.docx4j.wml.Text) {
+			
 			if (!conversionContext.isInComplexFieldDefinition()) {
-				getCurrentParent().appendChild(document.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+				
+				if (currentSpan==null) {
+					// eg after <br/>
+					log.error("null currentSpan! " + ((Text)o).getValue() );
+					Element spanEl = createNode(document, NODE_INLINE);
+					if (currentP==null) {
+						// Hyperlink special case
+						parentNode.appendChild(spanEl);
+					} else {
+						currentP.appendChild( spanEl  );
+					}
+					currentSpan = spanEl;
+				}
+
+				log.debug(((Text)o).getValue());
+				
+				DocumentFragment df = (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o).getValue());
+				XmlUtils.treeCopy(df, currentSpan);
+				// TODO would be more efficient without the treeCopy
+				// but fontSelector would need to be refactored a bit
+				
 			}
 
 		} else if (o instanceof org.docx4j.wml.R.Tab) {

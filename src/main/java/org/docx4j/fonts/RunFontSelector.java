@@ -80,13 +80,22 @@ public class RunFontSelector {
 		this.outputType = outputType;
 				
 		vis.setRunFontSelector(this);
-		vis.setFallbackFont(getDefaultFont());
+		
+		fallbackFont = getPhysicalFont(getDefaultFont());
+		if (fallbackFont==null) {
+			fallbackFont = getDefaultFont();
+			log.warn(getDefaultFont() + " is not mapped!");
+		} 
+		
+		vis.setFallbackFont(fallbackFont);
 		
 		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
 			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
 		}
 		
 	}
+	
+	String fallbackFont = null;
 	
 	CTLanguage themeFontLang = null;
 	
@@ -206,10 +215,7 @@ public class RunFontSelector {
     		String val = getPhysicalFont(fontName);
     		if (val==null) {
     			// Avoid @font-family="", which FOP doesn't like
-    			if (log.isDebugEnabled() ) {
-    				Throwable t = new Throwable();
-    				t.printStackTrace();
-    			}    			
+    			el.setAttribute("font-family", fallbackFont );
     		} else {	
     			el.setAttribute("font-family", getPhysicalFont(fontName) );
     		}
