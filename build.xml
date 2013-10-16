@@ -12,6 +12,11 @@
     <property name="src.main.java.dir" value="src/main/java"/>
 	
 	<property name="m2Repository" value="../../../.m2/repository"/>	
+	
+    <!--.NET properties -->
+    <property name="ikvm.dir" value="/Java/ikvm/ikvm-7.3.4830.0"/>
+    <property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
+	
 	<!-- 
 	
 		org.docx4j:docx4j:jar:3.0.0-SNAPSHOT
@@ -72,6 +77,8 @@
     <path id="Maven Dependencies.libraryclasspath">
     
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
     
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
@@ -271,6 +278,29 @@
 			</path>
 		</copy>		
     	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
+    </target>
+    
+    <target name="checkForIKVM">
+        <condition property="IKVMAvailable">
+            <and>
+                <os family="windows"/>
+                <available file="${ikvmc}" property="ignored" />
+            </and>
+        </condition>
+    </target>
+
+    <target name="dist.NET" depends="checkForIKVM,dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
+        <echo>Building docx4j.DLL</echo>
+		<fileset id="fileset" dir="${dist}">
+        	<include name="*"/>
+        </fileset>
+        <pathconvert refid="fileset" property="jars" pathsep=" "/>        
+		<exec executable="${ikvmc}">
+            <!-- <arg value="-reference:${ikvm.dir}/bin/IKVM.OpenJDK.Util.dll" /> -->
+            <arg value="-out:${dist}\docx4j.dll" />
+            <arg value="-target:library" />
+            <arg line="${jars}" />
+        </exec>    
     </target>
 
 	<!--
