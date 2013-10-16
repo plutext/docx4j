@@ -1,6 +1,5 @@
 package org.docx4j;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -20,7 +19,7 @@ public class Docx4jProperties {
 			properties.load(
 					ResourceUtils.getResource("docx4j.properties"));
 		} catch (Exception e) {
-			log.error("Error reading docx4j.properties", e);
+			log.warn("Couldn't find/read docx4j.properties; " + e.getMessage());
 		}
 	}
 	

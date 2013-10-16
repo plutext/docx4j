@@ -20,6 +20,8 @@
 
 package org.docx4j.utils;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,12 @@ public class ResourceUtils {
 	
 	protected static Logger log = LoggerFactory.getLogger(ResourceUtils.class);	
 	
+    /**
+     * Use ClassLoader.getResource to get the named resource
+     * @param filename
+     * @return
+     * @throws java.io.IOException if resource not found
+     */
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {
         // Try to load resource from jar.
@@ -43,6 +51,7 @@ public class ResourceUtils {
         	} else {
         		log.warn("Couldn't get resource: " + filename);
         	}
+        	throw new IOException(filename + " not found via classloader.");
         }
         
         // Get the jar file
