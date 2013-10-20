@@ -65,14 +65,19 @@ public class Context {
 		log.info("java.vendor="+System.getProperty("java.vendor"));
 		log.info("java.version="+System.getProperty("java.version"));
 		
+		// This stuff is just debugging diagnostics
 		searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
-		if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+		if (Thread.currentThread().getContextClassLoader()==null) {
+			log.warn("ContextClassLoader is null for current thread");
+			// Happens with IKVM 
+		} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
 			searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
 		}
 		
 		Object namespacePrefixMapper;
 		try {
 			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
+
 			try {
 				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
 				if (f.exists() ) {
@@ -98,19 +103,23 @@ public class Context {
 			}
 		} catch (JAXBException e) {
 			log.error("PANIC! No suitable JAXB implementation available");
+			log.error(e.getMessage(), e);
 			e.printStackTrace();
 		}
       
       try { 
+			// JAXBContext.newInstance uses the context class loader of the current thread. 
+			// To specify the use of a different class loader, 
+			// either set it via the Thread.setContextClassLoader() api 
+			// or use the newInstance method.
+			// JBOSS (older versions only?) might use a different class loader to load JAXBContext, 
+    	  	// which caused problems, so in docx4j we explicitly specify our class loader.  
+    	  	// IKVM 7.3.4830 also needs this to be done
+    	  	// (java.lang.Thread.currentThread().setContextClassLoader doesn't seem to help!)
+    	  	// and there are no environments in which this approach is known to be problematic
 			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			Context tmp = new Context();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			//log.info("\n\nClassloader: " + classLoader.toString() );			
-			
-			log.info("loading Context jc");		
-						
+			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
+
 			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
 					"org.docx4j.schemas.microsoft.com.office.word_2006.wordml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
@@ -141,6 +150,7 @@ public class Context {
 			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
 			
 			log.info(".. others loaded ..");
+										
 			
 		} catch (Exception ex) {
 			log.error("Cannot initialize context", ex);

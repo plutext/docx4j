@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.docx4j.Docx4jProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,13 +40,12 @@ public class NamespacePrefixMapperUtils {
 		if (prefixMapper!=null) return prefixMapper;
 		
 		if (testContext==null) {
-			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			NamespacePrefixMapperUtils tmp = new NamespacePrefixMapperUtils();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			
+			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+		}
+		
+		if (testContext==null) {
+			throw new JAXBException("Couldn't create context for org.docx4j.relationships.  Everything is broken!");
 		}
 		
 		Marshaller m=testContext.createMarshaller();
@@ -92,12 +92,7 @@ public class NamespacePrefixMapperUtils {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
 		if (testContext==null) {
-			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			NamespacePrefixMapperUtils tmp = new NamespacePrefixMapperUtils();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			
+			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 		}
 		

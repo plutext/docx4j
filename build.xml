@@ -74,6 +74,37 @@
 		 |  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.5.1:compile
 		 |  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:2.5.1:compile
 	 -->
+	 
+    <path id="FOP-stuff.classpath">
+
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.5/xmlgraphics-commons-1.5.jar"/>        
+
+        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
+        <pathelement location="${m2Repository}/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.7/batik-css-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.7/batik-dom-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.7/batik-parser-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.7/batik-util-1.7.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.7/batik-bridge-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.7/batik-script-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.7/batik-xml-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.7/batik-awt-util-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.7/batik-gvt-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.7/batik-transcoder-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.7/batik-svggen-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
+
+	</path>
+	 
     <path id="Maven Dependencies.libraryclasspath">
     
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
@@ -93,7 +124,6 @@
         <!--  end MOXy -->
            
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
-        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xmldsig-core/1.0.0/jaxb-xmldsig-core-1.0.0.jar"/>
                 
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
@@ -103,27 +133,6 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.5/xmlgraphics-commons-1.5.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.7/batik-css-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.7/batik-dom-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.7/batik-parser-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.7/batik-util-1.7.jar"/>
-        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
-        <pathelement location="${m2Repository}/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>
-
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.7/batik-bridge-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.7/batik-script-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.7/batik-xml-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.7/batik-awt-util-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.7/batik-gvt-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.7/batik-transcoder-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.7/batik-svggen-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
 
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
@@ -135,7 +144,6 @@
         <pathelement location="${m2Repository}/org/apache/poi/poi-scratchpad/3.8/poi-scratchpad-3.8.jar"/>
         <pathelement location="${m2Repository}/org/apache/poi/poi/3.8/poi-3.8.jar"/>
 
-        <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>    
 
         <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.3/antlr-runtime-3.3.jar"/>    
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
@@ -176,7 +184,9 @@
     </path>
     <path id="docx4j.classpath">
         <pathelement location="bin"/>
+        <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>    
         <path refid="Maven Dependencies.libraryclasspath"/>
+    	<path refid="FOP-stuff.classpath"/>        
     </path>
 
     <path id="dist.classpath">
@@ -291,16 +301,71 @@
 
     <target name="dist.NET" depends="checkForIKVM,dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
         <echo>Building docx4j.DLL</echo>
+        
+<!--         
 		<fileset id="fileset" dir="${dist}">
         	<include name="*"/>
         </fileset>
-        <pathconvert refid="fileset" property="jars" pathsep=" "/>        
+        <pathconvert refid="fileset" property="jars" pathsep=" "/>
+         -->
+         
+         <!--  splitting fop out results in 2 jars:
+         
+			         8,885,248 docx4j-fop.dll
+			        16,741,888 docx4j.dll   
+			        
+			   but seems more trouble than it is worth      
+
+		        <pathconvert refid="FOP-stuff.classpath" property="fop-jars" pathsep=" "/>        
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j-fop.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-target:library" />
+		            <arg line="${fop-jars}" />
+		        </exec>    
+		         
+			    <path id="docx4j-main.classpath">
+			        <path refid="Maven Dependencies.libraryclasspath"/>
+			        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+			        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+					<pathelement location="${dist}/docx4j-${version}.jar" />
+			    </path>
+		        <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
+		                 
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-reference:dist/docx4j-fop.dll" />
+		            <arg value="-target:library" />
+		            <arg line="${docx4j-jars}" />
+		        </exec>
+		        
+		        It is also possible to split out Xalan (inc serializer);
+		        in that case docx4j.dll is 20mb, and xalan is 4mb
+		        
+         -->
+         
+	    <path id="docx4j-main.classpath">
+	        <path refid="Maven Dependencies.libraryclasspath"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+	    	<path refid="FOP-stuff.classpath"/>        	        
+			<pathelement location="${dist}/docx4j-${version}.jar" />
+	    </path>
+        <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
+                 
 		<exec executable="${ikvmc}">
-            <!-- <arg value="-reference:${ikvm.dir}/bin/IKVM.OpenJDK.Util.dll" /> -->
-            <arg value="-out:${dist}\docx4j.dll" />
+            <arg value="-out:${dist}/docx4j.dll" />
+            <arg value="-keyfile:Plutext.snk" />
+            <arg value="-version:2.9.9.8" />
             <arg value="-target:library" />
-            <arg line="${jars}" />
+            <arg line="${docx4j-jars}" />
         </exec>    
+        
+        
+            
     </target>
 
 	<!--

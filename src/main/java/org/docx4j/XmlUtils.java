@@ -141,7 +141,10 @@ public class XmlUtils {
 		} else if ((System.getProperty("java.version").startsWith("1.6")
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
-						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
+						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.7")
+						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
+				) {
 
 	    	// Crimson fails to parse the HTML XSLT, so use Xerces ..
 			// .. this one is available in Java 6.	
@@ -160,7 +163,8 @@ public class XmlUtils {
 			//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
 			
 			
-			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
+			log.warn("default SAXParserFactory property : " + System.getProperty("javax.xml.parsers.SAXParserFactory" )
+					+ "\n Please consider using Xerces.");
 		}
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
 		// since we want to avoid Crimson being used for the life of the application.
@@ -180,7 +184,10 @@ public class XmlUtils {
 		} else if ((System.getProperty("java.version").startsWith("1.6")
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
-						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
+						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.7")
+						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
+				) {
 		
 			// Crimson doesn't support setTextContent; this.writeDocument also fails.
 			// We've already worked around the problem with setTextContent,
@@ -199,8 +206,10 @@ public class XmlUtils {
 			//		    "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 			// which is what we used to do in XmlPart.
 			
-			log.warn("Using default DocumentBuilderFactory: " 
-					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" ));
+			log.warn("default DocumentBuilderFactory property: " 
+					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" )
+					+ "\n Please consider using Xerces.");
+					
 		}
 		
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();

@@ -53,7 +53,10 @@ public class Context {
 		log.info("java.version="+System.getProperty("java.version"));
 		
 		org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
-		if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+		if (Thread.currentThread().getContextClassLoader()==null) {
+			log.warn("ContextClassLoader is null for current thread");
+			// Happens with IKVM 
+		} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
 			org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
 		}
 		
@@ -85,18 +88,14 @@ public class Context {
 			}
 		} catch (JAXBException e) {
 			log.error("PANIC! No suitable JAXB implementation available");
+			log.error(e.getMessage(), e);
 			e.printStackTrace();
 		}
 		
 		try {	
 			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			Context tmp = new Context();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			//log.info("\n\nClassloader: " + classLoader.toString() );			
-			
-			log.info("loading Context jcPML");			
+			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
+
 			jcPML = JAXBContext.newInstance("org.pptx4j.pml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:" +
 					"org.docx4j.mce", 
@@ -110,7 +109,7 @@ public class Context {
 			
 			
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log.error("Cannot initialize context", ex);
 		}				
 	}
 	
