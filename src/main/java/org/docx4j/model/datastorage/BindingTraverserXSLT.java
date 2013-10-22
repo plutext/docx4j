@@ -1,6 +1,8 @@
 package org.docx4j.model.datastorage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -22,6 +25,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.xalan.extensions.ExpressionContext;
@@ -45,6 +49,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
@@ -79,7 +84,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		}
 		
 	}
-	
+			
 	
 	/**
 	 * @param part
@@ -155,6 +160,104 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
 	//&lt;html&gt;&lt;body&gt;  &lt;p&gt;hello &lt;/p&gt; &lt;/body&gt;&lt;/html&gt;
 	
+	private static DocumentFragment placeholderFragment = null;
+	private static byte[] placeholderBytes = null;
+	private static final String placeholderResource = "org/docx4j/model/datastorage/placeholder.xml";
+	
+	private static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
+		
+		// One time
+		if (placeholderFragment==null) {
+			createPlaceholderFragment();
+		}
+		if (placeholderBytes==null) {
+			createPlaceholderBytes();
+		}
+
+		
+		if (contentParent.equals("p")) {
+			// Will always be invoked with this, for xpathGenerateRuns
+
+			if (rPr==null) {
+				// Usual case, just reuse the fragment
+				return placeholderFragment;
+			} else {
+				// Specific formatting
+				R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
+				run.setRPr(rPr);
+				Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
+				DocumentFragment docfrag = tmpDoc.createDocumentFragment();
+				XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+				return docfrag;
+			}
+			
+		} else {
+			
+			R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
+			run.setRPr(rPr);
+			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
+			
+			DocumentFragment docfrag = tmpDoc.createDocumentFragment();
+			
+			if (contentParent.equals("tbl")) {
+				
+				org.w3c.dom.Element wtr = tmpDoc.createElementNS(Namespaces.NS_WORD12, "tr");
+				docfrag.appendChild(wtr);
+				
+				org.w3c.dom.Element wtc = tmpDoc.createElementNS(Namespaces.NS_WORD12, "tc");
+				wtr.appendChild(wtc);
+				
+				org.w3c.dom.Element wp = tmpDoc.createElementNS(Namespaces.NS_WORD12, "p");
+				wtc.appendChild(wp);
+				
+				wp.appendChild(tmpDoc.getDocumentElement());
+				return docfrag;
+				
+			} else if (contentParent.equals("tr")) {
+				
+				org.w3c.dom.Element wtc = tmpDoc.createElementNS(Namespaces.NS_WORD12, "tc");
+				docfrag.appendChild(wtc);
+				
+				org.w3c.dom.Element wp = tmpDoc.createElementNS(Namespaces.NS_WORD12, "p");
+				wtc.appendChild(wp);
+				
+				wp.appendChild(tmpDoc.getDocumentElement());
+				return docfrag;
+				
+			} else if (contentParent.equals("tc")
+					|| contentParent.equals("body")) {
+								
+				org.w3c.dom.Element wp = tmpDoc.createElementNS(Namespaces.NS_WORD12, "p");
+				docfrag.appendChild(wp);
+				
+				wp.appendChild(tmpDoc.getDocumentElement());
+				return docfrag;
+				
+			} else {
+				// can't happen
+				return null;
+			}
+			
+			
+		}
+	}
+	
+	private static void createPlaceholderFragment() throws Exception {
+		// create it - one time operation
+		InputStream is = ResourceUtils.getResource(placeholderResource);
+		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
+		newInstance.setNamespaceAware(true);
+		Document tmpDoc = newInstance.newDocumentBuilder().parse(is);
+		placeholderFragment = tmpDoc.createDocumentFragment();
+		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), placeholderFragment);		
+	}
+	
+	private static void createPlaceholderBytes() throws Exception {
+		// Only want to do this once
+		InputStream is = ResourceUtils.getResource(placeholderResource);
+		placeholderBytes = IOUtils.toByteArray(is);		
+	}
+	
 	
 	/**
 	 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
@@ -179,7 +282,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 		
-		
+		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+		DocumentFragment docfrag = docContainer.createDocumentFragment();
 		
 		XHTMLImporter xHTMLImporter= null;
 	    try {
@@ -189,7 +293,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	    } catch (Exception e) {
 	        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 			log.error(e.getMessage(), e);
-			return null;
+			return xhtmlError(sdtParent, docContainer, docfrag, "Missing XHTML Handler!");
 	    }		
 	    
 		
@@ -213,21 +317,26 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
 					
 		String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
-		if (r==null) return null;
 		
 		try {
-			r = r.trim();
-//			log.debug(r);
-			//String unescaped = StringEscapeUtils.unescapeHtml(r);
-			//log.info("Unescaped: " + unescaped);
-			
-			// It comes to us unescaped, so the above is unnecessary.
 
 			RPr rPrSDT = null;
 			Node rPrNode = rPrNodeIt.nextNode();
 			if (rPrNode!=null) {
 				rPrSDT = (RPr)XmlUtils.unmarshal(rPrNode);
 			}
+			
+			if (r==null || r.trim().equals("")) {
+				return createPlaceholder(rPrSDT, sdtParent);
+			}
+
+			r = r.trim();
+//			log.debug(r);
+			//String unescaped = StringEscapeUtils.unescapeHtml(r);
+			//log.info("Unescaped: " + unescaped);
+			
+			// It comes to us unescaped, so the above is unnecessary.
+			
 			
 			if (r.startsWith("<span")) {
 				// Wrap the XHTML in a span element with @class, @style as appropriate
@@ -286,9 +395,6 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				log.debug("\nenhanced with css: \n" + r);
 			}
 			
-			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
-			DocumentFragment docfrag = docContainer.createDocumentFragment();
-			
 			
 			xHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 //	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
@@ -310,52 +416,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				//throw new Docx4JException("Problem converting XHTML", e);
 				
 				String errMsg = e.getMessage() + " with XHTML from " + xpathExp + " : " + r; 
-
-				org.w3c.dom.Element wr = docContainer.createElementNS(Namespaces.NS_WORD12, "r");
-				org.w3c.dom.Element wt = docContainer.createElementNS(Namespaces.NS_WORD12, "t");
-				wt.setTextContent(errMsg);
-				wr.appendChild(wt);
 				
-				if (sdtParent.equals("p")) {
-					docfrag.appendChild(wr);
-					return docfrag;
-				} else if (sdtParent.equals("tbl")) {
-					
-					org.w3c.dom.Element wtr = docContainer.createElementNS(Namespaces.NS_WORD12, "tr");
-					docfrag.appendChild(wtr);
-					
-					org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
-					wtr.appendChild(wtc);
-					
-					org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
-					wtc.appendChild(wp);
-					
-					wp.appendChild(wr);
-					
-					return docfrag;
-				} else if (sdtParent.equals("tr")) {
-					org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
-					docfrag.appendChild(wtc);
-					
-					org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
-					wtc.appendChild(wp);
-					
-					wp.appendChild(wr);
-					return docfrag;
-				} else if (sdtParent.equals("tc")) {
-					org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
-					docfrag.appendChild(wp);
-					
-					wp.appendChild(wr);
-					return docfrag;
-				} else {
-					org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
-					docfrag.appendChild(wp);
-					
-					wp.appendChild(wr);
-					return docfrag;
-
-				}
+				return xhtmlError(sdtParent, docContainer, docfrag, errMsg);
 			}
 
 			
@@ -441,6 +503,64 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return null;
+		}
+	}
+
+	/**
+	 * @param sdtParent
+	 * @param docContainer
+	 * @param docfrag
+	 * @param errMsg
+	 * @return
+	 */
+	private static DocumentFragment xhtmlError(String sdtParent,
+			org.w3c.dom.Document docContainer, DocumentFragment docfrag,
+			String errMsg) {
+		org.w3c.dom.Element wr = docContainer.createElementNS(Namespaces.NS_WORD12, "r");
+		org.w3c.dom.Element wt = docContainer.createElementNS(Namespaces.NS_WORD12, "t");
+		wt.setTextContent(errMsg);
+		wr.appendChild(wt);
+		
+		if (sdtParent.equals("p")) {
+			docfrag.appendChild(wr);
+			return docfrag;
+		} else if (sdtParent.equals("tbl")) {
+			
+			org.w3c.dom.Element wtr = docContainer.createElementNS(Namespaces.NS_WORD12, "tr");
+			docfrag.appendChild(wtr);
+			
+			org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
+			wtr.appendChild(wtc);
+			
+			org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+			wtc.appendChild(wp);
+			
+			wp.appendChild(wr);
+			
+			return docfrag;
+		} else if (sdtParent.equals("tr")) {
+			org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
+			docfrag.appendChild(wtc);
+			
+			org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+			wtc.appendChild(wp);
+			
+			wp.appendChild(wr);
+			return docfrag;
+		} else if (sdtParent.equals("tc")) {
+			org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+			docfrag.appendChild(wp);
+			
+			wp.appendChild(wr);
+			return docfrag;
+		} else {
+			// eg body
+			org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+			docfrag.appendChild(wp);
+			
+			wp.appendChild(wr);
+			return docfrag;
+
 		}
 	}
 	
@@ -549,10 +669,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		 */
 
 		String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
-		if (r==null) return null;
 
-		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
-		DocumentFragment docfrag = docContainer.createDocumentFragment();
+		
 		
 		try {
 			log.info(xpath + " yielded result '" + r + "'");
@@ -565,7 +683,12 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				}
 			}
 
-			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			if (r==null || r.equals("")) {
+				return createPlaceholder(rPr, "p");
+			}
+			
+			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
 			StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
 			
@@ -594,13 +717,13 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				
 				processString(sourcePart, docfrag, sb.toString(), rPr);
 			}				
+			return docfrag;			
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return null;
 		}
 		
-		return docfrag;			
 	}
 
 	
