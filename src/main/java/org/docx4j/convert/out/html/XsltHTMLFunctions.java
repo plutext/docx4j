@@ -749,55 +749,38 @@ public class XsltHTMLFunctions {
         			}        	        			
         		}
         	}
-        	        	
-            // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			
-			//log.info("Document: " + document.getClass().getName() );
 
-			Node span = document.createElement("span");			
-			document.appendChild(span);
-			
-			// Set @class	
-			String rStyleVal = defaultCharacterStyleId;
-			if ( rPr!=null && rPr.getRStyle()!=null) {
-				rStyleVal = rPr.getRStyle().getVal();
-			}
-			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-			if (asn==null) {
-				context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
-			} else {
-				((Element)span).setAttribute("class", 
-						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-				);		
-			}
-			
-			if (rPr!=null) {
-				
-				if (context.getLog().isDebugEnabled()) {					
-					context.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
-				}
-				
-				// Does our rPr contain anything else?
-				StringBuilder inlineStyle =  new StringBuilder();
-				HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
-				if (!inlineStyle.toString().equals("") ) {
-					((Element)span).setAttribute("style", inlineStyle.toString() );
-				}
-			}
-			
-			// Our fo:block wraps whatever result tree fragment
+			// Our span wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			Node n = childResults.nextNode();
-			XmlUtils.treeCopy( n,  span );			
+
+            // Create a DOM builder and parse the fragment
+        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+			Document document = factory.newDocumentBuilder().newDocument();
+				
+			Element span = document.createElement("span");			
+			document.appendChild(span);
 			
+    		// Avoid unnecessary nested span for common case of single child
+        	if (n.hasChildNodes() && n.getChildNodes().getLength()==1
+        			&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+        		
+        		String existingStyle = ((Element)n.getChildNodes().item(0)).getAttribute("style");
+				span.setAttribute("style", existingStyle );				
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				XmlUtils.treeCopy( n.getChildNodes().item(0).getChildNodes(),  span );			
+        		
+        	} else {
+				
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				XmlUtils.treeCopy( n,  span );			
+        	}
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
 
 			return docfrag;
+        	
 						
 		} catch (Exception e) {
 			context.getLog().error(e.getMessage(), e);
@@ -806,4 +789,54 @@ public class XsltHTMLFunctions {
     	return null;
     	
     }
+
+	/**
+	 * @param context
+	 * @param defaultCharacterStyleId
+	 * @param styleTree
+	 * @param rPr
+	 * @param span
+	 */
+	private static void setSpanAttr(HTMLConversionContext context,
+			String defaultCharacterStyleId, StyleTree styleTree, RPr rPr,
+			Element span) {
+		
+		// Set @class	
+		String rStyleVal = defaultCharacterStyleId;
+		if ( rPr!=null && rPr.getRStyle()!=null) {
+			rStyleVal = rPr.getRStyle().getVal();
+		}
+		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+		org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+		if (asn==null) {
+			context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
+		} else {
+			((Element)span).setAttribute("class", 
+					StyleTree.getHtmlClassAttributeValue(cTree, asn)			
+			);		
+		}
+		
+		if (rPr!=null) {
+			
+			if (context.getLog().isDebugEnabled()) {					
+				context.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
+			}
+			
+			// Does our rPr contain anything else?
+			StringBuilder inlineStyle =  new StringBuilder();
+			HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
+			if (inlineStyle.toString().equals("") ) {
+				// Do nothing here - just keep existing style
+				// (which if present, is a font definition obtained at w:t level)
+			} else {
+				String existingStyle = span.getAttribute("style");
+				if (existingStyle==null
+						|| existingStyle.trim().equals("")) {
+					span.setAttribute("style", inlineStyle.toString() );
+				} else {
+					span.setAttribute("style", inlineStyle.toString() + ";" + existingStyle );					
+				}
+			}
+		}
+	}
 }
