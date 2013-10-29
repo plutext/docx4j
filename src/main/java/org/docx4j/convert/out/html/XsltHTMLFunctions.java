@@ -623,57 +623,68 @@ public class XsltHTMLFunctions {
 				}
 			}
 			
-						
-			// Our fo:block wraps whatever result tree fragment
+
+			// Our element (eg <p>) wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			// init
 			Node n = childResults.nextNode();
-			do {	
+			if (xhtmlBlock.getNodeName().equals("p")) {
 				
-//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
+				mergeSpans(n.getChildNodes(), document, xhtmlBlock);
 				
-				// getNumberXmlNode creates a span node, which is empty
-				// if there is no numbering.
-				// Let's get rid of any such <span/>.
-				
-				// What we actually get is a document node
-				if (n.getNodeType()==Node.DOCUMENT_NODE) {
-					context.getLog().debug("handling DOCUMENT_NODE");
-					// Do just enough of the handling here
-	                NodeList nodes = n.getChildNodes();
-	                if (nodes != null) {
-	                    for (int i=0; i<nodes.getLength(); i++) {
-	                    	
-	        				if (((Node)nodes.item(i)).getLocalName().equals("span")
-	        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
-	        					// ignore
-	        					context.getLog().debug(".. ignoring <span/> ");
-	        				} else {
-	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
-	        				}
-	                    }
-	                }					
-				} else {
+			} else {
+			
+				do {	
 					
-	//					log.info("Node we are importing: " + n.getClass().getName() );
-	//					foBlockElement.appendChild(
-	//							document.importNode(n, true) );
-					/*
-					 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-					 * which causes
-					 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-					 * 
-					 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-					 * 
-					 * So instead of importNode, use 
-					 */
-					XmlUtils.treeCopy( n,  xhtmlBlock );
-				}
-				// next 
-				n = childResults.nextNode();
-				
-			} while ( n !=null ); 
+	//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
+					
+					// getNumberXmlNode creates a span node, which is empty
+					// if there is no numbering.
+					// Let's get rid of any such <span/>.
+					
+					// What we actually get is a document node
+					if (n.getNodeType()==Node.DOCUMENT_NODE) {
+						context.getLog().debug("handling DOCUMENT_NODE");
+						
+						// Do just enough of the handling here
+		                NodeList nodes = n.getChildNodes();
+		                if (nodes != null) {
+		                    for (int i=0; i<nodes.getLength(); i++) {
+		                    	
+		        				if (((Node)nodes.item(i)).getLocalName().equals("span")
+		        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
+		        					// ignore
+		        					context.getLog().debug(".. ignoring <span/> ");
+		        				} else {
+		        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
+		        				}
+		                    }
+		                }	
+		                
+		                
+					} else {
+						
+		//					log.info("Node we are importing: " + n.getClass().getName() );
+		//					foBlockElement.appendChild(
+		//							document.importNode(n, true) );
+						/*
+						 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+						 * which causes
+						 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+						 * 
+						 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+						 * 
+						 * So instead of importNode, use 
+						 */
+						XmlUtils.treeCopy( n,  xhtmlBlock );
+					}
+					// next 
+					n = childResults.nextNode();
+					
+				} while ( n !=null ); 
+			}
+			
 			
 			if (xhtmlBlock.getNodeName().equals("p")
 					&& !xhtmlBlock.hasChildNodes() ) {
@@ -696,8 +707,73 @@ public class XsltHTMLFunctions {
 		} 
     	
     	return null;
-    	
     }
+    
+    /**
+     * Merge adjacent spans if @class and @style are the same
+     * @param nodes
+     * @param result
+     */
+    private static void mergeSpans(NodeList nodes, Document document, Element xhtmlBlock) {
+    	
+    	if (nodes==null || nodes.getLength()==0) return;
+    	
+    	// init
+    	Element currentSpan = ((Element)nodes.item(0));
+    	String currentClass = currentSpan.getAttribute("class");
+    	String currentStyle = currentSpan.getAttribute("style");
+    		// should work for anything with @class, @style
+    	
+    	// Can't reuse existing span, since we'll get org.apache.xml.dtm.DTMDOMException
+		Element newSpan = document.createElement("span");	
+		if (currentClass!=null) {
+			newSpan.setAttribute("class", currentClass);
+		}
+		if (currentStyle!=null) {
+			newSpan.setAttribute("style", currentStyle);
+		}
+    	
+    	XmlUtils.treeCopy( currentSpan.getChildNodes(),  newSpan );
+    	xhtmlBlock.appendChild(newSpan);
+    	
+    	if (nodes.getLength()==1) return;
+    	
+    	for (int i=1; i<nodes.getLength(); i++) {
+    		
+        	Element thisSpan = ((Element)nodes.item(i));
+        	
+        	if (!thisSpan.hasChildNodes()) continue;
+        	
+        	String thisClass = thisSpan.getAttribute("class");
+        	String thisStyle = thisSpan.getAttribute("style");
+    		
+        	boolean classSame = (currentClass==null && thisClass==null)
+        			|| (currentClass!=null && currentClass.equals(thisClass));
+        	boolean styleSame = (currentStyle==null && thisStyle==null)
+        			|| (currentStyle!=null && currentStyle.equals(thisStyle));
+        		// TODO handle case where only difference is "white-space:pre-wrap;"
+        	
+        	if (classSame && styleSame) {
+        		// add to existing
+				XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
+        		
+        	} else {
+        		newSpan = document.createElement("span");	
+        		if (thisClass!=null) {
+        			newSpan.setAttribute("class", thisClass);
+        		}
+        		if (thisStyle!=null) {
+        			newSpan.setAttribute("style", thisStyle);
+        		}
+            	
+            	XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
+            	xhtmlBlock.appendChild(newSpan);
+            	currentClass = thisClass;
+            	currentStyle = thisStyle;
+        	}
+    	}
+    }
+    
 
     public static DocumentFragment createBlockForRPr( 
     		HTMLConversionContext context,
@@ -774,7 +850,9 @@ public class XsltHTMLFunctions {
         	} else {
 				
 				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
-				XmlUtils.treeCopy( n,  span );			
+				//XmlUtils.treeCopy( n,  span );
+				mergeSpans(n.getChildNodes(), document, span);
+				
         	}
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
@@ -811,9 +889,10 @@ public class XsltHTMLFunctions {
 		if (asn==null) {
 			context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
 		} else {
-			((Element)span).setAttribute("class", 
-					StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-			);		
+			String classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);
+			if (classVal!=null && !classVal.equals("")) {
+				((Element)span).setAttribute("class", classVal);
+			}
 		}
 		
 		if (rPr!=null) {
