@@ -463,6 +463,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 							// Note this paragraph style
 							// log.debug("put style " + pPr.getPStyle().getVal());
 							customPStyle = true;
+							stylesInUse.add(pPr.getPStyle().getVal());
 						}
 						if ((pPr.getRPr() != null) && (pPr.getRPr().getRStyle() != null)) {
 			        		// 	Note this run style
