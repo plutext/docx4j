@@ -75,6 +75,16 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	
 	// private PropertyResolver propertyResolver;
 	
+	@Override
+	public void setJaxbElement(Styles jaxbElement) {
+		super.setJaxbElement(jaxbElement);
+		// Null out cached values which now point to unrelated objects
+		styleDocDefaults=null;
+	    defaultCharacterStyle = null;
+	    defaultParagraphStyle = null;
+	    defaultTableStyle = null;
+	    css=null;
+	}
 	
     
 //	@Override
@@ -359,6 +369,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     }
     
     private final static String DEFAULT_CHARACTER_STYLE_DEFAULT = "<w:style w:type=\"character\" w:default=\"1\" w:styleId=\"DefaultParagraphFont\" " + Namespaces.W_NAMESPACE_DECLARATION + "><w:name w:val=\"Default Paragraph Font\" /></w:style>";
+    
     
     
     private Style defaultParagraphStyle;
