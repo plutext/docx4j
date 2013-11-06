@@ -90,6 +90,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	}
 	ImageInfo imageInfo;
 
+	@Deprecated // don't want to be tied to this; instead need an API which provides mime type, height & width
 	public ImageInfo getImageInfo() {
 		
         if (imageInfo == null) {
@@ -102,6 +103,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		return imageInfo;
 	}
 
+	@Deprecated
 	public void setImageInfo(ImageInfo imageInfo) {
 		this.imageInfo = imageInfo;
 	}
@@ -185,6 +187,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);
 	}
 
+    /**
+     * @param opcPackage
+     * @param sourcePart
+     * @param proposedRelId
+     * @param ext extension eg png
+     * @return
+     */
     public static String createImageName(OpcPackage opcPackage, Base sourcePart, String proposedRelId, String ext) {
 		
 		if (opcPackage instanceof WordprocessingMLPackage) {		
@@ -208,6 +217,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * (eg the main document part, a header part etc), and return it.
 	 * 
 	 * Works for both docx and pptx.
+	 * 
+	 * Note: this method creates a temp file (and attempts to delete it).
+	 * That's because it uses org.apache.xmlgraphics 
 	 * 
 	 * @param opcPackage
 	 * @param sourcePart
@@ -283,6 +295,53 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		return imagePart;
 		
+	}
+	
+	/**
+	 * Create an image part from the provided byte array, attach it to the source part
+	 * (eg the main document part, a header part etc), and return it.
+	 * 
+	 * Works for both docx and pptx.
+	 * 
+	 * Knowing the MIME type allows you to avoid ImageInfo, but you'll probably also need to
+	 * know the image dimensions
+	 * 
+	 * @param opcPackage
+	 * @param sourcePart
+	 * @param bytes
+	 * @param mime MIME type eg image/png
+     * @param ext filename extension eg png
+	 * @return
+	 * @throws Exception
+	 * 
+	 * @Since 3.0.0
+	 */
+	public static BinaryPartAbstractImage createImagePart(
+			OpcPackage opcPackage,
+			Part sourcePart, byte[] bytes, String mime, String ext) throws Exception {
+		
+		ContentTypeManager ctm = opcPackage.getContentTypeManager();
+		
+		// Ensure the relationships part exists
+        if (sourcePart.getRelationshipsPart() == null) {
+			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+        }
+
+		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+						
+		BinaryPartAbstractImage imagePart = 
+                (BinaryPartAbstractImage) ctm.newPartForContentType(
+				mime, 
+                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
+				
+        log.debug("created part " + imagePart.getClass().getName()
+                + " with name " + imagePart.getPartName().toString());
+
+        imagePart.setBinaryData(bytes);
+        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
+		
+		return imagePart;
+        
 	}
 
 
