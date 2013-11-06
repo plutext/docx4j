@@ -592,9 +592,8 @@ public class XsltHTMLFunctions {
 			context.getLog().debug(pStyleVal);
 			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-			xhtmlBlock.setAttribute("class", 
-					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
-			);
+			String classVal = StyleTree.getHtmlClassAttributeValue(pTree, asn);			
+			xhtmlBlock.setAttribute("class", classVal);
 		
 			
 			// Does our pPr contain anything else?
@@ -629,7 +628,10 @@ public class XsltHTMLFunctions {
 			// to the child nodes
 			// init
 			Node n = childResults.nextNode();
-			if (xhtmlBlock.getNodeName().equals("p")) {
+			if (xhtmlBlock.getNodeName().equals("p")
+					&& n.hasChildNodes()
+					&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+					// old XSLT won't produce a span for w:r unless there is w:rPr
 				
 				mergeSpans(n.getChildNodes(), document, xhtmlBlock);
 				
@@ -732,9 +734,11 @@ public class XsltHTMLFunctions {
 		if (currentStyle!=null) {
 			newSpan.setAttribute("style", currentStyle);
 		}
-    	
+
     	XmlUtils.treeCopy( currentSpan.getChildNodes(),  newSpan );
     	xhtmlBlock.appendChild(newSpan);
+    	
+    	//System.out.println(XmlUtils.w3CDomNodeToString(xhtmlBlock));
     	
     	if (nodes.getLength()==1) return;
     	
@@ -830,6 +834,9 @@ public class XsltHTMLFunctions {
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			Node n = childResults.nextNode();
+			
+//	    	System.out.println(XmlUtils.w3CDomNodeToString(n));
+			
 
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -847,8 +854,13 @@ public class XsltHTMLFunctions {
 				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
 				XmlUtils.treeCopy( n.getChildNodes().item(0).getChildNodes(),  span );			
         		
+//        	} else if (!n.getChildNodes().item(0).getLocalName().equals("span")) {
+//        		
+//        		// EXP - for backwards compat with old code where w:t didn't create span
+//				XmlUtils.treeCopy( n,  span );
+
         	} else {
-				
+        		
 				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
 				//XmlUtils.treeCopy( n,  span );
 				mergeSpans(n.getChildNodes(), document, span);
