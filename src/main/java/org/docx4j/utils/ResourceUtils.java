@@ -47,7 +47,7 @@ public class ResourceUtils {
                 
         if (url == null) {
         	if (filename.contains("jaxb.properties")){
-        		log.info("Not using MOXy, since no resource: " + filename);        		
+        		log.debug("Not using MOXy, since no resource: " + filename);        		
         	} else {
         		log.warn("Couldn't get resource: " + filename);
         	}

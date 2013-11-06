@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,9 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		try {
 			log.debug("Start conversion");
 			preprocessedPackage = preprocess(conversionSettings);
+			if (preprocessedPackage instanceof WordprocessingMLPackage) {
+				log.debug("Results of preprocess: " + ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getXML());
+			}
 			currentTime = logDebugStep(log, "Preprocessing", currentTime);
 			sectionWrappers = createWrappers(conversionSettings, preprocessedPackage);
 			currentTime = logDebugStep(log, "Create section wrappers", currentTime);

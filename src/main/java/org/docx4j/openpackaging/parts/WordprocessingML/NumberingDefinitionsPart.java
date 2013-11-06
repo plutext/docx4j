@@ -210,7 +210,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     
     /**
      * For the given list numId, restart the numbering on the specified
-     * level at value val.  This is done by creating a new list (ie <w:num>)
+     * level at value val.  This is done by creating a new list (ie &lt;w:num&gt;)
      * which uses the existing w:abstractNum.
      * @param numId
      * @param ilvl

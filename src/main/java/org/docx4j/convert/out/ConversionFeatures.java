@@ -44,7 +44,7 @@ public interface ConversionFeatures {
 	public static final String PP_COMMON_MOVE_BOOKMARKS = "pp.common.movebookmarks";
 
 	/** Word might put some pagebreaks in a paragraph. In the conversion process the 
-	 *  pagebreaks need to be at the beginnig of a paragraph. This is not needed if 
+	 *  pagebreaks need to be at the beginning of a paragraph. This is not needed if 
 	 *  the document doesn't contain explicit pagebreaks. 
 	 */
 	public static final String PP_COMMON_MOVE_PAGEBREAK = "pp.common.movepagebreak";

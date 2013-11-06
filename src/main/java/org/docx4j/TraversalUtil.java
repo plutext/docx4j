@@ -104,6 +104,9 @@ public class TraversalUtil {
 		 * @return whether the children of this node should be visited
 		 */
 		boolean shouldTraverse(Object o);
+		
+		// TODO for next gen interface, add
+		// List<Object> applyAfterWalkChildren(Object o);
 
 	}	
 

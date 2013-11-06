@@ -278,11 +278,11 @@ public class ContentTypeManager  {
 		
 		// if there is no override, get use the file extension
 		String ext = partName.substring(partName.indexOf(".") + 1).toLowerCase();
-		log.info("Looking at extension '" + ext);
+		log.debug("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
 		if (defaultCT!=null ) {
 			String contentType = defaultCT.getContentType();
-			log.info("Found content type '" + contentType + "' for "
+			log.debug("Found content type '" + contentType + "' for "
 							+ partName);
 			p = newPartForContentType(contentType, partName, rel);
 			p.setContentType(new ContentType(contentType));

@@ -91,14 +91,18 @@ public class SdtWriter {
 			throw new TransformerException("Missing or broken w:sdtPr", e1);
 		}
 		
+		log.debug("in sdt");
 		if (sdtPr.getTag()==null) {
+			log.debug(".. no w:tag");
 			
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
+				log.debug("'*' handler");
 				handler = handlers.get("*");			
 				result = handler.toNode(context.getWmlPackage(), null, null, childResults);
 			} else {
 				// Just return the contents!
+				log.debug("identity handler");
 				result = identity.toNode(context.getWmlPackage(), null, null, childResults);
 			}
 			return debug(result);

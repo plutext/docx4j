@@ -168,6 +168,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				if ( rPr!=null ) {
 					handleRPr(conversionContext, pPr, rPr, currentSpan);
 				}
+				
+				// To merge nested span (which we could do if there is a single child span),
+				// TraversalUtil Callback would need an after walk children
 			}
 			
 		} else if (o instanceof org.docx4j.wml.FldChar) {

@@ -78,6 +78,7 @@ public class Context {
 		try {
 			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
 
+			// Diagnostics regarding JAXB implementation
 			try {
 				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
 				if (f.exists() ) {
@@ -87,12 +88,12 @@ public class Context {
 					log.info("MOXy JAXB implementation intended..");
 				}
 			} catch (Exception e2) {
-				log.warn(e2.getMessage());
+				log.debug(e2.getMessage());
 				try {
 					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
 				} catch (Exception e3) {
-					log.warn(e3.getMessage());
+					log.debug(e3.getMessage());
 					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 						// Java 6
 						log.info("Using Java 6/7 JAXB implementation");
@@ -149,7 +150,7 @@ public class Context {
 			
 			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
 			
-			log.info(".. others loaded ..");
+			log.debug(".. other contexts loaded ..");
 										
 			
 		} catch (Exception ex) {

@@ -15,7 +15,7 @@ import org.docx4j.wml.RPr;
  * 
  *  @author Adam Schmideg
  *  
- *  @see also StyleUtil.apply methods
+ *  @see also org.docx4j.model.styles.StyleUtil.apply methods
  */
 public class ImmutablePropertyResolver extends PropertyResolver {
 

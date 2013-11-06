@@ -54,7 +54,7 @@ import org.w3c.dom.Document;
  */
 public class UnzippedPartStore implements PartStore {
 
-	private static Logger log = LoggerFactory.getLogger(Load3.class);
+	private static Logger log = LoggerFactory.getLogger(UnzippedPartStore.class);
 
 
 	private File dir;

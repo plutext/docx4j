@@ -29,6 +29,7 @@ import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,9 @@ import org.w3c.dom.traversal.NodeIterator;
  *
  */
 public abstract class AbstractConversionContext {
-	private static final Logger log = LoggerFactory.getLogger(Docx4J.class);
+	
+	private static final Logger log = LoggerFactory.getLogger(AbstractConversionContext.class);
+	
 	public static final String CONVERSION_CONTEXT_ID = "conversionContext";
 	
 	protected static final AbstractMessageWriter DUMMY_WRITER = new AbstractMessageWriter() {
@@ -69,6 +72,7 @@ public abstract class AbstractConversionContext {
 	private ConversionImageHandler imageHandler = null;
 	private ConversionHyperlinkHandler hyperlinkHandler = null;
 	private AbstractMessageWriter messageWriter = null;
+
 
 	protected AbstractConversionContext(AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, OpcPackage localOpcPackage) {
 		initializeSettings(conversionSettings, localOpcPackage);
@@ -145,6 +149,7 @@ public abstract class AbstractConversionContext {
 	public Map<String, Object> getXsltParameters() {
 		return xsltParameters;
 	}
+
 	
 	public Logger getLog() {
 		return log;

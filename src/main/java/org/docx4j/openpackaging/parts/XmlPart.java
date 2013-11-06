@@ -92,6 +92,7 @@ public abstract class XmlPart extends Part {
 	
 	static {
 		xPathFactory = XPathFactory.newInstance();
+		log.info( xPathFactory.getClass().getName());
 		xPath = xPathFactory.newXPath();		
 	}
 	

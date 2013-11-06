@@ -178,8 +178,16 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		        	//    XIncludeAwareParserConfiguration(XML11Configuration).resetCommon() 
 		            // with the result that this entity resolver is not used!
 		        }
-		    });			
-		    org.w3c.dom.Document doc = db.parse(new ByteArrayInputStream(outStream.toByteArray()));
+		    });	
+		    
+		    org.w3c.dom.Document doc = null;
+		    if (log.isDebugEnabled()) {
+			    byte[] bytes = outStream.toByteArray();
+			    log.debug(new String(bytes));
+			    doc = db.parse(new ByteArrayInputStream(bytes));
+		    } else {
+		    	doc = db.parse(new ByteArrayInputStream(outStream.toByteArray()));
+		    }
 		    transformer.transform(new DOMSource(doc.getDocumentElement()), result);
 			
 		} catch (TransformerException e) {

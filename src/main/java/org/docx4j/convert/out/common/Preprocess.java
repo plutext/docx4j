@@ -22,6 +22,7 @@ package org.docx4j.convert.out.common;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
@@ -34,6 +35,8 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class manages the preprocessing functionality for the conversion.<br>
  *  It contains two methods that get called from the conversions:
@@ -44,6 +47,9 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  *   
  */
 public class Preprocess implements ConversionFeatures {
+	
+	private static Logger log = LoggerFactory.getLogger(Preprocess.class);		
+	
 	
 	/** This method applies those features in the preprocessing, that may be used with an
 	 *  OpcPackage.<br>
@@ -64,6 +70,9 @@ public class Preprocess implements ConversionFeatures {
 		relationshipTypes = createRelationshipTypes(features);
 		if (features.contains(PP_COMMON_DEEP_COPY)) {
 			ret = PartialDeepCopy.process(opcPackage, relationshipTypes);
+			if (opcPackage instanceof WordprocessingMLPackage) {
+				log.debug("Results of PP_COMMON_DEEP_COPY: " + ((WordprocessingMLPackage)opcPackage).getMainDocumentPart().getXML());
+			}
 		}
 		return ret;
 	}
@@ -115,20 +124,29 @@ public class Preprocess implements ConversionFeatures {
 	WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
 	
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
+			log.debug("PP_COMMON_COMBINE_FIELDS");
 			FieldsCombiner.process(ret);
 		}
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS)) {
+			log.debug("PP_COMMON_MOVE_BOOKMARKS");
 			BookmarkMover.process(ret);
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
+			log.debug("PP_COMMON_MOVE_PAGEBREAK");
 			PageBreak.process(ret);
 		}
 		if (features.contains(PP_COMMON_CONTAINERIZATION)) {
+			log.debug("PP_COMMON_CONTAINERIZATION");
 			Containerization.process(ret);
 		}
 		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
+			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH");
 			DisablePageBreakOnFirstParagraph.process(ret);
 		}
+		
+		log.debug("Results of preprocessing: " + wmlPackage.getMainDocumentPart().getXML());
+		
+		
 		return ret;
 	}
 

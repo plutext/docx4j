@@ -68,7 +68,7 @@ import org.w3c.dom.Document;
  */
 public class ZipPartStore implements PartStore {
 
-	private static Logger log = LoggerFactory.getLogger(Load3.class);
+	private static Logger log = LoggerFactory.getLogger(ZipPartStore.class);
 
 
 	HashMap<String, ByteArray> partByteArrays;
@@ -177,7 +177,11 @@ public class ZipPartStore implements PartStore {
 
         ByteArray bytes = partByteArrays.get(partName);
         if (bytes == null) {
-        	log.warn("part '" + partName + "' not present in part store");
+        	if (partName.endsWith(".rels")) {
+        		log.debug("part '" + partName + "' not present in part store");
+        	} else {
+        		log.warn("part '" + partName + "' not present in part store");        		
+        	}
         	return null;
         	//throw new Docx4JException("part '" + partName + "' not found");
         }

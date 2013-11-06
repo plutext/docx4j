@@ -856,8 +856,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			if (log.isDebugEnabled()) log.debug("\n");			
-			log.info("unmarshalling " + this.getClass().getName() );									
+			log.debug("unmarshalling " + this.getClass().getName() );									
 			jaxbElement = (Relationships) u.unmarshal( is );
 
 		} catch (Exception e ) {
