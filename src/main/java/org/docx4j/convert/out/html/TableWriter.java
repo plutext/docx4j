@@ -116,6 +116,7 @@ public class TableWriter extends AbstractTableWriter {
 	    
 	    tableRoot.setAttribute("id", 
 	    		getId(((TableModelTransformState)transformState).getIdx()) );
+	    ((TableModelTransformState)transformState).incrementIdx();
 
 		// border model
 		// Handle cellSpacing as in xsl-fo to have a consistent look.
