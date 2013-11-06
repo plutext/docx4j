@@ -1683,7 +1683,8 @@ public class StyleUtil {
 	public static RPr apply(RPr source, RPr destination) {
 		
 		boolean hint = false;
-		if (source.getRFonts()!=null
+		if (source!=null
+				&& source.getRFonts()!=null
 				&& !isEmpty(source.getRFonts().getHint())) {
 			hint = true; 
 		}
