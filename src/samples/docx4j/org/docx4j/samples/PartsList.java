@@ -30,7 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
@@ -106,6 +108,20 @@ public class PartsList extends AbstractSample {
 			} else {
 				sb.append(" containing JaxbElement:"  + o.getClass().getName() );
 			}
+		} else if (p instanceof DefaultXmlPart) {
+			try {
+				org.w3c.dom.Document doc = ((DefaultXmlPart)p).getDocument();
+				Object o = XmlUtils.unmarshal(doc);
+				if (o instanceof javax.xml.bind.JAXBElement) {
+					sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
+				} else {
+					sb.append(" containing JaxbElement:"  + o.getClass().getName() );
+				}				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		
 		sb.append("\n content type: " + p.getContentType() + "\n");

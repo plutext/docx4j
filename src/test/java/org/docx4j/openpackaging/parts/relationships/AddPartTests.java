@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class AddPartTests {
 	
-	protected static Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
+	protected static Logger log = LoggerFactory.getLogger(AddPartTests.class);
 	
 	/**
 	 * @throws java.lang.Exception

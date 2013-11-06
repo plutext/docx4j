@@ -80,8 +80,8 @@ public class CompareDocumentsUsingDriver {
 		// 3. Get the result
 		String contentStr = sw.toString();
 		System.out.println("Result: \n\n " + contentStr);
-		Body newBody = (Body) org.docx4j.XmlUtils
-				.unmarshalString(contentStr);
+		Body newBody = (Body) XmlUtils.unwrap(
+								XmlUtils.unmarshalString(contentStr));
 		
 		// 4. Display the result as a PDF
 		// To do this, we'll replace the body in the newer document
@@ -91,6 +91,8 @@ public class CompareDocumentsUsingDriver {
 		
 //		RelationshipsPart rp = newerPackage.getMainDocumentPart().getRelationshipsPart(); 
 //		handleRels(pd, rp);						
+		
+		newerPackage.save(new java.io.File(System.getProperty("user.dir") +  "/COMPARED.docx"));
 		
 		
 		newerPackage.setFontMapper(new IdentityPlusMapper());		

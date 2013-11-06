@@ -32,6 +32,7 @@ public class BookmarksReplaceWithText {
 	 * - no attempt is made to check whether the start of some other bookmark is
 	 *   in that range.  If it is, it will get deleted!
 	 * - no attempt is made to preserve the rPr
+	 * - mdp only right now
 	 */
 	
 	protected static Logger log = LoggerFactory.getLogger(BookmarksReplaceWithText.class);

@@ -34,7 +34,7 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.SectPr;
 
 
-public class HeaderFooterRemove extends AbstractSample {
+public class HeaderFooterRemove  {
 
 	public static void main(String[] args) throws Exception {
 		

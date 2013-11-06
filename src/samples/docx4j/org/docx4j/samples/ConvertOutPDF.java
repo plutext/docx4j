@@ -64,9 +64,9 @@ public class ConvertOutPDF extends AbstractSample {
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
-    	saveFO = false;
+    	saveFO = true;
 	}
 	
 	
@@ -124,13 +124,14 @@ public class ConvertOutPDF extends AbstractSample {
 			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
 		foSettings.setWmlPackage(wordMLPackage);
+		
 		// Document format: 
 		// The default implementation of the FORenderer that uses Apache Fop will output
 		// a PDF document if nothing is passed via 
 		// foSettings.setApacheFopMime(apacheFopMime)
-		// apacheFopMime can be any of the output formats defined in org.apache.fop.apps.MimeConstants or
+		// apacheFopMime can be any of the output formats defined in org.apache.fop.apps.MimeConstants eg org.apache.fop.apps.MimeConstants.MIME_FOP_IF or
 		// FOSettings.INTERNAL_FO_MIME if you want the fo document as the result.
-		
+		//foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
 		
 		// exporter writes to an OutputStream.		
 		String outputfilepath;
@@ -147,7 +148,7 @@ public class ConvertOutPDF extends AbstractSample {
 		//Prefer the exporter, that uses a xsl transformation
 		//Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
-		//Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+//		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
 		System.out.println("Saved: " + outputfilepath);
     }

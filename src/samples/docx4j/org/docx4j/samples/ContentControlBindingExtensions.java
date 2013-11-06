@@ -20,8 +20,12 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 import javax.xml.bind.JAXBContext;
 
+import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
@@ -37,7 +41,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 /**
  * This sample demonstrates populating content controls
  * from a custom xml part (based on the xpaths given
- * in the content controls).
+ * in the content controls), via FLAG_BIND_BIND_XML
  * 
  * Word does this itself automatically, for if there is
  * a w:databinding element in the sdtPr.
@@ -50,7 +54,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * demonstrates docx4j's implementation of that.
  * 
  * In practice you'll want the XML part to be injected at runtime.  
- * For that, see the sample: ContentControlsMergeXML
+ * For that, use FLAG_NONE, or include FLAG_BIND_INSERT_XML.
+ * 
+ * See description of flags below.
 */
 public class ContentControlBindingExtensions {
 	
@@ -63,86 +69,40 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice2.docx";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
-		String inputfilepath = System.getProperty("user.dir") + "/Conditional cell formatting.docx";
+//		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
 		
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
-		
-		filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
-		System.out.println(filepathprefix);
-		
-		StringBuilder timingSummary = new StringBuilder();
-		
+		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+		String input_XML = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice-data.xml";
 
-		// Process conditionals and repeats
-		long startTime = System.currentTimeMillis();
-		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.preprocess();
-		long endTime = System.currentTimeMillis();
-		timingSummary.append("OpenDoPEHandler: " + (endTime-startTime));
+		
+		// resulting docx
+		String OUTPUT_DOCX = System.getProperty("user.dir") + "/OUT_ContentControlsMergeXML.docx";
 
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);		
-		
-		startTime = System.currentTimeMillis();
-		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
-		odi.process(wordMLPackage);
-		endTime = System.currentTimeMillis();
-		timingSummary.append("\nOpenDoPEIntegrity: " + (endTime-startTime));
-		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);		
-		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		saver.save(filepathprefix + "_preprocessed.docx");
-		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
-		
-		// Apply the bindings
-		BindingHandler.setHyperlinkStyle("Hyperlink");						
-		startTime = System.currentTimeMillis();
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
-		endTime = System.currentTimeMillis();
-		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);
-		saver.save(filepathprefix + "_bound.docx");
-		System.out.println("Saved: " + filepathprefix + "_bound.docx");
-		
-		// Either demonstrate reverter, or stripping of controls;
-		// you can't do both. So comment out one or the other.
-//		reverter(inputfilepath, filepathprefix + "_bound.docx");
-//		
-		// Strip content controls
-		startTime = System.currentTimeMillis();
-		RemovalHandler rh = new RemovalHandler();
-		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
-		endTime = System.currentTimeMillis();
-		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
+		// Load input_template.docx
+		WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(input_DOCX));
 
-		saver.save(filepathprefix + "_stripped.docx");
-		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
+		// Open the xml stream
+		FileInputStream xmlStream = new FileInputStream(new File(input_XML));
+
+		// Do the binding:
+		// FLAG_NONE means that all the steps of the binding will be done,
+		// otherwise you could pass a combination of the following flags:
+		// FLAG_BIND_INSERT_XML: inject the passed XML into the document
+		// FLAG_BIND_BIND_XML: bind the document and the xml (including any OpenDope handling)
+		// FLAG_BIND_REMOVE_SDT: remove the content controls from the document (only the content remains)
+		// FLAG_BIND_REMOVE_XML: remove the custom xml parts from the document 
+			
+		//Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_NONE);
+		//If a document doesn't include the Opendope definitions, eg. the XPathPart,
+		//then the only thing you can do is insert the xml
+		//the example document binding-simple.docx doesn't have an XPathPart....
+		Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_BIND_BIND_XML);
 		
-		System.out.println(timingSummary);
+		//Save the document 
+		Docx4J.save(wordMLPackage, new File(OUTPUT_DOCX), Docx4J.FLAG_NONE);
+		System.out.println("Saved: " + OUTPUT_DOCX);
 	}	
 	
-	public static void reverter(String inputfilepath, String instancePath) throws Docx4JException {
-		
-		WordprocessingMLPackage instancePkg = WordprocessingMLPackage.load(new java.io.File(instancePath));		
-		
-		OpenDoPEReverter reverter = new OpenDoPEReverter(
-				WordprocessingMLPackage.load(new java.io.File(inputfilepath)), 
-				instancePkg);
-		
-		System.out.println("reverted? " + reverter.revert() );
-		
-		SaveToZipFile saver = new SaveToZipFile(instancePkg);
-		saver.save(filepathprefix + "_reverted.docx");
-		System.out.println("Saved: " + filepathprefix + "_reverted.docx");
-		
-	}
 				
 
 }

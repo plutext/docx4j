@@ -68,7 +68,10 @@ public class AbstractFormattingSwitchTest {
 
 			try {
 				//sb.append("\n" + "TOBE: " + tt.expectedResult);
-				String result = FormattingSwitchHelper.applyFormattingSwitch(fsm, fsm.getFldArgument() );
+				String result = FormattingSwitchHelper.applyFormattingSwitch(null, fsm, fsm.getFldArgument() );
+					// setting pkg to null means we can't get the decimal symbol setting
+				
+				
 				//sb.append("\n" + "ASIS: " + result);
 
 //				assertEquals(result, tt.expectedResult);

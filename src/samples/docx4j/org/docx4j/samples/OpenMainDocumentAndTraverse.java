@@ -76,12 +76,15 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir")
-					+ "/sample-docs/word/sample-docx.xml";
+					+ "/sample-docs/word/sample-docx.docx";
 		}
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+
+		// Uncomment to see the raw XML
+		//System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
 
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document) documentPart
 				.getJaxbElement();

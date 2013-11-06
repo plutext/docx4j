@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -47,8 +48,8 @@ public class ConvertOutHtml extends AbstractSample {
 	static {
 	
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
-		
-		save = true;
+
+		save = false;
 	}
 
 	static boolean save;
@@ -103,12 +104,15 @@ public class ConvertOutHtml extends AbstractSample {
 			os = new ByteArrayOutputStream();
 		}
 
+		// If you want XHTML output
+    	Docx4jProperties.setProperty("docx4j.Convert.Out.HTML.OutputMethodXML", true);
+
 		//Don't care what type of exporter you use
-		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_NONE);
+//		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_NONE);
 		//Prefer the exporter, that uses a xsl transformation
-		//Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
 		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
-		//Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+//		Docx4J.toHTML(htmlSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
 
 		if (save) {
 			System.out.println("Saved: " + inputfilepath + ".html ");
