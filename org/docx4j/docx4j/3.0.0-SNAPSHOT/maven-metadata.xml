@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j</artifactId>
+  <version>3.0.0-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20131107.202234</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20131107202234</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>3.0.0-20131107.202234-1</value>
+        <updated>20131107202234</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.0.0-20131107.202234-1</value>
+        <updated>20131107202234</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>sources</classifier>
+        <extension>jar</extension>
+        <value>3.0.0-20131107.202234-1</value>
+        <updated>20131107202234</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
