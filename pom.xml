@@ -118,7 +118,7 @@
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<outputDirectory>bin</outputDirectory>
+		<outputDirectory>bin-mvn</outputDirectory><!--  avoid mixing mvn and eclipse output -->
 		<testOutputDirectory>bin</testOutputDirectory>
 		<plugins>
 			<plugin>
@@ -197,9 +197,10 @@
 					<excludes>
 						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources
 							add unwanted 1 MB to jar. -->
-						<exclude>src/test/resources/**</exclude>
+						<exclude>src/test/resources/**/*</exclude>
 						<!-- TODO this still leaves some ugly directories in our jar. Anyone
 							know how to leave out all files and directories in src/test/resources? -->
+						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
 					</excludes>
 				</configuration>
 			</plugin>
@@ -302,7 +303,6 @@
 				<includes>
 					<include>**/*.xslt</include>
 					<include>**/*.xml</include>
-					<include>**/jaxb.properties</include>
 				</includes>
 			</resource>
 			<resource>
@@ -310,21 +310,23 @@
 				<includes>
 					<include>**/*.xslt</include>
 					<include>**/*.xml</include>
-					<include>**/jaxb.properties</include>
 				</includes>
 			</resource>
 			<resource>
 				<directory>src/xlsx4j/java</directory>
 				<includes>
-					<include>**/jaxb.properties</include>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
 				</includes>
 			</resource>
+			<!-- 
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
 					<include>docx4j.properties</include>
 				</includes>
 			</resource>
+			 -->
 			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
 				</excludes> </resource> -->
 		</resources>
@@ -363,6 +365,7 @@
 	</reporting>
 	<dependencies>
 
+
 	<!-- To use MOXy, uncomment the following 2 dependencies.
 		Dependency version 2.4.1 had some issues,
 		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
@@ -389,14 +392,15 @@
 		</dependency>
 	 -->
 
-
+<!-- 
 
 		<dependency>
 		  <groupId>javax.mail</groupId>
 		  <artifactId>mail</artifactId>
 		  <version>1.4</version>
 		</dependency>
-
+ -->
+ 
 		  <!--  Uncomment this if you are using Java 5.
 
 		  		StAX reference implementation,
@@ -433,19 +437,6 @@
   -->
 
    			<!--  nothing newer in the repository! -->
-
-
-<!-- 		<dependency>
-			<groupId>org.plutext.jaxb</groupId>
-			<artifactId>svg</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.plutext.jaxb</groupId>
-			<artifactId>xslfo</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
- -->
 
 		<!--  New for docx4j 2.8.0 -->
 		<dependency>
@@ -512,34 +503,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<!-- required for fop, xmlgraphics-commons;
-			     list it explicitly, so dependencies can be excluded. -->
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
-			<!-- These are required for commons-logging 1.1, otherwise these unwanted dependencies are included.
-				See http://raibledesigns.com/rd/entry/maven_2_hates_commons_logging
-
-				<exclusions>
-				<exclusion>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				</exclusion>
-				<exclusion>
-				<groupId>logkit</groupId>
-				<artifactId>logkit</artifactId>
-				</exclusion>
-				<exclusion>
-				<groupId>avalon-framework</groupId>
-				<artifactId>avalon-framework</artifactId>
-				</exclusion>
-				<exclusion>
-				<groupId>javax.servlet</groupId>
-				<artifactId>servlet-api</artifactId>
-				</exclusion>
-				</exclusions> -->
 		</dependency>
 		<dependency>
 			<!--  required for ole introspection -->
