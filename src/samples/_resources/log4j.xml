@@ -61,15 +61,15 @@
 	</logger>	
 
     <logger name="org.docx4j.convert.in">
-  		<level value="debug"/> 
+  		<level value="warn"/> 
 	</logger>	
 
     <logger name="org.docx4j.convert.out">
-  		<level value="info"/> 
+  		<level value="debug"/> 
 	</logger>	
 	
     <logger name="org.docx4j.convert.out.common.preprocess">
-  		<level value="info"/> 
+  		<level value="debug"/> 
 	</logger>	
 
 	
@@ -78,10 +78,10 @@
 	</logger>	
 	
 	<logger name="org.docx4j.jaxb">
-		  		<level value="error"/> 
+		  		<level value="info"/> 
 	</logger>	
 
-	<logger name="org.docx4j.model.datastorage">
+	<logger name="org.docx4j.model">
 		  		<level value="debug"/> 
 	</logger>	
 
@@ -94,6 +94,10 @@
 	</logger>	
 
 	<logger name="org.docx4j.model.structure">
+		  		<level value="debug"/> 
+	</logger>	
+
+	<logger name="org.docx4j.model.styles">
 		  		<level value="debug"/> 
 	</logger>	
 	    	
@@ -113,10 +117,11 @@
   		<level value="info"/> 
 	</logger>
 
-<!-- 
     <logger name="org.docx4j.fonts">
   		<level value="debug"/> 
 	</logger>
+
+<!-- 
 
     <logger name="org.docx4j.model.properties.run.Font">
   		<level value="debug"/> 
