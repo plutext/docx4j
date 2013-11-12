@@ -292,21 +292,11 @@
 	
 		<xsl:variable name="pPrNode" select="../../w:pPr" />  	
 		<xsl:variable name="rPrNode" select="../w:rPr" />  	
-		<xsl:variable name="text" select="." />  	
+		<xsl:variable name="textNode" select="." />  	
 	
+		<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector( 
+		  		$conversionContext, $pPrNode, $rPrNode, $textNode)" />
 	
-		<xsl:choose>
-			<xsl:when test="@xml:space='preserve'">
-				<span style="white-space:pre-wrap;"><xsl:value-of select="." /></span>
-				<!-- Good for FF3, and WebKit; not honoured by IE7 though. Yawn. -->
-			</xsl:when>
-			<xsl:otherwise>
-			
-				<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector( 
-				  		$conversionContext, $pPrNode, $rPrNode, $text)" />
-				
-			</xsl:otherwise>
-		</xsl:choose>
 	</xsl:template>
 
   <xsl:template match="w:t[not(parent::w:r)]">  	

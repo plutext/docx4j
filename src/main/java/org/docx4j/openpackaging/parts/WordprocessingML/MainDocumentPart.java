@@ -491,7 +491,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 								
 				if (runFontSelector != null) {
 					// discover the fonts which apply to this text
-					runFontSelector.fontSelector(pPr, rPr, ((Text)o).getValue() );
+					runFontSelector.fontSelector(pPr, rPr, ((Text)o) );
 				}
 				
 			} else if (o instanceof org.docx4j.wml.R.Sym ) { 

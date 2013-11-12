@@ -387,10 +387,10 @@
 	
 		<xsl:variable name="pPrNode" select="../../w:pPr" />  	
 		<xsl:variable name="rPrNode" select="../w:rPr" />  	
-		<xsl:variable name="text" select="." />  	
+		<xsl:variable name="textNode" select="." />  	
 	
 		<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector( 
-		  		$conversionContext, $pPrNode, $rPrNode, $text)" />
+		  		$conversionContext, $pPrNode, $rPrNode, $textNode)" />
 				
 	</xsl:template>
 

@@ -15,6 +15,7 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STHint;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -188,9 +189,8 @@ public class RunFontSelector {
 		Element	span = createElement(document);
 		this.setAttribute(span, getDefaultFont());
 		span.setTextContent(text);  
+		
 		return result(document);
-			
-
     }
 
     public Element createElement(Document document) {
@@ -210,7 +210,16 @@ public class RunFontSelector {
     	
     	// could a document fragment contain just a #text node?
     	if (outputType==RunFontActionType.XHTML) {
-        	el.setAttribute("style", getCssProperty(fontName));
+    		if (spacePreserve) {
+    	    	/*
+    	    	 * 	Convert @xml:space='preserve' to style="white-space:pre-wrap;"
+    				which is good for FF3, and WebKit; not honoured by IE7 though. 
+    	    	 */
+    			el.setAttribute("style", getCssProperty(fontName) + "white-space:pre-wrap;");
+    			
+    		} else {
+    			el.setAttribute("style", getCssProperty(fontName));
+    		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		String val = getPhysicalFont(fontName);
     		if (val==null) {
@@ -222,7 +231,13 @@ public class RunFontSelector {
     	} 
     }
     
-    public Object fontSelector(PPr pPr, RPr rPr, String text) {
+    private boolean spacePreserve;
+    
+    public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
+    	
+    	String text = wmlText.getValue();
+    	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
+
     	
 //    	System.out.println(text);
     	

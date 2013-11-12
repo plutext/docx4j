@@ -195,7 +195,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 				log.debug(((Text)o).getValue());
 				
-				DocumentFragment df = (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o).getValue());
+				DocumentFragment df = (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o));
 				XmlUtils.treeCopy(df, currentSpan);
 				// TODO would be more efficient without the treeCopy
 				// but fontSelector would need to be refactored a bit

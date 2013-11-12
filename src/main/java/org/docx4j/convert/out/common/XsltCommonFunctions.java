@@ -36,6 +36,7 @@ import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -56,10 +57,11 @@ public class XsltCommonFunctions {
     public static DocumentFragment fontSelector(AbstractWmlConversionContext conversionContext, 
     		NodeIterator pPrNodeIt,
     		NodeIterator rPrNodeIt,
-    		String text) {
+    		NodeIterator textNodeIt) {
 
 		PPr pPr = null;
 		RPr rPr = null;
+		Text text = null;
     	
 //    	if (rPrNodeIt!=null) 
 		{ 
@@ -94,6 +96,23 @@ public class XsltCommonFunctions {
 				}        	        			
     		}
     	}
+		
+		{ 
+    		Node n = textNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				text =  (Text)jaxb;
+    			} catch (ClassCastException e) {
+    				conversionContext.getLog().error("Couldn't cast  to Text!");
+    			} catch (JAXBException e) {
+    				conversionContext.getLog().error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		
     	
     	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
 
