@@ -41,8 +41,8 @@ public class WmlXsltExporterDelegate<CS extends AbstractConversionSettings, CC e
 
 	@Override
 	protected Document getSourceDocument(
-			AbstractConversionSettings conversionSettings,
-			AbstractWmlConversionContext conversionContext)
+			CS conversionSettings,
+			CC conversionContext)
 			throws Docx4JException {
 		ConversionSectionWrappers conversionSectionWrappers = conversionContext.getSections();
 		Document ret = XmlUtils.marshaltoW3CDomDocument(conversionSectionWrappers.createSections(),
