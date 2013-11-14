@@ -40,17 +40,24 @@ public class BrWriter extends AbstractBrWriter {
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
-	Br modelData = (Br)unmarshalledNode;
-	Element ret = doc.createElementNS(XSL_FO, "block");
+		
+		Br modelData = (Br)unmarshalledNode;
+		Element ret;
 		
 		if (modelData.getType()!=null 
 				&& modelData.getType().equals(STBrType.PAGE)) {
 		
+			ret = doc.createElementNS(XSL_FO, "block");
 			ret.setAttribute("break-before", "page");
 		
 		} else {
 		
+			ret = doc.createElementNS(XSL_FO, "block");  // yuck .. block/inline/block
+			// see http://stackoverflow.com/a/3664468/1031689 answer
+			// at http://stackoverflow.com/questions/3661483/inserting-a-line-break-in-a-pdf-generated-from-xsl-fo-using-xslvalue-of
+			ret.setAttribute("linefeed-treatment", "preserve");
 			ret.setAttribute("white-space-treatment", "preserve");
+			ret.setTextContent("\n");
 		}
 		return ret;
 	}
