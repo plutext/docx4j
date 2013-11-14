@@ -21,14 +21,8 @@ package org.docx4j.model.datastorage;
 
 import java.util.Map;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -38,31 +32,13 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTDataBinding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BindingHandler {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingHandler.class);		
 	
-//	static Templates xslt;			
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-	static {
-//		try {
-//			Source xsltSource = new StreamSource(
-//						org.docx4j.utils.ResourceUtils.getResource(
-//								"org/docx4j/model/datastorage/bind.xslt"));
-//			xslt = XmlUtils.getTransformerTemplate(xsltSource);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (TransformerConfigurationException e) {
-//			e.printStackTrace();
-//		}
-		
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
-
-
 	/**
 	 * Configure, how the handler handles links found in Custom XML.
 	 * 

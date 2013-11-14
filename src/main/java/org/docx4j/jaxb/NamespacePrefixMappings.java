@@ -26,8 +26,6 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;

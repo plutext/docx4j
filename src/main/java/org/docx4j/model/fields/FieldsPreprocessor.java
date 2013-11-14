@@ -12,22 +12,19 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -55,8 +52,6 @@ public class FieldsPreprocessor {
     
 	
 	static Templates xslt;			
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
 	static {
 		try {
 			Source xsltSource = new StreamSource(
@@ -69,8 +64,6 @@ public class FieldsPreprocessor {
 			e.printStackTrace();
 		}
 		
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
 	}
 	
 	private FieldsPreprocessor(List<FieldRef> fieldRefs) {
@@ -87,7 +80,7 @@ public class FieldsPreprocessor {
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 				part.getJaxbElement() ); 	
 		
-		XPathsPart xPathsPart = null;
+//		XPathsPart xPathsPart = null;
 				
 		JAXBContext jc = Context.jc;
 		try {

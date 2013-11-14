@@ -7,7 +7,6 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -18,6 +17,7 @@ import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -59,8 +59,9 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 	 * other internal representation for its data. 
 	 */
 	protected Document doc;
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
+	
+	
+	private static XPath xPath = XPathFactoryUtil.newXPath();
 
 	/**
 	 * XPaths are evaluated against a DOM document representation
@@ -81,11 +82,6 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		}
 	}
 	
-	static {
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
-	
 	
 	private NamespacePrefixMappings nsContext;
 	private NamespacePrefixMappings getNamespaceContext() {
@@ -103,9 +99,11 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 			//throw new Docx4JException("You must call readyXPath() once before doing XPath stuff");
 		}
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-			String result = xPath.evaluate(xpathString, doc );
+			String result;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				result = xPath.evaluate(xpathString, doc );
+			}
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {
@@ -120,10 +118,11 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 			//throw new Docx4JException("You must call readyXPath() once before doing XPath stuff");
 		}
 		
-		getNamespaceContext().registerPrefixMappings(prefixMappings);
-		
-		return XmlUtils.xpath(doc, xpathString, 
-				getNamespaceContext() );
+		synchronized(xPath) {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			return XmlUtils.xpath(doc, xpathString, 
+					getNamespaceContext() );
+		}
 		
 	}
 

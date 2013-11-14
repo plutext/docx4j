@@ -24,7 +24,6 @@ package org.docx4j.openpackaging.parts;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
 
 
@@ -64,12 +64,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 	
 	private static Logger log = LoggerFactory.getLogger(DocPropsExtendedPart.class);
 	
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-	static {
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
+	private static XPath xPath = XPathFactoryUtil.newXPath();
 	
 	 /** 
 	 * @throws InvalidFormatException
@@ -146,9 +141,11 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 				getJaxbElement(), Context.jcDocPropsExtended );
 		
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-			String result = xPath.evaluate(xpathString, doc );
+			String result;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				result = xPath.evaluate(xpathString, doc );
+			}
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {

@@ -21,34 +21,20 @@
 package org.docx4j.openpackaging.parts;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.text.StrTokenizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.utils.XPathFactoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -85,16 +71,8 @@ public abstract class XmlPart extends Part {
 	 * other internal representation for its data. 
 	 */
 	protected Document doc;
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-
-
 	
-	static {
-		xPathFactory = XPathFactory.newInstance();
-		log.info( xPathFactory.getClass().getName());
-		xPath = xPathFactory.newXPath();		
-	}
+	private static XPath xPath = XPathFactoryUtil.newXPath();
 	
 	
 	private NamespacePrefixMappings nsContext;
@@ -132,9 +110,12 @@ public abstract class XmlPart extends Part {
 	 */
 	public String xpathGetString(String xpathString, String prefixMappings)  throws Docx4JException {
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
 			
-			String result = xPath.evaluate(xpathString, doc );
+			String result;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				result = xPath.evaluate(xpathString, doc );
+			}
 			if (result.equals("") && log.isWarnEnabled()) {
 				// Provide diagnostics as to cause of '' result 
 				NodeList nl = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET );
@@ -155,11 +136,11 @@ public abstract class XmlPart extends Part {
 	
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings) {
 		
-		getNamespaceContext().registerPrefixMappings(prefixMappings);
-		
-		return XmlUtils.xpath(doc, xpathString, 
-				getNamespaceContext() );
-		
+		synchronized(xPath) {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			return XmlUtils.xpath(doc, xpathString, 
+					getNamespaceContext() );
+		}		
 	}
 	
 	
@@ -175,9 +156,11 @@ public abstract class XmlPart extends Part {
 	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
 
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-
-			Node n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
+			Node n;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
+			}
 			if (n==null) {
 				log.debug("xpath returned null");
 				return false;

@@ -58,7 +58,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +71,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -1037,36 +1037,24 @@ public class XmlUtils {
     }
 	
     public static List<Node> xpath(Node node, String xpathExpression) {
-        XPathFactory xpf = XPathFactory.newInstance();
-        XPath xpath = xpf.newXPath();
 
         NamespaceContext nsContext = new NamespacePrefixMappings();
-        
         return xpath(node, xpathExpression, nsContext);
-        
     }	
 
     public static List<Node> xpath(Node node, String xpathExpression, NamespaceContext nsContext) {
     	
-//    	log.info("Using XPathFactory: " + XPathFactory.DEFAULT_PROPERTY_NAME + ": " 
-//    			+ System.getProperty(XPathFactory.DEFAULT_PROPERTY_NAME));    
-//        System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME, 
-//        		"org.apache.xpath.jaxp.XPathFactoryImpl");
-        // com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl
-        
         log.debug(w3CDomNodeToString(node));
         
         // create XPath
-        XPathFactory xpf = XPathFactory.newInstance();
-        XPath xpath = xpf.newXPath();
-        
-        log.debug("xpath implementation: " + xpath.getClass().getName());
-
-		xpath.setNamespaceContext(nsContext);
+        XPath xpath = XPathFactoryUtil.newXPath();
         
         try {
             List<Node> result = new ArrayList<Node>();
+            
+    		xpath.setNamespaceContext(nsContext);
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
+            
             log.info("evaluate returned " + nl.getLength() );
             for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
