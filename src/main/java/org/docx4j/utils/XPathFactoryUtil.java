@@ -12,11 +12,18 @@ public class XPathFactoryUtil {
 	
 	private static XPathFactory xPathFactory;
 	
+    private static final String DTM_MANAGER_PROP_NAME = "org.apache.xml.dtm.DTMManager";  
+    private static final String DTM_MANAGER_CLASS_NAME = "org.apache.xml.dtm.ref.DTMManagerDefault";  	
+	
 	public static synchronized XPathFactory getXPathFactory() {
 		
 		if (xPathFactory==null) {
 			xPathFactory = XPathFactory.newInstance();
 	        log.info("xpath implementation: " + xPathFactory.getClass().getName());
+	        // expect org.apache.xpath.jaxp.XPathFactoryImpl
+	        
+	        // See http://www.docx4java.org/forums/data-binding-java-f16/opendope-xpath-performance-t1696.html
+	        // System.setProperty(DTM_MANAGER_PROP_NAME, DTM_MANAGER_CLASS_NAME);  
 		}
 		return xPathFactory;
 		
@@ -29,16 +36,7 @@ public class XPathFactoryUtil {
 		synchronized(xPathFactory) {
 			return xPathFactory.newXPath();
 		}
-		
 	}
-	
-	
-//	log.info("Using XPathFactory: " + XPathFactory.DEFAULT_PROPERTY_NAME + ": " 
-//	+ System.getProperty(XPathFactory.DEFAULT_PROPERTY_NAME));    
-//System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME, 
-//	"org.apache.xpath.jaxp.XPathFactoryImpl");
-// com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl
-
 	
 
 }
