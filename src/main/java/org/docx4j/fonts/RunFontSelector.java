@@ -747,33 +747,21 @@ public class RunFontSelector {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
 			return pf.getName();
 		} else {
-			log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
 			
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
-			// Also do this in MDP FontDiscoveryCharacterVisitor
-			if (fontName.equals("ＭＳ ゴシック")) {
-//		        <a:font script="Jpan" typeface="ＭＳ ゴシック"/>
-				log.warn("Font '" + fontName + "' is not mapped to a physical font. Trying MS Gothic" );
-				pf = wordMLPackage.getFontMapper().getFontMappings().get("MS Gothic");
-			} else if (fontName.equals("맑은 고딕")) {
-//		        <a:font script="Hang" typeface="맑은 고딕"/>
-				log.warn("Font '" + fontName + "' is not mapped to a physical font. Trying Malgun Gothic" );
-				pf = wordMLPackage.getFontMapper().getFontMappings().get("Malgun Gothic");
-			} else if (fontName.equals("宋体")) {
-//		        <a:font script="Hans" typeface="宋体"/>
-				log.warn("Font '" + fontName + "' is not mapped to a physical font. Trying MS Song" );
-				pf = wordMLPackage.getFontMapper().getFontMappings().get("SimSung"); //?				
-			} else {
+			String englishFromCJK = CJKToEnglish.toEnglish( fontName);
+			if (englishFromCJK==null) {
 				log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
 				return null;
+			} else {
+				pf = wordMLPackage.getFontMapper().getFontMappings().get(englishFromCJK);
 			}
 			
 			if (pf==null) {
-				log.warn("..no good");
+				log.warn("Font '" + englishFromCJK + "' is not mapped to a physical font. " );
 				return null;
 			}
 			
-			log.warn("..ok");
 			return pf.getName();
 		}		
 	}	
