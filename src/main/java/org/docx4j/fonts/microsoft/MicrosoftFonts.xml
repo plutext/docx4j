@@ -418,6 +418,11 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Magneto" filename="MAGNETOB.TTF"/>
 
+<font name="Malgun Gothic" filename="malgun.ttf">
+	<bold filename="malgunbd.ttf"/>
+</font>
+
+
 <font name="Mangal" filename="mangal.ttf"/>
 
 <font name="Marlett" filename="marlett.ttf"/> 
