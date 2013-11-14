@@ -318,7 +318,27 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
     	// look here
 		public void fontAction(String fontname) {
+			
+			if (fontname==null) {
+				log.warn("Got null", new Throwable());
+				return;
+			}
+			
 			fontsDiscovered.add(fontname); 
+			
+			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
+			// Anything here should also be in RunFontSelector getPhysicalFont
+			if (fontname.equals("ＭＳ ゴシック")) {
+//		        <a:font script="Jpan" typeface="ＭＳ ゴシック"/>
+				fontsDiscovered.add("MS Gothic");
+			} else if (fontname.equals("맑은 고딕")) {
+//		        <a:font script="Hang" typeface="맑은 고딕"/>
+				fontsDiscovered.add("Malgun Gothic");
+			} else if (fontname.equals("宋体")) {
+//		        <a:font script="Hans" typeface="宋体"/>
+				fontsDiscovered.add("SimSung"); //?
+			} 			
+			
 		}
 
 		
