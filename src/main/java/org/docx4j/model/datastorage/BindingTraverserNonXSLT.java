@@ -169,6 +169,10 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 								sdtPr.getDataBinding(), sdt, 
 								sdtParent));
 				
+				// TODO v3 XSLT approach
+				// .. if the sdt contains a template picture,
+				// find its a:blip, and just replace that.
+				
 			} else if (map!=null && map.containsKey(OpenDoPEHandler.BINDING_CONTENTTYPE)
 						&& map.get(OpenDoPEHandler.BINDING_CONTENTTYPE).equals("application/xhtml+xml")) {
 					// Convert XHTML.

@@ -837,6 +837,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			String sdtParent,
 			String contentChild,
 			String cx, String cy) {
+		
+		log.info("Falling back to pre-v3 picture processing for " + xpath);
 
 		log.debug("parent: " + sdtParent);
 		log.debug("child: " + contentChild);
@@ -973,6 +975,61 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		} 
 	}
 	
+	/**
+	 * Pass back to XSLT, the value of w:blip/@r:embed, preserving everything
+	 * else about the existing template image.
+	 * 
+	 * @param wmlPackage
+	 * @param sourcePart
+	 * @param customXmlDataStorageParts
+	 * @param storeItemId
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 * @since 3.0.0
+	 */
+	public static String xpathInjectImageRelId(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings) {
+
+		// TODO: remove any images in package which are no longer used.
+		// Needs to be done once after BindingHandler has been done
+		// for all parts for which it is to be called (eg mdp, header parts etc).
+		
+		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + storeItemId);
+			return null;
+		}
+		try {
+			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
+			log.debug(xpath + " yielded result length" + xpResult.length());
+			
+			// Base64 decode it
+			byte[] bytes = Base64.decodeBase64( xpResult.getBytes("UTF8") );
+			
+			// Create image part and add it
+	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
+
+	        // In certain circumstances, save it immediately
+	        if (wmlPackage.getTargetPartStore()!=null
+	        		&& wmlPackage.getTargetPartStore() instanceof UnzippedPartStore) {
+	        	log.debug("incrementally saving " + imagePart.getPartName().getName());  
+	        	((UnzippedPartStore)wmlPackage.getTargetPartStore()).saveBinaryPart(imagePart);
+	        	// remove it from memory
+	        	ByteBuffer bb = null;
+	        	imagePart.setBinaryData(bb);//new byte[0]);
+	        	imagePart.setImageInfo(null); // this might help as well
+	        }
+	        
+			return imagePart.getRelLast().getId();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} 
+	}
 	
 	public static String getRepeatPositionCondition(
 			XPathsPart xPathsPart,				

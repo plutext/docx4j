@@ -72,6 +72,47 @@
   </xsl:template>
  
  
+<!-- docx4j 3.0.  If the w:sdtContent contains an existing w:drawing/wp:inline/a:graphic ..
+     reuse it, so any formatting thus configured is used.
+     We'll just replace the rId.. -->
+  
+  <xsl:template match=" @*|node()" mode="picture3">
+	<xsl:param name="sdtPr" select="/.."/> 
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"  mode="picture3">
+	    	<xsl:with-param name="sdtPr" select="$sdtPr"/>
+	    </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+  
+  
+  <xsl:template match="a:blip" mode="picture3" priority="1">
+	<xsl:param name="sdtPr" select="/.."/> 
+	<a:blip r:embed="{java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								string($sdtPr/w:dataBinding/@w:storeItemID),
+								string($sdtPr/w:dataBinding/@w:xpath),
+								string($sdtPr/w:dataBinding/@w:prefixMappings) )}" />
+<!--  if it was @r:link, it is now embedded -->
+  </xsl:template>
+
+<!-- 
+  <xsl:template match="a:blip" mode="picture3">
+	<xsl:param name="sdtPr" select="/.."/> 
+	<a:blip>
+		<xsl:attribute name="r:embed" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xsl:value-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								string($sdtPr/w:dataBinding/@w:storeItemID),
+								string($sdtPr/w:dataBinding/@w:xpath),
+								string($sdtPr/w:dataBinding/@w:prefixMappings) )" /></xsl:attribute>
+	</a:blip>
+  </xsl:template>
+  -->
+  
   <xsl:template match="w:sdt">  
   
   	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
@@ -83,29 +124,52 @@
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
   			<!--  honour w:dataBinding -->
-			<xsl:copy>
-			     <xsl:copy-of select="w:sdtPr"/>
-			     
-			     <xsl:if test="w:stdEndPr">
-			     	<xsl:copy-of select="w:sdtEndPr"/>
-		     	</xsl:if>
-
-			     
-			     <w:sdtContent>
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										string(w:sdtPr/w:dataBinding/@w:storeItemID),
-										string(w:sdtPr/w:dataBinding/@w:xpath),
-										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										$parent,
-										$child,
-										string(w:sdtContent//wp:extent[1]/@cx), 
-										string(w:sdtContent//wp:extent[1]/@cy))" />
-			     </w:sdtContent>
-			</xsl:copy>
+  			
+  			<xsl:choose>
+  				<xsl:when test="w:sdtContent//a:blip"><!-- docx4j 3.0 -->
+  					
+					<xsl:copy>
+					     <xsl:copy-of select="w:sdtPr"/>
+					     
+					     <xsl:if test="w:stdEndPr">
+					     	<xsl:copy-of select="w:sdtEndPr"/>
+				     	</xsl:if>
+		
+					    <xsl:apply-templates select="w:sdtContent" mode="picture3"> 
+					    	<xsl:with-param name="sdtPr" select="w:sdtPr"/>
+					    </xsl:apply-templates>
+					     
+					</xsl:copy>
+  				
+  				</xsl:when>
+  				<xsl:otherwise>
+  					<!--  fallback to pre v3 approach -->
+					<xsl:copy>
+					     <xsl:copy-of select="w:sdtPr"/>
+					     
+					     <xsl:if test="w:stdEndPr">
+					     	<xsl:copy-of select="w:sdtEndPr"/>
+				     	</xsl:if>
+		
+					     
+					     <w:sdtContent>
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												string(w:sdtPr/w:dataBinding/@w:storeItemID),
+												string(w:sdtPr/w:dataBinding/@w:xpath),
+												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+												$parent,
+												$child,
+												string(w:sdtContent//wp:extent[1]/@cx), 
+												string(w:sdtContent//wp:extent[1]/@cy))" />
+					     </w:sdtContent>
+					</xsl:copy>
+  				
+  				</xsl:otherwise>
+  			</xsl:choose>
 		</xsl:when>
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">

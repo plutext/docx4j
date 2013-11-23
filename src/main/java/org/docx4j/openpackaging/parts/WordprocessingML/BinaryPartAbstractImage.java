@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -74,6 +75,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	final static String IMAGE_DIR_PREFIX = "/word/media/";
 	final static String IMAGE_NAME_PREFIX = "image";
 	
+
+
 	public BinaryPartAbstractImage(PartName partName) throws InvalidFormatException {
 		super(partName);
 		
@@ -112,7 +115,18 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	// it would be better to have getOwningRelationship(),
 	// and if required, to get OwningRelationshipPart from that
 	// This is a temp workaround	
-	Relationship rel;
+	private List<Relationship> rels = new ArrayList<Relationship>();
+	public List<Relationship> getRels() {
+		return rels;
+	}
+	public Relationship getRelLast() {
+		int size = rels.size();
+		if (size<1) {
+			return null;
+		} else {
+			return rels.get(size-1);
+		}
+	}
 	static int density = 150;	
 
 	/**
@@ -274,7 +288,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		FileInputStream fis = new FileInputStream(tmpImageFile); 		
         imagePart.setBinaryData(fis);
 				
-        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
+        imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
 		
 		imagePart.setImageInfo(info);
 
@@ -341,7 +355,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
                 + " with name " + imagePart.getPartName().toString());
 
         imagePart.setBinaryData(bytes);
-        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
+        imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
 		
 		return imagePart;
         
@@ -391,7 +405,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         FileInputStream fis = new FileInputStream(imageFile);
         imagePart.setBinaryData(fis);
 
-        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
+        imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
 
         imagePart.setImageInfo(info);
 
@@ -553,8 +567,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
 
-		imagePart.rel = sourcePart.addTargetPart(imagePart); // want to create rel with suitable name; side effect is to add part
-		imagePart.rel.setTargetMode("External");
+		imagePart.rels.add(sourcePart.addTargetPart(imagePart)); // want to create rel with suitable name; side effect is to add part
+		imagePart.getRelLast().setTargetMode("External");
 
 		opcPackage.getExternalResources().put(imagePart.getExternalTarget(), 
 				imagePart);			
@@ -564,7 +578,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 //		} else {
 //			imagePart.rel.setTarget(url.toString());
 //		}
-		imagePart.rel.setTarget(url.toString());
+		imagePart.getRelLast().setTarget(url.toString());
 
 		imagePart.setImageInfo(info);
 		
@@ -743,7 +757,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         mappings.put("cy", Long.toString(cy));
         mappings.put("filenameHint", filenameHint);
         mappings.put("altText", altText);
-        mappings.put("rEmbedId", rel.getId());
+        mappings.put("rEmbedId", this.getRelLast().getId());
         mappings.put("id1", Integer.toString(id1));
         mappings.put("id2", Integer.toString(id2));
 
