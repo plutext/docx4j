@@ -187,11 +187,20 @@ public class RunFontSelector {
 		// if we set a default on eg body, this wouldn't be necessary.
 		// Similarly for the FO case.
 		Element	span = createElement(document);
+		document.appendChild(span);  
 		this.setAttribute(span, getDefaultFont());
 		span.setTextContent(text);  
 		
 		return result(document);
     }
+    
+    private DocumentFragment result(Document document) {
+    	
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+		return docfrag;
+    }
+    
 
     public Element createElement(Document document) {
     	Element el=null;
@@ -202,7 +211,17 @@ public class RunFontSelector {
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		el = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
     	} 
-		document.appendChild(el);   
+		/* Can't do document.appendChild(el) here, since its a problem if called multiple times!
+		 * 
+			org.w3c.dom.DOMException: HIERARCHY_REQUEST_ERR: An attempt was made to insert a node where it is not permitted. 
+				at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.insertBefore(Unknown Source)
+				at com.sun.org.apache.xerces.internal.dom.NodeImpl.appendChild(Unknown Source)
+				at org.docx4j.fonts.RunFontSelector.createElement(RunFontSelector.java:205)
+				at org.docx4j.convert.out.fo.FOConversionContext$3.createNew(FOConversionContext.java:139)
+				at org.docx4j.fonts.RunFontSelector.unicodeRangeToFont(RunFontSelector.java:462)
+				at org.docx4j.fonts.RunFontSelector.fontSelector(RunFontSelector.java:428)
+				at org.docx4j.convert.out.common.XsltCommonFunctions.fontSelector(XsltCommonFunctions.java:117)
+			 */
     	return el;
     }
     
@@ -315,6 +334,8 @@ public class RunFontSelector {
     			}    		
     			
     			Element	span = createElement(document);
+    			document.appendChild(span); 
+    			
     			this.setAttribute(span, fontName);
     			span.setTextContent(text);  
     			
@@ -328,6 +349,7 @@ public class RunFontSelector {
 
     			String fontName =rFonts.getCs();
     			Element	span = createElement(document);
+    			document.appendChild(span);     			
     			this.setAttribute(span, fontName);
     			span.setTextContent(text);
     			
@@ -397,6 +419,8 @@ public class RunFontSelector {
     			// use ascii
     			
     			Element	span = createElement(document);
+    			document.appendChild(span); 
+
     			if (outputType== RunFontActionType.DISCOVERY) {
     				vis.fontAction(ascii);
         			return null; 
@@ -427,7 +451,6 @@ public class RunFontSelector {
 		vis.setDocument(document);
 		return unicodeRangeToFont(text,  hint,  langEastAsia,
 	    		 eastAsia,  ascii,  hAnsi );
-//		return result(document);
     }
     	
         	
@@ -693,14 +716,6 @@ public class RunFontSelector {
     	// Handle final span
     	vis.finishPrevious();
     	return vis.getResult();
-    }
-    	
-
-    private DocumentFragment result(Document document) {
-    	
-		DocumentFragment docfrag = document.createDocumentFragment();
-		docfrag.appendChild(document.getDocumentElement());
-		return docfrag;
     }
     
     private Document getDocument() {
