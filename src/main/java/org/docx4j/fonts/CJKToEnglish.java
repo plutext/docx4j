@@ -23,6 +23,8 @@ public class CJKToEnglish {
 		if (fontName.equals("ＭＳ ゴシック")) {
 //	        <a:font script="Jpan" typeface="ＭＳ ゴシック"/>
 			return "MS Gothic";
+		} else if (fontName.equals("ＭＳ 明朝")) {			
+			return "MS Mincho";
 		} else if (fontName.equals("맑은 고딕")) {
 //	        <a:font script="Hang" typeface="맑은 고딕"/>
 			return "Malgun Gothic";
