@@ -187,9 +187,11 @@ public class RunFontSelector {
 		// if we set a default on eg body, this wouldn't be necessary.
 		// Similarly for the FO case.
 		Element	span = createElement(document);
-		document.appendChild(span);  
-		this.setAttribute(span, getDefaultFont());
-		span.setTextContent(text);  
+		if (span!=null) {
+			document.appendChild(span);  
+			this.setAttribute(span, getDefaultFont());
+			span.setTextContent(text);  
+		}
 		
 		return result(document);
     }
@@ -334,11 +336,12 @@ public class RunFontSelector {
     			}    		
     			
     			Element	span = createElement(document);
-    			document.appendChild(span); 
-    			
-    			this.setAttribute(span, fontName);
-    			span.setTextContent(text);  
-    			
+    			if (span!=null) {
+    				// It will be null in MainDocumentPart$FontAndStyleFinder case
+	    			document.appendChild(span); 
+	    			this.setAttribute(span, fontName);
+	    			span.setTextContent(text);  
+    			}
     			if (outputType== RunFontActionType.DISCOVERY) {
     				vis.fontAction(fontName);
     			}
@@ -349,9 +352,12 @@ public class RunFontSelector {
 
     			String fontName =rFonts.getCs();
     			Element	span = createElement(document);
-    			document.appendChild(span);     			
-    			this.setAttribute(span, fontName);
-    			span.setTextContent(text);
+    			if (span!=null) {
+    				// It will be null in MainDocumentPart$FontAndStyleFinder case
+	    			document.appendChild(span);     			
+	    			this.setAttribute(span, fontName);
+	    			span.setTextContent(text);
+    			}
     			
     			if (outputType== RunFontActionType.DISCOVERY) {
     				vis.fontAction(fontName);
@@ -419,8 +425,11 @@ public class RunFontSelector {
     			// use ascii
     			
     			Element	span = createElement(document);
-    			document.appendChild(span); 
-
+    			if (span!=null) {
+    				// It will be null in MainDocumentPart$FontAndStyleFinder case    			
+    				document.appendChild(span); 
+    			}
+    			
     			if (outputType== RunFontActionType.DISCOVERY) {
     				vis.fontAction(ascii);
         			return null; 
