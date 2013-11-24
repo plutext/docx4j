@@ -720,8 +720,23 @@ public class XsltHTMLFunctions {
     	
     	if (nodes==null || nodes.getLength()==0) return;
     	
-    	// init
-    	Element currentSpan = ((Element)nodes.item(0));
+    	// init .. skip children until we find a span
+    	int startIndex = 0;
+    	Element currentEl; 
+    	while (true) {
+    		currentEl = ((Element)nodes.item(startIndex));
+    		    		
+        	if (currentEl.getLocalName().equals("span")) {
+            	break;        		
+        	} else {
+            	XmlUtils.treeCopy( currentEl,  xhtmlBlock );
+        	}
+        	
+        	startIndex++;
+        	if (startIndex == nodes.getLength() ) return;
+    	}
+    	
+    	Element currentSpan = currentEl;
     	String currentClass = currentSpan.getAttribute("class");
     	String currentStyle = currentSpan.getAttribute("style");
     		// should work for anything with @class, @style
@@ -740,12 +755,29 @@ public class XsltHTMLFunctions {
     	
     	//System.out.println(XmlUtils.w3CDomNodeToString(xhtmlBlock));
     	
-    	if (nodes.getLength()==1) return;
+//    	if (nodes.getLength()==1) return;
     	
-    	for (int i=1; i<nodes.getLength(); i++) {
+    	for (int i=(startIndex+1); i<nodes.getLength(); i++) {
     		
         	Element thisSpan = ((Element)nodes.item(i));
         	
+        	// Handle elements other than span eg img
+        	if (!thisSpan.getLocalName().equals("span")) {
+            	XmlUtils.treeCopy( thisSpan,  xhtmlBlock );
+        		
+            	// Get read for next span
+        		newSpan = document.createElement("span");	
+            	xhtmlBlock.appendChild(newSpan); // might end up with an empty span
+        		if (currentClass!=null) {
+        			newSpan.setAttribute("class", currentClass);
+        		}
+        		if (currentStyle!=null) {
+        			newSpan.setAttribute("style", currentStyle);
+        		}
+        		continue;
+        	}
+        	
+        	// Handle span
         	if (!thisSpan.hasChildNodes()) continue;
         	
         	String thisClass = thisSpan.getAttribute("class");
@@ -848,7 +880,7 @@ public class XsltHTMLFunctions {
     		// Avoid unnecessary nested span for common case of single child
         	if (n.hasChildNodes() && n.getChildNodes().getLength()==1
         			&& n.getChildNodes().item(0).getLocalName().equals("span")) {
-        		
+        		        		
         		String existingStyle = ((Element)n.getChildNodes().item(0)).getAttribute("style");
 				span.setAttribute("style", existingStyle );				
 				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
