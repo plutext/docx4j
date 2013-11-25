@@ -415,7 +415,7 @@ public class RunFontSelector {
 		
     	/*
     	 * If the eastAsia (or eastAsiaTheme if defined) attribute’s value is “Times New Roman”
-    	 * and the ascii (or asciiTheme if defined) and hAnsi (orhAnsiTheme if defined) attributes are equal, 
+    	 * and the ascii (or asciiTheme if defined) and hAnsi (or hAnsiTheme if defined) attributes are equal, 
     	 * then the ascii (or asciiTheme if defined) font is used.
     	 */
 		if (("Times New Roman").equals(eastAsia)) {
@@ -451,6 +451,10 @@ public class RunFontSelector {
     	/* Otherwise, the following table is used. For all ranges not listed in the following table, 
     	 * the hAnsi (or hAnsiTheme if defined) font shall be used.
     	 */
+		if (hAnsi==null) {
+			log.warn("No value for hAnsi, using default font");
+			hAnsi = this.getDefaultFont();				
+		}
 		
 		String langEastAsia = null;
 		if (rPr.getLang()!=null) {
