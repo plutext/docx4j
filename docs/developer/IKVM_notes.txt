@@ -26,8 +26,9 @@ Using docx4j DLLs in .NET
 
 There are some classloading differences between Java and .NET
 
-Hopefully these will not bite you, but if you have 
+If you get
 org.apache.xalan.processor.TransformerFactoryImpl not being found,
+which we've seen in an ASP.NET environment,
 either of the following do solve this:
 
         java.lang.Class clazz = typeof(org.apache.xalan.processor.TransformerFactoryImpl);
