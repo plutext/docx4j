@@ -10,7 +10,7 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.0.1-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	<description>
@@ -865,6 +865,7 @@
 
    				-->
    				
+<!-- Uncomment to deploy to GitHub.  MUST Comment out for real release
 <distributionManagement>
     <repository>
         <id>internal.repo</id>
@@ -872,5 +873,5 @@
         <url>file://${project.build.directory}/mvn-repo</url>
     </repository>
 </distributionManagement>   				
-
+-->
 </project>
