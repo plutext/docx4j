@@ -57,6 +57,13 @@ Update pml to ECMA 376 2ed
 Other Changes (non-exhaustive)
 ------------------------------
 
+1045e36 - OpenDoPE pictures: reuse template picture (if present), for size, positioning etc
+
+6724f06 - Make build compatible with Java 7 (alberto) 
+
+c018431 - Images: Make configurable whether GC is performed prior to temp file deletion
+
+d0e0bfe - Data binding: where XPath returned is empty, add placeholder content (workaround for some patch levels of Word 2010 x86 where multiline is true)
 
 0bf7610 - BinaryPart getBytes() method 
 

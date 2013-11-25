@@ -82,9 +82,11 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.5/xmlgraphics-commons-1.5.jar"/>        
 
+<!-- 
         <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
         <pathelement location="${m2Repository}/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>
-        
+      -->
+         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.7/batik-css-1.7.jar"/>
@@ -94,7 +96,7 @@
 
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.7/batik-bridge-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.7/batik-script-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/> 
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.7/batik-xml-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.7/batik-awt-util-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.7/batik-gvt-1.7.jar"/>
@@ -359,7 +361,7 @@
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:2.9.9.8" />
+            <arg value="-version:2.9.9.9" />
             <arg value="-target:library" />
             <arg line="${docx4j-jars}" />
         </exec>    

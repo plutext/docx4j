@@ -212,8 +212,20 @@ public final class JarCheck
 //                                     + elementName );
                         // leave success set as previously
                         }
-                    else
+                    else if (  major > high ) {
+                    	
+                      err.println( ">> Wrong Version " );
+                      err.println( convertMachineToHuman.get( major )
+                                   + " ("
+                                   + major
+                                   + ") "
+                                   + elementName );
+                      success = false;
+                    	                      
+                    } else
                         {
+                    	// Suppress low version error
+                    	
 //                        err.println( ">> Wrong Version " );
 //                        err.println( convertMachineToHuman.get( major )
 //                                     + " ("

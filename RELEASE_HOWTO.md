@@ -1,7 +1,11 @@
 Docx4j release process
 ======================
 
-[Do this process for a release candidate first]
+[Do this process for a beta then a release candidate first; 
+ beta & RC should be pushed to maven repo on GitHub - see notes in pom.
+ Create beta from docx4j-ImportXHTML, since beta can include that stuff.
+ But don't bother putting that in maven repo.
+ Use mvn to build docx4j-ImportXHTML, but then ant to gather the jars ]
 
 Check everything is committed
 
@@ -14,8 +18,10 @@ Run JarCheck on result of mvn install to check its compiled for 1.5
 Update README.txt with release info.
 
     http://www.jukie.net/bart/blog/pimping-out-git-log
-    
-(refer to README.txt to see what rnumber to start at)    
+        
+(refer to README.txt to see what rnumber to start at)  
+
+    git lg b6c12c8..HEAD > stuff.txt  
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
 
