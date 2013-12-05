@@ -111,10 +111,14 @@ public class ConvertOutPDF extends AbstractSample {
 		// Set up font mapper (optional)
 		Mapper fontMapper = new IdentityPlusMapper();
 		wordMLPackage.setFontMapper(fontMapper);
-		// .. example of mapping missing font Algerian to installed font Comic Sans MS
+		
+		// .. example of mapping font Times New Roman which doesn't have certain Arabic glyphs
+		// eg Glyph "ي" (0x64a, afii57450) not available in font "TimesNewRomanPS-ItalicMT".
+		// eg Glyph "ج" (0x62c, afii57420) not available in font "TimesNewRomanPS-ItalicMT".
+		// to a font which does
 		PhysicalFont font 
-				= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
-		fontMapper.getFontMappings().put("Algerian", font);
+				= PhysicalFonts.getPhysicalFonts().get("Arial Unicode MS");
+		fontMapper.getFontMappings().put("Times New Roman", font);
 		
 
 		// FO exporter setup (required)
