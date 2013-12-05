@@ -31,6 +31,7 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -69,6 +70,19 @@ public class PartialDeepCopy {
 			else {
 				ret = createPackage(opcPackage);
 				deepCopyRelationships(ret, opcPackage, ret, relationshipTypes);
+				
+				// Copy the font mappings
+				if (opcPackage instanceof WordprocessingMLPackage) {
+					
+					try {
+						((WordprocessingMLPackage)ret).setFontMapper(
+								((WordprocessingMLPackage)opcPackage).getFontMapper(), false); //don't repopulate, since we want to preserve existing mappings
+					} catch (Exception e) {
+						// shouldn't happen
+						throw new Docx4JException("Error setting font mapper on copy", e);
+					}
+				}
+				
 			}
 		}
 		return ret;
@@ -110,6 +124,7 @@ public class PartialDeepCopy {
 		//is done in an another method
 //		partStore
 		ret.setSourcePartStore(opcPackage.getSourcePartStore());
+				
 		return ret;
 	}
 

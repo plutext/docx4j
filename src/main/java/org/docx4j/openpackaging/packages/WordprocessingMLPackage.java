@@ -300,7 +300,19 @@ public class WordprocessingMLPackage extends OpcPackage {
  */
 
     public void setFontMapper(Mapper fm) throws Exception {
+    	setFontMapper( fm,  true);
+    }
+    
+    /**
+     * @param fm
+     * @param populate
+     * @throws Exception
+     * 
+     * @since 3.0.1
+     */
+    public void setFontMapper(Mapper fm, boolean populate) throws Exception {
     	log.debug("setFontMapper invoked");
+    	
     	if (fm == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
@@ -328,7 +340,9 @@ public class WordprocessingMLPackage extends OpcPackage {
 			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		}
 		
-		fontMapper.populateFontMappings(fontsInUse, fonts);    	
+		if (populate) {
+			fontMapper.populateFontMappings(fontsInUse, fonts);
+		}
     	
     }
 
