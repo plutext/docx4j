@@ -264,6 +264,13 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     			log.warn("Missing typeface in font for " + type.toString() );
     			return null;
     		} else {
+    			if (typeface.trim().length()==0) {
+        			log.warn("Empty typeface in font for " + type.toString() ); 
+        			// eg <a:ea typeface=""/>
+        	        // or <a:cs typeface=""/>
+        			return null;
+    			}
+    			log.debug("'" + typeface + "'");
     			return typeface;
     		}
 		}

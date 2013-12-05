@@ -85,7 +85,9 @@ public class RunFontSelector {
 		fallbackFont = getPhysicalFont(getDefaultFont());
 		if (fallbackFont==null) {
 			fallbackFont = getDefaultFont();
-			log.warn(getDefaultFont() + " is not mapped!");
+			if (outputType!= RunFontActionType.DISCOVERY) {
+				log.warn(getDefaultFont() + " is not mapped!");
+			}
 		} 
 		
 		vis.setFallbackFont(fallbackFont);
@@ -198,6 +200,18 @@ public class RunFontSelector {
     
     private DocumentFragment result(Document document) {
     	
+		if (outputType== RunFontActionType.DISCOVERY) {
+			/* Avoid
+			 * 
+				Exception in thread "main" java.lang.NullPointerException
+					at com.sun.org.apache.xerces.internal.dom.ParentNode.internalInsertBefore(Unknown Source)
+					at com.sun.org.apache.xerces.internal.dom.ParentNode.insertBefore(Unknown Source)
+					at com.sun.org.apache.xerces.internal.dom.NodeImpl.appendChild(Unknown Source)
+					at org.docx4j.fonts.RunFontSelector.result(RunFontSelector.java:202)
+					at org.docx4j.fonts.RunFontSelector.fontSelector(RunFontSelector.java:366)
+			 */
+			return null;
+		}
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
 		return docfrag;
@@ -230,7 +244,10 @@ public class RunFontSelector {
     public void setAttribute(Element el, String fontName) {
     	
     	// could a document fragment contain just a #text node?
-    	if (outputType==RunFontActionType.XHTML) {
+    	
+		if (outputType== RunFontActionType.DISCOVERY) {
+			return;
+		} else if (outputType==RunFontActionType.XHTML) {
     		if (spacePreserve) {
     	    	/*
     	    	 * 	Convert @xml:space='preserve' to style="white-space:pre-wrap;"
@@ -328,11 +345,18 @@ public class RunFontSelector {
     				
     				fontName = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
     			}
-    			if (fontName==null) {
+    			if (fontName==null
+//    					|| fontName.trim().length()==0
+    					) {
     				fontName = rFonts.getCs();
-    			}
-    			if (fontName==null) {
+    			} 
+    			if (fontName==null
+//    					|| fontName.trim().length()==0
+    					) {
     				// then what?
+    				log.warn("font name is null, for " + text);
+    				log.warn(XmlUtils.marshaltoString(rPr, true, true));
+    				(new Throwable()).printStackTrace();
     			}    		
     			
     			Element	span = createElement(document);
@@ -775,6 +799,11 @@ public class RunFontSelector {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
 			return pf.getName();
 		} else {
+			
+			// This is ok if it happens 
+			// at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.fontsInUse(MainDocumentPart.java:238)
+			// at org.docx4j.openpackaging.packages.WordprocessingMLPackage.setFontMapper(WordprocessingMLPackage.java:311)
+
 			
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
 			String englishFromCJK = CJKToEnglish.toEnglish( fontName);
