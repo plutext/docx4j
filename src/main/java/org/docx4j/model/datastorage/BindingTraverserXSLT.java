@@ -677,7 +677,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			
 			RPr rPr = null;
 			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				if (o instanceof RPr) {
+				o = XmlUtils.unwrap(o); // Sun/Oracle JAXB (recent versions?) wraps RPR in JAXBElement 
+				if (o instanceof RPr) {					
 					rPr = (RPr)o;
 					break;
 				}
