@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.Writer.TransformState;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
 import org.docx4j.convert.out.common.writer.AbstractTableWriterModel;
@@ -118,7 +119,10 @@ public class TableWriter extends AbstractTableWriter {
 	}
   	
   	@Override
-	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, AbstractTableWriterModelCell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, 
+			TransformState transformState, 
+			AbstractTableWriterModelCell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+  		
   		if (isDummyCell) {
 			cellNode.setAttribute("border-style", "none");
 			cellNode.setAttribute("background-color", "transparent");
@@ -134,5 +138,15 @@ public class TableWriter extends AbstractTableWriter {
 		}
   	}
 	
+  	@Override
+  	protected void applyTableRowContainerCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, 
+  			TransformState transformState, 
+  			Element rowContainer, boolean isHeader) {
+  		
+  		// since start-indent is inherited, we need to counteract any setting on the table itself
+  		// see http://stackoverflow.com/questions/12391778/shift-a-fop-table-to-the-right
+  		rowContainer.setAttribute("start-indent", "0in");
+  		
+  	}
 	
 }
