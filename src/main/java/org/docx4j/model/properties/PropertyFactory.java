@@ -66,6 +66,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.PBdr;
@@ -95,8 +96,16 @@ public class PropertyFactory {
 		
 		List<Property> properties = new ArrayList<Property>();
 
-		if (tblPr.getTblInd()!=null ) 
-			properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
+		if (tblPr.getJc()!=null
+				&& 
+				(tblPr.getJc().getVal().equals(JcEnumeration.CENTER)
+						|| tblPr.getJc().getVal().equals(JcEnumeration.RIGHT)))
+		{ 
+			// ignore TblInd (since docx4j 3.0.1)
+		} else {
+			if (tblPr.getTblInd()!=null) 
+				properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
+		}
 		
 		if (tblPr.getTblBorders()!=null) {
 			TblBorders tblBorders = tblPr.getTblBorders();

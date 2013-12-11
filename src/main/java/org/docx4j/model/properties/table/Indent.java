@@ -99,6 +99,7 @@ public class Indent extends AbstractTableProperty {
 		if (left==null) {
 			log.warn("FIXME");
 		} else {
+			// assume dxa, which is twips
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 		
 	}
