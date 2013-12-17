@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,11 +225,33 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	
     	if (styleDocDefaults!=null) return; // been done already
     	
-    	styleDocDefaults = Context.getWmlObjectFactory().createStyle();
-    	
     	String ROOT_NAME = "DocDefaults";
+
+    	// could be in docx which we saved and are now re-opening
+    	styleDocDefaults = getStyleById(this.getJaxbElement().getStyle(), ROOT_NAME);
+    	if (styleDocDefaults==null) {
+
+        	styleDocDefaults = Context.getWmlObjectFactory().createStyle();
+        	styleDocDefaults.setStyleId(ROOT_NAME);
+        	
+    		this.getJaxbElement().getStyle().add(styleDocDefaults);
+    		
+    	} else {
+    		
+    		log.info("Found existing style named " + ROOT_NAME);
+    		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+    		
+        	// TODO: could be a name collision; some other app using that name :-(
+    		// We could check whether normal is based on it (see towards end of this method)
+    		
+    		if (styleDocDefaults.getRPr()!=null) {
+        		log.debug(".. reusing");
+    			return;
+    		} else {
+        		log.debug(".. but no rPr, so re-creating");    			
+    		}
+    	}
     	
-    	styleDocDefaults.setStyleId(ROOT_NAME);
     	styleDocDefaults.setType("paragraph");
     	
 		org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
@@ -323,11 +346,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		based.setVal(ROOT_NAME);		
 		normal.setBasedOn(based);
 		
-		// Finally, add it to styles
-		this.getJaxbElement().getStyle().add(styleDocDefaults);
-		log.warn("Added virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
+		log.info("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
 		
-		log.warn(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
 		
 		
     	
@@ -340,14 +361,20 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
      */
     public Style getStyleById(String id) {
     	
-		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
+		return getStyleById( this.getJaxbElement().getStyle(), id ); 				
+
+    }
+
+    private Style getStyleById(List<Style> styles, String id) {
+    	
+		for ( org.docx4j.wml.Style s : styles ) {				
 			if( s.getStyleId().equals(id) ) {
 				return s;
 			}
 		}
     	return null;
     }
-
+    
     private Style defaultCharacterStyle;
     public Style getDefaultCharacterStyle() {
     	
