@@ -457,7 +457,35 @@ public class XmlUtils {
 	    }
 	 }
 
+	/**
+	 * Marshal this object to a String, pretty printed, and without an XML declaration.
+	 * Useful for debugging.
+	 * 
+	 * @param o
+	 * @return
+	 * @since 3.0.1
+	 */
+	public static String marshaltoString(Object o ) {
+
+		JAXBContext jc = Context.jc;
+		return marshaltoString(o, true, true, jc );
+	}
+
+	/**
+	 * Use the specified JAXBContext to marshal this object to a String, pretty printed, and without an XML declaration.
+	 * Useful for debugging.
+	 * 
+	 * @param o
+	 * @return
+	 * @since 3.0.1
+	 */
+	public static String marshaltoString(Object o, JAXBContext jc ) {
+
+		return marshaltoString(o, true, true, jc );
+	}
+		
 	/** Marshal to a String */ 
+	@Deprecated
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
 		JAXBContext jc = Context.jc;
@@ -465,6 +493,7 @@ public class XmlUtils {
 	}
 
 	/** Marshal to a String */ 
+	@Deprecated
 	public static String marshaltoString(Object o, boolean suppressDeclaration, JAXBContext jc ) {
 
 		return marshaltoString(o, suppressDeclaration, false, jc );
