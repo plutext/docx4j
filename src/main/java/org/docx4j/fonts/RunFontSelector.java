@@ -5,8 +5,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.TextFont;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.wml.CTLanguage;
@@ -271,36 +273,57 @@ public class RunFontSelector {
     
     private boolean spacePreserve;
     
+    
+    /**
+     * Apply font selection algorithm to this Text, based on supplied PPr, RPr
+     * (and docDefaults, Theme part etc).
+     * 
+     * @param pPr
+     * @param rPr
+     * @param wmlText
+     * @return
+     */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
     	
     	String text = wmlText.getValue();
+    	log.debug(text);
     	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
-
-    	
-//    	System.out.println(text);
     	
     	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
     	
-    	Style pStyle = null;
+//    	Style pStyle = null;
+    	String pStyleId = null;
     	RPr pRPr = null;
     	if (pPr==null || pPr.getPStyle()==null) {
-    		pStyle = getDefaultPStyle();
-        	log.debug("using default p style");
-        	pRPr = pStyle.getRPr();  // TODO pStyle.getRPr() should inherit from basedOn
-    	} else if (wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
-    		log.debug(pPr.getPStyle().getVal());
-    		pRPr = propertyResolver.getEffectiveRPr(pPr.getPStyle().getVal());
+//    		pStyle = getDefaultPStyle(); 
+    		if (getDefaultPStyle() == null) {
+    			log.warn("getDefaultPStyle() returned null");
+    		} else {
+	        	log.debug("using default p style");
+//	        	pRPr = pStyle.getRPr();  // TODO pStyle.getRPr() should inherit from basedOn
+	        	pStyleId = getDefaultPStyle().getStyleId();
+    		}
+    	} else {
+    		pStyleId = pPr.getPStyle().getVal();
+    	}
+    		
+    	if (pStyleId!=null && wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
+    		// apply the rPr in the stack of styles, including documentDefaultRPr
+    		log.debug(pStyleId);
+    		pRPr = propertyResolver.getEffectiveRPr(pStyleId);
+        	log.debug("before getEffectiveRPrUsingPStyleRPr\n" + XmlUtils.marshaltoString(pRPr));
     	}
 
     	// Do we need boolean major??
     	// Can work that out from pStyle
 
     	
+    	// now apply the direct rPr
     	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr); 
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
     	
-    	log.debug("effective\n" + XmlUtils.marshaltoString(rPr, true, true));
+    	log.debug("effective\n" + XmlUtils.marshaltoString(rPr));
     	
     	/* eg
     	 * 
@@ -489,7 +512,14 @@ public class RunFontSelector {
 		return unicodeRangeToFont(text,  hint,  langEastAsia,
 	    		 eastAsia,  ascii,  hAnsi );
     }
+    
+    private boolean contains(String langEastAsia, String lang) {
     	
+    	// eg <w:lang w:eastAsia="zh-CN" .. />
+    	if (langEastAsia==null) return false;
+    	
+    	return langEastAsia.contains(lang);
+    }
         	
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi) {
@@ -541,7 +571,7 @@ public class RunFontSelector {
     					If hint is eastAsia and the language of the run is either Chinese Traditional or Chinese Simplified, the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
     					*/
         	    	if (hint == STHint.EAST_ASIA) {
-        	    		if (langEastAsia.equals("zh") ) {
+        	    		if (contains(langEastAsia, "zh") ) {
         	    			// the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
         	    			if ( (c>='\u00E0' && c<='\u00E1')         	    					
         	    					|| (c>='\u00E8' && c<='\u00EA')         	    					
@@ -586,7 +616,7 @@ public class RunFontSelector {
     					then eastAsia (or eastAsiaTheme if defined) font is used.
     					*/
         	    	if (hint == STHint.EAST_ASIA) {
-        	    		if ("zh".equals(langEastAsia) ) {
+        	    		if (contains(langEastAsia, "zh") ) {
     	    				vis.fontAction(eastAsia);
     	    			    vis.setMustCreateNewFlag(true);
         	    			
@@ -637,7 +667,7 @@ public class RunFontSelector {
         	    } else if (c>='\u1E00' && c<='\u1EFF') 
         	    {
         	    	if (hint == STHint.EAST_ASIA) {
-        	    		if ("zh".equals(langEastAsia) ) {
+        	    		if (contains(langEastAsia, "zh") ) {
     	    				vis.fontAction(eastAsia);	
         	    		} else {
     	    				vis.fontAction(hAnsi);

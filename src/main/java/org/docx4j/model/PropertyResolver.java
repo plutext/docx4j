@@ -175,6 +175,7 @@ public class PropertyResolver {
 		initialiseLiveStyles();		
 		
 		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+		log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
 		documentDefaultPPr = docDefaults.getPPr();
 		documentDefaultRPr = docDefaults.getRPr();
 
@@ -454,7 +455,20 @@ public class PropertyResolver {
 		
 	}
 
-	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr pPrLevelRunStyle) {
+	/**
+	 * Return effective rPr, as follows: Starting with the rPr from the pStyle, 
+	 * apply character style (if any) specified on the run,
+	 * then any other direct (ad-hoc) run formatting.
+	 * 
+	 * @param expressRPr
+	 * @param rPrFromPStyle should be rPr from the paragraph style (as opposed to rPr in the direct pPr, which is only relevant to the paragraph mark)
+	 * @return
+	 */
+	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) {
+		
+		// Note, RPr pPrLevelRunStyle should be rPr from the paragraph style
+		// (as opposed to rPr in the direct pPr, which is only
+		//  relevant to the paragraph mark)
 		
 		log.debug("in getEffectiveRPrUsingPStyle");
 //		Throwable t = new Throwable();
@@ -484,11 +498,12 @@ public class PropertyResolver {
 //			}
 		
 		RPr effectiveRPr = null;		
-		if (pPrLevelRunStyle==null) {
+		if (rPrFromPStyle==null) {
 			effectiveRPr = Context.getWmlObjectFactory().createRPr();
 		} else {
-			effectiveRPr=(RPr)XmlUtils.deepCopy(pPrLevelRunStyle);
-		}
+			effectiveRPr=(RPr)XmlUtils.deepCopy(rPrFromPStyle);
+		}		
+		
 		
 //    	System.out.println("start\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
 		
@@ -536,6 +551,12 @@ public class PropertyResolver {
 		
 	}
 	
+	/**
+	 * apply the rPr in the stack of styles, including documentDefaultRPr
+	 * 
+	 * @param styleId
+	 * @return
+	 */
 	public RPr getEffectiveRPr(String styleId) {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
@@ -571,12 +592,13 @@ public class PropertyResolver {
 		// Haven't done this one yet				
 		fillRPrStack(styleId, rPrStack);
 		// Finally, on top
-		rPrStack.push(documentDefaultRPr);
+		rPrStack.push(documentDefaultRPr); // is this necessary? didn't we make these into a style?
 						
 		resolvedRPr = factory.createRPr();			
 		// Now, apply the properties starting at the top of the stack
 		while (!rPrStack.empty() ) {
 			RPr rPr = rPrStack.pop();
+			log.debug("applying " + XmlUtils.marshaltoString(rPr));
 			applyRPr(rPr, resolvedRPr);
 		}
 		resolvedStyleRPrComponent.put(styleId, resolvedRPr);

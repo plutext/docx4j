@@ -107,6 +107,8 @@ import org.docx4j.wml.TextDirection;
 import org.docx4j.wml.TrPr;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  *  @author Alberto Zerolo
@@ -114,6 +116,9 @@ import org.docx4j.wml.UnderlineEnumeration;
  *  
 */
 public class StyleUtil {
+	
+	protected static Logger log = LoggerFactory.getLogger(StyleUtil.class);	
+	
 	
 	public static final String CHARACTER_STYLE = "character";
 	public static final String PARAGRAPH_STYLE = "paragraph";
@@ -1098,6 +1103,13 @@ public class StyleUtil {
 			);
 	}
 
+	/**
+	 * isEmpty returns true if rPr is null, or each of its
+	 * properties is in turn, empty 
+	 * 
+	 * @param rPr
+	 * @return
+	 */
 	public static boolean isEmpty(RPr rPr) {
 		return ((rPr == null) ||
 				(isEmpty(rPr.getRStyle()) &&
@@ -1384,6 +1396,13 @@ public class StyleUtil {
 	       isEmpty(pStyle.getVal());
 	}
 
+	/**
+	 * isEmpty (non sensitive to presence of possible hint ie
+	 * would still return true)
+	 * 
+	 * @param rFonts
+	 * @return
+	 */
 	public static boolean isEmpty(RFonts rFonts) {
 				
 		return (rFonts == null) ||
@@ -1687,10 +1706,11 @@ public class StyleUtil {
 				&& source.getRFonts()!=null
 				&& !isEmpty(source.getRFonts().getHint())) {
 			hint = true; 
+			log.debug("source rPr contains rFonts with hint");
 		}
 
 		if (isEmpty(source) && !hint ) {
-			
+			log.debug("no source rPr to apply");			
 		} else {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createRPr();
@@ -2190,6 +2210,8 @@ public class StyleUtil {
 			if (source.getHAnsi() != null) {
 				destination.setHAnsi(source.getHAnsi());
 			}
+			
+			// TODO: if we have eg ascii value, should we ignore theme val?
 
 			if (source.getAsciiTheme() != null) {
 				destination.setAsciiTheme(source.getAsciiTheme());
