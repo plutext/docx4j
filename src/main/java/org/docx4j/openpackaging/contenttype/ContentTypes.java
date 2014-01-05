@@ -289,6 +289,10 @@ public class ContentTypes {
 	public final static String SPREADSHEETML_CONNECTIONS =
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";	
 	
+	///xl/externalLinks/externalLink1.xml
+	public final static String SPREADSHEETML_EXTERNAL_LINK =
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
+	
 	// /xl/charts/chart1.xml
 	public final static String DRAWINGML_CHART =
 		"application/vnd.openxmlformats-officedocument.drawingml.chart+xml";

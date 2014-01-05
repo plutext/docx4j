@@ -278,6 +278,10 @@ public class Namespaces {
 	///xl/pivotCache/pivotCacheRecords1.xml
 	public final static String SPREADSHEETML_PIVOT_CACHE_RECORDS =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
+	
+	///xl/externalLinks/externalLink1.xml
+	public final static String SPREADSHEETML_EXTERNAL_LINK =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 
