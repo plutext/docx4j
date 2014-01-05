@@ -102,6 +102,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			// Save byte buffer as a tmp file
 			// Generate ImageInfo
 			// Delete tmp file
+        	log.info("ImageInfo is created by some of the createImageInline methods; that hasn't been done in this case");
 		}
 		
 		return imageInfo;
@@ -111,6 +112,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public void setImageInfo(ImageInfo imageInfo) {
 		this.imageInfo = imageInfo;
 	}
+	
 	// TODO, instead of Part.getOwningRelationshipPart(),
 	// it would be better to have getOwningRelationship(),
 	// and if required, to get OwningRelationshipPart from that
@@ -172,6 +174,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				wordMLPackage.getMainDocumentPart(), bytes);
 
 	}
+	
 	
     /**
      * Possibility to put directly an image filePath instead of giving an image byte array
@@ -333,6 +336,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * 
 	 * @Since 3.0.0
 	 */
+	@Deprecated
 	public static BinaryPartAbstractImage createImagePart(
 			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes, String mime, String ext) throws Exception {
@@ -361,6 +365,86 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         
 	}
 
+	/**
+	 * Create an image part from the provided byte array, attach it to the source part
+	 * (eg the main document part, a header part etc), and return it.
+	 * 
+	 * Works for both docx and pptx.
+	 * 
+	 * Knowing the MIME type allows you to avoid ImageInfo, but you'll probably also need to
+	 * know the image dimensions
+	 * 
+	 * @param opcPackage
+	 * @param sourcePart
+	 * @param bytes
+	 * @param mime MIME type eg image/png
+	 * @return
+	 * @throws Exception
+	 * 
+	 * @Since 3.0.1
+	 */
+	public static BinaryPartAbstractImage createImagePart(
+			OpcPackage opcPackage,
+			Part sourcePart, byte[] bytes, String mime) throws Exception {
+		
+		String ext = mimeToExt(mime);
+		if (mime==null || ext==null) {
+			log.warn("Null or unknown mime type; image introspection required!");
+			return createImagePart(
+					 opcPackage,
+					 sourcePart,  bytes);
+		}
+		
+		ContentTypeManager ctm = opcPackage.getContentTypeManager();
+		
+		// Ensure the relationships part exists
+        if (sourcePart.getRelationshipsPart() == null) {
+			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+        }
+
+		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+						
+		BinaryPartAbstractImage imagePart = 
+                (BinaryPartAbstractImage) ctm.newPartForContentType(
+				mime, 
+                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
+				
+        log.debug("created part " + imagePart.getClass().getName()
+                + " with name " + imagePart.getPartName().toString());
+
+        imagePart.setBinaryData(bytes);
+        imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
+		
+		return imagePart;
+        
+	}
+	
+	private static String mimeToExt(String mime) {
+		
+		if (mime==null) return null;
+		if (mime.equals(ContentTypes.IMAGE_BMP)) return ContentTypes.EXTENSION_BMP; 
+
+		if (mime.equals(ContentTypes.IMAGE_EMF)
+				|| mime.equals(ContentTypes.IMAGE_EMF2)) return ContentTypes.EXTENSION_EMF; 
+		
+		if (mime.equals(ContentTypes.IMAGE_WMF)) return ContentTypes.EXTENSION_WMF; 
+		
+		if (mime.equals(ContentTypes.IMAGE_GIF)) return ContentTypes.EXTENSION_GIF; 
+		
+		if (mime.equals(ContentTypes.IMAGE_JPEG)) return ContentTypes.EXTENSION_JPG_2; // prefer .jpeg
+
+		if (mime.equals(ContentTypes.IMAGE_PICT)) return ContentTypes.EXTENSION_PICT; // ??
+
+		if (mime.equals(ContentTypes.IMAGE_PNG)) return ContentTypes.EXTENSION_PNG; 
+		
+		if (mime.equals(ContentTypes.IMAGE_TIFF)) return ContentTypes.EXTENSION_TIFF; 
+
+		if (mime.equals(ContentTypes.IMAGE_EPS)) return ContentTypes.EXTENSION_EPS; 
+
+		if (mime.equals(ContentTypes.IMAGE_BMP)) return ContentTypes.EXTENSION_BMP; 
+		
+		return null;
+	}
 
 	/**
      * Create an image part from the provided filePath image, attach it to the source part
