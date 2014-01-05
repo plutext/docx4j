@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.HtmlCssHelper;
@@ -393,6 +394,51 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					r = "<span style=\"" + css + "\" class=\"" + classVal + "\">" + r + "</span>"; 					
 				}
 				log.debug("\nenhanced with css: \n" + r);
+				
+			} else if (Docx4jProperties.getProperty("org.docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt", false)) {
+				
+				// its block level, and we're instructed to apply the paragraph style
+				// linked to w:sdtPr/w:rPr/w:rStyle (if any)
+				String rStyleVal=null;
+				if ( rPrSDT!=null && rPrSDT.getRStyle()!=null) {
+					rStyleVal = rPrSDT.getRStyle().getVal();
+				}
+				if (rStyleVal!=null) {
+					Style pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);
+					
+					if (pStyle!=null) {
+						// Got the pStyle .. now apply it in the XHTML
+				    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
+				    	
+				    	String pStyleVal = pStyle.getStyleId();
+				    									
+						// Set @class	
+						String classVal =null;
+						Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
+						org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
+						if (asn==null) {
+							log.warn("No style node for: " + pStyleVal);
+						} else {
+							classVal = StyleTree.getHtmlClassAttributeValue(pTree, asn);		
+						}
+						
+						String css = null;
+						if ( rPrSDT!=null) {
+							StringBuilder result = new StringBuilder();
+							HtmlCssHelper.createCss(pkg, rPrSDT, result);
+							css = result.toString();
+							if (css.equals("")) {
+								css =null;
+							}
+						}
+						
+						// Recurse the XHTML, adding @class and @style
+						r = XHTMLAttrInjector.injectAttrs(r, classVal, css);
+						
+					}
+					
+				}
+				
 			}
 			
 			

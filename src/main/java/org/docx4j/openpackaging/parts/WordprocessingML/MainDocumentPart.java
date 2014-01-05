@@ -63,6 +63,9 @@ import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RStyle;
+import org.docx4j.wml.SdtElement;
+import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Text;
@@ -374,6 +377,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
 		new TraversalUtil(bodyChildren, finder);
 		finder.finish();
@@ -437,6 +441,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     		this.fontsDiscovered = fontsDiscovered;
     		this.stylesInUse = stylesInUse;
     	}
+    	
+    	StyleDefinitionsPart styleDefinitionsPart;
     	
         Style defaultParagraphStyle;
         Style defaultCharacterStyle;
@@ -530,6 +536,27 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				// so we don't need to look for them,
 				// but since a tc can contain w:p or nested table,
 				// we still need to recurse
+				
+			} else if (o instanceof SdtElement ) {
+				
+				SdtPr sdtPr = ((SdtElement)o).getSdtPr();
+				if (sdtPr!=null) {
+					Object o2 = sdtPr.getByClass(RPr.class);
+					if (o2!=null) {
+						RPr rPr = (RPr)o2;
+						RStyle rStyle = rPr.getRStyle();
+						if (rStyle!=null) {
+							// Add it
+							stylesInUse.add(rStyle.getVal());
+							// and linked p style (if any), useful for OpenDoPE XHTML
+							Style pStyle = styleDefinitionsPart.getLinkedStyle(rStyle.getVal());
+							if (pStyle!=null) {
+								stylesInUse.add(pStyle.getStyleId());
+							}
+						}
+					}
+				}
+				
 				
 			}
 			return null;

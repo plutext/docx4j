@@ -305,6 +305,25 @@ public class SdtPr
 		log.debug("Generated random id: " + newIdVal.toString() );
 		return newIdVal;
     }
+    
+    /**
+     * return the first object 
+     * @param clazz
+     * @return
+     * @since 3.0.1
+     */
+    public Object getByClass(Class clazz) {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		Object o2 = XmlUtils.unwrap(o);
+    		if ( o2.getClass().equals(clazz) ) {
+    			log.debug("found " + clazz.getName());
+    			return o2;
+    		} 
+    	}
+    	
+        return null;    	
+    }
 
     /**
      * Gets the value of the tag property.

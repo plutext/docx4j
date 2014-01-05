@@ -365,7 +365,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 
     }
 
-    private Style getStyleById(List<Style> styles, String id) {
+    /**
+     * @param id
+     * @return
+     * @since 3.0.1
+     */
+    private static Style getStyleById(List<Style> styles, String id) {
     	
 		for ( org.docx4j.wml.Style s : styles ) {				
 			if( s.getStyleId().equals(id) ) {
@@ -494,6 +499,40 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	public void setCss(String css) {
 		this.css = css;
 	}
+	
+	/**
+	 * For a run/character style return its linked paragraph style (if any),
+	 * or vice versa.
+	 * 
+	 * @param rStyleVal
+	 * @return
+	 */
+	public Style getLinkedStyle(String rStyleVal) {
+		
+		Style rStyle = getStyleById(rStyleVal);
+		if (rStyle==null) {
+			log.warn("Couldn't find rStyle " + rStyleVal);
+			return null;
+		} else {
+			// We have a run level style.  Is there a linked pStyle?
+			Style.Link linkedStyle = rStyle.getLink();
+			if (linkedStyle==null) {
+				log.warn("No linked style for rStyle " + rStyleVal);							
+				return null;
+			} else {
+				String pStyleVal = linkedStyle.getVal();
+				log.debug(rStyleVal + " is linked to style " + pStyleVal );
+				Style pStyle = getStyleById(pStyleVal);
+				
+				if (pStyle==null) {
+					log.warn("Couldn't find linked pStyle " + pStyleVal 
+							+ " for rStyle " + rStyleVal);		
+				}
+				return pStyle;
+			}
+		}
+	}
+
 	
     
 //	public static void main(String[] args) throws Exception {
