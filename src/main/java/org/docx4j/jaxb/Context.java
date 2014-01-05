@@ -40,6 +40,11 @@ public class Context {
 	
 	public static JAXBContext jc;
 	
+	// TEMP/Experimental
+//	public static void setJc(JAXBContext jc) {
+//		Context.jc = jc;
+//	}
+
 	@Deprecated
 	public static JAXBContext jcThemePart;
 	
@@ -66,12 +71,17 @@ public class Context {
 		log.info("java.version="+System.getProperty("java.version"));
 		
 		// This stuff is just debugging diagnostics
-		searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
-		if (Thread.currentThread().getContextClassLoader()==null) {
-			log.warn("ContextClassLoader is null for current thread");
-			// Happens with IKVM 
-		} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
-			searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
+		try {
+			searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
+			if (Thread.currentThread().getContextClassLoader()==null) {
+				log.warn("ContextClassLoader is null for current thread");
+				// Happens with IKVM 
+			} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+				searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
+			}
+		} catch ( java.security.AccessControlException e) {
+			// Google AppEngine throws this, at com.google.apphosting.runtime.security.CustomSecurityManager.checkPermission
+			log.warn("Caught/ignored " + e.getMessage());
 		}
 		
 		Object namespacePrefixMapper;
@@ -84,13 +94,11 @@ public class Context {
 				if (f.exists() ) {
 					log.info("MOXy JAXB implementation intended..");
 				} else { 
-					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
 				}
 			} catch (Exception e2) {
 				log.debug(e2.getMessage());
 				try {
-					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
 				} catch (Exception e3) {
 					log.debug(e3.getMessage());
