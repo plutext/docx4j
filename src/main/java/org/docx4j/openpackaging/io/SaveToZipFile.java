@@ -68,6 +68,7 @@ import org.w3c.dom.Document;
  * @author jharrop
  *
  */
+@Deprecated
 public class SaveToZipFile {
 	
 	private static Logger log = LoggerFactory.getLogger(SaveToZipFile.class);				

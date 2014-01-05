@@ -85,6 +85,7 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  * 
  */
+@Deprecated
 public class LoadFromZipNG extends Load {
 	
 	//public HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	

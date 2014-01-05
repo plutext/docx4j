@@ -59,6 +59,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 
 
+@Deprecated
 public class Load {
 
 	private static Logger log = LoggerFactory.getLogger(Load.class);
