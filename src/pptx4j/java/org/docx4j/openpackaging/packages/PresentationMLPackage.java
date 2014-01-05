@@ -142,8 +142,7 @@ public class PresentationMLPackage  extends OpcPackage {
 		String slideSize= Docx4jProperties.getProperties().getProperty("pptx4j.PageSize", "A4");
 		log.info("Using paper size: " + slideSize);
 		
-		String landscapeString = Docx4jProperties.getProperties().getProperty("pptx4j.PageOrientationLandscape", "false");
-		boolean landscape= Boolean.parseBoolean(landscapeString);
+		boolean landscape= Docx4jProperties.getProperty("pptx4j.PageOrientationLandscape", true);
 		log.info("Landscape orientation: " + landscape);
 		
 		return createPackage(
