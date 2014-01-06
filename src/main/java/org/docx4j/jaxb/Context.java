@@ -61,6 +61,9 @@ public class Context {
 	public static JAXBContext jcSectionModel;
 
 	public static JAXBContext jcXmlDSig;
+
+	/** @since 3.0.1 */
+	public static JAXBContext jcMCE;
 	
 	private static Logger log = LoggerFactory.getLogger(Context.class);
 		
@@ -157,6 +160,8 @@ public class Context {
 			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
 			
 			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
+
+			jcMCE = JAXBContext.newInstance("org.docx4.mce",classLoader );
 			
 			log.debug(".. other contexts loaded ..");
 										
