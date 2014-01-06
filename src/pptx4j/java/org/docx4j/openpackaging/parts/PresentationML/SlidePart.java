@@ -20,10 +20,13 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,9 +35,11 @@ import javax.xml.transform.dom.DOMResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
@@ -95,6 +100,41 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		return resolvedLayout;
 	}	
 
+
+    /**
+	 * Marshal the content tree rooted at <tt>jaxbElement</tt> into an output
+	 * stream
+	 * 
+	 * @param os
+	 *            XML will be added to this stream.
+	 * @param namespacePrefixMapper
+	 *            namespacePrefixMapper
+	 * 
+	 * @throws JAXBException
+	 *             If any unexpected problem occurs during the marshalling.
+	 */
+	@Override
+    public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
+
+		// Add xmlns:v="urn:schemas-microsoft-com:vml" eg in
+        // <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+        // <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">		
+		// How?  Could marshall to a DOM doc, but there is no way to force the xmlns to be included
+		// where it is not required.
+		// So do string manipulation
+    	
+		String xmlString = this.getXML();
+		int pos = xmlString.indexOf(":sld ");
+		xmlString = xmlString.substring(0, pos + 5 ) + "xmlns:v=\"urn:schemas-microsoft-com:vml\" " 
+						+ xmlString.substring(pos + 5 );
+		
+		try {
+			IOUtils.write(xmlString, os);
+		} catch (IOException e) {
+			throw new JAXBException(e.getMessage(), e);
+		}
+			
+	}	
 	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
