@@ -428,25 +428,29 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		}
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * @param index
+	 * @throws Pptx4jException 
+	 * @since 3.0.1
+	 */
+	public SlidePart getSlide(int index) throws Pptx4jException {
+		
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		int zeroBasedCount = sldIds.size() -1; 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Pptx4jException("No slide at index " + index + ".  (There are " + sldIds.size() + " slides) ");			
+		}
+
+		try {
+			Presentation.SldIdLst.SldId entry = this.getJaxbElement().getSldIdLst().getSldId().get(index);
+			return (SlidePart)this.getRelationshipsPart().getPart(entry.getRid());
+		} catch (Exception e) {
+			throw new Pptx4jException("Slide " + index + " not found", e);
+		}
+		
+	}
 	
 	
 	
