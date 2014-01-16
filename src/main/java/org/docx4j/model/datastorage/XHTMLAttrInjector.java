@@ -2,6 +2,8 @@ package org.docx4j.model.datastorage;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -75,8 +77,10 @@ public class XHTMLAttrInjector {
                 
                 // Do it...
             	Element el = (Element)sourceNode;
-            	if (el.getLocalName().equals("p")
-            			) {
+            	if (el.getLocalName()==null) {}
+            	else if (el.getLocalName().equals("p")
+            			|| el.getLocalName().equals("ol")
+            			|| el.getLocalName().equals("ul")) {
             		
             		/*
             		 * What about || el.getLocalName().equals("li")
@@ -97,6 +101,46 @@ public class XHTMLAttrInjector {
 	            		}
             		
             		}
+//            	} else if (el.getLocalName().equals("li")) {
+//
+//            		if (el.getAttribute("class").trim().equals("")
+//            				&& el.getAttribute("style").trim().equals("") ) {
+//            			
+//                		// Wrap its contents in a span
+//
+//                		// Clone contents
+//                		List<Node> clonedChildren = new ArrayList<Node>();
+//                		List<Node> deletions = new ArrayList<Node>();
+//                        NodeList children = sourceNode.getChildNodes();
+//                        if (children != null) {
+//                            for (int i=0; i<children.getLength(); i++) {
+//                            	clonedChildren.add(children.item(i).cloneNode(true));
+//                            	deletions.add(children.item(i));
+//                            }
+//                        }
+//                        
+//                        // Delete contents
+//                        for (Node del : deletions) {
+//                        	el.removeChild(del);
+//                        }
+//                        
+//                        // Add span
+//                        Element newSpan = el.getOwnerDocument().createElement("span");
+//                        el.appendChild(newSpan);
+//	            		if (classVal!=null) {
+//	            			newSpan.setAttribute("class", classVal);
+//	            		}
+//	            		if (styleVal!=null) {
+//	            			newSpan.setAttribute("style", styleVal);
+//	            		}
+//	            		
+//	            		// Now re-attach children
+//                        for (Node newChild : clonedChildren) {
+//                        	newSpan.appendChild(newChild);
+//                        }
+//            		
+//            		}
+            		
             	}
 
                 // recurse on each child
