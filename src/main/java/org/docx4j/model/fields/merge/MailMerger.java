@@ -38,6 +38,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.vml.CTTextbox;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTFFData;
@@ -476,17 +477,22 @@ public class MailMerger {
 				// 2.8.1
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
-				
+				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));				
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
 			} else if (p.getParent() instanceof java.util.List) {
 				// 3.0
 				index = ((java.util.List)p.getParent()).indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
 				log.debug("NewP length: " + newP.getContent().size() );
-				((java.util.List)p.getParent()).set(index, newP);				
+				((java.util.List) p.getParent()).set(index, newP);
+			} else if (p.getParent() instanceof CTTextbox) {
+				// 3.0.1
+				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				log.debug("Canonicalised: "+ XmlUtils.marshaltoString(newP, true, true));
+				((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
 			} else {
-				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
+				throw new Docx4JException("Unexpected parent: "+ p.getParent().getClass().getName());
 			}
 		}
 		
