@@ -397,20 +397,25 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				
 			} else if (Docx4jProperties.getProperty("org.docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt", false)) {
 				
+				log.debug("Block.rStyle.Adopt..");
+				
 				// its block level, and we're instructed to apply the paragraph style
 				// linked to w:sdtPr/w:rPr/w:rStyle (if any)
 				String rStyleVal=null;
 				if ( rPrSDT!=null && rPrSDT.getRStyle()!=null) {
 					rStyleVal = rPrSDT.getRStyle().getVal();
+					log.debug(".." + rStyleVal);
 				}
 				if (rStyleVal!=null) {
 					Style pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);
 					
 					if (pStyle!=null) {
+						
 						// Got the pStyle .. now apply it in the XHTML
 				    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
 				    	
 				    	String pStyleVal = pStyle.getStyleId();
+						log.debug(".." + pStyleVal);
 				    									
 						// Set @class	
 						String classVal =null;
@@ -434,6 +439,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 						
 						// Recurse the XHTML, adding @class and @style
 						r = XHTMLAttrInjector.injectAttrs(r, classVal, css);
+
+						log.debug(".." + r);
 						
 					}
 					
@@ -1020,6 +1027,49 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			e.printStackTrace();
 			return null;
 		} 
+	}
+
+	
+	/**
+	 * Process a rich text control containing an image.
+	 * 
+	 * @param wmlPackage
+	 * @param sourcePart
+	 * @param customXmlDataStorageParts
+	 * @param xPathsPart
+	 * @param tag
+	 * @return
+	 * @since 3.0.1
+	 */
+	public static String xpathInjectImageRelId(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			XPathsPart xPathsPart,		
+			String tag) {
+
+		QueryString qs = new QueryString();
+		HashMap<String, String> map = qs.parseQueryString(tag, true);
+		
+		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+		
+		log.info("Looking for xpath by id: " + xpathId);
+	
+		
+		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		
+		if (xpath==null) {
+			log.warn("Couldn't find xpath with id: " + xpathId);
+			return null;
+		}
+		
+		String storeItemId = xpath.getDataBinding().getStoreItemID();
+		String xpathExp = xpath.getDataBinding().getXpath();
+		String prefixMappings = xpath.getDataBinding().getPrefixMappings();	
+		
+		return xpathInjectImageRelId( wmlPackage,
+				sourcePart,
+				customXmlDataStorageParts,
+				storeItemId,  xpathExp,  prefixMappings);
 	}
 	
 	/**

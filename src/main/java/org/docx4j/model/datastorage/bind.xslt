@@ -112,6 +112,35 @@
 	</a:blip>
   </xsl:template>
   -->
+
+<!-- docx4j 3.0.1.  Handle a rich text control which contains an image.
+     Since this doesn't have a w:databinding, we can't just use mode="picture3"
+     
+     If the w:sdtContent contains an existing w:drawing/wp:inline/a:graphic ..
+     reuse it, so any formatting thus configured is used.
+     We'll just replace the rId.. -->
+  <xsl:template match=" @*|node()" mode="picture3richtext">
+	<xsl:param name="tag" select="/.."/> 
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"  mode="picture3richtext">
+			    	<xsl:with-param name="tag" select="$tag"/>
+	    </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+  
+  
+  <xsl:template match="a:blip" mode="picture3richtext" priority="1">
+	<xsl:param name="tag" select="/.."/> 
+	<a:blip r:embed="{java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								$xPathsPart,
+								$tag )}" />
+								
+<!--  if it was @r:link, it is now embedded -->
+  </xsl:template>
+  
   
   <xsl:template match="w:sdt">  
   
@@ -121,6 +150,25 @@
 	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
   	
   	<xsl:choose>
+
+
+		<!--  3.0.1 rich text cc containing w:drawing -->
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=Picture')">
+  		
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+	
+			    <xsl:apply-templates select="w:sdtContent" mode="picture3richtext"> 
+			    	<xsl:with-param name="tag" select="$tag"/>
+			    </xsl:apply-templates>
+			     
+			</xsl:copy>
+				
+		</xsl:when>  		
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
   			<!--  honour w:dataBinding -->
