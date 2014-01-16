@@ -1,9 +1,16 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
+import java.util.List;
+
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.pptx4j.Pptx4jException;
+import org.pptx4j.pml.Presentation;
+import org.xlsx4j.exceptions.Xlsx4jException;
+import org.xlsx4j.sml.Sheet;
 import org.xlsx4j.sml.Workbook;
 
 public class WorkbookPart  extends JaxbSmlPart<Workbook> {
@@ -67,6 +74,31 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		} else {	
 			return false;
 		}
+	}
+	
+	/**
+	 * @param index
+	 * @return
+	 * @throws Xlsx4jException
+	 * @ since 3.0.1
+	 */
+	public WorksheetPart getWorksheet(int index) throws Xlsx4jException {
+		
+		List<Sheet> sheets= this.getContents().getSheets().getSheet(); 
+
+		int zeroBasedCount = sheets.size() -1; 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Xlsx4jException("No sheet at index " + index + ".  (There are " + sheets.size() + " sheets) ");			
+		}
+
+		try {
+			Sheet s = sheets.get(index);
+			return (WorksheetPart)this.getRelationshipsPart().getPart(s.getId());
+		} catch (Exception e) {
+			throw new Xlsx4jException("Sheet " + index + " not found", e);
+		}
+		
 	}
 
 }
