@@ -207,7 +207,7 @@ public class MailMerger {
 			// now inject the content
 			target.getMainDocumentPart().getContent().addAll(content);
 
-			System.out.println("@@" + XmlUtils.marshaltoString(target.getMainDocumentPart().getJaxbElement(), true, true) );
+			log.debug(XmlUtils.marshaltoString(target.getMainDocumentPart().getJaxbElement(), true, true) );
 			
 			// add sectPr to final paragraph
 			Object last = content.get( content.size()-1);
