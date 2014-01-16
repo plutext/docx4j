@@ -155,7 +155,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "p."+ s.getStyleId()  + " {display:block;" );
+    		result.append( "."+ s.getStyleId()  + " {display:block;" );  // not just p, also inherit on ul|ol
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
