@@ -161,7 +161,7 @@ public class Context {
 			
 			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
 
-			jcMCE = JAXBContext.newInstance("org.docx4.mce",classLoader );
+			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader );
 			
 			log.debug(".. other contexts loaded ..");
 										
