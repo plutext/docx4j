@@ -600,9 +600,22 @@ public class MailMerger {
 //		System.out.println("BEFORE " +XmlUtils.marshaltoString(
 //			fr.getParent(), true, true));
 		
+//		log.debug(instr);
 		String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 		tmp = tmp.trim();
-		String datafieldName  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
+		String datafieldName  = null;
+		// A data field name will be quoted if it contains spaces
+		if (tmp.startsWith("\"")) {
+			if (tmp.indexOf("\"",1)>-1) {
+				datafieldName = tmp.substring(1, tmp.indexOf("\"",1));				
+			} else {
+				log.warn("Quote mismatch in " + instr);
+				// hope for the best
+				datafieldName = tmp.indexOf(" ") >-1 ? tmp.substring(1, tmp.indexOf(" ")) : tmp.substring(1) ;				
+			}
+		} else {
+			datafieldName = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
+		}
 		log.info("Key: '" + datafieldName + "'");
 
 		return datafieldName;
