@@ -78,16 +78,11 @@ public class XHTMLAttrInjector {
                 // Do it...
             	Element el = (Element)sourceNode;
             	if (el.getLocalName()==null) {}
-            	else if (el.getLocalName().equals("p")
+            	else if (el.getLocalName().equals("div")
+            			|| el.getLocalName().equals("p")
             			|| el.getLocalName().equals("ol")
             			|| el.getLocalName().equals("ul")) {
-            		
-            		/*
-            		 * What about || el.getLocalName().equals("li")
-            		 * 
-            		 * XHTMLImporter doesn't honour @class, @style on those
-            		 */
-            		
+            		            		
             		// don't do anything if @class or @style already present
             		if (el.getAttribute("class").trim().equals("")
             				&& el.getAttribute("style").trim().equals("") ) {
