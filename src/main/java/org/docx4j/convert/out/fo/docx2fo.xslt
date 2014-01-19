@@ -511,11 +511,24 @@
 	<xsl:choose>
 		<xsl:when test="./v:shape/v:imagedata">
 
-	  	<xsl:variable name="wpict" select="."/>
+	  		<xsl:variable name="wpict" select="."/>
 		  	
 		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10( 
 		  	$conversionContext,
   			$wpict)" />
+		</xsl:when>
+		<xsl:when test="./v:shape/v:textbox">
+			<!--  from 3.0.1 -->
+			<xsl:variable name="childResults">
+				<xsl:apply-templates  select="./v:shape/v:textbox/w:txbxContent/*" /> 
+			</xsl:variable>
+	
+			<xsl:variable name="currentNode" select="." />  			
+	
+			<!--  Create the XSL FO table in Java -->
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode(
+		  		$conversionContext,$currentNode, $childResults)"/>	  		
+			
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>

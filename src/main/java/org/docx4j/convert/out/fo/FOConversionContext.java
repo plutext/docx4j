@@ -63,6 +63,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 				registerWriter(new FldSimpleWriter());
 				registerWriter(new BookmarkStartWriter());
 				registerWriter(new HyperlinkWriter());
+				registerWriter(new PictWriter());
 			}
 		};
 			
@@ -183,7 +184,8 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	
 	
 	protected FORenderer initializeFoRenderer(FOSettings settings) {
-	FORenderer ret = settings.getCustomFoRenderer();
+		
+		FORenderer ret = settings.getCustomFoRenderer();
 		if (ret == null) {
 			if (FOSettings.INTERNAL_FO_MIME.equals(settings.getApacheFopMime())) {
 				ret = DummyFORenderer.getInstance();
@@ -192,6 +194,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 			else {
 				ret = ApacheFORenderer.getInstance();
 			}
+			settings.setCustomFoRenderer(ret); // make sure this is always set
 		}
 		return ret;
 	}

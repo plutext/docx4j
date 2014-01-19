@@ -73,6 +73,13 @@ public abstract class AbstractConversionContext {
 	private ConversionHyperlinkHandler hyperlinkHandler = null;
 	private AbstractMessageWriter messageWriter = null;
 
+	private AbstractConversionSettings settings = null;
+	/**
+	 * @since 3.0.1
+	 */
+	public AbstractConversionSettings getConversionSettings() {
+		return settings;
+	}
 
 	protected AbstractConversionContext(AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, OpcPackage localOpcPackage) {
 		initializeSettings(conversionSettings, localOpcPackage);
@@ -81,6 +88,7 @@ public abstract class AbstractConversionContext {
 	
 	protected void initializeSettings(AbstractConversionSettings settings, OpcPackage localOpcPackage) {
 		if (settings != null) {
+			this.settings=settings;
 			if ((localOpcPackage == null) && (settings.getWmlPackage() == null)) {
 				throw new IllegalArgumentException("The OpcPackage is missing in the settings.");
 			}

@@ -43,6 +43,22 @@
   			<xsl:copy-of select="mc:Choice[@Requires='v']/*"/>
 
   		</xsl:when>   -->
+  		
+  		<!--  wps:txbx/w:txbxContent .. this works
+  		      So TODO make choosing this configurable via docx4j.properties 
+  		
+  		<xsl:when test="mc:Choice[@Requires='wps']">
+  		
+  			<xsl:variable name="message" 
+  				select="string('Selecting mc:Choice[@Requires=wps]')" />  			
+			<xsl:variable name="logging" 
+				select="java:org.docx4j.utils.XSLTUtils.logWarn($message)" />
+				
+  			<xsl:copy-of select="mc:Choice[@Requires='wps']/*"/>
+
+  		</xsl:when>
+  		 -->
+  		   
   		<xsl:when test="mc:Fallback">
   		
   			<xsl:variable name="message" 

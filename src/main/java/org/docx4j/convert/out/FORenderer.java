@@ -21,8 +21,12 @@ package org.docx4j.convert.out;
 
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
+import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /** The pdf conversion process needs a fo renderer to convert the 
  *  fo document into the requested format. The fo renderer is encapsulated in 
@@ -83,5 +87,27 @@ public interface FORenderer {
 	 * @throws Docx4JException 
 	 */
 	public void render(String foDocument, FOSettings settings, boolean twoPass, List<SectionPageInformation> pageNumberInformation, OutputStream outputStream) throws Docx4JException;
+
+	
+	/**
+	 * Create XSL FO representing w:pict/v:shape/v:textbox, suited to the 
+	 * capabilities of this XSL FO renderer.
+	 *  
+	 * Invoked via PictWriter.
+	 * 
+	 * @param context  access to FO settings, the WordML package etc
+	 * @param modelContent  the XSL FO pre-computed from the v:textbox content  
+	 * @param doc
+	 * @param shape  access the v:shape, if necessary
+	 * @param props  the CSS like properties, contained in v:shape/@style
+	 * @param wrap   
+	 * @return
+	 * @since 3.0.1
+	 */
+	public Node handleVTextBox(AbstractWmlConversionContext context,
+			Node modelContent, Document doc, 
+			org.docx4j.vml.CTShape shape,
+			Map<String, String> props, 
+			boolean wrap);	
 
 }
