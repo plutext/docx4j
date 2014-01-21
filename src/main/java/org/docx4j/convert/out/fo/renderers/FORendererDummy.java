@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out.fo;
+package org.docx4j.convert.out.fo.renderers;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -42,9 +42,9 @@ import org.w3c.dom.Node;
  *  the fo document to the OutputStream. 
  * 
  */
-public class DummyFORenderer implements FORenderer {
-	protected static Logger log = LoggerFactory.getLogger(DummyFORenderer.class);
-	protected static final FORenderer INSTANCE = new DummyFORenderer();
+public class FORendererDummy implements FORenderer {
+	protected static Logger log = LoggerFactory.getLogger(FORendererDummy.class);
+	protected static final FORenderer INSTANCE = new FORendererDummy();
 	
 	public static FORenderer getInstance() {
 		return INSTANCE;

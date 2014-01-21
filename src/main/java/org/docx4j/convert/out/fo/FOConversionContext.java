@@ -29,6 +29,8 @@ import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
+import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
+import org.docx4j.convert.out.fo.renderers.FORendererDummy;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
@@ -188,11 +190,11 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 		FORenderer ret = settings.getCustomFoRenderer();
 		if (ret == null) {
 			if (FOSettings.INTERNAL_FO_MIME.equals(settings.getApacheFopMime())) {
-				ret = DummyFORenderer.getInstance();
+				ret = FORendererDummy.getInstance();
 				forceRequires1Pass();
 			}
 			else {
-				ret = ApacheFORenderer.getInstance();
+				ret = FORendererApacheFOP.getInstance();
 			}
 			settings.setCustomFoRenderer(ret); // make sure this is always set
 		}

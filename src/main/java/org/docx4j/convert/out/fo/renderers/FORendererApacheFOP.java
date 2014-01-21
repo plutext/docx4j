@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out.fo;
+package org.docx4j.convert.out.fo.renderers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +50,9 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.fo.AbstractPlaceholderLookup;
+import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
+import org.docx4j.convert.out.fo.PlaceholderReplacementHandler.PlaceholderLookup;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -63,10 +66,10 @@ import org.w3c.dom.Node;
 /** The Apache FO Renderer uses Apache FOP to render the fo document
  *  and is the default FO Renderer
  */
-public class ApacheFORenderer implements FORenderer {
+public class FORendererApacheFOP implements FORenderer {
 	
-	protected static Logger log = LoggerFactory.getLogger(ApacheFORenderer.class);
-	protected static ApacheFORenderer instance = null;
+	protected static Logger log = LoggerFactory.getLogger(FORendererApacheFOP.class);
+	protected static FORendererApacheFOP instance = null;
 
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 	
@@ -151,9 +154,9 @@ public class ApacheFORenderer implements FORenderer {
 
 	public static FORenderer getInstance() {
 		if (instance == null) {
-			synchronized (ApacheFORenderer.class) {
+			synchronized (FORendererApacheFOP.class) {
 				if (instance == null) {
-					instance = new ApacheFORenderer();
+					instance = new FORendererApacheFOP();
 				}
 			}
 		}
