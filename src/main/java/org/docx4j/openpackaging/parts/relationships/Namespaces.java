@@ -124,6 +124,18 @@ public class Namespaces {
 	
 	public final static String AF = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
+	
+	/* The standard states that the relationship type is 
+	 * 
+	 *     http://schemas.openxmlformats.org/officeDocument/2006/relationships/afChunk
+	 *   
+	 *  but Word uses 
+	 *  
+	 *     http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk
+	 *     
+	 *  (see [MS-OE376]; we do the same)
+	 */
+		
 
 	public final static String SUBDOCUMENT  = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/subDocument";
