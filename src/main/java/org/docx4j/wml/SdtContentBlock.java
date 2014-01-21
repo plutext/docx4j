@@ -55,6 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;/complexType>
  * </pre>
  * 
+ * or altChunk (added for 3.0.1)
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -96,7 +97,8 @@ public class SdtContentBlock
         @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "altChunk", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)        
     })
     protected List<Object> content;
     @XmlTransient
@@ -149,6 +151,7 @@ public class SdtContentBlock
      * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
      * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTAltChunk }{@code >} // since 3.0.1
      * 
      * @since 2.7
      */
