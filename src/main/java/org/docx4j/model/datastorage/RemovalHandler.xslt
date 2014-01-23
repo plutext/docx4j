@@ -64,6 +64,9 @@
       <xsl:when test="count(w:sdtPr/w:picture)=1 ">
         <xsl:copy-of select="."/>
        </xsl:when>
+      <xsl:when test="$xpath and contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+       </xsl:when>
         
       <!-- if we are to remove SDTs referencing empty XML nodes, remove the resulting element entirely
            EXCEPT for a tc, which we keep.  Consider a parameter which allows for the tc to be removed? -->
