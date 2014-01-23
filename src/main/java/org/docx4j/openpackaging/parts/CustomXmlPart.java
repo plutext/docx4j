@@ -24,5 +24,21 @@ public interface CustomXmlPart {
 	public String xpathGetString(String xpath, String prefixMappings) throws Docx4JException;	
 
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings)  throws Docx4JException;
+
+	/**
+	 * @param xpath
+	 * @param prefixMappings
+	 * @param value
+	 * @throws Docx4JException
+	 * @since 3.0.1
+	 */
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException;	
 	
+	/**
+	 * Get the XML as a String.
+	 * @throws Docx4JException 
+	 * 
+	 * @since 3.0.1
+	 */
+	public String getXML() throws Docx4JException;
 }

@@ -52,6 +52,7 @@ public interface CustomXmlDataStorage {
 		
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings);
 	
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException;
 		
 	/**
 	 * Set the contents of this object from the input stream
@@ -82,5 +83,10 @@ public interface CustomXmlDataStorage {
 	 */
 	public org.w3c.dom.Document getDocument() throws Docx4JException;	
 
-	
+	/**
+	 * Get the XML as a String.
+	 * 
+	 * @since 3.0.1
+	 */
+	public String getXML() throws Docx4JException;	
 }

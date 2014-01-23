@@ -200,5 +200,20 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 		return getData().xpathGetNodes(xpathString, prefixMappings);
 	}
 
+	@Override
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
+		return data.setNodeValueAtXPath(xpath, value, prefixMappings);
+		
+	}
+	
+	/**
+	 * Get the XML as a String.
+	 * 
+	 * @since 3.0.1
+	 */
+	public String getXML() throws Docx4JException {
+		return data.getXML();
+	}
+
 	
 }

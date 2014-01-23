@@ -100,6 +100,16 @@ public abstract class XmlPart extends Part {
 	public abstract Document getDocument() throws Docx4JException;
 	
 	/**
+	 * Get the XML as a String.
+	 * @throws Docx4JException 
+	 * 
+	 * @since 3.0.1
+	 */
+	public String getXML() throws Docx4JException {
+		return XmlUtils.w3CDomNodeToString(getDocument());
+	}
+	
+	/**
 	 * Note: If the result is an empty node-set, it will be converted to an
 	 * empty string, rather than null.
 	 * 

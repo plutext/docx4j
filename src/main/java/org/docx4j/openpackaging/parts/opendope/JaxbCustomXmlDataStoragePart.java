@@ -7,6 +7,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -19,6 +20,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> implements CustomXmlPart {
@@ -126,4 +128,36 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		
 	}
 
+	@Override
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
+
+		if (doc==null) {
+			readyXPath();
+			//throw new Docx4JException("You must call readyXPath() once before doing XPath stuff");
+		}
+		try {
+			Node node;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				node = (Node)xPath.evaluate(xpath, doc,  XPathConstants.NODE );
+				
+//				System.out.println(node.getClass().getName());
+				// com.sun.org.apache.xerces.internal.dom.ElementNSImpl
+				if (node instanceof Element) {
+					// ((Element)node).setNodeValue(nodeValue);
+					((Element)node).setTextContent(value);
+				} else {
+					throw new Docx4JException("Expected element, but got " + node.getClass().getName() );
+				}
+				return true;
+				
+			}
+		} catch (Docx4JException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new Docx4JException("Problems evaluating xpath '" + xpath + "'", e);
+		}
+		
+	}
+	
 }
