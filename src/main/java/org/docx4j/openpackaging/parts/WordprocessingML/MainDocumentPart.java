@@ -547,11 +547,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 						RStyle rStyle = rPr.getRStyle();
 						if (rStyle!=null) {
 							// Add it
-							stylesInUse.add(rStyle.getVal());
-							// and linked p style (if any), useful for OpenDoPE XHTML
-							Style pStyle = styleDefinitionsPart.getLinkedStyle(rStyle.getVal());
-							if (pStyle!=null) {
-								stylesInUse.add(pStyle.getStyleId());
+							if (stylesInUse !=null) { 
+								stylesInUse.add(rStyle.getVal());
+								// and linked p style (if any), useful for OpenDoPE XHTML
+								Style pStyle = styleDefinitionsPart.getLinkedStyle(rStyle.getVal());
+								if (pStyle!=null) {
+									stylesInUse.add(pStyle.getStyleId());
+								}
 							}
 						}
 					}
