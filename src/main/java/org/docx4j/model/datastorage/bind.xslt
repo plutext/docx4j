@@ -153,7 +153,7 @@
 
 
 		<!--  3.0.1 rich text cc containing w:drawing -->
-  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=Picture')">
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">
   		
 			<xsl:copy>
 			     <xsl:copy-of select="w:sdtPr"/>
@@ -372,6 +372,41 @@
 			</xsl:copy>  		  			
   		</xsl:when>
   		
+  		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:progid=Word.Document' )">
+  			<!--  Convert escaped Flat OPC XML.
+  			
+  				  We're inserting into a rich text control,
+  				  which in turn means there can't be a w:sdtPr/w:dataBinding.  
+  				  
+  				  So the extension function must read xpath from the w:tag, which in turn means the Word Add-In 
+  				  editor must write that.
+  				    			
+  			 -->
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+			     	
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertFlatOPC(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
+										$parent,
+										$child,
+										w:sdtPr/w:rPr,
+										$tag )" />
+			     </w:sdtContent>
+			     
+			</xsl:copy>  		  			
+  		</xsl:when>
+				  		
+				  		  		
   		
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:RptPosCon')">
   		
