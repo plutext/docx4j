@@ -32,7 +32,7 @@ import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.fo.ApacheFORenderer;
+import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
@@ -158,7 +158,7 @@ public class XSLFOExporterNonXSLT {
 
 // ========================================================================	
 	public void output(Document xslfo, OutputStream os, Configuration fopConfigZZZ) throws Docx4JException {
-	FORenderer renderer = ApacheFORenderer.getInstance();
+	FORenderer renderer = FORendererApacheFOP.getInstance();
 	String foDocument = XmlUtils.w3CDomNodeToString(xslfo);
 		renderer.render(foDocument, foSettings, false, null, os);
 	}
