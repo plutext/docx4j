@@ -41,16 +41,26 @@ import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
+import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTAltChunk;
+import org.docx4j.wml.CTAltChunkPr;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
@@ -395,7 +405,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				}
 				log.debug("\nenhanced with css: \n" + r);
 				
-			} else if (Docx4jProperties.getProperty("org.docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt", false)) {
+			} else if (Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt", false)) {
 				
 				log.debug("Block.rStyle.Adopt..");
 				
@@ -406,10 +416,20 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					rStyleVal = rPrSDT.getRStyle().getVal();
 					log.debug(".." + rStyleVal);
 				}
-				if (rStyleVal!=null) {
+				
+				if (rStyleVal==null) {
+
+					log.debug("No rStyle specified ");
+					
+				} else {
+					
 					Style pStyle = pkg.getMainDocumentPart().getStyleDefinitionsPart(false).getLinkedStyle(rStyleVal);
 					
-					if (pStyle!=null) {
+					if (pStyle==null) {
+						
+						log.warn("No linked style for " + rStyleVal);
+						
+					} else {
 						
 						// Got the pStyle .. now apply it in the XHTML
 				    	StyleTree styleTree = pkg.getMainDocumentPart().getStyleTree();
@@ -1292,5 +1312,121 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			return null;
 		}
 		
-	}	
+	}
+	
+	/**
+	 * Convert the FlatOPC into an AltChunk, which Xalan 
+	 * can insert into XSLT output.
+	 * 
+	 * @since 3.0.1
+	 */
+	public static DocumentFragment convertFlatOPC(
+			WordprocessingMLPackage pkg, 
+			JaxbXmlPart sourcePart,				
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			//String storeItemId, String xpath, String prefixMappings,
+			XPathsPart xPathsPart,				
+			String sdtParent,
+			String contentChild,				
+			NodeIterator rPrNodeIt, 
+			String tag) {
+
+		try {
+			log.debug("convertFlatOPC extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
+						
+			QueryString qs = new QueryString();
+			HashMap<String, String> map = qs.parseQueryString(tag, true);
+			
+			String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+			
+			log.info("Looking for xpath by id: " + xpathId);
+		
+			
+			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			
+			if (xpath==null) {
+				log.warn("Couldn't find xpath with id: " + xpathId);
+				return null;
+			}
+			
+			String storeItemId = xpath.getDataBinding().getStoreItemID();
+			String xpathExp = xpath.getDataBinding().getXpath();
+			String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+						
+			String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+			if (r==null) return nullResultParagraph(sdtParent, "[missing!]");
+			if (!r.startsWith("<?xml")) {
+				/*
+				 * <?xml version="1.0" encoding="utf-8" standalone="yes"?> // Word can't open it without this!
+				   <?mso-application progid="Word.Document"?> // optional
+				 */
+				r = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\n" + r;
+			}
+			//System.out.println(r);
+			
+			// .. create the part
+			AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(
+					getNewPartName("/chunk", ".xml", sourcePart.getRelationshipsPart()));
+			
+			afiPart.setBinaryData(r.getBytes("UTF-8"));
+	
+			afiPart.setAltChunkType(AltChunkType.Xml); // Flat OPC XML
+			
+			
+			Relationship altChunkRel =sourcePart.addTargetPart(afiPart);
+			
+			// now that its attached to the package ..
+			afiPart.registerInContentTypeManager();
+			
+	
+			CTAltChunk ac = Context.getWmlObjectFactory()
+					.createCTAltChunk();
+			ac.setId(altChunkRel.getId());
+
+			// This setting makes no difference in that the altChunk
+			// still won't use the style from the containing docx 
+			// if it isn't in the styles part in the altChunk!
+			
+//			// http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/matchSrc.html
+//			CTAltChunkPr acPr = Context.getWmlObjectFactory()
+//					.createCTAltChunkPr();	
+//			BooleanDefaultTrue bft = new BooleanDefaultTrue();
+//			bft.setVal(false);
+//			acPr.setMatchSrc(bft);
+//			ac.setAltChunkPr(acPr);
+			
+			
+			org.w3c.dom.Document docContainer = XmlUtils.marshaltoW3CDomDocument(ac);						
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
+			docfrag.appendChild(docContainer.getDocumentElement());
+			return docfrag;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+		
+	}
+	
+	// TODO - add something like this to RelationshipsPart?? 
+	private static PartName getNewPartName(String prefix, String suffix,
+			RelationshipsPart rp) throws InvalidFormatException {
+
+		PartName proposed = null;
+		int i = 1;
+		do {
+
+			if (i > 1) {
+				proposed = new PartName(prefix + i + suffix);
+			} else {
+				proposed = new PartName(prefix + suffix);
+			}
+			i++;
+
+		} while (rp.getRel(proposed) != null);
+
+		return proposed;
+
+	}
+	
 }
