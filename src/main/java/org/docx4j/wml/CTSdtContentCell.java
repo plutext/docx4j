@@ -39,6 +39,8 @@ import org.docx4j.math.CTOMathPara;
 
 
 /**
+ * Wraps around a table cell. So can't contain altChunk, p or tbl.
+ * 
  * <p>Java class for CT_SdtContentCell complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.

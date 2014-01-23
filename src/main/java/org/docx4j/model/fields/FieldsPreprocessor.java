@@ -137,6 +137,7 @@ public class FieldsPreprocessor {
 		
 		stack = new LinkedList<FieldRef>();
 		
+		log.debug(XmlUtils.marshaltoString(p));
 		handleContent(p.getContent(), newP);
 
 		// log.debug(XmlUtils.marshaltoString(newP, true));
@@ -171,6 +172,7 @@ public class FieldsPreprocessor {
 			//					&& ((JAXBElement)o).getName().equals(_PHyperlink_QNAME)) )	) {
 			//	
 			
+			
 			if ( o instanceof R ) {
 				
 				R existingRun = (R)o;
@@ -185,7 +187,7 @@ public class FieldsPreprocessor {
 			} else {
 				// its not something we're interested in
 				
-				log.debug(XmlUtils.unwrap(o).getClass().getName());
+				log.debug("Retaining" + XmlUtils.unwrap(o).getClass().getName());
 
 				attachmentPoint.getContent().add(o);
 

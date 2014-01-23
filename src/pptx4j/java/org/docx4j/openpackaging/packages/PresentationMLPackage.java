@@ -216,7 +216,8 @@ public class PresentationMLPackage  extends OpcPackage {
 	}
 	
 	/**
-	 * Create a slide and add it to the package
+	 * Create a slide and add it to the package.
+	 * Deprecated, so use MainPresentationPart's addSlide method instead.
 	 * 
 	 * @param pp
 	 * @param layoutPart
