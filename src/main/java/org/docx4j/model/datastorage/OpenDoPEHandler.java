@@ -132,6 +132,8 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
 
 	public final static String BINDING_CONTENTTYPE = "od:ContentType";
+	public final static String BINDING_HANDLER = "od:Handler";
+	public final static String BINDING_PROGID = "od:progid"; // eg =Word.Document
 	/*
 	 * --------------------------------------------------------------------------
 	 * - Pre-processing of content controls which have a tag containing
@@ -1186,12 +1188,14 @@ public class OpenDoPEHandler {
 				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
 				thisXPath = xpathObj.getDataBinding().getXpath();
 
-			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+			} else if (map.containsKey(BINDING_CONTENTTYPE)
+					|| map.containsKey(BINDING_HANDLER)
+					|| map.containsKey(BINDING_PROGID)) {
 
 				xpathObj = XPathsPart.getXPathById(xPaths,
 						map.get(BINDING_ROLE_XPATH) );
 				thisXPath = xpathObj.getDataBinding().getXpath();
-
+				
 			} else {
 
 				log.warn("couldn't find binding or bindingrole!");
@@ -1246,7 +1250,9 @@ public class OpenDoPEHandler {
 				map.put(BINDING_ROLE_REPEAT, newXPathObj.getId());
 				tag.setVal(QueryString.create(map));
 
-			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+			} else if (map.containsKey(BINDING_CONTENTTYPE)
+					|| map.containsKey(BINDING_HANDLER)
+					|| map.containsKey(BINDING_PROGID)) {
 
 				// Also need to create new xpath id, and add that
 				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
