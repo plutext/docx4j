@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Document;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -42,7 +43,8 @@ public class TableIndentTest extends AbstractXSLFOTest {
 	 * where table is centre or right justified
 	 * <w:jc w:val=\"center\"/>
 	 */
-	//@Test
+	@Test
+	@Ignore
 	public  void testTblIndentOnCentredTable() throws Exception {
 		
 		boolean save = true;
