@@ -342,6 +342,15 @@ public class P implements Child, ContentAccessor
     /**
      * Gets the value of the paraId property.
      * 
+     * From [MS-DOCX], "an identifier for a paragraph that is unique within the document part 
+     * (as specified by [ISO/IEC29500-1:2011] section 11.3), with the exception that it need 
+     * not be unique across the choices or fallback of an Alternate Content block 
+     * (as specified by [ISO/IEC29500-1:2011] section 17.17.3). 
+     * 
+     * Values MUST be greater than 0 and less than 0x80000000. 
+     * 
+     * Any element having this attribute MUST also have the textId attribute"
+     * 
      * @return
      *     possible object is
      *     {@link String }
@@ -366,6 +375,16 @@ public class P implements Child, ContentAccessor
     /**
      * Gets the value of the textId property.
      * 
+     * From [MS-DOCX], "a version identifier for a paragraph. 
+     * 
+     * Values MUST be greater than 0 and less than 0x80000000. 
+     * 
+     * Any element having this attribute MUST also have the paraId attribute.
+     * 
+     * If two documents have the same docId, then if two paragraphs within the same respective 
+     * document part (as specified by [ISO/IEC29500-1:2011] section 11.3) that have the same 
+     * paraId and textId SHOULD contain identical text, although formatting could differ."
+     *  
      * @return
      *     possible object is
      *     {@link String }
