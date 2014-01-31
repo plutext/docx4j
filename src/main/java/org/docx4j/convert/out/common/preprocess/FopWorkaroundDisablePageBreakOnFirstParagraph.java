@@ -27,8 +27,10 @@ import org.docx4j.wml.PPr;
 /**
  * Workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094  
  * You can disable this step if you are using FOP post 1.1
+ * 
+ * See also FopWorkaroundReplacePageBreakInEachList 
  */
-public class DisablePageBreakOnFirstParagraph {
+public class FopWorkaroundDisablePageBreakOnFirstParagraph {
 	public static void process(WordprocessingMLPackage wmlPackage) {
 		Object o = wmlPackage.getMainDocumentPart().getContent().get(0);
 		if (o instanceof P

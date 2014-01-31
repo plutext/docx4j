@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Exporter are responsible to create the environment for the export process. 
  * They take care of the pre- and post processing (FORenderer). 
@@ -50,7 +51,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	OutputStream intermediateOutputStream = null;
 	long startTime = System.currentTimeMillis();
 	long currentTime = startTime;
-	//TODO: The log of the conversionContext isn't avaiable until the
+	//TODO: The log of the conversionContext isn't available until the
 	//context has been created. When the log gets passed via the setting
 	//use that one instead.
 	Logger log = LocalLog;
@@ -74,6 +75,15 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			currentTime = logDebugStep(log, "Postprocessing", currentTime);
 			logDebugStep(log, "Conversion done", startTime);
 			
+//		} catch (Docx4JException e) {
+//			log.error(e.getMessage(), e);
+//			throw e;
+		} catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Only non-null Positions with an index can be checked")) {
+				throw new Docx4JException("Exception exporting package; FOP https://issues.apache.org/bugzilla/show_bug.cgi?id=54094 .. try PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM",e);				
+			} else {
+				throw new Docx4JException("Exception exporting package", e);
+			}
 		} catch (Exception e) {
 			log.error("Exception exporting package", e);
 			throw new Docx4JException("Exception exporting package", e);

@@ -27,8 +27,9 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.convert.out.common.preprocess.ConversionSectionWrapperFactory;
-import org.docx4j.convert.out.common.preprocess.DisablePageBreakOnFirstParagraph;
+import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
+import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -141,7 +142,11 @@ public class Preprocess implements ConversionFeatures {
 		}
 		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
 			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH");
-			DisablePageBreakOnFirstParagraph.process(ret);
+			FopWorkaroundDisablePageBreakOnFirstParagraph.process(ret);
+		}
+		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
+			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM");
+			FopWorkaroundReplacePageBreakInEachList.process(ret);
 		}
 		
 		log.debug("Results of preprocessing: " + wmlPackage.getMainDocumentPart().getXML());
