@@ -127,6 +127,39 @@ public class Emulator {
     }
     
 
+    /**
+     * @param wmlPackage
+     * @param pPr
+     * @return
+     * @since 3.0.1
+     */
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr) {
+    	
+		if (pPr==null) return null;
+			// Assumes default p style isn't numbered!
+			
+		String pStyleVal = null;
+		if (pPr.getPStyle()!=null) {
+			pStyleVal = pPr.getPStyle().getVal();
+		}
+		String numIdStr = null;
+		String levelIdStr = null;
+		
+		if (pPr.getNumPr()!=null) {
+			if (pPr.getNumPr().getNumId()!=null) {
+				BigInteger numId = pPr.getNumPr().getNumId().getVal();
+				if (numId!=null) numIdStr = numId.toString();
+			}
+			if (pPr.getNumPr().getIlvl()!=null) {
+				BigInteger levelId = pPr.getNumPr().getIlvl().getVal();
+				if (levelId!=null) levelIdStr = levelId.toString();
+			}
+		}
+			
+		return getNumber( wmlPackage,  pStyleVal, numIdStr,  levelIdStr);
+
+    }
+    
     /* Get the computed list number for the given list at this point in the
      * document.
      */
