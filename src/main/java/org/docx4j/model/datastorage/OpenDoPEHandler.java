@@ -939,6 +939,22 @@ public class OpenDoPEHandler {
 			new TraversalUtil(repeated.get(i), dt);
 		}
 		log.info(".. deep traversals done ");
+		
+		// make bookmarks (if any) unique
+		for (int i = 0; i < repeated.size(); i++) {
+			try {
+				
+				// Use the sdt id for uniqueness
+				long global= ((SdtElement)repeated.get(i)).getSdtPr().getId().getVal().longValue();
+				
+				BookmarkRenumber.fixRange(
+						((SdtElement)repeated.get(i)).getSdtContent().getContent(), 
+						"CTBookmark", "CTMarkupRange", null, global, i);
+			} catch (Exception e) {
+				// Shouldn't happen .. TODO remove reflection?
+				log.error(e.getMessage(),e);
+			}
+		}
 
 		return repeated;
 	}
