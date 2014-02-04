@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -66,7 +68,7 @@ import org.w3c.dom.Node;
 /** The Apache FO Renderer uses Apache FOP to render the fo document
  *  and is the default FO Renderer
  */
-public class FORendererApacheFOP implements FORenderer {
+public class FORendererApacheFOP extends AbstractFORenderer { //implements FORenderer {
 	
 	protected static Logger log = LoggerFactory.getLogger(FORendererApacheFOP.class);
 	protected static FORendererApacheFOP instance = null;
@@ -130,8 +132,26 @@ public class FORendererApacheFOP implements FORenderer {
 			placeholderLookup.setResults(formattingResults);
 			foDocumentSrc = new StreamSource(new StringReader(foDocument));
 		}
+		
 		//1st pass in 1 pass or 2nd pass in 2 pass
+		
+		if (TEXTBOX_POSTPROCESSING_REQUIRED) {
+			
+//			System.out.println("\n\n performing TEXTBOX_POSTPROCESSING \n\n");
+			
+			DOMResult result = new DOMResult(); 
+			org.docx4j.XmlUtils.transform(foDocumentSrc, xslt_POSTPROCESSING, null, result);		
+
+			org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
+			String modifiedFO = XmlUtils.w3CDomNodeToString(docResult); 
+			log.debug("After moving! \n" + modifiedFO);	
+			
+			foDocumentSrc = new StreamSource(new StringReader(modifiedFO));
+			
+		}
+			
 		render(fopFactory, apacheFopMime, foDocumentSrc, placeholderLookup, outputStream);
+		
 	}
 
 	private String setupApacheFopConfiguration(FOSettings settings) throws Docx4JException {
@@ -336,71 +356,12 @@ public class FORendererApacheFOP implements FORenderer {
 		}
 		return fopFactory;
 	}
+
+	@Override
+	public boolean supportsFloat() {
+		// FOP does not support fo:float
+		return false;
+	}
 	
-	public Node handleVTextBox(AbstractWmlConversionContext context,
-			Node modelContent, Document doc, 
-			org.docx4j.vml.CTShape shape,
-			Map<String, String> props, 
-			boolean wrap) {
-	
-		String mso_position_vertical_relative = props.get("mso-position-vertical-relative");
-//		String mso_position_vertical = props.get("mso-position-vertical");
-//		String z_index = props.get("z_index"); // negative -> behind
-//
-//		// TODO: use these
-//		String mso_position_horizontal_relative = props.get("mso-position-horizontal-relative");
-//		String mso_position_horizontal = props.get("mso-position-horizontal"); // eg center
-		
-		String margin_top = props.get("margin-top");
-		String margin_left = props.get("margin-left");
-//		String width = props.get("width");
-//		String height = props.get("height");
 
-		if (mso_position_vertical_relative!=null) {
-
-			if ( mso_position_vertical_relative.equals("text")) {
-				Element ret=null;
-				
-				// Position is relative to paragraph.
-				if (wrap) {
-
-					// Just lay it out in the flow; graceful degradation
-					ret = doc.createElementNS(XSL_FO, "block");  
-					XmlUtils.treeCopy(modelContent.getChildNodes(), ret);
-					return ret;
-				}
-				// Otherwise, text is not wrapped ...
-				// .. but how do we use z-index?
-				// http://www.w3.org/TR/xsl/#common-absolute-position-properties
-				ret = doc.createElementNS(XSL_FO, "block-container");  
-				ret.setAttribute("absolute-position", "absolute");
-				if (margin_top!=null) {
-					ret.setAttribute("top", margin_top);						
-				}
-				if (margin_left!=null) { // TODO consider mso_position_horizontal
-					ret.setAttribute("left", margin_left);						
-				}
-				// TODO how to get @right from width?
-				// TODO how to get @bottom from height?
-				
-				XmlUtils.treeCopy(modelContent.getChildNodes(), ret);
-				return ret;
-				
-				// could fo:block-container/@absolute-position (= fixed)
-				// be used in 2 pass to emulate wrapped top/bottom?
-				
-			}  else {
-
-				return context.getMessageWriter().message(context, 
-						"TODO: support for mso-position-vertical-relative=" + mso_position_vertical_relative);
-				
-			}
-			
-		}
-		
-		// FOP doesn't support fo:float, so we can't do anything except above
-		return context.getMessageWriter().message(context, 
-				"v:textbox to fo:float is not supported by Apache FOP.  Try another.");
-			
-	}	
 }

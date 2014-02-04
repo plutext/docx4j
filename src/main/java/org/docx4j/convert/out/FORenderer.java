@@ -109,5 +109,15 @@ public interface FORenderer {
 			org.docx4j.vml.CTShape shape,
 			Map<String, String> props, 
 			boolean wrap);	
+	
+	/**
+	 * Whether this FO renderer supports fo:float.
+	 * For example, Apache FOP renderer doesn't.
+	 * 
+	 * What AbstractFORenderer does in handleVTextBox depends on this. 
+	 * 
+	 * @return
+	 */
+	public boolean supportsFloat();
 
 }

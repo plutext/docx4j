@@ -29,6 +29,7 @@ import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractPictWriter;
+import org.docx4j.vml.wordprocessingDrawing.STVerticalAnchor;
 import org.docx4j.vml.wordprocessingDrawing.STWrapType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,21 +120,32 @@ public class PictWriter extends AbstractPictWriter {
 					"Couldn't find v:textbox in w:shape.");
 		}
 
-		Map<String, String> props = getProperties(textBox.getStyle());
+		Map<String, String> props = getProperties(shape.getStyle());
+//		// temp
+//		if (props.size()==0) {
+//			System.out.println(XmlUtils.marshaltoString(pict));
+//		}
 		
 		
 		boolean wrap = true;
-		if (w10Wrap!=null 
-				&& w10Wrap.getType()!=null) {
+		if (w10Wrap!=null) {
 			
-			if (w10Wrap.getType().equals(STWrapType.TOP_AND_BOTTOM)
+			if (w10Wrap.getType()!=null
+					&& (w10Wrap.getType().equals(STWrapType.TOP_AND_BOTTOM)
 					|| w10Wrap.getType().equals(STWrapType.SQUARE)
-					|| w10Wrap.getType().equals(STWrapType.TIGHT)) {
+					|| w10Wrap.getType().equals(STWrapType.TIGHT)
+					|| w10Wrap.getType().equals(STWrapType.THROUGH))) {
 				
-				wrap = true;
-			} else {
-				wrap = false;					
+				wrap = false;
 			}
+			
+			// the no wrap page top case
+			if (w10Wrap.getAnchory()!=null
+					&& (w10Wrap.getAnchory().equals(STVerticalAnchor.PAGE)  )) {
+				
+				wrap = false;
+			} 
+			
 		}
 			
 		FORenderer foRenderer  = ((FOSettings)context.getConversionSettings()).getCustomFoRenderer();
@@ -146,6 +158,12 @@ public class PictWriter extends AbstractPictWriter {
 	private Map<String, String> getProperties(String s) {
 		
 		Map<String, String> map = new HashMap<String, String>();
+		
+		if (s==null) {
+			log.warn("shape has no @style");
+			return map;
+		}
+		
 		for(final String entry : s.split(";")) {
 		    final String[] parts = entry.split(":");
 		    assert(parts.length == 2) : "Invalid entry: " + entry;

@@ -29,6 +29,7 @@ import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
+import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
@@ -51,7 +52,9 @@ import org.w3c.dom.Node;
  * @since 3.0
  */
 public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlConversionContext> extends TraversalUtil.CallbackImpl {
+	
 	private static Logger log = LoggerFactory.getLogger(AbstractVisitorExporterGenerator.class);
+	
 	protected static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";
 	protected static final int NODE_BLOCK = 1;
 	protected static final int NODE_INLINE = 2;
@@ -91,6 +94,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if ((o instanceof org.docx4j.wml.Tbl) ||
 			(o instanceof org.docx4j.wml.P.Hyperlink) ||
 			(o instanceof org.docx4j.wml.CTSimpleField) ||
+			(o instanceof org.docx4j.vml.CTTextbox) ||
 			(o instanceof org.docx4j.wml.FldChar)) {
 			return false;
 		} else {
@@ -113,12 +117,27 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 		// To use our existing model, first we need childResults.
 		// We get these using a new Generator object.
+		log.debug(modelId);
 		
 		DocumentFragment childResults = null;
 		if (unmarshalledNode instanceof ContentAccessor) {
 			childResults = document.createDocumentFragment();
 			AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
 			new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
+			
+		} else if (unmarshalledNode instanceof org.docx4j.wml.Pict) {
+			// if it contains a textbox..
+			
+			// repeating this...
+			org.docx4j.vml.CTTextbox textBox = getTextBox((org.docx4j.wml.Pict)unmarshalledNode);
+			
+			if (textBox!=null) {
+				
+				childResults = document.createDocumentFragment();
+				AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
+				new TraversalUtil(textBox.getTxbxContent().getContent(), generator);
+			}
+			
 		}
 		
 		Node resultNode = 
@@ -128,8 +147,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 					 modelId, 
 					 childResults, 
 					 document);
+
 		
 		if (resultNode != null) {
+			log.debug("Appending " + XmlUtils.w3CDomNodeToString(resultNode));
 			parentNode.appendChild(resultNode);
 		}
 	}
@@ -273,12 +294,25 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	          <v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:428.25pt;height:321pt">
 	            <v:imagedata r:id="rId4" o:title=""/>
 	          </v:shape> */
+			
+			org.docx4j.vml.CTTextbox textBox = getTextBox((org.docx4j.wml.Pict)o);
+			
+			if (textBox==null) {
+				// Assume it contains an image!
+				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
+				currentP.appendChild( document.importNode(foreignFragment, true) );
+				
+			} else {
+				
+				convertToNode(conversionContext, 
+				  o, AbstractPictWriter.WRITER_ID,
+				  document, getCurrentParent());
+				
+			}
+			
 
-			DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
 			
-			currentP.appendChild( document.importNode(foreignFragment, true) );
-			
-		} else if (o instanceof org.docx4j.wml.Br) {
+		} else if (o instanceof org.docx4j.wml.Br) {			
 
 			convertToNode(conversionContext, 
 						  o, AbstractBrWriter.WRITER_ID,
@@ -303,6 +337,43 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		}
 		
 		return null;
+	}
+	
+	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
+
+		org.docx4j.vml.CTShape shape = null;
+		for (Object o2 : pict.getAnyAndAny() ) {
+			
+			o2 = XmlUtils.unwrap(o2);
+//			System.out.println(o.getClass().getName());
+			if (o2 instanceof org.docx4j.vml.CTShape) {
+				shape = (org.docx4j.vml.CTShape)o2;
+				break;
+			}
+		}
+		if (shape==null) {
+			getLog().warn("no shape in pict " );
+			return null;
+		} else {
+
+			org.docx4j.vml.CTTextbox textBox = null;
+			org.docx4j.vml.wordprocessingDrawing.CTWrap w10Wrap = null;  
+			for (Object o2 : shape.getPathOrFormulasOrHandles() ) {
+				
+				o2 = XmlUtils.unwrap(o2);
+				
+				if (o2 instanceof org.docx4j.vml.CTTextbox) {
+					textBox = (org.docx4j.vml.CTTextbox)o2;
+				}
+				if (o2 instanceof org.docx4j.vml.wordprocessingDrawing.CTWrap) {
+					w10Wrap = (org.docx4j.vml.wordprocessingDrawing.CTWrap)o2;
+				}
+			}
+			
+			return textBox;
+			
+		}
+		
 	}
 
     protected abstract Element handlePPr(CC conversionContext, PPr pPrDirect, boolean sdt, Element currentParent);

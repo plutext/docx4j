@@ -290,6 +290,15 @@ public class PageDimensions {
 		return pgSz.getW().intValue() - (pgMar.getLeft().intValue() + pgMar.getRight().intValue());
 	}
 
+	/**headers/footers into account!
+	 * Doesn't take 
+	 * 
+	 * @since 3.0.1
+	 */
+	@Deprecated
+	public int getWritableHeightTwips() {		
+		return pgSz.getH().intValue() - (pgMar.getTop().intValue() + pgMar.getBottom().intValue());
+	}
 	
 	/* From http://msdn.microsoft.com/en-us/library/aa537167(office.11).aspx 
 	 * 
