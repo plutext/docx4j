@@ -173,7 +173,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
 	private static DocumentFragment placeholderFragment = null;
 	private static byte[] placeholderBytes = null;
-	private static final String placeholderResource = "org/docx4j/model/datastorage/placeholder.xml";
+	private static final String placeholderResourceFallback = "org/docx4j/model/datastorage/placeholder.xml";
+	private static final String placeholderResource = "OpenDoPE/placeholder.xml";
 	
 	private static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
 		
@@ -255,7 +256,15 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
 	private static void createPlaceholderFragment() throws Exception {
 		// create it - one time operation
-		InputStream is = ResourceUtils.getResource(placeholderResource);
+		InputStream is;
+		try {
+			is = ResourceUtils.getResource(placeholderResource);
+			
+		} catch (IOException e) {
+			log.info("No resource on classpath at OpenDoPE/placeholder.xml; falling back to using org/docx4j/model/datastorage/placeholder.xml");
+			is = ResourceUtils.getResource(placeholderResourceFallback);
+			
+		}
 		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
 		newInstance.setNamespaceAware(true);
 		Document tmpDoc = newInstance.newDocumentBuilder().parse(is);
@@ -265,7 +274,15 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	
 	private static void createPlaceholderBytes() throws Exception {
 		// Only want to do this once
-		InputStream is = ResourceUtils.getResource(placeholderResource);
+		InputStream is;
+		try {
+			is = ResourceUtils.getResource(placeholderResource);
+			
+		} catch (IOException e) {
+			log.info("No resource on classpath at OpenDoPE/placeholder.xml; falling back to using org/docx4j/model/datastorage/placeholder.xml");
+			is = ResourceUtils.getResource(placeholderResourceFallback);
+			
+		}
 		placeholderBytes = IOUtils.toByteArray(is);		
 	}
 	
