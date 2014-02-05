@@ -36,6 +36,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.RPr;
@@ -314,6 +315,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			try {
 				documentDefaultRPr = (RPr) XmlUtils
 						.unmarshalString(rPrDefaultsString);
+					// that includes font size 10
 			} catch (JAXBException e) {
 				throw new Docx4JException("Problem unmarshalling "
 						+ rPrDefaultsString, e);
@@ -322,6 +324,20 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 			if (documentDefaultRPr==null) {
 				documentDefaultRPr = Context.getWmlObjectFactory().createRPr();
+			}
+			// If default font size is not specified, set it to match Word default when unspecified (ie 10)
+			// It is useful to have this explicitly, especially for XHTML Import
+//	        <w:sz w:val="20"/>
+//	        <w:szCs w:val="20"/>			
+			if (documentDefaultRPr.getSz()==null) {
+				HpsMeasure s10pt = Context.getWmlObjectFactory().createHpsMeasure();
+				s10pt.setVal(BigInteger.valueOf(20));
+				documentDefaultRPr.setSz(s10pt);
+			}
+			if (documentDefaultRPr.getSzCs()==null) {
+				HpsMeasure s10pt = Context.getWmlObjectFactory().createHpsMeasure();
+				s10pt.setVal(BigInteger.valueOf(20));
+				documentDefaultRPr.setSzCs(s10pt);
 			}
 		}
     	
@@ -468,8 +484,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 	public final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + ">"
 		// Word 2007 still uses Times New Roman if there is no theme part, and we'd like to replicate that 
         // + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" />"
-        + "<w:sz w:val=\"22\" />"
-        + "<w:szCs w:val=\"22\" />"
+        + "<w:sz w:val=\"20\" />"  // was 11 prior to 3.01, but Word default in absence of this setting is 10.
+        + "<w:szCs w:val=\"20\" />"
         + "<w:lang w:val=\"en-US\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\" />"
       + "</w:rPr>";
 	public final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + ">"
