@@ -530,6 +530,19 @@
 		  		$conversionContext,$currentNode, $childResults)"/>	  		
 			
 		</xsl:when>
+		<xsl:when test="./v:rect/v:textbox">
+			<!--  from 3.0.1 -->
+			<xsl:variable name="childResults">
+				<xsl:apply-templates  select="./v:rect/v:textbox/w:txbxContent/*" /> 
+			</xsl:variable>
+	
+			<xsl:variable name="currentNode" select="." />  			
+	
+			<!--  Create the XSL FO table in Java -->
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode(
+		  		$conversionContext,$currentNode, $childResults)"/>	  		
+			
+		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
 			<xsl:copy-of 

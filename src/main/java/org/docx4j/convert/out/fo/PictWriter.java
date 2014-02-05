@@ -29,6 +29,7 @@ import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractPictWriter;
+import org.docx4j.vml.VmlAllCoreAttributes;
 import org.docx4j.vml.wordprocessingDrawing.STVerticalAnchor;
 import org.docx4j.vml.wordprocessingDrawing.STWrapType;
 import org.slf4j.Logger;
@@ -86,25 +87,27 @@ public class PictWriter extends AbstractPictWriter {
             </w:pict>
 		 */
 
-		// Get the shape
-		org.docx4j.vml.CTShape shape = null;
+		// Get the shape or rectangle...
+		org.docx4j.vml.VmlShapeElements shape = null;
 		for (Object o : pict.getAnyAndAny() ) {
 			
 			o = XmlUtils.unwrap(o);
 //			System.out.println(o.getClass().getName());
-			if (o instanceof org.docx4j.vml.CTShape) {
-				shape = (org.docx4j.vml.CTShape)o;
+			if (o instanceof org.docx4j.vml.VmlShapeElements
+					&& !(o instanceof org.docx4j.vml.CTShapetype)) {
+				shape = (org.docx4j.vml.VmlShapeElements)o;
+				log.debug("Found " + shape.getClass().getName());
 				break;
 			}
 		}
 		if (shape==null) {
 			return context.getMessageWriter().message(context, 
-					"Couldn't find v:shape in w:pict.");
+					"Couldn't find v:shape (or v:rectangle etc) in w:pict.");
 		}
 
 		org.docx4j.vml.CTTextbox textBox = null;
 		org.docx4j.vml.wordprocessingDrawing.CTWrap w10Wrap = null;  
-		for (Object o : shape.getPathOrFormulasOrHandles() ) {
+		for (Object o : shape.getEGShapeElements() ) {
 			
 			o = XmlUtils.unwrap(o);
 			
@@ -119,8 +122,19 @@ public class PictWriter extends AbstractPictWriter {
 			return context.getMessageWriter().message(context, 
 					"Couldn't find v:textbox in w:shape.");
 		}
+		
+		
 
-		Map<String, String> props = getProperties(shape.getStyle());
+		Map<String, String> props = null;
+		if (shape instanceof VmlAllCoreAttributes) {
+			props = getProperties(((VmlAllCoreAttributes)shape).getStyle()); 
+		} else {
+			log.warn(shape.getClass().getName() + " does not implement VmlAllCoreAttributes, so can't access @style if present");
+			return context.getMessageWriter().message(context, 
+					shape.getClass().getName() + " does not implement VmlAllCoreAttributes, so can't access @style if present");
+		}
+		
+		
 //		// temp
 //		if (props.size()==0) {
 //			System.out.println(XmlUtils.marshaltoString(pict));

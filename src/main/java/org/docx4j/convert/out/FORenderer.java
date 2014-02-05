@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.vml.VmlShapeElements;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -106,7 +107,7 @@ public interface FORenderer {
 	 */
 	public Node handleVTextBox(AbstractWmlConversionContext context,
 			Node modelContent, Document doc, 
-			org.docx4j.vml.CTShape shape,
+			org.docx4j.vml.VmlShapeElements shape,
 			Map<String, String> props, 
 			boolean wrap);	
 	
