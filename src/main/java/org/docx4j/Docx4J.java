@@ -52,6 +52,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -278,10 +279,11 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags) throws Docx4JException {
-	OpenDoPEHandler	openDoPEHandler = null;
-	CustomXmlDataStoragePart customXmlDataStoragePart = null;
-	RemovalHandler removalHandler = null;
-	String xpathStorageItemId = null;
+		
+		OpenDoPEHandler	openDoPEHandler = null;
+		CustomXmlDataStoragePart customXmlDataStoragePart = null;
+		RemovalHandler removalHandler = null;
+		//String xpathStorageItemId = null;
 
 		if (flags == FLAG_NONE) {
 			//do everything
@@ -291,20 +293,14 @@ public class Docx4J {
 					 FLAG_BIND_REMOVE_XML);
 		}
 		
-		xpathStorageItemId = findXPathStorageItemIdInXPathsPart(wmlPackage);
-		if ((xpathStorageItemId == null) && (flags == FLAG_BIND_INSERT_XML)) {
-			//If no XPathsPart found and the user only wants to inject the XML 
-			//then search for a storageItemId via the content controls.
-			//If the user wants to do more, then it won't work as the BindingHandler
-			//relies on the XPathsPart
-			xpathStorageItemId = findXPathStorageItemIdInContentControls(wmlPackage);
+		customXmlDataStoragePart 
+			= CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(wmlPackage);
+		if (customXmlDataStoragePart==null) {
+			throw new Docx4JException("Couldn't find CustomXmlDataStoragePart! exiting..");
 		}
-		if (xpathStorageItemId == null) {
-			throw new Docx4JException("No xpathStorageItemId found, does the document contain content controls that are bound?");
-		}
-		
+	
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
-			insertXMLData(wmlPackage, xpathStorageItemId, xmlDocument);
+			insertXMLData(customXmlDataStoragePart, xmlDocument);
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
 			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
@@ -315,42 +311,15 @@ public class Docx4J {
 			removeSDTs(wmlPackage);
 		}
 		if ((flags & FLAG_BIND_REMOVE_XML) == FLAG_BIND_REMOVE_XML) {
-			removeDefinedCustomXmlParts(wmlPackage, xpathStorageItemId);
+			removeDefinedCustomXmlParts(wmlPackage, customXmlDataStoragePart);
 		}
 	}
 
-	protected static void insertXMLData(WordprocessingMLPackage wmlPackage, 
-										String storageId, Document xmlDocument) throws Docx4JException {
-	CustomXmlDataStorage customXmlDataStorage = null;
-	CustomXmlDataStoragePart customXmlDataStoragePart = null;
-		customXmlDataStoragePart = (CustomXmlDataStoragePart)wmlPackage.getCustomXmlDataStorageParts().get(storageId.toLowerCase());
+	protected static void insertXMLData(CustomXmlDataStoragePart customXmlDataStoragePart, Document xmlDocument) throws Docx4JException {
+		
 		customXmlDataStoragePart.getData().setDocument(xmlDocument);
 	}
 
-	protected static String findXPathStorageItemIdInXPathsPart(WordprocessingMLPackage wmlPackage) {
-	String ret = null;
-	List<Xpath> xpathList = null;
-	Xpath xpath = null;
-		try {
-			if ((wmlPackage.getMainDocumentPart().getXPathsPart() != null) &&
-				(wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement() != null) &&
-				(wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath() != null)) {
-				xpathList = wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath();
-			}
-		}
-		catch (NullPointerException npe) {
-			//noop
-		}
-		if ((xpathList != null) && (xpathList.size() > 0)) {
-			for (int i=0; (ret == null) && (i<xpathList.size()); i++) {
-				xpath = xpathList.get(i);
-				if (xpath.getDataBinding() != null) {
-					ret = xpath.getDataBinding().getStoreItemID();
-				}
-			}
-		}
-		return ret;
-	}
 
 	protected static String findXPathStorageItemIdInContentControls(WordprocessingMLPackage wmlPackage) {
 	FindContentControlsVisitor visitor = null;
@@ -380,19 +349,18 @@ public class Docx4J {
 		}
 	}
 
-	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, String xpathStorageItemId) {
+	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, CustomXmlDataStoragePart customXmlDataStoragePart) {
 	List<PartName> partsToRemove = new ArrayList<PartName>();
 	RelationshipsPart relationshipsPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
 										    (relationshipsPart.getRelationships() != null) ?
 										    relationshipsPart.getRelationships().getRelationship() : null);
 	Part part = null;
-	CustomXmlDataStoragePart dataPart = null;
 		if (relationshipsList != null) {
 			for (Relationship relationship : relationshipsList) {
 				if (Namespaces.CUSTOM_XML_DATA_STORAGE.equals(relationship.getType())) {
 					part = relationshipsPart.getPart(relationship);
-					if (IsPartToRemove(part, xpathStorageItemId)) {
+					if (part==customXmlDataStoragePart) {
 						partsToRemove.add(part.getPartName());
 					}
 				}
@@ -405,44 +373,44 @@ public class Docx4J {
 		}
 	}
 
-	protected static boolean IsPartToRemove(Part part, String xpathStorageItemId) {
-	boolean ret = false;
-	RelationshipsPart relationshipsPart = part.getRelationshipsPart();
-	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
-										    (relationshipsPart.getRelationships() != null) ?
-										    relationshipsPart.getRelationships().getRelationship() : null);
-	
-	CustomXmlDataStoragePropertiesPart propertiesPart = null;
-	DatastoreItem datastoreItem = null;
-		if ((relationshipsList != null) && (!relationshipsList.isEmpty())) {
-			for (Relationship relationship : relationshipsList) {
-				if (Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES.equals(relationship.getType())) {
-					propertiesPart = (CustomXmlDataStoragePropertiesPart)relationshipsPart.getPart(relationship);
-					break;
-				}
-			}
-		}
-		if (propertiesPart != null)  {
-			datastoreItem = propertiesPart.getJaxbElement();
-		}
-		if (datastoreItem != null) {
-			if ((datastoreItem.getItemID() != null) && (datastoreItem.getItemID().length() > 0)) {
-				ret = datastoreItem.getItemID().equals(xpathStorageItemId);
-			}
-			if ((!ret) && 
-				(datastoreItem.getSchemaRefs() != null) && 
-				(datastoreItem.getSchemaRefs().getSchemaRef() != null) &&
-				(!datastoreItem.getSchemaRefs().getSchemaRef().isEmpty())) {
-				for (SchemaRef ref : datastoreItem.getSchemaRefs().getSchemaRef()) {
-					if (PART_TO_REMOVE_SCHEMA_TYPES.contains(ref.getUri())) {
-						ret = true;
-						break;
-					}
-				}
-			}
-		}
-		return ret;
-	}
+//	protected static boolean IsPartToRemove(Part part, String xpathStorageItemId) {
+//	boolean ret = false;
+//	RelationshipsPart relationshipsPart = part.getRelationshipsPart();
+//	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
+//										    (relationshipsPart.getRelationships() != null) ?
+//										    relationshipsPart.getRelationships().getRelationship() : null);
+//	
+//	CustomXmlDataStoragePropertiesPart propertiesPart = null;
+//	DatastoreItem datastoreItem = null;
+//		if ((relationshipsList != null) && (!relationshipsList.isEmpty())) {
+//			for (Relationship relationship : relationshipsList) {
+//				if (Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES.equals(relationship.getType())) {
+//					propertiesPart = (CustomXmlDataStoragePropertiesPart)relationshipsPart.getPart(relationship);
+//					break;
+//				}
+//			}
+//		}
+//		if (propertiesPart != null)  {
+//			datastoreItem = propertiesPart.getJaxbElement();
+//		}
+//		if (datastoreItem != null) {
+//			if ((datastoreItem.getItemID() != null) && (datastoreItem.getItemID().length() > 0)) {
+//				ret = datastoreItem.getItemID().equals(xpathStorageItemId);
+//			}
+//			if ((!ret) && 
+//				(datastoreItem.getSchemaRefs() != null) && 
+//				(datastoreItem.getSchemaRefs().getSchemaRef() != null) &&
+//				(!datastoreItem.getSchemaRefs().getSchemaRef().isEmpty())) {
+//				for (SchemaRef ref : datastoreItem.getSchemaRefs().getSchemaRef()) {
+//					if (PART_TO_REMOVE_SCHEMA_TYPES.contains(ref.getUri())) {
+//						ret = true;
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		return ret;
+//	}
 	
 	/**
 	 *  Duplicate the document
