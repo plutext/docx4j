@@ -78,7 +78,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Line", propOrder = {
     "egShapeElements"
 })
-public class CTLine implements Child
+public class CTLine implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({

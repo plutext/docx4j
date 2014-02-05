@@ -40,8 +40,11 @@ import org.docx4j.vml.officedrawing.CTExtrusion;
 import org.docx4j.vml.officedrawing.CTLock;
 import org.docx4j.vml.officedrawing.CTSignatureLine;
 import org.docx4j.vml.officedrawing.CTSkew;
+import org.docx4j.vml.officedrawing.STBWMode;
+import org.docx4j.vml.officedrawing.STConnectorType;
 import org.docx4j.vml.officedrawing.STHrAlign;
 import org.docx4j.vml.officedrawing.STInsetMode;
+import org.docx4j.vml.officedrawing.STTrueFalse;
 import org.docx4j.vml.presentationDrawing.CTRel;
 import org.docx4j.vml.spreadsheetDrawing.CTClientData;
 import org.docx4j.vml.wordprocessingDrawing.CTAnchorLock;
@@ -90,7 +93,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Group", propOrder = {
     "pathOrFormulasOrHandles"
 })
-public class CTGroup implements Child
+public class CTGroup implements Child, VmlShapeElements, VmlAllCoreAttributes
 {
 
     @XmlElementRefs({
@@ -268,11 +271,23 @@ public class CTGroup implements Child
      * 
      * 
      */
+    @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
             pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
         }
         return this.pathOrFormulasOrHandles;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+     * @since 3.0.1
+     */
+    public List<JAXBElement<?>> getEGShapeElements() {
+        if (pathOrFormulasOrHandles == null) {
+            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+        }
+        return this.pathOrFormulasOrHandles;    	
     }
 
     /**
@@ -1244,5 +1259,6 @@ public class CTGroup implements Child
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
     }
+
 
 }

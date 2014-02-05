@@ -79,7 +79,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Arc", propOrder = {
     "egShapeElements"
 })
-public class CTArc implements Child
+public class CTArc implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({

@@ -83,7 +83,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "egShapeElements",
     "complex"
 })
-public class CTShapetype implements Child
+public class CTShapetype implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({

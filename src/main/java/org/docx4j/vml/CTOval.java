@@ -76,7 +76,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Oval", propOrder = {
     "pathOrFormulasOrHandles"
 })
-public class CTOval implements Child
+public class CTOval implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({
@@ -258,12 +258,24 @@ public class CTOval implements Child
      * 
      * 
      */
+    @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
             pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
         }
         return this.pathOrFormulasOrHandles;
     }
+    
+    /* (non-Javadoc)
+     * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+     * @since 3.0.1
+     */
+    public List<JAXBElement<?>> getEGShapeElements() {
+        if (pathOrFormulasOrHandles == null) {
+            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+        }
+        return this.pathOrFormulasOrHandles;    	
+    }    
 
     /**
      * Gets the value of the opacity property.
