@@ -96,14 +96,22 @@ public interface ConversionFeatures {
 	 * workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094  
      * You can disable this step if you are using FOP post 1.1 or another FO renderer.
 	 */
-	public static final String PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH = "pp.apachefop.disablepagebreakfirstparagraph";
+	public static final String PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH = "pp.apachefop.disablepagebreakfirstparagraph";
 
 	/** This step removes a pagebreak before the first list item in each list. This is a 
 	 * workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094  
      * You can disable this step if you are using FOP post 1.1 or another FO renderer.
+	 * @since 3.0.1
 	 */
-	public static final String PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM = "pp.apachefop.disablepagebreaklistitem";
+	public static final String PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM = "pp.apachefop.disablepagebreaklistitem";
 	
+	/** If the docx contains a cover page which starts with a sectPr, this step moves the
+	 * sectPr to a new w:p inserted after.  This prevents the generation of an empty fo:flow.
+	 * @since 3.0.1
+	 */
+	public static final String PP_PDF_COVERPAGE_MOVE_SECTPR = "pp.common.coverpagemovesectpr";
+	
+		
 	
 	/** Default features, that get applied to a PDF conversion
 	 */
@@ -111,12 +119,13 @@ public interface ConversionFeatures {
 		PP_COMMON_DEEP_COPY, 
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
+		PP_PDF_COVERPAGE_MOVE_SECTPR, 
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_PAGE_NUMBERING,
 		PP_COMMON_CREATE_SECTIONS,
-		PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH
-		//, PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM // experimental in 3.0.1
+		PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH
+		//, PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM // experimental in 3.0.1
 	};
 
 	/** Default features, that get applied to a HTML conversion

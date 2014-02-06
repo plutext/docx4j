@@ -27,6 +27,7 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.convert.out.common.preprocess.ConversionSectionWrapperFactory;
+import org.docx4j.convert.out.common.preprocess.CoverPageSectPrMover;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
@@ -71,8 +72,8 @@ public class Preprocess implements ConversionFeatures {
 		relationshipTypes = createRelationshipTypes(features);
 		if (features.contains(PP_COMMON_DEEP_COPY)) {
 			ret = PartialDeepCopy.process(opcPackage, relationshipTypes);
-			if (opcPackage instanceof WordprocessingMLPackage) {
-				log.debug("Results of PP_COMMON_DEEP_COPY: " + ((WordprocessingMLPackage)opcPackage).getMainDocumentPart().getXML());
+			if (ret instanceof WordprocessingMLPackage) {
+				log.debug("Results of PP_COMMON_DEEP_COPY: " + ((WordprocessingMLPackage)ret).getMainDocumentPart().getXML());
 			}
 		}
 		return ret;
@@ -122,34 +123,50 @@ public class Preprocess implements ConversionFeatures {
 	 * @throws Docx4JException
 	 */
 	public static WordprocessingMLPackage process(WordprocessingMLPackage wmlPackage, Set<String> features) throws Docx4JException {
-	WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+
+//		log.debug(wmlPackage.getMainDocumentPart().getXML());		
+		
+		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+
+//		log.debug(ret.getMainDocumentPart().getXML());
 	
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
 			log.debug("PP_COMMON_COMBINE_FIELDS");
 			FieldsCombiner.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS)) {
 			log.debug("PP_COMMON_MOVE_BOOKMARKS");
 			BookmarkMover.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
 			log.debug("PP_COMMON_MOVE_PAGEBREAK");
 			PageBreak.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+		if (features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR)) {
+			log.debug("PP_COMMON_COVERPAGE_MOVE_SECTPR");
+			CoverPageSectPrMover.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_CONTAINERIZATION)) {
 			log.debug("PP_COMMON_CONTAINERIZATION");
 			Containerization.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
-		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
+		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
 			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH");
 			FopWorkaroundDisablePageBreakOnFirstParagraph.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
-		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
+		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
 			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM");
 			FopWorkaroundReplacePageBreakInEachList.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		
-		log.debug("Results of preprocessing: " + wmlPackage.getMainDocumentPart().getXML());
+		log.debug("Results of preprocessing: " + ret.getMainDocumentPart().getXML());
 		
 		
 		return ret;
