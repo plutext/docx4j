@@ -33,6 +33,8 @@ import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.opendope.xpaths.Xpaths.Xpath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mechanism to find the user's XML data part
@@ -43,6 +45,9 @@ import org.opendope.xpaths.Xpaths.Xpath;
  * @since 3.0.1
  */
 public class CustomXmlDataStoragePartSelector {
+	
+	protected static Logger log = LoggerFactory.getLogger(CustomXmlDataStoragePartSelector.class);
+	
 	
 	/**
 	 * We need the item id of the custom xml part.  
@@ -69,7 +74,7 @@ public class CustomXmlDataStoragePartSelector {
 			ccFinder.walkJAXBElements(
 				wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
 			if (visitor.customXmlDataStoragePart==null) {
-				System.out.println("FATAL. Couldn't find CustomXmlDataStoragePart  " );
+				log.error("FATAL. Couldn't find CustomXmlDataStoragePart  " );
 				return null;
 			} else {
 				return visitor.customXmlDataStoragePart;
@@ -94,10 +99,10 @@ public class CustomXmlDataStoragePartSelector {
 				CustomXmlDataStoragePart customXmlDataStoragePart 
 					= (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
 				if (customXmlDataStoragePart==null) {
-					System.out.println("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(xp));
+					log.warn("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(xp));
 					continue;			
 				} else {
-					System.out.println("Using " + xp.getDataBinding().getStoreItemID());
+					log.debug("Using " + xp.getDataBinding().getStoreItemID());
 					return customXmlDataStoragePart;
 					
 				}
@@ -185,14 +190,14 @@ public class CustomXmlDataStoragePartSelector {
 				} else {
 					
 					String itemId = element.getSdtPr().getDataBinding().getStoreItemID().toLowerCase();
-					System.out.println("Attempting to use item id: " + itemId);
+					log.debug("Attempting to use item id: " + itemId);
 					
 					CustomXmlDataStoragePart customXmlDataStoragePart 
 						= (CustomXmlDataStoragePart)customXmlParts.get(itemId);
 					if (customXmlDataStoragePart==null) {
-						System.out.println("Couldn't find CustomXmlDataStoragePart referenced from sdt bound with  " + itemId);			
+						log.warn("Couldn't find CustomXmlDataStoragePart referenced from sdt bound with  " + itemId);			
 					} else {
-						System.out.println("Using " + itemId);
+						log.debug("Using " + itemId);
 					}
 					
 				}

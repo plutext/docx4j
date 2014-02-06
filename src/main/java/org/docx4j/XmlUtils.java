@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -744,10 +745,31 @@ public class XmlUtils {
 			Marshaller mar = jc.createMarshaller();
 			ByteArrayOutputStream bout = new ByteArrayOutputStream(256);
 			mar.marshal(elem, bout);
+			
+//			byte[] bytes = bout.toByteArray();
+//			try {
+//				System.out.println(new String(bytes, "UTF-8"));
+//			} catch (UnsupportedEncodingException e) {
+//				e.printStackTrace();
+//			}
 
 			Unmarshaller unmar = jc.createUnmarshaller();
+			if (log.isDebugEnabled()){
+				unmar.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			}
 			elem = unmar.unmarshal(new StreamSource(new ByteArrayInputStream(
 					bout.toByteArray())), valueClass);
+			
+			/*
+			 * Losing content here?
+			 * 
+			 * First, make absolutely sure that what you have is valid.
+			 * 
+			 * For example, Word 2010 is happy to open w:p/w:pict
+			 * (as opposed to w:p/w:r/w:pict).
+			 * docx4j is happy to marshall w:p/w:pict, but not unmarshall it,
+			 * so that content would get dropped here.
+			 */
 
 			T res;
 			if (value instanceof JAXBElement<?>) {

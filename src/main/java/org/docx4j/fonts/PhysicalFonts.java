@@ -154,7 +154,7 @@ public class PhysicalFonts {
             	if (pattern.matcher(fontUrl.toString()).matches()){
             		addPhysicalFont( fontUrl);        		
             	} else {
-                	log.debug("Ignoring " + fontUrl.toString() );
+//                	log.debug("Ignoring " + fontUrl.toString() );
 
             	}
             }
