@@ -23,6 +23,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.ProofErr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -457,6 +458,14 @@ public class FieldsPreprocessor {
 					newR = Context.getWmlObjectFactory().createR();						
 				
 			} else if ( !currentField.haveSeenSeparate() ) {
+				
+				// Handles problems with empty w:instrText elements within complex field "begin" section
+				Object o = XmlUtils.unwrap(o2);
+				if (o instanceof Text && ((Text) o).getValue().trim().isEmpty()) {
+					log.debug("Empty w:instrText found. Ignore it!");
+					continue;
+				}
+				
 				
 //				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 				
