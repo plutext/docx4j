@@ -1,4 +1,4 @@
-package org.docx4j.convert.out.XSLFO.FOP;
+package org.docx4j.convert.out.XSLFO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,7 +36,7 @@ import org.docx4j.wml.Text;
 /**
  * 
  * This class documents the various cases used in the development of the text box to FO code
- * found in AbstractFORenderer
+ * found in PictWriter
  * 
  * The various cases can be renamed to main, then executed.
  * 

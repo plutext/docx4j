@@ -62,6 +62,7 @@ import org.w3c.dom.Node;
  *  @since 3.0
  */
 public interface FORenderer {
+	
 	public static final String PLACEHOLDER_PREFIX = "${";
 	public static final String PLACEHOLDER_SUFFIX = "}";
 	
@@ -89,36 +90,5 @@ public interface FORenderer {
 	 */
 	public void render(String foDocument, FOSettings settings, boolean twoPass, List<SectionPageInformation> pageNumberInformation, OutputStream outputStream) throws Docx4JException;
 
-	
-	/**
-	 * Create XSL FO representing w:pict/v:shape/v:textbox, suited to the 
-	 * capabilities of this XSL FO renderer.
-	 *  
-	 * Invoked via PictWriter.
-	 * 
-	 * @param context  access to FO settings, the WordML package etc
-	 * @param modelContent  the XSL FO pre-computed from the v:textbox content  
-	 * @param doc
-	 * @param shape  access the v:shape, if necessary
-	 * @param props  the CSS like properties, contained in v:shape/@style
-	 * @param wrap   
-	 * @return
-	 * @since 3.0.1
-	 */
-	public Node handleVTextBox(AbstractWmlConversionContext context,
-			Node modelContent, Document doc, 
-			org.docx4j.vml.VmlShapeElements shape,
-			Map<String, String> props, 
-			boolean wrap);	
-	
-	/**
-	 * Whether this FO renderer supports fo:float.
-	 * For example, Apache FOP renderer doesn't.
-	 * 
-	 * What AbstractFORenderer does in handleVTextBox depends on this. 
-	 * 
-	 * @return
-	 */
-	public boolean supportsFloat();
 
 }

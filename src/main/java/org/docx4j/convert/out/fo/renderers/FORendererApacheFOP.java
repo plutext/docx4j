@@ -357,11 +357,5 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		return fopFactory;
 	}
 
-	@Override
-	public boolean supportsFloat() {
-		// FOP does not support fo:float
-		return false;
-	}
-	
 
 }

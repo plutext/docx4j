@@ -70,11 +70,7 @@ public class FORendererDummy extends AbstractFORenderer { // implements FORender
 		}
 	}
 
-	@Override
-	public boolean supportsFloat() {
-		// Meaningless
-		return true;
-	}	
+
 	
 	
 }

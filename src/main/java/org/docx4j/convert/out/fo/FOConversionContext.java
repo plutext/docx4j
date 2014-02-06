@@ -65,7 +65,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 				registerWriter(new FldSimpleWriter());
 				registerWriter(new BookmarkStartWriter());
 				registerWriter(new HyperlinkWriter());
-				registerWriter(new PictWriter());
+				registerWriter(new FOPictWriterFloatAvoided()); // replace this if your renderer supports fo:float
 			}
 		};
 			
