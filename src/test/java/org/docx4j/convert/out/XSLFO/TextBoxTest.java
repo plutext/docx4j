@@ -32,6 +32,7 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.junit.Ignore;
 
 /**
  * 
@@ -48,6 +49,7 @@ import org.docx4j.wml.Text;
  * @author jharrop
  *
  */
+@Ignore
 public class TextBoxTest {
 	
 	
