@@ -87,36 +87,32 @@ public class Context {
 			log.warn("Caught/ignored " + e.getMessage());
 		}
 		
-		Object namespacePrefixMapper;
+		// Diagnostics regarding JAXB implementation
+		InputStream jaxbPropsIS=null;
 		try {
-			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
-
-			// Diagnostics regarding JAXB implementation
+			// Is MOXy configured?
+			jaxbPropsIS = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
+			log.info("MOXy JAXB implementation intended..");
+		} catch (Exception e3) {
+			log.info("No MOXy JAXB config found; assume not intended..");
+			log.debug(e3.getMessage());
+		}
+		if (jaxbPropsIS==null) {
+			// Only probe for other implementations if no MOXy
 			try {
-				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
-				if (f.exists() ) {
-					log.info("MOXy JAXB implementation intended..");
-				} else { 
-					log.info("MOXy JAXB implementation intended..");
+				Object namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
+				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+					// Java 6
+					log.info("Using Java 6/7 JAXB implementation");
+				} else {
+					log.info("Using JAXB Reference Implementation");			
 				}
-			} catch (Exception e2) {
-				log.debug(e2.getMessage());
-				try {
-					log.info("MOXy JAXB implementation intended..");
-				} catch (Exception e3) {
-					log.debug(e3.getMessage());
-					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-						// Java 6
-						log.info("Using Java 6/7 JAXB implementation");
-					} else {
-						log.info("Using JAXB Reference Implementation");			
-					}
-				}
+				
+			} catch (JAXBException e) {
+				log.error("PANIC! No suitable JAXB implementation available");
+				log.error(e.getMessage(), e);
+				e.printStackTrace();
 			}
-		} catch (JAXBException e) {
-			log.error("PANIC! No suitable JAXB implementation available");
-			log.error(e.getMessage(), e);
-			e.printStackTrace();
 		}
       
       try { 
@@ -145,7 +141,7 @@ public class Context {
 			if (jc.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
 			} else {
-				log.info("Not using MOXy.");				
+				log.info("Not using MOXy; using " + jc.getClass().getName());				
 			}
 			
 			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
