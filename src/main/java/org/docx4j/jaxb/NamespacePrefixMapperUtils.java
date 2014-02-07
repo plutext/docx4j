@@ -34,10 +34,15 @@ public class NamespacePrefixMapperUtils {
 	private static Object prefixMapper;
 	private static Object prefixMapperRels;
 	
+	private static boolean haveTried = false;
 	
 	public static Object getPrefixMapper() throws JAXBException {
 		
 		if (prefixMapper!=null) return prefixMapper;
+		
+		if (haveTried) return null;
+		// will be true soon..
+		haveTried = true;
 		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
