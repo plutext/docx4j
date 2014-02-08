@@ -20,6 +20,8 @@
 
 package org.docx4j.samples;
 
+import java.lang.reflect.Method;
+
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
@@ -104,11 +106,52 @@ public class ContentControlBindingExtensionsOld {
 		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
+		String bound = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
 		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
 		saver.save(filepathprefix + "_bound.docx");
 		System.out.println("Saved: " + filepathprefix + "_bound.docx");
+		
+		// process altChunk
+		if (bound.contains("altChunk")) {
+			try {
+				// Use reflection, so docx4j can be built
+				// by users who don't have the MergeDocx utility
+				Class<?> documentBuilder = Class
+						.forName("com.plutext.merge.ProcessAltChunk");
+				// Method method = documentBuilder.getMethod("merge",
+				// wmlPkgList.getClass());
+				Method[] methods = documentBuilder.getMethods();
+				Method processMethod = null;
+				for (int j = 0; j < methods.length; j++) {
+	//				log.debug(methods[j].getName());
+					if (methods[j].getName().equals("process")) {
+						processMethod = methods[j];
+					}
+				}
+				if (processMethod == null )
+					throw new NoSuchMethodException();
+				
+				startTime = System.currentTimeMillis();
+				
+				wordMLPackage = (WordprocessingMLPackage) processMethod.invoke(null,
+						wordMLPackage);
+	
+				endTime = System.currentTimeMillis();
+				timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
+				System.out.println(
+						XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+						);
+				saver.save(filepathprefix + "_altChunksMerged.docx");
+				System.out.println("Saved: " + filepathprefix + "_altChunksMerged.docx");
+	
+				
+			} catch (ClassNotFoundException e) {
+			} catch (NoSuchMethodException e) {
+			} catch (Exception e) {
+				throw new Docx4JException("Problem processing w:altChunk", e);
+			}	
+		}
 		
 		// Either demonstrate reverter, or stripping of controls;
 		// you can't do both. So comment out one or the other.
@@ -143,5 +186,13 @@ public class ContentControlBindingExtensionsOld {
 		
 	}
 				
+	public void extensionMissing(Exception e) {
+		System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+		System.out.println("* You don't appear to have the MergeDocx paid extension,");
+		System.out.println("* which is necessary to merge docx, or process altChunk.");
+		System.out.println("* Purchases of this extension support the docx4j project.");
+		System.out.println("* Please visit www.plutext.com if you want to buy it.");
+	}
+	
 
 }
