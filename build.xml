@@ -7,7 +7,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.0.0-SNAPSHOT"/>
+	<property name="version" value="3.0.1"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
@@ -116,11 +116,11 @@
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
     	
-    	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext-3.0.0.jar"/>
-        <pathelement location="moxy/org.eclipse.persistence.moxy_2.5.1.jar"/>
-        <pathelement location="moxy/org.eclipse.persistence.core_2.5.1.jar"/>
-        <pathelement location="moxy/org.eclipse.persistence.asm_2.5.1.jar"/>
-        <pathelement location="moxy/org.eclipse.persistence.antlr_2.5.1.jar"/>
+    	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.0.0/docx4j-MOXy-JAXBContext-3.0.0.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.1/org.eclipse.persistence.moxy-2.5.1.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.1/org.eclipse.persistence.core-2.5.1.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.1/org.eclipse.persistence.asm-2.5.1.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.1/org.eclipse.persistence.antlr-2.5.1.jar"/>
         <pathelement location="${m2Repository}/javax/mail/mail/1.4/mail-1.4.jar"/>
         -->
         <!--  end MOXy -->
@@ -213,12 +213,15 @@
             <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/xlsx4j/java" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
+            <!-- 
+            <fileset dir="src/samples/_resources" />
+             -->
         </copy>
     </target>
 	
     <target name="clean">
         <delete dir="bin"/>
-        <delete dir="dist"/>
+        <delete dir="${dist}"/>
     </target>
     <target depends="build-project" name="build"/>
    
@@ -234,6 +237,9 @@
             <src path="src/glox4j/java"/>
             <src path="src/pptx4j/java"/>
             <src path="src/xlsx4j/java"/>
+            <!-- 
+            <src path="src/samples/docx4j"/>
+             -->
             <!-- <classpath refid="docx4j.classpath"/> -->
             <!--  build with earlier than
 
@@ -361,7 +367,7 @@
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:2.9.9.9" />
+            <arg value="-version:3.0.0.1" />
             <arg value="-target:library" />
             <arg line="${docx4j-jars}" />
         </exec>    

@@ -125,7 +125,7 @@
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<outputDirectory>bin-mvn</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
 		<testOutputDirectory>bin</testOutputDirectory>
 		<plugins>
 			<plugin>

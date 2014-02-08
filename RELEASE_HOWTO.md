@@ -1,11 +1,35 @@
 Docx4j release process
 ======================
 
-[Do this process for a beta then a release candidate first; 
+Do this process for a beta then a release candidate first; 
  beta & RC should be pushed to maven repo on GitHub - see notes in pom.
  Create beta from docx4j-ImportXHTML, since beta can include that stuff.
  But don't bother putting that in maven repo.
- Use mvn to build docx4j-ImportXHTML, but then ant to gather the jars ]
+ Use mvn to build docx4j-ImportXHTML, but then ant to gather the jars 
+
+In docx4j pom:
+
+<!-- Uncomment to deploy to GitHub.  MUST Comment out for real release
+<distributionManagement>
+:
+ 
+ 
+When it comes to the actual release, follow the below for:
+
++ docx4j
+
++ xhtmlrenderer
++ docx4j-ImportXHTML
+
++ docx4j-MOXy
+
+TODO: consider which (if either) of xhtmlrenderer and docx4j-ImportXHTML should contain .css & .conf resources
+
+TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
+
+TODO: fix AlteredParts test  
+ 
+---------- 
 
 Check everything is committed
 
@@ -13,7 +37,9 @@ Update Getting Started as necessary (inc HTML and PDF versions)
 
 Check jar versions in pom.xml, build.xml
 
-Run JarCheck on result of mvn install to check its compiled for 1.5
+mvn clean
+
+Run JarCheck on result of mvn install to check its compiled for 1.5 (run it on all jars in dist)
 
 Update README.txt with release info.
 
@@ -25,7 +51,11 @@ Update README.txt with release info.
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
 
+For a clean jar:
+		<outputDirectory>bin-mvn</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+
 git commit / push upstream
+(uses git-remote-https, if you want to force a particular network connection)
 
 Start up the Git Bash session and go to your project directory.
 
@@ -33,7 +63,7 @@ Windows users, you need to start up an SSH agent to provide your passkey when ne
 
 To do this, in your Git Shell type :
 
-    1eval `ssh-agent`  //pay attention to the back tick quotes here
+    eval `ssh-agent`  //pay attention to the back tick quotes here
     
 which should return a piece of text like Agent pid xyz. This command starts the agent and sets up a couple of 
 environment variables relating to the SSH agent. 
@@ -53,13 +83,15 @@ Github RSA key is in the c:\.ssh\ directory. If it isn’t then just substitute 
 $ ssh-add ~/.ssh/id_rsa
 Enter passphrase for /c/Users/jharrop/.ssh/id_rsa: [the github 2 one]
 
+This command prompt can be used to do what follows for the 4 projects.  ie the above only needs to be done once :-)
+
 then per https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
 
 mvn release:clean
 
 mvn release:prepare
 
-in prepare, prompt for passphrase is the *other* one 
+in prepare, prompt for passphrase is the *other* one [e..]
 (if you bugger it up, do git reset --hard, and start again with clean!)
 
 release:prepare ends with:
@@ -155,14 +187,14 @@ since it says it
 
 	don't handle protocol 'git@github.com:file'
 
-You can'so just do:
+so just do:
 
 	$ mvn release:perform -X 
 
 and be patient .. it may look like nothing is happening 
 (frozen checking out... and no network traffic), but have faith....
 
-enter code signing password again
+enter code signing password again [ie e..]
 
 .. then its upload to oss.sonatype.org
 
@@ -214,7 +246,16 @@ ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
     
     but for consistency, use the docx4j jar maven made.
     
-    Put Getting Started in the dist dir
+    Create a dir structure:
+    
+    docx4j-3.x.y.jar
+    - dependencies
+    - documentation
+    - legals
+    - optional
+      + ImportXHTML (3 jars)
+      + MOXy (1 jar - users must download MOXY itself from EclipseLink)
+    - resources
 
     Create docx4j-x.x.x.zip (ant dist, rename the jar as well)
 

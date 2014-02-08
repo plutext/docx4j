@@ -1,6 +1,64 @@
 CHANGELOG
 =========
 
+Version 3.0.1
+=============
+
+
+Release date
+------------
+
+8 Feb 2014
+
+Contributors to this release
+----------------------------
+
+David Becker
+Jason Harrop
+Anton Reshetnikov (batonez)
+Dirk Rewoo
+
+
+Notable Changes in Version 3.0.1
+---------------------------------
+
+OpenDoPE - Handle escaped Flat OPC ie bind rich text content (tag contains 'od:progid=Word.Document') 
+
+Other Changes (non-exhaustive)
+------------------------------
+
+PDF/FO output - basic implementation of textbox handling (dependent on support in FO renderer)
+
+61ea5a2 - FieldsPreprocessor ignore empty w:instrText elements
+5a21b10 - Fields: handle nested p, eg w:p//v:textbox//w:p
+e726d4d - MailMerger: handle quoted field name (containing spaces)
+0057b7b - text box handling in MailMerge (David Becker)
+
+56227b3 - OpenDoPE.  New  CustomXmlDataStoragePartSelector to identify the XML part being replaced
+c672b1f - Renumber bookmarks in repeats
+01203b6 - placeholder.xml - user can override with OpenDoPE/placeholder.xml
+06a8f02 - od:Handler=Picture processes a rich text control containing an image
+1525482 - OpenDoPE org.docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt option to automatcially apply linked paragraph style to bound escaped XHTML
+
+cf9a517 - VML shape interfaces
+87ac08f - use default font size of 10pt (same as Word)
+
+5c297e1 - List numbering emulator - fix for lower lettering (batonez)
+
+ba59b54 - xlsx4j getWorksheet(int index)
+ab59e6c - xlsx4j ExternalLinkPart
+
+7ee0ab5 - pptx4j getSlide(int index)
+86f5ebb - pptx4j SlidePart marshal mc:AlternateContent 
+
+1491394 - mc:AlternateContent JAXB model
+
+ba560ca - Support Google AppEngine (GAE)
+
+dd51255 - RunFontSelector bug fixes
+
+
+
 
 Version 3.0.0
 =============
@@ -9,7 +67,7 @@ Version 3.0.0
 Release date
 ------------
 
-TBD 2013
+26 Nov 2013
 
 Contributors to this release
 ----------------------------
