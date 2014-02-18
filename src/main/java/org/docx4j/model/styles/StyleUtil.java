@@ -1716,10 +1716,7 @@ public class StyleUtil {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createRPr();
 			
-			// getLang TODO
 			destination.setLang(apply(source.getLang(), destination.getLang()));
-			
-			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -2217,16 +2214,7 @@ public class StyleUtil {
 				destination.setCs(source.getCs());
 				destination.setCstheme(null);
 			}
-			if (source.getEastAsia() == null) {
-				// Special case handling for:
-				// <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
-				if ( source.getAscii() != null
-						&& source.getCs() != null
-						&& source.getHAnsi() != null) {
-					// Not sure whether that rule can be relaxed, but we need:-
-					destination.setEastAsiaTheme(null);				
-				}
-			} else {
+			if (source.getEastAsia() != null) {
 				destination.setEastAsia(source.getEastAsia());
 				destination.setEastAsiaTheme(null);				
 			}

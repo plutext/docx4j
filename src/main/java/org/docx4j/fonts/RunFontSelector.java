@@ -700,25 +700,7 @@ public class RunFontSelector {
         	    		
             	    	// 2014 02 18 - not necessarily Japanese!
             	    	// eg 五、劳动报酬 is Chinese
-        	    		//
 	    				vis.fontAction(hAnsi); 
-	    				
-	    				// I'm not sure of the exact rules here;
-	    				// Given that we need rule: contains(langEastAsia, "zh")
-	    				// maybe we don't need rule: eastAsia==null
-	    				// in which case we could also delete the following 
-	    				// from StyleUtil:
-	    				/*
-							if (source.getEastAsia() == null) {
-								// Special case handling for:
-								// <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
-								if ( source.getAscii() != null
-										&& source.getCs() != null
-										&& source.getHAnsi() != null) {
-									// Not sure whether that rule can be relaxed, but we need:-
-									destination.setEastAsiaTheme(null);				
-								}	 
-						*/
         	    		
         	    	} else {
 	        	    	// Japanese
@@ -797,7 +779,14 @@ public class RunFontSelector {
         	    	currentRangeLower = '\uFE70';
         	    	currentRangeUpper = '\uFEFE';	
         	    } else if (c>='\uFF00' && c<='\uFFEF') {
-    				vis.fontAction(eastAsia); 
+        	    	
+        	    	if (eastAsia==null) {
+        	    		// eg <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
+        	    		// for "；" (0xff1b, semicolonmonospace)  and "，" (0xff0c, commamonospace) 
+	    				vis.fontAction(hAnsi); 
+        	    	} else {
+        	    		vis.fontAction(eastAsia);
+        	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFF00';
@@ -848,10 +837,10 @@ public class RunFontSelector {
 	private String getPhysicalFont(String fontName) {
 		
 		log.debug("looking for: " + fontName);
-		if (log.isDebugEnabled()) {
-			Throwable t = new Throwable();
-			log.debug("Call stack", t);
-		}		
+//		if (log.isDebugEnabled()) {
+//			Throwable t = new Throwable();
+//			log.debug("Call stack", t);
+//		}		
 
 		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
 		if (pf!=null) {
