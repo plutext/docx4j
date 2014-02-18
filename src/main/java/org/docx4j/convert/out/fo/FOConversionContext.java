@@ -148,7 +148,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 	
 				public void fontAction(String fontname) {
 					
-//					System.out.println(fontname);
+//					System.out.println("FO RFS fontname: " + fontname);
 //    				Throwable t = new Throwable();
 //    				t.printStackTrace();
 					

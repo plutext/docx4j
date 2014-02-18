@@ -380,7 +380,7 @@ public class PhysicalFonts {
 		        	
 		        	// Add it to the map
 		        	physicalFontMap.put(pf.getName(), pf);
-		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());
+		    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
 
 				if (nameAsInFontTablePart != null && !physicalFontMap.containsKey(nameAsInFontTablePart)) {
 					physicalFontMap.put(nameAsInFontTablePart, pf);

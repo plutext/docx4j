@@ -280,7 +280,6 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 	
     public String getFont(STTheme type, CTLanguage themeFontLang) {
     	
-    	log.debug(type.toString() );
 
     	if (themeFontLang==null) {
     		// then the default fonts for each region as specified by the latin, ea, and cs elements should be used
@@ -289,18 +288,22 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     		
     	} else {
     	
-    		String lang = this.getLang(themeFontLang, type);
+        	log.debug(themeFontLang.toString() );
+        	log.debug(type.toString() );
+
+        	String lang = this.getLang(themeFontLang, type);
     		if (lang==null) {
         		log.debug("lang==null");
         		return getFontFromTheme(type);
     		}
-    		log.debug(lang);
+    		log.debug("--> " + lang);
     		
 //    		Throwable t = new Throwable();
 //    		t.printStackTrace();
     		
     		// need to convert
     		String script = LanguageTagToScriptMapping.getScriptForLanguageTag(lang);
+    		log.debug("--> script: " + script);
     		
     		if (script==null) {
         		return getFontFromTheme(type);
