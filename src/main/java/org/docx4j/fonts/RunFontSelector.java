@@ -696,8 +696,16 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u2F00' && c<='\uDFFF') 
         	    {
-        	    	// Japanese
-    				vis.fontAction(eastAsia); 
+        	    	if (eastAsia==null) {
+            	    	// 2014 02 18 - not necessarily Japanese!
+            	    	// eg  新細明體 is Chinese
+        	    		//
+	    				vis.fontAction(hAnsi); 
+        	    		
+        	    	} else {
+	        	    	// Japanese
+	    				vis.fontAction(eastAsia); 
+        	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u2F00';
@@ -834,6 +842,11 @@ public class RunFontSelector {
 			// at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.fontsInUse(MainDocumentPart.java:238)
 			// at org.docx4j.openpackaging.packages.WordprocessingMLPackage.setFontMapper(WordprocessingMLPackage.java:311)
 
+			
+			if (log.isDebugEnabled()) {
+				Throwable t = new Throwable();
+				log.debug("Call stack", t);
+			}
 			
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
 			String englishFromCJK = CJKToEnglish.toEnglish( fontName);

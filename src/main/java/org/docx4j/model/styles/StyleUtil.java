@@ -2200,30 +2200,48 @@ public class StyleUtil {
 			
 			if (source.getAscii() != null) {
 				destination.setAscii(source.getAscii());
+				destination.setAsciiTheme(null); 
+				// theme trumps non theme, but here destination is "lower" than source
+				// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html 
 			}
 			if (source.getCs() != null) {
 				destination.setCs(source.getCs());
+				destination.setCstheme(null);
 			}
-			if (source.getEastAsia() != null) {
+			if (source.getEastAsia() == null) {
+				// Special case handling for:
+				// <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
+				if ( source.getAscii() != null
+						&& source.getCs() != null
+						&& source.getHAnsi() != null) {
+					// Not sure whether that rule can be relaxed, but we need:-
+					destination.setEastAsiaTheme(null);				
+				}
+			} else {
 				destination.setEastAsia(source.getEastAsia());
+				destination.setEastAsiaTheme(null);				
 			}
 			if (source.getHAnsi() != null) {
 				destination.setHAnsi(source.getHAnsi());
+				destination.setHAnsiTheme(null);				
 			}
 			
-			// TODO: if we have eg ascii value, should we ignore theme val?
 
 			if (source.getAsciiTheme() != null) {
 				destination.setAsciiTheme(source.getAsciiTheme());
+				destination.setAscii(null);  // do this, since theme trumps non theme
 			}
 			if (source.getCstheme() != null) {
 				destination.setCstheme(source.getCstheme());
+				destination.setCs(null);				
 			}
 			if (source.getEastAsiaTheme() != null) {
 				destination.setEastAsiaTheme(source.getEastAsiaTheme());
+				destination.setEastAsia(null);				
 			}
 			if (source.getHAnsiTheme() != null) {
 				destination.setHAnsiTheme(source.getHAnsiTheme());
+				destination.setHAnsi(null);				
 			}
 
 			if (source.getHint() != null) {
