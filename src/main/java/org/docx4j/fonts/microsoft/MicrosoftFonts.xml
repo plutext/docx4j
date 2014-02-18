@@ -21,7 +21,33 @@
     
   -->    
 
-<!-- On Linux and OSX, we want to offer Windows Word 2007 fonts,
+<!-- 
+
+For docx4j PDF output, entries in here feed into the generated fop config.
+For example:
+
+<fop version="1.0">
+  <strict-configuration>true</strict-configuration>
+  <renderers>
+    <renderer mime="application/pdf">
+      <fonts>
+        <font embed-url="file:/C:/Windows/FONTS/calibri.ttf">
+          <font-triplet name="Calibri" style="normal" weight="normal"/>
+        </font>
+        <font embed-url="file:/C:/Windows/FONTS/calibrib.ttf">
+          <font-triplet name="Calibri" style="normal" weight="bold"/>
+        </font>
+        <font embed-url="file:/C:/Windows/FONTS/calibriz.ttf">
+          <font-triplet name="Calibri" style="italic" weight="bold"/>
+        </font>
+
+
+
+
+
+
+
+On Linux and OSX, we want to offer Windows Word 2007 fonts,
      rather than the fonts installed on the platform.
 
 	 see http://support.microsoft.com/kb/924623 for a list of these.
@@ -322,8 +348,14 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 	</font>
 
 
-<font name="Cambria Math" filename="CAMBRIA.TTC"  mac="Cambria Math.ttf" />
-
+<font name="Cambria Math" filename="CAMBRIA.TTC"  mac="Cambria Math.ttf" >
+	<!--  Use Cambria forms for bold, italic.
+	      Word 2010's PDF output seems to be able to output Cambria Math in bold, italic; I'm not sure how..
+	 -->
+		<bold filename="CAMBRIAB.TTF" mac="Cambria Bold.ttf" />
+		<italic filename="CAMBRIAI.TTF" mac="Cambria Italic.ttf" />
+		<bolditalic filename="CAMBRIAZ.TTF" mac="Cambria Bold Italic.ttf"/> 	
+	</font>
 
 <font name="Centaur" filename="CENTAUR.TTF"/>
 
