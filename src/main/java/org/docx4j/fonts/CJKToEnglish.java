@@ -30,9 +30,9 @@ public class CJKToEnglish {
 			return "Malgun Gothic";
 		} else if (fontName.equals("宋体")) {
 //	        <a:font script="Hans" typeface="宋体"/>
-			return "SimSun"; // check this				
-		} else if (fontName.equals("新細明體")) { // Arial (or Tahoma?)
-			return "Arial"; 
+			return "SimSun"; 			
+		} else if (fontName.equals("新細明體")) { 
+			return "PMingLiU"; // according to http://zh.wikipedia.org/wiki/%E5%AE%8B%E4%BD%93
 		} else {
 			return null;
 		}		

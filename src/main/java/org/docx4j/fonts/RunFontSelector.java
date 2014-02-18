@@ -697,10 +697,28 @@ public class RunFontSelector {
         	    else if (c>='\u2F00' && c<='\uDFFF') 
         	    {
         	    	if (eastAsia==null) {
+        	    		
             	    	// 2014 02 18 - not necessarily Japanese!
-            	    	// eg  新細明體 is Chinese
+            	    	// eg 五、劳动报酬 is Chinese
         	    		//
 	    				vis.fontAction(hAnsi); 
+	    				
+	    				// I'm not sure of the exact rules here;
+	    				// Given that we need rule: contains(langEastAsia, "zh")
+	    				// maybe we don't need rule: eastAsia==null
+	    				// in which case we could also delete the following 
+	    				// from StyleUtil:
+	    				/*
+							if (source.getEastAsia() == null) {
+								// Special case handling for:
+								// <w:rFonts w:ascii="SimSun" w:hAnsi="SimSun" w:cs="SimSun"/>
+								if ( source.getAscii() != null
+										&& source.getCs() != null
+										&& source.getHAnsi() != null) {
+									// Not sure whether that rule can be relaxed, but we need:-
+									destination.setEastAsiaTheme(null);				
+								}	 
+						*/
         	    		
         	    	} else {
 	        	    	// Japanese
@@ -830,7 +848,10 @@ public class RunFontSelector {
 	private String getPhysicalFont(String fontName) {
 		
 		log.debug("looking for: " + fontName);
-		
+		if (log.isDebugEnabled()) {
+			Throwable t = new Throwable();
+			log.debug("Call stack", t);
+		}		
 
 		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
 		if (pf!=null) {
@@ -843,10 +864,7 @@ public class RunFontSelector {
 			// at org.docx4j.openpackaging.packages.WordprocessingMLPackage.setFontMapper(WordprocessingMLPackage.java:311)
 
 			
-			if (log.isDebugEnabled()) {
-				Throwable t = new Throwable();
-				log.debug("Call stack", t);
-			}
+
 			
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
 			String englishFromCJK = CJKToEnglish.toEnglish( fontName);

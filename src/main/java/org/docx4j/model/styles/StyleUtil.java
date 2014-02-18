@@ -34,6 +34,7 @@ import org.docx4j.wml.CTCnf;
 import org.docx4j.wml.CTEm;
 import org.docx4j.wml.CTFramePr;
 import org.docx4j.wml.CTHeight;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTShortHexNumber;
 import org.docx4j.wml.CTSignedHpsMeasure;
@@ -1716,6 +1717,8 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createRPr();
 			
 			// getLang TODO
+			destination.setLang(apply(source.getLang(), destination.getLang()));
+			
 			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
@@ -1754,6 +1757,12 @@ public class StyleUtil {
 		}
 		return destination;
 	}
+	
+	public static CTLanguage apply(CTLanguage source, CTLanguage destination) {
+		// TODO refine this?
+		return ((source == null) ? destination : source);
+	}
+	
 
 	public static RPr apply(ParaRPr source, RPr destination) {
 		if (!isEmpty(source)) {
