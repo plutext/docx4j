@@ -791,6 +791,20 @@ public class RunFontSelector {
         	    	
         	    	currentRangeLower = '\uFF00';
         	    	currentRangeUpper = '\uFFEF';	
+        	    } else {
+        	    	// Per http://msdn.microsoft.com/en-us/library/ff533743.aspx
+        	    	// for all ranges not listed in the above, the hAnsi (or hAnsiTheme if defined) font shall be used.
+        	    	String hex = String.format("%04x", (int) c);
+        	    	log.debug("Defaulting to hAnsi for char " + hex);
+    				vis.fontAction(hAnsi); 
+        	    	vis.addCharacterToCurrent(c);
+        	    	
+        	    	currentRangeLower='\u0000';
+        	    	currentRangeUpper='\u0000';
+        	    	
+        	    	// TODO: enhance to allow current to be reused, if font is same
+        	    	
+        	    	
         	    }
     	    }
     	} 
