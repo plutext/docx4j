@@ -244,9 +244,10 @@ public class PartialDeepCopy {
 							((JaxbXmlPart)source).getJAXBContext()));
 			((JaxbXmlPart)destination).setJAXBContext(((JaxbXmlPart)source).getJAXBContext());
 			
-			if (source instanceof MainDocumentPart) {
-				System.out.println("source: " + ((JaxbXmlPart)source).getXML());
-				System.out.println("destination: " + ((JaxbXmlPart)destination).getXML());
+			if (log.isDebugEnabled()
+					&& (source instanceof MainDocumentPart)) {
+				log.debug("source: " + ((JaxbXmlPart)source).getXML());
+				log.debug("destination: " + ((JaxbXmlPart)destination).getXML());
 			}
 			
 			
