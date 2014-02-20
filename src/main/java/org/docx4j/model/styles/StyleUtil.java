@@ -1896,6 +1896,8 @@ public class StyleUtil {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createTblPr();
 			
+			destination.setBidiVisual(apply(source.getBidiVisual(), destination.getBidiVisual()));
+			
 			destination.setTblStyle(apply(source.getTblStyle(), destination.getTblStyle()));
 			destination.setTblpPr(apply(source.getTblpPr(), destination.getTblpPr()));
 			destination.setTblOverlap(apply(source.getTblOverlap(), destination.getTblOverlap()));

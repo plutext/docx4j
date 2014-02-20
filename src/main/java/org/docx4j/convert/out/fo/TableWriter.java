@@ -86,7 +86,9 @@ public class TableWriter extends AbstractTableWriter {
 	}
 	
 	@Override
-	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, 
+			AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
+		
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
@@ -108,6 +110,19 @@ public class TableWriter extends AbstractTableWriter {
 		if (table.getTableWidth() > 0) {
 			tableRoot.setAttribute("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()) );		
 		}
+		
+		
+		// Hebrew: columns appear in reverse order
+		// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/bidiVisual.html
+		// @since 3.0.2
+		if ((table.getEffectiveTableStyle().getTblPr() != null) 
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual()!=null) 
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual().isVal()) ) {
+
+			tableRoot.setAttribute("writing-mode", "rl-tb");
+			
+		}
+				
 	}
 
 	@Override

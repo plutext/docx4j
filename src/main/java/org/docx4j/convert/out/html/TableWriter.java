@@ -135,6 +135,18 @@ public class TableWriter extends AbstractTableWriter {
 			HtmlCssHelper.appendStyle(tableRoot, 
 					Property.composeCss("width", UnitsOfMeasurement.twipToBest(table.getTableWidth())));
 		}
+		
+		// Hebrew: columns appear in reverse order
+		// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/bidiVisual.html
+		// @since 3.0.2
+		if ((table.getEffectiveTableStyle().getTblPr() != null) 
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual()!=null) 
+				&& (table.getEffectiveTableStyle().getTblPr().getBidiVisual().isVal()) ) {
+
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss("direction", "rtl"));
+			
+		}
+		
 	}
 
 	/**
