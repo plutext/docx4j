@@ -109,7 +109,7 @@ public class CustomXmlDataStoragePartSelector {
 				
 				
 			}
-			System.out.println("Couldn't identify XML part from XPaths part entries");
+			log.error("Couldn't identify XML part from XPaths part entries");
 			return null;
 			
 			
@@ -192,7 +192,7 @@ public class CustomXmlDataStoragePartSelector {
 					String itemId = element.getSdtPr().getDataBinding().getStoreItemID().toLowerCase();
 					log.debug("Attempting to use item id: " + itemId);
 					
-					CustomXmlDataStoragePart customXmlDataStoragePart 
+					customXmlDataStoragePart 
 						= (CustomXmlDataStoragePart)customXmlParts.get(itemId);
 					if (customXmlDataStoragePart==null) {
 						log.warn("Couldn't find CustomXmlDataStoragePart referenced from sdt bound with  " + itemId);			

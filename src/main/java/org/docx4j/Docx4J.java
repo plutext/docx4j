@@ -303,8 +303,10 @@ public class Docx4J {
 			insertXMLData(customXmlDataStoragePart, xmlDocument);
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
-			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
-			openDoPEHandler.preprocess();
+			if (wmlPackage.getMainDocumentPart().getXPathsPart()!=null) {
+				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
+				openDoPEHandler.preprocess();
+			}
 			BindingHandler.applyBindings(wmlPackage);
 		}
 		if ((flags & FLAG_BIND_REMOVE_SDT) == FLAG_BIND_REMOVE_SDT) {

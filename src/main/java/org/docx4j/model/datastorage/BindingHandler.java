@@ -145,8 +145,7 @@ public class BindingHandler {
 			XPathsPart xPathsPart = null;
 			
 			if ( ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart() == null) {
-				log.error("OpenDoPE XPaths part missing");
-				//throw new Docx4JException("OpenDoPE XPaths part missing");
+				log.warn("OpenDoPE XPaths part missing"); // OK if no OpenDoPE stuff is used
 			} else {
 				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
 				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
