@@ -32,6 +32,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.relationships.Relationships;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -270,5 +271,40 @@ public abstract class Part extends Base {
 	}
 
     public abstract boolean isContentEqual(Part other) throws Docx4JException;
+    
+    /**
+     * Remove this part from the pkg. Beware: it is up to you to make sure
+     * your content doesn't rely on this part being present!  A symptom of
+     * that would be that Office now reports your file to be corrupt or in 
+     * need of repair.   
+     * 
+     * @since 3.0.2
+     */
+    public void remove() {
+    	
+    	for (Relationship r : getSourceRelationships()) {
+    		
+    		if (r.getParent()==null) {
+    			
+    			log.warn("source rel of " + this.getPartName().getName() + " has no parent rels element");
+    			
+    		} else if (
+    				((Relationships)r.getParent()).getRelationship().remove(r) 
+    			) {
+    			log.debug("Successfully removed rel " + r.getId() );
+    				// we don't know which rels part Relationships belongs to, but it doesn't matter 
+    		} else {
+    			log.warn("source rel of " + this.getPartName().getName() + " not present in parent rels element");
+    		}
+    	}
+    	
+    	if (this.getPackage()==null) {
+    		log.warn(this.getPartName().getName() + " not attached to any package");
+    	} else {
+    		this.getPackage().getParts().remove(getPartName());
+    			// Note, this doesn't remove any child parts from that collection
+    	}
+    	
+    }
 
 }

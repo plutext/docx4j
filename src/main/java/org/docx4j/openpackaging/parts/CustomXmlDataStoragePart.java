@@ -242,4 +242,26 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 		}
 	}	
 	
+    /**
+     * Remove this part from the pkg. Beware: it is up to you to make sure
+     * your content doesn't rely on this part being present!  A symptom of
+     * that would be that Office now reports your file to be corrupt or in 
+     * need of repair.   
+     * 
+     * @since 3.0.2
+     */
+	@Override	
+    public void remove() {
+		
+		String itemId = this.getItemId(); 
+		if (itemId!=null) {
+			log.debug("removing from CustomXmlDataStorageParts " + itemId);
+			this.getPackage().getCustomXmlDataStorageParts().remove(itemId);
+		}		
+		
+		super.remove();
+    	
+    }
+    
+	
 }

@@ -624,6 +624,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 					+ ". Target is " + rel.getTarget() );
 		}
 		jaxbElement.getRelationship().add(rel);
+		rel.setParent(jaxbElement);
 		return true;
 	}
 	
