@@ -14,10 +14,13 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -159,5 +162,31 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		}
 		
 	}
+	
+	/**
+	 * @since 3.0.2
+	 */
+	public String getItemId() {
+		
+		if (this.getRelationshipsPart()==null) { 
+			return null; 
+		} else {
+			// Look in its rels for rel of @Type customXmlProps (eg @Target="itemProps1.xml")
+			Relationship r = this.getRelationshipsPart().getRelationshipByType(
+					Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
+			if (r==null) {
+				log.warn(".. but that doesn't point to a  customXmlProps part");
+				return null;
+			}
+			CustomXmlDataStoragePropertiesPart customXmlProps = 
+				(CustomXmlDataStoragePropertiesPart)this.getRelationshipsPart().getPart(r);
+			if (customXmlProps==null) {
+				log.warn(".. but the target seems to be missing?");
+				return null;
+			} else {
+				return customXmlProps.getItemId().toLowerCase();
+			}
+		}
+	}	
 	
 }

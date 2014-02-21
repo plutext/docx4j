@@ -58,6 +58,7 @@ import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
@@ -215,5 +216,30 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 		return data.getXML();
 	}
 
+	/**
+	 * @since 3.0.2
+	 */
+	public String getItemId() {
+		
+		if (this.getRelationshipsPart()==null) { 
+			return null; 
+		} else {
+			// Look in its rels for rel of @Type customXmlProps (eg @Target="itemProps1.xml")
+			Relationship r = this.getRelationshipsPart().getRelationshipByType(
+					Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
+			if (r==null) {
+				log.warn(".. but that doesn't point to a  customXmlProps part");
+				return null;
+			}
+			CustomXmlDataStoragePropertiesPart customXmlProps = 
+				(CustomXmlDataStoragePropertiesPart)this.getRelationshipsPart().getPart(r);
+			if (customXmlProps==null) {
+				log.warn(".. but the target seems to be missing?");
+				return null;
+			} else {
+				return customXmlProps.getItemId().toLowerCase();
+			}
+		}
+	}	
 	
 }
