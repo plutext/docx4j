@@ -149,22 +149,22 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 		<bolditalic filename="arialbi.ttf" mac="Arial Bold Italic.ttf"/>
 	</font>
 
-<font name="Arial Black" filename="ariblk.ttf"/>
+<font name="Arial Black" filename="ariblk.ttf" mac="arial black.ttf"/>
 		
-<font name="Comic Sans MS" filename="comic.ttf"  coreWebFont="true">
-		<bold filename="comicbd.ttf"/>
+<font name="Comic Sans MS" filename="comic.ttf"  coreWebFont="true" mac="comic sans ms.ttf">
+		<bold filename="comicbd.ttf" mac="comic sans ms bold.ttf"/>
 	</font>
 	
-<font name="Courier New" filename="cour.ttf" coreWebFont="true">
-		<bold filename="courbd.ttf"/>
-		<italic filename="couri.ttf"/>
-		<bolditalic filename="courbi.ttf"/>
+<font name="Courier New" filename="cour.ttf" coreWebFont="true" mac="courier new.ttf">
+		<bold filename="courbd.ttf" mac="courier new bold.ttf" />
+		<italic filename="couri.ttf" mac="courier new italic.ttf"/>
+		<bolditalic filename="courbi.ttf" mac="courier new bold italic.ttf"/>
 	</font>
 		
-<font name="Georgia" filename="georgia.ttf" coreWebFont="true">
-		<bold filename="georgiab.ttf"/>
-		<italic filename="georgiai.ttf"/>
-		<bolditalic filename="georgiaz.ttf"/>
+<font name="Georgia" filename="georgia.ttf" coreWebFont="true" mac="georgia.ttf">
+		<bold filename="georgiab.ttf" mac="georgia bold.ttf"/>
+		<italic filename="georgiai.ttf" mac="georgia italic.ttf"/>
+		<bolditalic filename="georgiaz.ttf" mac="georgia bold italic.ttf"/>
 	</font>
 	
 <font name="Impact" filename="impact.ttf" coreWebFont="true"/>
@@ -175,10 +175,10 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 		<bolditalic filename="timesbi.ttf" mac="Times New Roman Bold Italic.ttf" />
 	</font>
 
-<font name="Trebuchet MS" filename="trebuc.ttf" coreWebFont="true">
-		<bold filename="trebucbd.ttf"/>
-		<italic filename="trebucit.ttf"/>
-		<bolditalic filename="trebucbi.ttf"/>
+<font name="Trebuchet MS" filename="trebuc.ttf" coreWebFont="true" mac="trebuchet ms.ttf">
+		<bold filename="trebucbd.ttf" mac="trebuchet ms bold.ttf"/>
+		<italic filename="trebucit.ttf" mac="trebuchet ms italic.ttf"/>
+		<bolditalic filename="trebucbi.ttf" mac="trebuchet ms bold italic.ttf"/>
 	</font>
 		
 <font name="Verdana" filename="verdana.ttf"  mac="Verdana.ttf" coreWebFont="true">
@@ -187,7 +187,7 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 		<bolditalic filename="verdanaz.ttf" mac="Verdana Bold Italic.ttf" />
 	</font>	
 
-<font name="Webdings" filename="webdings.ttf" coreWebFont="true"/>	
+<font name="Webdings" filename="webdings.ttf" coreWebFont="true" mac="webdings.ttf"/>	
 
 <!-- Core UI fonts -->
 	
@@ -199,8 +199,8 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 		<bolditalic filename="SEGOEUIZ.TTF"/>
 	</font>
 
-<font name="Tahoma" filename="tahoma.ttf" secondary="true">
-		<bold filename="tahomabd.ttf"/>
+<font name="Tahoma" filename="tahoma.ttf" secondary="true" mac="tahoma.ttf">
+		<bold filename="tahomabd.ttf" mac="tahoma bold.ttf"/>
 	</font>
 
 <!-- ClearType Collection fonts -->
@@ -293,14 +293,14 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 <font name="Algerian" filename="ALGER.TTF"/>
 
 <font name="Arial Narrow" filename="ARIALN.TTF">
-		<bold filename="ARIALNB.TTF"/>
-		<italic filename="ARIALNI.TTF"/>
-		<bolditalic filename="ARIALNBI.TTF"/>
+		<bold filename="ARIALNB.TTF" mac="arial narrow bold.ttf"/>
+		<italic filename="ARIALNI.TTF" mac="arial narrow italic.ttf"/>
+		<bolditalic filename="ARIALNBI.TTF" mac="arial narrow bold italic.ttf"/>
 	</font>
 
-<font name="Arial Unicode MS" filename="ARIALUNI.TTF"/>
+<font name="Arial Unicode MS" filename="ARIALUNI.TTF" mac="arial unicode.ttf"/>
 
-<font name="Baskerville Old Face" filename="BASKVILL.TTF"/>
+<font name="Baskerville Old Face" filename="BASKVILL.TTF" mac="baskerville.ttc"/>
 
 <font name="Batang" filename="batang.ttc"  mac="Batang.ttf" />
 <font name="BatangChe"  filename="batang.ttc"/>
@@ -439,7 +439,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <!-- missing on Vista, and currently no panose information in our 
 	 sample fonts part -->
-<font name="Lucida Sans" filename="lsans.ttf">
+<font name="Lucida Sans" filename="lsans.ttf" mac="lucida sans unicode.ttf">
 		<bold filename="lsansd.ttf"/>
 		<italic filename="lsansi.ttf"/>
 		<bolditalic filename="lsansdi.ttf"/>
@@ -457,14 +457,14 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Mangal" filename="mangal.ttf"/>
 
-<font name="Marlett" filename="marlett.ttf"/> 
+<font name="Marlett" filename="marlett.ttf" mac="marlett.ttf"/> 
 <!-- Marlett filename is a guess.
 	 It is not listed in kb/924623, so not installed with Office 2007? -->
 
 <font name="Matura MT Script Capitals" filename="MATURASC.TTF"/>
 
 
-<font name="MingLiU" filename="mingliu.ttc"/>
+<font name="MingLiU" filename="mingliu.ttc" mac="mingliu.ttf"/>
 <font name="PMingLiU" filename="mingliu.ttc" mac="PMingLiU.ttf" />
 
 <font name="Mistral" filename="MISTRAL.TTF"/>

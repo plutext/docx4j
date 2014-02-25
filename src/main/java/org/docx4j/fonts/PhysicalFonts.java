@@ -435,6 +435,10 @@ public class PhysicalFonts {
 
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getBold().getMac()==null) {
+					log.debug("No bold form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getBold().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getBold().getFilename().toLowerCase();
@@ -463,6 +467,10 @@ public class PhysicalFonts {
 			// since MicrosoftFonts.xml doesn't give the associate font name
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getBolditalic().getMac()==null) {
+					log.debug("No Bolditalic form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getBolditalic().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getBolditalic().getFilename().toLowerCase();
@@ -491,6 +499,10 @@ public class PhysicalFonts {
 			// since MicrosoftFonts.xml doesn't give the associate font name
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getItalic().getMac()==null) {
+					log.info("No italic form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getItalic().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getItalic().getFilename().toLowerCase();
