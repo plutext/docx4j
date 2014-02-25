@@ -4,6 +4,8 @@
 	xmlns:java="http://xml.apache.org/xalan/java"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	
 	xmlns:wordml2010="http://schemas.microsoft.com/office/word/2010/wordml"
 	xmlns:wordml201011="http://schemas.microsoft.com/office/word/2010/11/wordml"
 
@@ -82,5 +84,35 @@
   <!--  Most JAXB implementations don't signal additional attributes as errors. -->
   <xsl:template match="@wordml2010:*" />  
   <xsl:template match="@wordml201011:*" />  
+  
+  
+  <!-- Workaround for Google Docs as at 20140225 <w:tblW w:w="10206.0" w:type="dxa"/> 
+       See http://www.docx4java.org/forums/docx-java-f6/problem-with-document-created-by-google-docs-t1802.html
+       Where else does Google Docs make the same sort of error?
+  -->
+  <xsl:template match="w:tblW"> 
+  	<xsl:choose>
+  		<xsl:when test="@w:type='dxa'">
+  			<w:tblW>
+			      <xsl:apply-templates select="@*"  mode="GoogleDocsTblWFix"/>
+  			</w:tblW>  		
+  		</xsl:when>
+  		<xsl:otherwise>
+		    <xsl:copy>
+		      <xsl:apply-templates select="@*|node()"/>
+		    </xsl:copy>
+  		
+  		</xsl:otherwise>
+  	</xsl:choose> 
+  	</xsl:template>
+  	  	
+  <xsl:template match="@w:w" mode="GoogleDocsTblWFix" priority="2">
+  	<xsl:attribute name="w:w"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template> 
+  
+  <xsl:template match="@w:*" mode="GoogleDocsTblWFix" priority="1">
+  	<xsl:copy-of select="."/>
+  </xsl:template> 
+  
    
 </xsl:stylesheet>

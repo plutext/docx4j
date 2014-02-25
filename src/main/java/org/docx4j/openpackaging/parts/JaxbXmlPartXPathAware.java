@@ -315,7 +315,15 @@ implements XPathEnabled<E> {
 			try {
 				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 					// Unwrap, so we have eg CTEndnotes, not JAXBElement
-			} catch (UnmarshalException ue) {
+			} catch (Exception ue) {
+
+				if (ue instanceof UnmarshalException) {
+					// Usually..
+				} else {
+					// eg java.lang.NumberFormatException
+					log.error( ue.getMessage(), ue);
+					log.info(".. can recover if problem is w:tblW/@w:w");
+				}
 				
 				if (is.markSupported() ) {
 					// When reading from zip, we use a ByteArrayInputStream,
@@ -415,7 +423,14 @@ implements XPathEnabled<E> {
 			
 			try {
 				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
-			} catch (UnmarshalException ue) {
+			} catch (Exception ue) {
+				if (ue instanceof UnmarshalException) {
+					// Usually..
+				} else {
+					// eg java.lang.NumberFormatException
+					log.error( ue.getMessage(), ue);
+					log.info(".. can recover if problem is w:tblW/@w:w");					
+				}
 				log.info("encountered unexpected content; pre-processing");
 				org.w3c.dom.Document doc = null;
 				try {
