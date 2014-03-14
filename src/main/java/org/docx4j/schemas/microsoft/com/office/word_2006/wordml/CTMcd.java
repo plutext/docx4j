@@ -37,15 +37,15 @@ public class CTMcd
     implements Child
 {
 
-    @XmlAttribute(name = "macroName")
+    @XmlAttribute(name = "macroName", namespace = "http://schemas.microsoft.com/office/word/2006/wordml")
     protected String macroName;
-    @XmlAttribute(name = "name")
+    @XmlAttribute(name = "name", namespace = "http://schemas.microsoft.com/office/word/2006/wordml")
     protected String name;
-    @XmlAttribute(name = "menuHelp")
+    @XmlAttribute(name = "menuHelp", namespace = "http://schemas.microsoft.com/office/word/2006/wordml")
     protected String menuHelp;
-    @XmlAttribute(name = "bEncrypt")
+    @XmlAttribute(name = "bEncrypt", namespace = "http://schemas.microsoft.com/office/word/2006/wordml")
     protected String bEncrypt;
-    @XmlAttribute(name = "cmg")
+    @XmlAttribute(name = "cmg", namespace = "http://schemas.microsoft.com/office/word/2006/wordml")
     protected String cmg;
     @XmlTransient
     private Object parent;

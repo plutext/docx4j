@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema elementFormDefault="qualified"
+<xsd:schema elementFormDefault="qualified" attributeFormDefault="qualified"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
