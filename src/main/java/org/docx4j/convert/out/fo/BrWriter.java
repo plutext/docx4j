@@ -57,6 +57,8 @@ public class BrWriter extends AbstractBrWriter {
 			// at http://stackoverflow.com/questions/3661483/inserting-a-line-break-in-a-pdf-generated-from-xsl-fo-using-xslvalue-of
 			ret.setAttribute("linefeed-treatment", "preserve");
 			ret.setAttribute("white-space-treatment", "preserve");
+			//ret.setAttribute("space-after", "0in"); // doesn't help
+			ret.setAttribute("line-height", "0pt"); // suits FOP 1.1
 			ret.setTextContent("\n");
 		}
 		return ret;
