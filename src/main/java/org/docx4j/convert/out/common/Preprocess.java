@@ -32,6 +32,7 @@ import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnF
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
 import org.docx4j.convert.out.common.preprocess.PageBreak;
+import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -165,6 +166,12 @@ public class Preprocess implements ConversionFeatures {
 			FopWorkaroundReplacePageBreakInEachList.process(ret);
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}
+		if (features.contains(PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)) {
+			log.debug("PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX");
+			ParagraphStylesInTableFix.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+
 		
 		log.debug("Results of preprocessing: " + ret.getMainDocumentPart().getXML());
 		
@@ -210,9 +217,9 @@ public class Preprocess implements ConversionFeatures {
 		if (features == null) {
 			throw new IllegalArgumentException("The set of the features is null.");
 		}
-		//PP_COMMON_DEEP_COPY, isn' required, no check
-		//PP_COMMON_MOVE_BOOKMARKS, isn' required, no check
-		//PP_COMMON_CONTAINERIZATION, isn' required, no check
+		//PP_COMMON_DEEP_COPY, isn't required, no check
+		//PP_COMMON_MOVE_BOOKMARKS, isn't required, no check
+		//PP_COMMON_CONTAINERIZATION, isn't required, no check
 		//PP_COMMON_COMBINE_FIELDS is required if PP_COMMON_PAGE_NUMBERING is selected
 		if (features.contains(PP_COMMON_PAGE_NUMBERING)) {
 			features.add(PP_COMMON_COMBINE_FIELDS);

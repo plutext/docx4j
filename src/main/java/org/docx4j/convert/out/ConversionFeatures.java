@@ -111,6 +111,21 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_PDF_COVERPAGE_MOVE_SECTPR = "pp.common.coverpagemovesectpr";
 	
+	/**
+	 * In a cell, a paragraph uses the table's paragraph properties,
+	 * plus the relevant paragraph style (Normal, by default).
+	 * The relevant paragraph style trumps the values from the
+	 * table's paragraph properties, so that would mean giving
+	 * the doc defaults (which we've made part of our styles) priority
+	 * over the table's paragraph properties, which is wrong.
+	 * TO avoid this, this preprocessor creates a new style, which encapsulates the
+	 * paragraph style, with DocDefaults given lower priority 
+	 * than table style.  This created style has no w:basedOn setting.
+	 * This preprocessor is required if paragraphs in tables are being styled incorrectly.
+	 * It wouldn't be required but for our DocDefaults styles hack!
+	 * @since 3.0.2
+	 */
+	public static final String PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX = "pp.common.tbl-p-style-fix";
 		
 	
 	/** Default features, that get applied to a PDF conversion
@@ -124,7 +139,8 @@ public interface ConversionFeatures {
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_PAGE_NUMBERING,
 		PP_COMMON_CREATE_SECTIONS,
-		PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH
+		PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH,
+		PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX // 3.0.2 helps a bit (not as much as for HTML)
 		//, PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM // experimental in 3.0.1
 	};
 
@@ -137,6 +153,7 @@ public interface ConversionFeatures {
 		PP_COMMON_CONTAINERIZATION,
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_DUMMY_PAGE_NUMBERING,
-		PP_COMMON_DUMMY_CREATE_SECTIONS
+		PP_COMMON_DUMMY_CREATE_SECTIONS,
+		PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX // 3.0.2
 	};
 }
