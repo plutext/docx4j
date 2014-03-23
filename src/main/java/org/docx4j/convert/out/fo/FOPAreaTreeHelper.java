@@ -110,7 +110,15 @@ public class FOPAreaTreeHelper {
 			contents.add(p);
 			
 		}
+		
+		if (hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr()!=null) {
 
+			contents.add(filler);
+			contents.add(filler);
+			contents.add(filler);
+			contents.add(filler);
+			
+		}
     }
     
     private static P createFillerP() {
@@ -150,7 +158,7 @@ public class FOPAreaTreeHelper {
     }    
 	
     
-    static org.w3c.dom.Document getAreaTreeViaFOP(WordprocessingMLPackage hfPkg) throws Docx4JException, ParserConfigurationException, SAXException, IOException  {
+    static org.w3c.dom.Document getAreaTreeViaFOP(WordprocessingMLPackage hfPkg, boolean useXSLT) throws Docx4JException, ParserConfigurationException, SAXException, IOException  {
 
     	  // Currently FOP dependent!  But an Antenna House version ought to be feasible.
     	
@@ -166,7 +174,11 @@ public class FOPAreaTreeHelper {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
-        Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+        if (useXSLT) {
+        	Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+        } else {
+        	Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        	
+        }
         
         InputStream is = new ByteArrayInputStream(os.toByteArray());
 		javax.xml.parsers.DocumentBuilderFactory dbf = XmlUtils.getDocumentBuilderFactory().newInstance();

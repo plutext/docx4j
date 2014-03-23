@@ -90,40 +90,7 @@ public class LayoutMasterSetBuilder {
 		if ( foSettings.getApacheFopMime() ==null 
 				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
 
-			WordprocessingMLPackage wordMLPackage = context.getWmlPackage();
-			
-			// Make a copy of it
-			Set<String> relationshipTypes = new TreeSet<String>();
-				relationshipTypes.add(Namespaces.DOCUMENT);
-				relationshipTypes.add(Namespaces.HEADER);
-				relationshipTypes.add(Namespaces.FOOTER);
-				//those are probably not affected but get visited by the 
-				//default TraversalUtil.
-				relationshipTypes.add(Namespaces.ENDNOTES);
-				relationshipTypes.add(Namespaces.FOOTNOTES);
-				relationshipTypes.add(Namespaces.COMMENTS);
-				
-			WordprocessingMLPackage hfPkg;
-			try {
-				hfPkg = (WordprocessingMLPackage) PartialDeepCopy.process(wordMLPackage, relationshipTypes);
-				
-				FOPAreaTreeHelper.trimContent(hfPkg);
-				
-				org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg);
-				
-				System.out.println(XmlUtils.w3CDomNodeToString(areaTree));
-				
-				Map<String, Integer> headerBpda = new HashMap<String, Integer>();
-				Map<String, Integer> footerBpda = new HashMap<String, Integer>();
-				
-				FOPAreaTreeHelper.calculateHFExtents(areaTree,  headerBpda,  footerBpda);
-				
-				FOPAreaTreeHelper.adjustLayoutMasterSet(lms, context.getSections(), headerBpda, footerBpda);				
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			fixExtents( lms, context, true);
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
@@ -134,7 +101,49 @@ public class LayoutMasterSetBuilder {
 		return docfrag;		
 	}
 	
+	private static void fixExtents(LayoutMasterSet lms, AbstractWmlConversionContext context, boolean useXSLT) {
 
+		WordprocessingMLPackage wordMLPackage = context.getWmlPackage();
+		
+//		log.debug(wordMLPackage.getMainDocumentPart().getXML());
+		
+		log.debug("incoming LMS: " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
+		
+		// Make a copy of it
+		Set<String> relationshipTypes = new TreeSet<String>();
+			relationshipTypes.add(Namespaces.DOCUMENT);
+			relationshipTypes.add(Namespaces.HEADER);
+			relationshipTypes.add(Namespaces.FOOTER);
+			//those are probably not affected but get visited by the 
+			//default TraversalUtil.
+			relationshipTypes.add(Namespaces.ENDNOTES);
+			relationshipTypes.add(Namespaces.FOOTNOTES);
+			relationshipTypes.add(Namespaces.COMMENTS);
+			
+		WordprocessingMLPackage hfPkg;
+		try {
+			hfPkg = (WordprocessingMLPackage) PartialDeepCopy.process(wordMLPackage, relationshipTypes);
+			
+			FOPAreaTreeHelper.trimContent(hfPkg);
+			
+			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT);
+			
+			log.debug(XmlUtils.w3CDomNodeToString(areaTree));
+			
+			Map<String, Integer> headerBpda = new HashMap<String, Integer>();
+			Map<String, Integer> footerBpda = new HashMap<String, Integer>();
+			
+			FOPAreaTreeHelper.calculateHFExtents(areaTree,  headerBpda,  footerBpda);
+			
+			FOPAreaTreeHelper.adjustLayoutMasterSet(lms, context.getSections(), headerBpda, footerBpda);				
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		log.debug("resulting LMS: " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
+		
+	}
 	
     /**
      * For XSLFOExporterNonXSLT
@@ -150,7 +159,7 @@ public class LayoutMasterSetBuilder {
 		if ( foSettings.getApacheFopMime() ==null 
 				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
 			
-			// TODO: we currently have no way of doing this other than by using FOP!
+			fixExtents( lms, context, false);
 
 		}
 		

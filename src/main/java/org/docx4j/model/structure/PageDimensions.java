@@ -330,7 +330,8 @@ public class PageDimensions {
 	 */
 	public int getHeaderMargin() {
 		if (pgMar.getHeader()==null 
-				|| pgMar.getHeader().intValue() ==0 ) {
+//				|| pgMar.getHeader().intValue() ==0 
+				) {
 			return 720; //default in Word 2010 is 1/2 inch
 		} else {
 			return pgMar.getHeader().intValue();
@@ -342,7 +343,8 @@ public class PageDimensions {
 	 */
 	public int getFooterMargin() {
 		if (pgMar.getFooter()==null 
-				|| pgMar.getFooter().intValue() ==0 ) {
+//				|| pgMar.getFooter().intValue() ==0 
+				) {
 			return 720; //default in Word 2010 is 1/2 inch
 		} else {
 			return pgMar.getFooter().intValue();
