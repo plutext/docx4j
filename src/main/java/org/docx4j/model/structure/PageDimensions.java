@@ -331,7 +331,7 @@ public class PageDimensions {
 	public int getHeaderMargin() {
 		if (pgMar.getHeader()==null 
 				|| pgMar.getHeader().intValue() ==0 ) {
-			return 708;
+			return 720; //default in Word 2010 is 1/2 inch
 		} else {
 			return pgMar.getHeader().intValue();
 		}
@@ -343,34 +343,10 @@ public class PageDimensions {
 	public int getFooterMargin() {
 		if (pgMar.getFooter()==null 
 				|| pgMar.getFooter().intValue() ==0 ) {
-			return 1440;
+			return 720; //default in Word 2010 is 1/2 inch
 		} else {
 			return pgMar.getFooter().intValue();
 		}
 	}
-	
-	int headerExtent = 708;
-	/**
-	 * Get the height of the header. In Word, the size of header and footer areas can change dynamically;
-	 * for PDF output, you need to set this appropriately.  It defaults to 708 TWIPs 
-	 */
-	public int getHeaderExtent() {
-		return headerExtent;
-	}
-	public void setHeaderExtent(int headerExtent) {
-		this.headerExtent = headerExtent;
-	}
-
-	int footerExtent = 708;
-	/**
-	 * Get the height of the footer. In Word, the size of header and footer areas can change dynamically;
-	 * for PDF output, you need to set this appropriately.  It defaults to 708 TWIPs 
-	 */
-	public int getFooterExtent() {
-		return footerExtent;
-	}
-	public void setFooterExtent(int footerExtent) {
-		this.footerExtent = footerExtent;
-	}
-	
+		
 }

@@ -19,17 +19,24 @@
  */
 package org.docx4j.convert.out.fo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.fop.apps.MimeConstants;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
+import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.plutext.jaxb.xslfo.ObjectFactory;
@@ -41,12 +48,29 @@ import org.plutext.jaxb.xslfo.RegionBefore;
 import org.plutext.jaxb.xslfo.RegionBody;
 import org.plutext.jaxb.xslfo.RepeatablePageMasterAlternatives;
 import org.plutext.jaxb.xslfo.SimplePageMaster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
+
+
 
 /**
  * A description of how this stuff works
  * can be found at /docs/headers_footers.docx
+ * 
+ * Its not possible to let FOP set the height (@extent) of the header and footer regions 
+ * automatically: http://apache-fop.1065347.n5.nabble.com/Auto-size-header-to-fit-with-content-td4455.html 
+ * 
+ * So we need to set the height (@extent) of the header and footer regions explicitly.
+ * 
+ * We do that by creating a temp FO file which contains essentially just the headers/footers,
+ * then interrogating FOP's area tree representation to find the height of each.
+ * 
+ * So:
+ * 1. create LayoutMasterSet (with large extents)
+ * 2. generate area tree from that
+ * 3. return LayoutMasterSet (with required extents)
  * 
  * @author jharrop
  *
@@ -59,13 +83,58 @@ public class LayoutMasterSetBuilder {
 		
 	public static DocumentFragment getLayoutMasterSetFragment(AbstractWmlConversionContext context) {
 
-		LayoutMasterSet lms = getFoLayoutMasterSet(context);		
+		LayoutMasterSet lms = getFoLayoutMasterSet(context);	
+		
+		// Generate area tree, but avoid infinite loop!
+		FOSettings foSettings = (FOSettings)context.getConversionSettings();
+		if ( foSettings.getApacheFopMime() ==null 
+				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
+
+			WordprocessingMLPackage wordMLPackage = context.getWmlPackage();
+			
+			// Make a copy of it
+			Set<String> relationshipTypes = new TreeSet<String>();
+				relationshipTypes.add(Namespaces.DOCUMENT);
+				relationshipTypes.add(Namespaces.HEADER);
+				relationshipTypes.add(Namespaces.FOOTER);
+				//those are probably not affected but get visited by the 
+				//default TraversalUtil.
+				relationshipTypes.add(Namespaces.ENDNOTES);
+				relationshipTypes.add(Namespaces.FOOTNOTES);
+				relationshipTypes.add(Namespaces.COMMENTS);
+				
+			WordprocessingMLPackage hfPkg;
+			try {
+				hfPkg = (WordprocessingMLPackage) PartialDeepCopy.process(wordMLPackage, relationshipTypes);
+				
+				FOPAreaTreeHelper.trimContent(hfPkg);
+				
+				org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg);
+				
+				System.out.println(XmlUtils.w3CDomNodeToString(areaTree));
+				
+				Map<String, Integer> headerBpda = new HashMap<String, Integer>();
+				Map<String, Integer> footerBpda = new HashMap<String, Integer>();
+				
+				FOPAreaTreeHelper.calculateHFExtents(areaTree,  headerBpda,  footerBpda);
+				
+				FOPAreaTreeHelper.adjustLayoutMasterSet(lms, context.getSections(), headerBpda, footerBpda);				
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
+		
+		
 		return docfrag;		
 	}
+	
+
 	
     /**
      * For XSLFOExporterNonXSLT
@@ -74,13 +143,24 @@ public class LayoutMasterSetBuilder {
      */	
 	public static void appendLayoutMasterSetFragment(AbstractWmlConversionContext context, Node foRoot) {
 
-		LayoutMasterSet lms = getFoLayoutMasterSet(context);		
+		LayoutMasterSet lms = getFoLayoutMasterSet(context);	
+		
+		// Generate area tree, but avoid infinite loop!
+		FOSettings foSettings = (FOSettings)context.getConversionSettings();
+		if ( foSettings.getApacheFopMime() ==null 
+				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
+			
+			// TODO: we currently have no way of doing this other than by using FOP!
+
+		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		XmlUtils.treeCopy(document.getDocumentElement(), foRoot);
 	}
+
 	
 	private static LayoutMasterSet getFoLayoutMasterSet(AbstractWmlConversionContext context) {
+		
 		
 		LayoutMasterSet lms = getFactory().createLayoutMasterSet();
 		List<ConversionSectionWrapper> sections = context.getSections().getList();
@@ -157,7 +237,9 @@ public class LayoutMasterSetBuilder {
 			// SECOND, create page-sequence-masters
 			lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createPageSequenceMaster(hf, sectionName )  );
-		}	
+		}
+		
+		// 
 		
 		return lms;
 	}
@@ -218,13 +300,13 @@ public class LayoutMasterSetBuilder {
 		return psm;
 	}
 	
-	private static final int HEADER_PADDING_TWIP = 360;
-	private static final int FOOTER_PADDING_TWIP = 360;
-	private static final int MIN_PAGE_MARGIN = 360;
 	
 	private static SimplePageMaster createSimplePageMaster( 
 			String masterName, PageDimensions page, String appendRegionName, 
 			boolean needBefore, boolean needAfter) {
+		
+		// This method uses dummy large extents
+		// A later step fixes them.
 		
 		SimplePageMaster spm = getFactory().createSimplePageMaster();
 		spm.setMasterName(masterName);
@@ -262,6 +344,8 @@ public class LayoutMasterSetBuilder {
 		rb.setMarginLeft("0mm");
 		rb.setMarginRight("0mm");
 		
+		float halfPageHeight = page.getPgSz().getH().intValue()/40; // convert from twips, then * 0.5
+		String halfPageHeightPts = halfPageHeight + "pt";  
 		
 		spm.setRegionBody(rb);
 		
@@ -270,19 +354,19 @@ public class LayoutMasterSetBuilder {
 			RegionBefore rBefore = getFactory().createRegionBefore();
 			rBefore.setRegionName("xsl-region-before-"+appendRegionName);
 			spm.setRegionBefore(rBefore);
-
-			// Make margin smaller, because header takes up space it would otherwise occupy			
+			
+			// Margin top on SPM is space between the page edge and the start of the header			
 			int marginTopTwips 
-				= page.getPgMar().getTop().intValue() 
-					- (HEADER_PADDING_TWIP + page.getHeaderExtent() + page.getHeaderMargin() );
-			if (marginTopTwips<MIN_PAGE_MARGIN) marginTopTwips=MIN_PAGE_MARGIN;				
+				=  page.getHeaderMargin();
 			spm.setMarginTop( UnitsOfMeasurement.twipToBest(marginTopTwips ) );
 			
 			// Size header manually
-			rBefore.setExtent( UnitsOfMeasurement.twipToBest(page.getHeaderExtent() ));
+			rBefore.setExtent( halfPageHeightPts); // A4 portrait is 297mm high
+			
 			
 			// Leave room for this region in body margin
-			rb.setMarginTop(UnitsOfMeasurement.twipToBest(page.getHeaderExtent()+ HEADER_PADDING_TWIP ));
+			rb.setMarginTop(halfPageHeightPts);
+			
 			
 		} else {
 			// No header
@@ -295,19 +379,14 @@ public class LayoutMasterSetBuilder {
 			rAfter.setRegionName("xsl-region-after-"+appendRegionName);
 			spm.setRegionAfter(rAfter);
 			
-			// Make margin smaller, because footer takes up space it would otherwise occupy  
-			int marginBottomTwips
-					= page.getPgMar().getBottom().intValue()
-						- (FOOTER_PADDING_TWIP + page.getFooterExtent() + page.getFooterMargin() );
-			if (marginBottomTwips<MIN_PAGE_MARGIN) marginBottomTwips=MIN_PAGE_MARGIN;			
-			log.debug("marginBottomTwips: " + marginBottomTwips );
+			int marginBottomTwips= page.getFooterMargin();
 			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(marginBottomTwips) );
 			
 			// Size footer manually
-			rAfter.setExtent( UnitsOfMeasurement.twipToBest(page.getFooterExtent() ) );
+			rAfter.setExtent( halfPageHeightPts); // A4 portrait is 297mm high
 					
 			// Leave room for this region in body margin
-			rb.setMarginBottom(UnitsOfMeasurement.twipToBest(page.getFooterExtent() + FOOTER_PADDING_TWIP ) );
+			rb.setMarginBottom(halfPageHeightPts );
 			
 		} else {
 			// No footer
