@@ -45,7 +45,7 @@ public class FOSettings extends AbstractConversionSettings {
 
 	public FOSettings() {
 		super();
-		addFeatures(DEFAULT_PDF_FEATURES);
+		addFeatures(ConversionFeatures.DEFAULT_PDF_FEATURES);
 	}
 
 	public String getApacheFopConfiguration() {

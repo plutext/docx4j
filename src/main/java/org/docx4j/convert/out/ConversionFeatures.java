@@ -19,6 +19,10 @@
  */
 package org.docx4j.convert.out;
 
+import java.util.Set;
+
+import org.docx4j.openpackaging.packages.OpcPackage;
+
 /** This interface contains flags that get passed to the conversion process.
  *  <ul>
  *  <li>PP_xx : Functions that get done in the preprocessing step</li>
@@ -29,7 +33,7 @@ package org.docx4j.convert.out;
  *  <li>xx_PDF_xx: PDF functions, may be applied only to PDF conversion.</li>
  *  </ul>
  */
-public interface ConversionFeatures {
+public abstract class ConversionFeatures {
 	
 	/** During the conversion the document might be changed. If the caller continues to 
 	 *  use the document after it, a deep copy should be done. This is not needed if 
@@ -126,7 +130,7 @@ public interface ConversionFeatures {
 	 * @since 3.0.2
 	 */
 	public static final String PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX = "pp.common.tbl-p-style-fix";
-		
+
 	
 	/** Default features, that get applied to a PDF conversion
 	 */
@@ -156,4 +160,33 @@ public interface ConversionFeatures {
 		PP_COMMON_DUMMY_CREATE_SECTIONS,
 		PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX // 3.0.2
 	};
+	
+	/** Check the package and requested features and append defaults if necessary
+	 * 
+	 * @param opcPackage
+	 * @param features
+	 */
+	protected static void checkParams(OpcPackage opcPackage, Set<String> features) {
+		if (opcPackage == null) {
+			throw new IllegalArgumentException("The passed opcPackage is null.");
+		}
+		if (features == null) {
+			throw new IllegalArgumentException("The set of the features is null.");
+		}
+		//PP_COMMON_DEEP_COPY, isn't required, no check
+		//PP_COMMON_MOVE_BOOKMARKS, isn't required, no check
+		//PP_COMMON_CONTAINERIZATION, isn't required, no check
+		//PP_COMMON_COMBINE_FIELDS is required if PP_COMMON_PAGE_NUMBERING is selected
+		if (features.contains(PP_COMMON_PAGE_NUMBERING)) {
+			features.add(PP_COMMON_COMBINE_FIELDS);
+		}
+		//either PP_COMMON_PAGE_NUMBERING or PP_COMMON_DUMMY_PAGE_NUMBERING (Default) is required
+		if (!features.contains(PP_COMMON_PAGE_NUMBERING)) {
+			features.add(PP_COMMON_DUMMY_PAGE_NUMBERING);
+		}
+		//either PP_COMMON_CREATE_SECTIONS or PP_COMMON_DUMMY_CREATE_SECTIONS (Default) is required
+		if (!features.contains(PP_COMMON_CREATE_SECTIONS)) {
+			features.add(PP_COMMON_DUMMY_CREATE_SECTIONS);
+		}
+	}	
 }

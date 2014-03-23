@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out.common.preprocess;
+package org.docx4j.convert.out.common.wrappers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,6 +30,8 @@ import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
+import org.docx4j.convert.out.common.preprocess.PageNumberInformation;
+import org.docx4j.convert.out.common.preprocess.PageNumberInformationCollector;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -42,6 +44,7 @@ import org.docx4j.wml.SectPr.PgSz;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class ConversionSectionWrapperFactory {
+	
 	protected static Logger log = LoggerFactory.getLogger(ConversionSectionWrapperFactory.class);
 	
 	protected static class SdtBlockFinder extends CallbackImpl {
@@ -119,11 +122,11 @@ public class ConversionSectionWrapperFactory {
 	
 	
 	public static ConversionSectionWrappers process(WordprocessingMLPackage wmlPackage, boolean dummySections, boolean dummyPageNumbering) {
-	List<ConversionSectionWrapper> conversionSections = null;
-	Document document = wmlPackage.getMainDocumentPart().getJaxbElement();
-	RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
-	BooleanDefaultTrue evenAndOddHeaders = null;
-	
+		
+		List<ConversionSectionWrapper> conversionSections = null;
+		Document document = wmlPackage.getMainDocumentPart().getJaxbElement();
+		RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
+		BooleanDefaultTrue evenAndOddHeaders = null;
 
 		if ((wmlPackage.getMainDocumentPart().getDocumentSettingsPart() != null) &&
 			(wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement() != null)) {

@@ -54,7 +54,7 @@ public abstract class AbstractWmlExporter<CS extends AbstractConversionSettings,
 	@Override
 	protected ConversionSectionWrappers createWrappers(CS conversionSettings, WordprocessingMLPackage preprocessedPackage) throws Docx4JException {
 	ConversionSectionWrappers ret = null;
-		ret = Preprocess.createWrappers(preprocessedPackage, conversionSettings.getFeatures());
+		ret = CreateWrappers.process(preprocessedPackage, conversionSettings.getFeatures());
 		return ret;
 	}
 

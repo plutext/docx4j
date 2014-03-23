@@ -94,7 +94,7 @@ public class PartialDeepCopy {
 								((WordprocessingMLPackage)opcPackage).getFontMapper(), false); //don't repopulate, since we want to preserve existing mappings
 					} catch (Exception e) {
 						// shouldn't happen
-						e.printStackTrace();
+						log.error(e.getMessage(),e);
 						throw new Docx4JException("Error setting font mapper on copy", e);
 					}
 				}

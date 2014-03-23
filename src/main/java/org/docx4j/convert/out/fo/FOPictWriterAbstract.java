@@ -211,7 +211,11 @@ public abstract class FOPictWriterAbstract extends AbstractPictWriter {
 
 			if (mso_position_vertical_relative==null) {
 				
-				log.warn(XmlUtils.marshaltoString(shape));
+				try {
+					log.warn(XmlUtils.marshaltoString(shape));
+				} catch (Exception e) {
+					log.warn(e.getMessage());
+				}
 				return context.getMessageWriter().message(context, 
 						"mso_position_vertical_relative==null.  What to do?");
 				

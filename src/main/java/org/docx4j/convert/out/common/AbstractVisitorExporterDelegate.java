@@ -59,13 +59,14 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
 
 	@Override
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
-	Document document = null;
-	Element documentRoot = null;
-	Element documentRootBody = null;
-	Element sectionRoot = null;
-	Element sectionRootBody = null;
-	Element currentParent = null;
-	Element flow = null;
+		
+		Document document = null;
+		Element documentRoot = null;
+		Element documentRootBody = null;
+		Element sectionRoot = null;
+		Element sectionRootBody = null;
+		Element currentParent = null;
+		Element flow = null;
 
 		conversionContext.setCurrentPartMainDocument(); 
     	document = XmlUtils.neww3cDomDocument();

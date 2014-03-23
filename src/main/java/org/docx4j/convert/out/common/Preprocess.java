@@ -26,7 +26,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
-import org.docx4j.convert.out.common.preprocess.ConversionSectionWrapperFactory;
 import org.docx4j.convert.out.common.preprocess.CoverPageSectPrMover;
 import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
@@ -34,6 +33,7 @@ import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInE
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *  </ul> 
  *   
  */
-public class Preprocess implements ConversionFeatures {
+public class Preprocess extends ConversionFeatures {
 	
 	private static Logger log = LoggerFactory.getLogger(Preprocess.class);		
 	
@@ -87,10 +87,13 @@ public class Preprocess implements ConversionFeatures {
 	 * @return the affected parts
 	 */
 	protected static Set<String> createRelationshipTypes(Set<String> features) {
-	Set<String> relationshipTypes = new TreeSet<String>();
+		
+		Set<String> relationshipTypes = new TreeSet<String>();
+		
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS) || 
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
 			features.contains(PP_COMMON_COMBINE_FIELDS)) {
+			
 			relationshipTypes.add(Namespaces.DOCUMENT);
 			relationshipTypes.add(Namespaces.HEADER);
 			relationshipTypes.add(Namespaces.FOOTER);
@@ -179,58 +182,6 @@ public class Preprocess implements ConversionFeatures {
 		return ret;
 	}
 
-	/** This method creates the Sections for the conversion. The type of the created sections 
-	 *  depend on the selected features.<br> 
-	 *  Features processed: 
-	 *  <ul>
-	 *  <li>PP_COMMON_PAGE_NUMBERING</li>
-	 *  <li>PP_COMMON_DUMMY_PAGE_NUMBERING</li>
-	 *  <li>PP_COMMON_CREATE_SECTIONS</li>
-	 *  <li>PP_COMMON_DUMMY_CREATE_SECTIONS</li>
-	 *  </ul> 
-	 * 
-	 * @param wmlPackage, the package that should be preprocessed
-	 * @param features, the selected features
-	 * @return the created sections
-	 * @throws Docx4JException
-	 */
-	public static ConversionSectionWrappers createWrappers(WordprocessingMLPackage wmlPackage, Set<String> features)  throws Docx4JException {
-	ConversionSectionWrappers ret = null;
-	boolean dummySections = false;
-	boolean dummyPageNumbering = false;
-		checkParams(wmlPackage, features);
-		dummySections = !features.contains(PP_COMMON_CREATE_SECTIONS);
-		dummyPageNumbering = !features.contains(PP_COMMON_PAGE_NUMBERING);
-		ret = ConversionSectionWrapperFactory.process(wmlPackage, dummySections, dummyPageNumbering);
-		return ret;
-	}
 	
-	/** Check the package and requested features and append defaults if necessary
-	 * 
-	 * @param opcPackage
-	 * @param features
-	 */
-	protected static void checkParams(OpcPackage opcPackage, Set<String> features) {
-		if (opcPackage == null) {
-			throw new IllegalArgumentException("The passed opcPackage is null.");
-		}
-		if (features == null) {
-			throw new IllegalArgumentException("The set of the features is null.");
-		}
-		//PP_COMMON_DEEP_COPY, isn't required, no check
-		//PP_COMMON_MOVE_BOOKMARKS, isn't required, no check
-		//PP_COMMON_CONTAINERIZATION, isn't required, no check
-		//PP_COMMON_COMBINE_FIELDS is required if PP_COMMON_PAGE_NUMBERING is selected
-		if (features.contains(PP_COMMON_PAGE_NUMBERING)) {
-			features.add(PP_COMMON_COMBINE_FIELDS);
-		}
-		//either PP_COMMON_PAGE_NUMBERING or PP_COMMON_DUMMY_PAGE_NUMBERING (Default) is required
-		if (!features.contains(PP_COMMON_PAGE_NUMBERING)) {
-			features.add(PP_COMMON_DUMMY_PAGE_NUMBERING);
-		}
-		//either PP_COMMON_CREATE_SECTIONS or PP_COMMON_DUMMY_CREATE_SECTIONS (Default) is required
-		if (!features.contains(PP_COMMON_CREATE_SECTIONS)) {
-			features.add(PP_COMMON_DUMMY_CREATE_SECTIONS);
-		}
-	}
+
 }

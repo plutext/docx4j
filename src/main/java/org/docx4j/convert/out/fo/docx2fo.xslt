@@ -322,7 +322,7 @@
 
   <!-- each paragraph is encapsulated in a block element
        the attributes of the block define
-       font-family and size, line-heigth etc. -->
+       font-family and size, line-height etc. -->
   <xsl:template match="w:p">
   
     	<xsl:call-template name="pretty-print-block"/>

@@ -51,6 +51,7 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 	protected static final int DEFAULT_START_SIZE = 10240;
 	
 	protected static class FoSectionPageInformation implements FORenderer.SectionPageInformation {
+		
 		protected String documentPageCountID = null;
 		protected String documentPageCountFoFormat = null;
 		protected String sectionPageCountID = null;
@@ -106,10 +107,12 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 			AbstractConversionContext conversionContext,
 			OutputStream intermediateOutputStream, OutputStream outputStream)
 			throws Docx4JException {
+		
 			//intermediateOutputStream is a ByteArrayOutputStream, as we have created it above
-	String	foDocument = null;
-	File dumpFoFile = conversionSettings.getFoDumpFile();
-	FOConversionContext foConversionContext = (FOConversionContext)conversionContext;
+		
+		String	foDocument = null;
+		File dumpFoFile = conversionSettings.getFoDumpFile();
+		FOConversionContext foConversionContext = (FOConversionContext)conversionContext;
 
 		try {
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString("UTF-8");
@@ -138,13 +141,14 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 
 
 	protected List<SectionPageInformation> createPageNumberInformation(FOConversionContext conversionContext) {
-	List<ConversionSectionWrapper> wrapperList = null;
-	List<FORenderer.SectionPageInformation> ret = Collections.EMPTY_LIST;
-	ConversionSectionWrapper section = null;
-	String sectionId = null;
-	String pageFoFormat = null;
-	String pageWordFormat = null;
-	FORenderer.SectionPageInformation pageNumberInformation = null;
+		
+		List<ConversionSectionWrapper> wrapperList = null;
+		List<FORenderer.SectionPageInformation> ret = Collections.EMPTY_LIST;
+		ConversionSectionWrapper section = null;
+		String sectionId = null;
+		String pageFoFormat = null;
+		String pageWordFormat = null;
+		FORenderer.SectionPageInformation pageNumberInformation = null;
 	
 		if (conversionContext.isRequires2Pass()) {
 			wrapperList = conversionContext.getSections().getList();

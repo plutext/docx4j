@@ -42,7 +42,7 @@ public class HTMLSettings extends AbstractConversionSettings {
 		settings.put(USER_BODY_TOP, "<!-- userBodyTop goes here -->");
 		settings.put(USER_BODY_TAIL, "<!-- userBodyTail goes here -->");
 
-		addFeatures(DEFAULT_HTML_FEATURES);
+		addFeatures(ConversionFeatures.DEFAULT_HTML_FEATURES);
 	}
 	
 	public void setConditionalComments(Boolean conditionalComments) {

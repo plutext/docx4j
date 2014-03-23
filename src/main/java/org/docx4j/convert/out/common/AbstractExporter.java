@@ -45,16 +45,18 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 	
 	@Override
 	public void export(CS conversionSettings, OutputStream outputStream) throws Docx4JException {
-	PK preprocessedPackage = null;
-	ConversionSectionWrappers sectionWrappers = null;
-	CC conversionContext = null;
-	OutputStream intermediateOutputStream = null;
-	long startTime = System.currentTimeMillis();
-	long currentTime = startTime;
-	//TODO: The log of the conversionContext isn't available until the
-	//context has been created. When the log gets passed via the setting
-	//use that one instead.
-	Logger log = LocalLog;
+		
+		PK preprocessedPackage = null;
+		ConversionSectionWrappers sectionWrappers = null;
+		CC conversionContext = null;
+		OutputStream intermediateOutputStream = null;
+		
+		long startTime = System.currentTimeMillis();
+		long currentTime = startTime;
+		//TODO: The log of the conversionContext isn't available until the
+		//context has been created. When the log gets passed via the setting
+		//use that one instead.
+		Logger log = LocalLog;
 	
 		try {
 			log.debug("Start conversion");
@@ -63,15 +65,21 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 				log.debug("Results of preprocess: " + ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getXML());
 			}
 			currentTime = logDebugStep(log, "Preprocessing", currentTime);
-			sectionWrappers = createWrappers(conversionSettings, preprocessedPackage);
+			
+			sectionWrappers = createWrappers(conversionSettings, preprocessedPackage);			
 			currentTime = logDebugStep(log, "Create section wrappers", currentTime);
+			
 			conversionContext = createContext(conversionSettings, preprocessedPackage, sectionWrappers);
 			log = conversionContext.getLog();
 			currentTime = logDebugStep(log, "Create conversion context", currentTime);
+			
 			intermediateOutputStream = createIntermediateOutputStream(outputStream);
+			
+			
 			process(conversionSettings, conversionContext, intermediateOutputStream);
 			currentTime = logDebugStep(log, "Processing", currentTime);
-			postprocess(conversionSettings, conversionContext, intermediateOutputStream, outputStream);
+			
+			postprocess(conversionSettings, conversionContext, intermediateOutputStream, outputStream);			
 			currentTime = logDebugStep(log, "Postprocessing", currentTime);
 			logDebugStep(log, "Conversion done", startTime);
 			
@@ -106,19 +114,54 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		return currentTime;
 	}
 
+	/**
+	 * @param conversionSettings
+	 * @return
+	 * @throws Docx4JException
+	 */
 	protected abstract PK preprocess(CS conversionSettings) throws Docx4JException;
 
+	/**
+	 * @param conversionSettings
+	 * @param preprocessedPackage
+	 * @return
+	 * @throws Docx4JException
+	 */
 	protected abstract ConversionSectionWrappers createWrappers(CS conversionSettings,  PK preprocessedPackage) throws Docx4JException;
 
+	/**
+	 * @param conversionSettings
+	 * @param preprocessedPackage
+	 * @param sectionWrappers
+	 * @return
+	 */
 	protected abstract CC createContext(CS conversionSettings, PK preprocessedPackage, ConversionSectionWrappers sectionWrappers);
 
+	/**
+	 * @param outputStream
+	 * @return
+	 * @throws Docx4JException
+	 */
 	protected OutputStream createIntermediateOutputStream(OutputStream outputStream) throws Docx4JException {
 		//default: no intermediate OutputStream needed (html)
 		return outputStream;
 	}
 
+	/**
+	 * @param conversionSettings
+	 * @param conversionContext
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	protected abstract void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException;
 	
+	/**
+	 * @param conversionSettings
+	 * @param conversionContext
+	 * @param intermediateOutputStream
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	protected void postprocess(CS conversionSettings, AbstractConversionContext conversionContext, OutputStream intermediateOutputStream, OutputStream outputStream) throws Docx4JException {
 		//default: no postprocess needed, output has been done on target OutputStream
 	}
