@@ -53,6 +53,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -121,11 +122,46 @@ public class XsltFOFunctions {
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults) {
     	
-    	return createBlock( 
+    	DocumentFragment df = createBlock( 
         		context,
         		pPrNodeIt,
         		pStyleVal, childResults,
-        		false);    	
+        		false);  
+    	
+    	// Arabic (and presumably Hebrew) fix
+    	// If we have inline direction="rtl" (created by TextDirection class)
+    	// wrap the inline with:
+    	//    <bidi-override direction="rtl" unicode-bidi="embed">
+		/* See further:
+			From: Glenn Adams <glenn@skynav.com>
+			Date: Fri, Mar 21, 2014 at 8:41 AM
+			Subject: Re: right align arabic in table-cell
+			To: FOP Users <fop-users@xmlgraphics.apache.org>
+		 */
+    	
+    	Element block = (Element)df.getFirstChild();
+		NodeList blockChildren = block.getChildNodes();
+    	for (int i = 0 ; i <blockChildren.getLength(); i++ ) {
+    	
+    		Element inline = (Element)blockChildren.item(i);
+    	
+	    	if (inline !=null && inline.getAttribute("direction")!=null
+	    			&& inline.getAttribute("direction").equals("rtl")) {
+
+	        	inline.removeAttribute("direction");
+	    		
+	    		Element bidiOverride = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:bidi-override");
+	        	bidiOverride.setAttribute("unicode-bidi", "embed" );
+	        	bidiOverride.setAttribute("direction", "rtl" );    		
+	    		
+	        	block.replaceChild(bidiOverride, inline);
+	        	bidiOverride.appendChild(inline);
+	    		
+	    	}
+    	} 
+    	
+    	return df;
     }
     
     private static DocumentFragment createBlock( 

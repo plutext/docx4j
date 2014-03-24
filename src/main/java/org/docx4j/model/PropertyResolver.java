@@ -631,6 +631,11 @@ public class PropertyResolver {
 		//PPrBase.PStyle pStyle;
 		
 			// Ignore
+
+		if (pPrToApply.getBidi()!=null) {
+			return true;		
+		}
+		
 		
 		//BooleanDefaultTrue keepNext;
 		if (pPrToApply.getKeepNext()!=null) {
@@ -1117,9 +1122,9 @@ public class PropertyResolver {
     		// Its already live - nothing to do
     		return true;    		
     	}
-    	
+    	// Assumption here is that it doesn't exist in your styles part, so..
     	java.util.Map<String, org.docx4j.wml.Style> knownStyles 
-    		= StyleDefinitionsPart.getKnownStyles();
+    		= StyleDefinitionsPart.getKnownStyles(); // NB KnownStyles.xml, not those in docx!
     	
     	org.docx4j.wml.Style s = knownStyles.get(styleId);
     	

@@ -368,4 +368,40 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     	}
 		
 	}
+
+	@Override
+	protected void rtlAwareAppendChildToCurrentP(Element spanEl) {
+		
+    	// Arabic (and presumably Hebrew) fix
+    	// If we have inline direction="rtl" (created by TextDirection class)
+    	// wrap the inline with:
+    	//    <bidi-override direction="rtl" unicode-bidi="embed">
+		/* See further:
+			From: Glenn Adams <glenn@skynav.com>
+			Date: Fri, Mar 21, 2014 at 8:41 AM
+			Subject: Re: right align arabic in table-cell
+			To: FOP Users <fop-users@xmlgraphics.apache.org>
+		 */						
+
+		if (rPr!=null 
+				&& rPr.getRtl()!=null
+			&& rPr.getRtl().isVal())  {
+			
+			spanEl.removeAttribute("direction");
+    		
+    		Element bidiOverride = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+					"fo:bidi-override");
+        	bidiOverride.setAttribute("unicode-bidi", "embed" );
+        	bidiOverride.setAttribute("direction", "rtl" );    		
+    		
+        	bidiOverride.appendChild(spanEl);
+
+			currentP.appendChild( bidiOverride  );
+        	
+		} else {
+			// Usual case
+			currentP.appendChild( spanEl  );
+		}
+		
+	}
 }

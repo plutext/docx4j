@@ -26,6 +26,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
@@ -275,8 +276,10 @@ public class PropertyFactory {
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)
 //			dest.setRStyle(rPr.getRStyle());
+		
 		if (rPr.getRtl() != null)
 			properties.add(new TextDirection(rPr.getRtl() ));
+		
 //		if (rPr.getShadow() != null)
 //			dest.setShadow(rPr.getShadow());
 		if (rPr.getShd() != null)
@@ -411,8 +414,8 @@ public class PropertyFactory {
 //			dest.setAutoSpaceDE(pPr.getAutoSpaceDE());
 //		if (pPr.getAutoSpaceDN() != null)
 //			dest.setAutoSpaceDN(pPr.getAutoSpaceDN());
-//		if (pPr.getBidi() != null)
-//			dest.setBidi(pPr.getBidi());
+		if (pPr.getBidi() != null)
+			properties.add(new Bidi(pPr.getBidi()));
 //		if (pPr.getCnfStyle() != null)
 //			dest.setCnfStyle(pPr.getCnfStyle());
 //		if (pPr.getContextualSpacing() != null)

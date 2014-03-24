@@ -44,6 +44,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * The …ExporterGenerator is the visitor, that gets used in those cases where a document is done 
@@ -147,14 +148,22 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 					 modelId, 
 					 childResults, 
 					 document);
+		
 
+    	
+ 
 		
 		if (resultNode != null) {
 			log.debug("Appending " + XmlUtils.w3CDomNodeToString(resultNode));
 			parentNode.appendChild(resultNode);
 		}
+		
 	}
 	
+	
+	protected void rtlAwareAppendChildToCurrentP(Element child) {
+		parentNode.appendChild(child);
+	}
 	
 	@Override
 	public List<Object> apply(Object o) {
@@ -177,18 +186,20 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				// Convert run to span
 				Element spanEl = createNode(document, NODE_INLINE);
-				if (currentP==null) {
-					// Hyperlink special case
-					parentNode.appendChild(spanEl);
-				} else {
-					currentP.appendChild( spanEl  );
-				}
 				currentSpan = spanEl;
 				
 				rPr = ((R)o).getRPr();
 				if ( rPr!=null ) {
 					handleRPr(conversionContext, pPr, rPr, currentSpan);
 				}
+
+				if (currentP==null) {
+					// Hyperlink special case
+					parentNode.appendChild(spanEl);
+				} else {
+					rtlAwareAppendChildToCurrentP(spanEl);
+				}
+
 				
 				// To merge nested span (which we could do if there is a single child span),
 				// TraversalUtil Callback would need an after walk children
