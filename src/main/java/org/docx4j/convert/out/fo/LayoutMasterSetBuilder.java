@@ -85,11 +85,12 @@ public class LayoutMasterSetBuilder {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(context);	
 		
-		// Generate area tree, but avoid infinite loop!
+		// Set suitable extents, for which we need area tree 
 		FOSettings foSettings = (FOSettings)context.getConversionSettings();
-		if ( foSettings.getApacheFopMime() ==null 
-				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
-
+		if ( !foSettings.lsLayoutMasterSetCalculationInProgress()) // Avoid infinite loop
+			// Can't just do it where foSettings.getApacheFopMime() is not MimeConstants.MIME_FOP_AREA_TREE,
+			// since TOC functionality uses that.
+		{
 			fixExtents( lms, context, true);
 		}
 		
@@ -154,13 +155,13 @@ public class LayoutMasterSetBuilder {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(context);	
 		
-		// Generate area tree, but avoid infinite loop!
+		// Set suitable extents, for which we need area tree 
 		FOSettings foSettings = (FOSettings)context.getConversionSettings();
-		if ( foSettings.getApacheFopMime() ==null 
-				|| !foSettings.getApacheFopMime().equals(MimeConstants.MIME_FOP_AREA_TREE))  {
-			
+		if ( !foSettings.lsLayoutMasterSetCalculationInProgress()) // Avoid infinite loop
+			// Can't just do it where foSettings.getApacheFopMime() is not MimeConstants.MIME_FOP_AREA_TREE,
+			// since TOC functionality uses that.
+		{
 			fixExtents( lms, context, false);
-
 		}
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );

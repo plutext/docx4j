@@ -143,22 +143,24 @@ public class XsltFOFunctions {
 		NodeList blockChildren = block.getChildNodes();
     	for (int i = 0 ; i <blockChildren.getLength(); i++ ) {
     	
-    		Element inline = (Element)blockChildren.item(i);
-    	
-	    	if (inline !=null && inline.getAttribute("direction")!=null
-	    			&& inline.getAttribute("direction").equals("rtl")) {
-
-	        	inline.removeAttribute("direction");
-	    		
-	    		Element bidiOverride = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", 
-						"fo:bidi-override");
-	        	bidiOverride.setAttribute("unicode-bidi", "embed" );
-	        	bidiOverride.setAttribute("direction", "rtl" );    		
-	    		
-	        	block.replaceChild(bidiOverride, inline);
-	        	bidiOverride.appendChild(inline);
-	    		
-	    	}
+    		if (blockChildren.item(i) instanceof Element) {
+	    		Element inline = (Element)blockChildren.item(i);
+	    	
+		    	if (inline !=null && inline.getAttribute("direction")!=null
+		    			&& inline.getAttribute("direction").equals("rtl")) {
+	
+		        	inline.removeAttribute("direction");
+		    		
+		    		Element bidiOverride = df.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", 
+							"fo:bidi-override");
+		        	bidiOverride.setAttribute("unicode-bidi", "embed" );
+		        	bidiOverride.setAttribute("direction", "rtl" );    		
+		    		
+		        	block.replaceChild(bidiOverride, inline);
+		        	bidiOverride.appendChild(inline);
+		    		
+		    	}
+    		}
     	} 
     	
     	return df;

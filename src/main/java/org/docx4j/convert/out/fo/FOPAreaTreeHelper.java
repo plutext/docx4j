@@ -166,6 +166,8 @@ public class FOPAreaTreeHelper {
         foSettings.setWmlPackage(hfPkg);
         foSettings.setApacheFopMime(MimeConstants.MIME_FOP_AREA_TREE);
         
+        foSettings.setLayoutMasterSetCalculationInProgress(true); // avoid recursion
+        
 //        foSettings.getFeatures().add(ConversionFeatures.PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM); // in 3.0.1, this is off by default
         
         if (log.isDebugEnabled()) {
