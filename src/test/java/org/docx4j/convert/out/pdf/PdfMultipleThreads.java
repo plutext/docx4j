@@ -4,7 +4,8 @@ import java.text.NumberFormat;
 
 import javax.xml.bind.JAXBContext;
 
-import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
+import org.docx4j.Docx4J;
+import org.docx4j.convert.out.FOSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -27,7 +28,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * 
  * Be sure to use VM args:
  * 
- * -Dlog4j.configuration=log4j.xml -Xmx512m
+ *  -Xmx512m
  * 
  * Win 7 x64 can do 18 threads with extra perm gen:
  * 
@@ -217,16 +218,19 @@ public class PdfMultipleThreads  {
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 			
 			wordMLPackage.setFontMapper(fontMapper);
-						
-			org.docx4j.convert.out.pdf.PdfConversion c 
-				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
-		
+								
 //			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
 //					new java.io.File(
 //								inputfilepath + Thread.currentThread().getName() + ".fo"));
 			OutputStream os = new java.io.FileOutputStream(
-								inputfilepath + Thread.currentThread().getName() + ".pdf");			
-			c.output(os, new PdfSettings() );
+								inputfilepath + Thread.currentThread().getName() + ".pdf");	
+			
+			// FO exporter setup (required)
+			// .. the FOSettings object
+	    	FOSettings foSettings = Docx4J.createFOSettings();
+			foSettings.setWmlPackage(wordMLPackage);			
+			
+			Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);			
 			System.out.println("Saved " + inputfilepath + Thread.currentThread().getName() + ".pdf");
 
 		 } catch (InterruptedException e) {
