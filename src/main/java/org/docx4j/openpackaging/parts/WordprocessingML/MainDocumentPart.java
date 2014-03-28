@@ -242,7 +242,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, null);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
-		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
+		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();	
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
+		
 		new TraversalUtil(bodyChildren, finder);
 //		finder.finish();
 		
@@ -307,7 +309,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
             		}
             	}
             }    		
-    	}	    
+    	}	
+    	
+    	if (log.isDebugEnabled()) {
+    		for (String fontName : fontsDiscovered) {
+    			log.debug(fontName);
+    		}
+    	}
 		    	
 		return fontsDiscovered;
     }
@@ -435,7 +443,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	RunFontSelector runFontSelector;
     	
     	FontAndStyleFinder(RunFontSelector runFontSelector, 
-    			Set<String> fontsDiscovered, Set<String> stylesInUse) {
+    			Set<String> fontsDiscovered, 
+    			Set<String> stylesInUse) {
     		
     		this.runFontSelector = runFontSelector;
     		this.fontsDiscovered = fontsDiscovered;
@@ -611,9 +620,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		org.docx4j.wml.P p = createParagraphOfText(text);
 						
-		StyleDefinitionsPart styleDefinitionsPart 
-			= this.getStyleDefinitionsPart();
-
 		if (getPropertyResolver().activateStyle(styleId)) {
 			// Style is available 
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();			
@@ -694,10 +700,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 //		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
 //		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
-		
+				
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();		
 		
 		finder.walkJAXBElements(list);
 		finder.finish();
