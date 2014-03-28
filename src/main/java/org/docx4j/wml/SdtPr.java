@@ -359,7 +359,7 @@ public class SdtPr
     	
     	if (existingTag!=null) {
     		if (!existingTag.equals(value)) {
-    			log.debug("Changing SDT tag from " + existingTag + " to " + value);
+    			log.debug("Changing SDT tag from " + existingTag.getVal() + " to " + value.getVal() );
         		rPrOrAliasOrLock.remove(existingTag);
         		if (value!=null) {
         			rPrOrAliasOrLock.add(value);

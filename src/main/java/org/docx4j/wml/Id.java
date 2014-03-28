@@ -22,6 +22,8 @@
 package org.docx4j.wml; 
 
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
@@ -61,6 +63,8 @@ import javax.xml.bind.annotation.XmlType;
 public class Id implements Child
 {
 
+	private static Logger log = LoggerFactory.getLogger(Id.class);
+	
     @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected BigInteger val;
     @XmlTransient
@@ -126,8 +130,16 @@ public class Id implements Child
 	   
 	    public int hashCode() {
 	    	
+	    	if (val==null) {
+	    		
+	        	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
+	        	this.setVal( newIdVal );
+    			log.warn("Generated Id val " + newIdVal);
+	    		
+	    	}
+	    	
 	    	// Natural and good enough...
-	    	return val.intValue();	    	
+    		return val.intValue();
 	    }
         
     
