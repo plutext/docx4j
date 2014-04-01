@@ -35,6 +35,7 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.Indent;
+import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
@@ -42,6 +43,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
+import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -537,7 +539,20 @@ public class XsltFOFunctions {
 			}
     	}
 		
-    	
+    	// Special case, since bidi is translated to align right
+    	// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
+    	if (pPr.getBidi()!=null && pPr.getBidi().isVal()) {
+    		
+    		if (pPr.getJc()!=null) {
+    			if (pPr.getJc().getVal().equals(JcEnumeration.RIGHT)) {
+    				// set it to left!
+    				foBlockElement.setAttribute(Justification.FO_NAME,  "left");
+    			} else if (pPr.getJc().getVal().equals(JcEnumeration.LEFT)) {
+    				// set it to right!
+    				foBlockElement.setAttribute(Justification.FO_NAME,  "right");
+    			}
+    		}
+    	}
     	
 	}
 	

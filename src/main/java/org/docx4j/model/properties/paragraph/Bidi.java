@@ -100,6 +100,7 @@ public class Bidi extends AbstractParagraphProperty {
 			   So all we need to do is:				
 			 */
 			foElement.setAttribute(Justification.FO_NAME,  "right"); 
+			// unless jc is set to align right; this interaction handled in XsltFOFunctions.createFoAttributes
 			
 		} else {
 			foElement.setAttribute(Justification.FO_NAME,  "left"); // eg English
