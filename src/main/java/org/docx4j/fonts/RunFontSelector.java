@@ -1,8 +1,11 @@
 package org.docx4j.fonts;
 
+import java.awt.font.NumericShaper;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.TextFont;
 import org.docx4j.jaxb.Context;
@@ -11,6 +14,7 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
@@ -273,6 +277,7 @@ public class RunFontSelector {
     
     private boolean spacePreserve;
     
+
     
     /**
      * Apply font selection algorithm to this Text, based on supplied PPr, RPr
@@ -353,13 +358,15 @@ public class RunFontSelector {
 			return nullRPr(document, text);
 		}		
     	
+		text = this.arabicNumbering(text, rPr.getRtl(), rPr.getCs(), themeFontLang);
+		
     	/* If the run has the cs element ("[ISO/IEC-29500-1] §17.3.2.7; cs") 
     	 * or the rtl element ("[ISO/IEC-29500-1] §17.3.2.30; rtl"), 
     	 * then the cs (or cstheme if defined) font is used, 
     	 * regardless of the Unicode character values of the run's content.
     	 */
     	if (rPr.getCs()!=null || rPr.getRtl()!=null ) {
-    		
+    		    		
     		// use the cs (or cstheme if defined) font is used
     		if (rFonts.getCstheme()!=null) {
     			
@@ -911,4 +918,96 @@ public class RunFontSelector {
 
 	}
 
+	// Arabic numbering stuff
+	
+	enum MicrosoftWordNumeralOption {
+		Hindi, Context, Arabic, System;
+	}
+	enum NativeDigitsSetting {
+		National, Context;
+	}
+	
+	private static NumericShaper numericShaperArabicIndic = null;
+	private static NumericShaper getNumericShaperArabicIndic() {
+		
+		if (numericShaperArabicIndic == null) {
+			numericShaperArabicIndic = NumericShaper.getShaper(NumericShaper.ARABIC);
+				// NumericShaper.EASTERN_ARABIC actually corresponds to Unicode EXTENDED ARABIC-INDIC DIGIT
+		}
+		return numericShaperArabicIndic;
+	}
+	
+	private static NativeDigitsSetting nativeDigitsSetting = null;
+	private static NativeDigitsSetting getNativeDigitsSetting() {
+		
+		if (nativeDigitsSetting==null) {
+			nativeDigitsSetting = NativeDigitsSetting.valueOf(
+					Docx4jProperties.getProperty("docx4j.ControlPanel.RegionAndLanguage.AdditionalSettings.UseNative.Digits", "National"));
+		}
+		return nativeDigitsSetting;
+	}
+
+	private static MicrosoftWordNumeralOption microsoftWordNumeralOption = null;
+	private static MicrosoftWordNumeralOption getMicrosoftWordNumeralOption() {
+		
+		if (microsoftWordNumeralOption==null) {
+			microsoftWordNumeralOption = MicrosoftWordNumeralOption.valueOf(
+					Docx4jProperties.getProperty("docx4j.WordOptions.Advanced.Numeral", "Arabic"));
+		}
+		return microsoftWordNumeralOption;
+	}
+	
+	private String shapeAsArabicIndic(String text) {
+		
+		// Use U+0660 .. U+0669 are ARABIC-INDIC DIGIT values 0 through 9
+		// See http://stackoverflow.com/questions/1676460/in-unicode-why-are-there-two-representations-for-the-arabic-digits
+		 char[] chars = text.toCharArray();
+		 getNumericShaperArabicIndic().shape(chars, 0, chars.length);
+		 return new String(chars);		
+	}
+	
+    private String arabicNumbering(String text, BooleanDefaultTrue rtl, BooleanDefaultTrue cs, CTLanguage themeFontLang ) {
+    	
+    	/* Rules below were inferred based on testing which always included
+    	 * 
+    	 *     <w:pPr>
+			      <w:bidi/>
+			    </w:pPr>
+
+    	 */
+    	if (themeFontLang!=null
+    			&& themeFontLang.getBidi()!=null
+    			&& themeFontLang.getBidi().equals("ar-SA")) {
+    		// Do stuff in this method
+    	} else {
+    		// Do nothing if those conditions don't apply
+    		return text;
+    	}
+
+    	if ( (rtl!=null && rtl.isVal())
+    			|| (cs!=null && cs.isVal()) ) {
+
+			// If rtl or cs present, use eastern numbering, except where numer option = arabic.  
+			// Return ie (If both rtl and the hint are present, do what rtl tells you
+			
+	    	if (getMicrosoftWordNumeralOption().equals(MicrosoftWordNumeralOption.Arabic)) {
+	    		return text;
+	    	} else {
+	    		return shapeAsArabicIndic(text);
+	    	}
+    	}
+    	
+    	if (getNativeDigitsSetting().equals(NativeDigitsSetting.National)) {
+    		return shapeAsArabicIndic(text);
+    	} else {
+    		// Context
+    		if (getMicrosoftWordNumeralOption().equals(MicrosoftWordNumeralOption.Hindi)) {
+        		return shapeAsArabicIndic(text);
+    		} else {
+	    		return text;
+    		}
+    	}
+    	
+    }	
+	// end Arabic Numbering stuff 	
 }
