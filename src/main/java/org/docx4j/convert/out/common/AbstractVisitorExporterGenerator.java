@@ -111,6 +111,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				   (currentP != null ? currentP : parentNode)
 			   );
 	}
+
 	
 	protected void convertToNode(CC conversionContext, 
 							   Object unmarshalledNode, String modelId, 
@@ -235,9 +236,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			}
 
 		} else if (o instanceof org.docx4j.wml.R.Tab) {
-			if (!conversionContext.isInComplexFieldDefinition()) {
-				getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));
-			}
+			convertTabToNode(conversionContext, document);
 			
 		} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
@@ -350,6 +349,14 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		return null;
 	}
 	
+	protected void convertTabToNode(CC conversionContext, Document document) throws DOMException {
+		
+		if (!conversionContext.isInComplexFieldDefinition()) {
+			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));
+		}
+	}
+	
+	
 	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
 
 		org.docx4j.vml.CTShape shape = null;
@@ -403,6 +410,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected abstract DocumentFragment createImage(int imgType, CC conversionContext, Object anchorOrInline);
 	
 	protected abstract Element createNode(Document doc, int nodeType);
+	
+	
 	
 	protected Logger getLog() {
 		return log;

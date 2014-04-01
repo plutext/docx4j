@@ -40,6 +40,7 @@ import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
 import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
+import org.docx4j.model.properties.paragraph.Tabs;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
 import org.docx4j.model.properties.run.FontColor;
@@ -499,8 +500,8 @@ public class PropertyFactory {
 //			dest.setSuppressLineNumbers(pPr.getSuppressLineNumbers());
 //		if (pPr.getSuppressOverlap() != null)
 //			dest.setSuppressOverlap(pPr.getSuppressOverlap());
-//		if (pPr.getTabs() != null)
-//			dest.setTabs(pPr.getTabs());
+		if (pPr.getTabs() != null)
+			properties.add(new Tabs(pPr.getTabs()));
 		if (pPr.getTextAlignment() != null)
 			properties.add(new TextAlignmentVertical(pPr.getTextAlignment()));
 //		if (pPr.getTextboxTightWrap() != null)

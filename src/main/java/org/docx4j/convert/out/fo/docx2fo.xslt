@@ -676,14 +676,33 @@
 
  -->
 <xsl:template match="w:tab"> 
-	<!--  Use this simple-minded approach from MS stylesheet,
-	      until our document model can do better.   -->
-    <xsl:call-template name="OutputTlcChar">
-      <xsl:with-param name="tlc">
-        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="count" select="3"/>
-    </xsl:call-template>
+
+	<xsl:variable name="p" select="ancestor::*[self::w:p][1]" />
+	
+	<xsl:choose>
+		<xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1">
+						
+		  <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
+		    leader-length.maximum="100%" leader-pattern="dots">
+		  </fo:leader>
+						
+		</xsl:when>		
+		<xsl:otherwise>
+		
+			<!--  Use this simple-minded approach from MS stylesheet,
+			      until our document model can do better.   -->
+		    <xsl:call-template name="OutputTlcChar">
+		      <xsl:with-param name="tlc">
+		        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
+		      </xsl:with-param>
+		      <xsl:with-param name="count" select="3"/>
+		    </xsl:call-template>
+		
+		</xsl:otherwise>
+	
+	</xsl:choose>
+
+
 </xsl:template>
 
 

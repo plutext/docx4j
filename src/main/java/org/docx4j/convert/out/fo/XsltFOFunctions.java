@@ -46,6 +46,8 @@ import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STTabJc;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
@@ -538,6 +540,8 @@ public class XsltFOFunctions {
 				}
 			}
     	}
+    	
+    	if (pPr==null) return;
 		
     	// Special case, since bidi is translated to align right
     	// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
@@ -551,6 +555,25 @@ public class XsltFOFunctions {
     				// set it to right!
     				foBlockElement.setAttribute(Justification.FO_NAME,  "right");
     			}
+    		}
+    	}
+    	
+    	// Table of contents dot leader needs text-align-last="justify"
+    	// Are we in a TOC?
+    	if (pPr.getTabs()!=null
+    			
+    			// PStyle is not included in our effective pPr!
+//    			&& pPr.getPStyle()!=null 
+//    			&& pPr.getPStyle().getVal()!=null
+//    			&& pPr.getPStyle().getVal().startsWith("TOC")  
+    			) {
+    		
+    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+    		if (tabStop!=null
+    				//&& tabStop.getLeader().equals(STTabTlc.DOT)
+    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
+    			
+    			foBlockElement.setAttribute("text-align-last",  "justify");
     		}
     	}
     	

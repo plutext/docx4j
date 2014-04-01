@@ -40,11 +40,15 @@ import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STTabJc;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -96,6 +100,41 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		return null;
 	}
 	
+	@Override
+	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {
+
+		if (!conversionContext.isInComplexFieldDefinition()) {
+						
+	    	if (pPr!=null && pPr.getTabs()!=null) {
+	    		
+	    		// xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1"
+	    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+	    		if (tabStop!=null
+	    				&& tabStop.getLeader().equals(STTabTlc.DOT)
+	    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
+	    			
+					// <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
+					//		    leader-length.maximum="100%" leader-pattern="dots">
+	    			Element foLeader = document.createElementNS(XSL_FO, "leader");	    			
+	    			foLeader.setAttribute("leader-length.minimum",  "12pt");
+	    			foLeader.setAttribute("leader-length.maximum",  "100%");
+	    			foLeader.setAttribute("leader-length.optimum",  "40pt");
+	    			foLeader.setAttribute("leader-pattern",  "dots");
+	    			
+	    			getCurrentParent().appendChild(foLeader);	    			
+	    			
+	    		} else {
+	    			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));	    			
+	    		}
+	    	}
+	    	else {
+    			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));	    			
+    		}	    	
+			
+		}
+	}
+	
+	
     @Override
 	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) {
     	Element ret = currentParent;
@@ -122,8 +161,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
         try {
         	
-        	PPr pPr = null;
-        	RPr rPr = null;
+//        	PPr pPr = null;
+//        	RPr rPr = null;
 			pPr = propertyResolver.getEffectivePPr(pPrDirect);  
 
 			getLog().debug("getting rPr for paragraph style");    				
@@ -288,6 +327,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				}
 			}
     	}
+    	
+    	if (pPr==null) return;
 		
     	// Special case, since bidi is translated to align right
     	// Handle interaction between w:pPr/w:bidi and w:pPr/w:jc/@w:val='right'
@@ -302,7 +343,27 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
     				foBlockElement.setAttribute(Justification.FO_NAME,  "right");
     			}
     		}
-    	}    	
+    	}   
+    	
+    	// Table of contents dot leader needs text-align-last="justify"
+    	// Are we in a TOC?
+    	if (pPr.getTabs()!=null
+    			
+    			// PStyle is not included in our effective pPr!
+//    			&& pPr.getPStyle()!=null 
+//    			&& pPr.getPStyle().getVal()!=null
+//    			&& pPr.getPStyle().getVal().startsWith("TOC")  
+    			) {
+    		
+    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+    		if (tabStop!=null
+    				//&& tabStop.getLeader().equals(STTabTlc.DOT)
+    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
+    			
+    			foBlockElement.setAttribute("text-align-last",  "justify");
+    		}
+    	}
+    	
     	
 	}
 	
