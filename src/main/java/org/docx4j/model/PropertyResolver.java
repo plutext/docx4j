@@ -1,6 +1,7 @@
 package org.docx4j.model;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -392,14 +393,14 @@ public class PropertyResolver {
 			return null;
 		}
 		
-		PPr expressPPr = s.getPPr();
-		if (expressPPr==null) {
-			// A paragraph style may have no w:pPr component
-			log.debug("style: " + styleId + " has no PPr");
-			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
-			resolvedPPr = resolvedStylePPrComponent.get(normalId);
-			return resolvedPPr;
-		}
+//		PPr expressPPr = s.getPPr();
+//		if (expressPPr==null) {
+//			// A paragraph style may have no w:pPr component
+//			log.debug("style: " + styleId + " has no PPr");
+//			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
+//			resolvedPPr = resolvedStylePPrComponent.get(normalId);
+//			return resolvedPPr;
+//		}
 		
 		//  Next, paragraph and run properties are 
 		//	applied to each paragraph as defined by the paragraph style.
@@ -978,6 +979,23 @@ public class PropertyResolver {
 //    	}
 	}	
 	
+    private static final String HEADING_STYLE = "Heading";
+	
+    /*
+     * @since 3.0.2
+     */
+    public int getLvlFromHeadingStyle(String style){
+    	// Note that this is done using the style ID, not its OutlineLevel,
+    	// since Word does it purely on the name of the style!
+        int level = -1;
+        try{
+            level = Integer.parseInt(style.substring(HEADING_STYLE.length(), style.length()).trim());
+        } catch (NumberFormatException ex){
+            //log.debug(style + " - what level is this? ");
+        }
+
+        return level;
+    }	
 	
 	/**
 	 * Ascend the style hierarchy, capturing the pPr bit
@@ -1021,7 +1039,28 @@ public class PropertyResolver {
 			}
 			return;
 		}
-		pPrStack.push(style.getPPr());
+		
+		// For heading styles, check the outline level is as expected
+		if (styleId.startsWith(HEADING_STYLE)) {
+			
+			int level = getLvlFromHeadingStyle(styleId);
+			if (level>0
+					&& style.getPPr()!=null
+					&& style.getPPr().getOutlineLvl()!=null
+					&& style.getPPr().getOutlineLvl().getVal()!=null
+					&& style.getPPr().getOutlineLvl().getVal().intValue()!=(level-1)) {
+				
+				// must use the outline level appropriate to this heading!
+				// No need to clone, since Microsoft Word automatically overwrites like this!
+				log.info(styleId + " - reset actual outline level with " + (level-1));
+				style.getPPr().getOutlineLvl().setVal(BigInteger.valueOf(level-1));
+			} 
+			
+			pPrStack.push(style.getPPr());				
+		} else {
+			pPrStack.push(style.getPPr());
+		}
+		
 		log.debug("Added " + styleId + " to pPr stack");
 		
 		// Some styles contain numPr, without specifying
