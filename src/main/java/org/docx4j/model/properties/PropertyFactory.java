@@ -32,6 +32,7 @@ import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
 import org.docx4j.model.properties.paragraph.NumberingProperty;
+import org.docx4j.model.properties.paragraph.OutlineLevel;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderLeft;
 import org.docx4j.model.properties.paragraph.PBorderRight;
@@ -449,8 +450,9 @@ public class PropertyFactory {
 			properties.add(new Indent(pPr.getInd()));			
 		}
 		
-//		if (pPr.getOutlineLvl() != null)
-//			dest.setOutlineLvl(pPr.getOutlineLvl());
+		if (pPr.getOutlineLvl() != null)
+			properties.add(new OutlineLevel(pPr.getOutlineLvl()));
+		
 //		if (pPr.getOverflowPunct() != null)
 //			dest.setOverflowPunct(pPr.getOverflowPunct());
 		if (pPr.getPageBreakBefore() != null)
