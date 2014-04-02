@@ -942,7 +942,7 @@ public class RunFontSelector {
 		
 		if (nativeDigitsSetting==null) {
 			nativeDigitsSetting = NativeDigitsSetting.valueOf(
-					Docx4jProperties.getProperty("docx4j.ControlPanel.RegionAndLanguage.AdditionalSettings.UseNative.Digits", "National"));
+					Docx4jProperties.getProperty("docx4j.MicrosoftWindows.Region.Format.Numbers.NativeDigits", "National"));
 		}
 		return nativeDigitsSetting;
 	}
@@ -952,7 +952,7 @@ public class RunFontSelector {
 		
 		if (microsoftWordNumeralOption==null) {
 			microsoftWordNumeralOption = MicrosoftWordNumeralOption.valueOf(
-					Docx4jProperties.getProperty("docx4j.WordOptions.Advanced.Numeral", "Arabic"));
+					Docx4jProperties.getProperty("docx4j.MicrosoftWord.Numeral", "Arabic"));
 		}
 		return microsoftWordNumeralOption;
 	}
