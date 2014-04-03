@@ -51,6 +51,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.events.PackageIdentifier;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -80,7 +81,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * 
  * @author Jason Harrop
  */
-public class OpcPackage extends Base {
+public class OpcPackage extends Base implements PackageIdentifier {
 
 	private static Logger log = LoggerFactory.getLogger(OpcPackage.class);
 
@@ -612,5 +613,17 @@ public class OpcPackage extends Base {
 		
 	}
 
+	@Override
+	public String name() {
+		return name;
+	}
+	private String name;
+	/**
+	 * Allocate a name to this package, for the purposes of Docx4jEvent,
+	 * and logging.
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 	
 }
