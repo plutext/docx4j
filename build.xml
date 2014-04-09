@@ -7,7 +7,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.0.1"/>
+	<property name="version" value="3.1.0-beta"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
@@ -104,15 +104,19 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.7/batik-svggen-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
+        
+        <pathelement location="${m2Repository}/net/engio/mbassador/1.1.10/mbassador-1.1.10.jar"/>
 
 	</path>
 	 
     <path id="Maven Dependencies.libraryclasspath">
     
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+        
+        <!-- TODO put these in optional
         <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
-    
+     -->
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
     	
@@ -231,7 +235,7 @@
         
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
         	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" 
-        	target="${target}">
+        	target="${target}"  encoding="utf-8">
             <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
             <src path="src/glox4j/java"/>
@@ -366,8 +370,14 @@
                  
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
+            <!-- 
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:3.0.0.1" />
+             -->
+            <arg value="-version:3.0.1.06" /> <!--  damn, should have used .00 -->
+            <arg value="-reference:dll/slf4j-api.dll" />            
+            <!-- 
+            <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
+            -->            
             <arg value="-target:library" />
             <arg line="${docx4j-jars}" />
         </exec>    

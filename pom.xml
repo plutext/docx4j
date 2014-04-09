@@ -441,7 +441,13 @@
 			<artifactId>jaxb-xmldsig-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
+		
+		<!--  events -->
+		<dependency>
+		    <groupId>net.engio</groupId>
+		    <artifactId>mbassador</artifactId>
+		    <version>1.1.10</version>
+		</dependency>
 
 		<!--  From 3.0, docx4j uses slf4j --> 
 		<dependency>
@@ -510,9 +516,8 @@
            (there is probably something in maven
 
      	   http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/xmlgraphics-commons-svn-trunk.jar
+
      	-->
-
-
 
 
 	<dependency>
@@ -523,15 +528,9 @@
 			<exclusion>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
-				<!--  pulls in old version 1.0.4 -->
 			</exclusion>		
 		</exclusions>
 	</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 		
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
@@ -554,14 +553,16 @@
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis-ext</artifactId>
 			</exclusion>
-<!-- 			
-			<exclusion>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId> 
-			</exclusion>
-		 -->
 		</exclusions>
 	</dependency>
+
+
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
 
 	<!-- these two are to correct issues in fop dependency -->
 	<dependency>
