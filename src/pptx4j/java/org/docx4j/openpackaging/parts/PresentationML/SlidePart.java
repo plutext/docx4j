@@ -123,13 +123,19 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		// where it is not required.
 		// So do string manipulation
     	
-		String xmlString = this.getXML();
+		String xmlString = XmlUtils.marshaltoString( getJaxbElement(), false, true, jc ); 
+			// include the XML declaration; it'll be UTF-8
 		int pos = xmlString.indexOf(":sld ");
 		xmlString = xmlString.substring(0, pos + 5 ) + "xmlns:v=\"urn:schemas-microsoft-com:vml\" " 
 						+ xmlString.substring(pos + 5 );
 		
 		try {
-			IOUtils.write(xmlString, os);
+			IOUtils.write(xmlString, os, "UTF-8"); // be sure to write UTF-8 irrespective of default encoding
+			/* FIX confirmed by running a presentation containing eg mög
+			 * through RoundTripTest, 
+			 * with run configuration setting -Dfile.encoding=ISO-8859-1,
+			 * verified Powerpoint (2010) can open it.
+			 */
 		} catch (IOException e) {
 			throw new JAXBException(e.getMessage(), e);
 		}
