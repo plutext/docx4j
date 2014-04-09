@@ -1,14 +1,31 @@
 package org.docx4j.events;
 
 
+import org.docx4j.Docx4jProperties;
+
 import net.engio.mbassy.bus.MBassador;
 
 public abstract class Docx4jEvent {
+	
+	private static Boolean publishAsynch = null;
+	public static Boolean publishAsynch() {
+		if (publishAsynch==null) {
+			publishAsynch = Docx4jProperties.getProperty("docx4j.events.Docx4jEvent.PublishAsync", false);
+		}
+		return publishAsynch;
+	}
+
+	public static void setPublishAsynch(Boolean publishAsynch) {
+		Docx4jEvent.publishAsynch = publishAsynch;
+	}
+	
 	
 	/* The 3 constructors are designed to facilitate the one-liner:
 	 * 
 	 *    Docx4jEvent.publish(bus, new Docx4jEvent( Job.MERGE, EventType.PKG_STARTED));
 	 */
+
+
 
 	private PackageIdentifier pkgIdentifier=null; // where null, the event is assumed to be job level
 	public PackageIdentifier getPkgIdentifier() {
@@ -79,7 +96,12 @@ public abstract class Docx4jEvent {
 	
 	public static void publish(MBassador<Docx4jEvent> bus, Docx4jEvent event) {
     	if (bus!=null) {
-    		bus.publish(event);
+    		if (publishAsynch()) {
+    			bus.publishAsync(event);
+    		} else {
+    			// predictable order
+    			bus.publish(event);    			
+    		}
     	}				
 	}
 	

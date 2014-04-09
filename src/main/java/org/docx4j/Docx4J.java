@@ -37,6 +37,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 
+import net.engio.mbassy.bus.MBassador;
+
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
@@ -46,20 +48,23 @@ import org.docx4j.convert.out.fo.FOExporterVisitor;
 import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
 import org.docx4j.convert.out.html.HTMLExporterXslt;
-import org.docx4j.customXmlProperties.DatastoreItem;
-import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
+import org.docx4j.events.Docx4jEvent;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.PackageIdentifier;
+import org.docx4j.events.PackageIdentifierTransient;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownJobTypes;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -70,8 +75,8 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
-import org.opendope.xpaths.Xpaths.Xpath;
 import org.w3c.dom.Document;
+
 
 /** This is a facade for some typical uses of Docx4J:
  * <ul>
@@ -83,6 +88,7 @@ import org.w3c.dom.Document;
  * 
  */
 public class Docx4J {
+	
 	public static final String MIME_PDF = FOSettings.MIME_PDF;
 	public static final String MIME_FO = FOSettings.INTERNAL_FO_MIME;
 	
@@ -127,6 +133,11 @@ public class Docx4J {
 	 */
 	public static final int FLAG_BIND_REMOVE_XML = 8;
 	
+	private static MBassador<Docx4jEvent> bus;
+	public static void setEventNotifier(MBassador<Docx4jEvent> eventbus) {
+		bus = eventbus;
+	}
+	
 	protected static class FindContentControlsVisitor extends TraversalUtilVisitor<SdtElement> {
 		public static class BreakException extends RuntimeException {
 		}
@@ -169,25 +180,50 @@ public class Docx4J {
 		PART_TO_REMOVE_SCHEMA_TYPES.add(NS_COMPONENTS);
 	}
 
+
 	/**
 	 *  Load a Docx Document from a File
 	 */	
 	public static WordprocessingMLPackage load(File inFile) throws Docx4JException {
-		return WordprocessingMLPackage.load(inFile);
+		
+		PackageIdentifier name = new PackageIdentifierTransient(inFile.getName());
+		StartEvent startEvent = new StartEvent( name,  WellKnownProcessSteps.PKG_LOAD );
+		Docx4jEvent.publish(bus, startEvent);
+		
+		WordprocessingMLPackage pkg =  WordprocessingMLPackage.load(inFile);
+		pkg.setName(name.name());
+		
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));
+		return pkg;
 	}
 	
 	/**
 	 *  Load a Docx Document from an InputStream
 	 */	
 	public static WordprocessingMLPackage load(InputStream inStream) throws Docx4JException {
-		return WordprocessingMLPackage.load(inStream);
+		return load(inStream, "UNNAMED");
+	}
+
+	/**
+	 *  Load a Docx Document from an InputStream
+	 */	
+	public static WordprocessingMLPackage load(InputStream inStream, String friendlyName) throws Docx4JException {
+		StartEvent startEvent = new StartEvent( new PackageIdentifierTransient(friendlyName),  WellKnownProcessSteps.PKG_LOAD );
+		Docx4jEvent.publish(bus, startEvent);
+		WordprocessingMLPackage pkg =  WordprocessingMLPackage.load(inStream);
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));
+		return pkg;
 	}
 	
 	/**
 	 *  Save a Docx Document to a File
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
-	OutputStream outStream = null;
+		
+		StartEvent startEvent = new StartEvent( wmlPackage,  WellKnownProcessSteps.PKG_SAVE );
+		Docx4jEvent.publish(bus, startEvent);
+
+		OutputStream outStream = null;
 		try {
 			outStream = new FileOutputStream(outFile);
 			save(wmlPackage, outStream, flags);
@@ -202,12 +238,18 @@ public class Docx4J {
 				outStream = null;
 			}
 		}
+		
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));
 	}
 	
 	/**
 	 *  Save a Docx Document to an OutputStream
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
+		
+		StartEvent startEvent = new StartEvent( wmlPackage,  WellKnownProcessSteps.PKG_SAVE );
+		Docx4jEvent.publish(bus, startEvent);
+		
 		if (flags == FLAG_SAVE_FLAT_XML) {
 			JAXBContext jc = Context.jcXmlPackage;
 			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(wmlPackage);
@@ -223,9 +265,11 @@ public class Docx4J {
 			}
 		}
 		else {
-			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
+//			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
+			Save saver = new Save(wmlPackage);
 			saver.save(outStream);
 		}
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));
 	}
 	
 	/**
@@ -255,6 +299,10 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, InputStream xmlDocument, int flags) throws Docx4JException {
+		
+		StartEvent bindJobStartEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage );
+		Docx4jEvent.publish(bus, bindJobStartEvent);
+		
 		if (flags == FLAG_NONE) {
 			//do everything
 			flags = (FLAG_BIND_INSERT_XML |
@@ -273,6 +321,9 @@ public class Docx4J {
 				}
 		}
         bind(wmlPackage, xmlDoc, flags);
+        
+		Docx4jEvent.publish(bus, new EventFinished(bindJobStartEvent));
+        
 	}
 	
 	/**
@@ -300,20 +351,44 @@ public class Docx4J {
 		}
 	
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_INSERT_XML );
+			Docx4jEvent.publish(bus, startEvent);
+			
 			insertXMLData(customXmlDataStoragePart, xmlDocument);
+			
+			Docx4jEvent.publish(bus, new EventFinished(startEvent));
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML );
+			Docx4jEvent.publish(bus, startEvent);
+			
 			if (wmlPackage.getMainDocumentPart().getXPathsPart()!=null) {
 				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
 				openDoPEHandler.preprocess();
 			}
 			BindingHandler.applyBindings(wmlPackage);
+			
+			Docx4jEvent.publish(bus, new EventFinished(startEvent));
 		}
 		if ((flags & FLAG_BIND_REMOVE_SDT) == FLAG_BIND_REMOVE_SDT) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_SDT );
+			Docx4jEvent.publish(bus, startEvent);
+
 			removeSDTs(wmlPackage);
+			
+			Docx4jEvent.publish(bus, new EventFinished(startEvent));
 		}
 		if ((flags & FLAG_BIND_REMOVE_XML) == FLAG_BIND_REMOVE_XML) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_XML );
+			Docx4jEvent.publish(bus, startEvent);
+			
 			removeDefinedCustomXmlParts(wmlPackage, customXmlDataStoragePart);
+			
+			Docx4jEvent.publish(bus, new EventFinished(startEvent));			
 		}
 	}
 
@@ -433,7 +508,8 @@ public class Docx4J {
 	 *  Convert the document via xsl-fo
 	 */	
 	public static void toFO(FOSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-	Exporter<FOSettings> exporter = getFOExporter(flags);
+		
+		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
 	}
 	
@@ -441,10 +517,16 @@ public class Docx4J {
 	 *  Convenience method to convert the document to PDF
 	 */	
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) throws Docx4JException {
-	FOSettings settings = createFOSettings();
+		
+		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
+		Docx4jEvent.publish(bus, startEvent);
+		
+		FOSettings settings = createFOSettings();
 		settings.setWmlPackage(wmlPackage);
 		settings.setApacheFopMime("application/pdf");
 		toFO(settings, outputStream, FLAG_NONE);
+		
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));			
 	}
 	
 	protected static Exporter<FOSettings> getFOExporter(int flags) {
@@ -468,15 +550,25 @@ public class Docx4J {
 	 *  Convert the document to HTML
 	 */	
 	public static void toHTML(HTMLSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-	Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
+
+		StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.HTML_OUT );
+		Docx4jEvent.publish(bus, startEvent);
+		
+		Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
 		exporter.export(settings, outputStream);
+		
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));			
 	}
 	
 	/**
 	 *  Convert the document to HTML
 	 */	
 	public static void toHTML(WordprocessingMLPackage wmlPackage, String imageDirPath, String imageTargetUri, OutputStream outputStream) throws Docx4JException {
-	HTMLSettings settings = createHTMLSettings();
+
+		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.HTML_OUT );
+		Docx4jEvent.publish(bus, startEvent);
+		
+		HTMLSettings settings = createHTMLSettings();
 		settings.setWmlPackage(wmlPackage);
 		if (imageDirPath != null) {
 			settings.setImageDirPath(imageDirPath);
@@ -485,6 +577,8 @@ public class Docx4J {
 			settings.setImageTargetUri(imageTargetUri);
 		}
 		toHTML(settings, outputStream, FLAG_NONE);
+		
+		Docx4jEvent.publish(bus, new EventFinished(startEvent));			
 	}
 	
 	protected static Exporter<HTMLSettings> getHTMLExporter(int flags) {
