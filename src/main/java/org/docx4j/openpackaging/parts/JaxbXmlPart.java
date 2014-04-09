@@ -105,6 +105,12 @@ public abstract class JaxbXmlPart<E> extends Part {
 	/** The content tree (ie JAXB representation of the Part) */
 	protected E jaxbElement = null;
 
+	/**
+	 * Get the live contents of this part.
+	 * (getContents() is preferred, this is the older/less friendly method name)
+	 * @return
+	 * @since 3.0
+	 */
 	public E getJaxbElement() {
 		
 		// Lazy unmarshal

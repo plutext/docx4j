@@ -65,6 +65,10 @@ import org.w3c.dom.Document;
 
 /**
  * Save a Package object to a Zip file or output stream
+ * 
+ * Use org.docx4j.openpackaging.io3.Save instead, also 
+ * available via Docx4J facade (since 3.0.2).
+ * 
  * @author jharrop
  *
  */

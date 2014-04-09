@@ -101,6 +101,7 @@ public class Bidi extends AbstractParagraphProperty {
 			 */
 			foElement.setAttribute(Justification.FO_NAME,  "right"); 
 			// unless jc is set to align right; this interaction handled in XsltFOFunctions.createFoAttributes
+			// and equivalent method in FOExporterVisitorGenerator
 			
 		} else {
 			foElement.setAttribute(Justification.FO_NAME,  "left"); // eg English

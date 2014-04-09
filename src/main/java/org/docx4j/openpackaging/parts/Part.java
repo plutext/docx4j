@@ -125,15 +125,18 @@ public abstract class Part extends Base {
 	 */
 	private RelationshipsPart owningRelationshipPart;
 	
-	// TODO, instead of Part.getOwningRelationshipPart(),
-	// it would be better to have getOwningRelationship(),
-	// and if required, to get OwningRelationshipPart from that
+	// instead of Part.getOwningRelationshipPart(),
+	// we now have getSourceRelationships()
+	// TODO can't get OwningRelationshipPart from that
+	// (set that on the Relationships object?)
 
 		
+	@Deprecated
 	public RelationshipsPart getOwningRelationshipPart() {
 		return owningRelationshipPart;
 	}
 
+	@Deprecated
 	public void setOwningRelationshipPart(
 			RelationshipsPart owningRelationshipPart) {
 		this.owningRelationshipPart = owningRelationshipPart;
