@@ -37,6 +37,7 @@ import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -46,12 +47,18 @@ import org.slf4j.LoggerFactory;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.events.Docx4jEvent;
+import org.docx4j.events.EventFinished;
 import org.docx4j.events.PackageIdentifier;
+import org.docx4j.events.PackageIdentifierTransient;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -222,10 +229,24 @@ public class OpcPackage extends Base implements PackageIdentifier {
      *
 	 * @param docxFile
 	 *            The docx file 
+	 * @since 3.1.0
+	 */	
+	public static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile) throws Docx4JException {
+		return load(pkgIdentifier, docxFile, null);
+	}
+	
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an existing File (.docx/.docxm, .ppxtx or Flat OPC .xml).
+     *
+	 * @param docxFile
+	 *            The docx file 
 	 */	
 	public static OpcPackage load(final java.io.File docxFile) throws Docx4JException {
 		return load(docxFile, null);
 	}
+	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
 	 * or PresentationMLPackage
@@ -240,14 +261,38 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 */	
 	public static OpcPackage load(final java.io.File docxFile, String password) throws Docx4JException {
 		
+		PackageIdentifier name = new PackageIdentifierTransient(docxFile.getName());
+		
 		try {
-			return OpcPackage.load(new FileInputStream(docxFile), password );
+			return OpcPackage.load(name, new FileInputStream(docxFile), password );
 		} catch (final FileNotFoundException e) {
 			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
 	}
 
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an existing File (.docx/.docxm, .ppxtx or Flat OPC .xml).
+     *
+	 * @param docxFile
+	 *            The docx file
+	 * @param password
+	 *            The password, if the file is password protected (compound)
+	 *            
+	 * @Since 3.1.0         
+	 */	
+	public static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password) throws Docx4JException {
+		
+		try {
+			return OpcPackage.load(pkgIdentifier, new FileInputStream(docxFile), password );
+		} catch (final FileNotFoundException e) {
+			OpcPackage.log.error(e.getMessage(), e);
+			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
+		}
+	}
+	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
 	 * or PresentationMLPackage
@@ -260,7 +305,24 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 */	
 	public static OpcPackage load(final InputStream inputStream) throws Docx4JException {
 		return load(inputStream, "");
-	}	
+	}
+
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * It detects the convenient format inspecting two first bytes of stream (magic bytes). 
+	 * For office 2007 'x' formats, these two bytes are 'PK' (same as zip file)  
+     *
+	 * @param inputStream
+	 *            The docx file 
+	 *            
+	 * @since 3.1.0            
+	 */	
+	public static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream) throws Docx4JException {
+		return load(pkgIdentifier, inputStream, "");
+	}
+	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
 	 * or PresentationMLPackage
@@ -276,6 +338,26 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 2.8.0           
 	 */	
 	public static OpcPackage load(final InputStream inputStream, String password) throws Docx4JException {
+
+		return load(null, inputStream,  password);
+	}
+	
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * It detects the convenient format inspecting two first bytes of stream (magic bytes). 
+	 * For office 2007 'x' formats, these two bytes are 'PK' (same as zip file)  
+     *
+	 * @param inputStream
+	 *            The docx file 
+	 * @param password
+	 *            The password, if the file is password protected (compound)
+	 *            
+	 * @Since 3.1.0     
+	 */	
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream inputStream, String password) throws Docx4JException {
+		
 		//try to detect the type of file using a bufferedinputstream
 		final BufferedInputStream bis = new BufferedInputStream(inputStream);
 		bis.mark(0);
@@ -291,15 +373,15 @@ public class OpcPackage extends Base implements PackageIdentifier {
 			throw new Docx4JException("Error reading from the stream (no bytes available)");
 		}
 		if (firstTwobytes[0]=='P' && firstTwobytes[1]=='K') { // 50 4B
-			return OpcPackage.load(bis, Filetype.ZippedPackage, null);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.ZippedPackage, null);
 		} else if  (firstTwobytes[0]==(byte)0xD0 && firstTwobytes[1]==(byte)0xCF) {
 			// password protected docx is a compound file, with signature D0 CF 11 E0 A1 B1 1A E1
 			log.info("Detected compound file");
-			return OpcPackage.load(bis, Filetype.Compound, password);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password);
 		} else {
 			//Assume..
 			log.info("Assuming Flat OPC XML");
-			return OpcPackage.load(bis, Filetype.FlatOPC, null);
+			return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null);
 		}
 	}
 	
@@ -333,7 +415,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	public static OpcPackage load(final InputStream is, Filetype type) throws Docx4JException {
 		return load(is, type, null);
 	}
-	
+
 	/**
 	 * convenience method to load a word2007 document 
 	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
@@ -346,12 +428,42 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 2.8.0           
 	 */
 	public static OpcPackage load(final InputStream is, Filetype type, String password) throws Docx4JException {
+
+		return load(null, is, type, password);
+	}
+	
+	/**
+	 * convenience method to load a word2007 document 
+	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 * 
+	 * @Since 3.1.0      
+	 */
+	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password) throws Docx4JException {
+
+		if (pkgIdentifier==null) {
+			pkgIdentifier = new PackageIdentifierTransient("pkg_" + System.currentTimeMillis());
+		}
+		
+		StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
+		startEvent.publish();			
 		
 		if (type.equals(Filetype.ZippedPackage)){
 			
 			final ZipPartStore partLoader = new ZipPartStore(is);
 			final Load3 loader = new Load3(partLoader);
-			return loader.get();
+			OpcPackage opcPackage = loader.get();
+			
+			if (pkgIdentifier!=null) {
+				opcPackage.setName(pkgIdentifier.name());
+			}
+			
+			new EventFinished(startEvent).publish();						
+			return opcPackage;
 			
 //			final LoadFromZipNG loader = new LoadFromZipNG();
 //			return loader.get(is);			
@@ -384,7 +496,9 @@ public class OpcPackage extends Base implements PackageIdentifier {
 				throw new Docx4JException("Problem reading compound file: wrong password?", e);
 			} catch (Exception e) {
 				throw new Docx4JException("Problem reading compound file", e);
-			}  			
+			} finally {
+				new EventFinished(startEvent).publish();				
+			}
 		}
 		
 		try {
@@ -393,74 +507,105 @@ public class OpcPackage extends Base implements PackageIdentifier {
 		} catch (final Exception e) {
 			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load xml from stream ",e);
-		} 
+		} finally {
+			new EventFinished(startEvent).publish();									
+		}
 	}
 
 	/**
 	 * Convenience method to save a WordprocessingMLPackage
-	 * or PresentationMLPackage to a File.
-     *
-	 * @param file
-	 *            The docx file 
+	 * or PresentationMLPackage to a File.  If the file ends with .xml,
+	 * use Flat OPC XML format; otherwise zip it up.
 	 */	
 	public void save(java.io.File file) throws Docx4JException {
-		save(file, null);
-	}	
-	/**
-	 * Convenience method to save a WordprocessingMLPackage
-	 * or PresentationMLPackage to a File.
-     *
-	 * @param file
-	 *            The docx file 
-	 */	
-	private void save(java.io.File file, String password) throws Docx4JException {
-
 		if (file.getName().endsWith(".xml")) {
-			
-		   	// Create a org.docx4j.wml.Package object
-			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(this);
-			org.docx4j.xmlPackage.Package pkg = worker.get();
-	    	
-	    	// Now marshall it
-			try {
-				worker.marshal(new FileOutputStream(file));
-			} catch (Exception e) {
-				throw new Docx4JException("Error saving Flat OPC XML", e);
-			}	
-			return;
+			save(file, Docx4J.FLAG_SAVE_FLAT_XML);			
+		} else {
+			save(file, Docx4J.FLAG_SAVE_ZIP_FILE);						
+		}
+	}	
+
+	// TODO: support for writing password protected files 
+	
+//			// Create the compound file
+//	        try {
+//	        	// Write the package to a stream
+//	        	
+//	        	// .. then encrypt
+//	        	
+//	        	// TODO.  See for example http://code.google.com/p/ooxmlcrypto/source/browse/trunk/OfficeCrypto/OfficeCrypto.cs
+//				
+
+	
+	/**
+	 *  Save this pkg to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  
+	 *  @since 3.1.0
+	 */	
+	public void save(File outFile, int flags) throws Docx4JException {
+		
+		OutputStream outStream = null;
+		try {
+			outStream = new FileOutputStream(outFile);
+			save(outStream, flags);
+		} catch (FileNotFoundException e) {
+			throw new Docx4JException("Exception creating output stream: " + e.getMessage(), e);
+		}
+		finally {
+			if (outStream != null) {
+				try {
+					outStream.close();
+				} catch (IOException e) {}
+				outStream = null;
+			}
 		}
 		
-		if (password==null) {
-			
-//			SaveToZipFile saver = new SaveToZipFile(this); 
-//			saver.save(file);
-			
-			Save saver = new Save(this); 
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(file);
-				saver.save(fos);
-			} catch (FileNotFoundException e) {
-				throw new Docx4JException("Couldn't save " + file.getPath(), e);
-			} finally {
-				IOUtils.closeQuietly(fos);
-			}		
-			
-		} else {
-			// Create the compound file
-	        try {
-	        	// Write the package to a stream
-	        	
-	        	// .. then encrypt
-	        	
-	        	// TODO.  See for example http://code.google.com/p/ooxmlcrypto/source/browse/trunk/OfficeCrypto/OfficeCrypto.cs
-				
-			} catch (Exception e) {
-				throw new Docx4JException("Problem reading compound file", e);
-			}  			
-			
-		}
+	}	
+
+	/**
+	 *  Save this pkg to an OutputStream in the usual zipped up format
+	 *  (Docx4J.FLAG_SAVE_ZIP_FILE)
+	 *  
+	 *  @since 3.1.0
+	 */	
+	public void save(OutputStream outStream) throws Docx4JException {
+		save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);						
 	}
+
+	
+	/**
+	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  
+	 *  @since 3.1.0
+	 */	
+	public void save(OutputStream outStream, int flags) throws Docx4JException {
+		
+		StartEvent startEvent = new StartEvent( this,  WellKnownProcessSteps.PKG_SAVE );
+		startEvent.publish();
+		
+		if (flags == Docx4J.FLAG_SAVE_FLAT_XML) {
+			JAXBContext jc = Context.jcXmlPackage;
+			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(this);
+			org.docx4j.xmlPackage.Package pkg = opcXmlCreator.get();
+			Marshaller marshaller;
+			try {
+				marshaller = jc.createMarshaller();
+				NamespacePrefixMapperUtils.setProperty(marshaller, 
+						NamespacePrefixMapperUtils.getPrefixMapper());			
+				marshaller.marshal(pkg, outStream);				
+			} catch (JAXBException e) {
+				throw new Docx4JException("Exception marshalling document for output: " + e.getMessage(), e);
+			}
+		}
+		else {
+//			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
+			Save saver = new Save(this);
+			saver.save(outStream);
+		}
+		new EventFinished(startEvent).publish();
+	}	
 	
 	
 	

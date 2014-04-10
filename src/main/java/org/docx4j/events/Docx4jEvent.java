@@ -7,6 +7,11 @@ import net.engio.mbassy.bus.MBassador;
 
 public abstract class Docx4jEvent {
 	
+	private static MBassador<Docx4jEvent> bus;
+	public static void setEventNotifier(MBassador<Docx4jEvent> bus) {
+		Docx4jEvent.bus = bus;
+	}	
+	
 	private static Boolean publishAsynch = null;
 	public static Boolean publishAsynch() {
 		if (publishAsynch==null) {
@@ -94,13 +99,13 @@ public abstract class Docx4jEvent {
 	}
 
 	
-	public static void publish(MBassador<Docx4jEvent> bus, Docx4jEvent event) {
+	public void publish() {
     	if (bus!=null) {
     		if (publishAsynch()) {
-    			bus.publishAsync(event);
+    			bus.publishAsync(this);
     		} else {
     			// predictable order
-    			bus.publish(event);    			
+    			bus.publish(this);    			
     		}
     	}				
 	}
