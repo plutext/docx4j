@@ -168,8 +168,16 @@ public class PropertyResolver {
 
 		styleDefinitionsPart.createVirtualStylesForDocDefaults();
 		
-		defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
-		defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
+		try {
+			defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
+		} catch (NullPointerException npe) {
+			log.warn("No default paragraph style!!");
+		}
+		try {
+			defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
+		} catch (NullPointerException npe) {
+			log.warn("No default character style!!");
+		}
 
 		// Initialise styles
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
@@ -1014,7 +1022,8 @@ public class PropertyResolver {
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
-			if (styleId.equals("DocDefaults")) {
+			if (styleId!=null
+					&& styleId.equals("DocDefaults")) {
 				
 				// Don't worry about this.
 				// SDP.createVirtualStylesForDocDefaults()

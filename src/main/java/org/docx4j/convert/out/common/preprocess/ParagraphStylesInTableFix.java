@@ -75,8 +75,12 @@ public class ParagraphStylesInTableFix {
 		
 		StyleRenamer styleRenamer = new StyleRenamer();
 		
-		styleRenamer.setDefaultParagraphStyle(wmlPackage.getMainDocumentPart()
-				.getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId());
+		try {
+			styleRenamer.setDefaultParagraphStyle(wmlPackage.getMainDocumentPart()
+					.getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId());
+		} catch (NullPointerException npe) {
+			log.warn("No default paragraph style!!");
+		}
 		
 		Style defaultTableStyle = wmlPackage.getMainDocumentPart()
 				.getStyleDefinitionsPart().getDefaultTableStyle();
@@ -187,6 +191,10 @@ public class ParagraphStylesInTableFix {
 			TblPr tblPr = tblStack.peek().getTblPr(); 
 			if (tblPr!=null && tblPr.getTblStyle()!=null) {
 				tableStyle = tblPr.getTblStyle().getVal();
+			} else {
+				// TODO: work out what Word does when there is no explicit table style
+				log.warn("No explicit table style.");
+				return null;
 			}
 			String resultStyleID = styleVal+"-"+tableStyle;
 			if (tableStyle.endsWith("-BR")) {
@@ -324,7 +332,12 @@ public class ParagraphStylesInTableFix {
 						if (tblStack.size()==0) {						
 							p.getPPr().getPStyle().setVal(newStyle);
 						} else {
-							p.getPPr().getPStyle().setVal(getCellPStyle(newStyle));							
+							String resultStyle = getCellPStyle(newStyle);
+							if (resultStyle==null) {
+								p.getPPr().getPStyle().setVal(newStyle);								
+							} else {
+								p.getPPr().getPStyle().setVal(resultStyle);
+							}
 						}
 					//}
 				} else {				

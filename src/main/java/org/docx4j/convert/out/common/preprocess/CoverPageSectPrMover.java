@@ -52,6 +52,12 @@ public class CoverPageSectPrMover {
 	
 	private static void moveSectPr(Body body) {
 		
+		if (body==null
+				|| body.getContent().size()==0) {
+			log.warn("w:document/w:body null or empty");
+			return;
+		}
+		
 		Object o = body.getContent().get(0);
 		
 		if (o instanceof P) {
