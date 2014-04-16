@@ -20,9 +20,12 @@
 package org.docx4j.convert.out.common.preprocess;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094  
@@ -31,8 +34,21 @@ import org.docx4j.wml.PPr;
  * See also FopWorkaroundReplacePageBreakInEachList 
  */
 public class FopWorkaroundDisablePageBreakOnFirstParagraph {
+	
+	private static Logger log = LoggerFactory.getLogger(FopWorkaroundDisablePageBreakOnFirstParagraph.class);
+	
 	public static void process(WordprocessingMLPackage wmlPackage) {
-		Object o = wmlPackage.getMainDocumentPart().getContent().get(0);
+		
+		Body body = wmlPackage.getMainDocumentPart().getJaxbElement().getBody();
+		
+		if (body==null
+				|| body.getContent().size()==0) {
+			log.warn("w:document/w:body null or empty");
+			return;
+		}		
+		
+		Object o = body.getContent().get(0);
+		
 		if (o instanceof P
 				&& ((P)o).getPPr()!=null) {
 			PPr pPr = ((P)o).getPPr();
