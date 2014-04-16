@@ -85,7 +85,7 @@ public class ParagraphStylesInTableFix {
 		Style defaultTableStyle = wmlPackage.getMainDocumentPart()
 				.getStyleDefinitionsPart().getDefaultTableStyle();
 		if (defaultTableStyle != null) {
-			styleRenamer.setDefaultTableStyle(defaultTableStyle.getStyleId());
+			styleRenamer.setDefaultTableStyle(defaultTableStyle);
 		}
 		
 		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();
@@ -117,8 +117,8 @@ public class ParagraphStylesInTableFix {
 		}
 
 
-		private String defaultTableStyle;   
-		public void setDefaultTableStyle(String defaultTableStyle) {
+		private Style defaultTableStyle;    // Need the actual Style here (see below) 
+		public void setDefaultTableStyle(Style defaultTableStyle) {
 			this.defaultTableStyle = defaultTableStyle;
 		}
 		
@@ -187,14 +187,30 @@ public class ParagraphStylesInTableFix {
 		private String getCellPStyle(String styleVal) {
 
 			
-			String tableStyle=defaultTableStyle;
+			String tableStyle=null;
 			TblPr tblPr = tblStack.peek().getTblPr(); 
 			if (tblPr!=null && tblPr.getTblStyle()!=null) {
 				tableStyle = tblPr.getTblStyle().getVal();
+			} else if (defaultTableStyle==null) {
+				log.warn("No default table style defined in docx Style Definitions part"); 
+				return null;						
 			} else {
-				// TODO: work out what Word does when there is no explicit table style
-				log.warn("No explicit table style.");
-				return null;
+				if (defaultTableStyle.getName()!=null
+						&& defaultTableStyle.getName().getVal()!=null
+						&& defaultTableStyle.getName().getVal().equals("Normal Table")) {
+					// Word 2010 x64 ignores any table style with that name!
+					log.debug("Ignoring style with name 'Normal Table' (mimicking Word)"); 
+					return null;
+				} else {
+					// We have a default table style
+					tableStyle = defaultTableStyle.getStyleId();
+					// shouldn't happen, but just in case..
+					if (tableStyle==null) {
+						log.error("Default table style has no ID!"); 
+						log.error(XmlUtils.marshaltoString(tableStyle));
+						return null;						
+					}
+				}
 			}
 			String resultStyleID = styleVal+"-"+tableStyle;
 			if (tableStyle.endsWith("-BR")) {
@@ -398,3 +414,68 @@ public class ParagraphStylesInTableFix {
 	
 	
 }
+
+/*
+ * 
+Default table styles:
+
+  <w:style w:type="table" w:styleId="TableGrid">
+    <w:name w:val="Table Grid"/>
+    <w:basedOn w:val="TableNormal"/>
+    <w:uiPriority w:val="59"/>
+    <w:rsid w:val="00081E3C"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblBorders>
+        <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+      </w:tblBorders>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="108" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="108" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+
+  <w:style w:type="table" w:default="1" w:styleId="TableNormal">
+    <w:name w:val="Normal Table"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="108" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="108" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+  
+Word creates tables which use 
+
+        <w:tblStyle w:val="TableGrid"/>
+
+(Note that it includes w:pPr)
+
+But TableNormal is magic/weird in that Word 2010 x64 seems to ignore its contents, even if used explicitly,
+if its w:name is 'Normal Table':
+
+        <w:name w:val="Normal Table"/>
+
+!! Go figure...
+        
+Its @w:default and @w:styleId are not relevant to this oddity...
+
+          <w:style w:type="table" w:default="1" w:styleId="TableNormal">
+ */ 
