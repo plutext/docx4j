@@ -32,11 +32,13 @@ import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.preprocess.PageNumberInformation;
 import org.docx4j.convert.out.common.preprocess.PageNumberInformationCollector;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.P;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
@@ -154,10 +156,15 @@ public class ConversionSectionWrapperFactory {
 	 * @return
 	 */
 	protected static List<ConversionSectionWrapper> processDummy(WordprocessingMLPackage wmlPackage, Document document, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
-	List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
-	ConversionSectionWrapper currentSectionWrapper = null;
-	HeaderFooterPolicy previousHF =
-			new HeaderFooterPolicy(document.getBody().getSectPr(), null, rels, evenAndOddHeaders);
+		
+		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
+		ConversionSectionWrapper currentSectionWrapper = null;
+		HeaderFooterPolicy previousHF =
+				new HeaderFooterPolicy(document.getBody().getSectPr(), null, rels, evenAndOddHeaders);
+	
+		// SectionWrapper does work where sectPr is null (ie document has no body level sectPr),
+		// so document.getBody().getSectPr() is ok
+	
 		currentSectionWrapper = createSectionWrapper(
 				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
 				1, document.getBody().getContent(), dummyPageNumbering); 		
@@ -220,7 +227,34 @@ public class ConversionSectionWrapperFactory {
 				}				
 			} 
 		}
-		sectPrs.add(document.getBody().getSectPr());
+		
+		if (document.getBody().getSectPr()!=null) {
+			// usual case
+			sectPrs.add(document.getBody().getSectPr()); 
+			
+		} else {
+			log.debug("No body level sectPr in document");
+			
+			// OK if the last object is w:p and it contains a sectPr.
+			List<Object> all = document.getBody().getContent();
+	    	Object last = all.get( all.size()-1 );
+	    	if (last instanceof P 
+	    			&& ((P) last).getPPr()!=null 
+	    				&& ((P) last).getPPr().getSectPr() !=null) {
+	    			// ok
+				log.debug(".. but last p contains sectPr .. move it"); // so our assumption later about there being a following section is correct
+
+				SectPr thisSectPr = ((P) last).getPPr().getSectPr();
+				document.getBody().setSectPr(thisSectPr);
+				((P) last).getPPr().setSectPr(null);
+				sectPrs.remove(thisSectPr);
+	    	
+	    	} else {			
+				document.getBody().setSectPr(Context.getWmlObjectFactory().createSectPr());
+				sectPrs.add(document.getBody().getSectPr()); 
+	    	}
+		}
+		
 		
 		int sectPrIndex = 0; // includes continuous ones
 		for (Object o : document.getBody().getContent() ) {
