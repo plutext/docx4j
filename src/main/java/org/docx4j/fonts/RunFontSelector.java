@@ -290,9 +290,21 @@ public class RunFontSelector {
      */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
     	
-    	String text = wmlText.getValue();
-    	log.debug(text);
-    	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
+    	String text=null;
+    	if (wmlText==null) {
+    		log.debug("Null Text object");
+    	} else {
+    		text = wmlText.getValue();
+        	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
+    	}
+    	if (text==null) {
+    		log.debug("w:t with null value"); 
+    		if (outputType!= RunFontActionType.DISCOVERY) {
+    			return null;
+    		} // otherwise a font might be used in a run with content other than w:t?
+    	} else {
+    		log.debug(text);
+    	}
     	
     	PropertyResolver propertyResolver = wordMLPackage.getMainDocumentPart().getPropertyResolver();
     	
@@ -542,6 +554,9 @@ public class RunFontSelector {
     	char currentRangeLower='\u0000';
     	char currentRangeUpper='\u0000';
     	    	
+    	if (text==null) {
+    		return null; 
+    	}
     	for (int i = 0; i < text.length(); i++){
     		
     	    char c = text.charAt(i);        
