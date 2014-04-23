@@ -41,9 +41,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * found warning relating to batik. It
  * doesn't matter.
  * 
- * If you don't have log4j configured, 
+ * If you don't have logging configured, 
  * your PDF will say "TO HIDE THESE MESSAGES, 
- * TURN OFF log4j debug level logging for 
+ * TURN OFF debug level logging for 
  * org.docx4j.convert.out.pdf.viaXSLFO".  The thinking is
  * that you need to be able to be warned if there
  * are things in your docx which the PDF output
@@ -58,6 +58,25 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *
  */
 public class ConvertOutPDF extends AbstractSample {
+	
+	/*
+	 * NOT WORKING?
+	 * 
+	 * If you are getting:
+	 * 
+	 *   "fo:layout-master-set" must be declared before "fo:page-sequence"
+	 * 
+	 * please check:
+	 * 
+	 * 1.  the jaxb-xslfo jar is on your classpath
+	 * 
+	 * 2.  that there is no stack trace earlier in the logs
+	 * 
+	 * 3.  your JVM has adequate memory, eg
+	 * 
+	 *           -Xmx1G -XX:MaxPermSize=128m
+	 * 
+	 */
 	
 	// Config for non-command line use
 	static {
@@ -89,7 +108,8 @@ public class ConvertOutPDF extends AbstractSample {
 		String regex = null;
 		// Windows:
 		// String
-		// regex=".*(calibri|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
+		// regex=".*(calibri|camb|cour|arial|symb|times|Times|zapf).*";
+		regex=".*(calibri|camb|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
 		// Mac
 		// String
 		// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
@@ -117,9 +137,12 @@ public class ConvertOutPDF extends AbstractSample {
 		// eg Glyph "ج" (0x62c, afii57420) not available in font "TimesNewRomanPS-ItalicMT".
 		// to a font which does
 		PhysicalFont font 
-				= PhysicalFonts.getPhysicalFonts().get("Arial Unicode MS");
-		fontMapper.getFontMappings().put("Times New Roman", font);
-		
+				= PhysicalFonts.getPhysicalFonts().get("Arial Unicode MS"); 
+			// make sure this is in your regex (if any)!!!
+		if (font!=null) {
+			fontMapper.getFontMappings().put("Times New Roman", font);
+		}
+		fontMapper.getFontMappings().put("Libian SC Regular", PhysicalFonts.getPhysicalFonts().get("SimSun"));
 
 		// FO exporter setup (required)
 		// .. the FOSettings object
@@ -146,13 +169,18 @@ public class ConvertOutPDF extends AbstractSample {
 		}
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
     	
-
-		//Don't care what type of exporter you use
-		Docx4J.toFO(foSettings, os, Docx4J.FLAG_NONE);
-		//Prefer the exporter, that uses a xsl transformation
-		//Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
-		//Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
-//		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		// Specify whether PDF export uses XSLT or not to create the FO
+		// (XSLT takes longer, but is more complete).
+		
+		// Don't care what type of exporter you use
+		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		
+		// Prefer the exporter, that uses a xsl transformation
+		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+		
+		// Prefer the exporter, that doesn't use a xsl transformation (= uses a visitor)
+		// .. faster, but not yet at feature parity
+		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
 		System.out.println("Saved: " + outputfilepath);
     }

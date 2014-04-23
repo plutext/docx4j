@@ -46,8 +46,7 @@ import org.w3c.dom.traversal.NodeIterator;
 /** 
  * This class contains common static functions, that get called from the PDF and HTML xsl-transformations. 
  * Methods, that are specific to a certain conversion, get implemented in their corresponding XsltxxxFunction classes.<br/>
- * The normal behaviour is to delegate this functions to the current context, that get's passed in.
- *  
+ * The normal behaviour is to delegate this functions to the current context, that gets passed in.
  */
 public class XsltCommonFunctions {
 	

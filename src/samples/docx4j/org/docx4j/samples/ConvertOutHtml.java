@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2014, Plutext Pty Ltd.
  *
  *  This file is part of docx4j.
 
@@ -83,6 +83,24 @@ public class ConvertOutHtml extends AbstractSample {
     			+ "_files");
     	htmlSettings.setWmlPackage(wordMLPackage);
     	
+    	
+    	/* CSS reset, see http://itumbcom.blogspot.com.au/2013/06/css-reset-how-complex-it-should-be.html 
+    	 * 
+    	 * motivated by vertical space in tables in Firefox and Google Chrome.
+        
+	        If you have unwanted vertical space, in Chrome this may be coming from -webkit-margin-before and -webkit-margin-after
+	        (in Firefox, margin-top is set to 1em in html.css)
+	        
+	        Setting margin: 0 on p is enough to fix it.
+	        
+	        See further http://www.css-101.org/articles/base-styles-sheet-for-webkit-based-browsers/    	
+    	*/
+    	String userCSS = "html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, img,  ol, ul, li, table, caption, tbody, tfoot, thead, tr, th, td " +
+    			"{ margin: 0; padding: 0; border: 0;}" +
+    			"body {line-height: 1;} ";
+    	htmlSettings.setUserCSS(userCSS);
+    	
+    	
     	//Other settings (optional)
 //    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
 //    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
@@ -121,4 +139,28 @@ public class ConvertOutHtml extends AbstractSample {
 		}
 
     }
+    
+//    class ResettingStyleHandler implements ConversionHTMLStyleElementHandler {
+//
+//    	@Override
+//    	public Element createStyleElement(OpcPackage opcPackage, Document document,
+//    			String styleDefinition) {
+//
+//    		
+//    		if ((styleDefinition != null) && (styleDefinition.length() > 0)) {
+//        		
+//    			Element ret = document.createElement("link");
+//    			ret.setAttribute("rel", "stylesheet");
+//    			ret.setAttribute("type", "text/css");
+//    			// TODO insert styleDefinition
+//        		return ret;
+//        		
+//    		} else {
+//        		System.out.println("styleDefinition was null or empty!");			
+//    		}
+//    		return null;
+//    	}
+//    }
+    
+    
 }
