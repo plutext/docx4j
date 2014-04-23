@@ -7,13 +7,16 @@
      docx4j 3.0 uses slf4j, so configuring logging is entirely up to you, the user of the docx4j library.
 
      If you want to use log4j, you can, by adding slf4j-log4j12 (and log4j itself).
-
+     
+     In that case, you can use this file as the basis for your log4j configuration if you wish.
 
 	 To see log output when running samples from within Eclipse, 
 	 in the Eclipse run dialog, arguments tab, enter the following
 	 as a program argument:
 	
 	     -Dlog4j.configuration=src/main/resources/log4j.xml
+	     
+	 or add the dir containing this file to your classpath (in run configuration)
 	
 	--> 	
 
@@ -43,12 +46,10 @@
     <!-- L O G G E R S                                                          -->
     <!-- ====================================================================== -->
 
-    <logger name="com.plutext.cmis">
-  		<level value="debug"/> 
-	</logger>
 
+    <!--  Apache loggers -->
     <logger name="org.apache.commons">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>
 	
     <logger name="org.apache.fop">
@@ -56,8 +57,9 @@
 	</logger>
 	
 
+    <!--  docx4j loggers -->
     <logger name="org.docx4j">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>	
 
     <logger name="org.docx4j.convert.in">
@@ -65,76 +67,96 @@
 	</logger>	
 
     <logger name="org.docx4j.convert.out">
-  		<level value="debug"/> 
+  		<level value="warn"/> 
 	</logger>	
 	
     <logger name="org.docx4j.convert.out.common.preprocess">
-  		<level value="debug"/> 
+  		<level value="warn"/> 
 	</logger>	
 
-	
+	<logger name="org.docx4j.convert.out.common.preprocess.FieldsCombiner">
+		  <level value="warn"/> 
+	</logger>	
+    	
     <logger name="org.docx4j.convert.out.common.writer.AbstractMessageWriter">
   		<level value="debug"/> 
 	</logger>	
 	
+    <logger name="org.docx4j.fonts">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.docx4j.fonts.RunFontSelector">
+  		<level value="warn"/> 
+	</logger>
+    
 	<logger name="org.docx4j.jaxb">
-		  		<level value="info"/> 
+		<level value="info"/> 
 	</logger>	
 
 	<logger name="org.docx4j.model">
-		  		<level value="debug"/> 
+		<level value="warn"/> 
 	</logger>	
 
 	<logger name="org.docx4j.model.fields">
-		  		<level value="debug"/> 
+		<level value="warn"/> 
 	</logger>	
 	
-	<logger name="org.docx4j.convert.out.common.preprocess.FieldsCombiner">
-		  		<level value="debug"/> 
-	</logger>	
-
 	<logger name="org.docx4j.model.structure">
-		  		<level value="debug"/> 
+		<level value="warn"/> 
 	</logger>	
 
 	<logger name="org.docx4j.model.styles">
-		  		<level value="debug"/> 
+		<level value="warn"/> 
 	</logger>	
 	    	
     <logger name="org.docx4j.openpackaging">
   		<level value="info"/> 
 	</logger>
 
-    <logger name="org.docx4j.openpackaging.io">
-  		<level value="debug"/> 
+    <logger name="org.docx4j.openpackaging.io3">
+  		<level value="info"/> 
 	</logger>
 
     <logger name="org.docx4j.openpackaging.packages">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>
 
     <logger name="org.docx4j.openpackaging.parts">
   		<level value="info"/> 
 	</logger>
 
-    <logger name="org.docx4j.fonts">
-  		<level value="debug"/> 
-	</logger>
-
-<!-- 
-
-    <logger name="org.docx4j.model.properties.run.Font">
-  		<level value="debug"/> 
-	</logger>
-  
-  
-    <logger name="org.docx4j.fonts.fop.fonts.truetype">
+    <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
- -->
+    
+    <logger name="org.docx4j.wml">
+  		<level value="warn"/> 
+	</logger>
+	
+    
+    
+    <!--  Enterprise edition loggers -->
+    <logger name="com.plutext.docx.toc">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="com.plutext.merge">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="com.plutext.merge.altchunk">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="com.plutext.cmis">
+  		<level value="warn"/> 
+	</logger>
+    
  
+    <!--  Root logger -->
     <root>
-        <level value="info" />
+        <level value="warn" />
         <appender-ref ref="console"/>
         <!-- <appender-ref ref="error"/> -->
     </root>

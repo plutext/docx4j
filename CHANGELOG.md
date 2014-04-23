@@ -1,6 +1,61 @@
 CHANGELOG
 =========
 
+Version 3.1.0 
+=============
+
+
+Release date
+------------
+
+23 April 2014
+
+
+Dependency changes
+------------------
+
+mbassador 1.1.10 jar; see http://www.docx4java.org/forums/docx-java-f6/nightly-20140403-requires-mbassador-jar-t1852.html
+
+
+
+Notable Changes in Version 3.1.0
+---------------------------------
+
+Events infrastructure, allowing a listener to subscribe to track progress of time consuming tasks (eg PDF output).
+See for example https://github.com/plutext/docx4j/blob/master/src/samples/docx4j/org/docx4j/samples/EventMonitoringDemo.java
+
+FO/PDF output: suitable room for header/footer
+
+
+Other Changes (non-exhaustive)
+------------------------------
+
+Part remove - new method
+VbaDataPart - namespace qualify attributes  
+
+Fonts on Mac OSX - avoid NPE
+
+docx Binding fixes for case where OpenDoPE parts are not present
+
+docx fix for non-conformant Google Docs docx
+
+docx PDF (and XSL FO) output 
+- TOC dot leader tabs
+- soft return reduce vertical space 
+- computed style improvements for p in table
+- Arabic numbering
+- Arabic/Hebrew output: w:pPr/w:bidi and w:rPr/w:rtl handling
+- Support bidiVisual property, to layout columns in rtl order for eg Hebrew
+- Chinese improvements
+
+pptx
+- slides: use UTF-8, irrespective of default encoding
+
+xlsx
+- add bookViews/workbookView to workbook to ensure Excel 2010 doesn't crash when printing
+
+
+
 Version 3.0.1
 =============
 
