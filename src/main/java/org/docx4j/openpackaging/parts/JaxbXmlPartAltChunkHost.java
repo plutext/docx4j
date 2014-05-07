@@ -295,7 +295,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 			try {
 				// Use reflection, so docx4j can be built
 				// by users who don't have the MergeDocx utility
-				Class<?> documentBuilder = Class.forName("com.plutext.merge.ProcessAltChunk");			
+				Class<?> documentBuilder = Class.forName("com.plutext.merge.altchunk.ProcessAltChunk");			
 				//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
 				Method[] methods = documentBuilder.getMethods(); 
 				Method method = null;
@@ -315,25 +315,25 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				return (WordprocessingMLPackage)method.invoke(null, clonePkg);
 				
 			} catch (SecurityException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 				log.warn("* Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (ClassNotFoundException e) {
 				extensionMissing(e);
 				return clonePkg;
 			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 				log.warn("* Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (NoSuchMethodException e) {
 				extensionMissing(e);
 				return clonePkg;
 			} catch (IllegalAccessException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 				log.warn("* Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (InvocationTargetException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 				log.warn("* Skipping altChunk of type docx ");
 				return clonePkg;
 			} 
@@ -346,9 +346,9 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 	private void extensionMissing(Exception e) {
 		log.warn("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
 		log.warn("* Skipping altChunk of type docx ");
-		log.warn("* You don't appear to have the MergeDocx paid extension,");
+		log.warn("* You don't appear to have the MergeDocx extension,");
 		log.warn("* which is necessary to merge docx, or process altChunk.");
-		log.warn("* Purchases of this extension support the docx4j project.");
+		log.warn("* MergeDocx is part of the Enterprise Edition of docx4j.");
 		log.warn("* Please email sales@plutext.com or visit www.plutext.com if you want to buy it.");
 	}
 	

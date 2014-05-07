@@ -117,7 +117,8 @@ public class MailMerger {
 	 * results as a single docx, and just hopes for the best.
 	 * Images and hyperlinks should be ok. But numbering 
 	 * will continue, as will footnotes/endnotes. 
-	 * [Advert:] If this isn't working for you, MergeDocx will solve your problems. 
+	 * [Advert:] If this isn't working for you, the commercial Enterprise Edition of docx4j
+	 * (MergeDocx component) will solve your problems. 
 	 * @param input
 	 * @param data
 	 * @param processHeadersAndFooters process headers and footers in FIRST section only.
