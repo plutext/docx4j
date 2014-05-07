@@ -52,17 +52,29 @@ ValidationEventHandler{
 	public static Templates getMcPreprocessor() throws IOException, TransformerConfigurationException {
 		
 		if (mcPreprocessorXslt==null) {
+			
+			// Similar approach to allowing user override as in BindingTraverserXSLT
 			try {
 				Source xsltSource  = new StreamSource(
 						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/jaxb/mc-preprocessor.xslt"));
+								"custom-preprocessor.xslt"));
 				mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
-			} catch (IOException e) {
-				log.error("Problem setting up  mc-preprocessor.xslt", e);
-				throw(e);
-			} catch (TransformerConfigurationException e) {
-				log.error("Problem setting up  mc-preprocessor.xslt", e);
-				throw(e);
+			} catch (Exception e) {
+				log.info("No resource on classpath at custom-preprocessor.xslt (enable debug level logging to see stack trace); falling back to using org/docx4j/jaxb/mc-preprocessor.xslt in docx4j jar");
+				log.debug(e.getMessage(), e);
+				try {
+					Source xsltSource  = new StreamSource(
+							org.docx4j.utils.ResourceUtils.getResource(
+									"org/docx4j/jaxb/mc-preprocessor.xslt"));
+					mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
+					log.info(".. successfully loaded the usual org/docx4j/jaxb/mc-preprocessor.xslt ");
+				} catch (IOException e2) {
+					log.error("Problem setting up  mc-preprocessor.xslt", e2);
+					throw(e2);
+				} catch (TransformerConfigurationException e2) {
+					log.error("Problem setting up  mc-preprocessor.xslt", e2);
+					throw(e2);
+				}
 			}
 		}
 		
