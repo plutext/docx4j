@@ -33,6 +33,7 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.P;
 import org.docx4j.wml.SdtBlock;
@@ -93,7 +94,12 @@ public class ParagraphStylesInTableFix {
         
         styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
         
-		new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
+		try {
+			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
+		} catch (Docx4JException e) {
+			// TODO Auto-generated catch block
+			log.error(e.getMessage(), e);
+		}
 		
 		// TODO, headers/footers as well
 		

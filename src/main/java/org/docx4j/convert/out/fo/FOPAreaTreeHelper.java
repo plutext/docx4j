@@ -73,7 +73,12 @@ public class FOPAreaTreeHelper {
     	
     	// Find the sectPrs
     	SectPrFinder sf = new SectPrFinder(hfPkg.getMainDocumentPart());
-		new TraversalUtil(hfPkg.getMainDocumentPart().getContents(), sf);  
+		try {
+			new TraversalUtil(hfPkg.getMainDocumentPart().getContents(), sf);
+		} catch (Docx4JException e) {
+			// TODO Auto-generated catch block
+			log.error(e.getMessage(), e);
+		}  
 		
 		List<SectPr> sectPrList = sf.getSectPrList();
 		

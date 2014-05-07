@@ -12,6 +12,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.styles.StyleUtil;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.wml.BooleanDefaultTrue;
@@ -99,7 +100,12 @@ public class RunFontSelector {
 		vis.setFallbackFont(fallbackFont);
 		
 		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
-			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+			try {
+				themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+			} catch (Docx4JException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
 		}
 		
 	}
@@ -167,7 +173,13 @@ public class RunFontSelector {
 						log.info("No theme part - default to Calibri");
 						defaultFont= "Calibri"; 
 					} else {
-						String font = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+						String font=null;
+						try {
+							font = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+						} catch (Docx4JException e) {
+							// TODO Auto-generated catch block
+							log.error(e.getMessage(), e);
+						}
 						if (font!=null) {
 							defaultFont= font; 
 						} else {
@@ -385,7 +397,12 @@ public class RunFontSelector {
     			String fontName = null; 
     			if (getThemePart()!=null) {
     				
-    				fontName = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
+    				try {
+						fontName = getThemePart().getFont(rFonts.getCstheme(), themeFontLang);
+					} catch (Docx4JException e) {
+						// TODO Auto-generated catch block
+						log.error(e.getMessage(), e);
+					}
     			}
     			if (fontName==null
 //    					|| fontName.trim().length()==0
@@ -445,7 +462,12 @@ public class RunFontSelector {
 		
 		if (rFonts.getEastAsiaTheme()!=null
 				&& getThemePart()!=null) {
-			eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
+			try {
+				eastAsia = getThemePart().getFont(rFonts.getEastAsiaTheme(), themeFontLang);
+			} catch (Docx4JException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
 			
 			// ??
 			//if (getPhysicalFont(eastAsia)==null) {
@@ -465,7 +487,12 @@ public class RunFontSelector {
 		
 		if (rFonts.getAsciiTheme()!=null
 				&& getThemePart()!=null) {
-			ascii = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+			try {
+				ascii = getThemePart().getFont(rFonts.getAsciiTheme(), themeFontLang);
+			} catch (Docx4JException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
 		} else {
 			// No theme, so 
 			ascii = rFonts.getAscii();
@@ -473,7 +500,12 @@ public class RunFontSelector {
 		
 		if (rFonts.getHAnsiTheme()!=null
 				&& getThemePart()!=null) {
-			hAnsi = getThemePart().getFont(rFonts.getHAnsiTheme(), themeFontLang);
+			try {
+				hAnsi = getThemePart().getFont(rFonts.getHAnsiTheme(), themeFontLang);
+			} catch (Docx4JException e) {
+				// TODO Auto-generated catch block
+				log.error(e.getMessage(), e);
+			}
 		} else {
 			// No theme, so 
 			hAnsi = rFonts.getHAnsi();

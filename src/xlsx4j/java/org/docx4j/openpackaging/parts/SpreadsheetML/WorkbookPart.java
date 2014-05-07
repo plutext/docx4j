@@ -2,6 +2,7 @@ package org.docx4j.openpackaging.parts.SpreadsheetML;
 
 import java.util.List;
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -84,7 +85,12 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	 */
 	public WorksheetPart getWorksheet(int index) throws Xlsx4jException {
 		
-		List<Sheet> sheets= this.getContents().getSheets().getSheet(); 
+		List<Sheet> sheets;
+		try {
+			sheets = this.getContents().getSheets().getSheet();
+		} catch (Docx4JException e1) {
+			throw new Xlsx4jException(e1.getMessage(), e1);
+		} 
 
 		int zeroBasedCount = sheets.size() -1; 
 
