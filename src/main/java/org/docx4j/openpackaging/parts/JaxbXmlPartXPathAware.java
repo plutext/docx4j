@@ -322,7 +322,6 @@ implements XPathEnabled<E> {
 				} else {
 					// eg java.lang.NumberFormatException
 					log.error( ue.getMessage(), ue);
-					log.info(".. can recover if problem is w:tblW/@w:w");
 				}
 				
 				if (is.markSupported() ) {
@@ -402,8 +401,10 @@ implements XPathEnabled<E> {
 			return jaxbElement;
 			
 		} catch (Exception e ) {
-			e.printStackTrace();
-			return null;
+//			e.printStackTrace();
+//			return null;
+			
+			throw new JAXBException(e.getMessage(), e);
 		}
     }
 

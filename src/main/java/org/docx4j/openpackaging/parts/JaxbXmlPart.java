@@ -106,12 +106,13 @@ public abstract class JaxbXmlPart<E> extends Part {
 	protected E jaxbElement = null;
 
 	/**
-	 * Get the live contents of this part.
-	 * (getContents() is preferred, this is the older/less friendly method name)
+	 * Get the live contents of this part (the JAXB object model).
+	 * (An alias/synonym for older getJaxbElement(), but now throws exception)
+	 * @throws Docx4JException
 	 * @return
 	 * @since 3.0
 	 */
-	public E getJaxbElement() {
+	public E getContents() throws Docx4JException {
 		
 		// Lazy unmarshal
 		InputStream is = null;
@@ -136,9 +137,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
-				log.error(e.getMessage(), e);
-			} catch (Docx4JException e) {
-				log.error(e.getMessage(), e);
+				throw new Docx4JException(e.getMessage(), e);
+//			} catch (Docx4JException e) {
+//				log.error(e.getMessage(), e);
 			} finally {
 				IOUtils.closeQuietly(is);
 			}			
@@ -148,12 +149,17 @@ public abstract class JaxbXmlPart<E> extends Part {
 	
 	/**
 	 * Get the live contents of this part.
-	 * (Just an alias/synonym for getJaxbElement())
+	 * (getContents() is preferred, this is the older/less friendly method name)
 	 * @return
-	 * @since 3.0
 	 */
-	public E getContents() {
-		return getJaxbElement();
+	@Deprecated
+	public E getJaxbElement() {
+		try {
+			return getContents();
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			return null;
+		} 
 	}
 
 	public void setJaxbElement(E jaxbElement) {
@@ -281,10 +287,13 @@ public abstract class JaxbXmlPart<E> extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
-			getJaxbElement();
+			getContents();
 	    	setMceIgnorable();
 			marshaller.marshal(jaxbElement, node);
 
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			throw new JAXBException(e);  // avoid change to method signature
 		} catch (JAXBException e) {
 //			e.printStackTrace();
 			log.error(e.getMessage(), e);
@@ -327,14 +336,17 @@ public abstract class JaxbXmlPart<E> extends Part {
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
 			log.info("marshalling " + this.getClass().getName() );	
-			getJaxbElement();
-			if (jaxbElement==null) {
-				log.error("No JAXBElement has been created for this part, yet!");
-				throw new JAXBException("No JAXBElement has been created for this part, yet!");
-			}
+			getContents();
+//			if (jaxbElement==null) {
+//				log.error("No JAXBElement has been created for this part, yet!");
+//				throw new JAXBException("No JAXBElement has been created for this part, yet!");
+//			}
 	    	setMceIgnorable();
 			marshaller.marshal(jaxbElement, os);
 
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			throw new JAXBException(e);  // avoid change to method signature
 		} catch (JAXBException e) {
 			//e.printStackTrace();
 			log.error(e.getMessage(), e);
