@@ -271,6 +271,19 @@ public class PageDimensions {
 			}
 		}
 
+		else if (sz.equals(PageSizePaper.A5)) {
+			pgSz.setCode(BigInteger.valueOf(11));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(11907));
+				pgSz.setH(BigInteger.valueOf(8391));
+			} else {
+				pgSz.setW(BigInteger.valueOf(8391));
+				pgSz.setH(BigInteger.valueOf(11907));
+
+			}
+		}
+		
 		else if (sz.equals(PageSizePaper.B4JIS)) {
 			pgSz.setCode(BigInteger.valueOf(12));
 			if (landscape) {

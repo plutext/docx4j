@@ -9,6 +9,7 @@ public enum PageSizePaper {
 		    LEGAL("legal"),
 		    A3("A3"),
 		    A4("A4"),
+		    A5("A5"),
 		    B4JIS("B4JIS");
 		    
 		    private final String value;
