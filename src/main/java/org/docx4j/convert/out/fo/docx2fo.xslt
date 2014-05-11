@@ -335,7 +335,12 @@
 		</xsl:variable>
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
-		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  
+		
+<!-- Uncomment to provide hints as to where in the docx processing is up to.. 		
+		<xsl:variable name="logging" 
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, string($childResults))" />
+	 -->		
 
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createBlockForPPr( 
   			$conversionContext, $pPrNode, $pStyleVal, $childResults)" />

@@ -224,7 +224,7 @@ public class TraversalUtil {
         // Its not graphicData.getAny() we're typically interested in
         if (graphicData.getPic() != null && graphicData.getPic().getBlipFill() != null
                 && graphicData.getPic().getBlipFill().getBlip() != null) {
-            log.info("found CTBlip");
+            log.debug("found CTBlip");
             List<Object> artificialList = new ArrayList<Object>();
             if (!tmpArtificialList.isEmpty())
                 artificialList.addAll(tmpArtificialList);
@@ -277,7 +277,7 @@ public class TraversalUtil {
                 handleCTNonVisualDrawingProps(drawingProps, artificialList);
             }
             if (anchor.getGraphic() != null) {
-                log.info("found a:graphic");
+                log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = anchor.getGraphic();
                 if (graphic.getGraphicData() != null) {
                     artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
@@ -293,7 +293,7 @@ public class TraversalUtil {
                 handleCTNonVisualDrawingProps(drawingProps, artificialList);
             }
             if (inline.getGraphic() != null) {
-                log.info("found a:graphic");
+                log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = inline.getGraphic();
                 if (graphic.getGraphicData() != null) {
                     artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
@@ -311,7 +311,7 @@ public class TraversalUtil {
 			org.docx4j.dml.picture.Pic dmlPic = ((org.docx4j.dml.picture.Pic)o);
 			if (dmlPic.getBlipFill()!=null
 					&& dmlPic.getBlipFill().getBlip()!=null) {
-					log.info("found DML Blip");
+					log.debug("found DML Blip");
 					List<Object> artificialList = new ArrayList<Object>();
 					artificialList.add(dmlPic.getBlipFill().getBlip());
 					return artificialList;
@@ -323,7 +323,7 @@ public class TraversalUtil {
 			org.docx4j.dml.CTGvmlPicture dmlPic = ((org.docx4j.dml.CTGvmlPicture)o);
 			if (dmlPic.getBlipFill()!=null
 					&& dmlPic.getBlipFill().getBlip()!=null) {
-					log.info("found DML Blip");
+					log.debug("found DML Blip");
 					List<Object> artificialList = new ArrayList<Object>();
 					artificialList.add(dmlPic.getBlipFill().getBlip());
 					return artificialList;
