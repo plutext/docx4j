@@ -36,6 +36,17 @@
 
   -->
         
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * *
+ 
+     WARNING: this copy for docx2fo.xslt is deprecated!
+     
+     See instead org.docx4j.convert.out.fo/docx2fo.xslt
+
+     * * * * * * * * * * * * * * * * * * * * * * * * * *
+ --> 
+
+
+
 
 <!-- =======================================
 
@@ -589,7 +600,8 @@
 				<fo:block break-before="page" />
 			</xsl:when>
 			<xsl:otherwise>
-				<fo:block white-space-treatment="preserve"> </fo:block>
+				<fo:block white-space-treatment="preserve"> 
+				</fo:block>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>

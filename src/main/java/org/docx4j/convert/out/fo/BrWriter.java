@@ -51,6 +51,31 @@ public class BrWriter extends AbstractBrWriter {
 			ret.setAttribute("break-before", "page");
 		
 		} else {
+			
+			/* w:br is converted to fo:block with @line-height="0pt", to get rid of
+			 * unwanted vertical whitespace.  If effect, it results in a carriage return.
+			 * 
+			 * However, some users use contiguous w:br to create vertical spacing
+			 * which works in Word.  But FOP only does a single carriage return
+			 * for contiguous fo:block/@line-height="0pt"
+			 * 
+			 * So we need to work around this.  Possible approaches:
+			 * 
+			 * 1. pre-process to convert the w:br to a w:p.  This is difficult,
+			 *    for example, numbering.
+			 * 
+			 * 2. set TransformState, so the attribute is not set for the 2nd w:br
+			 * 
+			 * 3. set some custom attribute on the br
+			 * 
+			 * 4. post-process the XSL FO, so in contiguous fo:block/@line-height="0pt"
+			 *    the attributes on 2nd and subsequent are changed.
+			 *    
+			 *    eg in org/docx4j/convert/out/fo/renderers/AbstractFORenderer_POSTPROCESSING.xslt
+			 *     
+			 * It turns out the easiest approach is to catch the special case in the XSLT
+			 * 
+			 */
 		
 			ret = doc.createElementNS(XSL_FO, "block");  // yuck .. block/inline/block
 			// see http://stackoverflow.com/a/3664468/1031689 answer

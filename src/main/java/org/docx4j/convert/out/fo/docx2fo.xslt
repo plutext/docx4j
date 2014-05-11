@@ -622,14 +622,51 @@
 
 	<xsl:template match="w:br">
 	
-		<xsl:variable name="childResults">
-			<xsl:apply-templates /> 
+		<!--  Is there a w:br immediately before this one?
+		
+		      If this is the first child of this w:r, and the w:r is preceded by another w:r, look at its last child
+		
+			  If this is not the first child of this w:r, look at the preceding sibling
+		 -->
+		<xsl:variable name="predecessor"> 
+			<xsl:choose>
+				<xsl:when test="count(preceding-sibling::w:rPr)=1 and count(preceding-sibling::*)>1">
+					<!--  take rPr into account -->
+					<xsl:value-of select="local-name(preceding-sibling::*[1])"/>
+				</xsl:when>
+				<xsl:when test="count(preceding-sibling::w:rPr)=0 and count(preceding-sibling::*)>0">
+					<xsl:value-of select="local-name(preceding-sibling::*[1])"/>
+				</xsl:when>
+				<xsl:when test="count(../preceding-sibling::*)>0">
+					<xsl:value-of select="local-name(../preceding-sibling::*[1]/*[last()])"/>
+				</xsl:when>
+				<xsl:otherwise/>
+			</xsl:choose>
 		</xsl:variable>
-	
-		<xsl:variable name="currentNode" select="." />  			
-	
-	     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext,$currentNode, 
-				$childResults)" />
+		
+<!-- 	<xsl:variable name="logging" 
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, $predecessor)" />
+			 -->			
+		
+		<xsl:choose>
+			<xsl:when test="$predecessor='br' and not(@w:type='page')">
+				<!-- special case; see discussion in BrWriter -->
+				<fo:block white-space-treatment="preserve" linefeed-treatment="preserve"><xsl:text> <!-- one carriage return -->				
+</xsl:text></fo:block>
+			</xsl:when>
+			<xsl:otherwise>
+				<!--  usual case -->
+				<xsl:variable name="childResults">
+					<xsl:apply-templates /> 
+				</xsl:variable>
+			
+				<xsl:variable name="currentNode" select="." />  			
+			
+			     <xsl:copy-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.toNode($conversionContext,$currentNode, 
+						$childResults)" />
+			
+			</xsl:otherwise>
+		</xsl:choose>
 	  		  			
 	</xsl:template>
 

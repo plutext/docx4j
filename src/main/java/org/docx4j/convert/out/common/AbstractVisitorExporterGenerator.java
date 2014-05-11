@@ -31,11 +31,13 @@ import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBrType;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -322,13 +324,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 
 			
-		} else if (o instanceof org.docx4j.wml.Br) {			
-
-			convertToNode(conversionContext, 
-						  o, AbstractBrWriter.WRITER_ID,
-						  document, (currentP != null ? currentP : parentNode));
+		} else if (o instanceof Br) {
 			
-			currentSpan=null;
+			handleBr((Br)o);
 			
 		} else if (o instanceof org.docx4j.wml.R.Sym) {
 
@@ -347,6 +345,21 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		}
 		
 		return null;
+	}
+	
+	abstract protected void handleBr(Br o);
+	
+	protected int getPos(List list, Object wanted) {
+		
+		int index = 0;
+		for(Object o : list) {
+			
+			if (o==wanted) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
 	}
 	
 	protected void convertTabToNode(CC conversionContext, Document document) throws DOMException {

@@ -24,6 +24,7 @@ import java.util.List;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
+import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.model.PropertyResolver;
@@ -40,14 +41,20 @@ import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.JcEnumeration;
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STTabJc;
 import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -56,6 +63,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator<FOConversionContext>{
+	
+	private static Logger log = LoggerFactory.getLogger(FOExporterVisitorGenerator.class);
+	
+	
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
 	public static final AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory<FOConversionContext> GENERATOR_FACTORY = 
@@ -99,6 +110,88 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 		return null;
 	}
+	
+	@Override
+	protected void handleBr(Br br) {
+		
+		
+		/* Is there a w:br immediately before this one?
+		
+	      If this is the first child of this w:r, and the w:r is preceded by another w:r, look at its last child
+	
+		  If this is not the first child of this w:r, look at the preceding sibling
+*/
+		
+		boolean firstBr = true; // until proven otherwise
+		
+		R r = (R)br.getParent();
+		int pos = getPos(r.getContent(), br);
+		if (pos<0) {
+			log.error("Couldn't locate w:br in w:r");
+		}
+		else if (pos==0) {
+			// Need to look in preceding run
+			Object rParent = r.getParent();
+			// Handle just the case where this is w:p for now
+			if(rParent instanceof P) {
+				P parentP = (P)rParent;
+				pos = getPos(parentP.getContent(), r);
+				if (pos<0) {
+					log.error("Couldn't locate w:r in w:p");
+				} else if (pos>0) {
+					Object beforeR = parentP.getContent().get(pos-1);
+					if (beforeR instanceof R) {
+						List list = ((R)beforeR).getContent();
+						Object previous = list.get(list.size()-1);
+						if (previous instanceof Br) {
+							firstBr=false;
+						}
+					} else {
+//						System.out.println(beforeR.getClass().getName());
+						
+					}
+				}
+			} else {
+				log.info("TODO: handle run parent " + rParent.getClass().getName());
+			}
+		} else {
+			Object previous = r.getContent().get(pos-1);
+			if (previous instanceof Br) {
+				firstBr=false;
+			} else {
+//				System.out.println("previous: " + previous.getClass().getName());
+			}
+		}
+		
+		if ((!firstBr) && 
+				(br.getType()==null
+				  || br.getType().equals(STBrType.TEXT_WRAPPING))) {
+			
+			// ie  a soft-return following another
+			// 
+			Element ret = createNode(document, NODE_BLOCK);
+			// see http://stackoverflow.com/a/3664468/1031689 answer
+			// at http://stackoverflow.com/questions/3661483/inserting-a-line-break-in-a-pdf-generated-from-xsl-fo-using-xslvalue-of
+			ret.setAttribute("linefeed-treatment", "preserve");
+			ret.setAttribute("white-space-treatment", "preserve");
+			ret.setTextContent("\n");
+			
+			getCurrentParent().appendChild(ret); // should be spanEl
+			
+		} else {
+			// Usual case
+			convertToNode(conversionContext, 
+					  br, AbstractBrWriter.WRITER_ID,
+					  document, getCurrentParent() );
+			
+		}
+		
+		if ((br.getType()!=null
+				  && br.getType().equals(STBrType.PAGE))) {
+			currentSpan=null;			
+		}
+	}
+	
 	
 	@Override
 	protected void convertTabToNode(FOConversionContext conversionContext, Document document) throws DOMException {

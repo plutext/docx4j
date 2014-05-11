@@ -19,8 +19,11 @@
  */
 package org.docx4j.convert.out.html;
 
+import java.util.List;
+
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
+import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -28,8 +31,12 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBrType;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -171,4 +178,15 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			
 	}
 
+	@Override
+	protected void handleBr(Br o) {
+		
+		// Just the usual case (unlike XSL FO, no attempt is made here to manage vertical space) 
+		convertToNode(conversionContext, 
+				  o, AbstractBrWriter.WRITER_ID,
+				  document, (currentP != null ? currentP : parentNode));
+		
+		currentSpan=null;		
+			
+	}    
 }
