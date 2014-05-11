@@ -27,6 +27,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
@@ -248,8 +249,11 @@ public class PropertyResolver {
 			result = XmlUtils.deepCopy(tableStyleStack.pop());
 		} else {
 			result = Context.getWmlObjectFactory().createStyle();
+			CTTblPrBase emptyPr = Context.getWmlObjectFactory().createCTTblPrBase();
+			result.setTblPr(emptyPr);
 			if (tblPr==null) {
 				// Return empty style object
+				log.info("Generated empty tblPr" );
 				return result;
 			}			
 		}
@@ -259,6 +263,11 @@ public class PropertyResolver {
 		
 		// Finally apply the tblPr we were passed
 		result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
+		
+		// Sanity check
+		if (result.getTblPr()==null) {
+			log.error("Null tblPr. FIXME" );
+		}
 		
 		return result;
 	}
@@ -343,6 +352,16 @@ public class PropertyResolver {
 			
 		} else {
 			styleId = expressPPr.getPStyle().getVal();
+			if (styleId==null) {
+				log.warn("Missing style id: " + XmlUtils.marshaltoString(expressPPr));
+				if (log.isDebugEnabled()) {
+					Throwable t = new Throwable();
+					log.debug("Null styleId produced by code path", t);
+				} else {
+					log.warn("Enable debug level logging to see code path");					
+				}
+				styleId = defaultParagraphStyleId;
+			}
 		}
 		resolvedPPr = getEffectivePPr(styleId);
 		
@@ -386,7 +405,7 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public PPr getEffectivePPr(String styleId) {
-
+		
 		PPr resolvedPPr = resolvedStylePPrComponent.get(styleId);
 		
 		if (resolvedPPr!=null) {
@@ -1014,6 +1033,16 @@ public class PropertyResolver {
 	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
 		// The return value is the style on which styleId is based.
 		// It is purely for the purposes of ascertainNumId.
+		
+		if (styleId==null) {
+			if (log.isDebugEnabled()) {
+				Throwable t = new Throwable();
+				log.debug("Null styleId produced by code path", t);
+			} else {
+				log.warn("Null styleId; Enable debug level logging to see code path");					
+			}
+			return;
+		}
 		
 		// get the style
 		Style style = liveStyles.get(styleId);

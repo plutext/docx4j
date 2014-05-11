@@ -58,6 +58,7 @@ import org.docx4j.wml.TblGridCol;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -70,6 +71,10 @@ import org.w3c.dom.Node;
  *  
 */
 public abstract class AbstractTableWriter extends AbstractSimpleWriter {
+	
+	private static Logger log = LoggerFactory.getLogger(AbstractTableWriter.class);
+	
+	
 	public static final String WRITER_ID = "w:tbl";
 	
   
@@ -317,6 +322,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		// - position (tblPr/tblInd)
 		// - table-layout
 	
+		if (table.getEffectiveTableStyle().getTblPr()==null) {
+			log.warn("table.getEffectiveTableStyle().getTblPr() is null, but should never be");
+			return;
+		}
+	
 		tableProperties = PropertyFactory.createProperties(table.getEffectiveTableStyle().getTblPr());
 		
 		// Borders, shading
@@ -385,6 +395,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	
 
 	protected void createCellProperties(List<Property> properties, CTTblPrBase tblPr) {
+		
+		if (tblPr==null ) {
+			log.warn("table.getEffectiveTableStyle().getTblPr() is null, but should never be");
+			return;
+		}
+		
 	TblBorders tblBorders = tblPr.getTblBorders();
 	CTTblCellMar tblCellMargin = tblPr.getTblCellMar();
 		if (tblBorders!=null) {

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.BrokenStyleRemediator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -355,7 +356,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			n = Context.getWmlObjectFactory().createStyleName();
 			n.setVal("Normal");
 			normal.setName(n);
-			this.getJaxbElement().getStyle().add(normal);			
+			this.getJaxbElement().getStyle().add(normal);	
+			
+			normal.setDefault(Boolean.TRUE); // @since 3.1.1
 		}
 		
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
@@ -388,8 +391,14 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
      */
     private static Style getStyleById(List<Style> styles, String id) {
     	
-		for ( org.docx4j.wml.Style s : styles ) {				
-			if( s.getStyleId().equals(id) ) {
+		for ( org.docx4j.wml.Style s : styles ) {	
+			
+			if (s.getStyleId()==null) {
+				BrokenStyleRemediator.remediate(s);
+			}
+			
+			if( s.getStyleId()!=null
+					&& s.getStyleId().equals(id) ) {
 				return s;
 			}
 		}
@@ -421,6 +430,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     
     
     private Style defaultParagraphStyle;
+    /**
+     * if this returns null; invoke createVirtualStylesForDocDefaults() @since 3.1.1 then try again
+     * 
+     * @return
+     */
     public Style getDefaultParagraphStyle() {
     	
     	if (defaultParagraphStyle==null) {
@@ -451,6 +465,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     			}
     		}    		
     	}
+    
     	
 		return defaultParagraphStyle;
     }
