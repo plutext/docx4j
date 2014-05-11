@@ -368,10 +368,15 @@ public class ParagraphStylesInTableFix {
 					if (styleVal!=null) {
 						if (tblStack.size()>0) {						
 							log.debug("Fixing " + pstyle.getVal());
-							p.getPPr().getPStyle().setVal(getCellPStyle(styleVal));							
+							if (getCellPStyle(styleVal)==null) {
+								log.debug("getCellPStyle returned null, so leave as is");
+							} else {
+								p.getPPr().getPStyle().setVal(getCellPStyle(styleVal));
+							}
 						}
 					}
 				}
+				
 			}
 			
 			return null;
