@@ -301,7 +301,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				Method method = null;
 				for (int j=0; j<methods.length; j++) {
 					System.out.println(methods[j].getName());
-					if (methods[j].getName().equals("process")) {
+					if (methods[j].getName().equals("process")
+							&& methods[j].getParameterTypes().length==1) {
 						method = methods[j];
 						break;
 					}
@@ -349,7 +350,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		log.warn("* You don't appear to have the MergeDocx extension,");
 		log.warn("* which is necessary to merge docx, or process altChunk.");
 		log.warn("* MergeDocx is part of the Enterprise Edition of docx4j.");
-		log.warn("* Please email sales@plutext.com or visit www.plutext.com if you want to buy it.");
+		log.warn("* Please email sales@plutext.com or visit www.plutext.com if you want to try it.");
 	}
 	
 	private String toString(ByteBuffer bb) throws UnsupportedEncodingException {
