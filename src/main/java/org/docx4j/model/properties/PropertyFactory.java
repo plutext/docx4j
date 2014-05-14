@@ -586,6 +586,9 @@ public class PropertyFactory {
 			} else if (name.equals(SpaceAfter.CSS_NAME )) {
 				// space-after
 				return new SpaceAfter(value);
+			} else if (name.equals(LineSpacing.CSS_NAME )) {
+				// line-height
+				return new LineSpacing(value);
 			}		
 		} catch (java.lang.UnsupportedOperationException uoe) {
 			// TODO: consider whether it is right to catch this,
