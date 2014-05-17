@@ -34,11 +34,13 @@ import org.docx4j.convert.out.common.preprocess.PageNumberInformation;
 import org.docx4j.convert.out.common.preprocess.PageNumberInformationCollector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
@@ -123,16 +125,16 @@ public class ConversionSectionWrapperFactory {
 	}
 	
 	
-	public static ConversionSectionWrappers process(WordprocessingMLPackage wmlPackage, boolean dummySections, boolean dummyPageNumbering) {
+	public static ConversionSectionWrappers process(WordprocessingMLPackage wmlPackage, boolean dummySections, boolean dummyPageNumbering) throws Docx4JException {
 		
 		List<ConversionSectionWrapper> conversionSections = null;
-		Document document = wmlPackage.getMainDocumentPart().getJaxbElement();
+		Document document = wmlPackage.getMainDocumentPart().getContents();
 		RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 		BooleanDefaultTrue evenAndOddHeaders = null;
 
 		if ((wmlPackage.getMainDocumentPart().getDocumentSettingsPart() != null) &&
-			(wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement() != null)) {
-			evenAndOddHeaders = wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().getEvenAndOddHeaders();
+			(wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getContents() != null)) {
+			evenAndOddHeaders = wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getEvenAndOddHeaders();
 		}
 		
 		if (dummySections) {
@@ -157,6 +159,8 @@ public class ConversionSectionWrapperFactory {
 	 */
 	protected static List<ConversionSectionWrapper> processDummy(WordprocessingMLPackage wmlPackage, Document document, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
 		
+		log.debug("starting");
+		
 		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
 		ConversionSectionWrapper currentSectionWrapper = null;
 		HeaderFooterPolicy previousHF =
@@ -172,17 +176,174 @@ public class ConversionSectionWrapperFactory {
 		return conversionSections;
 	}
 	
-	protected static List<ConversionSectionWrapper> processComplete(WordprocessingMLPackage wmlPackage, Document document, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
+	/**
+	 * @param sectPr
+	 * @param headerFooterPolicy
+	 * @param rels
+	 * @param evenAndOddHeaders  from the document settings part
+	 * @param conversionSectionIndex
+	 * @param content
+	 * @param dummyPageNumbering
+	 * @return
+	 */
+	protected static ConversionSectionWrapper createSectionWrapper(
+			SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, 
+			int conversionSectionIndex, List<Object> content,
+			boolean dummyPageNumbering) {
+		
+		ConversionSectionWrapper csw = 
+					new ConversionSectionWrapper(sectPr, headerFooterPolicy, rels, evenAndOddHeaders,
+					"s" + Integer.toString(conversionSectionIndex), content);
+		
+		PageNumberInformation pageNumberInformation = 
+				PageNumberInformationCollector.process(csw, dummyPageNumbering);
+		csw.setPageNumberInformation(pageNumberInformation);
+		
+		return csw;
+	}
+	
+	protected static List<ConversionSectionWrapper> processComplete(WordprocessingMLPackage wmlPackage, Document document, 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, boolean dummyPageNumbering) {
+		
+		log.debug("starting");
+
+		// Get a list of all the sectPrs
+		removeContentControls( document);
+		List<SectPr> sectPrs =  getSectPrs(document);
+
+		// Local vars
 		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
-		List<Object> sectionContent = new ArrayList<Object>();
 		ConversionSectionWrapper currentSectionWrapper = null;
 		HeaderFooterPolicy previousHF = null;
 		int conversionSectionIndex = 0;
+		List<Object> sectionContent = new ArrayList<Object>();
 		
-		// According to the ECMA-376 2ed, if type is not specified, read it as next page
-		// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??	
-		// 20130216 Review above comment: !  In the Word UI, the Word "continuous" is shown where it is effective.  
-		// In the XML, it is stored in the next following sectPr.
+		// Now go through the document content,
+		
+		int sectPrIndex = 0; // includes continuous ones
+		for (Object o : document.getBody().getContent() ) {
+			
+			if (o instanceof org.docx4j.wml.P) {
+				
+				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+					
+					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+					if (ppr.getSectPr()!=null) {
+
+						/* If the *following* section is continuous, 
+						 * don't add *this* section, because we want our
+						 * sectionWrapper to surround the content preceding
+						 * both sectPr.
+						 * 
+						 * When we do eventually create that section wrapper,
+						 * it must use the header/footer settings from 
+						 * *this* section.
+						 * 
+						 * There is a special case to consider:
+						 *  
+						        <w:sectPr>
+						          <w:type w:val="continuous"/>
+						          <w:pgSz <---- different values from previous sectPr
+						 *
+						 * In this case, Word will render a page break, 
+						 * but:
+						 * 1. still show it as continuous
+						 * 2. still use the headers/footers from this section
+						 *  
+						 */
+						
+						boolean ignoreThisSection = false;
+						SectPr followingSectPr = sectPrs.get(++sectPrIndex);
+						if ( followingSectPr.getType()!=null
+								     && followingSectPr.getType().getVal().equals("continuous")) {
+
+							log.info("following sectPr is continuous; this section wrapper must include its contents ");
+							ignoreThisSection = true;
+							
+						} 
+						
+						
+						if (ignoreThisSection) {
+							// In case there are some headers/footers that apply to both this content and the 
+							// content before the continuous sectPr,
+							// or that need to get inherited by the section after the continuous sectPr 
+							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
+
+							
+							PgSz pgSzThis = ppr.getSectPr().getPgSz();
+							PgSz pgSzNext = followingSectPr.getPgSz();
+							if (insertPageBreak( pgSzThis,  pgSzNext)) {
+								
+								ppr.setPageBreakBefore(new BooleanDefaultTrue());
+							}
+							//ppr.setSectPr(null); // Don't do this, since we have to process the docx (inc sectPrs) multiple times for a single PDF output
+							
+						} else {
+							currentSectionWrapper = createSectionWrapper(
+									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
+									++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+							conversionSections.add(currentSectionWrapper);
+							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
+							sectionContent = new ArrayList<Object>();
+							
+						}
+					}
+				}				
+			} 
+			sectionContent.add(o);
+//			System.out.println(XmlUtils.marshaltoString(o, true));
+		}
+		
+		// Section wrapper for the document level sectPr, containing remaining content
+		currentSectionWrapper = createSectionWrapper(
+				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
+				++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
+		conversionSections.add(currentSectionWrapper);
+		return conversionSections;
+	}
+	
+	private static boolean insertPageBreak(PgSz pgSzThis, PgSz pgSzNext) {
+
+		boolean insertPageBreak = false;
+		
+		// If the w:pgSz on the two sections differs, 
+		// then Word inserts a page break (ie doesn't treat it as continuous).
+		// If no w:pgSz element is present, then Word defaults
+		// (presumably to Legal? TODO CHECK. There is no default setting in the docx).
+		// Word always inserts a w:pgSz element?
+
+		
+		if (pgSzThis!=null && pgSzNext!=null) {
+			
+			if (pgSzThis.getH().compareTo(pgSzNext.getH())!=0) {
+				insertPageBreak = true;
+			}
+			if (pgSzThis.getW().compareTo(pgSzNext.getW())!=0) {
+				insertPageBreak = true;
+			}
+			
+			// Orientation:default is portrait
+			boolean portraitThis = true;
+			if (pgSzThis.getOrient()!=null) {
+				portraitThis=pgSzThis.getOrient().equals(STPageOrientation.PORTRAIT);
+			}
+			boolean portraitNext = true;
+			if (pgSzNext.getOrient()!=null) {
+				portraitNext=pgSzNext.getOrient().equals(STPageOrientation.PORTRAIT);
+			}
+			if (portraitThis!=portraitNext) {
+				insertPageBreak = true;									
+			}
+			
+		}
+		// TODO: handle cases where one or both pgSz elements are missing,
+		// or H or W is missing.
+		// Treat pgSz element missing as Legal size?
+		return insertPageBreak;
+	}
+	
+	
+	private static void removeContentControls(Document document) {
 
 		// First, remove content controls, 
 		// since the P could be in a content control.
@@ -212,6 +373,17 @@ public class ConversionSectionWrapperFactory {
 //		if (log.isDebugEnabled()) {
 //			log.debug(XmlUtils.marshaltoString(document, true, true));
 //		}
+		
+	}
+	
+	private static List<SectPr> getSectPrs(Document document) {
+
+		// According to the ECMA-376 2ed, if type is not specified, read it as next page
+		// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??	
+		// 20130216 Review above comment: !  In the Word UI, the Word "continuous" is shown where it is effective
+		// (except 20140517 where the page sizes differ, so that it says continuous but inserts a break!)
+		// In the XML, it is stored in the next following sectPr.
+
 		
 		// Make a list, so it is easy to look at the following sectPr,
 		// which we need to do to handle continuous sections properly
@@ -255,100 +427,8 @@ public class ConversionSectionWrapperFactory {
 	    	}
 		}
 		
-		
-		int sectPrIndex = 0; // includes continuous ones
-		for (Object o : document.getBody().getContent() ) {
-			
-			if (o instanceof org.docx4j.wml.P) {
-				
-				if (((org.docx4j.wml.P)o).getPPr() != null ) {
-					
-					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
-					if (ppr.getSectPr()!=null) {
-
-						// If the *following* section is continuous, don't add *this* section
-						boolean ignoreThisSection = false;
-						SectPr followingSectPr = sectPrs.get(++sectPrIndex);
-						if ( followingSectPr.getType()!=null
-								     && followingSectPr.getType().getVal().equals("continuous")) {
-							
-							ignoreThisSection = true;
-							
-							// If the w:pgSz on the two sections differs, 
-							// then Word inserts a page break (ie doesn't treat it as continuous).
-							// If no w:pgSz element is present, then Word defaults
-							// (presumably to Legal? TODO CHECK. There is no default setting in the docx).
-							// Word always inserts a w:pgSz element?
-
-							PgSz pgSzThis = ppr.getSectPr().getPgSz();
-							PgSz pgSzNext = followingSectPr.getPgSz();
-							
-							if (pgSzThis!=null && pgSzNext!=null) {
-								
-								if (pgSzThis.getH().compareTo(pgSzNext.getH())!=0) {
-									ignoreThisSection = false;
-								}
-								if (pgSzThis.getW().compareTo(pgSzNext.getW())!=0) {
-									ignoreThisSection = false;
-								}
-								
-								// Orientation:default is portrait
-								boolean portraitThis = true;
-								if (pgSzThis.getOrient()!=null) {
-									portraitThis=pgSzThis.getOrient().equals(STPageOrientation.PORTRAIT);
-								}
-								boolean portraitNext = true;
-								if (pgSzNext.getOrient()!=null) {
-									portraitNext=pgSzNext.getOrient().equals(STPageOrientation.PORTRAIT);
-								}
-								if (portraitThis!=portraitNext) {
-									ignoreThisSection = false;									
-								}
-								
-							}
-							// TODO: handle cases where one or both pgSz elements are missing,
-							// or H or W is missing.
-							// Treat pgSz element missing as Legal size?
-						} 
-						
-						if (ignoreThisSection) {
-							// In case there are some headers/footers that get inherited by the next section
-							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
-							
-						} else {
-							currentSectionWrapper = createSectionWrapper(
-									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
-									++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
-							conversionSections.add(currentSectionWrapper);
-							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
-							sectionContent = new ArrayList<Object>();
-							
-						}
-					}
-				}				
-			} 
-			sectionContent.add(o);
-//			System.out.println(XmlUtils.marshaltoString(o, true));
-		}
-		
-		currentSectionWrapper = createSectionWrapper(
-				document.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders,
-				++conversionSectionIndex, sectionContent, dummyPageNumbering); 		
-		conversionSections.add(currentSectionWrapper);
-		return conversionSections;
+		return sectPrs;
 	}
+	
 
-	protected static ConversionSectionWrapper createSectionWrapper(
-			SectPr sectPr, HeaderFooterPolicy headerFooterPolicy, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders, 
-			int conversionSectionIndex, List<Object> content,
-			boolean dummyPageNumbering) {
-	PageNumberInformation pageNumberInformation = null;
-	ConversionSectionWrapper ret = 
-				new ConversionSectionWrapper(sectPr, headerFooterPolicy, rels, evenAndOddHeaders,
-				"s" + Integer.toString(conversionSectionIndex), content);
-		pageNumberInformation = 
-				PageNumberInformationCollector.process(ret, dummyPageNumbering);
-		ret.setPageNumberInformation(pageNumberInformation);
-		return ret;
-	}
 }
