@@ -15,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.fop.apps.MimeConstants;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
@@ -45,7 +46,7 @@ import org.xml.sax.SAXException;
  * Helper to correctly size header/footer areas in PDF output.
  * 
  * @author jharrop
- * @since 3.0.2
+ * @since 3.1.0
  *
  */
 public class FOPAreaTreeHelper {
@@ -84,8 +85,8 @@ public class FOPAreaTreeHelper {
 		
 		// Was there a body level one?
 		if (hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr()!=null) {
-			//then delete the first entry
-			sectPrList.remove(0);
+			//then delete the first entry (which is where SectPrFinder put it)
+			sectPrList.remove(0);  
 		}
 		
 		// Now generate content; let's use
@@ -116,6 +117,7 @@ public class FOPAreaTreeHelper {
 			
 		}
 		
+		// Add content before the body level sectPr
 		if (hfPkg.getMainDocumentPart().getJaxbElement().getBody().getSectPr()!=null) {
 
 			contents.add(filler);
@@ -262,8 +264,11 @@ public class FOPAreaTreeHelper {
 	        			
 	        			String simplePageMasterName = ((Element)pageViewport).getAttribute("simple-page-master-name");
 	        			
+	        			log.debug("processing simple-page-master-name: " + simplePageMasterName);
+	        			
 	        			if (headerBpda.containsKey(simplePageMasterName)) {
 	        				// already done this one
+	        				log.debug(".. dupe .. ignore");
 	        				continue;
 	        			}
 	        			
@@ -305,8 +310,10 @@ public class FOPAreaTreeHelper {
 	    	        	    	
 	    	        	    	if (region.getLocalName().equals("regionBefore")) {
 	    	        	    		headerBpda.put(simplePageMasterName, Integer.valueOf(bpda));
+	    	        	    		
 	    	        	    	} else if (region.getLocalName().equals("regionAfter")) {
 	    	        	    		footerBpda.put(simplePageMasterName, Integer.valueOf(bpda));
+	    	        	    		
 	    	        	    	} else if (region.getLocalName().equals("regionBody")) {
 	    	        	    		// not interested
 	    	        	    	} else {
@@ -369,9 +376,12 @@ public class FOPAreaTreeHelper {
     			if (spm.getRegionBefore()!=null) {
     				Integer hBpdaMilliPts = headerBpda.get(simplePageMasterName);
     				if (hBpdaMilliPts==null) {
+    					// No headerBpda for s1-default
     					log.error("No headerBpda for " + simplePageMasterName);
+    					// You need to debug to find out why
+    					
     				} else {
-	        			float hBpdaPts = headerBpda.get(simplePageMasterName)/1000;
+	        			float hBpdaPts = hBpdaMilliPts/1000;
 		    			spm.getRegionBefore().setExtent(hBpdaPts+"pt");
 		    			spm.getRegionBody().setMarginTop(hBpdaPts+"pt");
 		    			
@@ -390,21 +400,27 @@ public class FOPAreaTreeHelper {
     			
     			// Region after
     			if (spm.getRegionAfter()!=null) {
-	    			float fBpdaPts = footerBpda.get(simplePageMasterName)/1000;
-	    			spm.getRegionAfter().setExtent(fBpdaPts+"pt");
-	    			spm.getRegionBody().setMarginBottom(fBpdaPts+"pt");
+    				Integer fBpdaMilliPts = footerBpda.get(simplePageMasterName);
+    				if (fBpdaMilliPts==null) {
+    					log.error("No footerBpda for " + simplePageMasterName);
+    					
+    				} else {    				
+		    			float fBpdaPts = fBpdaMilliPts/1000;
+		    			spm.getRegionAfter().setExtent(fBpdaPts+"pt");
+		    			spm.getRegionBody().setMarginBottom(fBpdaPts+"pt");
+		    			
+		    			// If the bottom margin in Word > what we have, then pad with top bottom
+		    			float totalHeight = (page.getFooterMargin()/20 ) // twips to points
+		    								+ fBpdaPts;
+		    			
+		    			float extraMargin = (page.getPgMar().getBottom().intValue()/20) - totalHeight;  
+		    			
+		    			if (extraMargin>0) {
+		    				float required = (page.getPgMar().getBottom().intValue()-page.getFooterMargin())/20;
+			    			spm.getRegionBody().setMarginBottom(extraMargin+"pt");	    				
+		    			} // otherwise, we've expanded to the extent of the footer already
 	    			
-	    			// If the bottom margin in Word > what we have, then pad with top bottom
-	    			float totalHeight = (page.getFooterMargin()/20 ) // twips to points
-	    								+ fBpdaPts;
-	    			
-	    			float extraMargin = (page.getPgMar().getBottom().intValue()/20) - totalHeight;  
-	    			
-	    			if (extraMargin>0) {
-	    				float required = (page.getPgMar().getBottom().intValue()-page.getFooterMargin())/20;
-		    			spm.getRegionBody().setMarginBottom(extraMargin+"pt");	    				
-	    			} // otherwise, we've expanded to the extent of the footer already
-	    			
+    				}
     			}    			
     			
     		}
