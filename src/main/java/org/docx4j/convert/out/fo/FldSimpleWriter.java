@@ -71,9 +71,27 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 				ret.appendChild(doc.createTextNode("${" + getParameterName(context) + "}"));
 			}
 			else {
-				ret = doc.createElementNS(FO_NS, "fo:page-number-citation-last");
+//				ret = doc.createElementNS(FO_NS, "fo:page-number-citation-last");
+//				String refId = getRefid(context);
+//				ret.setAttribute("ref-id", getRefid(context));
+				
+				// Workaround for missing space before fo:page-number-citation-last in FOP 1.1 output;
+				// See http://apache-fop.1065347.n5.nabble.com/preserving-a-trailing-space-in-inline-td40644.html
+				// Since this method returns a node, wrap the two nodes in an fo:wrapper
+
+				ret = doc.createElementNS(FO_NS, "fo:wrapper");
+				
+				Element pncl = doc.createElementNS(FO_NS, "fo:page-number-citation-last");
 				String refId = getRefid(context);
-				ret.setAttribute("ref-id", getRefid(context));
+				pncl.setAttribute("ref-id", getRefid(context));
+				
+				ret.appendChild(pncl);
+				
+				ret.appendChild(
+						// &#x200b;
+						doc.createTextNode("\u200b")
+				);
+				
 			}
 			return ret;
 		}
