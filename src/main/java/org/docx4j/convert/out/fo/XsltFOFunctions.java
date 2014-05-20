@@ -167,7 +167,71 @@ public class XsltFOFunctions {
     		}
     	} 
     	
+    	if (foContainsElement(block, "leader")) {
+			// ptab to leader implementation:
+			// for leader to work as expected in fop, we need text-align-last; see http://xmlgraphics.apache.org/fop/faq.html#leader-expansion
+			// this code adds that.
+    		// Note that it doesn't seem to be necessary for leader in TOC, but it doesn't hurt
+			block.setAttribute("text-align-last", "justify");
+    	}
+    	
     	return df;
+    }
+    
+    
+    /**
+     * Recurse sourceNode looking to see whether it contains element with local name elementName
+     * @param sourceNode
+     * @param elementName
+     * @return
+     */
+    private static boolean foContainsElement(Node sourceNode, String elementName) {
+
+        switch (sourceNode.getNodeType() ) {
+
+	    	case Node.DOCUMENT_NODE: // type 9
+        	case Node.DOCUMENT_FRAGMENT_NODE: // type 11
+        
+                // recurse on each child
+                NodeList nodes = sourceNode.getChildNodes();
+                if (nodes != null) {
+                    for (int i=0; i<nodes.getLength(); i++) {
+                    	if (foContainsElement(nodes.item(i), elementName)) {
+                    		return true;
+                    	}
+                    }
+                }
+                return false;
+                
+            case Node.ELEMENT_NODE:
+                
+                // Do it...
+            	Element el = (Element)sourceNode;
+            	if (el.getLocalName().equals(elementName)) {
+            		System.out.println("Got " + elementName);
+            		return true;
+            	}
+
+                // recurse on each child
+                NodeList children = sourceNode.getChildNodes();
+                if (children != null) {
+                    for (int i=0; i<children.getLength(); i++) {
+                    	if (foContainsElement(children.item(i), elementName)) {
+                    		return true;
+                    	}
+                    }
+                }
+
+                return false;
+
+            case Node.TEXT_NODE:
+            	
+                return false;
+                
+            default:
+            	
+                return false;
+        }
     }
     
     private static DocumentFragment createBlock( 

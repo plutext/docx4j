@@ -711,9 +711,11 @@
 
 <w:p>
 	<w:pPr><w:tabs><w:tab w:val="left" w:pos="4320"/></w:tabs></w:pPr>
-	<w:r><w:t xml:space="preserve">Will tab.. </w:t></w:r><w:r>
-	<w:tab/>
-	<w:t>3 inches</w:t></w:r>
+	<w:r><w:t xml:space="preserve">Will tab.. </w:t></w:r>
+	<w:r>
+		<w:tab/>
+		<w:t>3 inches</w:t>
+	</w:r>
 </w:p>
 
  -->
@@ -744,6 +746,17 @@
 	
 	</xsl:choose>
 
+
+</xsl:template>
+
+<!-- 
+      <w:ptab w:relativeTo="margin" w:alignment="right" w:leader="none"/>
+    </w:r>
+     -->
+<xsl:template match="w:ptab[@w:alignment='right']"> 
+
+	  <fo:leader leader-length.minimum="12pt" leader-length.maximum="100%" leader-length.optimum="100%" 
+	  leader-pattern="space"  leader-alignment="reference-area" />
 
 </xsl:template>
 
