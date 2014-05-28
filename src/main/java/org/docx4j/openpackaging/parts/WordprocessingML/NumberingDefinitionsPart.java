@@ -51,6 +51,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Numbering.Num;
@@ -449,7 +450,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	    	    	 
 		java.io.InputStream is = null;
 		try {
-			is = org.docx4j.utils.ResourceUtils.getResource(
+			is = ResourceUtils.getResourceViaProperty(
+					"docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.DefaultNumbering",
 					"org/docx4j/openpackaging/parts/WordprocessingML/numbering.xml");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

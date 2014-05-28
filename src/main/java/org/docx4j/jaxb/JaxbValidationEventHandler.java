@@ -33,6 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.utils.ResourceUtils;
 
 
 public class JaxbValidationEventHandler implements 
@@ -53,29 +54,11 @@ ValidationEventHandler{
 		
 		if (mcPreprocessorXslt==null) {
 			
-			// Similar approach to allowing user override as in BindingTraverserXSLT
-			try {
-				Source xsltSource  = new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
-								"custom-preprocessor.xslt"));
-				mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
-			} catch (Exception e) {
-				log.info("No resource on classpath at custom-preprocessor.xslt (enable debug level logging to see stack trace); falling back to using org/docx4j/jaxb/mc-preprocessor.xslt in docx4j jar");
-				log.debug(e.getMessage(), e);
-				try {
-					Source xsltSource  = new StreamSource(
-							org.docx4j.utils.ResourceUtils.getResource(
-									"org/docx4j/jaxb/mc-preprocessor.xslt"));
-					mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
-					log.info(".. successfully loaded the usual org/docx4j/jaxb/mc-preprocessor.xslt ");
-				} catch (IOException e2) {
-					log.error("Problem setting up  mc-preprocessor.xslt", e2);
-					throw(e2);
-				} catch (TransformerConfigurationException e2) {
-					log.error("Problem setting up  mc-preprocessor.xslt", e2);
-					throw(e2);
-				}
-			}
+			Source xsltSource  = new StreamSource(
+					ResourceUtils.getResourceViaProperty("docx4j.jaxb.JaxbValidationEventHandler", 
+							"org/docx4j/jaxb/mc-preprocessor.xslt")
+					);
+			mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
 		}
 		
 		return mcPreprocessorXslt;

@@ -35,6 +35,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.FontRel;
 import org.docx4j.wml.Fonts;
 
@@ -76,7 +77,9 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     		java.io.InputStream is = null;
 			try {
 				// Works in Eclipse - not absence of leading '/'
-				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml");
+				is = ResourceUtils.getResourceViaProperty(
+						"docx4j.openpackaging.parts.WordprocessingML.FontTablePart.DefaultFonts",
+						"org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -36,6 +36,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
@@ -134,7 +135,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 				//is = getResource("styles.xml");
 				
 				// Works in Eclipse - not absence of leading '/'
-				is = org.docx4j.utils.ResourceUtils.getResource(
+				is = ResourceUtils.getResourceViaProperty("docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.DefaultStyles",
 						"org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
 				
 					// styles.xml defines a small subset of common styles
@@ -155,7 +156,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	
 		java.io.InputStream is = null;
 		try {
-			is = org.docx4j.utils.ResourceUtils.getResource(
+			is = ResourceUtils.getResourceViaProperty("docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.KnownStyles",
 					"org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");						
 			
 			JAXBContext jc = Context.jc;

@@ -21,14 +21,43 @@
 package org.docx4j.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+import org.docx4j.Docx4jProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResourceUtils {
 	
 	protected static Logger log = LoggerFactory.getLogger(ResourceUtils.class);	
-	
+
+    /**
+     * Get this resource from the location specified in docx4j.properties;
+     * if none is specified, fallback to the default specified
+     * 
+     * @param propName
+     * @param defaultPath
+     * @return
+     * @throws java.io.IOException
+     * @since 3.1.1
+     */
+    public static java.io.InputStream getResourceViaProperty(String propName, String defaultPath) throws java.io.IOException
+    {
+    	String resourcePath= Docx4jProperties.getProperty(propName, defaultPath);
+    	InputStream resourceIS = null;
+    	try {
+    		resourceIS = getResource(resourcePath);
+    	} catch (IOException ioe) {
+    		log.warn(resourcePath + ": " + ioe.getMessage());
+    	}
+    	if (resourceIS==null) {
+    		log.warn("Property " + propName + " resolved to missing resource " + resourcePath + "; using " +  defaultPath);
+    		return getResource(defaultPath);
+    	} else {
+    		return resourceIS;
+    	}
+    }
+    
     /**
      * Use ClassLoader.getResource to get the named resource
      * @param filename

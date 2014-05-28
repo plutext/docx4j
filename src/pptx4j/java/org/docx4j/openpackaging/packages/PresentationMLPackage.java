@@ -54,6 +54,7 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
@@ -196,7 +197,8 @@ public class PresentationMLPackage  extends OpcPackage {
 			
 			// Theme part
 			ThemePart themePart = new ThemePart(new PartName("/ppt/theme/theme1.xml"));
-			java.io.InputStream is = org.docx4j.utils.ResourceUtils.getResource(
+			java.io.InputStream is = ResourceUtils.getResourceViaProperty(
+					"pptx4j.openpackaging.packages.PresentationMLPackage.DefaultTheme",
 						"org/docx4j/openpackaging/parts/PresentationML/theme.xml");
 			themePart.unmarshal(is);
 			

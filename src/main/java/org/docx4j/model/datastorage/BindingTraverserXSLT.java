@@ -85,7 +85,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	static {
 		try {
 			Source xsltSource = new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
+						ResourceUtils.getResourceViaProperty(
+								"docx4j.model.datastorage.BindingTraverserXSLT.xslt",
 								"org/docx4j/model/datastorage/bind.xslt"));
 			xslt = XmlUtils.getTransformerTemplate(xsltSource);
 		} catch (IOException e) {
