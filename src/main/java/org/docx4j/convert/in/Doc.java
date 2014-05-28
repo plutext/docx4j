@@ -20,7 +20,7 @@
 
 package org.docx4j.convert.in;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class Doc {
 	 *         conversion
 	 * @throws Exception
 	 */
-	public static WordprocessingMLPackage convert(FileInputStream in)
+	public static WordprocessingMLPackage convert(InputStream in)
 			throws Exception {
 
 		HWPFDocument doc = new HWPFDocument(in);
@@ -408,7 +408,7 @@ public class Doc {
 
 		String localPath = System.getProperty("user.dir") + "/LineSpacing.doc";
 
-		WordprocessingMLPackage out = convert(new FileInputStream(localPath));
+		WordprocessingMLPackage out = convert(new java.io.FileInputStream(localPath));
 
 		// String outputfilepath = "/home/dev/tmp/test-out.docx";
 		//
