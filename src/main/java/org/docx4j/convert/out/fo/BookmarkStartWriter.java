@@ -46,6 +46,11 @@ public class BookmarkStartWriter extends AbstractBookmarkStartWriter {
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
 	CTBookmark modelData = (CTBookmark)unmarshalledNode;
+	
+	if (modelData.getName().equals("_GoBack")) {
+		return null;
+	}
+	
 		Element ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
 		ret.setAttribute("id", modelData.getName());
 		return ret;
