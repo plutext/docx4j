@@ -19,6 +19,7 @@
  */
 package org.docx4j.convert.out.common;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
@@ -75,8 +76,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected Element currentP = null; 
 	protected Element currentSpan = null;
 	
-	protected Element tr = null;		
-	protected Element tc = null;
+	protected LinkedList<Element> tr = new LinkedList<Element>();
+	protected LinkedList<Element> tc = new LinkedList<Element>();
 
 	//current paragraph style to inherit styles in rPr
 	protected PPr pPr = null;
@@ -168,6 +169,47 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		parentNode.appendChild(child);
 	}
 	
+	
+	@Override
+	public void walkJAXBElements(Object o) {
+		
+		Node existingParentNode = parentNode;
+		
+		if (o instanceof org.docx4j.wml.Tr) {
+			
+			tr.push(document.createElementNS(Namespaces.NS_WORD12, "tr"));
+			//parentNode is in this case the DocumentFragment, that get's passed 
+			//to the TableModel/TableModelWriter
+			parentNode.appendChild(tr.peek());
+			
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			
+			tc.push(document.createElementNS(Namespaces.NS_WORD12, "tc"));
+			(tr.peek()).appendChild(tc.peek());
+			// now the html p content will go temporarily go in w:tc,
+			// which is what we need for our existing table model.
+			
+			parentNode = tc.peek();
+			
+		}		
+		
+		super.walkJAXBElements(o);
+		
+		if (o instanceof org.docx4j.wml.Tr) {
+			
+			tr.pop();
+			
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			
+			tc.pop();
+			
+			parentNode = existingParentNode; // restore
+		}		
+		
+		
+	}
+	
+	
 	@Override
 	public List<Object> apply(Object o) {
 		
@@ -175,8 +217,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 			currentP = createNode(document, NODE_BLOCK);
 			currentSpan = null;
-			if (tc!=null) {
-				tc.appendChild( currentP  );
+			if (tc.peek()!=null) {
+				tc.peek().appendChild( currentP  );
 			} else {
 				parentNode.appendChild( currentP  );					
 			}
@@ -270,17 +312,23 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		} else if (o instanceof org.docx4j.wml.Tr) {
 			
-			tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
-			//parentNode is in this case the DocumentFragment, that get's passed 
-			//to the TableModel/TableModelWriter
-			parentNode.appendChild(tr);
+			// done in walkJAXBElements
+			
+//			tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
+//			//parentNode is in this case the DocumentFragment, that get's passed 
+//			//to the TableModel/TableModelWriter
+//			parentNode.appendChild(tr);
 			
 		} else if (o instanceof org.docx4j.wml.Tc) {
 			
-			tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
-			tr.appendChild(tc);
-			// now the html p content will go temporarily go in w:tc,
-			// which is what we need for our existing table model.
+			// done in walkJAXBElements
+
+//			tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
+//			tr.appendChild(tc);
+//			// now the html p content will go temporarily go in w:tc,
+//			// which is what we need for our existing table model.
+			
+//			System.out.println("#wrapped in w:tc OK");
 			
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
@@ -341,7 +389,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		//CTMarkupRange is the w:bookmarkEnd
 			
 		} else {
-			getLog().warn("Need to handle " + o.getClass().getName() );				
+			getLog().warn("Need to handle " + o.getClass().getName() );	
+			log.debug(XmlUtils.marshaltoString(o));
 		}
 		
 		return null;
