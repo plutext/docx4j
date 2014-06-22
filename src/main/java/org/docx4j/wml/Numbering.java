@@ -1604,6 +1604,7 @@ public class Numbering implements Child
     @XmlType(name = "", propOrder = {
         "pict"
     })
+    @XmlRootElement(name="numPicBullet")
     public static class NumPicBullet implements Child
     {
 
