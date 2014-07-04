@@ -143,6 +143,8 @@ public class XmlUtils {
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.8")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
 				) {
@@ -185,6 +187,8 @@ public class XmlUtils {
 		} else if ((System.getProperty("java.version").startsWith("1.6")
 						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.8")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
