@@ -38,7 +38,7 @@ import org.docx4j.utils.ResourceUtils;
 
 public class Context {
 	
-	public static JAXBContext jc;
+	public static final JAXBContext jc;
 	
 	// TEMP/Experimental
 //	public static void setJc(JAXBContext jc) {
@@ -68,7 +68,8 @@ public class Context {
 	private static Logger log = LoggerFactory.getLogger(Context.class);
 		
 	static {
-	  
+		JAXBContext tempContext = null;
+
 		// Display diagnostic info about version of JAXB being used.
 		log.info("java.vendor="+System.getProperty("java.vendor"));
 		log.info("java.version="+System.getProperty("java.version"));
@@ -128,7 +129,7 @@ public class Context {
 			
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
+			tempContext = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
 					"org.docx4j.schemas.microsoft.com.office.word_2006.wordml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
 					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
@@ -138,13 +139,13 @@ public class Context {
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
 			
-			if (jc.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
+			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
 			} else {
-				log.info("Not using MOXy; using " + jc.getClass().getName());				
+				log.info("Not using MOXy; using " + tempContext.getClass().getName());				
 			}
 			
-			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
+			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader );
@@ -165,6 +166,7 @@ public class Context {
 		} catch (Exception ex) {
 			log.error("Cannot initialize context", ex);
 		}				
+      jc = tempContext;
 	}
 	
 	private static org.docx4j.wml.ObjectFactory wmlObjectFactory;
