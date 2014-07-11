@@ -284,6 +284,11 @@ public class RunFontSelector {
     		} else {	
     			el.setAttribute("font-family", getPhysicalFont(fontName) );
     		}
+    		
+			// Any reason not to always do this?
+//			el.setAttribute( "white-space-collapse", "false");
+//			el.setAttribute( "white-space", "pre");
+    		
     	} 
     }
     
@@ -516,7 +521,7 @@ public class RunFontSelector {
     	 * and the ascii (or asciiTheme if defined) and hAnsi (or hAnsiTheme if defined) attributes are equal, 
     	 * then the ascii (or asciiTheme if defined) font is used.
     	 */
-		if (("Times New Roman").equals(eastAsia)) {
+		if (("Times New Roman").equals(eastAsia)) {		
 		
     		if (ascii!=null
     				&& ascii.equals(hAnsi)) {
@@ -542,7 +547,7 @@ public class RunFontSelector {
 		}
 		
 		if (ascii==null) {
-			log.warn("No value for ascii, using default font");
+			log.debug("No value for ascii, using default font");
 			ascii = this.getDefaultFont();
 		}
     		    	
@@ -550,7 +555,7 @@ public class RunFontSelector {
     	 * the hAnsi (or hAnsiTheme if defined) font shall be used.
     	 */
 		if (hAnsi==null) {
-			log.warn("No value for hAnsi, using default font");
+			log.debug("No value for hAnsi, using default font");
 			hAnsi = this.getDefaultFont();				
 		}
 		
@@ -771,7 +776,24 @@ public class RunFontSelector {
         				vis.fontAction(eastAsia); 
         	    	} else {
         	    		// Usual case
-        				// TODO .. do what???      	    			    	    		
+        	    		
+        	    		//WARN org.apache.fop.apps.FOUserAgent .processEvent line 94 - Glyph "" 
+        	    		// (0xf07f) not available in font "Webdings".
+        	    		// if (c=='\uF07F')  what to do??
+        	    		
+        	    		// Having tested in Word (see the Symbols.docx), it is hAnsi which matters
+        	    		if (hAnsi==null) {
+        	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
+        	    		} else 
+//        	    		if ("Wingdings".equals(hAnsi)
+//        	    				|| "Wingdings 2".equals(hAnsi)
+//        	    				) 
+        	    		{
+        	    			// Presume this is right for all fonts, until proven otherwise.
+        	    			// Certainly it is OK for Webdings, Wingdings, Symbol
+        	    			vis.fontAction(hAnsi); 
+        	    		} 
+        	    		
         	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
