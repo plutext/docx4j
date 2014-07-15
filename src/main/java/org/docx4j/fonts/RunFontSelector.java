@@ -1,6 +1,7 @@
 package org.docx4j.fonts;
 
 import java.awt.font.NumericShaper;
+import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -333,7 +334,7 @@ public class RunFontSelector {
     		if (getDefaultPStyle() == null) {
     			log.warn("getDefaultPStyle() returned null");
     		} else {
-	        	log.debug("using default p style");
+//	        	log.debug("using default p style");
 //	        	pRPr = pStyle.getRPr();  // TODO pStyle.getRPr() should inherit from basedOn
 	        	pStyleId = getDefaultPStyle().getStyleId();
     		}
@@ -343,9 +344,9 @@ public class RunFontSelector {
     		
     	if (pStyleId!=null && wordMLPackage.getMainDocumentPart().getStyleDefinitionsPart(false) != null) {
     		// apply the rPr in the stack of styles, including documentDefaultRPr
-    		log.debug(pStyleId);
+//    		log.debug(pStyleId);
     		pRPr = propertyResolver.getEffectiveRPr(pStyleId);
-        	log.debug("before getEffectiveRPrUsingPStyleRPr\n" + XmlUtils.marshaltoString(pRPr));
+//        	log.debug("before getEffectiveRPrUsingPStyleRPr\n" + XmlUtils.marshaltoString(pRPr));
     	}
 
     	// Do we need boolean major??
@@ -613,7 +614,12 @@ public class RunFontSelector {
     		    
 //    		    System.out.println(c);    		    
     		    
-    		    // .. Basic Latin
+    		    /* .. Basic Latin
+    		     * 
+    		     * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html says 
+    		     * @ascii (or @asciiTheme) is used to format all characters in the ASCII range 
+    		     * (0 - 127)
+    		     */
         	    if (c>='\u0000' && c<='\u007F') 
         	    {
         	    	vis.fontAction(ascii); 
@@ -629,39 +635,53 @@ public class RunFontSelector {
     					If hint is eastAsia, the following characters use eastAsia (or eastAsiaTheme if defined): A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
     					If hint is eastAsia and the language of the run is either Chinese Traditional or Chinese Simplified, the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
     					*/
-        	    	if (hint == STHint.EAST_ASIA) {
-        	    		if (contains(langEastAsia, "zh") ) {
+
+	    			if (hint == STHint.EAST_ASIA
+	    					&& eastAsia !=null) {
+        	    	
+    	    			if ( c=='\u00A1' || c=='\u00A4' 
+	    					|| (c>='\u00A7' && c<='\u00A8')         	    					
+	    					|| c=='\u00AA' 
+	    	    			|| c=='\u00AD' // Known issues with soft hyphen
+	    					|| c=='\u00AF'          	    					
+	    					|| (c>='\u00B0' && c<='\u00B4')         	    					
+	    					|| (c>='\u00B6' && c<='\u00BA') 
+	    					|| (c>='\u00BC' && c<='\u00BF') 
+	    					|| c=='\u00D7' || c=='\u00F7' ) {
+
+                	    		// Don't use east asia unless hint tells us to!
+        	    				vis.fontAction(eastAsia);
+        	    				
+    	    			} else if (contains(langEastAsia, "zh") &&
+
         	    			// the following characters use eastAsia (or eastAsiaTheme if defined): E0 – E1, E8 – EA, EC – ED, F2 – F3, F9 – FA, FC
-        	    			if ( (c>='\u00E0' && c<='\u00E1')         	    					
+        	    			 ( (c>='\u00E0' && c<='\u00E1')         	    					
         	    					|| (c>='\u00E8' && c<='\u00EA')         	    					
         	    					|| (c>='\u00EC' && c<='\u00ED')         	    					
         	    					|| (c>='\u00F2' && c<='\u00F3')         	    					
         	    					|| (c>='\u00F9' && c<='\u00FA') 
-        	    					|| c=='\u00FC') {
+        	    					|| c=='\u00FC'))  {
         	    				vis.fontAction(eastAsia);
-        	    			    vis.setMustCreateNewFlag(true);
-        	    			} else {
-        	    				vis.fontAction(hAnsi);
-        	    			}
-        	    			
-        	    		} else // A1, A4, A7 – A8, AA, AD, AF, B0 – B4, B6 – BA, BC – BF, D7, F7
-        	    			if ( c=='\u00A1' || c=='\u00A4' 
-    	    					|| (c>='\u00A7' && c<='\u00A8')         	    					
-    	    					|| c=='\u00AA' || c=='\u00AD' || c=='\u00AF'          	    					
-    	    					|| (c>='\u00B0' && c<='\u00B4')         	    					
-    	    					|| (c>='\u00B6' && c<='\u00BA') 
-    	    					|| (c>='\u00BC' && c<='\u00BF') 
-    	    					|| c=='\u00D7' || c=='\u00F7' ) {
+     	    				
+    	    			}  else if (hAnsi!=null) {
+        	    			vis.fontAction(hAnsi);
         	    				
-        	    				vis.fontAction(eastAsia);
-        	    			    vis.setMustCreateNewFlag(true);
-        	    			}  else {
-        	    				vis.fontAction(hAnsi);
-        	    			}
+        	    		} else {
+                			vis.fontAction(getDefaultFont());
+    	    			}  
+        	    		
+        	    	} else if (hAnsi!=null) {        	    		
+	    				vis.fontAction(hAnsi);
+
         	    	} else {
-        				vis.fontAction(hAnsi);
+
+        	    		// .. Ignore ascii and east Asia 
+        				vis.fontAction(getDefaultFont());
+        	    		
         	    	}
+        	    	
         	    	vis.addCharacterToCurrent(c);
+        		    vis.setMustCreateNewFlag(false);
         	    	
         	    	currentRangeLower = '\u0000';
         	    	currentRangeUpper = '\u007F';
@@ -710,7 +730,26 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u0590' && c<='\u07BF') 
         	    {
-    				vis.fontAction(ascii); 
+        	    	try {
+        	    		
+        	    		// This is complex script range,
+        	    		// so should we be using it??  
+        	    		// Word doesn't seem to be in these edge cases
+        	    		// (note that most of the real cs cases should
+        	    		//  be handled without this method being invoked)
+        	    		
+        	    		// Word doesn't use Arial Unicode MS (where specified),
+        	    		// so I assume it wouldn't use most other fonts either
+        	    		
+        	    		// It often uses TNR, so the following is good enough...
+						if (GlyphCheck.hasChar("Times New Roman", c)) {
+							vis.fontAction("Times New Roman");        	    		
+						}
+						
+					} catch (ExecutionException e) {
+						log.error(e.getMessage(), e);
+					}
+        	    	
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u0590';
@@ -718,7 +757,12 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u1100' && c<='\u11FF') 
         	    {
-    				vis.fontAction(eastAsia); 
+        	    	if (eastAsia==null) {
+        	    		vis.fontAction("Gungsuh"); // TODO what if not present?
+        	    			// Why is it not found?  Its in batang.ttc
+        	    	} else {        	    	
+        	    		vis.fontAction(eastAsia);
+        	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u1100';
@@ -745,9 +789,13 @@ public class RunFontSelector {
         	    	if (hint == STHint.EAST_ASIA) {
         				vis.fontAction(eastAsia); 
         	    	} else {
-        	    		// Usual case
-        				// TODO .. do what???      	    			    	    		
-        	    	}
+        	    		// eg <w:rFonts w:ascii="Arial Unicode MS" w:hAnsi="Arial Unicode MS" 
+        	    		//              w:eastAsia="Arial Unicode MS" w:cs="Arial Unicode MS"/>
+        	    		if (hAnsi==null) {
+        	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
+        	    		} else {
+        	    			vis.fontAction(hAnsi); 
+        	    		}         	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u2000';
@@ -755,15 +803,28 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u2F00' && c<='\uDFFF') 
         	    {
+        	    	/*
+        	    	 * NB, with contrived cases using
+        	    	 * Arial Unicode MS, Word substitutes
+        	    	 * fonts, including:
+        	    	 * - Meiryo
+        	    	 * - PMingLiU
+        	    	 * - Batang
+        	    	 * - MS Mincho
+        	    	 * depending on the char
+        	    	 */
+        	    	
         	    	if (eastAsia==null) {
         	    		
             	    	// 2014 02 18 - not necessarily Japanese!
             	    	// eg 五、劳动报酬 is Chinese
 	    				vis.fontAction(hAnsi); 
-        	    		
+	    				debugCheckGlyph(hAnsi, c);
+
         	    	} else {
 	        	    	// Japanese
 	    				vis.fontAction(eastAsia); 
+	    				debugCheckGlyph(eastAsia, c);
         	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
@@ -772,29 +833,29 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\uE000' && c<='\uF8FF') 
         	    {
+        	    	
+        	    	/* NB, in contrived cases using
+        	    	 * Arial Unicode MS, 
+        	    	 * Word is generally unable to substitute 
+        	    	 * a suitable font!
+        	    	 */ 
+        	    	
         	    	if (hint == STHint.EAST_ASIA) {
         				vis.fontAction(eastAsia); 
         	    	} else {
         	    		// Usual case
         	    		
-        	    		//WARN org.apache.fop.apps.FOUserAgent .processEvent line 94 - Glyph "" 
-        	    		// (0xf07f) not available in font "Webdings".
-        	    		// if (c=='\uF07F')  what to do??
-        	    		
-        	    		// Having tested in Word (see the Symbols.docx), it is hAnsi which matters
+        	    		// F000 to F0FF expect to use symbol fonts
         	    		if (hAnsi==null) {
-        	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
-        	    		} else 
-//        	    		if ("Wingdings".equals(hAnsi)
-//        	    				|| "Wingdings 2".equals(hAnsi)
-//        	    				) 
-        	    		{
-        	    			// Presume this is right for all fonts, until proven otherwise.
-        	    			// Certainly it is OK for Webdings, Wingdings, Symbol
-        	    			vis.fontAction(hAnsi); 
-        	    		} 
-        	    		
+							log.warn("TODO: how to handle char '" + c + "' (0x"
+			                    + Integer.toHexString(c) 
+			                    + ") lacking hAnsi?");	        	    			
+        	    		} else {
+    	    				vis.fontAction(hAnsi); 										
+    	    				debugCheckGlyph(hAnsi, c);
+						}
         	    	}
+        	    		
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uE000';
@@ -873,6 +934,8 @@ public class RunFontSelector {
         	    	String hex = String.format("%04x", (int) c);
         	    	log.debug("Defaulting to hAnsi for char " + hex);
     				vis.fontAction(hAnsi); 
+    				debugCheckGlyph(hAnsi, c);
+    				
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower='\u0000';
@@ -888,6 +951,20 @@ public class RunFontSelector {
     	// Handle final span
     	vis.finishPrevious();
     	return vis.getResult();
+    }
+    
+    private void debugCheckGlyph(String fontName, char c) {
+    	
+		if (log.isDebugEnabled()) {
+	    	try {
+				if (!GlyphCheck.hasChar(fontName, c)) {
+					Throwable t = new Throwable();
+					log.debug("FIXME", t);
+				}
+			} catch (ExecutionException e) {
+				log.error(e.getMessage(), e);
+			}
+	    }    	
     }
     
     private Document getDocument() {
