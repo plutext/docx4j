@@ -1,5 +1,6 @@
 package org.docx4j.fonts.microsoft;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.utils.ResourceUtils;
 
 public class MicrosoftFontsRegistry {
 
@@ -36,8 +38,8 @@ public class MicrosoftFontsRegistry {
 	
 	
 	/**
-	 * Get Microsoft fonts
-	 * docx4all - all platforms - to populate font dropdown list */	
+	 * Get Microsoft fonts; this is used by PhysicalFonts.getBoldForm etc, 
+	 * and also in docx4all - all platforms - to populate font dropdown list */	
 	private final static void setupMicrosoftFontsRegistry() throws Exception {
 
 		
@@ -48,12 +50,8 @@ public class MicrosoftFontsRegistry {
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-		log.info("unmarshalling fonts.microsoft" );									
-		// Get the xml file
-		java.io.InputStream is = null;
-		// Works in Eclipse - note absence of leading '/'
-		is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
-					
+		InputStream is = ResourceUtils.getResourceViaProperty("docx4j.fonts.microsoft.MicrosoftFonts"  , "org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
+		
 		org.docx4j.fonts.microsoft.MicrosoftFonts msFonts = (org.docx4j.fonts.microsoft.MicrosoftFonts)u.unmarshal( is );
 		
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
