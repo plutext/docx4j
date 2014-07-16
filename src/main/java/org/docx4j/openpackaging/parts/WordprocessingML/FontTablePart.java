@@ -126,7 +126,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     }
 
 	public static void main(String[] args) throws Exception {
-		String filepath = System.getProperty("user.dir") + "/sample-docs/FontEmbedded.docx";		
+		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(filepath));
 		
 		wordMLPackage.getMainDocumentPart().getFontTablePart().processEmbeddings();

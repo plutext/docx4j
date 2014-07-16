@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EncodingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
@@ -53,20 +54,43 @@ public class ObfuscatedFontPart extends BinaryPart {
     private static File tmpFontDir = null; 
     
     static {
-        File userHome = getUserHome();
-        if (userHome != null) {
-            File docx4jUserDir = new File(userHome, DOCX4J_USER_DIR);
-            docx4jUserDir.mkdir();
-            tmpFontDir = new File(docx4jUserDir, TEMPORARY_FONT_DIR);
-            tmpFontDir.mkdir();
-        }    	
+    	
+    	String tmpFontDirPath = Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir");
+    	
+    	if (tmpFontDirPath==null) {
+    		
+	        File userHome = getUserHome();
+	        if (userHome == null) {
+	        	log.warn("No home dir found; consider setting property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
+	        } else {
+	        	
+	            File docx4jUserDir = new File(userHome, DOCX4J_USER_DIR);
+	            docx4jUserDir.mkdir();
+	            tmpFontDir = new File(docx4jUserDir, TEMPORARY_FONT_DIR);
+	            tmpFontDir.mkdir();
+	        }    	
+    		
+    	} else {
+
+            tmpFontDir = new File(tmpFontDirPath);
+            if (!tmpFontDir.exists() ) {
+            	log.info(tmpFontDirPath + " does not exist. Attempting to create..");
+	            tmpFontDir.mkdir();
+            } else if (!tmpFontDir.isDirectory()) {
+            	log.info(tmpFontDirPath + " exists, but is not a directory!") ;          	
+            }
+    	
+    	}
     }
     
     public static String getTemporaryEmbeddedFontsDir() {
+    	if (tmpFontDir==null) {
+    		throw new RuntimeException("No dir configured for temp fonts!  Either set system property user.home to a writable dir, or configure docx4j property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
+    	}
     	try {
 			return tmpFontDir.getCanonicalPath();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 			return null;
 		}
     }
@@ -155,8 +179,8 @@ public class ObfuscatedFontPart extends BinaryPart {
 			log.debug("wrote: " + fontData.length);
 			fos.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Problem with " + path);
+			log.error(e.getMessage(), e);
 		} 
 		
 		log.info("Done!");
