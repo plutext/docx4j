@@ -381,7 +381,9 @@ public class SaveToZipFile {
 						log.debug(part.getClass().getName() );
 					}
 
-					if (!part.getPackage().equals(p)) {
+					if (part.getPackage()==null) {
+						log.warn("Packae is not set on Part " + resolvedPartUri);
+					} else if (!part.getPackage().equals(p)) {
 						log.warn("Part " + resolvedPartUri + " is attached to some other package");
 					}
 					

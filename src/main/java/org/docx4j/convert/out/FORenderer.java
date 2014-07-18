@@ -21,13 +21,8 @@ package org.docx4j.convert.out;
 
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 
-import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.vml.VmlShapeElements;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 /** The pdf conversion process needs a fo renderer to convert the 
  *  fo document into the requested format. The fo renderer is encapsulated in 

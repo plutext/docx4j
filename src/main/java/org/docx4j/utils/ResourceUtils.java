@@ -44,6 +44,7 @@ public class ResourceUtils {
     public static java.io.InputStream getResourceViaProperty(String propName, String defaultPath) throws java.io.IOException
     {
     	String resourcePath= Docx4jProperties.getProperty(propName, defaultPath);
+    	log.debug(propName + " resolved to " + resourcePath);
     	InputStream resourceIS = null;
     	try {
     		resourceIS = getResource(resourcePath);
@@ -66,6 +67,8 @@ public class ResourceUtils {
      */
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {
+    	log.debug("Attempting to load: " + filename);
+    	
         // Try to load resource from jar.
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader == null) {  // IKVM (v.0.44.0.5) doesn't set context classloader 

@@ -205,6 +205,8 @@ public abstract class Part extends Base {
 	public OpcPackage getPackage() {
 		if (pack==null) {
 			log.error("Package field null for this Part " + this.getClass().getName() );
+		} else if (log.isDebugEnabled() ) {
+			log.debug(pack.name());
 		}
 		return pack;
 	}
@@ -214,6 +216,7 @@ public abstract class Part extends Base {
 	// where and how it should be set
 	public void setPackage( OpcPackage pack) {
 		log.debug("setPackage called for " + this.getClass().getName() );
+//		(new Throwable()).printStackTrace();
 		this.pack = pack;
 	}
 
