@@ -673,6 +673,10 @@ public class AbstractTableWriterModel {
 			
 			Node thisChild = wtrNode.getChildNodes().item(i);
 			
+			if (thisChild.getNodeType()!= 1){
+				continue;  
+			}
+			
 			log.debug("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
 			
 			if (thisChild.getLocalName().equals("tc") ) {
