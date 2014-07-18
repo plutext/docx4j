@@ -39,12 +39,15 @@ import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.ParaRPr;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STTabJc;
 import org.docx4j.wml.STTabTlc;
@@ -53,6 +56,9 @@ import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -68,6 +74,9 @@ import org.w3c.dom.traversal.NodeIterator;
  *  
  */
 public class XsltFOFunctions {
+	
+	private static Logger log = LoggerFactory.getLogger(XsltFOFunctions.class);
+	
 
 	public static DocumentFragment getLayoutMasterSetFragment(AbstractWmlConversionContext context) {
 		return LayoutMasterSetBuilder.getLayoutMasterSetFragment(context);
@@ -261,8 +270,8 @@ public class XsltFOFunctions {
 //			pStyleVal = "Normal";
 			pStyleVal = defaultParagraphStyleId;
 		}
-		if (context.getLog().isDebugEnabled()) {
-			context.getLog().debug("style '" + pStyleVal );
+		if (log.isDebugEnabled()) {
+			log.debug("style '" + pStyleVal );
 		}
 
     	//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
@@ -280,49 +289,58 @@ public class XsltFOFunctions {
         	// original JAXB objects?
         	PPr pPr = null;
         	RPr rPr = null;
+        	RPr rPrParagraphMark = null;  // required for list item label
         	if (pPrNodeIt==null) {  // Never happens?        		
-    			if (context.getLog().isDebugEnabled()) {
-    				context.getLog().debug("Here after all!!");
+    			if (log.isDebugEnabled()) {
+    				log.debug("Here after all!!");
     			}
         		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
         		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
+        		rPrParagraphMark = rPr;
         	} else {
         		Node n = pPrNodeIt.nextNode();
         		if (n==null) {
-        			if (context.getLog().isDebugEnabled()) {
-        				context.getLog().debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
+        			if (log.isDebugEnabled()) {
+        				log.debug("pPrNodeIt.nextNode() was null (ie there is no pPr in this p)");
         			}
             		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
             		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
             		// TODO - in this case, we should be able to compute once,
             		// and on subsequent calls, just return pre computed value
         		} else {
-        			if (context.getLog().isDebugEnabled()) {
-        				context.getLog().debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
+        			if (log.isDebugEnabled()) {
+        				log.debug( "P actual pPr: "+ XmlUtils.w3CDomNodeToString(n) );
         			}
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
     				pPrDirect =  (PPr)jaxb;
     				pPr = propertyResolver.getEffectivePPr(pPrDirect);  
-    				if ((pPr==null) && (context.getLog().isDebugEnabled())) {
-    					context.getLog().debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
+    				if ((pPr==null) && (log.isDebugEnabled())) {
+    					log.debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
     				}
     				
     				// On the block representing the w:p, we want to put both
     			    // pPr and rPr attributes.
     				
-    				if (context.getLog().isDebugEnabled()) {
-    					context.getLog().debug("getting rPr for paragraph style");
+    				if (log.isDebugEnabled()) {
+    					log.debug("getting rPr for paragraph style");
     				}
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
     					// rPr in pPr direct formatting only applies to paragraph mark, 
-    					// so pass null here       				
+    					// and by virtue of that, to list item label,
+    					// so pass null here
+    				// Now, work out the value for list item label
+            		rPrParagraphMark = XmlUtils.deepCopy(rPr);
+//        			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+            		
+            		StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark); 
+    				
         		}
         	}        	
 
-			if (context.getLog().isDebugEnabled() && pPr!=null) {				
-				context.getLog().debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
+			if (log.isDebugEnabled() && pPr!=null) {				
+				log.debug("P effective pPr: "+ XmlUtils.marshaltoString(pPr, true, true));					
 			}
         	
             // Create a DOM builder and parse the fragment			
@@ -408,18 +426,52 @@ public class XsltFOFunctions {
 	        	}
 				
 				if (triple==null) {
-					context.getLog().warn("computed number ResultTriple was null");
-	        		if (context.getLog().isDebugEnabled() ) {
+					log.warn("computed number ResultTriple was null");
+	        		if (log.isDebugEnabled() ) {
 	        			foListItemLabelBody.setAttribute("color", "red");
 	        			foListItemLabelBody.setTextContent("null#");
 	        		} 
 	        	} else {
+
+        			// Format the list item label
+        			// OK just to override specific values
+        			// Values come from numbering rPr, unless overridden in p-level rpr
+	        		if(triple.getRPr()==null) {
+	        			
+	        			if (pPr.getRPr()==null) {
+	        				// do nothing, since we're already inheriting the formatting in the style
+	        				// (as opposed to the paragraph mark formatting)
+	        				// EXCEPT for font
+//	        				setFont( context,  foListItemLabelBody, rPr.getRFonts()); 
+	        				setFont( context,  foListItemLabelBody,  pPr,  rPr,  triple.getNumString());
+	        			} else {
+							createFoAttributes(context.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
+//	        				setFont( context,  foListItemLabelBody, rPrParagraphMark.getRFonts()); 	        				
+	        				setFont( context,  foListItemLabelBody,  pPr,  rPrParagraphMark,  triple.getNumString());
+	        			}
+	        			
+	        		} else {
+	        			RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
+//	        			System.out.println(XmlUtils.marshaltoString(rPrParagraphMark));
+	        			
+	        			// pMark overrides numbering, except for font
+	        			// (which makes sense, since that would change the bullet)
+	        			// so set the font
+        				setFont( context,  foListItemLabelBody,  pPr,  actual,  triple.getNumString());
+        				// .. before taking rPrParagraphMark into account
+	            		StyleUtil.apply(rPrParagraphMark, actual); 
+//	        			System.out.println(XmlUtils.marshaltoString(actual));
+						createFoAttributes(context.getWmlPackage(), actual, foListItemLabel );
+	        			
+	        		}
+	        			        		
+	        		
         			int numChars=1;
 	        		if (triple.getBullet()!=null ) {
 		        		foListItemLabelBody.setTextContent(triple.getBullet() );
 		        	} else if (triple.getNumString()==null) {
-		        		context.getLog().debug("computed NumString was null!");
-		        		if (context.getLog().isDebugEnabled() ) {
+		        		log.debug("computed NumString was null!");
+		        		if (log.isDebugEnabled() ) {
 		        			foListItemLabelBody.setAttribute("color", "red");
 		        			foListItemLabelBody.setTextContent("null#");
 		        		} 
@@ -447,13 +499,13 @@ public class XsltFOFunctions {
 	        		}
     				indentHandledByNumbering = true; 
 	        		
-	        		// Set the font
-	        		if (triple.getNumFont()!=null) {
-	        			String font = PhysicalFonts.getPhysicalFont(context.getWmlPackage(), triple.getNumFont() );
-	        			if (font!=null) {
-	        				foListItemLabelBody.setAttribute("font-family", font );
-	        			}
-	        		}
+//	        		// Set the font
+//	        		if (triple.getNumFont()!=null) {
+//	        			String font = PhysicalFonts.getPhysicalFont(context.getWmlPackage(), triple.getNumFont() );
+//	        			if (font!=null) {
+//	        				foListItemLabelBody.setAttribute("font-family", font );
+//	        			}
+//	        		}
 	        		
 	        	}
 				
@@ -467,8 +519,8 @@ public class XsltFOFunctions {
 						"fo:block");
 				foListItemBody.appendChild(foBlockElement);
 				
-				if (context.getLog().isDebugEnabled()) {
-					context.getLog().debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
+				if (log.isDebugEnabled()) {
+					log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
 				}
 				
 				
@@ -496,8 +548,8 @@ public class XsltFOFunctions {
 				}
 	        }
 
-			if (context.getLog().isDebugEnabled()) {
-				context.getLog().debug("after createFoAttributes: " + XmlUtils.w3CDomNodeToString(foBlockElement) );
+			if (log.isDebugEnabled()) {
+				log.debug("after createFoAttributes: " + XmlUtils.w3CDomNodeToString(foBlockElement) );
 			}
 			
 			// Our fo:block wraps whatever result tree fragment
@@ -535,11 +587,37 @@ public class XsltFOFunctions {
 			return docfrag;
 						
 		} catch (Exception e) {
-			context.getLog().error(e.getLocalizedMessage(), e);
+			//log.error(e.getLocalizedMessage(), e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;
     	
+    }
+    
+    /**
+     * Use RunFontSelector to determine the correct font for the list item label.
+     * 
+     * @param context
+     * @param foListItemLabelBody
+     * @param pPr
+     * @param rPr
+     * @param text
+     */
+    protected static void setFont(FOConversionContext context, Element foListItemLabelBody, PPr pPr, RPr rPr, String text) {
+    	
+    	DocumentFragment result = (DocumentFragment)context.getRunFontSelector().fontSelector(pPr, rPr, text);
+    	System.out.println(XmlUtils.w3CDomNodeToString(result));
+    	// eg <fo:inline xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="Times New Roman">1)</fo:inline>
+    	
+    	// Now get the attribute value
+    	if (result!=null && result.getFirstChild()!=null) {
+    		Attr attr = ((Element)result.getFirstChild()).getAttributeNode("font-family");
+    		if (attr!=null) {
+    			foListItemLabelBody.setAttribute("font-family", attr.getValue());
+    		}
+    	}
+			
     }
     
     
@@ -553,7 +631,7 @@ public class XsltFOFunctions {
 			
 			for ( CTTabStop tabStop : pprTabs.getTab() ) {
 					if (tabStop.getPos().intValue()> (pos+ numWidth) ) {
-						context.getLog().debug("tab stop: using specified");
+						log.debug("tab stop: using specified");
 						return (tabStop.getPos().intValue() - pos);
 					}
 			}
@@ -567,14 +645,14 @@ public class XsltFOFunctions {
 			defaultTab = twips.getVal().intValue();
 			
 			if (defaultTab>0) {
-				context.getLog().debug("tab stop: using default from docx");
+				log.debug("tab stop: using default from docx");
 				int tabNUmber = (int)Math.floor((pos+numWidth)/defaultTab);
 				int nextTabPos = defaultTab*(tabNUmber+1);
 				return nextTabPos - pos;
 			}
 		}
 
-		context.getLog().debug("tab stop: assuming default tab 360");
+		log.debug("tab stop: assuming default tab 360");
 		int tabNUmber = (int)Math.floor((pos+numWidth)/defaultTab);
 		int nextTabPos = defaultTab*(tabNUmber+1);
 		return nextTabPos - pos;
@@ -714,20 +792,33 @@ public class XsltFOFunctions {
         			try {
         				pPrDirect =  (PPr)jaxb;
         			} catch (ClassCastException e) {
-        		    	context.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+        		    	log.error("Couldn't cast to PPr " + jaxb.getClass().getName() + " to PPr!");
         			}        	        			
         		}
         	}
         	
 			Object jaxbR = u.unmarshal(rPrNodeIt.nextNode());			
-			RPr rPrDirect = null;
-			try {
-				rPrDirect =  (RPr)jaxbR;
-			} catch (ClassCastException e) {
-				context.getLog().error("Couldn't cast .." );
+			//RPr rPrDirect = null;
+			RPr rPr = null;
+			if (jaxbR instanceof RPr) {
+				//rPrDirect =  (RPr)jaxbR;
+				rPr = propertyResolver.getEffectiveRPr((RPr)jaxbR, pPrDirect);
+			} else if (jaxbR instanceof ParaRPr) {
+//				if (log.isDebugEnabled()) {
+//					Throwable t = new Throwable();
+//					log.debug("passed ParaRPr", t);
+//				}
+				
+				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
+//    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+        		
+        		StyleUtil.apply((ParaRPr)jaxbR, rPr); 				
+				
+			} else {
+				log.error("TODO handle  .." + jaxbR.getClass().getName());
 			}        	
-        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect);
         	
+			
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
@@ -758,7 +849,7 @@ public class XsltFOFunctions {
 			return docfrag;
 						
 		} catch (Exception e) {
-			context.getLog().error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		} 
     	
     	return null;

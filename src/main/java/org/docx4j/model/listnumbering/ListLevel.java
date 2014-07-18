@@ -391,6 +391,7 @@ public class ListLevel {
      * returns the font name
      * @return
      */
+	@Deprecated
     public String getFont()
     {
             return this.font;

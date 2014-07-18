@@ -99,6 +99,7 @@ import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
 
@@ -313,6 +314,8 @@ public class Emulator {
 				triple.ind = ppr.getInd();
 			}
 			
+			triple.rPr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getRPr();
+			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
 			if (numId.equals("0")) {
@@ -320,6 +323,8 @@ public class Emulator {
 				log.debug("Couldn't find list " + numId);
 			} else {
 				log.warn("Couldn't find list " + numId);
+//				Throwable t = new Throwable();
+//				t.printStackTrace();
 			}
 			
 		} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
@@ -332,7 +337,7 @@ public class Emulator {
 
     
     /**
-     * Used in HTML output.
+     * Used in HTML output (XsltHTMLFunctions) only.
      * 
      * @since 3.0.0
      */
@@ -502,6 +507,8 @@ public class Emulator {
     
     
     public class ResultTriple {
+    	// If we had our time again, wouldn't include 'Triple' in the name of this class,
+    	// since its become a misnomer
     	
     	String numString;
 		public String getNumString() {
@@ -509,6 +516,7 @@ public class Emulator {
 		}
     	
     	String numFont;
+    	@Deprecated
 		public String getNumFont() {
 			return numFont;
 		}
@@ -527,6 +535,12 @@ public class Emulator {
 		public Ind getIndent() {
 			return ind;
 		}
+		
+	    
+	    RPr rPr;
+	    public RPr getRPr() {
+			return rPr;
+		}		
     }
 
 }

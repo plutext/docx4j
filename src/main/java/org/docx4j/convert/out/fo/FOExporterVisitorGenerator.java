@@ -38,6 +38,7 @@ import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
@@ -46,6 +47,7 @@ import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBrType;
 import org.docx4j.wml.STTabJc;
@@ -260,9 +262,15 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 			getLog().debug("getting rPr for paragraph style");    				
 			rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
-				// rPr in pPr direct formatting only applies to paragraph mark, 
-				// so pass null here       				
-
+			// rPr in pPr direct formatting only applies to paragraph mark, 
+			// and by virtue of that, to list item label,
+			// so pass null here
+			
+			// Now, work out the value for list item label
+			RPr rPrParagraphMark = XmlUtils.deepCopy(rPr);
+	//		System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));		
+			StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark); 
+			
 			if (getLog().isDebugEnabled() && pPr!=null) {				
 				getLog().debug(XmlUtils.marshaltoString(pPr, true, true));					
 			}
@@ -330,6 +338,36 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        		} 
 	        	} else {
 	        		
+        			// Format the list item label
+        			// OK just to override specific values
+        			// Values come from numbering rPr, unless overridden in p-level rpr
+	        		if(triple.getRPr()==null) {
+	        			
+	        			if (pPr.getRPr()==null) {
+	        				// do nothing, since we're already inheriting the formatting in the style
+	        				// (as opposed to the paragraph mark formatting)
+	        				// EXCEPT for font
+	        				XsltFOFunctions.setFont( conversionContext,  foListItemLabelBody, pPr, rPr,  triple.getNumString());        				
+	        			} else {
+							createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
+							XsltFOFunctions.setFont( conversionContext,  foListItemLabelBody, pPr, rPrParagraphMark,  triple.getNumString());	        				
+	        			}
+	        			
+	        		} else {
+	        			RPr actual = XmlUtils.deepCopy(triple.getRPr()); // clone, so the ilvl rpr is not altered
+//	        			System.out.println(XmlUtils.marshaltoString(rPrParagraphMark));
+	        			
+	        			// pMark overrides numbering, except for font
+	        			// (which makes sense, since that would change the bullet)
+	        			// so set the font
+	        			XsltFOFunctions.setFont( conversionContext,  foListItemLabelBody,  pPr,  actual,  triple.getNumString());
+        				// .. before taking rPrParagraphMark into account
+	            		StyleUtil.apply(rPrParagraphMark, actual); 
+//	        			System.out.println(XmlUtils.marshaltoString(actual));
+						createFoAttributes(conversionContext.getWmlPackage(), actual, foListItemLabel );
+	        			
+	        		}	        		
+	        		
 	        		// Indent (in combination with provisional-distance-between-starts
 	        		// above
 	        		if (triple.getIndent()!=null) {
@@ -338,13 +376,13 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	    				indent.setXslFO(foListBlock);
 	        		}
 	        		
-	        		// Set the font
-	        		if (triple.getNumFont()!=null) {
-	        			String font = PhysicalFonts.getPhysicalFont(conversionContext.getWmlPackage(), triple.getNumFont() );
-	        			if (font!=null) {
-	        				foListItemLabelBody.setAttribute("font-family", font );
-	        			}
-	        		}
+//	        		// Set the font
+//	        		if (triple.getNumFont()!=null) {
+//	        			String font = PhysicalFonts.getPhysicalFont(conversionContext.getWmlPackage(), triple.getNumFont() );
+//	        			if (font!=null) {
+//	        				foListItemLabelBody.setAttribute("font-family", font );
+//	        			}
+//	        		}
 	        		
 	        		if (triple.getBullet()!=null ) {
 		        		foListItemLabelBody.setTextContent(triple.getBullet() );
@@ -396,6 +434,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
         return ret;
     }
 
+    
 	protected void createFoAttributes(FOConversionContext conversionContext, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
 		
     	List<Property> properties = PropertyFactory.createProperties(conversionContext.getWmlPackage(), pPr);

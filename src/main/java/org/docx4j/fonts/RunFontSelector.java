@@ -296,7 +296,6 @@ public class RunFontSelector {
     private boolean spacePreserve;
     
 
-    
     /**
      * Apply font selection algorithm to this Text, based on supplied PPr, RPr
      * (and docDefaults, Theme part etc).
@@ -307,7 +306,7 @@ public class RunFontSelector {
      * @return
      */
     public Object fontSelector(PPr pPr, RPr rPr, Text wmlText) {
-    	
+
     	String text=null;
     	if (wmlText==null) {
     		log.debug("Null Text object");
@@ -315,6 +314,21 @@ public class RunFontSelector {
     		text = wmlText.getValue();
         	spacePreserve = (wmlText.getSpace()!=null) && (wmlText.getSpace().equals("preserve"));
     	}
+    	
+    	return fontSelector( pPr,  rPr,  text);
+    }
+    
+    /**
+     * Apply font selection algorithm to this Text, based on supplied PPr, RPr
+     * (and docDefaults, Theme part etc).
+     * 
+     * @param pPr
+     * @param rPr
+     * @param wmlText
+     * @return
+     */
+    public Object fontSelector(PPr pPr, RPr rPr, String text) {
+    	
     	if (text==null) {
     		log.debug("w:t with null value"); 
     		if (outputType!= RunFontActionType.DISCOVERY) {
@@ -581,6 +595,11 @@ public class RunFontSelector {
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi) {
     	
+//    	String hAnsi = hAnsiActual;
+//		if (hAnsi==null) {
+//			log.debug("No value for hAnsi, using default font");
+//			hAnsi = this.getDefaultFont();				
+//		}
     	
     	// See http://stackoverflow.com/questions/196830/what-is-the-easiest-best-most-correct-way-to-iterate-through-the-characters-of-a
     	// and http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
