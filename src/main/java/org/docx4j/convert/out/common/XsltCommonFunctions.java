@@ -24,8 +24,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.fo.XsltFOFunctions;
 import org.docx4j.convert.out.html.HTMLConversionContext;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -34,9 +36,12 @@ import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -49,6 +54,9 @@ import org.w3c.dom.traversal.NodeIterator;
  * The normal behaviour is to delegate this functions to the current context, that gets passed in.
  */
 public class XsltCommonFunctions {
+	
+	private static Logger log = LoggerFactory.getLogger(XsltCommonFunctions.class);
+	
 	
 	private XsltCommonFunctions() {
 	}
@@ -72,9 +80,9 @@ public class XsltCommonFunctions {
         			Object jaxb = u.unmarshal(n);
     				pPr =  (PPr)jaxb;
     			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    				log.error("Couldn't cast  to RPr!");
     			} catch (JAXBException e) {
-    				conversionContext.getLog().error(e.getMessage(), e);
+    				log.error(e.getMessage(), e);
 				}        	        			
     		}
     	}
@@ -87,11 +95,28 @@ public class XsltCommonFunctions {
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
-    				rPr =  (RPr)jaxb;
+    				//rPr =  (RPr)jaxb;
+    				
+    				if (jaxb instanceof RPr) {
+    					//rPrDirect =  (RPr)jaxbR;
+    					rPr = (RPr)jaxb;
+    				} else if (jaxb instanceof ParaRPr) {
+//    					if (log.isDebugEnabled()) {
+//    						Throwable t = new Throwable();
+//    						log.debug("passed ParaRPr", t);
+//    					}
+    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
+//    	    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+    	        		
+    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
+    					
+    				}    				
+    				
+    				
     			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to RPr!");
+    				log.error("Couldn't cast  to RPr!");
     			} catch (JAXBException e) {
-    				conversionContext.getLog().error(e.getMessage(), e);
+    				log.error(e.getMessage(), e);
 				}        	        			
     		}
     	}
@@ -105,9 +130,9 @@ public class XsltCommonFunctions {
         			Object jaxb = u.unmarshal(n);
     				text =  (Text)jaxb;
     			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to Text!");
+    				log.error("Couldn't cast  to Text!");
     			} catch (JAXBException e) {
-    				conversionContext.getLog().error(e.getMessage(), e);
+    				log.error(e.getMessage(), e);
 				}        	        			
     		}
     	}
@@ -147,8 +172,8 @@ public class XsltCommonFunctions {
 		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
 		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
 				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
-		if (context.getLog().isDebugEnabled()) {
-			context.getLog().debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		if (log.isDebugEnabled()) {
+			log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
 		}
 		return d;
 	}
@@ -342,8 +367,8 @@ public class XsltCommonFunctions {
 		STFldCharType fieldCharType = field.getFldCharType();
 		
 		if (fieldCharType==null) {
-			if (context.getLog().isDebugEnabled()) {
-				context.getLog().debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
+			if (log.isDebugEnabled()) {
+				log.debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
 			}
 			
 		} else {

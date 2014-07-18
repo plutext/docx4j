@@ -36,6 +36,8 @@ import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -49,6 +51,8 @@ import org.w3c.dom.Node;
  *
  */
 public class FOConversionContext extends AbstractWmlConversionContext {
+	
+	private static Logger log = LoggerFactory.getLogger(FOConversionContext.class);
 
 	protected boolean requires2PassChecked = false;
 	protected boolean requires2Pass = false;

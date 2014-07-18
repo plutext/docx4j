@@ -180,8 +180,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	    AbstractTableWriterModel table = new AbstractTableWriterModel();
 	    
 	    table.build(context, unmarshalledNode, content);
-	    if (getLog().isDebugEnabled()) {
-	        getLog().debug("Table asXML:\n" + table.debugStr());
+	    if (log.isDebugEnabled()) {
+	        log.debug("Table asXML:\n" + table.debugStr());
 	    }
 	    
 	    if (!table.getCells().isEmpty()) {
@@ -272,9 +272,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					// insert content into cell
 					// skipping w:tc node itself, insert only its children
 					if (cell.getContent() == null) {
-						getLog().warn("model cell had no contents!");
+						log.warn("model cell had no contents!");
 					} else {
-						getLog().debug("copying cell contents..");
+						log.debug("copying cell contents..");
 						XmlUtils.treeCopy(cell.getContent().getChildNodes(),
 								cellNode);
 					}
@@ -525,7 +525,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	/*
 	 *  These are the main methods the subclasses have to or should override
 	 */
-	protected abstract Logger getLog();
+	//protected abstract Logger getLog();
 	
   	protected abstract Element createNode(Document doc, int nodeType);
 

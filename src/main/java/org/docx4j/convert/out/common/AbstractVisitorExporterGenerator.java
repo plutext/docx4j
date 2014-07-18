@@ -389,7 +389,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		//CTMarkupRange is the w:bookmarkEnd
 			
 		} else {
-			getLog().warn("Need to handle " + o.getClass().getName() );	
+			log.warn("Need to handle " + o.getClass().getName() );	
 			log.debug(XmlUtils.marshaltoString(o));
 		}
 		
@@ -432,7 +432,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			}
 		}
 		if (shape==null) {
-			getLog().warn("no shape in pict " );
+			log.warn("no shape in pict " );
 			return null;
 		} else {
 

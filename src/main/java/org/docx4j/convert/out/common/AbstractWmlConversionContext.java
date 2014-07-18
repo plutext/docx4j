@@ -24,6 +24,7 @@ import java.util.Map;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
+import org.docx4j.convert.out.fo.FOExporterVisitorGenerator;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.PropertyResolver;
@@ -33,6 +34,8 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.wml.STFldCharType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -45,6 +48,9 @@ import org.w3c.dom.Element;
  *
  */
 public abstract class AbstractWmlConversionContext extends AbstractConversionContext {
+	
+	private static Logger log = LoggerFactory.getLogger(AbstractWmlConversionContext.class);
+	
 	
 	private Map<String, Writer.TransformState> transformStates = null;
 	private AbstractWriterRegistry writerRegistry = null;

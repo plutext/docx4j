@@ -41,8 +41,12 @@ import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.FoNumberFormatUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings, FOConversionContext>{
+
+	private static Logger log = LoggerFactory.getLogger(AbstractFOExporter.class);
 	
 	protected AbstractFOExporter(AbstractExporterDelegate<FOSettings, FOConversionContext> exporterDelegate) {
 		super(exporterDelegate);
@@ -120,15 +124,15 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 			//if UTF-8 is unsupported, then anything will do... (java without utf-8??)
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString();
 		}
-		if (conversionContext.getLog().isDebugEnabled()) {
-			conversionContext.getLog().debug(foDocument);
+		if (log.isDebugEnabled()) {
+			log.debug(foDocument);
 		}
 		if (dumpFoFile != null) {
 			try {
 				FileUtils.writeStringToFile(dumpFoFile, foDocument, "UTF-8");
-				conversionContext.getLog().info("Saved " + dumpFoFile.getPath());
+				log.info("Saved " + dumpFoFile.getPath());
 			} catch (IOException e) {
-				conversionContext.getLog().warn("fo file couldn't be dumped to " + dumpFoFile.getPath() + ": " + e, e);
+				log.warn("fo file couldn't be dumped to " + dumpFoFile.getPath() + ": " + e, e);
 			}
 		}
 

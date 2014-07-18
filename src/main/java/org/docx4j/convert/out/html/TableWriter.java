@@ -41,7 +41,7 @@ import org.docx4j.model.styles.StyleTree.AugmentedStyle;
  *  
 */
 public class TableWriter extends AbstractTableWriter {
-	protected final static Logger logger = LoggerFactory.getLogger(TableWriter.class);
+	protected final static Logger log = LoggerFactory.getLogger(TableWriter.class);
 	
 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
 	protected final static String TABLE_INDENT = "margin-left"; 
@@ -50,10 +50,10 @@ public class TableWriter extends AbstractTableWriter {
   		return "docx4j_tbl_" + idx;
 	}
 	
-	@Override
-	protected Logger getLog() {
-		return logger;
-	}
+//	@Override
+//	protected Logger getLog() {
+//		return logger;
+//	}
 	
   	@Override
 	protected Element createNode(Document doc, int nodeType) {
@@ -104,7 +104,7 @@ public class TableWriter extends AbstractTableWriter {
 	
 		// Set @class
 	    if (table.getStyleId()==null) {
-	    	getLog().debug("table has no w:tblStyle?");
+	    	log.debug("table has no w:tblStyle?");
 	    } else {
 			StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();	
 			Tree<AugmentedStyle> tTree = styleTree.getTableStylesTree();		

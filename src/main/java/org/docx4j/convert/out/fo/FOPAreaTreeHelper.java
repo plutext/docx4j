@@ -297,7 +297,8 @@ public class FOPAreaTreeHelper {
 		    	        	    			try {
 	    	        	    					bpda += Integer.parseInt(block.getAttribute("bpda"));
 		    	        	    			} catch (java.lang.NumberFormatException nfe) {
-		    	        	    				log.error(XmlUtils.w3CDomNodeToString(block));
+		    	        	    				// safe to ignore?
+		    	        	    				log.error("For @bpda, \n"+ XmlUtils.w3CDomNodeToString(block));
 		    	        	    				log.error(nfe.getMessage(), nfe);
 		    	        	    			}
 		    	        	    			

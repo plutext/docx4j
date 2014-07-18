@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
+import org.docx4j.convert.out.fo.XsltFOFunctions;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -54,6 +55,8 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.PPrBase.Ind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -70,6 +73,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class XsltHTMLFunctions {
 	
+	private static Logger log = LoggerFactory.getLogger(XsltHTMLFunctions.class);
     
 	
 	/*
@@ -183,7 +187,7 @@ public class XsltHTMLFunctions {
 			return docfrag;
 			
 		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}			
 		return null;
 	}
@@ -218,7 +222,7 @@ public class XsltHTMLFunctions {
 			return docfrag;
 			
 		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}			
 		return null;
 
@@ -256,7 +260,7 @@ public class XsltHTMLFunctions {
 			return docfrag;
 			
 		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}			
 		return null;
 

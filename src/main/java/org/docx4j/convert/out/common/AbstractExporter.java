@@ -70,7 +70,6 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			currentTime = logDebugStep(log, "Create section wrappers", currentTime);
 			
 			conversionContext = createContext(conversionSettings, preprocessedPackage, sectionWrappers);
-			log = conversionContext.getLog();
 			currentTime = logDebugStep(log, "Create conversion context", currentTime);
 			
 			intermediateOutputStream = createIntermediateOutputStream(outputStream);

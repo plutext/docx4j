@@ -41,10 +41,10 @@ public class TableWriter extends AbstractTableWriter {
 	protected final static Logger logger = LoggerFactory.getLogger(TableWriter.class);
 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
 	
-	@Override
-	protected Logger getLog() {
-		return logger;
-	}
+//	@Override
+//	protected Logger getLog() {
+//		return logger;
+//	}
 	
   	@Override
 	protected Element createNode(Document doc, int nodeType) {

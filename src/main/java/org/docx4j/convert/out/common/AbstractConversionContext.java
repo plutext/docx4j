@@ -159,6 +159,12 @@ public abstract class AbstractConversionContext {
 	}
 
 	
+	/**
+	 * This method shouldn't be used from regular Java methods, since it
+	 * means the log entry doesn't should the actual class causing the problem.
+	 * 
+	 * @return
+	 */
 	public Logger getLog() {
 		return log;
 	}
