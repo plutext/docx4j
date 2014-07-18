@@ -31,6 +31,9 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.utils.ResourceUtils;
 import org.w3c.dom.Document;
@@ -53,10 +56,17 @@ public abstract class AbstractXsltExporterDelegate<CS extends AbstractConversion
 	
 	@Override
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
+		
+		StartEvent startEvent = new StartEvent( conversionSettings.getWmlPackage(), WellKnownProcessSteps.OUT_XsltExporterDelegate );
+		startEvent.publish();		
+		
 		Document domDoc = getSourceDocument(conversionSettings, conversionContext);
 		Templates templates = getTemplates(conversionSettings, conversionContext);
 		Result intermediateResult = new StreamResult(outputStream);
 		XmlUtils.transform(domDoc, templates, conversionContext.getXsltParameters(), intermediateResult);
+		
+		new EventFinished(startEvent).publish();
+		
 	}
 	
 	protected abstract Document getSourceDocument(CS conversionSettings, CC conversionContext) throws Docx4JException;

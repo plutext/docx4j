@@ -32,6 +32,9 @@ import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
@@ -103,8 +106,11 @@ public class LayoutMasterSetBuilder {
 	}
 	
 	private static void fixExtents(LayoutMasterSet lms, AbstractWmlConversionContext context, boolean useXSLT) {
-
+		
 		WordprocessingMLPackage wordMLPackage = context.getWmlPackage();
+
+		StartEvent startEvent = new StartEvent( wordMLPackage, WellKnownProcessSteps.FO_EXTENTS );
+		startEvent.publish();
 		
 //		log.debug(wordMLPackage.getMainDocumentPart().getXML());
 		
@@ -143,6 +149,8 @@ public class LayoutMasterSetBuilder {
 			e.printStackTrace();
 		}
 		log.debug("resulting LMS: " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
+		
+		new EventFinished(startEvent).publish();
 		
 	}
 	

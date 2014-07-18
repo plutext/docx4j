@@ -22,6 +22,8 @@ package org.docx4j.convert.out.common;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -29,6 +31,9 @@ import javax.xml.transform.stream.StreamResult;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Part;
 import org.w3c.dom.Document;
@@ -59,6 +64,9 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
 
 	@Override
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
+		
+		StartEvent startEvent = new StartEvent( conversionSettings.getWmlPackage(), WellKnownProcessSteps.OUT_AbstractVisitorExporterDelegate );
+		startEvent.publish();		
 		
 		Document document = null;
 		Element documentRoot = null;
@@ -122,6 +130,9 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
     	appendDocumentFooter(conversionContext, document, documentRoot); 
     	
     	writeDocument(conversionContext, document, outputStream);
+    	
+		new EventFinished(startEvent).publish();
+    	
 	}
 
 

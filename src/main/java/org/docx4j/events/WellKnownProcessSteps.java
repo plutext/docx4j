@@ -10,6 +10,13 @@ public enum WellKnownProcessSteps implements ProcessStep {
 	BIND_REMOVE_SDT,
 	BIND_REMOVE_XML,
 	PDF,
+	OUT_XsltExporterDelegate,
+	OUT_AbstractVisitorExporterDelegate,
+	//FO_XSLT_NON,
+	FO_EXTENTS,
+	FOP_RENDER_PASS1,
+	FOP_RENDER_PASS2,
+	CONVERT_PREPROCESS,
 	HTML_OUT,
 	XHTML_IMPORT;	
 

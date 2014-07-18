@@ -34,6 +34,9 @@ import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.convert.out.common.wrappers.ConversionSectionWrapperFactory;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -131,6 +134,10 @@ public class Preprocess extends ConversionFeatures {
 //		log.debug(wmlPackage.getMainDocumentPart().getXML());		
 		
 		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+		
+		StartEvent startEvent = new StartEvent( ret, WellKnownProcessSteps.CONVERT_PREPROCESS );
+		startEvent.publish();
+		
 
 //		log.debug(ret.getMainDocumentPart().getXML());
 	
@@ -177,6 +184,8 @@ public class Preprocess extends ConversionFeatures {
 
 		
 		log.debug("Results of preprocessing: " + ret.getMainDocumentPart().getXML());
+		
+		new EventFinished(startEvent).publish();
 		
 		
 		return ret;

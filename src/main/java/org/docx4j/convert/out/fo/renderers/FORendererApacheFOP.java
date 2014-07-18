@@ -55,6 +55,9 @@ import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.fo.AbstractPlaceholderLookup;
 import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
 import org.docx4j.convert.out.fo.PlaceholderReplacementHandler.PlaceholderLookup;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -127,10 +130,17 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		if (twoPass) {
 			//1st pass in 2 pass
 			log.debug("1st pass in 2 pass");
+			
+			StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
+			startEvent.publish();
+			
 			placeholderLookup = new FopPlaceholderLookup(pageNumberInformation);
 			formattingResults = calcResults(fopFactory, apacheFopMime, foDocumentSrc, placeholderLookup);
 			placeholderLookup.setResults(formattingResults);
 			foDocumentSrc = new StreamSource(new StringReader(foDocument));
+			
+			new EventFinished(startEvent).publish();
+			
 		}
 		
 		//1st pass in 1 pass or 2nd pass in 2 pass
@@ -149,14 +159,19 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			foDocumentSrc = new StreamSource(new StringReader(modifiedFO));
 			
 		}
-			
+
+		StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
+		startEvent.publish();
+		
 		render(fopFactory, apacheFopMime, foDocumentSrc, placeholderLookup, outputStream);
 		
+		new EventFinished(startEvent).publish();
 	}
 
 	private String setupApacheFopConfiguration(FOSettings settings) throws Docx4JException {
-	String ret = settings.getApacheFopConfiguration();
-	WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getWmlPackage();
+		
+		String ret = settings.getApacheFopConfiguration();
+		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getWmlPackage();
 		if (ret == null) {
 			ret = FopConfigUtil.createDefaultConfiguration(wmlPackage.getFontMapper(), 
 					wmlPackage.getMainDocumentPart().fontsInUse());
