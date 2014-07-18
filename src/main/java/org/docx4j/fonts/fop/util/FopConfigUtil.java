@@ -20,17 +20,21 @@
 
 package org.docx4j.fonts.fop.util;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.ResourceUtils;
 
 /**
  * The sole role of this class is to create an avalon configuration
@@ -44,6 +48,26 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 public class FopConfigUtil {
 	
 	protected static Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
+	
+	private static final String substitutions;
+	
+	static {
+		
+		String substitutionsPath = Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.substitutions");
+		String substitutionsTmp;
+		if (substitutionsPath==null) {
+			substitutionsTmp="";
+		} else {
+			try {
+				substitutionsTmp=IOUtils.toString(ResourceUtils.getResource(substitutionsPath));
+			} catch (IOException e) {
+				log.error("Problems with class path resource " + substitutionsPath);
+				log.error(e.getMessage(), e);
+				substitutionsTmp="";
+			}
+		}
+		substitutions = substitutionsTmp;
+	}
 
 	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 //  public static Configuration createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {
@@ -54,6 +78,11 @@ public class FopConfigUtil {
 		StringBuilder buffer = new StringBuilder(10240);
 
 		buffer.append("<fop version=\"1.0\"><strict-configuration>true</strict-configuration>");
+		if (substitutions.length()>0) {
+			buffer.append("<fonts>");
+			buffer.append(substitutions);
+			buffer.append("</fonts>");			
+		}
 		buffer.append("<renderers><renderer mime=\"application/pdf\">");
 		buffer.append("<fonts>");
 		declareFonts(fontMapper, fontsInUse, buffer);
