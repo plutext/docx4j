@@ -20,6 +20,7 @@
 package org.docx4j.model.styles;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -70,6 +71,15 @@ import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.PStyle;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.PPrBase.TextAlignment;
+import org.docx4j.wml.CTColumns;
+import org.docx4j.wml.CTDecimalNumber;
+import org.docx4j.wml.CTDocGrid;
+import org.docx4j.wml.CTEdnProps;
+import org.docx4j.wml.CTFtnProps;
+import org.docx4j.wml.CTLineNumber;
+import org.docx4j.wml.CTPageNumber;
+import org.docx4j.wml.CTPaperSource;
+import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -93,6 +103,7 @@ import org.docx4j.wml.STVerticalJc;
 import org.docx4j.wml.STWrap;
 import org.docx4j.wml.STXAlign;
 import org.docx4j.wml.STYAlign;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Style.BasedOn;
 import org.docx4j.wml.Tabs;
@@ -163,8 +174,49 @@ public class StyleUtil {
 		return (pPr1 == pPr2) ||
 			((pPr1 != null) && (pPr2 != null) &&
 			  areEqual((PPrBase)pPr1, (PPrBase)pPr2) &&
-			  areEqual(pPr1.getRPr(), pPr2.getRPr())
+			  areEqual(pPr1.getRPr(), pPr2.getRPr()) &&
+			  areEqual(pPr1.getSectPr(), pPr2.getSectPr())			  
 			);
+	}
+	
+	/**
+	 * @param sectPr1
+	 * @param sectPr2
+	 * @return
+	 * @since 3.2
+	 */
+	public static boolean areEqual(SectPr sectPr1, SectPr sectPr2) {
+
+		log.warn("TODO: implementation is incomplete; contributions welcome");						
+		
+		return (sectPr1 == sectPr2) ||
+				((sectPr1 != null) && (sectPr2 != null) &&	
+						areEqual(sectPr1.getFormProt() , sectPr2.getFormProt()) &&
+						areEqual(sectPr1.getVAlign() , sectPr2.getVAlign()) &&
+						areEqual(sectPr1.getNoEndnote(), sectPr2.getNoEndnote()) &&
+						areEqual(sectPr1.getTitlePg() , sectPr2.getTitlePg()) &&
+						areEqual(sectPr1.getTextDirection(), sectPr2.getTextDirection()) &&
+						areEqual(sectPr1.getBidi(), sectPr2.getBidi()) &&
+						areEqual(sectPr1.getRtlGutter(), sectPr2.getRtlGutter()) 
+						
+// TODO						
+//						areEqual(sectPr1.getDocGrid() , sectPr2.getDocGrid()) &&
+//						areEqual(sectPr1.getEGHdrFtrReferences(), sectPr2.getEGHdrFtrReferences()) &&
+//						areEqual(sectPr1.getFootnotePr(), sectPr2.getFootnotePr()) &&
+//						areEqual(sectPr1.getEndnotePr(), sectPr2.getEndnotePr()) &&
+//						areEqual(sectPr1.getType() , sectPr2.getType()) &&
+//						areEqual(sectPr1.getPgSz() , sectPr2.getPgSz()) &&
+//						areEqual(sectPr1.getPgMar(), sectPr2.getPgMar()) &&
+//						areEqual(sectPr1.getPaperSrc(), sectPr2.getPaperSrc()) &&
+//						areEqual(sectPr1.getPgBorders() , sectPr2.getPgBorders()) &&
+//						areEqual(sectPr1.getLnNumType(), sectPr2.getLnNumType()) &&
+//						areEqual(sectPr1.getPgNumType(), sectPr2.getPgNumType()) &&
+//						areEqual(sectPr1.getCols() , sectPr2.getCols()) &&
+//						areEqual(sectPr1.getPrinterSettings(), sectPr2.getPrinterSettings()) &&
+//						areEqual(sectPr1.getFootnoteColumns(), sectPr2.getFootnoteColumns()) 
+					  
+					);
+												
 	}
 
 	public static boolean areEqual(PPrBase pPrBase1, PPrBase pPrBase2) {
@@ -1063,7 +1115,8 @@ public class StyleUtil {
 	public static boolean isEmpty(PPr pPr) {
 		return (pPr == null) ||
 			(isEmpty((PPrBase)pPr) &&
-			 isEmpty(pPr.getRPr())
+			 isEmpty(pPr.getRPr()) &&
+			 isEmpty(pPr.getSectPr() )
 			);
 	}
 
@@ -1609,11 +1662,13 @@ public class StyleUtil {
 	}
 
 	protected static boolean isEmpty(BigInteger val) {
-		return (val == null) || (val.equals(BigInteger.ZERO));
+		return (val == null); // want to apply 0 value!
+		//|| (val.equals(BigInteger.ZERO));
 	}
 
 	protected static boolean isEmpty(Integer val) {
-		return (val == null) || (val.intValue() == 0);
+		return (val == null); // want to apply 0 value!
+		//|| (val.intValue() == 0);
 	}
 
 	protected static boolean isEmpty(String val) {
@@ -1624,7 +1679,14 @@ public class StyleUtil {
 		return (val == null) || (val.equals(STThemeColor.NONE));
 	}
 	
-	
+	protected static boolean isEmpty(SectPr val) {
+		
+		if (val==null) return true;
+		
+		log.debug("TODO: isEmpty(SectPr) implementation is quite basic");
+		
+		return false;
+	}
 	
 /////////////////////////////////////////////
 //apply-Methods
@@ -1634,17 +1696,22 @@ public class StyleUtil {
 /////////////////////////////////////////////
 	
 	public static void apply(Style source, Style destination) {
+		
 		if (CHARACTER_STYLE.equals(source.getType())) {
+			
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
 		}
 		else if (PARAGRAPH_STYLE.equals(source.getType()) || 
 				 NUMBERING_STYLE.equals(source.getType())) {
+			
 			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
 		}
 		else if (TABLE_STYLE.equals(source.getType())) {
+			
 			destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
 			destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+			
 			apply(source.getTblStylePr(), destination.getTblStylePr());
 			
 			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
@@ -1658,11 +1725,13 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			destination.setSectPr(apply(source.getSectPr(), destination.getSectPr()));
 		}
 		return destination;
 	}
 
 	public static void apply(PPrBase source, PPrBase destination) {
+		
 	//PPrBase as a Base class isn't instantiated
 		if (!isEmpty((PPrBase)source)) {
 			destination.setPStyle(apply(source.getPStyle(), destination.getPStyle()));	
@@ -1685,9 +1754,12 @@ public class StyleUtil {
 			destination.setAutoSpaceDN(apply(source.getAutoSpaceDN(), destination.getAutoSpaceDN()));	
 			destination.setBidi(apply(source.getBidi(), destination.getBidi()));	
 			destination.setAdjustRightInd(apply(source.getAdjustRightInd(), destination.getAdjustRightInd()));	
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));	
+			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
+			
 			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));	
-			destination.setInd(apply(source.getInd(), destination.getInd()));	
+			
+			destination.setInd(apply(source.getInd(), destination.getInd()));
+			
 			destination.setContextualSpacing(apply(source.getContextualSpacing(), destination.getContextualSpacing()));	
 			destination.setMirrorIndents(apply(source.getMirrorIndents(), destination.getMirrorIndents()));	
 			destination.setSuppressOverlap(apply(source.getSuppressOverlap(), destination.getSuppressOverlap()));	
@@ -1699,6 +1771,50 @@ public class StyleUtil {
 			destination.setCnfStyle(apply(source.getCnfStyle(), destination.getCnfStyle()));	
 		}
 	}
+	
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.2
+	 */
+	public static SectPr apply(SectPr source, SectPr destination) {
+		
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createSectPr();
+			}
+			
+			destination.setFormProt(apply(source.getFormProt() , destination.getFormProt()));
+			destination.setVAlign(apply(source.getVAlign() , destination.getVAlign()) );
+			destination.setNoEndnote(apply(source.getNoEndnote(), destination.getNoEndnote()) );
+			destination.setTitlePg(apply(source.getTitlePg() , destination.getTitlePg()) );
+			destination.setTextDirection(apply(source.getTextDirection(), destination.getTextDirection()) );
+			destination.setBidi(apply(source.getBidi(), destination.getBidi()) );
+			destination.setRtlGutter(apply(source.getRtlGutter(), destination.getRtlGutter() ));
+					
+			log.warn("TODO: implementation is incomplete");
+					
+// TODO						
+//						destination.setDocGrid(apply(source.getDocGrid() , destination.getDocGrid()) );
+//						destination.setEGHdrFtrReferences(apply(source.getEGHdrFtrReferences(), destination.getEGHdrFtrReferences()) );
+//						destination.setFootnotePr(apply(source.getFootnotePr(), destination.getFootnotePr()) );
+//						destination.setEndnotePr(apply(source.getEndnotePr(), destination.getEndnotePr()) );
+//						destination.setType(apply(source.getType() , destination.getType()) );
+//						destination.setPgSz(apply(source.getPgSz() , destination.getPgSz()) );
+//						destination.setPgMar(apply(source.getPgMar(), destination.getPgMar()) );
+//						destination.setPaperSrc(apply(source.getPaperSrc(), destination.getPaperSrc()) );
+//						destination.setPgBorders(apply(source.getPgBorders() , destination.getPgBorders()) );
+//						destination.setLnNumType(apply(source.getLnNumType(), destination.getLnNumType()) );
+//						destination.setPgNumType(apply(source.getPgNumType(), destination.getPgNumType()) );
+//						destination.setCols(apply(source.getCols() , destination.getCols()) );
+//						destination.setPrinterSettings(apply(source.getPrinterSettings(), destination.getPrinterSettings()) );
+//						destination.setFootnoteColumns(apply(source.getFootnoteColumns(), destination.getFootnoteColumns()) 
+					  
+		}
+		return destination;												
+	}	
 
 	public static RPr apply(RPr source, RPr destination) {
 		
@@ -1941,8 +2057,8 @@ public class StyleUtil {
 	public static void apply(List<CTTblStylePr> source, List<CTTblStylePr> destination) {
 		CTTblStylePr destinationTblStylePr = null;
 		if (!isEmpty(source)) {
-			//not sure about this, but if the source defines a content model it should
-			//replace the one of the source as a whole, and not parts of it.
+			// not sure about this, but if the source defines a content model it should
+			// replace the destination as a whole, and not parts of it.
 			destination.clear();
 			for (int i=0; i<source.size(); i++) {
 				destinationTblStylePr = apply(source.get(i), null);
