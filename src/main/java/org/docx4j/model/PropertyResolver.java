@@ -144,7 +144,8 @@ public class PropertyResolver {
 		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
 		themePart = mdp.getThemePart();
 		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
-		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null
+				&& wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents()!=null) {
 			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
 		}
 		init();		
@@ -764,17 +765,19 @@ public class PropertyResolver {
 		log.debug( "apply " + XmlUtils.marshaltoString(pPrToApply,  true, true)
 			+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
 		
-		if (pPrToApply==null) {
-			return;
-		}
+		StyleUtil.apply(pPrToApply, effectivePPr);
 		
-    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
-    	for( Property p :  properties ) {
-			if (p!=null) {
-//				log.debug("applying pPr " + p.getClass().getName() );
-				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+//		if (pPrToApply==null) {
+//			return;
+//		}
+//		
+//    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
+//    	for( Property p :  properties ) {
+//			if (p!=null) {
+////				log.debug("applying pPr " + p.getClass().getName() );
+//				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 
 		log.debug( "result " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
     	
