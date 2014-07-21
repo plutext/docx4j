@@ -34,8 +34,17 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.wml.CTCompat;
+import org.docx4j.wml.CTCompatSetting;
+import org.docx4j.wml.HpsMeasure;
+import org.docx4j.wml.Jc;
+import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
@@ -68,13 +77,55 @@ public class ParagraphStylesInTableFix {
 	
 	protected static Logger log = LoggerFactory.getLogger(ParagraphStylesInTableFix.class);	
 	
+	private static final CTCompatSetting defaultSetting; // see comments on overrideTableStyleFontSizeAndJustification at line 350 below
 	
-	/** Move bookmarks into a paragraph
-	 * 
-	 */
+	static {
+		
+		defaultSetting=Context.getWmlObjectFactory().createCTCompatSetting();
+		defaultSetting.setVal("0"); // default is false
+	}
+
 	public static void process(WordprocessingMLPackage wmlPackage) {
+
+		/* Are we invoked from FOPAreaTreeHelper?
+		 * 
+		 * 	at org.docx4j.convert.out.fo.FOPAreaTreeHelper.getAreaTreeViaFOP(FOPAreaTreeHelper.java:187)
+			at org.docx4j.convert.out.fo.LayoutMasterSetBuilder.fixExtents(LayoutMasterSetBuilder.java:136)
+			at org.docx4j.convert.out.fo.LayoutMasterSetBuilder.getLayoutMasterSetFragment(LayoutMasterSetBuilder.java:97)
+			at org.docx4j.convert.out.fo.XsltFOFunctions.getLayoutMasterSetFragment(XsltFOFunctions.java:82)
+
+		 */
+		Throwable t = new Throwable();
+		StackTraceElement[] trace = t.getStackTrace();
+		boolean inFOPAreaTreeHelper=false;
+		for (int i=0; i < trace.length; i++) {
+			if (trace[i].getClassName().contains("FOPAreaTreeHelper")) {
+				return;  // don't do this, especially changing overrideTableStyleFontSizeAndJustification!
+			}
+		}
 		
 		StyleRenamer styleRenamer = new StyleRenamer();
+
+		try { // see comments on overrideTableStyleFontSizeAndJustification at line 350 below
+			DocumentSettingsPart dsp = wmlPackage.getMainDocumentPart().getDocumentSettingsPart();
+			if (dsp==null) {
+				dsp = new DocumentSettingsPart();
+				wmlPackage.getMainDocumentPart().addTargetPart(dsp);
+				
+				dsp.setContents( Context.getWmlObjectFactory().createCTSettings() );
+				
+				
+			} else {
+				styleRenamer.overrideTableStyleFontSizeAndJustification 
+					= dsp.getWordCompatSetting("overrideTableStyleFontSizeAndJustification");
+			}
+
+			// For our output docx, we always want:-
+			if (inFOPAreaTreeHelper)
+			dsp.setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "1");
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}
 		
 		try {
 			styleRenamer.setDefaultParagraphStyle(wmlPackage.getMainDocumentPart()
@@ -90,9 +141,11 @@ public class ParagraphStylesInTableFix {
 		}
 		
 		Styles styles = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();
-        styleRenamer.setNewStyles(styles);
         
         styleRenamer.propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
+        // do that first, since it creates virtual styles for DocDefaults,
+        // which we need to include in the below
+        styleRenamer.setStyles(styles);
         
 		try {
 			new TraversalUtil(wmlPackage.getMainDocumentPart().getContents(), styleRenamer);
@@ -103,12 +156,16 @@ public class ParagraphStylesInTableFix {
 		
 		// TODO, headers/footers as well
 		
+//		System.out.println(wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getXML());
+		
 
 	}	
 	
 	public static class StyleRenamer extends CallbackImpl {
 		
 		protected static Logger log = LoggerFactory.getLogger(StyleRenamer.class);
+		
+		CTCompatSetting overrideTableStyleFontSizeAndJustification=defaultSetting; // see comments on overrideTableStyleFontSizeAndJustification at line 350 below
 		
 		private PropertyResolver propertyResolver;
 		
@@ -119,6 +176,10 @@ public class ParagraphStylesInTableFix {
 		
 	    private String defaultParagraphStyle;
 		public void setDefaultParagraphStyle(String defaultParagraphStyle) {
+			
+			
+			log.debug(defaultParagraphStyle);
+			
 			this.defaultParagraphStyle = defaultParagraphStyle;
 		}
 
@@ -141,43 +202,29 @@ public class ParagraphStylesInTableFix {
 	    // We don’t have to treat nested tables in any special way, 
 	    // since a nested table does not inherit any of the properties of its parent table.
 		
-	    private Styles newStyles=null;
+//	    private Styles newStyles=null;
 	    private Map<String,Style> allStyles=null;
-	    public void setNewStyles(Styles newStyles) {
+	    public void setStyles(Styles newStyles) {
 	    	
-	    	this.newStyles = newStyles;
+//	    	this.newStyles = newStyles;
 	    	allStyles = new HashMap<String,Style>(); 
-	    	cellPStyles = new HashSet<String>(); 
+//	    	cellPStyles = new HashSet<String>(); 
 	    	
 	    	for (Style s : newStyles.getStyle()) {
+	    		System.out.println(s.getStyleId());
 	    		allStyles.put(s.getStyleId(), s);
 	    	}
 	    }
-	    private Set<String> cellPStyles=null;
+	    private Set<String> cellPStyles=new HashSet<String>(); 
 	    
 	    
-	    /*
-	     * w:compatSetting[w:name="overrideTableStyleFontSizeAndJustification"]
-	     * is defined in [MS-DOCX] 
-	     * 
-	     * If this value is true, then the style hierarchy of the document is evaluated as specified 
-	     * in [ISO/IEC29500-1:2011] section 17.7.2.
-	     * 
-			If this value is false, which is the default, then the following additional rules apply:
-			
-			If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
-			specifies a font size of 11pt or 12pt, then that setting will not override the font size 
-			specified by the table style for paragraphs in tables.
-			
-			If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
-			specifies a justification of left, then that setting will not override the justification 
-			specified by the table style for paragraphs in tables.
-			
-			TODO:
-			- output docx should use value true.
-			- our explicit p style in cell should take into account what the setting is on the
-			  relevant input docx 
-	     */
+	    private boolean isFalse(CTCompatSetting overrideTableStyleFontSizeAndJustification) {
+	    	
+	    	return  ( overrideTableStyleFontSizeAndJustification.getVal().equals("0")
+					|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("false")
+					|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("no")
+					);
+	    }
 	    
 		/**
 		 * In a cell, a paragraph uses the table's paragraph properties,
@@ -190,8 +237,25 @@ public class ParagraphStylesInTableFix {
 		 * paragraph style, with DocDefaults given lower priority 
 		 * than table style.  This created style has no w:basedOn setting.
 		 */
-		private String getCellPStyle(String styleVal) {
-
+		private String getCellPStyle(String styleVal, boolean pStyleIsDefault) {
+			
+			// Font size and jc for the style (which could be the default style), 
+			// without following its based on values
+			Style expressStyle = allStyles.get(styleVal);
+			Jc expressStyleJc = expressStyle.getPPr()==null ? null : expressStyle.getPPr().getJc();
+			HpsMeasure expressStyleFontSize = null;
+			if (expressStyle.getRPr()!=null) {
+				expressStyleFontSize=expressStyle.getRPr().getSz();
+			}
+			// Font size and jc for the style following its based on values
+			PPr effectivePPr = propertyResolver.getEffectivePPr(styleVal);
+			Jc effectiveJc = effectivePPr.getJc();
+			
+			RPr effectiveRPr = propertyResolver.getEffectiveRPr(styleVal);
+			HpsMeasure effectiveFontSize = null;
+			if (effectiveRPr!=null) {
+				effectiveFontSize=effectiveRPr.getSz();
+			}
 			
 			String tableStyle=null;
 			TblPr tblPr = tblStack.peek().getTblPr(); 
@@ -232,6 +296,7 @@ public class ParagraphStylesInTableFix {
 			Style basedOn = null;
 			String currentStyle = styleVal;
 			do {
+				System.out.println("Getting " + currentStyle);
 				Style thisStyle = allStyles.get(currentStyle);
 				hierarchy.add(thisStyle);
 				if (thisStyle.getBasedOn()!=null) {
@@ -240,6 +305,8 @@ public class ParagraphStylesInTableFix {
 					currentStyle = null;
 				}
 			} while (currentStyle != null);
+			
+	
 			
 			Style newStyle = Context.getWmlObjectFactory().createStyle();
 			newStyle.setType("paragraph");
@@ -252,7 +319,8 @@ public class ParagraphStylesInTableFix {
 			log.debug("Result");
 			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
 			
-			// Next, table style
+			// Next, table style - first/temporarily in tableStyleContrib
+			Style tableStyleContrib = null;
 			List<Style> tblStyles = new ArrayList<Style>();
 			if (tableStyle!=null) {
 				currentStyle = tableStyle;
@@ -286,16 +354,126 @@ public class ParagraphStylesInTableFix {
 	    			styleToApply = tblStyles.get(i);
 	    			log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
 	    			
-	    			StyleUtil.apply(styleToApply, newStyle);
-	    			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+	    			tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
+	    			log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
 	    		}
 			}
+			
+			if (tableStyleContrib==null) {
+				// will happen if the style was Normal Table, since we break above..
+				// .. so just make an empty object, to avoid having to do isNull tests below..
+				tableStyleContrib = Context.getWmlObjectFactory().createStyle();
+			}
+
+			// What do the table styles contribute?
+			Jc tableStyleJc = tableStyleContrib.getPPr()==null ? null : tableStyleContrib.getPPr().getJc();
+			
+			HpsMeasure tableStyleFontSize = null;
+			if (tableStyleContrib.getRPr()!=null) {
+				tableStyleFontSize=tableStyleContrib.getRPr().getSz();
+			}
+			
+			// Now we can apply to table style contrib on top of docDefaults
+			// As these are different style types:-
+			newStyle.setPPr(StyleUtil.apply(tableStyleContrib.getPPr(), newStyle.getPPr()));
+			newStyle.setRPr(StyleUtil.apply(tableStyleContrib.getRPr(), newStyle.getRPr()));
+			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
 			
 			
 			// Finally, rest of list in reverse
 			for (int i = hierarchy.size()-2; i>=0; i--) {
 				styleToApply = hierarchy.get(i);
+				log.debug("Applying " + styleToApply.getStyleId() +
+						"\n" + XmlUtils.marshaltoString(styleToApply, true, true));
 				StyleUtil.apply(styleToApply, newStyle);
+				log.debug("Result: " + 
+						"\n" + XmlUtils.marshaltoString(newStyle, true, true));
+			}
+			
+		    /*
+		     * w:compatSetting[w:name="overrideTableStyleFontSizeAndJustification"]
+		     * is defined in [MS-DOCX] 
+		     * 
+		     * If this value is true, then the style hierarchy of the document is evaluated as specified 
+		     * in [ISO/IEC29500-1:2011] section 17.7.2.
+		     */
+			if (isFalse(overrideTableStyleFontSizeAndJustification)) {
+				
+				log.info("giving TableStyleFontSizeAndJustification primacy, as per this docx w:compatSetting");
+				
+			     /* 
+					If this value is false, which is the default, then the following additional rules apply:
+					
+					If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
+					specifies a font size of 11pt or 12pt, then that setting will not override the font size 
+					specified by the table style for paragraphs in tables.
+					
+						// That's wrong; this additional rule only applies if the font size is 12pt (not 11pt!).
+						// Tested in Word 2010 
+					
+					If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
+					specifies a justification of left, then that setting will not override the justification 
+					specified by the table style for paragraphs in tables.
+					  
+				 * The philosophy seems to be that inside a table cell, Normal didn't apply.
+				 * 
+				 * NB: there are fairly comprehensive test cases in src/test/java
+				 * for the behaviour with font size (where in each case the expected
+				 * result is set on the basis of what Word does). There aren't any at the moment for
+				 * justification (which is assumed to follow the same logic we have here).
+				 * 
+				 * Where Normal is basedOn our DocDefaults style, Word *does* override the table style!
+				 * We'll ignore that for now, because the next version of docx4j (v3.3) needs to
+				 * stop creating a DocDefaults style. 
+			     */
+				
+				// Font size
+				if ((!styleVal.equals(defaultParagraphStyle)) 
+						&& expressStyleFontSize!=null) {
+					// Not normal (but assume based on it)
+
+					// if style is not default, use it 
+					// (whether its basedOn normal or not)
+					// provided it contributes fontSize (its not enough for it to be inherited from Normal,
+					// but TODO if A is basedOn B basedOn Normal, something contributed by B should be used) 
+					// .. so nothing to do
+					
+					
+				} else if (tableStyleFontSize!=null) {
+					
+					// the exception
+					if (effectiveFontSize!=null
+							&& effectiveFontSize.getVal().intValue()==24 )
+					newStyle.getRPr().setSz(tableStyleFontSize); //use this!
+					// What about SzCs?
+					
+				} else {
+					
+					// the table style doesn't set it
+					// .. so nothing to do
+				}
+					
+
+				// Justification
+				if ((!styleVal.equals(defaultParagraphStyle)) 
+						&& expressStyleJc!=null
+						) {
+					// if style is not default, use it (whether its basedOn normal or not)
+					// .. so nothing to do
+					
+				} else if (tableStyleJc!=null) {
+					
+					// the exception
+					if (effectiveJc!=null
+							&& effectiveJc.getVal().equals(JcEnumeration.LEFT))
+						newStyle.getPPr().setJc(tableStyleJc); //use this!
+					
+				} else {
+					
+					// the table style doesn't set it
+					// .. so nothing to do
+				}
+				
 			}
 			
 			Style.Name name = Context.getWmlObjectFactory().createStyleName();
@@ -303,7 +481,7 @@ public class ParagraphStylesInTableFix {
 			newStyle.setName(name);
 			
 			newStyle.setStyleId(resultStyleID);
-			newStyles.getStyle().add(newStyle);
+//			newStyles.getStyle().add(newStyle);
 			cellPStyles.add(resultStyleID); 
 			
 			// required for PDF (but not XHTML) output
@@ -354,7 +532,8 @@ public class ParagraphStylesInTableFix {
 						if (tblStack.size()==0) {						
 							p.getPPr().getPStyle().setVal(newStyle);
 						} else {
-							String resultStyle = getCellPStyle(newStyle);
+							// We're in a table
+							String resultStyle = getCellPStyle(newStyle, true);
 							if (resultStyle==null) {
 								p.getPPr().getPStyle().setVal(newStyle);								
 							} else {
@@ -368,10 +547,12 @@ public class ParagraphStylesInTableFix {
 					if (styleVal!=null) {
 						if (tblStack.size()>0) {						
 							log.debug("Fixing " + pstyle.getVal());
-							if (getCellPStyle(styleVal)==null) {
+							String newStyle = getCellPStyle(styleVal, 
+													styleVal.equals(defaultParagraphStyle));
+							if (newStyle==null) {
 								log.debug("getCellPStyle returned null, so leave as is");
 							} else {
-								p.getPPr().getPStyle().setVal(getCellPStyle(styleVal));
+								p.getPPr().getPStyle().setVal(newStyle);
 							}
 						}
 					}
