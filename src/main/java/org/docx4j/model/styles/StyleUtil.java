@@ -1093,8 +1093,10 @@ public class StyleUtil {
 		if (style == null) 
 			return true;
 
-		if (isEmpty(style.getStyleId()))
-			return true;
+		if (isEmpty(style.getStyleId())) {
+			log.warn("style currently has no id");
+		}
+		
 		if (CHARACTER_STYLE.equals(style.getType())) {
 			return isEmpty(style.getRPr());
 		}
@@ -1104,12 +1106,25 @@ public class StyleUtil {
 				   isEmpty(style.getRPr());
 		}
 		else if (TABLE_STYLE.equals(style.getType())) {
-			return isEmpty(style.getTblPr()) &&
+			return isEmpty(style.getPPr()) &&
+				   isEmpty(style.getRPr()) &&
+				   isEmpty(style.getTblPr()) &&
 				   isEmpty(style.getTcPr()) &&
 				   isEmpty(style.getTblStylePr());
 			
 		}
-		throw new IllegalArgumentException("Invalid style type: " + style.getType());
+		//throw new IllegalArgumentException("Invalid style type: " + style.getType());
+		else {
+
+			log.warn("style type is currently unknown or null");
+			log.debug(XmlUtils.marshaltoString(style));
+			
+			return isEmpty(style.getPPr()) &&
+					   isEmpty(style.getRPr()) &&
+					   isEmpty(style.getTblPr()) &&
+					   isEmpty(style.getTcPr()) &&
+					   isEmpty(style.getTblStylePr());
+		}
 	}
 
 	public static boolean isEmpty(PPr pPr) {
@@ -1695,28 +1710,74 @@ public class StyleUtil {
 //	
 /////////////////////////////////////////////
 	
-	public static void apply(Style source, Style destination) {
+	/**
+	 * Note that this method does not climb the hierarchy
+	 * to take any account of what these styles are basedOn
+	 * (other than to set the basedOn value)
+	 * 
+	 * @param source
+	 * @param destination
+	 */
+	public static Style apply(Style source, Style destination) {
+
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createStyle();
+				if (source.getType()!=null) {
+					destination.setType(source.getType());
+				}
+			} else {
+				if (areEqual(source.getType(), destination.getType())) {
+					// good, as expected
+				} else if (destination.getType()==null) {
+					log.warn("Setting destination style type from source type " + source.getType());
+					destination.setType(source.getType());
+				} else {
+					throw new RuntimeException("Source style type " + source.getType()
+							+ " does not match destination type " + destination.getType());
+					// Maybe there are some scenarios where you want to apply
+					// say the rpr component of a p style to a run level style
+					// but wait until need is proven.
+					// You could still do that, by using apply(RPr, RPr).
+					// Better to do type like checking here, and force explicit intention
+				}
+			}
 		
-		if (CHARACTER_STYLE.equals(source.getType())) {
-			
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			if (CHARACTER_STYLE.equals(source.getType())) {
+				
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else if (PARAGRAPH_STYLE.equals(source.getType()) || 
+					 NUMBERING_STYLE.equals(source.getType())) {
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else if (TABLE_STYLE.equals(source.getType())) {
+				
+				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+				
+				apply(source.getTblStylePr(), destination.getTblStylePr());
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else {
+
+				log.warn("source style type is currently unknown or null");
+				
+				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+				
+				apply(source.getTblStylePr(), destination.getTblStylePr());
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
 		}
-		else if (PARAGRAPH_STYLE.equals(source.getType()) || 
-				 NUMBERING_STYLE.equals(source.getType())) {
-			
-			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-		}
-		else if (TABLE_STYLE.equals(source.getType())) {
-			
-			destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
-			destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
-			
-			apply(source.getTblStylePr(), destination.getTblStylePr());
-			
-			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-		}
+		return destination;
 	}
 
 	public static PPr apply(PPr source, PPr destination) {
