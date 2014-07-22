@@ -336,6 +336,22 @@ public class XmlUtils {
 		
 	}
 
+	/**
+	 * @param list
+	 * @param name
+	 * @return
+	 * @since 3.2.0
+	 */
+	public static JAXBElement<?> getListItemByQName(List<JAXBElement<?>> list, QName name) {
+		
+		for(JAXBElement<?> el : list) {
+			
+			if (el.getName().equals(name)) {
+				return el;
+			}
+		}
+		return null;
+	}
 	
 
 	/** Unmarshal an InputStream as an object in the package org.docx4j.jaxb.document.
