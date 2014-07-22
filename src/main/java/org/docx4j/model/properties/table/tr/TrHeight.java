@@ -6,6 +6,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTHeight;
 import org.docx4j.wml.STHeightRule;
 import org.docx4j.wml.TrPr;
@@ -31,11 +33,25 @@ public class TrHeight extends AbstractTrProperty {
 	
 	@Override
 	public void set(TrPr trPr) {
-	JAXBElement<CTHeight> jbHeight = null;
-	CTHeight ctHeight = (CTHeight)getObject();
+		
+		JAXBElement<CTHeight> jbHeight = null;
+		CTHeight ctHeight = (CTHeight)getObject();
 		if ((ctHeight != null) && (ctHeight.getVal() != null)) {
 			jbHeight = new JAXBElement<CTHeight>(TRHEIGHT_NAME, CTHeight.class, (CTHeight)getObject());
-			trPr.getCnfStyleOrDivIdOrGridBefore().add(jbHeight);
+			
+			JAXBElement<?> existing = XmlUtils.getListItemByQName(trPr.getCnfStyleOrDivIdOrGridBefore(), jbHeight.getName() );
+			if (existing==null) {
+				
+				// just add it
+				trPr.getCnfStyleOrDivIdOrGridBefore().add(jbHeight);
+				
+			} else {
+				
+				// replace it
+				trPr.getCnfStyleOrDivIdOrGridBefore().remove(existing);
+				trPr.getCnfStyleOrDivIdOrGridBefore().add(jbHeight);
+			}
+			
 		}
 	}
 

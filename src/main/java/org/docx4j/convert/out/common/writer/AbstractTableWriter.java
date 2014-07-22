@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.UnitsOfMeasurement;
@@ -44,7 +45,10 @@ import org.docx4j.model.properties.table.CellMarginRight;
 import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.model.properties.table.tc.TextAlignmentVertical;
+import org.docx4j.model.properties.table.tr.TrCantSplit;
 import org.docx4j.model.properties.table.tr.TrHeight;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTHeight;
 import org.docx4j.wml.CTShd;
@@ -381,14 +385,28 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	}
 
 	protected void createRowProperties(List<Property> properties, TrPr trPr, boolean includeDefaultHeight) {
-	JAXBElement<CTHeight> trHeight = (trPr != null ? 
+		
+		// handle <w:trHeight/>
+		JAXBElement<CTHeight> trHeight = (trPr != null ? 
 				(JAXBElement<CTHeight>)getElement(trPr.getCnfStyleOrDivIdOrGridBefore(), "trHeight") : 
 				null);
 		if (trHeight != null) {
 			properties.add(new TrHeight(trHeight.getValue()));
 		}
+		
+		// handle <w:cantSplit/>
+		if (trPr != null) {
+			JAXBElement<?> cantSplit = XmlUtils.getListItemByQName(trPr.getCnfStyleOrDivIdOrGridBefore(), new QName(Namespaces.NS_WORD12, "cantSplit"));
+			if (cantSplit!=null) {
+				BooleanDefaultTrue val = (BooleanDefaultTrue)XmlUtils.unwrap(cantSplit);
+				if (val.isVal()) {
+					properties.add(new TrCantSplit(cantSplit));					
+				}
+			}
+		}
 	}
 
+	
 	protected void createCellProperties(List<Property> properties, TrPr trPr) {
 		
 	}
