@@ -21,7 +21,10 @@
 
 package org.docx4j.wml; 
 
+import org.docx4j.model.properties.PropertyFactory;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -44,23 +47,23 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;attribute name="val" use="required">
  *         &lt;simpleType>
  *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="black"/>
- *             &lt;enumeration value="blue"/>
- *             &lt;enumeration value="cyan"/>
- *             &lt;enumeration value="green"/>
- *             &lt;enumeration value="magenta"/>
- *             &lt;enumeration value="red"/>
- *             &lt;enumeration value="yellow"/>
- *             &lt;enumeration value="white"/>
- *             &lt;enumeration value="darkBlue"/>
- *             &lt;enumeration value="darkCyan"/>
- *             &lt;enumeration value="darkGreen"/>
- *             &lt;enumeration value="darkMagenta"/>
- *             &lt;enumeration value="darkRed"/>
- *             &lt;enumeration value="darkYellow"/>
- *             &lt;enumeration value="darkGray"/>
- *             &lt;enumeration value="lightGray"/>
- *             &lt;enumeration value="none"/>
+ *             &lt;enumeration value="black", 
+ *             &lt;enumeration value="blue", 
+ *             &lt;enumeration value="cyan", 
+ *             &lt;enumeration value="green", 
+ *             &lt;enumeration value="magenta", 
+ *             &lt;enumeration value="red", 
+ *             &lt;enumeration value="yellow", 
+ *             &lt;enumeration value="white", 
+ *             &lt;enumeration value="darkBlue", 
+ *             &lt;enumeration value="darkCyan", 
+ *             &lt;enumeration value="darkGreen", 
+ *             &lt;enumeration value="darkMagenta", 
+ *             &lt;enumeration value="darkRed", 
+ *             &lt;enumeration value="darkYellow", 
+ *             &lt;enumeration value="darkGray", 
+ *             &lt;enumeration value="lightGray", 
+ *             &lt;enumeration value="none", 
  *           &lt;/restriction>
  *         &lt;/simpleType>
  *       &lt;/attribute>
@@ -76,6 +79,19 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "highlight")
 public class Highlight implements Child
 {
+	
+	protected static Logger log = LoggerFactory.getLogger(PropertyFactory.class);
+	
+	// See http://www.w3.org/TR/css3-color/#svg-color, except for darkYellow (for which I've used gold)
+	private final static String[][] colors = { { "black", "000000" }, { "blue", "0000FF" },
+			{ "cyan", "00FFFF" }, { "green", "008000" },
+			{ "magenta", "FF00FF" }, { "red", "FF0000" },
+			{ "yellow", "FFFF00" }, { "white", "FFFFFF" },
+			{ "darkBlue", "00008B" }, { "darkCyan", "008B8B" },
+			{ "darkGreen", "006400" }, { "darkMagenta", "8B008B" },
+			{ "darkRed", "8B0000" }, { "darkYellow", "FFD700" },
+			{ "darkGray", "A9A9A9" }, { "lightGray", "D3D3D3" } };
+	
 
     @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected String val;
@@ -94,6 +110,19 @@ public class Highlight implements Child
         return val;
     }
 
+    public String getHexVal() {
+    	
+    	if (val==null) return null;
+    	
+    	for (int i = 0; i<colors.length; i++) {
+    		if (val.equals(colors[i][0])) {
+    			return "#" + colors[i][1]; 
+    		}
+    	}     	
+		log.error("Unexpected w:highlight value '" + val + "'");
+		return null;
+    }
+    
     /**
      * Sets the value of the val property.
      * 
@@ -103,7 +132,41 @@ public class Highlight implements Child
      *     
      */
     public void setVal(String value) {
-        this.val = value;
+    	
+    	if (value==null) {
+    		this.val = value;
+    		return;
+    	}
+    	
+    	boolean inEnumeration = false;
+    	for (int i = 0; i<colors.length; i++) {
+    		if (value.equals(colors[i][0])) {
+    			inEnumeration = true; 
+    			break;
+    		}
+    	}
+    	
+    	if (inEnumeration) {
+    		this.val = value;
+    		return;
+    	} else if (value.trim().startsWith("#")) {
+    		value=value.trim().substring(1).toUpperCase();
+    		
+        	for (int i = 0; i<colors.length; i++) {
+        		if (value.equals(colors[i][1])) {
+        			val = colors[i][0]; 
+        			return;
+        		}
+        	}
+        	
+    		log.warn("use enumerated color, or implement algorithm to map to closest color: '" + value + "'");
+        	
+    	} else if (value.trim().contains("rgb")) {
+    		
+    		log.warn("TODO: implement rgb to color for '" + value + "'");
+    	}
+		log.error("Can't set w:highlight from '" + value + "'");    	
+    	this.val = null;
     }
 
     /**
@@ -133,3 +196,4 @@ public class Highlight implements Child
     }
 
 }
+

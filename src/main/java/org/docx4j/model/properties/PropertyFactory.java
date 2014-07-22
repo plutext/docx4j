@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.Indent;
@@ -518,6 +519,18 @@ public class PropertyFactory {
 //			dest.setWordWrap(pPr.getWordWrap());
 		return properties;		
 	}
+	
+	private static Boolean useHIghlightInRPr = null;
+	private static boolean shouldUseHighlightInRPr() {
+		
+		if (useHIghlightInRPr==null) {
+			useHIghlightInRPr = Docx4jProperties.getProperty("docx4j.model.properties.PropertyFactory.createPropertyFromCssName.background-color.useHighlightInRPr", 
+					false);
+		}
+		return useHIghlightInRPr;
+	}
+	
+	
 
 	public static Property createPropertyFromCssName(String name, CSSValue value) {
 		
@@ -552,12 +565,13 @@ public class PropertyFactory {
 			    if(value.getCssText().toLowerCase().equals("transparent")){
 			        return null;
 			    }
-			    // if css value is presented as color, make shading;
-			    // else assume it is string value so highlight
-			    if(simpleRGBCheck(value.getCssText())){
-			        return new RShading(value);
-			    } else {
+			    
+			    if (shouldUseHighlightInRPr()) {
+			    	// Highlight needs "red", not "#FF0000", but our code 
+			    	// is ok with this as long as the color is in the enumeration from the spec
 			        return new HighlightColor(value);
+			    } else {
+			        return new RShading(value);
 			    }
 			} else if (name.equals(VerticalAlignment.CSS_NAME)) {
 			    //default value
