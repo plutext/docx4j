@@ -71,10 +71,19 @@ public class LineSpacing extends AbstractParagraphProperty {
 		} else if (CSSPrimitiveValue.CSS_MM == type) {
 			twip = UnitsOfMeasurement.mmToTwip(fVal);		
 		} else if (CSSPrimitiveValue.CSS_PERCENTAGE == type) {
-			twip = twipFromPercentage(fVal);		
+			twip = twipFromPercentage(fVal);
+		} else if (CSSPrimitiveValue.CSS_IDENT == type) {
+			if (value.getCssText().equals("normal")) {
+				// no need to set LineSpacing
+				return;
+			} else {
+				log.error("TODO: handle value: " + value.getCssText());
+				return;
+			}
 		} else {
 			log.error("No support for unit " + type);
-			twip = 0;
+			// twip = 0;  // don't do that; its a very bad default!
+			return;
 		}
 		this.setObject(BigInteger.valueOf(twip) );
 		
