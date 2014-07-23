@@ -97,7 +97,7 @@ public class ParagraphStylesInTableFix {
 		 */
 		Throwable t = new Throwable();
 		StackTraceElement[] trace = t.getStackTrace();
-		boolean inFOPAreaTreeHelper=false;
+//		boolean inFOPAreaTreeHelper=false;
 		for (int i=0; i < trace.length; i++) {
 			if (trace[i].getClassName().contains("FOPAreaTreeHelper")) {
 				return;  // don't do this, especially changing overrideTableStyleFontSizeAndJustification!
@@ -114,15 +114,22 @@ public class ParagraphStylesInTableFix {
 				
 				dsp.setContents( Context.getWmlObjectFactory().createCTSettings() );
 				
+				// no need to set styleRenamer.overrideTableStyleFontSizeAndJustification,
+				// since the default is what we want in this case
 				
 			} else {
 				styleRenamer.overrideTableStyleFontSizeAndJustification 
 					= dsp.getWordCompatSetting("overrideTableStyleFontSizeAndJustification");
+				if (styleRenamer.overrideTableStyleFontSizeAndJustification==null) {
+					styleRenamer.overrideTableStyleFontSizeAndJustification=defaultSetting;
+					// TODO,consider making the function return the default value?
+				}
 			}
 
 			// For our output docx, we always want:-
-			if (inFOPAreaTreeHelper)
 			dsp.setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "1");
+			// since the p styles we make/use take the table style into account 
+			
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
 		}
