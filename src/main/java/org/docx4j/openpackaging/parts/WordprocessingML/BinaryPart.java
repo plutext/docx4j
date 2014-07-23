@@ -40,9 +40,14 @@ import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.utils.BufferUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class BinaryPart extends Part {
+	
+	protected static Logger log = LoggerFactory.getLogger(BinaryPart.class);
+	
 	
 	public BinaryPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -94,78 +99,71 @@ public class BinaryPart extends Part {
 		this.bb = bb;
 	}
 	
-	
-	/**
-	 * Store buffer thru soft reference so it could be 
-	 * unloaded by the java vm if free memory is low.
-	 */
-	private Reference<ByteBuffer> bbRef = null;
-	
+		
 	/**
 	 * @since 3.0
 	 */
 	public boolean isLoaded() {
 		
-		if (this.bb != null) {
-			return true;
-		}
-		
-		return (this.bbRef != null);
+		return (this.bb != null);
 	}
 	
 	public ByteBuffer getBuffer() {
-		ByteBuffer res = null;
 		
 		if (this.bb != null) {
 			// use buffer loaded during package load
 			// (if not using Load3)
-			res = this.bb;
+			bb.rewind(); // Don't forget this!
+			return bb;
 			
-		} else {
-
-			res = (this.bbRef != null) ? this.bbRef.get() : null;
-			if (this.getPackage()==null) {
-				log.warn("No package owns this part.");
-				return null;				
-			}
-			// no cached buffer, try to load part data now			
-			PartStore partStore = this.getPackage().getSourcePartStore();
-			if (partStore==null) {
-				log.warn("No PartStore configured for this package");
-				return null;
-			} if (res == null) {
-				InputStream is=null;
-				try {
-					String name = this.partName.getName();
-					
-					try {
-						this.setContentLengthAsLoaded(
-								partStore.getPartSize( name.substring(1)));
-					} catch (UnsupportedOperationException uoe) {}
-					
-					is = partStore.loadPart( name.substring(1));
-					if (is==null) {
-						log.warn(name + " missing from part store");
-					} else {
-						res = BufferUtil.readInputStream(is);
-						// Store buffer thru soft reference so it could be
-						// unloaded by the java vm if free memory is low.
-						this.bbRef = new SoftReference<ByteBuffer>(res);
-					}
-				} catch (Docx4JException e) {
-					log.error(e.getMessage(), e);
-				} catch (IOException e) {
-					log.error(e.getMessage(), e);
-				} finally {
-					IOUtils.closeQuietly(is);
-				}
-			
-			}			
-			
+		} 		
+		
+		if (this.getPackage()==null) {
+			log.warn("No package owns this part, and/or you didn't set its contents.");
+			return null;				
 		}
 		
-		res.rewind(); // Don't forget this!
-		return res;
+		// no cached buffer, try to load part data now			
+		PartStore partStore = this.getPackage().getSourcePartStore();
+		if (partStore==null) {
+			log.warn("No PartStore configured for this package");
+			return null;
+		} 
+		
+		
+		InputStream is=null;
+		try {
+			String name = this.partName.getName();
+			
+			try {
+				this.setContentLengthAsLoaded(
+						partStore.getPartSize( name.substring(1)));
+			} catch (UnsupportedOperationException uoe) {}
+			
+			is = partStore.loadPart( name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+			} else {
+				
+//				if (log.isDebugEnabled()) {
+//					Throwable t = new Throwable();
+//					log.debug("Lazy loading of binary part " + name, t);
+//				}
+				
+				bb = BufferUtil.readInputStream(is);
+				bb.rewind();
+				return bb;
+			}
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		} catch (IOException e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+		
+		return null;
+		
 	}
 	
 	/**
