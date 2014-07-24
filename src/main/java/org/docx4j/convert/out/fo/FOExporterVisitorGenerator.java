@@ -231,7 +231,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	
 	
     @Override
-	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) {
+	protected Element handlePPr(FOConversionContext conversionContext, PPr pPrDirect, boolean sdt, 
+			Element currentParent) {
     	Element ret = currentParent;
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
@@ -268,17 +269,28 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			
 			// Now, work out the value for list item label
 			RPr rPrParagraphMark = XmlUtils.deepCopy(rPr);
-	//		System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));		
-			StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark); 
+	//		System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+			if (pPrDirect!=null) {
+				StyleUtil.apply(pPrDirect.getRPr(), rPrParagraphMark);				
+			}
 			
 			if (getLog().isDebugEnabled() && pPr!=null) {				
 				getLog().debug(XmlUtils.marshaltoString(pPr, true, true));					
 			}
         							
 			boolean inlist = false;
+			boolean indentHandledByNumbering = false;
 			
-			Element foBlockElement;
-			if (pPr!=null && pPr.getNumPr()!=null ) {
+			
+			Element foBlockElement = null;
+			Element foListBlock = null;
+			
+//			if (pPr!=null && pPr.getNumPr()!=null ) {
+			if (pPr!=null 
+					&& pPr.getNumPr()!=null 
+					&& pPr.getNumPr().getNumId()!=null
+					&& pPr.getNumPr().getNumId().getVal().longValue()!=0 //zero means no numbering
+					) {
 				
 				inlist = true;
 				
@@ -286,11 +298,17 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				// each list-item. This is not great; DocumentModel will ultimately
 				// allow us to use fo:list-block properly.
 
-				Element foListBlock = document.createElementNS(XSL_FO, 
+				foListBlock = document.createElementNS(XSL_FO, 
 						"list-block");
 				currentParent.appendChild(foListBlock);
+					// That's different to XSL.
+					// Here we end up with block/list-block
+					// cf XSL, where the logic avoids creating 2 elements.
+					// May be easy to fix, if instead of passing in
+					// currentParent, we return block or list-block
+					// from here, and appendChild in the calling code.
 								
-				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
+//				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
 				
 				// Need to apply shading at fo:list-block level
 				if (pPr.getShd()!=null) {
@@ -310,6 +328,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 				Element foListItemLabelBody = document.createElementNS(XSL_FO, 
 						"block");
 				foListItemLabel.appendChild(foListItemLabelBody);
+				
+				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-item-body");
+				foListItem.appendChild(foListItemBody);	
+				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");				
 				
 	        	ResultTriple triple;
 	        	if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
@@ -338,8 +361,19 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        		} 
 	        	} else {
 	        		
-        			// Format the list item label
-        			// OK just to override specific values
+	        		/* Format the list item label
+	        		 * 
+	        		 * Since it turns out (in FOP at least) that the label and the body 
+	        		 * don't have the same vertical alignment 
+	        		 * unless font size is applied at the same level
+	        		 * (ie to both -label and -body, or to the block inside each), 
+	        		 * we have to format the list-item-body as well.
+	        		 * This issue only manifests itself if the font size on
+	        		 * the outer list-block is larger than the font sizes
+	        		 * set inside it.
+	        		 */
+
+	        		// OK just to override specific values
         			// Values come from numbering rPr, unless overridden in p-level rpr
 	        		if(triple.getRPr()==null) {
 	        			
@@ -349,7 +383,10 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        				// EXCEPT for font
 	        				XsltFOFunctions.setFont( conversionContext,  foListItemLabelBody, pPr, rPr,  triple.getNumString());        				
 	        			} else {
-							createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
+
+	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
+	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemBody );
+	        				
 							XsltFOFunctions.setFont( conversionContext,  foListItemLabelBody, pPr, rPrParagraphMark,  triple.getNumString());	        				
 	        			}
 	        			
@@ -364,10 +401,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
         				// .. before taking rPrParagraphMark into account
 	            		StyleUtil.apply(rPrParagraphMark, actual); 
 //	        			System.out.println(XmlUtils.marshaltoString(actual));
+	            		
 						createFoAttributes(conversionContext.getWmlPackage(), actual, foListItemLabel );
-	        			
+						createFoAttributes(conversionContext.getWmlPackage(), actual, foListItemBody );	        			
 	        		}	        		
-	        		
+
+/*	        		
 	        		// Indent (in combination with provisional-distance-between-starts
 	        		// above
 	        		if (triple.getIndent()!=null) {
@@ -376,33 +415,41 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	    				indent.setXslFO(foListBlock);
 	        		}
 	        		
-//	        		// Set the font
-//	        		if (triple.getNumFont()!=null) {
-//	        			String font = PhysicalFonts.getPhysicalFont(conversionContext.getWmlPackage(), triple.getNumFont() );
-//	        			if (font!=null) {
-//	        				foListItemLabelBody.setAttribute("font-family", font );
-//	        			}
-//	        		}
-	        		
-	        		if (triple.getBullet()!=null ) {
-		        		foListItemLabelBody.setTextContent(triple.getBullet() );
-		        	} else if (triple.getNumString()==null) {
-		        		getLog().warn("computed NumString was null!");
-		        		if (getLog().isDebugEnabled() ) {
-		        			foListItemLabelBody.setTextContent("nns");
-		        		} 
-			    	} else {
-						Text number = document.createTextNode( triple.getNumString() );
-						foListItemLabelBody.appendChild(number);		    		
-			    	}
+	*/      
 	        	}
-				
-				Element foListItemBody = document.createElementNS(XSL_FO, 
-						"list-item-body");
-				foListItem.appendChild(foListItemBody);	
 
-				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
+    			int numChars=1;	        		
+        		if (triple.getBullet()!=null ) {
+	        		foListItemLabelBody.setTextContent(triple.getBullet() );
+	        	} else if (triple.getNumString()==null) {
+	        		getLog().warn("computed NumString was null!");
+	        		if (getLog().isDebugEnabled() ) {
+	        			foListItemLabelBody.setTextContent("nns");
+	        		} 
+	        		numChars=0;		        		
+		    	} else {
+					Text number = document.createTextNode( triple.getNumString() );
+					foListItemLabelBody.appendChild(number);
+					numChars = triple.getNumString().length();						
+		    	}
 				
+        		// Indent (setting provisional-distance-between-starts)
+        		// Indent on direct pPr trumps indent in pPr in numbering, which trumps indent
+    			// specified in a style.  Well, not exactly, components which aren't set in
+        		// the direct formatting will be contributed by the numbering's indent settings
+        		Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+        		if (indent.isHanging() ) {
+    				indent.setXslFOListBlock(foListBlock, -1);	        			
+        		} else {
+        			
+        			int numWidth = 90 * numChars; // crude .. TODO take font size into account
+        			
+        		    int pdbs = XsltFOFunctions.getDistanceToNextTabStop(conversionContext, indent.getNumberPosition(), numWidth,
+        		    		pPrDirect.getTabs(), conversionContext.getWmlPackage().getMainDocumentPart().getDocumentSettingsPart());
+    				indent.setXslFOListBlock(foListBlock, pdbs);	        				        			
+        		}
+				indentHandledByNumbering = true; 				
+								
 				foBlockElement = document.createElementNS(XSL_FO, 
 						"block");
 				foListItemBody.appendChild(foBlockElement);
@@ -423,7 +470,14 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			}
 			
 			if (rPr!=null) {											
-				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
+//				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
+				
+				if (foListBlock==null) {
+					createFoAttributes(conversionContext.getWmlPackage(), rPr, currentParent );
+				} else {
+					createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)foListBlock) );					
+				}
+				
 	        }
         
 						

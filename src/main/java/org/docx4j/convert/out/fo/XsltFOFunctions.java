@@ -405,6 +405,11 @@ public class XsltFOFunctions {
 						"fo:block");
 				foListItemLabel.appendChild(foListItemLabelBody);
 				
+				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-item-body");
+				foListItem.appendChild(foListItemBody);	
+				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
+				
 	        	ResultTriple triple;
 	        	if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
 	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
@@ -424,6 +429,8 @@ public class XsltFOFunctions {
 			        			ilvlString ); 		        	
 	        		}
 	        	}
+	        	
+	        	
 				
 				if (triple==null) {
 					log.warn("computed number ResultTriple was null");
@@ -433,7 +440,18 @@ public class XsltFOFunctions {
 	        		} 
 	        	} else {
 
-        			// Format the list item label
+	        		/* Format the list item label
+	        		 * 
+	        		 * Since it turns out (in FOP at least) that the label and the body 
+	        		 * don't have the same vertical alignment 
+	        		 * unless font size is applied at the same level
+	        		 * (ie to both -label and -body, or to the block inside each), 
+	        		 * we have to format the list-item-body as well.
+	        		 * This issue only manifests itself if the font size on
+	        		 * the outer list-block is larger than the font sizes
+	        		 * set inside it.
+	        		 */
+	        		
         			// OK just to override specific values
         			// Values come from numbering rPr, unless overridden in p-level rpr
 	        		if(triple.getRPr()==null) {
@@ -445,7 +463,10 @@ public class XsltFOFunctions {
 //	        				setFont( context,  foListItemLabelBody, rPr.getRFonts()); 
 	        				setFont( context,  foListItemLabelBody,  pPr,  rPr,  triple.getNumString());
 	        			} else {
+	        				
 							createFoAttributes(context.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
+							createFoAttributes(context.getWmlPackage(), rPrParagraphMark, foListItemBody );	
+							
 //	        				setFont( context,  foListItemLabelBody, rPrParagraphMark.getRFonts()); 	        				
 	        				setFont( context,  foListItemLabelBody,  pPr,  rPrParagraphMark,  triple.getNumString());
 	        			}
@@ -461,8 +482,10 @@ public class XsltFOFunctions {
         				// .. before taking rPrParagraphMark into account
 	            		StyleUtil.apply(rPrParagraphMark, actual); 
 //	        			System.out.println(XmlUtils.marshaltoString(actual));
+	            		
 						createFoAttributes(context.getWmlPackage(), actual, foListItemLabel );
-	        			
+						createFoAttributes(context.getWmlPackage(), actual, foListItemBody );
+						
 	        		}
 	        			        		
 	        		
@@ -509,11 +532,6 @@ public class XsltFOFunctions {
 	        		
 	        	}
 				
-				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
-						"fo:list-item-body");
-				foListItem.appendChild(foListItemBody);	
-
-				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 				
 				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
 						"fo:block");
@@ -621,7 +639,8 @@ public class XsltFOFunctions {
     }
     
     
-    private static int getDistanceToNextTabStop(FOConversionContext context, int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
+    protected static int getDistanceToNextTabStop(FOConversionContext context, int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
+    	// Also used by FOExporterVisitorGenerator, so should be moved
     	    	
 		int pdbs = 0; 
 		int defaultTab = 360;
