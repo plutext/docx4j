@@ -103,6 +103,7 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
         
+        <pathelement location="${m2Repository}/com/google/guava/guava/17.0/guava-17.0.jar"/>
 
 	</path>
 	 
