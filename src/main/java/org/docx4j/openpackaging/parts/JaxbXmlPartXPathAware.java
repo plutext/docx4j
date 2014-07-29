@@ -26,6 +26,7 @@ import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
@@ -278,6 +279,26 @@ implements XPathEnabled<E> {
 		
 	}	
 	
+	private void unwrapUsually(Binder<Node> binder, Node doc) throws JAXBException {
+		
+		jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
+		// Unwrap, so we have eg CTEndnotes, not JAXBElement
+	
+		// .. but we do need to leave it wrapped, 
+		// if there is not @XmlRootElement annotation 
+		if (jaxbElement instanceof org.docx4j.dml.chartDrawing.CTDrawing) {
+			// Check it
+			Object tmp = binder.unmarshal( doc );
+			if (tmp instanceof javax.xml.bind.JAXBElement) {
+				QName qname = ((javax.xml.bind.JAXBElement)tmp).getName();
+				if (qname.equals( org.docx4j.dml.chart.ObjectFactory._UserShapes_QNAME)) {
+					jaxbElement=(E)tmp;	
+				}
+			}
+		}
+				
+	}
+	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may
@@ -313,8 +334,8 @@ implements XPathEnabled<E> {
 			binder.setEventHandler(eventHandler);
 			
 			try {
-				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
-					// Unwrap, so we have eg CTEndnotes, not JAXBElement
+				unwrapUsually(binder,  doc);  // unlikely to need this in the code below
+					
 			} catch (Exception ue) {
 
 				if (ue instanceof UnmarshalException) {
@@ -423,7 +444,10 @@ implements XPathEnabled<E> {
 			binder.setEventHandler(eventHandler);
 			
 			try {
-				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
+//				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
+				unwrapUsually(binder,  el);  // unlikely to need this in the code below
+				
+				
 			} catch (Exception ue) {
 				if (ue instanceof UnmarshalException) {
 					// Usually..

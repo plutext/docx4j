@@ -19,17 +19,13 @@
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.jaxb.Context;
 
 public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 
@@ -62,6 +58,8 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 			return new Chart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT_HEADER)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutHeaderPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_CHART_SHAPES)) {
+			return new ChartShapePart(new PartName(partName));
 		}
 		else {
 			throw new PartUnrecognisedException("No subclass found for "

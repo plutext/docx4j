@@ -262,6 +262,9 @@ public class Namespaces {
 	// since it is also used in PresentationML
 	public final static String SPREADSHEETML_CHART =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
+	
+	public final static String CHART_USER_SHAPES =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes";	
 
 	// /xl/comments1.xml 
 	public final static String SPREADSHEETML_COMMENTS =

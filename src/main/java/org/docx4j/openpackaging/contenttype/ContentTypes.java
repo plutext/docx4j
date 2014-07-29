@@ -301,6 +301,9 @@ public class ContentTypes {
 	public final static String DRAWINGML_DRAWING =
 		"application/vnd.openxmlformats-officedocument.drawing+xml";
 
+	public final static String DRAWINGML_CHART_SHAPES =
+			"application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml";	
+
 	public final static String VML_DRAWING =
 		"application/vnd.openxmlformats-officedocument.vmlDrawing";
 	
