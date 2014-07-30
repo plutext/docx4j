@@ -99,7 +99,6 @@ import javax.xml.bind.annotation.XmlType;
     "oMath",
     "rPrChange"
 })
-@XmlRootElement(name = "rPr")
 public class ParaRPr implements Child
 {
 

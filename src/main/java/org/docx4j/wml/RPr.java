@@ -93,7 +93,7 @@ import javax.xml.bind.annotation.XmlType;
     "oMath",
     "rPrChange"
 })
-@XmlRootElement(name = "rPr")
+@XmlRootElement(name = "rPr") // shouldn't really be here, since ParaRPr is also w:rPr
 public class RPr
     implements Child
 {
