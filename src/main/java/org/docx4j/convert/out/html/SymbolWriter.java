@@ -78,7 +78,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	    Element span = doc.createElement("span");
 	    docfrag.appendChild(span);
 		
-	    span.setAttribute("style", "font-family:" + pf.getName() );
+	    span.setAttribute("style", "font-family: '" + pf.getName() + "'" );
 	    span.appendChild( theChar );
 	}
     

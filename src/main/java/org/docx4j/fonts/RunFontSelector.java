@@ -1011,7 +1011,7 @@ public class RunFontSelector {
 		String font = getPhysicalFont(fontName);
 		
 		if (font!=null) {					
-			return Property.composeCss(CSS_NAME, font );
+			return Property.composeCss(CSS_NAME, "'" + font + "'");
 		} else {
 			log.warn("No mapping from " + font);
 			return Property.CSS_NULL;
