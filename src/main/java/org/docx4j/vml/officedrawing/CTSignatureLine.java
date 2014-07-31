@@ -69,32 +69,50 @@ public class CTSignatureLine implements Child
 
     @XmlAttribute(name = "issignatureline")
     protected STTrueFalse issignatureline;
+    
     @XmlAttribute(name = "id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String id;
+    
     @XmlAttribute(name = "provid")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String provid;
+    
     @XmlAttribute(name = "signinginstructionsset")
     protected STTrueFalse signinginstructionsset;
+    
     @XmlAttribute(name = "allowcomments")
     protected STTrueFalse allowcomments;
+    
     @XmlAttribute(name = "showsigndate")
     protected STTrueFalse showsigndate;
+    
     @XmlAttribute(name = "suggestedsigner", namespace = "urn:schemas-microsoft-com:office:office")
     protected String suggestedsigner;
+    
     @XmlAttribute(name = "suggestedsigner2", namespace = "urn:schemas-microsoft-com:office:office")
     protected String suggestedsigner2;
+    
     @XmlAttribute(name = "suggestedsigneremail", namespace = "urn:schemas-microsoft-com:office:office")
     protected String suggestedsigneremail;
-    @XmlAttribute(name = "signinginstructions")
+    
+    // v3.2.0: namespace added manually to the three below; see https://github.com/plutext/docx4j/issues/121 
+    // (compare xsd/vml/vml-officedrawing.xsd)
+    
+    @XmlAttribute(name = "signinginstructions", namespace = "urn:schemas-microsoft-com:office:office")
     protected String signinginstructions;
-    @XmlAttribute(name = "addlxml")
+    
+    @XmlAttribute(name = "addlxml", namespace = "urn:schemas-microsoft-com:office:office")
     protected String addlxml;
-    @XmlAttribute(name = "sigprovurl")
+    
+    @XmlAttribute(name = "sigprovurl", namespace = "urn:schemas-microsoft-com:office:office")
     protected String sigprovurl;
+    
+    // -- end manually added namespaces
+    
     @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
+    
     @XmlTransient
     private Object parent;
 
