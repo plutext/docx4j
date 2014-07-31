@@ -1028,7 +1028,7 @@ public class RunFontSelector {
 //			log.debug("Call stack", t);
 //		}		
 
-		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+		PhysicalFont pf = wordMLPackage.getFontMapper().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
 			return pf.getName();
@@ -1037,21 +1037,27 @@ public class RunFontSelector {
 			// This is ok if it happens 
 			// at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.fontsInUse(MainDocumentPart.java:238)
 			// at org.docx4j.openpackaging.packages.WordprocessingMLPackage.setFontMapper(WordprocessingMLPackage.java:311)
-
-			
-
+			// Can suppress warning with either:
+//				StackTraceElement[] ste= (new Throwable()).getStackTrace();
+//				if (ste[2].getMethodName().equals("fontsInUse")) {
+			// or
+//				if (wordMLPackage.getFontMapper().getFontMappings().size()==0) {
 			
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
 			String englishFromCJK = CJKToEnglish.toEnglish( fontName);
 			if (englishFromCJK==null) {
-				log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
+				if (wordMLPackage.getFontMapper().size()>0) {
+					log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
+				}
 				return null;
 			} else {
-				pf = wordMLPackage.getFontMapper().getFontMappings().get(englishFromCJK);
+				pf = wordMLPackage.getFontMapper().get(englishFromCJK);
 			}
 			
 			if (pf==null) {
-				log.warn("Font '" + englishFromCJK + "' is not mapped to a physical font. " );
+				if (wordMLPackage.getFontMapper().size()>0) {
+					log.warn("Font '" + englishFromCJK + "' is not mapped to a physical font. " );
+				}
 				return null;
 			}
 			
