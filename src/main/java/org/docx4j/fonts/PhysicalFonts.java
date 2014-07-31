@@ -43,10 +43,36 @@ public class PhysicalFonts {
 	
 	/** These are the physical fonts on the system which we have discovered. */ 
 	private final static Map<String, PhysicalFont> physicalFontMap;
+	
+	@Deprecated // want to enforce case insensitive
 	public static Map<String, PhysicalFont> getPhysicalFonts() {
 		return physicalFontMap;
 	}
-
+	
+	/**
+	 * Get a PhysicalFont 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static PhysicalFont get(String key) {
+		return physicalFontMap.get(key.toLowerCase());
+	}
+	/**
+	 * Put a PhysicalFont 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @param pf
+	 */
+	public static void put(String key, PhysicalFont pf) {
+		physicalFontMap.put(key.toLowerCase(), pf);
+	}
 
 	private final static Map<String, PhysicalFont> physicalFontMapByFilenameLowercase;
 	
@@ -379,20 +405,27 @@ public class PhysicalFonts {
 		        if (pf!=null) {
 		        	
 		        	// Add it to the map
-		        	physicalFontMap.put(pf.getName(), pf);
+		        	put(pf.getName(), pf);
 		    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
 
-				if (nameAsInFontTablePart != null && !physicalFontMap.containsKey(nameAsInFontTablePart)) {
-					physicalFontMap.put(nameAsInFontTablePart, pf);
+				if (nameAsInFontTablePart != null 
+						&& get(nameAsInFontTablePart)==null) {
+					
+					put(nameAsInFontTablePart, pf);
 					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
 				}
 		    		
 		    		// We also need to add it to map by filename
 		    		String filename = pf.getEmbeddedFile();
+		    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
+		    				    		
 		    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
 		    		
 		    		if (osName.startsWith("Mac")) {
 		    			filename = filename.replace("%20", " "); 
+		    			/* there are a few like this on Windows as well, but they're exotic, 
+		    			 * eg  biondi%20light.ttf catriel ligurino *Tiger* tandelle
+		    			 */
 		    		}
 		    		physicalFontMapByFilenameLowercase.put(filename, pf);
 		    		log.debug("added to filename map: " + filename);
@@ -521,7 +554,7 @@ public class PhysicalFonts {
 			log.error("Implement me for pptx4j");
 			return null;
 		}
-		PhysicalFont pf = ((WordprocessingMLPackage)wmlPackage).getFontMapper().getFontMappings().get(fontName);
+		PhysicalFont pf = ((WordprocessingMLPackage)wmlPackage).getFontMapper().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
 			return pf.getName();

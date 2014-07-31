@@ -248,7 +248,7 @@ public class BestMatchingMapper extends Mapper {
 	        // last time.  We don't need to do it again, unless
 	        // new physical fonts have been added (eg via
 	        // an embedding)
-	        if (fontMappings.get(documentFontName) != null ) {
+	        if (get(documentFontName) != null ) {
 	        	log.info(documentFontName + " already mapped.");
         		if ( lastSeenNumberOfPhysicalFonts == 
         				PhysicalFonts.getPhysicalFonts().size() ) {
@@ -326,7 +326,7 @@ public class BestMatchingMapper extends Mapper {
 					
 					if (fontMatched!=null) {
 					
-					fontMappings.put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
+					put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
 					log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
 							+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
 					} else {
@@ -481,7 +481,7 @@ public class BestMatchingMapper extends Mapper {
 			}
 			
 			if (fontMatched!=null) {
-				fontMappings.put(documentFontName, fontMatched);
+				put(documentFontName, fontMatched);
 				log.warn("Mapped " +  documentFontName  + " -->  " + fontMatched.getName() 
 						+ "( "+ fontMatched.getEmbeddedFile() );
 			} else {

@@ -92,7 +92,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		R.Sym modelData = (R.Sym)unmarshalledNode;
 		String fontName = modelData.getFont();
 		String textValue =  modelData.getChar();
-		PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
+		PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
 		char chValue = '\0';
 		Typeface typeface = null;
 	  

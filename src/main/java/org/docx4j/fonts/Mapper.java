@@ -68,9 +68,39 @@ public abstract class Mapper {
 	}
 	
 	protected final static Map<String, PhysicalFont> fontMappings;
+	
+	@Deprecated // in order to avoid case sensitivity
 	public Map<String, PhysicalFont> getFontMappings() {
 		return fontMappings;
 	}	
+	
+	/**
+	 * Get a PhysicalFont from FontMappings, 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public PhysicalFont get(String key) {
+		return fontMappings.get(key.toLowerCase());
+	}
+	/**
+	 * Put a PhysicalFont into FontMappings, 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @param pf
+	 */
+	public void put(String key, PhysicalFont pf) {
+		fontMappings.put(key.toLowerCase(), pf);
+	}
+	public int size() {
+		return fontMappings.size();
+	}
 	
 	public final static String FONT_FALLBACK = "Times New Roman"; 
 
@@ -109,7 +139,7 @@ public abstract class Mapper {
 
 		
 		
-		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
+		PhysicalFont physicalFont = get((documentStyleId));
 		if (physicalFont==null) {
 
 			log.error("No mapping for: " + documentStyleId);

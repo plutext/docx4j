@@ -115,7 +115,7 @@ public class FopConfigUtil {
 		
 		for (String fontName : fontsInUse) {		    
 		    
-		    PhysicalFont pf = fontMapper.getFontMappings().get(fontName);
+		    PhysicalFont pf = fontMapper.get(fontName);
 		    
 		    if (pf==null) {
 		    	log.error("Document font " + fontName + " is not mapped to a physical font!");

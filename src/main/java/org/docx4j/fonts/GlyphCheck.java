@@ -52,7 +52,7 @@ public class GlyphCheck {
 
 	public static boolean hasChar(String fontName, char c) throws ExecutionException {
 		
-		PhysicalFont pf = PhysicalFonts.getPhysicalFonts().get(fontName);
+		PhysicalFont pf = PhysicalFonts.get(fontName);
 		if (pf==null) {
 			log.error("Couldn't get font " + fontName);
 			return false;

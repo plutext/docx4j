@@ -67,7 +67,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	DocumentFragment docfrag = doc.createDocumentFragment();
 	
 	String fontName = modelData.getFont();
-	PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
+	PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
 
 	if (pf==null) {
 		log.warn("No physical font present for:" + fontName);		

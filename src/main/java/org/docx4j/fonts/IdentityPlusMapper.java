@@ -114,12 +114,12 @@ public class IdentityPlusMapper extends Mapper {
 
 		for( String documentFontname : documentFontNames) {
 	        log.debug("Document font: " + documentFontname);
-	        PhysicalFont mappedTo = PhysicalFonts.getPhysicalFonts().get(documentFontname);
+	        PhysicalFont mappedTo = PhysicalFonts.get(documentFontname);
 	        if ( mappedTo!=null ) {
 	        	
 	        	// An identity mapping; that is all
 	        	// this class knows how to do!
-        		fontMappings.put(documentFontname,         				 
+        		put(documentFontname,         				 
         				mappedTo );	
         			log.debug(".. mapped to " + mappedTo.getName() );
 	        } else {
