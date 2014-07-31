@@ -356,7 +356,9 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	// ----------------------------------------------------------
 	
 	/**
-	 * Loads a pre-existing target part.
+	 * Loads a pre-existing target part into the package
+	 * (but does not load its contents as such; that is
+	 *  done elsewhere).
 	 * 
 	 * The target part is assumed to be specified already in this 
 	 * relationship part. 

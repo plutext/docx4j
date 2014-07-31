@@ -335,6 +335,10 @@ public class Load3 extends Load {
 			part.setRelationshipType(relationshipType);
 		}
 		rp.loadPart(part, r);
+		 // That loads a pre-existing target part into the package
+		 // (but does not load its contents as such; that is
+		 //  done elsewhere).
+		
 		pkg.handled.put(resolvedPartUri, resolvedPartUri);
 
 		
@@ -431,6 +435,9 @@ public class Load3 extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
+					
+					// Note that this is done lazily, since the below lines are commented out
+					
 //					is = partStore.loadPart( resolvedPartUri);
 //					((BinaryPart)part).setBinaryData(is);
 

@@ -118,6 +118,14 @@ public abstract class JaxbXmlPart<E> extends Part {
 		InputStream is = null;
 		if (jaxbElement==null) {
 			PartStore partStore = this.getPackage().getSourcePartStore();
+			if (partStore==null) {
+				log.warn("No PartStore defined for this package (it was probably created, not loaded). " );
+				log.warn(partName.getName() + ": did you initialise its contents to something?");
+				return null;
+				// or we could create it, with a bit of effort;
+				// as to which see http://stackoverflow.com/questions/1090458/instantiating-a-generic-class-in-java
+			} 			
+			
 			try {
 				String name = this.partName.getName();
 				

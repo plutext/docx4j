@@ -70,7 +70,7 @@ public class CreateHelloWorld  {
 				
 		// Create and add shape
 		Shape sample = ((Shape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
-		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
+		slidePart.getContents().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
 		
 		// All done: save it
 		presentationMLPackage.save(new java.io.File(outputfilepath));

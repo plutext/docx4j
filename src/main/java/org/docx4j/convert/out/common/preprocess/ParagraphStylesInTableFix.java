@@ -218,7 +218,7 @@ public class ParagraphStylesInTableFix {
 //	    	cellPStyles = new HashSet<String>(); 
 	    	
 	    	for (Style s : newStyles.getStyle()) {
-	    		System.out.println(s.getStyleId());
+//	    		System.out.println(s.getStyleId());
 	    		allStyles.put(s.getStyleId(), s);
 	    	}
 	    }
@@ -303,7 +303,7 @@ public class ParagraphStylesInTableFix {
 			Style basedOn = null;
 			String currentStyle = styleVal;
 			do {
-				System.out.println("Getting " + currentStyle);
+//				System.out.println("Getting " + currentStyle);
 				Style thisStyle = allStyles.get(currentStyle);
 				hierarchy.add(thisStyle);
 				if (thisStyle.getBasedOn()!=null) {

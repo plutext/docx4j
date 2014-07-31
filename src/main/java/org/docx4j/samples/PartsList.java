@@ -26,11 +26,8 @@ import java.util.HashMap;
 
 import javax.xml.bind.JAXBElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -39,6 +36,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class PartsList extends AbstractSample {
@@ -75,6 +74,9 @@ public class PartsList extends AbstractSample {
 		
 		System.out.println(sb.toString());
 		
+//		opcPackage.save( new File(System.getProperty("user.dir") + "/OUT_chart_drawing.xlsx")); 
+		
+		
 	}
 	
 	/**
@@ -100,13 +102,13 @@ public class PartsList extends AbstractSample {
 //		System.out.println("//" + p.getPartName() );
 //		System.out.println("public final static String XX =");
 //		System.out.println("\"" +  relationshipType +  "\";");
-		
+
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
 			if (o instanceof javax.xml.bind.JAXBElement) {
 				sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 			} else {
-				sb.append(" containing JaxbElement:"  + o.getClass().getName() );
+				sb.append(" containing:"  + o.getClass().getName() );
 			}
 		} else if (p instanceof DefaultXmlPart) {
 			try {
@@ -115,7 +117,7 @@ public class PartsList extends AbstractSample {
 				if (o instanceof javax.xml.bind.JAXBElement) {
 					sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 				} else {
-					sb.append(" containing JaxbElement:"  + o.getClass().getName() );
+					sb.append(" containing:"  + o.getClass().getName() );
 				}				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
