@@ -82,7 +82,7 @@ public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D>
            CTCustomGeometry2D geom = (CTCustomGeometry2D)XmlUtils.unmarshal(node, Context.jc, CTCustomGeometry2D.class);
 
            if(containsKey(name)) {
-               log.warn("Duplicate definition of " + name) ;  // happens for upDownArrow
+               log.warn("Duplicate definition of " + name) ;  // happened for upDownArrow; that dupe now commented out
            }
            put(name, geom);
            

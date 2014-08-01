@@ -22,7 +22,7 @@ import org.pptx4j.Pptx4jException;
  * 
  * See further http://blogs.msdn.com/b/openspecification/archive/2011/11/14/how-to-use-the-presetshapedefinitions-xml-file-and-fun-with-drawingml.aspx
  * 
- * Note: upArrow seems to be missing, and leftArrow corrupts the pptx!
+ * Note: leftArrow corrupts the pptx, so it is not converted here.  Someone motivated might explore why?
  * 
  * @author jharrop
  */
