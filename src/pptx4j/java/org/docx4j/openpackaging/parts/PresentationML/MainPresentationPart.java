@@ -434,6 +434,9 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	 * @since 3.0.1
 	 */
 	public SlidePart getSlide(int index) throws Pptx4jException {
+
+		ensureContent();
+		ensureSldIdLst();
 		
 		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
 		
@@ -452,6 +455,42 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 	}
 	
+	private void ensureContent() throws Pptx4jException {
+		try {
+			if (this.getContents()==null ) {
+				throw new Pptx4jException("MainPresentationPart has no content");
+			}
+			
+		} catch (Docx4JException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}		
+	}
+
+	private void ensureSldIdLst() throws Pptx4jException {
+		try {
+			if (this.getContents().getSldIdLst()==null) {
+				throw new Pptx4jException("SldIdLst missing from MainPresentationPart");
+			}
+			
+		} catch (Docx4JException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}		
+	}
 	
+	/**
+	 * @param index
+	 * @throws Pptx4jException 
+	 * @since 3.2.0
+	 */
+	public int getSlideCount() throws Pptx4jException {
+
+		ensureContent();
+		ensureSldIdLst();
+		
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		return sldIds.size(); 
+
+	}
 	
 }
