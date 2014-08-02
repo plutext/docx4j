@@ -209,6 +209,10 @@ public class FOPAreaTreeHelper {
      */
     static void calculateHFExtents(org.w3c.dom.Document areaTree, Map<String, Integer> headerBpda, Map<String, Integer> footerBpda) {
     	
+    	if (log.isDebugEnabled()) {
+    		log.debug(XmlUtils.w3CDomNodeToString(areaTree));
+    	}
+    	
     	/*
 			<areaTree version="2.0">
 			  <pageSequence>

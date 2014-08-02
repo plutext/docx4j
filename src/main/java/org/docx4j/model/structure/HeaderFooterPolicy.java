@@ -205,6 +205,16 @@ public class HeaderFooterPolicy {
 				if (evenFooter == null) {
 					evenFooter = getDummyFooter();
 				}
+				
+				// Experimental: 2014 08 01; required for FOPAreaTreeHelper;
+				// (without this, where no header is defined in the docx,
+				//  xsl-region-before-default is not created)
+				if (defaultHeader == null) {
+					defaultHeader = getDummyHeader();
+				}
+				if (defaultFooter == null) {
+					defaultFooter = getDummyFooter();
+				}
 			}
 			else {
 				// Per spec, use odd only.  Any even header/footer will be ignored
