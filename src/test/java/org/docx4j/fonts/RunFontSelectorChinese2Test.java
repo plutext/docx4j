@@ -40,11 +40,11 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class RunFontSelectorChineseTest {
+public class RunFontSelectorChinese2Test {
 	
 	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
 	
-	static String[] expectedFont = { "SimSun", "SimSun","SimSun","SimSun","SimSun","SimSun","","SimSun","Times New Roman" };
+	static String[] expectedFont = { "SimSun", "SimSun","SimSun","SimSun","SimSun","SimSun","Times New Roman","SimSun","Times New Roman" };
 	
 	@Test
 	public  void testFont() throws Exception {
@@ -81,8 +81,12 @@ public class RunFontSelectorChineseTest {
 		
 		RunFontSelector rfs = createRunFontSelector(wordMLPackage);
 		
+		
+		
 		// For each w:p, test w:r/w:t
 		for (int i=0; i<document.getContent().size(); i++) {
+
+//			System.out.println(i);
 			
 			P p = (P)document.getContent().get(i);
 			

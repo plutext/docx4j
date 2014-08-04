@@ -283,7 +283,7 @@ public class RunFontSelector {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     		} else {	
-    			el.setAttribute("font-family", getPhysicalFont(fontName) );
+    			el.setAttribute("font-family", val );
     		}
     		
 			// Any reason not to always do this?
@@ -835,13 +835,13 @@ public class RunFontSelector {
         	    	
         	    	if (eastAsia==null) {
         	    		
-            	    	// 2014 02 18 - not necessarily Japanese!
-            	    	// eg 五、劳动报酬 is Chinese
 	    				vis.fontAction(hAnsi); 
 	    				debugCheckGlyph(hAnsi, c);
 
         	    	} else {
-	        	    	// Japanese
+        	    		// Japanese
+            	    	// 2014 02 18 - not necessarily!
+            	    	// eg 五、劳动报酬 is Chinese
 	    				vis.fontAction(eastAsia); 
 	    				debugCheckGlyph(eastAsia, c);
         	    	}
