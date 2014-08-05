@@ -178,7 +178,15 @@ public class ContentTypes {
 	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";	
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
+	
+	// .pptm
+	public final static String PRESENTATIONML_MACROENABLED = 
+			"application/vnd.ms-powerpoint.presentation.macroEnabled.main+xml";
+	// .potm |
+	public final static String PRESENTATIONML_TEMPLATE_MACROENABLED = 
+			"application/vnd.ms-powerpoint.template.macroEnabled.main+xml";
+	
 	// .potx | 
 	public final static String PRESENTATIONML_TEMPLATE = 
 		"application/vnd.openxmlformats-officedocument.presentationml.template.main+xml";

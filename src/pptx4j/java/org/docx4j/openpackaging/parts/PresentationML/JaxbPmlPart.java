@@ -106,7 +106,10 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 	throws InvalidFormatException, PartUnrecognisedException {
 		
 		if (contentType.equals(ContentTypes.PRESENTATIONML_MAIN)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) ) {
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+				) {
 			return new MainPresentationPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE)) {
 			return new SlidePart(new PartName(partName));

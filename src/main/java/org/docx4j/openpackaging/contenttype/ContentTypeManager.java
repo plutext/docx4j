@@ -409,7 +409,11 @@ public class ContentTypeManager  {
 			} catch (Exception e) {
 				return new BinaryPart( new PartName(partName));				
 			}
-		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentation")
+				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+						) {
 			try {
 				return JaxbPmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
@@ -804,6 +808,8 @@ public class ContentTypeManager  {
 			return p;
 		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
