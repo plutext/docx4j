@@ -1,6 +1,140 @@
 CHANGELOG
 =========
 
+
+Version 3.2.0 
+=============
+
+
+Release date
+------------
+
+__ August 2014
+
+
+Contributors to this release
+----------------------------
+
+BobFleischman
+apixandru
+Jason Harrop
+
+
+Dependency changes
+------------------
+
+31mb1c1646 Add new dependency com.google.guava
+
+
+Notable Changes in Version 3.2.0
+---------------------------------
+
+FO/PDF output: miscellaneous improvements, including:
+
+   header/footer height calculation
+   Support for table row w:cantsplit property   
+   ParagraphStylesInTableFix enhancements
+   support FOP config font substitutions
+   formatting of list item label   
+   generally use per class logging, since this makes it easier to see where the message is generated 
+   New property "docx4j.fonts.microsoft.MicrosoftFonts"  (defaults to "org/docx4j/fonts/microsoft/MicrosoftFonts.xml"), so that file can be overridden outside the jar
+   Add GlyphCheck; improve support for Arial Unicode MS 
+   For Wingding etc symbols, use hAnsi font ; https://github.com/plutext/docx4j/issues/118 
+   PDF events
+   PDF (non XLST): support nested tables
+   Workaround for missing space before fo:page-number-citation-last in FOP 1.1 output
+   FO support for ptab align right 
+   Create a suitable ConversionSectionWrapper, when continuous sectPr encountered, by using header/footer details from the previous sectPr
+   Where appropriate (ie different page size), insert a page break
+   Support css line-height 
+   In HTML|FO\PDF output, ensure tblPr is not null - Try to behave gracefully if broken style is encountered (ie missing @w:type or @w:styleId) 
+   w:br in FO output: Handling of vertical space 
+
+31m0c0e45d *API change*  getContents now throws Docx4JException, instead of returning null in the case of error. 
+
+
+New docx4j.properties
+---------------------
+
+31mf0fbd9f User can override org/docx4j/jaxb/mc-preprocessor.xslt with an xslt on their classpath named custom-preprocessor.xslt
+
+	# PDF output; ability to specify font substitutions.  See src/samples/_resources
+	# Avoid using both this and fontMapper.getFontMappings() for the same fonts!
+	#docx4j.fonts.fop.util.FopConfigUtil.substitutions=fop-substitutions.xml
+	
+	# Defaults to org/docx4j/fonts/microsoft/MicrosoftFonts.xml
+	# which is contained in the docx4j jar
+	# If you need to override it in order to provide different file names for
+	# one or more fonts, start by extracting and editing a copy of the existing file
+	docx4j.fonts.microsoft.MicrosoftFonts=org/docx4j/fonts/microsoft/MicrosoftFonts.xml
+	
+	# In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000"
+	# Set this to true to use w:highlight instead 
+	#docx4j.model.properties.PropertyFactory.createPropertyFromCssName.background-color.useHighlightInRPr=false
+	
+	# Defaults to org/docx4j/jaxb/mc-preprocessor.xslt
+	docx4j.jaxb.JaxbValidationEventHandler=custom-preprocessor.xslt
+	
+	# The styles part content used by WordprocessingMLPackage createPackage
+	# and by getStyleDefinitionsPart(true) where the styles part is null
+	docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.DefaultStyles=org/docx4j/openpackaging/parts/WordprocessingML/styles.xml
+	
+	# Used to try to activate a style (PropertyResolver.activateStyle) which isn't defined in the styles part
+	docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.KnownStyles=org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml
+	
+	docx4j.openpackaging.parts.WordprocessingML.FontTablePart.DefaultFonts=org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml
+	
+	docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.DefaultNumbering=org/docx4j/openpackaging/parts/WordprocessingML/numbering.xml
+	
+	# Embedded Fonts - extract to dir
+	# By default, docx4j will extract embedded fonts to dir 
+	# ~/.docx4all/temporary embedded fonts
+	# (creating it if necessary).
+	#docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir=c:\\temp
+   
+
+Other Changes (non-exhaustive)
+------------------------------
+
+   
+31mff84cf0  DocumentModel: use SectPrFinder to find the sectPr (which means it will now find sectPr inside content controls) 
+
+31m0700196  preset Shape definitions
+
+31mfbef8b9 Map font names case-insensitive, since Word treats w:rFonts attribute values case-insensitive.
+
+31mfa767f6 RPr and ParaRPr inherit from RPrAbstract
+
+31m7c9dd58 signature line attributes: add namespace; fixes https://github.com/plutext/docx4j/issues/121 
+
+31m543713f Support for part representing userShapes added to a chart
+
+31m265ee8b fixed code that generates textId (BobFleischman)
+
+31m9a8b75c BinaryPart: Tidy up code and remove soft reference ByteBuffer. 
+
+Import XHTML
+
+    31m85b7a4d  In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000" Now you can configure it to use w:highlight instead
+
+    31m810ed9b LineSpacing: handle the CSS default 'normal' sensibly when importing 
+
+31mdbf7dee StyleUtil: changes to isEmpty and apply semantics for Style objects
+ 
+31m3845825 StyleUtil changes: - change to isEmpty semantics for Integer, BigInteger so that a value of 0 is not treated as empty (since otherwise eg spaceAfter 0 isn't applied) - pPr includes sectPr, so add PARTIAL implementation of areEqual and apply for sectPr
+
+31mea22fb6  make jc final. it's used in a lot of places but only assigned once. (apixandru)
+
+31m8edaddf For Oracle Java 8, use com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl and com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
+
+31mdf84571 Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx 
+
+
+
+
+
+
+
 Version 3.1.0 
 =============
 

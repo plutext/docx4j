@@ -359,7 +359,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 			normal.setName(n);
 			this.getJaxbElement().getStyle().add(normal);	
 			
-			normal.setDefault(Boolean.TRUE); // @since 3.1.1
+			normal.setDefault(Boolean.TRUE); // @since 3.2.0
 		}
 		
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
@@ -432,7 +432,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     
     private Style defaultParagraphStyle;
     /**
-     * if this returns null; invoke createVirtualStylesForDocDefaults() @since 3.1.1 then try again
+     * if this returns null; invoke createVirtualStylesForDocDefaults() @since 3.2.0 then try again
      * 
      * @return
      */

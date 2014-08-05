@@ -39,7 +39,7 @@ public class ResourceUtils {
      * @param defaultPath
      * @return
      * @throws java.io.IOException
-     * @since 3.1.1
+     * @since 3.2.0
      */
     public static java.io.InputStream getResourceViaProperty(String propName, String defaultPath) throws java.io.IOException
     {
