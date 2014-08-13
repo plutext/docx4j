@@ -111,6 +111,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectSignatureBin;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
@@ -382,6 +383,8 @@ public class ContentTypeManager  {
 			return new VbaDataPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT)) {
 			return new VbaProjectBinaryPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT_SIGNATURE)) {
+			return new VbaProjectSignatureBin(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {

@@ -99,6 +99,12 @@ public class ContentTypes {
 
 	public final static String OFFICEDOCUMENT_VBA_DATA =
 		"application/vnd.ms-word.vbaData+xml";
+
+	/**
+	 * @since 3.2.0
+	 */
+	public final static String OFFICEDOCUMENT_VBA_PROJECT_SIGNATURE =
+			"application/vnd.ms-office.vbaProjectSignature";
 	
 	public final static String OFFICEDOCUMENT_OLE_OBJECT =
 		"application/vnd.openxmlformats-officedocument.oleObject";

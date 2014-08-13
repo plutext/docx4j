@@ -147,6 +147,12 @@ public class Namespaces {
 		"http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 	public final static String VBA_DATA_WORD = 
 		"http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
+	
+	/**
+	 * @since 3.2.0
+	 */
+	public final static String VBA_PROJECT_SIGNATURE = 
+			"http://schemas.microsoft.com/office/2006/relationships/vbaProjectSignature";
 
 	public final static String OLE_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject"; 
