@@ -27,9 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +45,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
-import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -60,11 +57,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.xalan.trace.PrintTraceListener;
-import org.apache.xalan.trace.TraceManager;
-import org.apache.xalan.transformer.TransformerImpl;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -72,7 +64,10 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.utils.XPathFactoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -106,15 +101,35 @@ public class XmlUtils {
 		return transformerFactory;
 	}
 
-	private static DocumentBuilderFactory documentBuilderFactory;
+	final private static DocumentBuilderFactory documentBuilderFactory;
 	/**
 	 * @since 2.8.1
 	 * 
 	 * TODO replace the various DocumentBuilderFactory.newInstance()
 	 * throughout docx4j with a call to this.
 	 */
+	@Deprecated
 	public static DocumentBuilderFactory getDocumentBuilderFactory() {
 		return documentBuilderFactory;
+	}
+
+	/**
+	 * Use the suitably configured DocumentBuilderFactory to provide
+	 * a new instance of DocumentBuilder. Remember that DocumentBuilder is not thread-safe!
+	 * @return
+	 * @since 3.2.0
+	 */
+	public static DocumentBuilder getNewDocumentBuilder() {
+		synchronized (documentBuilderFactory) {
+			// see https://community.oracle.com/thread/1626108 for inconclusive discussion about whether a pool would be worthwhile 
+			try {
+				return documentBuilderFactory.newDocumentBuilder();
+			} catch (ParserConfigurationException e) {
+				// Catch this, since its unlikely to happen 
+				log.error(e.getMessage(), e);
+				return null;
+			}
+		}
 	}
 	
 	static {
@@ -221,6 +236,23 @@ public class XmlUtils {
 		documentBuilderFactory.setNamespaceAware(true);
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory).
 		// Maybe we could, if docx4j always used this documentBuilderFactory.
+		try {
+			documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+		documentBuilderFactory.setXIncludeAware(false);
+		documentBuilderFactory.setExpandEntityReferences(false);
+		try {
+			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+		try {
+			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+//		try {
+//			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+		
+		// see also https://svn.apache.org/repos/asf/shindig/trunk/java/common/src/main/java/org/apache/shindig/common/xml/XmlUtil.java
+		// for how Shindig does it
 		
 	}
 	
@@ -681,10 +713,7 @@ public class XmlUtils {
 
 			Marshaller marshaller = jc.createMarshaller();
 
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-					.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());			
@@ -693,8 +722,6 @@ public class XmlUtils {
 
 			return doc;
 		} catch (JAXBException e) {
-		    throw new RuntimeException(e);
-		} catch (ParserConfigurationException e) {
 		    throw new RuntimeException(e);
 		}
 	}
@@ -707,11 +734,7 @@ public class XmlUtils {
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
-
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-					.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());			
@@ -723,8 +746,6 @@ public class XmlUtils {
 
 			return doc;
 		} catch (JAXBException e) {
-		    throw new RuntimeException(e);
-		} catch (ParserConfigurationException e) {
 		    throw new RuntimeException(e);
 		}
 	}
@@ -833,13 +854,7 @@ public class XmlUtils {
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
 	public static org.w3c.dom.Document neww3cDomDocument() {
 		
-		try {
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			return dbf.newDocumentBuilder().newDocument();
-		} catch (ParserConfigurationException e) {
-                    throw new RuntimeException(e);
-		}		
+		return XmlUtils.getNewDocumentBuilder().newDocument();
 		
 	}
 	
@@ -855,10 +870,7 @@ public class XmlUtils {
 	public static void appendXmlFragment(Document document, Node parent, String fragment)
 			throws IOException, SAXException, ParserConfigurationException {
 
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-				.newDocumentBuilder();
-
-		Node fragmentNode = docBuilder.parse(
+		Node fragmentNode = XmlUtils.getNewDocumentBuilder().parse(
 				new InputSource(new StringReader(fragment)))
 				.getDocumentElement();
 		
