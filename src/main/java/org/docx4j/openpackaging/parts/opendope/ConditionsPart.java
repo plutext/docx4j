@@ -1,18 +1,13 @@
 package org.docx4j.openpackaging.parts.opendope;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.JAXBContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.conditions.Condition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.conditions.Conditions> {
 	

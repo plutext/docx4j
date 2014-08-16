@@ -20,25 +20,17 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import javax.xml.bind.annotation.XmlElement;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.w14.CTDefaultImageDpi;
-import org.docx4j.w14.CTLongHexNumber;
-import org.docx4j.w14.CTOnOff;
-import org.docx4j.w15.CTGuid;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTCompat;
 import org.docx4j.wml.CTCompatSetting;
 import org.docx4j.wml.CTSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 

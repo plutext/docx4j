@@ -22,9 +22,9 @@ package org.docx4j.convert.out.fo;
 import java.io.File;
 import java.net.MalformedURLException;
 
+import org.docx4j.model.images.FileConversionImageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.model.images.FileConversionImageHandler;
 
 /** This is a File-based ImageHandler, for generating images used in FO/PDF-documents
  */

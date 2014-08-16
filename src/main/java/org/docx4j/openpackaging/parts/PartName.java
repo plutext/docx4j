@@ -30,13 +30,12 @@ package org.docx4j.openpackaging.parts;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 

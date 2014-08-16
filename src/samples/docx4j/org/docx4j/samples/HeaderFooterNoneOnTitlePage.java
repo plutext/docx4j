@@ -21,30 +21,13 @@
 package org.docx4j.samples;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.structure.SectionWrapper;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.utils.BufferUtil;
 import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.Hdr;
-import org.docx4j.wml.HdrFtrRef;
-import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.ObjectFactory;
-import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.SectPr;
-import org.docx4j.wml.SectPr.Type;
 
 /**
  * Create a WordML Pkg and add a header to it.

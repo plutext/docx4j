@@ -26,15 +26,6 @@ import java.io.FileInputStream;
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.Docx4J;
-import org.docx4j.XmlUtils;
-import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.OpenDoPEHandler;
-import org.docx4j.model.datastorage.OpenDoPEIntegrity;
-import org.docx4j.model.datastorage.OpenDoPEReverter;
-import org.docx4j.model.datastorage.RemovalHandler;
-import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 

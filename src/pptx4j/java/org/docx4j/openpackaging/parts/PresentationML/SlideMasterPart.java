@@ -23,26 +23,24 @@ package org.docx4j.openpackaging.parts.PresentationML;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTColorMapping;
-import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.pml.CTPlaceholder;
 import org.pptx4j.pml.CommonSlideData;
-import org.pptx4j.pml.Shape;
-import org.pptx4j.pml.SlideLayoutIdList;
 import org.pptx4j.pml.ObjectFactory;
-import org.pptx4j.pml.Sld;
+import org.pptx4j.pml.Shape;
 import org.pptx4j.pml.SldMaster;
+import org.pptx4j.pml.SlideLayoutIdList;
 import org.pptx4j.pml.SlideLayoutIdList.SldLayoutId;
 
 

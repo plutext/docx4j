@@ -24,15 +24,12 @@ limitations under the License.
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.wml.BooleanDefaultFalse;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.FooterReference;
@@ -40,6 +37,8 @@ import org.docx4j.wml.HdrFtrRef;
 import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HeaderFooterPolicy {
 

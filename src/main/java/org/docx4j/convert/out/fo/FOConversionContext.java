@@ -24,8 +24,8 @@ import java.util.List;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.AbstractWriterRegistry;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * See /docs/developer/Convert_Out.docx for an overview of

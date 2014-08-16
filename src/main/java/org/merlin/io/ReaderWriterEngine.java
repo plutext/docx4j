@@ -1,6 +1,10 @@
 package org.merlin.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  * An output engine that copies data from a Reader through

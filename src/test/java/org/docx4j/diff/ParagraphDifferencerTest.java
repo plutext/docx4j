@@ -19,11 +19,7 @@
  */
 package org.docx4j.diff;
 
-import static org.junit.Assert.*;
-import org.docx4j.diff.Differencer;
-
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamResult;
 
 import org.docx4j.jaxb.Context;

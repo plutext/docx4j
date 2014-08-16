@@ -23,19 +23,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
-import java.util.Map;
 
-import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.vml.CTShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 
 /** The Dummy FO Renderer doesn't render anything, it just outputs

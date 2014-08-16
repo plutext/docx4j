@@ -10,7 +10,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -18,7 +17,6 @@ import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.XPathFactoryUtil;

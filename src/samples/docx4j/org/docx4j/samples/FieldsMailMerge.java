@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.merge.DataFieldName;
 import org.docx4j.model.fields.merge.MailMerger.OutputField;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;

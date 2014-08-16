@@ -28,7 +28,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Document;
 
 
 /**

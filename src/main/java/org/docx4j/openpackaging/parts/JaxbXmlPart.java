@@ -34,8 +34,6 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -43,8 +41,8 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.wml.Numbering;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 

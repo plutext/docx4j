@@ -1,6 +1,5 @@
 package org.docx4j.model.listnumbering;
 
-import org.docx4j.model.listnumbering.NumberFormatRomanAbstract.RomanValue;
 
 //File   : gui/componenents/calculators/Roman.java
 //Description: A static method for converting binary integers to Roman numbers.

@@ -21,52 +21,15 @@
 package org.docx4j.openpackaging.parts;
 
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
-import org.docx4j.customXmlProperties.SchemaRefs;
-import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
-import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.Body;
-import org.docx4j.wml.CTDataBinding;
-import org.docx4j.wml.CTSdtContentCell;
-import org.docx4j.wml.P;
-import org.docx4j.wml.SdtPr;
-import org.docx4j.wml.Tag;
-import org.docx4j.wml.Tc;
-import org.opendope.conditions.Condition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 

@@ -24,8 +24,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.fo.XsltFOFunctions;
-import org.docx4j.convert.out.html.HTMLConversionContext;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;

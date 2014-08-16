@@ -14,16 +14,13 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
-import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

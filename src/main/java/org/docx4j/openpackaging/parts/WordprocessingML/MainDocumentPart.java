@@ -24,7 +24,6 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,8 +71,6 @@ import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 
 
 /**

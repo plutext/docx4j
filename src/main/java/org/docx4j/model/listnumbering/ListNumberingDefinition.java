@@ -89,13 +89,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.Lvl;
-import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents:

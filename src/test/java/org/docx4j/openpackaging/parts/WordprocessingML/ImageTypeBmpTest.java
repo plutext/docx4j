@@ -1,11 +1,12 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
 
 public class ImageTypeBmpTest {
 	

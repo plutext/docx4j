@@ -20,13 +20,9 @@
 
 package org.docx4j.model.structure;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.finders.SectPrFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -35,6 +31,8 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

@@ -32,15 +32,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
@@ -60,6 +55,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 

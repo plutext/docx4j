@@ -19,8 +19,6 @@
  */
 package org.docx4j.model.listnumbering;
 
-import static org.junit.Assert.*;
-
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;

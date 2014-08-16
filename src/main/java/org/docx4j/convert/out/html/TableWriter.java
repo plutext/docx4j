@@ -21,19 +21,19 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
-import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
 import org.docx4j.convert.out.common.writer.AbstractTableWriterModel;
+import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.styles.StyleTree;
+import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
-import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 
 /*
  *  Write a w:tbl as an HTML <table>.

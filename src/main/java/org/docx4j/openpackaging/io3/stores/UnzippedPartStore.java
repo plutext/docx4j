@@ -29,17 +29,16 @@ import java.io.OutputStream;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**

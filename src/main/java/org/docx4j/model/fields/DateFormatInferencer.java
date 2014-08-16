@@ -3,12 +3,13 @@
  */
 package org.docx4j.model.fields;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.docx4j.Docx4jProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.Docx4jProperties;
 
 /**
  * From http://stackoverflow.com/questions/3389348/parse-any-date-in-java

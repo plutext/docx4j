@@ -22,7 +22,6 @@
 package org.docx4j.samples;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;

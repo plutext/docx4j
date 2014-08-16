@@ -21,7 +21,6 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -33,15 +32,12 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
@@ -51,8 +47,6 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -65,6 +59,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Styles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 

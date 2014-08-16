@@ -23,23 +23,18 @@ import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.TcFinder;
@@ -63,20 +58,17 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTLock;
-import org.docx4j.wml.CTSdtCell;
-import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
-import org.docx4j.wml.TcPr;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {

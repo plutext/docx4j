@@ -27,14 +27,9 @@ import javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.CustomXmlDataStorage;
-import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
-import org.docx4j.model.datastorage.RemovalHandler;
-import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 
 
 /**

@@ -1,27 +1,22 @@
 package org.docx4j.openpackaging.parts.relationships;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.AlteredParts.Alterations;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PatcherTest {
 

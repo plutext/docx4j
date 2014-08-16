@@ -13,9 +13,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
-import org.docx4j.wml.Styles;
 import org.docx4j.wml.PPrBase.PStyle;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Styles;
 import org.junit.Assert;
 
 public abstract class PStyleTableAbstract {

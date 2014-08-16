@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 
 public interface Evaluable {

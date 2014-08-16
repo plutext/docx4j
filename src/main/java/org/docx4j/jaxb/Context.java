@@ -20,7 +20,6 @@
 package org.docx4j.jaxb;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -32,9 +31,9 @@ import java.util.jar.Manifest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.docx4j.utils.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.utils.ResourceUtils;
 
 public class Context {
 	

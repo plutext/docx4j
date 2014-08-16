@@ -20,12 +20,6 @@
 
 package org.docx4j.jaxb;
 
-import java.util.Iterator;
-
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
-
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper 
 	{

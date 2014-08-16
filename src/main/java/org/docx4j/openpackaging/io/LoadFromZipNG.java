@@ -35,7 +35,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -43,8 +42,6 @@ import java.util.zip.ZipInputStream;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -72,8 +69,9 @@ import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

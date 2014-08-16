@@ -22,14 +22,12 @@ package org.docx4j.convert.out.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.docx4j.Docx4J;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

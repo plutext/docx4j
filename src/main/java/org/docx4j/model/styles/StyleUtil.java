@@ -20,7 +20,6 @@
 package org.docx4j.model.styles;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -71,15 +70,6 @@ import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.PStyle;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.PPrBase.TextAlignment;
-import org.docx4j.wml.CTColumns;
-import org.docx4j.wml.CTDecimalNumber;
-import org.docx4j.wml.CTDocGrid;
-import org.docx4j.wml.CTEdnProps;
-import org.docx4j.wml.CTFtnProps;
-import org.docx4j.wml.CTLineNumber;
-import org.docx4j.wml.CTPageNumber;
-import org.docx4j.wml.CTPaperSource;
-import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;

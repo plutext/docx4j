@@ -20,7 +20,6 @@
 package org.docx4j.model.properties.table;
 
 import org.docx4j.model.properties.Property;
-import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblPr;
 
 public abstract class AbstractTableProperty extends Property {

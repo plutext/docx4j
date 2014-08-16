@@ -25,12 +25,9 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
@@ -45,15 +42,14 @@ import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
-import org.docx4j.wml.FldChar;
-import org.docx4j.wml.P;
-import org.docx4j.wml.Pict;
-import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.Comments.Comment;
+import org.docx4j.wml.FldChar;
+import org.docx4j.wml.Pict;
 import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -200,12 +196,19 @@ public class TraversalUtil {
 
 	Callback cb;
 
+	/**
+	 * Traverse the object using your callback.  Invoking this constructor starts the 
+	 * traverse, by invoking the callback's walkJAXBElements method.
+	 * 
+	 * @param parent
+	 * @param cb
+	 */
 	public TraversalUtil(Object parent, Callback cb) {
 
 		this.cb = cb;
 		cb.walkJAXBElements(parent);
 	}
-
+	
 	static void visitChildrenImpl(Object o) {
 
 	}

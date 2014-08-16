@@ -1,18 +1,10 @@
 package org.docx4j.fonts;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 
-import javax.xml.bind.JAXBElement;
-
-import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
-
 import org.docx4j.dml.Theme;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
@@ -21,9 +13,7 @@ import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTCharacterSpacing;
-import org.docx4j.wml.CTCompat;
 import org.docx4j.wml.CTKinsoku;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTSettings;
@@ -39,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class RunFontSelectorJapaneseTest {
 	

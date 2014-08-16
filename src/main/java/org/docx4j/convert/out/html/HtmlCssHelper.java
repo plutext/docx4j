@@ -23,16 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
@@ -42,6 +40,8 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /** These is an utility class with some common functions for the 

@@ -23,14 +23,9 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.zip.ZipFile;
-
-import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;

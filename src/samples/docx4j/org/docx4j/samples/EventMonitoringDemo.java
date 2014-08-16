@@ -22,7 +22,6 @@ package org.docx4j.samples;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;

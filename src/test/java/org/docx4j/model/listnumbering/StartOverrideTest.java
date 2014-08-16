@@ -19,16 +19,8 @@
  */
 package org.docx4j.model.listnumbering;
 
-import static org.junit.Assert.*;
-
-import org.docx4j.XmlUtils;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.P;
-import org.docx4j.wml.R;
-import org.docx4j.wml.Text;
 import org.junit.Test;
 
 /**

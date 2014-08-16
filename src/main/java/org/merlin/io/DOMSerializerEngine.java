@@ -1,9 +1,17 @@
 package org.merlin.io;
 
-import java.io.*;
-import java.util.*;
-import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.DocumentTraversal;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.NodeIterator;
 
 /**
  * An output engine that serializes a DOM tree using a specified

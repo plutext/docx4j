@@ -23,8 +23,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Bidi;
@@ -65,17 +63,12 @@ import org.docx4j.model.properties.table.CellMarginRight;
 import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
-import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblBorders;
@@ -83,6 +76,8 @@ import org.docx4j.wml.TcMar;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.css.CSSValue;
 
 public class PropertyFactory {

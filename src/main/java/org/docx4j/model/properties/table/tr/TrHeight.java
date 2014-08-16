@@ -7,7 +7,6 @@ import javax.xml.namespace.QName;
 
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTHeight;
 import org.docx4j.wml.STHeightRule;
 import org.docx4j.wml.TrPr;

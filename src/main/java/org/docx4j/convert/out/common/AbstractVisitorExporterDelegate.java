@@ -22,8 +22,6 @@ package org.docx4j.convert.out.common;
 import java.io.OutputStream;
 import java.util.List;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;

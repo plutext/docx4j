@@ -25,12 +25,11 @@ import java.util.List;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
-import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
+import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
-import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.ContentAccessor;
@@ -38,7 +37,6 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.STBrType;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * The …ExporterGenerator is the visitor, that gets used in those cases where a document is done 

@@ -1,31 +1,11 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
-import java.io.InputStream;
-import java.util.List;
-
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Templates;
-import javax.xml.transform.dom.DOMResult;
-
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.JAXBAssociation;
-import org.docx4j.jaxb.JaxbValidationEventHandler;
-import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.XPathEnabled;
-import org.w3c.dom.Node;
 import org.xlsx4j.jaxb.Context;
 
 public abstract class JaxbSmlPart<E>  extends JaxbXmlPartXPathAware<E>  {

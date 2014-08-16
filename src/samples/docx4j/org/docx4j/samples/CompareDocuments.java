@@ -30,7 +30,6 @@ import javax.xml.bind.JAXBContext;
 
 import org.docx4j.Docx4J;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;

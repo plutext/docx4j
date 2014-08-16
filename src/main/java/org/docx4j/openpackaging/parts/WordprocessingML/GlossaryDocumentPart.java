@@ -21,15 +21,12 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.GlossaryDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 

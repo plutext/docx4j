@@ -25,9 +25,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -51,22 +49,16 @@ import org.apache.fop.apps.PageSequenceResults;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
-import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.fo.AbstractPlaceholderLookup;
 import org.docx4j.convert.out.fo.PlaceholderReplacementHandler;
-import org.docx4j.convert.out.fo.PlaceholderReplacementHandler.PlaceholderLookup;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.vml.wordprocessingDrawing.STWrapType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /** The Apache FO Renderer uses Apache FOP to render the fo document
  *  and is the default FO Renderer

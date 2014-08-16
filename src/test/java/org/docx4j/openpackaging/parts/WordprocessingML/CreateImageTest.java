@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URL;
 
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;
 

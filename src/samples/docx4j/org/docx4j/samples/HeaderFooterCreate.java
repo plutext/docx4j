@@ -21,7 +21,6 @@
 package org.docx4j.samples;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;

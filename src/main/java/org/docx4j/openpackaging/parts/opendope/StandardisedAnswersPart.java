@@ -2,13 +2,10 @@ package org.docx4j.openpackaging.parts.opendope;
 
 import javax.xml.bind.JAXBContext;
 
-import org.opendope.answers.Answer;
-import org.opendope.answers.Answers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StandardisedAnswersPart extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers> {
 	

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.JAXBElement;
 
@@ -26,7 +25,6 @@ import org.docx4j.vml.CTShapetype;
 import org.docx4j.vml.CTStroke;
 import org.docx4j.vml.CTTextbox;
 import org.docx4j.vml.wordprocessingDrawing.CTWrap;
-import org.docx4j.vml.wordprocessingDrawing.STWrapType;
 import org.docx4j.wml.CTTxbxContent;
 import org.docx4j.wml.P;
 import org.docx4j.wml.Pict;

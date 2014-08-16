@@ -21,7 +21,6 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,17 +30,13 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
-import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -61,6 +56,8 @@ import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
 import org.pptx4j.pml.SldLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 

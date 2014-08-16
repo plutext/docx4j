@@ -3,22 +3,10 @@ package org.docx4j.model;
 
 import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import javax.xml.bind.JAXBException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.TextFont;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
-import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
-import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -27,15 +15,16 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTTblPrBase;
-import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
-import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TblPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class works out the actual set of properties (paragraph or run)

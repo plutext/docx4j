@@ -38,8 +38,6 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.xmlgraphics.image.loader.ImageInfo;
 import org.apache.xmlgraphics.image.loader.ImageManager;
 import org.apache.xmlgraphics.image.loader.ImageSessionContext;
@@ -49,7 +47,6 @@ import org.apache.xmlgraphics.image.loader.impl.DefaultImageSessionContext;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.picture.Pic;
-import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
@@ -68,6 +65,8 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.pml.Presentation.SldSz;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	

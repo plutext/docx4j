@@ -32,28 +32,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
-import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
-import org.docx4j.events.Docx4jEvent;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.PackageIdentifier;
 import org.docx4j.events.PackageIdentifierTransient;
@@ -71,7 +64,6 @@ import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
@@ -81,6 +73,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -121,6 +115,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 		return parts;		
 	}
 	
+	// Currently only external images are stored here
 	protected HashMap<ExternalTarget, Part> externalResources 
 		= new HashMap<ExternalTarget, Part>();
 	public HashMap<ExternalTarget, Part> getExternalResources() {

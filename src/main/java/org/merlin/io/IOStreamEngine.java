@@ -1,6 +1,8 @@
 package org.merlin.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * An output engine that copies data from an InputStream through

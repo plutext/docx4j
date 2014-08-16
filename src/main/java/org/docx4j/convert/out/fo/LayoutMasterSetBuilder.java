@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.fop.apps.MimeConstants;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;

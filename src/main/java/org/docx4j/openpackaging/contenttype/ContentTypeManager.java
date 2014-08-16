@@ -54,16 +54,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -79,14 +76,10 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
-import org.docx4j.openpackaging.parts.VMLBinaryPart;
 import org.docx4j.openpackaging.parts.VMLPart;
-import org.docx4j.openpackaging.parts.DrawingML.Chart;
-import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
@@ -116,6 +109,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.glox4j.openpackaging.packages.GloxPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

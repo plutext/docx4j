@@ -19,13 +19,12 @@
  */
 package org.docx4j.model.properties.paragraph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
 import org.docx4j.wml.Jc;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 

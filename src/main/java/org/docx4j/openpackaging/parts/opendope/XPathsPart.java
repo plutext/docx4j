@@ -2,13 +2,12 @@ package org.docx4j.openpackaging.parts.opendope;
 
 import javax.xml.bind.JAXBContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.xpaths.Xpaths.Xpath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths.Xpaths> {
 	

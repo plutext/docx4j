@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
-import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.STFldCharType;

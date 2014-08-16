@@ -4,24 +4,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.ComplexFieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
-import org.docx4j.model.fields.merge.MailMerger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * List all field instructions found in docx (main document part,

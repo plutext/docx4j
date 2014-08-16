@@ -1,13 +1,8 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
-import javax.xml.bind.JAXBElement;
-
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.xlsx4j.jaxb.Context;
-import org.xlsx4j.sml.CTCalcChain;
 import org.xlsx4j.sml.CTSst;
 
 public class SharedStrings  extends JaxbSmlPart<CTSst> {

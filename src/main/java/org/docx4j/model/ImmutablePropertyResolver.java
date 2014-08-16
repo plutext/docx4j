@@ -2,9 +2,6 @@ package org.docx4j.model;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.ThemePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 

@@ -84,24 +84,15 @@
 package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.Lvl;
-import org.docx4j.wml.NumFmt;
-import org.docx4j.wml.NumberFormat;
-import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.RPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.RPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Emulator {
 	
