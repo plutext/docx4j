@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.Format;
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -26,8 +24,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
@@ -38,10 +34,8 @@ import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.StyleUtil;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
@@ -58,9 +52,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTAltChunk;
-import org.docx4j.wml.CTAltChunkPr;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
@@ -69,9 +61,10 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.opendope.xpaths.Xpaths.Xpath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -266,9 +259,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			is = ResourceUtils.getResource(placeholderResourceFallback);
 			
 		}
-		DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-		newInstance.setNamespaceAware(true);
-		Document tmpDoc = newInstance.newDocumentBuilder().parse(is);
+		Document tmpDoc = XmlUtils.getNewDocumentBuilder().parse(is);
 		placeholderFragment = tmpDoc.createDocumentFragment();
 		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), placeholderFragment);		
 	}

@@ -24,8 +24,6 @@ limitations under the License.
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTCustomGeometry2D;
 import org.docx4j.jaxb.Context;
@@ -64,10 +62,7 @@ public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D>
 
     private void read(InputStream is) throws Exception {
     	
-    	DocumentBuilderFactory dbf = XmlUtils.getDocumentBuilderFactory();
-		dbf.setNamespaceAware(true);
-
-	    Document domDoc = dbf.newDocumentBuilder().parse(is);
+	    Document domDoc = XmlUtils.getNewDocumentBuilder().parse(is);
 	    
 	    Element presetShapeDefinitons = domDoc.getDocumentElement();
         NodeList nodes = presetShapeDefinitons.getChildNodes();

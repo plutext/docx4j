@@ -29,8 +29,8 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.docx4j.XmlUtils;
 import org.eclipse.compare.EventSequenceComparator;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
@@ -484,9 +484,7 @@ public class Docx4jDriver {
 
 	private static Document getDocument(File f) throws Exception {
 
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			DocumentBuilder db = dbf.newDocumentBuilder();
+			DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
 			return db.parse(f);
 	}
 }

@@ -2,20 +2,14 @@ package org.docx4j.model.datastorage;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.docx4j.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -35,13 +29,10 @@ public class XHTMLAttrInjector {
     		content = content.substring(1);
     	}	
     	
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);    	
-    	DocumentBuilder db = dbf.newDocumentBuilder();
     	InputSource is = new InputSource();
     	is.setCharacterStream(new StringReader(content));
 
-    	Document doc = db.parse(is);    	
+    	Document doc = XmlUtils.getNewDocumentBuilder().parse(is);    	
 		
 		// traverse + inject (need traverse, to get p in table)
     	injectAttrs(doc, classVal, styleVal);

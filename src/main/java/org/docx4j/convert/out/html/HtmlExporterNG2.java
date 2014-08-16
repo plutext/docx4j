@@ -31,7 +31,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
@@ -164,7 +163,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// transformer.transform(new StreamSource(new ByteArrayInputStream(bytes)), result);
 			// use
 			
-		    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance(); // as opposed to XmlUtils.getNewDocumentBuilder()
 		    dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);	
 		    DocumentBuilder db = dbFactory.newDocumentBuilder();
 		    // that feature is enough; alternatively, the below also works.  Use both for good measure.

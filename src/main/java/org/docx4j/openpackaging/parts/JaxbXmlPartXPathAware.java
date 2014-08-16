@@ -27,7 +27,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
@@ -319,10 +318,7 @@ implements XPathEnabled<E> {
 			
 			log.info("For " + this.getClass().getName() + ", unmarshall via binder");
 			// InputStream to Document
-			javax.xml.parsers.DocumentBuilderFactory dbf 
-				= DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(is);
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is);
 
 			// 
 			binder = jc.createBinder();
@@ -424,6 +420,21 @@ implements XPathEnabled<E> {
 		} catch (Exception e ) {
 //			e.printStackTrace();
 //			return null;
+			
+			/* java.lang.NullPointerException
+				at com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDProcessor.startDTD(Unknown Source)
+				at com.sun.org.apache.xerces.internal.impl.XMLDTDScannerImpl.scanDTDInternalSubset(Unknown Source)
+				at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl$DTDDriver.dispatch(Unknown Source)
+				at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl$DTDDriver.next(Unknown Source)
+				at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl$PrologDriver.next(Unknown Source)
+			 */
+			for ( int i=0 ; i<e.getStackTrace().length; i++) {
+				if (e.getStackTrace()[i].getClassName().contains("DTD")
+						|| e.getStackTrace()[i].getMethodName().contains("DTD")) {
+					// Mimic Word 2010 message
+					throw new JAXBException("DTD is prohibited", e);
+				}
+			}
 			
 			throw new JAXBException(e.getMessage(), e);
 		}

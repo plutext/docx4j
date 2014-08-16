@@ -21,26 +21,18 @@
 package org.docx4j.convert.out.flatOpcXml;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.zip.ZipEntry;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
@@ -54,8 +46,9 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -218,10 +211,7 @@ public class FlatOpcXmlCreator implements Output {
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 			try {
-				javax.xml.parsers.DocumentBuilderFactory dbf
-					= javax.xml.parsers.DocumentBuilderFactory.newInstance();
-				dbf.setNamespaceAware(true);
-				w3cDoc = dbf.newDocumentBuilder().newDocument();
+				w3cDoc = XmlUtils.getNewDocumentBuilder().newDocument();
 				
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
 						NamespacePrefixMapperUtils.getPrefixMapper() );

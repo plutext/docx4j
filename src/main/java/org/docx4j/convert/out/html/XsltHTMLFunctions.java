@@ -25,14 +25,10 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
-import org.docx4j.convert.out.fo.XsltFOFunctions;
-import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -45,16 +41,15 @@ import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.PPrBase.Ind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -150,46 +145,40 @@ public class XsltHTMLFunctions {
 		// There is a similar method for the non XSLT case, in HTMLExporterVisitorDelegate
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 		
-		    Element	headEl = document.createElement("head");
-			Element meta = document.createElement("meta");
-			Element element = null;
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	document.appendChild(headEl);   
-	    	
-	    	// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	    	meta.setAttribute("http-equiv", "Content-Type");
-	    	meta.setAttribute("content", "text/html; charset=utf-8");
-	    	headEl.appendChild(meta);
-	    	
-	    	// <style..
-	    	element = createStyleElement(conversionContext, document, buffer);
-			if (element != null) {
-				headEl.appendChild(element);
-			}
+	    Element	headEl = document.createElement("head");
+		Element meta = document.createElement("meta");
+		Element element = null;
+		StringBuilder buffer = new StringBuilder(10240);
+		
+    	document.appendChild(headEl);   
+    	
+    	// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    	meta.setAttribute("http-equiv", "Content-Type");
+    	meta.setAttribute("content", "text/html; charset=utf-8");
+    	headEl.appendChild(meta);
+    	
+    	// <style..
+    	element = createStyleElement(conversionContext, document, buffer);
+		if (element != null) {
+			headEl.appendChild(element);
+		}
 
-			
-			// <script
-			buffer.setLength(0);
-			element = createScriptElement(conversionContext, document, buffer);
-			if (element != null) {
-				headEl.appendChild(element);
-			}
-			
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
-	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			log.error(e.getMessage(), e);
-		}			
-		return null;
+		
+		// <script
+		buffer.setLength(0);
+		element = createScriptElement(conversionContext, document, buffer);
+		if (element != null) {
+			headEl.appendChild(element);
+		}
+		
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+
+		return docfrag;
+		
+
 	}
 
 	/**
@@ -202,30 +191,21 @@ public class XsltHTMLFunctions {
 	public static DocumentFragment appendStyleElement(HTMLConversionContext conversionContext) {
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	// <style..
-	    	Element element = createStyleElement(conversionContext, document, buffer);
-			if (element == null) {
-				return null;
-			}
-			document.appendChild(element);
+		StringBuilder buffer = new StringBuilder(10240);
 		
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
+    	// <style..
+    	Element element = createStyleElement(conversionContext, document, buffer);
+		if (element == null) {
+			return null;
+		}
+		document.appendChild(element);
 	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			log.error(e.getMessage(), e);
-		}			
-		return null;
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
 
+		return docfrag;
 	}
 
 	/**
@@ -240,29 +220,21 @@ public class XsltHTMLFunctions {
 		// actually invokes ConversionHTMLScriptElementHandler
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	// <script..
-	    	Element element = createScriptElement(conversionContext, document, buffer);
-			if (element == null) {
-				return null;
-			}
-			document.appendChild(element);
+		StringBuilder buffer = new StringBuilder(10240);
 		
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
+    	// <script..
+    	Element element = createScriptElement(conversionContext, document, buffer);
+		if (element == null) {
+			return null;
+		}
+		document.appendChild(element);
 	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			log.error(e.getMessage(), e);
-		}			
-		return null;
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+
+		return docfrag;
 
 	}
 	
@@ -582,8 +554,7 @@ public class XsltHTMLFunctions {
         	}
         	
             // Create a DOM document to take the results			
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();			
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();			
 				//log.info("Document: " + document.getClass().getName() );
 			Element xhtmlBlock = document.createElement(htmlElementName);			
 			document.appendChild(xhtmlBlock);
@@ -875,8 +846,7 @@ public class XsltHTMLFunctions {
 			
 
             // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 				
 			Element span = document.createElement("span");			
 			document.appendChild(span);

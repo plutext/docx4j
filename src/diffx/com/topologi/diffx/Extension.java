@@ -7,10 +7,9 @@ import java.io.Writer;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.docx4j.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -58,7 +57,7 @@ public final class Extension {
    */
   private static final Map<String, String> BUILDERS = new Hashtable<String, String>();
   static {
-    BUILDERS.put("net.sf.saxon.dom", "net.sf.saxon.dom.DocumentBuilderFactoryImpl");
+//    BUILDERS.put("net.sf.saxon.dom", "net.sf.saxon.dom.DocumentBuilderFactoryImpl");
   }
 
   /**
@@ -159,13 +158,7 @@ public final class Extension {
 //        : DocumentBuilderFactory.newInstance(factory, Extension.class.getClassLoader());  
     
 	// Avoid build error - see https://code.google.com/p/wo-diffx/issues/detail?id=7  
-    DocumentBuilderFactory dbFactory =  DocumentBuilderFactory.newInstance();
-    
-    dbFactory.setNamespaceAware(config.isNamespaceAware());
-    dbFactory.setExpandEntityReferences(true);
-    dbFactory.setValidating(false);
-    DocumentBuilder builder = dbFactory.newDocumentBuilder();
-    Document document = builder.parse(new InputSource(new StringReader(xml)));
+    Document document = XmlUtils.getNewDocumentBuilder().parse(new InputSource(new StringReader(xml)));
     return document.getDocumentElement();
   }
 

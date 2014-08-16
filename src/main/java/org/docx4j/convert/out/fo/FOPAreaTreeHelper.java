@@ -15,7 +15,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.fop.apps.MimeConstants;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
-import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
@@ -190,9 +189,7 @@ public class FOPAreaTreeHelper {
         }
         
         InputStream is = new ByteArrayInputStream(os.toByteArray());
-		javax.xml.parsers.DocumentBuilderFactory dbf = XmlUtils.getDocumentBuilderFactory().newInstance();
-		dbf.setNamespaceAware(true);
-		DocumentBuilder builder = dbf.newDocumentBuilder();
+		DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
 		return builder.parse(is);
 
     }	

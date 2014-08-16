@@ -24,9 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.avalon.framework.configuration.Configuration;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
@@ -90,17 +87,13 @@ public class XSLFOExporterNonXSLT {
 	 */
 	public org.w3c.dom.Document export() throws Docx4JException {
 	ByteArrayOutputStream outStream = new ByteArrayOutputStream(DEFAULT_OUTPUT_SIZE);
-	DocumentBuilder documentBuilder = null; 
 	Document ret = null;
 		foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
 		try {
 			Docx4J.toFO(foSettings, outStream, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
-			documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
-			ret = documentBuilder.parse(new ByteArrayInputStream(outStream.toByteArray()));
+			ret = XmlUtils.getNewDocumentBuilder().parse(new ByteArrayInputStream(outStream.toByteArray()));
 		} catch (Docx4JException e) {
 			log.error("Exception exporting document: " + e.getMessage(), e);
-		} catch (ParserConfigurationException e) {
-			log.error("Exception creating document builder: " + e.getMessage(), e);
 		} catch (SAXException e) {
 			log.error("Exception parsing document: " + e.getMessage(), e);
 		} catch (IOException e) {

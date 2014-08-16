@@ -20,27 +20,17 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
-import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
-import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -50,7 +40,8 @@ import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.pml.CommonSlideData;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Sld;
-import org.w3c.dom.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -162,10 +153,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		try {
 			
 			// InputStream to Document
-			javax.xml.parsers.DocumentBuilderFactory dbf 
-				= DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(is);
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is);
 
 			
 			/* Note: 2013 04 25

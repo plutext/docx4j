@@ -3,16 +3,10 @@ package org.docx4j.fonts;
 import java.awt.font.NumericShaper;
 import java.util.concurrent.ExecutionException;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.TextFont;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
-import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -385,7 +379,7 @@ public class RunFontSelector {
 				
     	 */
 
-		Document document = getDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 		
 		// No rPr .. only happens if no documentDefaultRPr
 		if (rPr==null) {
@@ -986,18 +980,6 @@ public class RunFontSelector {
 	    }    	
     }
     
-    private Document getDocument() {
-
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		try {
-			return factory.newDocumentBuilder().newDocument();
-					
-		} catch (ParserConfigurationException e) {
-			log.error(e.getMessage(), e);
-		}			
-		return null;
-    	
-    }
 	
 	private String getCssProperty(String fontName) {
 		

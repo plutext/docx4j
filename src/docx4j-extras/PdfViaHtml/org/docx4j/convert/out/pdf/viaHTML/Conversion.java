@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporter;
@@ -92,11 +93,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// TESTING
 //	    xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
 //	    try {
-//			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-//			dbf.setNamespaceAware(true);
-//			dbf.newDocumentBuilder().newDocument();
-//	    	
-//			xhtmlDoc = dbf.newDocumentBuilder().parse(new File("C:\\Users\\jharrop\\workspace\\docx4all\\sample-docs\\comic.html"));
+//			xhtmlDoc = XmlUtils.getNewDocumentBuilder().parse(new File("C:\\Users\\jharrop\\workspace\\docx4all\\sample-docs\\comic.html"));
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        } 	    

@@ -21,9 +21,6 @@ package org.docx4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -32,18 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilder;
-
 import net.engio.mbassy.bus.MBassador;
 
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.convert.out.fo.FOExporterVisitor;
 import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
@@ -51,18 +42,14 @@ import org.docx4j.convert.out.html.HTMLExporterXslt;
 import org.docx4j.events.Docx4jEvent;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.PackageIdentifier;
-import org.docx4j.events.PackageIdentifierTransient;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownJobTypes;
 import org.docx4j.events.WellKnownProcessSteps;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -274,10 +261,8 @@ public class Docx4J {
 		}
 	    Document xmlDoc = null;
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
-		    DocumentBuilder documentBuilder = null; 
 				try {
-		            documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder(); 
-		            xmlDoc = documentBuilder.parse(xmlDocument);
+		            xmlDoc = XmlUtils.getNewDocumentBuilder().parse(xmlDocument);
 				} catch (Exception e) {
 					throw new Docx4JException("Problems creating a org.w3c.dom.Document for the passed input stream.", e);
 				}

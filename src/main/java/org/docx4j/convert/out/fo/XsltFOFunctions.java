@@ -22,12 +22,10 @@ package org.docx4j.convert.out.fo;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.preprocess.Containerization;
-import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.fields.FormattingSwitchHelper;
@@ -46,16 +44,14 @@ import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.ParaRPr;
-import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STTabJc;
-import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
-import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -344,8 +340,7 @@ public class XsltFOFunctions {
 			}
         	
             // Create a DOM builder and parse the fragment			
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			
 			//log.info("Document: " + document.getClass().getName() );
 			
@@ -839,8 +834,7 @@ public class XsltFOFunctions {
         	
 			
             // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			
 			//log.info("Document: " + document.getClass().getName() );
 

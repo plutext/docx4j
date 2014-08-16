@@ -23,40 +23,28 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 
 import javax.xml.bind.util.JAXBResult;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTDiagramDefinition;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
 
 
 public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
@@ -151,11 +139,7 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		
 		// Need the source doc as a DOM for later, and also
 		// as XSLT input
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		DocumentBuilder docBuilder = dbf.newDocumentBuilder();
-		
-		Document doc = docBuilder.parse(
+		Document doc = XmlUtils.getNewDocumentBuilder().parse(
 				new File(System.getProperty("user.dir")+ "/SmartArt/12hi.xml"  ) );		
 		
 		Source myList = new javax.xml.transform.dom.DOMSource(doc);

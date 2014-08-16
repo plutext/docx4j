@@ -7,9 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -66,16 +63,12 @@ public class HtmlExporterNonXSLT {
 	 */
 	public org.w3c.dom.Document export() {
 	ByteArrayOutputStream outStream = new ByteArrayOutputStream(DEFAULT_OUTPUT_SIZE);
-	DocumentBuilder documentBuilder = null; 
 	Document ret = null;
 		try {
 			Docx4J.toHTML(htmlSettings, outStream, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
-			documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
-			ret = documentBuilder.parse(new ByteArrayInputStream(outStream.toByteArray()));
+			ret = XmlUtils.getNewDocumentBuilder().parse(new ByteArrayInputStream(outStream.toByteArray()));
 		} catch (Docx4JException e) {
 			log.error("Exception exporting document: " + e.getMessage(), e);
-		} catch (ParserConfigurationException e) {
-			log.error("Exception creating document builder: " + e.getMessage(), e);
 		} catch (SAXException e) {
 			log.error("Exception parsing document: " + e.getMessage(), e);
 		} catch (IOException e) {

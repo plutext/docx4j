@@ -22,22 +22,15 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.io.File;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDiagramDefinition;
-import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart;
-import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
-import org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart;
-import org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
@@ -153,11 +146,7 @@ public class CreatePptxWithSmartArt extends CreateWithSmartArtAbstract {
 		
 		// Need the source doc as a DOM for later, and also
 		// as XSLT input
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		DocumentBuilder docBuilder = dbf.newDocumentBuilder();
-				
-		Document doc = docBuilder.parse(
+		Document doc = XmlUtils.getNewDocumentBuilder().parse(
 				new File(System.getProperty("user.dir")+ "/sample-docs/glox/extracted/data-sample.xml"  ) );		
 						
 		GloxPackage gloxPackage = (GloxPackage)OpcPackage.load(

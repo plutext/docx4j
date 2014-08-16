@@ -31,10 +31,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -65,6 +62,8 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 
 
@@ -566,9 +565,7 @@ public class FlatOpcXmlImporter  {
 							CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
 
 							// Copy el into a new document
-							javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-							dbf.setNamespaceAware(true);
-							org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+							org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 							//XmlUtils.treeCopy(el, doc);
 							org.w3c.dom.Node copy = doc.importNode(el, true);
 							// Word doesn't like the xml namespace to be bound. At some point in a process 
@@ -590,9 +587,7 @@ public class FlatOpcXmlImporter  {
 						CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
 
 						// Copy el into a new document
-						javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-						dbf.setNamespaceAware(true);
-						org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+						org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 						//XmlUtils.treeCopy(el, doc);
 						org.w3c.dom.Node copy = doc.importNode(el, true);
 						try {
@@ -609,9 +604,7 @@ public class FlatOpcXmlImporter  {
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					
 					// Copy el into a new document
-					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(true);
-					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+					org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 					//XmlUtils.treeCopy(el, doc);
 					org.w3c.dom.Node copy = doc.importNode(el, true);
 					try {

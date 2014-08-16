@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.docx4j.XmlUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -549,7 +549,7 @@ public final class DOMWriterImpl implements DOMWriter {
    * @throws ParserConfigurationException If thrown by the document builder factory.
    */
   private static Document newDocument() throws ParserConfigurationException {
-    DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
     return builder.newDocument();
   }
 
