@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -49,6 +50,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_CommentAuthorList", propOrder = {
     "cmAuthor"
 })
+@XmlRootElement(name = "cmAuthorLst")
 public class CTCommentAuthorList {
 
     protected List<CTCommentAuthor> cmAuthor;
