@@ -71,7 +71,51 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	
 	private final static String DEFAULT_NOTES_SIZE = "<p:notesSz xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" " +
 			"cx=\"6858000\" cy=\"9144000\"/>";
+	
 
+	private CommentAuthorsPart commentAuthorsPart;
+	
+	public boolean setPartShortcut(Part part) {
+		
+		if (part == null ){
+			return false;
+		} else {
+			return setPartShortcut(part, part.getRelationshipType() );
+		}
+		
+	}	
+		
+	public boolean setPartShortcut(Part part, String relationshipType) {
+		
+		// Since each part knows its relationshipsType,
+		// why is this passed in as an arg?
+		// Answer: where the relationshipType is ascertained
+		// from the rel itself, it is the most authoritative.
+		// Note that we normally use the info in [Content_Types]
+		// to create a part of the correct type.  This info
+		// will not necessary correspond to the info in the rel!
+		
+		if (relationshipType==null) {
+			log.warn("trying to set part shortcut against a null relationship type.");
+			return false;
+		}
+		
+		if (relationshipType.equals(Namespaces.PRESENTATIONML_COMMENT_AUTHORS)) {
+			commentAuthorsPart = (CommentAuthorsPart)part;
+			return true;			
+		} else {	
+			return false;
+		}
+	}
+
+	
+	/**
+	 * @since 3.2.0
+	 */
+	public CommentAuthorsPart getCommentAuthorsPart() {
+		return commentAuthorsPart;
+	}
+	
 	/**
 	 * @since 2.7
 	 */

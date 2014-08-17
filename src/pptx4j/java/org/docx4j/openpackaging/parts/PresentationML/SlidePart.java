@@ -297,6 +297,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
     
     NotesSlidePart notes;
     SlideLayoutPart layout;
+    CommentsPart comments;
     
 	public boolean setPartShortcut(Part part) {
 		
@@ -329,6 +330,9 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_SLIDE_LAYOUT)) {
 			layout = (SlideLayoutPart)part;
 			return true;					
+		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_COMMENTS)) {
+			comments = (CommentsPart)part;
+			return true;					
 		} else {	
 			return false;
 		}
@@ -339,6 +343,13 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 	}
 	public SlideLayoutPart getSlideLayoutPart() {
 		return layout;
+	}
+	
+	/**
+	 * @since 3.2.0
+	 */
+	public CommentsPart getCommentsPart() {
+		return comments;
 	}
 	
     
