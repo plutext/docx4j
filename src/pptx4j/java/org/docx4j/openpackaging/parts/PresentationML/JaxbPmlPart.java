@@ -98,6 +98,8 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 			return new SlideMasterPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE_LAYOUT)) {
 			return new SlideLayoutPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENTS)) {
+			return new CommentsPart(new PartName(partName));			
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_TABLE_STYLES)) {
 			return new TableStylesPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_PRES_PROPS)) {
@@ -112,6 +114,8 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 			return new NotesMasterPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_SLIDE)) {
 			return new NotesSlidePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENT_AUTHORS)) {
+			return new CommentAuthorsPart(new PartName(partName));			
 		} else {
 			throw new PartUnrecognisedException("No subclass found for " 
 					+ partName + " (content type '" + contentType + "')");					

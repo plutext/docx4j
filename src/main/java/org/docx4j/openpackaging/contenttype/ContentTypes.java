@@ -181,6 +181,12 @@ public class ContentTypes {
 	// embedded presentation
 	public final static String PRESENTATION = 
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+	public final static String PRESENTATIONML_COMMENTS = 
+			"application/vnd.openxmlformats-officedocument.presentationml.comments+xml";
+
+	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
+			"application/vnd.openxmlformats-officedocument.presentationml.commentAuthors+xml";
 	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 

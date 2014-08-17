@@ -184,6 +184,11 @@ public class Namespaces {
 	public final static String DRAWINGML_DIAGRAM_DRAWING =
 		"http://schemas.microsoft.com/office/2007/relationships/diagramDrawing";
 	
+	public final static String PRESENTATIONML_COMMENTS = 
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+
+	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/commentAuthors";
 	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	
