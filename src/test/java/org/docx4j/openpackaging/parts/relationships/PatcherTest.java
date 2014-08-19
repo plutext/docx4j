@@ -1,10 +1,13 @@
 package org.docx4j.openpackaging.parts.relationships;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+
+import junit.framework.Assert;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
@@ -70,7 +73,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 			
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 	}
@@ -95,7 +98,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -114,6 +117,7 @@ public class PatcherTest {
 				new java.io.File(resourceDir + "paragraph-single.docx"));
 		
 		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+		alterations.debug();
 
 		Patcher.apply(otherPackage, alterations);
 		
@@ -122,9 +126,13 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
-				marshallFlatOPC(thisPackage).toByteArray(), 
-				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+		byte[] array1 = marshallFlatOPC(thisPackage).toByteArray();
+		byte[] array2 = marshallFlatOPC(otherPackage).toByteArray();
+				
+		Assert.assertTrue(java.util.Arrays.equals(
+				array1, 
+				array2));
 		
 	}
 
@@ -148,7 +156,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -175,7 +183,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -205,7 +213,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -234,7 +242,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -262,7 +270,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -290,7 +298,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -317,7 +325,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -344,7 +352,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		
@@ -370,7 +378,7 @@ public class PatcherTest {
 //			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
 //		}
 		
-		assert(java.util.Arrays.equals(
+		Assert.assertTrue(java.util.Arrays.equals(
 				marshallFlatOPC(thisPackage).toByteArray(), 
 				marshallFlatOPC(otherPackage).toByteArray() ));
 		

@@ -139,11 +139,8 @@ public class Load3 extends Load {
 		}
 		
 		// .. now find the name of the main part
-		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(null, partName);
-		if (rp==null) {
-			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
-		}
+		RelationshipsPart rp = RelationshipsPart.createPackageRels();
+		populatePackageRels(rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		PartName mainPartNameObj;
@@ -181,6 +178,26 @@ public class Load3 extends Load {
 		 
 		 return p;
 	}
+
+	private void populatePackageRels(RelationshipsPart rp) 
+			throws Docx4JException {
+		
+		InputStream is = null;
+		try {
+			is =  partStore.loadPart( "_rels/.rels");
+			if (is==null) {
+				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
+			}
+			rp.unmarshal(is);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
+			
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
 	
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, String partName) 
 			throws Docx4JException {
@@ -194,8 +211,7 @@ public class Load3 extends Load {
 			if (is==null) {
 				return null; // that's ok
 			}
-			rp = new RelationshipsPart(new PartName("/" + partName) );
-			rp.setSourceP(p);
+			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
@@ -348,8 +364,8 @@ public class Load3 extends Load {
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
 			addPartsFromRelationships(part, rrp, ctm );
-			String relPart = PartName.getRelationshipsPartName(
-					part.getPartName().getName().substring(1) );
+//			String relPart = PartName.getRelationshipsPartName(
+//					part.getPartName().getName().substring(1) );
 //			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}

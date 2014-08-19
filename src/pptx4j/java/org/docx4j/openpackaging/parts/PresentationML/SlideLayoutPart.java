@@ -75,7 +75,7 @@ public final class SlideLayoutPart extends JaxbPmlPart<SldLayout> {
 		Relationship masterRel = getRelationshipsPart().getRelationshipByType(
 				Namespaces.PRESENTATIONML_SLIDE_MASTER);
 		if (masterRel==null) {
-			log.warn(this.partName.getName() + " has no master!");
+			log.warn(this.getPartName().getName() + " has no master!");
 		} else {
 			master = (SlideMasterPart)getRelationshipsPart().getPart(masterRel);
 		}

@@ -378,7 +378,9 @@ public class Save {
 						log.debug(part.getClass().getName() );
 					}
 
-					if (!part.getPackage().equals(p)) {
+					if (part.getPackage()==null) {
+						log.warn("Part " + resolvedPartUri + " is not attached to any package");						
+					} else if (!part.getPackage().equals(p)) {
 						log.warn("Part " + resolvedPartUri + " is attached to some other package");
 					}
 					

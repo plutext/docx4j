@@ -180,7 +180,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 */
 	public OpcPackage() {
 		try {
-			partName = new PartName("/", false);
+			this.setPartName(new PartName("/", false));
 			
 			contentTypeManager = new ContentTypeManager();
 		} catch (Exception e) {
@@ -197,7 +197,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 */
 	public OpcPackage(ContentTypeManager contentTypeManager) {
 		try {
-			partName = new PartName("/", false);
+			this.setPartName(new PartName("/", false));
 			
 			this.contentTypeManager = contentTypeManager;
 		} catch (Exception e) {

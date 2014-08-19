@@ -83,7 +83,7 @@ public class AlteredParts {
 			RelationshipsPart thisRP, RelationshipsPart otherRP)
 			throws Docx4JException {
 		
-		log.info("######### @" + thisRP.partName.getName() + "#########");
+		log.info("######### @" + thisRP.getPartName().getName() + "#########");
 
 		log.info("uniques -------");
 		List<Relationship> uniques = thisRP.uniqueToThis(otherRP);

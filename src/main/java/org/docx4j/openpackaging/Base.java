@@ -149,8 +149,16 @@ public abstract class Base {
 	 * We will assume the Package has a part name of "/"
 	 * 
 	 */
-	public PartName partName;
+	private PartName partName;
 
+	/**
+	 * @param partName
+	 * @since 3.2.0
+	 */
+	public void setPartName(PartName partName) {
+		this.partName = partName;
+	}
+	
 	/**
 	 * @return the uri
 	 */

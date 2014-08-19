@@ -62,8 +62,9 @@ public class PartialDeepCopy {
 	
 	
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
-	OpcPackage ret = null;
-	RelationshipsPart relPart = null;
+		
+		OpcPackage ret = null;
+		RelationshipsPart relPart = null;
 		if (opcPackage != null) {
 			if ((relationshipTypes != null) && (relationshipTypes.isEmpty())) {
 				ret = opcPackage;
@@ -105,7 +106,8 @@ public class PartialDeepCopy {
 	}
 
 	protected static OpcPackage createPackage(OpcPackage opcPackage) throws Docx4JException {
-	OpcPackage ret = null;
+		
+		OpcPackage ret = null;
 		try {
 			ret = opcPackage.getClass().newInstance();
 		} catch (InstantiationException e) {
@@ -117,7 +119,7 @@ public class PartialDeepCopy {
 //		contentType
 		ret.setContentType(new ContentType(opcPackage.getContentType()));
 //		partName
-		ret.partName = opcPackage.partName;
+		ret.setPartName(opcPackage.getPartName());
 //		relationships
 		//is done in an another method
 //		userData

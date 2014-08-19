@@ -103,7 +103,7 @@ public abstract class Part extends Base {
 			// except for a part which isn't yet connected to
 			// a package via a relationship.
 			if (this.sourceRelationships.size()==0) {
-				log.warn(this.partName.getName() + " has no source rel set");
+				log.warn(this.getPartName().getName() + " has no source rel set");
 				return null;
 			} else {
 				// It ought to be the same in each source rel
@@ -179,7 +179,7 @@ public abstract class Part extends Base {
 	public Part(PartName partName)
 			throws InvalidFormatException {
 //		log.debug( partName.getName() );
-		this.partName = partName;
+		this.setPartName(partName);
 	}
 	
 
@@ -245,8 +245,9 @@ public abstract class Part extends Base {
 	 * take action to avoid name collisions.
 	 * 
 	 * @param newName
+	 * @since 3.2.0
 	 */
-	public void setPartName(PartName newName) {
+	public void rename(PartName newName) {
 		
 		log.info("Renaming part " + this.getPartName().getName() + " to " + newName.getName() );
 		
@@ -270,7 +271,7 @@ public abstract class Part extends Base {
 		}
 
 		// Set the new part name
-		this.partName = newName;
+		this.setPartName(newName);
 		
 		// Add this part back to the parts collection
 		this.getPackage().getParts().put(this);

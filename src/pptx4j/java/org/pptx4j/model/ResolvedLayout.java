@@ -152,7 +152,7 @@ public class ResolvedLayout implements Cloneable {
 		Relationship rel = slidePart.getRelationshipsPart().getRelationshipByType(
 				Namespaces.PRESENTATIONML_SLIDE_LAYOUT);
 		if (rel==null) {
-			log.warn(slidePart.partName.getName() + " has no explicit layout!");
+			log.warn(slidePart.getPartName().getName() + " has no explicit layout!");
 			// This happens at least some of the time.
 			// eg for title slide 
 			// That case is ok, since CTR_TITLE and SUB_TITLE only occur

@@ -106,17 +106,20 @@ public class Patcher {
 			
 			if (a.getPart().getContentType().equals(ContentTypes.RELATIONSHIPS_PART)) {
 				
-				RelationshipsPart newRP = FlatOpcXmlImporter.createRelationshipsPart(
-						a.getPart());
+				
+				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
 				if (a.getSourcePartName().equals("/")) {
-					otherPackage.setRelationships(newRP);
-					newRP.setSourceP(otherPackage);					
+					newRP = otherPackage.getRelationshipsPart(true);
+//					otherPackage.setRelationships(newRP);
+//					newRP.setSourceP(otherPackage);					
 				} else {
 					Part parentPart = otherPackage.getParts().get(a.getSourcePartName());
-					parentPart.setRelationships(newRP);
-					newRP.setSourceP(parentPart);					
+					newRP = parentPart.getRelationshipsPart(true);
+//					parentPart.setRelationships(newRP);
+//					newRP.setSourceP(parentPart);					
 				}
+				FlatOpcXmlImporter.populateRelationshipsPart(newRP,  a.getPart().getXmlData().getAny());
 				
 			} else {
 
@@ -164,17 +167,20 @@ public class Patcher {
 			
 			if (a.getPart().getContentType().equals(ContentTypes.RELATIONSHIPS_PART)) {
 				
-				RelationshipsPart newRP = FlatOpcXmlImporter.createRelationshipsPart(
-						a.getPart());
+				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
 				if (a.getSourcePartName().equals("/")) {
-					otherPackage.setRelationships(newRP);
-					newRP.setSourceP(otherPackage);
+					newRP = otherPackage.getRelationshipsPart(true);
+//					otherPackage.setRelationships(newRP);
+//					newRP.setSourceP(otherPackage);
 				} else {
 					Part parentPart = otherPackage.getParts().get(a.getSourcePartName());
-					parentPart.setRelationships(newRP);
-					newRP.setSourceP(parentPart);
+					newRP = parentPart.getRelationshipsPart(true);
+//					parentPart.setRelationships(newRP);
+//					newRP.setSourceP(parentPart);
 				}
+				FlatOpcXmlImporter.populateRelationshipsPart(newRP,  a.getPart().getXmlData().getAny());
+				
 				
 			} else {
 

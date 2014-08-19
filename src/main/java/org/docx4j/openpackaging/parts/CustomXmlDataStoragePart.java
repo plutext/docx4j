@@ -108,7 +108,7 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 			}
 		}
 		
-		this.partName = new PartName("/customXml/item" + partNum + ".xml");
+		this.setPartName(new PartName("/customXml/item" + partNum + ".xml"));
 		log.info("Using PartName /customXml/item" + partNum + ".xml");
 		init();
 	}

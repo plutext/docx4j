@@ -88,7 +88,7 @@ implements XPathEnabled<E> {
 			
 			InputStream is = null;
 			try {
-				String name = this.partName.getName();
+				String name = this.getPartName().getName();
 				
 				try {
 					this.setContentLengthAsLoaded(

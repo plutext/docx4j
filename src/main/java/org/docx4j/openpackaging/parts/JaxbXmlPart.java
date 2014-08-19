@@ -115,17 +115,21 @@ public abstract class JaxbXmlPart<E> extends Part {
 		// Lazy unmarshal
 		InputStream is = null;
 		if (jaxbElement==null) {
+			if (this.getPackage()==null) {
+				log.warn("This part not added to a package, so its contents can't be retrieved. " );
+				return null;
+			}
 			PartStore partStore = this.getPackage().getSourcePartStore();
 			if (partStore==null) {
 				log.warn("No PartStore defined for this package (it was probably created, not loaded). " );
-				log.warn(partName.getName() + ": did you initialise its contents to something?");
+				log.warn(this.getPartName().getName() + ": did you initialise its contents to something?");
 				return null;
 				// or we could create it, with a bit of effort;
 				// as to which see http://stackoverflow.com/questions/1090458/instantiating-a-generic-class-in-java
 			} 			
 			
 			try {
-				String name = this.partName.getName();
+				String name = this.getPartName().getName();
 				
 				try {
 					if (partStore!=null) {
@@ -220,7 +224,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 		if (jaxbElement==null) {
 
 			PartStore partStore = this.getPackage().getSourcePartStore();
-			String name = this.partName.getName();
+			String name = this.getPartName().getName();
 			InputStream is = partStore.loadPart( 
 					name.substring(1));
 			if (is==null) {

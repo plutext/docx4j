@@ -42,6 +42,7 @@ import java.util.zip.ZipInputStream;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -217,11 +218,8 @@ public class LoadFromZipNG extends Load {
 		}
 		
 		// .. now find the name of the main part
-		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(null, partByteArrays, partName);
-		if (rp==null) {
-			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
-		}
+		RelationshipsPart rp = RelationshipsPart.createPackageRels();
+		populatePackageRels(partByteArrays, rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		String pkgContentType = ctm.getContentType(new PartName("/" + mainPartName));
@@ -258,20 +256,29 @@ public class LoadFromZipNG extends Load {
 		 return p;
 	}
 	
+	private void populatePackageRels(HashMap<String, ByteArray> partByteArrays, RelationshipsPart rp) 
+			throws Docx4JException {
+		
+		InputStream is = null;
+		try {
+			is =  getInputStreamFromZippedPart( partByteArrays,  "_rels/.rels");
+			if (is==null) {
+				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
+			}
+			rp.unmarshal(is);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
+			
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
+	
 	//private RelationshipsPart getRelationshipsPartFromZip(Base p, ZipFile zf, String partName) 
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, HashMap<String, ByteArray> partByteArrays, String partName) 
 			throws Docx4JException {
-//			Document contents = null;
-//			try {
-//				contents = getDocumentFromZippedPart( zf,  partName);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				throw new Docx4JException("Error getting document from Zipped Part", e);
-//				
-//			} 
-//		// debugPrint(contents);
-//		// TODO - why don't any of the part names in this document start with "/"?
-//		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
 		
 		RelationshipsPart rp = null;
 		
@@ -279,8 +286,9 @@ public class LoadFromZipNG extends Load {
 		try {
 			is =  getInputStreamFromZippedPart( partByteArrays,  partName);
 			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
-			rp = new RelationshipsPart(new PartName("/" + partName) );
-			rp.setSourceP(p);
+//			rp = new RelationshipsPart(new PartName("/" + partName) );
+//			rp.setSourceP(p);
+			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
@@ -462,8 +470,8 @@ public class LoadFromZipNG extends Load {
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
 			addPartsFromRelationships(partByteArrays, part, rrp, ctm );
-			String relPart = PartName.getRelationshipsPartName(
-					part.getPartName().getName().substring(1) );
+//			String relPart = PartName.getRelationshipsPartName(
+//					part.getPartName().getName().substring(1) );
 //			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}

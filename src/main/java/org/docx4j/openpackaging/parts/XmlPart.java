@@ -89,7 +89,7 @@ public abstract class XmlPart extends Part {
             DocumentBuilder documentBuilder = XmlUtils.getNewDocumentBuilder();  
             doc = documentBuilder.parse(is);
 		} catch (Exception e) {
-			throw new Docx4JException("Problems parsing InputStream for part " + this.partName.getName(), e);
+			throw new Docx4JException("Problems parsing InputStream for part " + this.getPartName().getName(), e);
 		} 
 	}	
 

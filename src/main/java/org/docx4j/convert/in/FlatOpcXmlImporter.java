@@ -230,9 +230,9 @@ public class FlatOpcXmlImporter  {
 				return null;
 			}
 			
-			rp = createRelationshipsPart(part);
-			rp.setSourceP(p);
-						
+			rp = p.getRelationshipsPart(true);
+			populateRelationshipsPart(rp,  part.getXmlData().getAny());
+									
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Docx4JException("Error getting document from XmlPackage:" + partName, e);
@@ -242,10 +242,8 @@ public class FlatOpcXmlImporter  {
 		return rp;
 	}
 
-	public static RelationshipsPart createRelationshipsPart(org.docx4j.xmlPackage.Part part) throws InvalidFormatException, JAXBException {
+	public static RelationshipsPart populateRelationshipsPart(RelationshipsPart rp, org.w3c.dom.Element el) throws InvalidFormatException, JAXBException {
 		
-		RelationshipsPart rp = new RelationshipsPart( new PartName(part.getName() ) );
-		org.w3c.dom.Element el = part.getXmlData().getAny();		
 		rp.setRelationships( (Relationships)rp.unmarshal(el) );
 		
 		return rp;		
