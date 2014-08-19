@@ -87,6 +87,7 @@ import java.math.BigInteger;
 
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.Lvl;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
@@ -300,12 +301,14 @@ public class Emulator {
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
 			
-			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			triple.lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
+			
+			PPr ppr = triple.getLvl().getPPr();
 			if (ppr!=null) {
 				triple.ind = ppr.getInd();
 			}
 			
-			triple.rPr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getRPr();
+			triple.rPr = triple.getLvl().getRPr();
 			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
@@ -455,7 +458,9 @@ public class Emulator {
 
 			// don't IncrementCounter here
 			
-			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			Lvl lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
+			PPr ppr = lvl.getPPr();
+			
 			if (ppr==null) {
 				return null;
 			} else {
@@ -523,6 +528,11 @@ public class Emulator {
 		}
 		
 		Ind ind = null;
+    	/**
+    	 * Use getLvl().getPPr().getInd() instead
+    	 * @return
+    	 */
+    	@Deprecated // consider whether to add getPpr and access via that.  
 		public Ind getIndent() {
 			return ind;
 		}
@@ -531,7 +541,16 @@ public class Emulator {
 	    RPr rPr;
 	    public RPr getRPr() {
 			return rPr;
-		}		
+		}
+	    
+	    Lvl lvl;
+		/**
+		 * @return
+		 * @since 3.2.0
+		 */
+		public Lvl getLvl() {
+			return lvl;
+		}
     }
 
 }
