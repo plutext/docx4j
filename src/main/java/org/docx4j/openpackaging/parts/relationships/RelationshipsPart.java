@@ -59,8 +59,6 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -77,6 +75,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -86,27 +86,11 @@ import org.docx4j.relationships.Relationships;
 public final class RelationshipsPart extends JaxbXmlPart<Relationships> { 
 
 	private static Logger log = LoggerFactory.getLogger(RelationshipsPart.class);
-	
 
-	/**
-	 * Constructor.
-	 */
-	public RelationshipsPart(PartName partName) throws InvalidFormatException {
-		super(partName);
-		init();
-	}
-	// NB partName is the partName of this relationship part,
-	// not the source Part.  sourceP above has the 
-	// sourcePartName, which will be required in order to resolve 
-	// relative targets
-
-	public RelationshipsPart() throws InvalidFormatException {
-		super(new PartName("/_rels/.rels"));
-		init();
-	}
-	
 	/**
 	 * Constructor.  Creates an appropriately named .rels XML document.
+	 * 
+	 * Often invoked via sourceP.getRelationshipsPart(true)  // create rels part
 	 * 
 	 * @param sourceP
 	 * 			  Source part for these relationships
@@ -118,7 +102,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			throws InvalidFormatException {
 		
 		super(new PartName(PartName.getRelationshipsPartName(
-				sourceP.getPartName().getName() )) );
+				sourceP.getPartName().getName() )) ); // though we won't be using that, since it is dynamic
 		
 		this.sourceP = sourceP;
 		init();
@@ -133,7 +117,31 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		jaxbElement = factory.createRelationships();		
 	}
+
 		
+	/**
+	 * You probably don't want this one (though it is useful for reflection). If you do use it, you need to setPartName
+	 * @throws InvalidFormatException
+	 */
+	public RelationshipsPart() throws InvalidFormatException {
+		super(new PartName("/blagh")); // 
+		init();
+	}
+	
+	/**
+	 * @return
+	 * @throws InvalidFormatException
+	 * @since 3.2.0, at which time related constructor was made private
+	 */
+	public static RelationshipsPart createPackageRels() throws InvalidFormatException {
+		RelationshipsPart rp = new RelationshipsPart(new PartName("/_rels/.rels"));
+		return rp;
+	}
+	private RelationshipsPart(PartName partname) throws InvalidFormatException {
+		super(partname);
+		init();
+	}
+
 	
 	public void init() {		
 		// Used if this Part is added to [Content_Types].xml 
@@ -142,6 +150,29 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 		setJAXBContext(Context.jcRelationships);				
 	}
+	
+
+	@Override
+	public PartName getPartName() {
+		
+		// Calculate rels part name dynamically where possible;
+		// this ensures it is named appropriately
+		// if its source part's name changes 
+		// (eg AddPartBehaviour.RENAME_IF_NAME_EXISTS)
+		if (this.getSourceP()!=null
+				&& (!(this.getSourceP() instanceof OpcPackage))) {
+			try {
+				return new PartName(PartName.getRelationshipsPartName(
+						sourceP.getPartName().getName() ));
+			} catch (InvalidFormatException e) {
+				log.error(e.getMessage(), e);
+				throw new RuntimeException(e);
+			}
+		} else {
+			return super.getPartName();
+		}
+	}
+	
 	
 	public static RelationshipsPart createRelationshipsPartForPart(
 			Base sourcePart) {
@@ -263,7 +294,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	
 			try {
 				uri = org.docx4j.openpackaging.URIHelper
-						.resolvePartUri(sourceP.partName.getURI(), new URI(
+						.resolvePartUri(sourceP.getPartName().getURI(), new URI(
 								r.getTarget()));
 			} catch (URISyntaxException e) {
 				log.error("Cannot convert " + r.getTarget()
@@ -438,7 +469,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				part = this.getPackage().getParts().get( newPartName );
 				
 				// if rel already exists, return that				
-				// if rel doesn't exist (the part does), create a rel to it				
+				// if rel doesn't exist (the part does), create a rel to it
+				if (log.isDebugEnabled()) {
+					boolean exists = (part!=null);
+					log.debug("part exists: " + exists);
+				}
 			}
 			
 			if (mode.equals(AddPartBehaviour.RENAME_IF_NAME_EXISTS)) {
@@ -458,10 +493,17 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 							"." , 
 							this.getPackage().getParts().getParts() );										
 				}
-				part.partName = newPartName; // access directly
+				part.setPartName(newPartName); // access directly
+				log.debug(".. renamed to " + newPartName );
 				
 				// this partname is globally unique in the docx
 				// so rel won't exist
+				
+				// Could have added in 3.2.0, but not required, since instead we work out the name dynamically  
+				//	if (part.getRelationshipsPart()!=null) {
+				//		part.getRelationshipsPart().setPartName(
+				//				new PartName(PartName.getRelationshipsPartName( newPartName.getName() )));					
+				//	}
 								
 			}				
 		}
@@ -503,6 +545,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			}
 		}
 
+		if (log.isDebugEnabled()) {
+			boolean exists = (existsAlready!=null);
+			log.debug("rel exists: " + exists);
+		}
+		
 		if (existsAlready!=null
 				&& mode.equals(AddPartBehaviour.REUSE_EXISTING)) {
 			log.debug("Returning preexisting rel");
@@ -694,7 +741,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			// Remove parts it references
 			if (part.getRelationshipsPart()!=null) {
 				removedParts.addAll(
-						part.getRelationshipsPart().removeParts() );
+						part.getRelationshipsPart().removeParts() ); // the recursive bit
 				
 				// part.setRelationships(null);  // Unnecessary
 			}			
@@ -763,11 +810,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			if (sourceP==null) {
 				// This rels part isn't attached!
 				resolvedTargetURI = org.docx4j.openpackaging.URIHelper
-				.resolvePartUri(new URI(inferSourcePartName(this.partName.getName())), new URI(
+				.resolvePartUri(new URI(inferSourcePartName(this.getPartName().getName())), new URI(
 						rel.getTarget()));				
 			} else {
 				resolvedTargetURI = org.docx4j.openpackaging.URIHelper
-						.resolvePartUri(sourceP.partName.getURI(), new URI(
+						.resolvePartUri(sourceP.getPartName().getURI(), new URI(
 								rel.getTarget()));
 			}
 		} catch (URISyntaxException e) {
@@ -792,7 +839,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		if (rel == null)
 			throw new IllegalArgumentException("rel");
 		
-		jaxbElement.getRelationship().remove(rel);
+		if (jaxbElement.getRelationship().remove(rel)) {
+			// removed ok
+		} else {
+			log.warn("Couldn't find rel " + rel.getId() + " " + rel.getTarget());
+		}
 
 	}
 	
@@ -822,11 +873,31 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		if (relToBeRemoved==null) {
 			// The Part may be in the package somewhere, but its not
 			// a target of this relationships part!
-			throw new IllegalArgumentException(partName + " is not a target of " + this.partName );
+			throw new IllegalArgumentException(partName + " is not a target of " + this.getPartName() );
 		} else {
 			removeRelationship(relToBeRemoved);				
 		}
 		
+	}
+	
+	
+	/**
+	 * Remove relationships by type (eg Namespaces.PRESENTATIONML_SLIDE_LAYOUT) 
+	 * 
+	 * @param type
+	 * @since 3.2.0
+	 */
+	public void removeRelationshipsByType(String type) {
+		
+		List<Relationship> relsToClear = new ArrayList<Relationship>();
+		for (Relationship r : this.getRelationships().getRelationship()) {
+			if (r.getType().equals(type)) {
+				relsToClear.add(r);
+			}
+		}
+		for (Relationship r : relsToClear) {
+			this.getRelationships().getRelationship().remove(r);
+		}	
 	}
 	
 	/**
