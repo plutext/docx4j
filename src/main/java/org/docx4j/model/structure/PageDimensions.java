@@ -22,14 +22,14 @@ package org.docx4j.model.structure;
 
 import java.math.BigInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgMar;
 import org.docx4j.wml.SectPr.PgSz;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wraps PgSz (Page size) and PgMar (margin settings).
@@ -299,8 +299,14 @@ public class PageDimensions {
 	}	
 	
 		
-	public int getWritableWidthTwips() {		
-		return pgSz.getW().intValue() - (pgMar.getLeft().intValue() + pgMar.getRight().intValue());
+	public int getWritableWidthTwips() {
+		
+		int gutter = 0;		
+		if (pgMar.getGutter()!=null) {
+			gutter = pgMar.getGutter().intValue();
+		}
+		
+		return pgSz.getW().intValue() - (gutter + pgMar.getLeft().intValue() + pgMar.getRight().intValue());
 	}
 
 	/**headers/footers into account!
