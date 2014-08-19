@@ -118,6 +118,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			transformParameters.put("wmlPackage", (WordprocessingMLPackage)pkg);			
 			transformParameters.put("sourcePart", part);			
 			transformParameters.put("xPathsPart", xPathsPart);			
+			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
@@ -298,7 +299,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			String sdtParent,
 			String contentChild,				
 			NodeIterator rPrNodeIt, 
-			String tag) {
+			String tag,
+			Map<String, Integer> sequenceCounters) {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 		
@@ -315,6 +317,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			log.error(e.getMessage(), e);
 			return xhtmlError(sdtParent, docContainer, docfrag, "Missing XHTML Handler!");
 	    }		
+	    
+	    xHTMLImporter.setSequenceCounters(sequenceCounters);
 	    
 		
 		QueryString qs = new QueryString();

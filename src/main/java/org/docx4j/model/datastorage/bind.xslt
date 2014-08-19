@@ -24,6 +24,7 @@
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="sourcePart"/> <!-- select="'passed in'"-->	
 <xsl:param name="xPathsPart"/> <!-- select="'passed in'"-->	
+<xsl:param name="sequenceCounters"/>
 
   <xsl:template match="/ | @*|node()">
     <xsl:copy>
@@ -288,7 +289,8 @@
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tr">
 				  			<!--  no reason in principle why we couldn't convert
@@ -307,7 +309,8 @@
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tc">
 				  			<!--  no reason in principle why we couldn't convert
@@ -325,7 +328,8 @@
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:p">
 				  		
@@ -345,7 +349,8 @@
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters )" />
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level 
 				  		
@@ -364,7 +369,8 @@
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
