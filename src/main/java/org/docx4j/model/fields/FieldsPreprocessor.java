@@ -228,12 +228,24 @@ public class FieldsPreprocessor {
 		
 	}
 	
+	/**
+	 * Its preserved, if it is locked.
+	 * 
+	 * If it isn't locked, it is preserved unless its a MERGEFIELD or a DOCPROPERTY field.
+	 * 
+	 * @param fieldRef
+	 * @return
+	 */
 	private boolean preserveResult(FieldRef fieldRef) {
 		
 		if (fieldRef.isLock()) return true;
 		
-		if (fieldRef.getFldName().equals("MERGEFIELD")
-				|| fieldRef.getFldName().equals("DOCPROPERTY")) {
+		
+		String fldName = fieldRef.getFldName();
+		if (fldName==null) return true;
+		
+		if (fldName.equals("MERGEFIELD")
+				|| fldName.equals("DOCPROPERTY")) {
 			return false;
 		}
 		return true;

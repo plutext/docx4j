@@ -4,18 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.xml.bind.JAXBElement;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.CTFFData;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
-import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The objective of this class is to represent a complex field
@@ -301,7 +298,14 @@ public class FieldRef {
 			return FormattingSwitchHelper.getFldSimpleName( ((Text)o).getValue() );
 		} else {
 			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			if (o instanceof FieldRef) {
+				// contains a nested field?!
+				FieldRef nested = (FieldRef)o;
+				log.error("Nested field " + nested.getFldName() );				
+				
+			} else {
+				log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+			}
 			return null;
 		}
 	}	
