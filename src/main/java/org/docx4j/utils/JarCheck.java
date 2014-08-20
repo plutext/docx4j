@@ -20,6 +20,9 @@
  */
 package org.docx4j.utils;
 
+import static java.lang.System.err;
+import static java.lang.System.out;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,12 +30,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static java.lang.System.err;
-import static java.lang.System.out;
-/*
-TODO: check class minor version as well.
-     */
 
 /**
  * Ensures javac -target versions of the class files in a jar are as expected.

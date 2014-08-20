@@ -93,7 +93,7 @@ public class SectPrFinder extends CallbackImpl {
 		if (o instanceof P) {
 			P p = (P)o;
 			if ( p.getPPr()!=null && p.getPPr().getSectPr()!=null ) {
-				System.out.println("Found sectpr!");
+//				System.out.println("Found sectpr!");
 				sectPrList.add(p.getPPr().getSectPr());
 			}
 		}
@@ -102,7 +102,7 @@ public class SectPrFinder extends CallbackImpl {
 	
 	public boolean shouldTraverse(Object o) {
 		
-		System.out.println(o.getClass().getName() );
+//		System.out.println(o.getClass().getName() );
 		
 		return !(o instanceof P
 				|| o instanceof org.docx4j.wml.Tbl); 
