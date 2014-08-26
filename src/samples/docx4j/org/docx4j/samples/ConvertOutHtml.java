@@ -49,7 +49,7 @@ public class ConvertOutHtml extends AbstractSample {
 	
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 
-		save = false;
+		save = true;
 	}
 
 	static boolean save;
