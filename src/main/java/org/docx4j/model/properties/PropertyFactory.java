@@ -65,6 +65,7 @@ import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.Highlight;
 import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.PBdr;
@@ -557,14 +558,29 @@ public class PropertyFactory {
 				return new FontSize(value);
 			} else if (name.equals(RShading.CSS_NAME )) {
 			    // background color
-			    if(value.getCssText().toLowerCase().equals("transparent")){
+			    if(value==null 
+			    		|| value.getCssText()==null
+			    		|| value.getCssText().trim().length()==0
+			    		) {
+			    	log.warn("Ignoring CSS property " + name + " with null or empty value");
+			        return null;			    	
+			    } else if ( value.getCssText().toLowerCase().equals("transparent")){
 			        return null;
 			    }
 			    
 			    if (shouldUseHighlightInRPr()) {
 			    	// Highlight needs "red", not "#FF0000", but our code 
 			    	// is ok with this as long as the color is in the enumeration from the spec
-			        return new HighlightColor(value);
+			    	HighlightColor highlightColor = new HighlightColor(value);
+			    	
+//			    	System.out.println(XmlUtils.marshaltoString((Highlight)highlightColor.getObject()));
+			    	
+			    	
+			    	if ( ((Highlight)highlightColor.getObject()).getVal()==null) {
+			    		return null; // Word 2010 x64 can't open the docx if it contains <w:highlight/>!
+			    	} else {
+			    		return highlightColor;
+			    	}
 			    } else {
 			        return new RShading(value);
 			    }

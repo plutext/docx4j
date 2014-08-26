@@ -80,7 +80,7 @@ import javax.xml.bind.annotation.XmlType;
 public class Highlight implements Child
 {
 	
-	protected static Logger log = LoggerFactory.getLogger(PropertyFactory.class);
+	protected static Logger log = LoggerFactory.getLogger(Highlight.class);
 	
 	// See http://www.w3.org/TR/css3-color/#svg-color, except for darkYellow (for which I've used gold)
 	private final static String[][] colors = { { "black", "000000" }, { "blue", "0000FF" },
@@ -159,7 +159,7 @@ public class Highlight implements Child
         		}
         	}
         	
-    		log.warn("use enumerated color, or implement algorithm to map to closest color: '" + value + "'");
+    		log.error("use enumerated color, or implement algorithm to map to closest color: '" + value + "'");
         	
     	} else if (value.trim().contains("rgb")) {
     		
