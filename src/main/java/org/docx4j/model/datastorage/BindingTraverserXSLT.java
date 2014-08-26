@@ -169,7 +169,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	private static DocumentFragment placeholderFragment = null;
 	private static byte[] placeholderBytes = null;
 	private static final String placeholderResourceFallback = "org/docx4j/model/datastorage/placeholder.xml";
-	private static final String placeholderResource = "OpenDoPE/placeholder.xml";
+	private static final String placeholderResource = "OpenDoPE/placeholder.xml"; // default, can be overridden since 3.2.0
 	
 	private static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
 		
@@ -253,10 +253,10 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		// create it - one time operation
 		InputStream is;
 		try {
-			is = ResourceUtils.getResource(placeholderResource);
+			is = ResourceUtils.getResourceViaProperty("docx4j.model.datastorage.placeholder"  ,  placeholderResource);
 			
 		} catch (IOException e) {
-			log.info("No resource on classpath at OpenDoPE/placeholder.xml; falling back to using org/docx4j/model/datastorage/placeholder.xml");
+			log.info("No resource on classpath for property docx4j.model.datastorage.placeholder; falling back to using org/docx4j/model/datastorage/placeholder.xml");
 			is = ResourceUtils.getResource(placeholderResourceFallback);
 			
 		}
@@ -269,10 +269,10 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		// Only want to do this once
 		InputStream is;
 		try {
-			is = ResourceUtils.getResource(placeholderResource);
+			is = ResourceUtils.getResourceViaProperty("docx4j.model.datastorage.placeholder"  ,  placeholderResource);
 			
 		} catch (IOException e) {
-			log.info("No resource on classpath at OpenDoPE/placeholder.xml; falling back to using org/docx4j/model/datastorage/placeholder.xml");
+			log.info("No resource on classpath at docx4j.model.datastorage.placeholder; falling back to using org/docx4j/model/datastorage/placeholder.xml");
 			is = ResourceUtils.getResource(placeholderResourceFallback);
 			
 		}

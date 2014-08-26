@@ -9,7 +9,7 @@ Version 3.2.0
 Release date
 ------------
 
-__ August 2014
+26 August 2014
 
 
 Contributors to this release
@@ -18,6 +18,7 @@ Contributors to this release
 BobFleischman
 apixandru
 Jason Harrop
+Sven Jacobi 
 
 
 Dependency changes
@@ -29,6 +30,8 @@ Dependency changes
 Notable Changes in Version 3.2.0
 ---------------------------------
 
+d150d9c7f6 *Security fix*  Configure DocumentBuilderFactory to disallow doctype declaration etc. (reported by Sven Jacobi)
+
 FO/PDF output: miscellaneous improvements, including:
 
    header/footer height calculation
@@ -37,7 +40,6 @@ FO/PDF output: miscellaneous improvements, including:
    support FOP config font substitutions
    formatting of list item label   
    generally use per class logging, since this makes it easier to see where the message is generated 
-   New property "docx4j.fonts.microsoft.MicrosoftFonts"  (defaults to "org/docx4j/fonts/microsoft/MicrosoftFonts.xml"), so that file can be overridden outside the jar
    Add GlyphCheck; improve support for Arial Unicode MS 
    For Wingding etc symbols, use hAnsi font ; https://github.com/plutext/docx4j/issues/118 
    PDF events
@@ -56,8 +58,6 @@ FO/PDF output: miscellaneous improvements, including:
 New docx4j.properties
 ---------------------
 
-31mf0fbd9f User can override org/docx4j/jaxb/mc-preprocessor.xslt with an xslt on their classpath named custom-preprocessor.xslt
-
 	# PDF output; ability to specify font substitutions.  See src/samples/_resources
 	# Avoid using both this and fontMapper.getFontMappings() for the same fonts!
 	#docx4j.fonts.fop.util.FopConfigUtil.substitutions=fop-substitutions.xml
@@ -71,7 +71,7 @@ New docx4j.properties
 	# In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000"
 	# Set this to true to use w:highlight instead 
 	#docx4j.model.properties.PropertyFactory.createPropertyFromCssName.background-color.useHighlightInRPr=false
-	
+		
 	# Defaults to org/docx4j/jaxb/mc-preprocessor.xslt
 	docx4j.jaxb.JaxbValidationEventHandler=custom-preprocessor.xslt
 	
@@ -91,11 +91,28 @@ New docx4j.properties
 	# ~/.docx4all/temporary embedded fonts
 	# (creating it if necessary).
 	#docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir=c:\\temp
+	
+	# .. placeholder to use instead of "Click here to enter text" 
+	# Defaults to OpenDoPE/placeholder.xml, and if nothing is there,
+	# will fallback to org/docx4j/model/datastorage/placeholder.xml (which is in the docx4j jar)
+	#docx4j.model.datastorage.placeholder=OpenDoPE/placeholder.xml	
+	# What is new is that you can override that location (ie so you don't have to create an OpenDoPE folder)
    
+Pptx4j
+------
+
+d1b60a96e7 pptx4j: dedicated parts for slide comments 
+
+b452e79852 Support for opening pptm/potx/potm files
 
 Other Changes (non-exhaustive)
 ------------------------------
 
+8e640dafb7 dedicated parts for VbaProjectSignature
+
+9d714432db partName is now private; has getter/setter
+
+e66884b830 Create rels part name dynamically
    
 31mff84cf0  DocumentModel: use SectPrFinder to find the sectPr (which means it will now find sectPr inside content controls) 
 
@@ -129,8 +146,7 @@ Import XHTML
 
 31mdf84571 Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx 
 
-
-
+31mf0fbd9f User can override org/docx4j/jaxb/mc-preprocessor.xslt with an xslt on their classpath named custom-preprocessor.xslt
 
 
 
