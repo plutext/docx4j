@@ -82,7 +82,7 @@ public class PdfMultipleThreads  {
 
 		PhysicalFont font 
 				= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
-		fontMapper.getFontMappings().put("Calibri", font);
+		fontMapper.put("Calibri", font);
     	
 		// OK, initial overhead done; let's start the test
 		

@@ -23,6 +23,11 @@ When it comes to the actual release, follow the below for:
 
 + docx4j-MOXy
 
++ Enterprise Ed. 
+
++ .NET dist
+
+
 TODO: consider which (if either) of xhtmlrenderer and docx4j-ImportXHTML should contain .css & .conf resources
 
 TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
