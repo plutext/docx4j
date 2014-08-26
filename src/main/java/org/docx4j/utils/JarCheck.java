@@ -279,7 +279,7 @@ public final class JarCheck
 //          int high = convertHumanToMachine.get( args[ 2 ] );
           
         int low  = convertHumanToMachine.get( "1.3" );
-        int high = convertHumanToMachine.get( "1.5" );
+        int high = convertHumanToMachine.get( "1.6" );
             
             String dirPath = System.getProperty("user.dir") + "/dist/";
             
