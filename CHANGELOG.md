@@ -26,6 +26,8 @@ Dependency changes
 
 31mb1c1646 Add new dependency com.google.guava
 
+Minimum Java version is Java 6 (since guava and ambassador are compiled for that)
+
 
 Notable Changes in Version 3.2.0
 ---------------------------------
