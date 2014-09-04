@@ -21,6 +21,7 @@
 package org.docx4j.samples;
 
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,6 +30,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.Docx4J;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
@@ -48,7 +50,10 @@ import org.docx4j.wml.Document;
 public class CompareDocuments {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
+	
+	static boolean DOCX_SAVE = true;
 
+	static boolean PDF_SAVE = false;
 	/**
 	 * @param args
 	 */
@@ -82,8 +87,8 @@ public class CompareDocuments {
 		// 3. Get the result
 		String contentStr = sw.toString();
 		System.out.println("Result: \n\n " + contentStr);
-		Body newBody = (Body) org.docx4j.XmlUtils
-				.unmarshalString(contentStr);
+		Body newBody = (Body) XmlUtils.unwrap(
+				XmlUtils.unmarshalString(contentStr));
 		
 		// 4. Display the result as a PDF
 		// To do this, we'll replace the body in the newer document
@@ -92,36 +97,41 @@ public class CompareDocuments {
 		RelationshipsPart rp = newerPackage.getMainDocumentPart().getRelationshipsPart(); 
 		handleRels(pd, rp);						
 		
-		
-		newerPackage.setFontMapper(new IdentityPlusMapper());	
-		
-		boolean saveFO = false;
-		String outputfilepath = System.getProperty("user.dir") +  "/OUT_CompareDocuments.pdf";
-		
-		// FO exporter setup (required)
-		// .. the FOSettings object
-    	FOSettings foSettings = Docx4J.createFOSettings();
-		if (saveFO) {
-			foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") +  "/OUT_CompareDocuments..fo"));
+		if (DOCX_SAVE) {
+			newerPackage.save(new File(System.getProperty("user.dir") +"/OUT_CompareDocuments.docx"));
 		}
-		foSettings.setWmlPackage(newerPackage);
-		// Document format: 
-		// The default implementation of the FORenderer that uses Apache Fop will output
-		// a PDF document if nothing is passed via 
-		// foSettings.setApacheFopMime(apacheFopMime)
-		// apacheFopMime can be any of the output formats defined in org.apache.fop.apps.MimeConstants or
-		// FOSettings.INTERNAL_FO_MIME if you want the fo document as the result.
 		
-		
-		// exporter writes to an OutputStream.		
-		OutputStream os = new java.io.FileOutputStream(outputfilepath);
-    	
-
-		//Don't care what type of exporter you use
-		Docx4J.toFO(foSettings, os, Docx4J.FLAG_NONE);
-
-		
-		System.out.println("Saved " + System.getProperty("user.dir")  +  "/OUT_CompareDocuments.pdf");
+		if (PDF_SAVE) {
+			
+			newerPackage.setFontMapper(new IdentityPlusMapper());	
+			
+			boolean saveFO = false;
+			String outputfilepath = System.getProperty("user.dir") +  "/OUT_CompareDocuments.pdf";
+			
+			// FO exporter setup (required)
+			// .. the FOSettings object
+	    	FOSettings foSettings = Docx4J.createFOSettings();
+			if (saveFO) {
+				foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") +  "/OUT_CompareDocuments..fo"));
+			}
+			foSettings.setWmlPackage(newerPackage);
+			// Document format: 
+			// The default implementation of the FORenderer that uses Apache Fop will output
+			// a PDF document if nothing is passed via 
+			// foSettings.setApacheFopMime(apacheFopMime)
+			// apacheFopMime can be any of the output formats defined in org.apache.fop.apps.MimeConstants or
+			// FOSettings.INTERNAL_FO_MIME if you want the fo document as the result.
+			
+			
+			// exporter writes to an OutputStream.		
+			OutputStream os = new java.io.FileOutputStream(outputfilepath);
+	    	
+	
+			//Don't care what type of exporter you use
+			Docx4J.toFO(foSettings, os, Docx4J.FLAG_NONE);
+			
+			System.out.println("Saved " + System.getProperty("user.dir")  +  "/OUT_CompareDocuments.pdf");
+		}
 				
 	}
 
