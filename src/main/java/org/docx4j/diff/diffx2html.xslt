@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:dfx="http://www.topologi.org/2004/Diff-X"
-    xmlns:del="http://www.topologi.org/2004/Diff-X/Delete"
+  	xmlns:dfx="http://www.topologi.com/2005/Diff-X"
+    xmlns:del="http://www.topologi.com/2005/Diff-X/Delete"
     xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"
     xmlns:ns2="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
     xmlns:ns4="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
