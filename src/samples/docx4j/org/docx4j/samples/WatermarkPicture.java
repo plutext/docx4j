@@ -15,6 +15,15 @@ import org.docx4j.wml.Hdr;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
 
+/**
+ * 
+ * A watermark is set via the headers.
+ * 
+ *  This is different to w:document/w:background (see BackgroundImage sample for that,
+ *  though this WatermarkPicture is probably what you want.)
+ *  
+ * @author jharrop
+ */
 public class WatermarkPicture
 {
 
