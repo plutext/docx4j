@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   	xmlns:dfx="http://www.topologi.com/2005/Diff-X"
     xmlns:del="http://www.topologi.com/2005/Diff-X/Delete"
+    xmlns:ins="http://www.topologi.com/2005/Diff-X"
     xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
  	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"    
@@ -949,6 +950,74 @@ java.lang.IllegalArgumentException:
 	<xsl:template match="w:tcPr[@dfx:delete]"> <!--  normal mode -->
 		<w:tcPr>
 			<xsl:apply-templates  mode="deleted-table" /> <!--  swap mode -->
+		</w:tcPr>
+	</xsl:template>
+	
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- ++++++ TABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++ - inserted  ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<xsl:template match="w:tbl[@dfx:insert]">
+		<!-- Handled at tr level -->
+		<w:tbl>
+			<xsl:apply-templates mode="inserted-table"/>
+		</w:tbl>
+	</xsl:template>
+
+	<!--  drop @dfx:delete -->
+	<xsl:template match="@dfx:insert" priority="5" mode="inserted-table" />
+
+	<xsl:template match="@*|node()" mode="inserted-table">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" mode="inserted-table" />
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="@ins:*" priority="5" mode="inserted-table" />
+		    
+	<!--  handle case of no w:trPr  -->	    
+	<xsl:template match="w:tr[@dfx:insert]" mode="inserted-table">
+	<w:tr>
+		<xsl:choose>
+			<xsl:when test="count(w:trPr)=0">
+				<w:trPr>
+					<xsl:variable name="id"
+						select="java:org.docx4j.diff.Differencer.getId()" />
+					<w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!-- w:date is optional -->
+				</w:trPr>
+				<xsl:apply-templates mode="inserted-table"/>				
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates mode="inserted-table"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</w:tr>
+	</xsl:template>
+	
+	<!--  existing w:trPr  -->	    
+	<xsl:template match="w:trPr[@dfx:insert]" mode="inserted-table">
+
+			<xsl:variable name="id" 
+							select="java:org.docx4j.diff.Differencer.getId()" />
+	
+			<w:trPr>
+				<xsl:apply-templates mode="inserted-table"/>
+				
+			    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!--  w:date is optional -->
+		    </w:trPr>		
+
+	</xsl:template>
+	
+	<xsl:template match="w:tc[@dfx:insert]"  mode="inserted-table">
+		<w:tc>
+			<xsl:apply-templates /> <!--  normal mode, for w:p etc -->
+		</w:tc>
+	</xsl:template>
+	
+	<xsl:template match="w:tcPr[@dfx:insert]"> <!--  normal mode -->
+		<w:tcPr>
+			<xsl:apply-templates  mode="inserted-table" /> <!--  swap mode -->
 		</w:tcPr>
 	</xsl:template>
 	
