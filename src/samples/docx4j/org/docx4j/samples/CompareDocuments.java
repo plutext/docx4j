@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 
@@ -34,12 +35,18 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Document;
+
+import com.topologi.diffx.Docx4jDriver;
 
 
 /**
@@ -54,6 +61,15 @@ public class CompareDocuments {
 	static boolean DOCX_SAVE = true;
 
 	static boolean PDF_SAVE = false;
+	
+	
+	/**
+	 * Split up the problem to try to solve more quickly
+	 * (you might try this when you have 500 entries or more)
+	 */
+	static boolean DIVIDE_AND_CONQUER = false;
+	
+	
 	/**
 	 * @param args
 	 */
@@ -61,7 +77,7 @@ public class CompareDocuments {
 
 		String newerfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 		String olderfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
-						
+		
 		// 1. Load the Packages
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
 		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath));
@@ -76,13 +92,24 @@ public class CompareDocuments {
 		javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(
 				sw);
 		Calendar changeDate = null;
+		
+		Differencer pd = null;
+		if (DIVIDE_AND_CONQUER) {
 
-		Differencer pd = new Differencer();
-		pd.setRelsDiffIdentifier("blagh"); // not necessary in this case 
-		pd.diff(newerBody, olderBody, result, "someone", changeDate,
-				newerPackage.getMainDocumentPart().getRelationshipsPart(),
-				olderPackage.getMainDocumentPart().getRelationshipsPart() 
-				);
+			Docx4jDriver.diff( XmlUtils.marshaltoW3CDomDocument(newerBody).getDocumentElement(),
+					XmlUtils.marshaltoW3CDomDocument(olderBody).getDocumentElement(),
+					   sw);
+				// The signature which takes Reader objects appears to be broken
+			
+		} else {
+
+			pd = new Differencer();
+			pd.setRelsDiffIdentifier("blagh"); // not necessary in this case 
+			pd.diff(newerBody, olderBody, result, "someone", changeDate,
+					newerPackage.getMainDocumentPart().getRelationshipsPart(),
+					olderPackage.getMainDocumentPart().getRelationshipsPart() 
+					);
+		}
 		
 		// 3. Get the result
 		String contentStr = sw.toString();
@@ -94,8 +121,12 @@ public class CompareDocuments {
 		// To do this, we'll replace the body in the newer document
 		((Document)newerPackage.getMainDocumentPart().getJaxbElement()).setBody(newBody);
 
-		RelationshipsPart rp = newerPackage.getMainDocumentPart().getRelationshipsPart(); 
-		handleRels(pd, rp);						
+		if (DIVIDE_AND_CONQUER) {
+			// No image support at present
+		} else {
+			handleRels(pd, newerPackage.getMainDocumentPart());
+		}
+		
 		
 		if (DOCX_SAVE) {
 			newerPackage.save(new File(System.getProperty("user.dir") +"/OUT_CompareDocuments.docx"));
@@ -139,9 +170,14 @@ public class CompareDocuments {
 		 In the general case, you need to handle relationships.
 		 Although not necessary in this simple example, 
 		 we do it anyway for the purposes of illustration.
+	 * @throws InvalidFormatException 
 		 
 	 */
-	private static void handleRels(Differencer pd, RelationshipsPart rp) {
+	private static void handleRels(Differencer pd, MainDocumentPart newMDP) throws InvalidFormatException {
+		
+		RelationshipsPart rp = newMDP.getRelationshipsPart(); 
+		System.out.println("before: \n" + rp.getXML());		
+		
 		// Since we are going to add rels appropriate to the docs being 
 		// compared, for neatness and to avoid duplication
 		// (duplication of internal part names is fatal in Word,
@@ -160,10 +196,19 @@ public class CompareDocuments {
 		}
 		
 		// Now add the rels we composed
-		List<Relationship> newRels = pd.getComposedRels();
-		for (Relationship nr : newRels) {							
-			rp.addRelationship(nr);
+		Map<Relationship, Part> newRels = pd.getComposedRels();
+		for (Relationship nr : newRels.keySet()) {	
+			
+			Part part = newRels.get(nr);
+			if (part instanceof BinaryPart) { // ensure contents are loaded, before moving to new pkg
+				((BinaryPart)part).getBuffer();
+			}
+			
+			newMDP.addTargetPart(part, nr.getId());
 		}
+		
+		System.out.println("after: \n" + rp.getXML());
+		
 	}
 	
 	

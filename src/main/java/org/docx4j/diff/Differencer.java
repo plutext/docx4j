@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.P;
@@ -103,8 +105,8 @@ public class Differencer {
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
 	
 	// The rels used in the resulting diff
-	private List<Relationship> composedRels = new ArrayList<Relationship>();
-	public List<Relationship> getComposedRels() {
+	private Map<Relationship, Part> composedRels = new HashMap<Relationship,Part>();
+	public Map<Relationship, Part> getComposedRels() {
 		return composedRels;
 	}
 	
@@ -210,6 +212,8 @@ public class Differencer {
 	}
 
 	/**
+	 * This is a Xalan extension function, invoked from diffx2wml.xslt
+	 * 
 	 * Any rel which is present in the results of the comparison must point to
 	 * a valid target of the correct type, or the resulting document will
 	 * be broken.  
@@ -247,12 +251,17 @@ public class Differencer {
 			return;
 		}
 		
+		Part p = docPartRels.getPart(r);
+		
 		Relationship r2 = (Relationship)XmlUtils.deepCopy(r, Context.jcRelationships);
 		
 		r2.setId(newRelId);
 		log.error(".. added rel " + newRelId + " -- " + r2.getTarget() );
 		
-		pd.composedRels.add(r2);
+		
+		
+		
+		pd.composedRels.put(r2, p);
 	}
 
 	/**

@@ -185,8 +185,15 @@ java.lang.IllegalArgumentException:
 
   <xsl:template match="w:r">
 
-       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference"/> 
-      <!-- NB: this XSLT drops run content other than these. What else to keep? -->
+       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference|w:pPr"/> 
+      <!-- NB: 
+      		1.  note w:pPr (!), that's required because diffX might create
+      		
+				    <w:r dfx:insert="true">
+				      <w:pPr dfx:delete="true">
+				        <w:drawing dfx:insert="true">      		
+      		
+      		2. this XSLT drops run content other than these. What else to keep? -->
 
   </xsl:template>
 
