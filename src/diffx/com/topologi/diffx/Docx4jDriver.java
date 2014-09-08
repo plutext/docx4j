@@ -229,17 +229,27 @@ public class Docx4jDriver {
 				if (xml1.getChildNodes().item(i).getNodeType()!=3) {
 					//log("Adding " + xml1.getChildNodes().item(i).getNodeName() );
 					Element e = (Element)xml1.getChildNodes().item(i);
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w",
-							"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp",
-							"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing");
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a",
-							"http://schemas.openxmlformats.org/drawingml/2006/main");
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:pic",
-							"http://schemas.openxmlformats.org/drawingml/2006/picture");
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:r",
-							"http://schemas.openxmlformats.org/officeDocument/2006/relationships");
 					
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "mlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a14", "http://schemas.microsoft.com/office/drawing/2010/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.openxmlformats.org/officeDocument/2006/math" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:mc", "http://schemas.openxmlformats.org/markup-compatibility/2006" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:o", "urn:schemas-microsoft-com:office:office" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:pic", "http://schemas.openxmlformats.org/drawingml/2006/picture");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:v", "urn:schemas-microsoft-com:vml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w10", "urn:schemas-microsoft-com:office:word" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w14", "http://schemas.microsoft.com/office/word/2010/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w15", "http://schemas.microsoft.com/office/word/2012/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wne", "http://schemas.microsoft.com/office/word/2006/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpg", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpi", "http://schemas.microsoft.com/office/word/2010/wordprocessingInk" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wps", "http://schemas.microsoft.com/office/word/2010/wordprocessingShape" );
 					
 					leftES.add(loader.process( e ));
 					//log("" + leftES.get( leftES.size()-1 ).hashCode() );
@@ -253,8 +263,28 @@ public class Docx4jDriver {
 			for (int i = 0 ; i < xml2.getChildNodes().getLength(); i++ ) {
 				if (xml2.getChildNodes().item(i).getNodeType()!=3) {
 					Element e = (Element)xml2.getChildNodes().item(i);
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w",
-							"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+					
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "mlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a14", "http://schemas.microsoft.com/office/drawing/2010/main");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.openxmlformats.org/officeDocument/2006/math" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:mc", "http://schemas.openxmlformats.org/markup-compatibility/2006" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:o", "urn:schemas-microsoft-com:office:office" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:pic", "http://schemas.openxmlformats.org/drawingml/2006/picture");
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:v", "urn:schemas-microsoft-com:vml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w10", "urn:schemas-microsoft-com:office:word" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w14", "http://schemas.microsoft.com/office/word/2010/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w15", "http://schemas.microsoft.com/office/word/2012/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wne", "http://schemas.microsoft.com/office/word/2006/wordml" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpg", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpi", "http://schemas.microsoft.com/office/word/2010/wordprocessingInk" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wps", "http://schemas.microsoft.com/office/word/2010/wordprocessingShape" );
+					
 					rightES.add(loader.process( e ));
 					//log("" + rightES.get( rightES.size()-1 ).hashCode() );
 				}
