@@ -603,6 +603,15 @@ public class XsltHTMLFunctions {
 			// to the child nodes
 			// init
 			Node n = childResults.nextNode();
+			
+			if (xhtmlBlock.getNodeName().equals("p") 
+					&& context.getBookmarkStart()!=null ) {
+				
+				xhtmlBlock.setAttribute("id", context.getBookmarkStart().getName() );
+				context.setBookmarkStart(null);
+			}
+			
+			
 			if (xhtmlBlock.getNodeName().equals("p")
 					&& n.hasChildNodes()
 					&& n.getChildNodes().item(0).getLocalName().equals("span")) {

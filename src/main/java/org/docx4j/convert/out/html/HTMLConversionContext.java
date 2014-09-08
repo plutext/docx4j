@@ -34,6 +34,7 @@ import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.CTBookmark;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -290,4 +291,19 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 	public String getUserBodyTail() {
 		return userBodyTail;
 	}
+	
+	/**
+	 * If property docx4j.Convert.Out.HTML.BookmarkStartWriter.mapTo=id,
+	 * bookmarks as encountered will be stored here.
+	 */
+	private CTBookmark bookmarkStart;
+
+	public CTBookmark getBookmarkStart() {
+		return bookmarkStart;
+	}
+
+	public void setBookmarkStart(CTBookmark bookmarkStart) {
+		this.bookmarkStart = bookmarkStart;
+	}
+	
 }
