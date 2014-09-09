@@ -230,7 +230,7 @@ public class Docx4jDriver {
 					//log("Adding " + xml1.getChildNodes().item(i).getNodeName() );
 					Element e = (Element)xml1.getChildNodes().item(i);
 					
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "mlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a14", "http://schemas.microsoft.com/office/drawing/2010/main");
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.openxmlformats.org/officeDocument/2006/math" );
@@ -264,7 +264,7 @@ public class Docx4jDriver {
 				if (xml2.getChildNodes().item(i).getNodeType()!=3) {
 					Element e = (Element)xml2.getChildNodes().item(i);
 					
-					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "mlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:wpc", "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" );
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:a14", "http://schemas.microsoft.com/office/drawing/2010/main");
 					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:m", "http://schemas.openxmlformats.org/officeDocument/2006/math" );
