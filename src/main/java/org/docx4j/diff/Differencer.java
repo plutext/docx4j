@@ -244,7 +244,7 @@ public class Differencer {
 		}
 		
 		
-		log.error("Looking for rel " + relId);
+		log.debug("Looking for rel " + relId);
 		Relationship r = docPartRels.getRelationshipByID(relId);
 		if (r==null) {
 			log.error("Couldn't find rel " + relId);
@@ -256,7 +256,7 @@ public class Differencer {
 		Relationship r2 = (Relationship)XmlUtils.deepCopy(r, Context.jcRelationships);
 		
 		r2.setId(newRelId);
-		log.error(".. added rel " + newRelId + " -- " + r2.getTarget() );
+		log.debug(".. added rel " + newRelId + " -- " + r2.getTarget() );
 		
 		
 		
@@ -372,14 +372,40 @@ public class Differencer {
 			
 			
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
-			Reader reader;
-			if (log.isDebugEnabled() ) {
-				String res = diffxResult.toString();
-				log.debug("Diff result:" + res);
-				reader = new StringReader(res);
+			String res = diffxResult.toString();
+			
+			/* 2014 09 09
+			 * 
+			 * For unknown reasons, diffx may write:
+			 * 
+			 *    <a14:useLocalDpi dfx:insert="true" val="0" ins:val="true"/>
+			 *    
+			 * ie without the namespace being declared.
+			 * 
+			 * Maybe something to do with the namespace being declared deep in the input?
+			 * 
+			 *    <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+			 *    
+			 * This is a crude workaround.   
+			 */
+			int nsIndex = res.indexOf("xmlns:");
+			int closeTag = res.indexOf(">", nsIndex);
+			String topLevelDecs = res.substring(0, closeTag);
+			
+			System.out.println(topLevelDecs);
+			if (topLevelDecs.contains("xmlns:a14")) {
+				// OK
 			} else {
-				reader = new StringReader(diffxResult.toString());				
+				res = topLevelDecs + " xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\""
+						+ res.substring(closeTag);
+				
 			}
+			
+			
+			if (log.isDebugEnabled() ) {
+				log.debug("Diff result:" + res);
+			} 
+			Reader reader = new StringReader(res);
 			
 			String simplified = null;
 				try {
