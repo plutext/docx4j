@@ -42,6 +42,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Document;
@@ -176,7 +177,7 @@ public class CompareDocuments {
 	private static void handleRels(Differencer pd, MainDocumentPart newMDP) throws InvalidFormatException {
 		
 		RelationshipsPart rp = newMDP.getRelationshipsPart(); 
-		System.out.println("before: \n" + rp.getXML());		
+		//System.out.println("before: \n" + rp.getXML());		
 		
 		// Since we are going to add rels appropriate to the docs being 
 		// compared, for neatness and to avoid duplication
@@ -204,10 +205,11 @@ public class CompareDocuments {
 				((BinaryPart)part).getBuffer();
 			}
 			
-			newMDP.addTargetPart(part, nr.getId());
+			newMDP.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS, nr.getId());
+
 		}
 		
-		System.out.println("after: \n" + rp.getXML());
+		//System.out.println("after: \n" + rp.getXML());
 		
 	}
 	
