@@ -25,6 +25,7 @@
 <xsl:param name="sourcePart"/> <!-- select="'passed in'"-->	
 <xsl:param name="xPathsPart"/> <!-- select="'passed in'"-->	
 <xsl:param name="sequenceCounters"/>
+<xsl:param name="bookmarkIdCounter"/>
 
   <xsl:template match="/ | @*|node()">
     <xsl:copy>
@@ -290,7 +291,8 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag,
-										$sequenceCounters )" />
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tr">
 				  			<!--  no reason in principle why we couldn't convert
@@ -310,7 +312,8 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag,
-										$sequenceCounters )" />
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tc">
 				  			<!--  no reason in principle why we couldn't convert
@@ -329,7 +332,8 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag,
-										$sequenceCounters )" />
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:p">
 				  		
@@ -350,7 +354,8 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag,
-										$sequenceCounters )" />
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level 
 				  		
@@ -370,7 +375,8 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag,
-										$sequenceCounters )" />
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>

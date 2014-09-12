@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Source;
 
@@ -154,5 +155,15 @@ public interface XHTMLImporter {
 	 * @since 3.2.0
 	 */
 	public void setSequenceCounters(Map<String, Integer> sequenceCounters); 
+	
+	public AtomicInteger getBookmarkIdLast();
+	
+	/**
+	 * Support injecting a starting bookmark value, so bookmark numbers
+	 * can be managed across invocations.
+	 * @param val
+	 * @since 3.2.1
+	 */
+	public void setBookmarkIdNext(AtomicInteger val);
     
 }

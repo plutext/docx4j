@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.Format;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
@@ -27,10 +29,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
@@ -53,6 +57,7 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.CTAltChunk;
+import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
@@ -119,6 +124,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			transformParameters.put("sourcePart", part);			
 			transformParameters.put("xPathsPart", xPathsPart);			
 			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
+			transformParameters.put("bookmarkIdCounter", 
+					new AtomicInteger(initBookmarkIdStart((WordprocessingMLPackage)pkg))  );
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
@@ -138,6 +145,25 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			throw new Docx4JException("Problems applying bindings", e);			
 		}
 	}
+	
+	
+	
+	private int initBookmarkIdStart(WordprocessingMLPackage wordMLPackage) {
+
+		int highestId = 0;
+		
+		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		
+		for (CTBookmark bm : rt.getStarts()) {
+			
+			BigInteger id = bm.getId();
+			if (id!=null && id.intValue()>highestId) {
+				highestId = id.intValue();
+			}
+		}
+		return highestId+1;
+	}	
 	
 	public static void log(ExpressionContext expressionContext, String message ) {
 		
@@ -280,6 +306,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	}
 	
 	
+	
 	/**
 	 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
 	 * can insert into XSLT output.
@@ -300,7 +327,8 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			String contentChild,				
 			NodeIterator rPrNodeIt, 
 			String tag,
-			Map<String, Integer> sequenceCounters) {
+			Map<String, Integer> sequenceCounters,
+			int bookmarkId) {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 		
@@ -319,6 +347,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	    }		
 	    
 	    xHTMLImporter.setSequenceCounters(sequenceCounters);
+	    xHTMLImporter.setBookmarkIdNext(new AtomicInteger(bookmarkId));
 	    
 		
 		QueryString qs = new QueryString();
