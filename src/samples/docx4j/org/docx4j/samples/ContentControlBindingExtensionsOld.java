@@ -21,6 +21,7 @@
 package org.docx4j.samples;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 
@@ -103,7 +104,12 @@ public class ContentControlBindingExtensionsOld {
 		// Apply the bindings
 		BindingHandler.setHyperlinkStyle("Hyperlink");						
 		startTime = System.currentTimeMillis();
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		
+		AtomicInteger bookmarkId = odh.getNextBookmarkId();
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.setStartingIdForNewBookmarks(bookmarkId);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
+		
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
 		String bound = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);

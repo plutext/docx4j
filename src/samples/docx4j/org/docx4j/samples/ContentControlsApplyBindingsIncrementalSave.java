@@ -93,7 +93,8 @@ public class ContentControlsApplyBindingsIncrementalSave {
 //		if (hyperlinkStyle!=null) {
 //			BindingHandler.getHyperlinkResolver().setHyperlinkStyle(hyperlinkStyle);
 //		}
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
 		// 1. the custom xml part 

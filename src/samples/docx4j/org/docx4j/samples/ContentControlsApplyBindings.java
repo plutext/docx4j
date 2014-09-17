@@ -21,6 +21,8 @@
 package org.docx4j.samples;
 
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
@@ -82,7 +84,9 @@ public class ContentControlsApplyBindings {
 		if (hyperlinkStyle!=null) {
 			BindingHandler.getHyperlinkResolver().setHyperlinkStyle(hyperlinkStyle);
 		}
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
 		// 1. the custom xml part 

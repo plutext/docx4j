@@ -3,6 +3,7 @@ package org.docx4j.model.datastorage;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.Binder;
 
@@ -100,7 +101,11 @@ public class EndToEndTest {
 		assertTrue("expected 0 runs but got " + count, count==0 );
 		
 		// Apply the bindings
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		AtomicInteger bookmarkId = odh.getNextBookmarkId();
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.setStartingIdForNewBookmarks(bookmarkId);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
+		
 
 		// create a 'clean' object again ..		
 		xmlNode = XmlUtils.marshaltoW3CDomDocument(
@@ -214,7 +219,10 @@ public class EndToEndTest {
 		assertTrue("expected 4 rows but got " + count, count==4 );		
 		
 		// Apply the bindings
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		AtomicInteger bookmarkId = odh.getNextBookmarkId();
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.setStartingIdForNewBookmarks(bookmarkId);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
 
 		// create a 'clean' object again ..		
 		xmlNode = XmlUtils.marshaltoW3CDomDocument(
