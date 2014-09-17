@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,10 +101,26 @@ public class OpenDoPEHandler {
 
 		shallowTraversor = new ShallowTraversor();
 		shallowTraversor.wordMLPackage = wordMLPackage;
+		
+		bookmarkRenumber = new BookmarkRenumber(wordMLPackage);
 	}
 
 	private WordprocessingMLPackage wordMLPackage;
 	private ShallowTraversor shallowTraversor;
+	
+	private BookmarkRenumber bookmarkRenumber;
+	
+	/**
+	 * Provide a way to for user to fetch the starting bookmark ID number
+	 * for use in the next stage (ie Binding Traverse).
+	 * 
+	 * If it isn't fetched/set, the value will have to be recalculated (less efficient).
+	 *  
+	 * @since 3.2.1
+	 */	
+	public AtomicInteger getNextBookmarkId() {
+		return bookmarkRenumber.getBookmarkId();
+	}
 
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 
@@ -939,7 +956,7 @@ public class OpenDoPEHandler {
 				// Use the sdt id for uniqueness
 				long global= ((SdtElement)repeated.get(i)).getSdtPr().getId().getVal().longValue();
 				
-				BookmarkRenumber.fixRange(
+				bookmarkRenumber.fixRange(
 						((SdtElement)repeated.get(i)).getSdtContent().getContent(), 
 						"CTBookmark", "CTMarkupRange", null, global, i);
 			} catch (Exception e) {

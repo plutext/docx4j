@@ -4,14 +4,17 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.CTPerm;
@@ -52,9 +55,46 @@ public class BookmarkRenumber {
 	
 	protected static Logger log = LoggerFactory.getLogger(BookmarkRenumber.class);	
 	
+	private BookmarkRenumber() {}
+	
+	BookmarkRenumber(WordprocessingMLPackage wordMLPackage) {
+		this.wordMLPackage=wordMLPackage;
+	}
+	
+	private WordprocessingMLPackage wordMLPackage; // so we can calculate bookmark starting ID on demand
+	
+	private AtomicInteger bookmarkId = null;
+	
+	protected AtomicInteger getBookmarkId() {
+		
+		if (bookmarkId==null) {
+			// Work out starting ID
+			bookmarkId = new AtomicInteger(initBookmarkIdStart());
+		}
+		return bookmarkId;
+	}
+
+	private int initBookmarkIdStart() {
+
+		int highestId = 0;
+		
+		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		
+		for (CTBookmark bm : rt.getStarts()) {
+			
+			BigInteger id = bm.getId();
+			if (id!=null && id.intValue()>highestId) {
+				highestId = id.intValue();
+			}
+		}
+		return highestId +1;
+	}	
+	
+	
 	//             fixRange( blockRange, "CTBookmark", "CTMarkupRange", null);
 	
-	protected static void fixRange(List<Object> paragraphs, String startElement,
+	protected void fixRange(List<Object> paragraphs, String startElement,
 			String endElement, String refElement, long global, int instanceNumber) throws Exception {
 				
 		RangeTraverser rt = new RangeTraverser(startElement, endElement,
@@ -184,12 +224,9 @@ public class BookmarkRenumber {
 		int counter = 0; // for bookmark renumbering
 		for (Object o : rt.starts) {
 			counter++;
-			// for bookmarks, our ID scheme is
-			// doc# x 100000 + bm#
-			// this allows 100K bm per doc
-//			long newId = (instanceNumber* 100000) + counter;
-			long newId = global + counter;
-
+//			long newId = global + counter;  // depending on what global is, these may collide!
+			long newId = getBookmarkId().getAndIncrement();
+			
 			if (startIdMethod == null)
 				startIdMethod = findGetIdMethod(o);
 
@@ -359,11 +396,7 @@ public class BookmarkRenumber {
 
 		for (Object o : rt.ends) {
 			counter++;
-			// for bookmarks, our ID scheme is
-			// doc# x 100000 + bm#
-			// this allows 100K bm per doc
-			//long newId = (instanceNumber* 100000) + counter;
-			long newId = global + counter;
+			long newId = getBookmarkId().getAndIncrement();
 				// only renumber here for ends without starts
 
 			if (endIdMethod == null)
@@ -447,7 +480,7 @@ public class BookmarkRenumber {
 		}
 	}
         
-        private static Method findGetIdMethod(Object o) throws Exception {
+        private Method findGetIdMethod(Object o) throws Exception {
         	
         	// Have to do this because getDeclaredMethod
         	// doesn't find inherited methods, and for bookmarks,
@@ -465,7 +498,7 @@ public class BookmarkRenumber {
         	return null;
         }
         
-        private static Method findSetIdMethod(Object o) throws Exception {
+        private Method findSetIdMethod(Object o) throws Exception {
         	
         	Method[] methods = o.getClass().getMethods();
         	
@@ -479,7 +512,7 @@ public class BookmarkRenumber {
         	return null;
         }
         
-        private static BigInteger getId(Method idMethod, Object o) throws Exception {
+        private BigInteger getId(Method idMethod, Object o) throws Exception {
         	
         	if (idMethod!=null) {
         		return (BigInteger)idMethod.invoke(o);
@@ -495,7 +528,7 @@ public class BookmarkRenumber {
         	return null;
         }
                 
-        private static Object createObject(String name, Object id ) throws Exception {
+        private Object createObject(String name, Object id ) throws Exception {
         	
 			ObjectFactory factory = Context.getWmlObjectFactory();
 			log.debug("Looking for method create" + name);
@@ -517,7 +550,7 @@ public class BookmarkRenumber {
         	
         }
         
-        private static Object convertObject(Object id, Class c) throws Docx4JException {
+        private Object convertObject(Object id, Class c) throws Docx4JException {
         	
         	if (c.isAssignableFrom(id.getClass())) {
         		return id;

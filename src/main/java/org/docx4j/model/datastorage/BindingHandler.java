@@ -19,8 +19,12 @@
  **/
 package org.docx4j.model.datastorage;
 
+import java.math.BigInteger;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.docx4j.TraversalUtil;
+import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
@@ -31,6 +35,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTDataBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +96,53 @@ public class BindingHandler {
 	
 	private static BindingHyperlinkResolver hyperlinkResolver;
 	
+	private AtomicInteger bookmarkId = null;
+
+	/**
+	 * Provide a way to set the starting bookmark ID number
+	 * for the purposes of Binding Traverse.
+	 * 
+	 * For efficiency, user code needs to pass this value through
+	 * from the previous stage (repeats/condition handing).
+	 * 
+	 * If it isn't, the value will be calculated (less efficient).
+	 *  
+	 * New bookmarks could be created from XHTML, or renumbered
+	 * in Flat OPC XML (TODO).
+	 * 
+	 * @param bookmarkId
+	 * @since 3.2.1
+	 */
+	public void setStartingIdForNewBookmarks(AtomicInteger bookmarkId) {
+		this.bookmarkId = bookmarkId;
+		
+	}
+		
+	protected AtomicInteger initBookmarkIdStart() {
+		
+		// The efficient case, where this value is set by user,
+		// from previous step
+		if (bookmarkId!=null) return bookmarkId;
+
+		// The inefficient case, where we calculate again
+		log.warn("Recalculating starting value for new bookmarks.  For efficiency, you should set this in your code.");
+		int highestId = 0;
+		
+		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		
+		for (CTBookmark bm : rt.getStarts()) {
+			
+			BigInteger id = bm.getId();
+			if (id!=null && id.intValue()>highestId) {
+				highestId = id.intValue();
+			}
+		}
+		return new AtomicInteger(highestId+1);
+	}	
+	
+	
+	
 	
 	/* ---------------------------------------------------------------------------
 	 * Apply bindings
@@ -106,9 +158,23 @@ public class BindingHandler {
 	 *    Word does this step itself).  This will be a new
 	 *    static method in this class.
 	 */
+	
+	private WordprocessingMLPackage wordMLPackage;
 		
+	private BindingHandler() {}
+	
+	public BindingHandler(WordprocessingMLPackage wordMLPackage) {
+		this.wordMLPackage = wordMLPackage;
+	}
 
+		@Deprecated
 		public static void applyBindings(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+			BindingHandler bh = new BindingHandler( wordMLPackage);
+			bh.applyBindings();
+		}
+
+		public  void applyBindings() throws Docx4JException {
 
 			// A component can apply in both the main document part,
 			// and in headers/footers. See further
@@ -130,8 +196,8 @@ public class BindingHandler {
 				}
 			}
 		}
-	
-		public static void applyBindings(JaxbXmlPart part) throws Docx4JException {
+		
+		public void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
 			org.docx4j.openpackaging.packages.OpcPackage pkg 
 				= part.getPackage();		
@@ -154,8 +220,12 @@ public class BindingHandler {
 			
 			BindingTraverserInterface traverser = new BindingTraverserXSLT();
 			
-			part.setJaxbElement(
-					traverser.traverseToBind(part, pkg, xPathsPart) );
+			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
+			
+				part.setJaxbElement(
+						traverser.traverseToBind(part, pkg, xPathsPart) );
+			
+			bookmarkId = traverser.getNextBookmarkId();
 					
 		}
 

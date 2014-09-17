@@ -63,7 +63,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BindingTraverserNonXSLT implements BindingTraverserInterface {
+public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserNonXSLT.class);		
 	

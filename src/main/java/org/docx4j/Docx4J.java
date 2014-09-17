@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.engio.mbassy.bus.MBassador;
 
@@ -282,6 +283,8 @@ public class Docx4J {
 		CustomXmlDataStoragePart customXmlDataStoragePart = null;
 		RemovalHandler removalHandler = null;
 		//String xpathStorageItemId = null;
+		
+		AtomicInteger bookmarkId = null;
 
 		if (flags == FLAG_NONE) {
 			//do everything
@@ -314,8 +317,12 @@ public class Docx4J {
 			if (wmlPackage.getMainDocumentPart().getXPathsPart()!=null) {
 				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
 				openDoPEHandler.preprocess();
+				
+				bookmarkId = openDoPEHandler.getNextBookmarkId();
 			}
-			BindingHandler.applyBindings(wmlPackage);
+			BindingHandler bh = new BindingHandler(wmlPackage);
+			bh.setStartingIdForNewBookmarks(bookmarkId);
+			bh.applyBindings();
 			
 			new EventFinished(startEvent).publish();
 		}

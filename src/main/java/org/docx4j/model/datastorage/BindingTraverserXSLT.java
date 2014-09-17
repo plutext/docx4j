@@ -74,7 +74,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
 
-public class BindingTraverserXSLT implements BindingTraverserInterface {
+public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserXSLT.class);		
 	
@@ -124,8 +124,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			transformParameters.put("sourcePart", part);			
 			transformParameters.put("xPathsPart", xPathsPart);			
 			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
-			transformParameters.put("bookmarkIdCounter", 
-					new AtomicInteger(initBookmarkIdStart((WordprocessingMLPackage)pkg))  );
+			transformParameters.put("bookmarkIdCounter", new BookmarkCounter(bookmarkId)  );
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
@@ -146,24 +145,26 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		}
 	}
 	
-	
-	
-	private int initBookmarkIdStart(WordprocessingMLPackage wordMLPackage) {
-
-		int highestId = 0;
+	/**
+	 * Workaround for the fact that Xalan doesn't let us pass an AtomicInteger into an extension
+	 * function.  Instead, it converts it into an int, which means the object in our 
+	 * bookmarkIdCounter parameter isn't updated.
+	 * 
+	 * So here we wrap the AtomicInteger in a class, 
+	 * 
+	 * @author jharrop
+	 *
+	 */
+	public static class BookmarkCounter {
 		
-		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
-		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		protected AtomicInteger bookmarkId;		
 		
-		for (CTBookmark bm : rt.getStarts()) {
-			
-			BigInteger id = bm.getId();
-			if (id!=null && id.intValue()>highestId) {
-				highestId = id.intValue();
-			}
+		BookmarkCounter(AtomicInteger bookmarkId) {
+			this.bookmarkId = bookmarkId;
 		}
-		return highestId+1;
-	}	
+		
+	}
+	
 	
 	public static void log(ExpressionContext expressionContext, String message ) {
 		
@@ -328,7 +329,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			NodeIterator rPrNodeIt, 
 			String tag,
 			Map<String, Integer> sequenceCounters,
-			int bookmarkId) {
+			BookmarkCounter bookmarkCounter) {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 		
@@ -347,7 +348,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 	    }		
 	    
 	    xHTMLImporter.setSequenceCounters(sequenceCounters);
-	    xHTMLImporter.setBookmarkIdNext(new AtomicInteger(bookmarkId));
+	    xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
 	    
 		
 		QueryString qs = new QueryString();
@@ -541,7 +542,10 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 				return docfrag;
 			}
 			
-			log.info("Got results: " + results.size() );				
+			log.info("Got results: " + results.size() );	
+			
+			log.debug("context: " + sdtParent);
+			
 			if (results.size()>0  
 					&& results.get(0) instanceof P
 					&& sdtParent.equals("p")) {
@@ -596,18 +600,32 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 //					}					
 					
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
+					
+					if (log.isDebugEnabled() ) {
+						log.debug(XmlUtils.w3CDomNodeToString(tmpDoc));
+					}
+					
 					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
 				}
 				
 			} else {
-
+				// Either the first result is not w:p, or context is not inline 
 				
 				for(Object o : results) {
 					
-					String debug = XmlUtils.marshaltoString(o, true);
-					log.debug("Conversion result: " + debug);
+					if (sdtParent.equals("p") && o instanceof P) {
+						log.warn("DISCARDING conversion result (can't add in context p): " + XmlUtils.marshaltoString(o, true));
+						
+					} else if (log.isDebugEnabled()) {
+						log.debug("Conversion result: " + XmlUtils.marshaltoString(o, true));						
+					}
 					
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
+					
+					if (log.isDebugEnabled() ) {
+						log.debug(XmlUtils.w3CDomNodeToString(tmpDoc));
+					}
+					
 					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
 					
 				}
