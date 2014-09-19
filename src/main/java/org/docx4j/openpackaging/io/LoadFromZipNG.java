@@ -441,7 +441,11 @@ public class LoadFromZipNG extends Load {
 			if (source.setPartShortcut(part, relationshipType ) ) {
 				log.debug("Convenience method established from " + source.getPartName() 
 						+ " to " + part.getPartName());
-			}			
+			}	
+			
+			// v3.2.1: also note this additional source rel 
+			part.getSourceRelationships().add(r);  
+			
 			return;
 		}
 		
