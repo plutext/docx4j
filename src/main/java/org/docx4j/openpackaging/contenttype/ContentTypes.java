@@ -185,6 +185,9 @@ public class ContentTypes {
 	public final static String PRESENTATIONML_COMMENTS = 
 			"application/vnd.openxmlformats-officedocument.presentationml.comments+xml";
 
+	public final static String PRESENTATIONML_FONT_DATA = 
+			"application/x-fontdata";
+	
 	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
 			"application/vnd.openxmlformats-officedocument.presentationml.commentAuthors+xml";
 	

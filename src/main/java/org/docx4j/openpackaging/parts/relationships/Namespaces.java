@@ -189,6 +189,9 @@ public class Namespaces {
 
 	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
 			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/commentAuthors";
+
+	public final static String PRESENTATIONML_FONT_DATA = 	
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"; 
 	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	

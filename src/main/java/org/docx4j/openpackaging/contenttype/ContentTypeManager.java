@@ -81,6 +81,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.VMLPart;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
+import org.docx4j.openpackaging.parts.PresentationML.FontDataPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
@@ -448,6 +449,11 @@ public class ContentTypeManager  {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
 			return CreateDefaultXmlPartObject(partName );
+			
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_FONT_DATA)) {
+			
+			return new FontDataPart(new PartName(partName));
+			
 		} else {
 			
 			log.error("No subclass found for " + partName + "; defaulting to binary");
