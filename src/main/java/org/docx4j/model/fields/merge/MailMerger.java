@@ -15,6 +15,7 @@ import javax.xml.transform.TransformerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -507,8 +508,20 @@ public class MailMerger {
 				String val = datamap.get( new DataFieldName(datafieldName));
 				String gFormat = null; // required only for FORMTEXT conversion
 				
-				if (val==null) {
+				if (StringUtils.isBlank(val)) {
 					log.warn("Couldn't find value for key: '" + datafieldName + "'");
+                    if (fieldFate.equals(OutputField.REMOVED)) {
+                        // Remove the mergefield from the document
+                        removeSimpleField(fr);
+
+                        // Concatenate all content still present in the parent
+                        String text = getTextInsideContent(fr.getParent());
+
+                        // If the parent still contains data, don't delete it
+                        if (StringUtils.isBlank(text)) {
+                            recursiveRemove(shellClone, fr.getParent());
+                        }
+                    }				
 				} else {
 					
 					// Now format the result
@@ -659,7 +672,67 @@ public class MailMerger {
 		}
 	}
 	
-	
+    /**
+     * Remove the field but preserve the paragraph and content around it
+     * 
+     * @param fr
+     */
+    private static void removeSimpleField(FieldRef fr) {
+        int end = fr.getParent().getContent().indexOf(fr.getEndRun());
+        int begin = fr.getParent().getContent().indexOf(fr.getBeginRun());
+        for (int i = end; i >= begin; i--) {
+            fr.getParent().getContent().remove(i);
+        }
+    }
+
+    /**
+     * Parse through all content inside the paragraph to concatenate all values inside a text
+     * 
+     * @param paragraph The paragraph which contains (or not) data
+     * @return All text inside the paragraph
+     */
+    private static String getTextInsideContent(ContentAccessor paragraph) {
+        StringBuilder result = new StringBuilder();
+        for (Object content : paragraph.getContent()) {
+            if (content instanceof org.docx4j.wml.R) {
+                org.docx4j.wml.R run = (org.docx4j.wml.R) content;
+                List<Object> runContent = run.getContent();
+                for (Object o2 : runContent) {
+                    if (o2 instanceof javax.xml.bind.JAXBElement) {
+                        if (((JAXBElement<?>) o2).getDeclaredType().getName().equals("org.docx4j.wml.Text")) {
+                            org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o2).getValue();
+                            result.append(t.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * To remove an object from the docx template
+     * 
+     * @param content Body (or other part) of the template
+     * @param needToBeRemoved The object that will be removed from the content
+     */
+    private static void recursiveRemove(ContentAccessor content, Object needToBeRemoved) {
+        if (content.getContent().contains(needToBeRemoved)) {
+            content.getContent().remove(needToBeRemoved);
+            return;
+        }
+
+        for (Object object : content.getContent()) {
+            if (object instanceof ContentAccessor) {
+                recursiveRemove((ContentAccessor) object, needToBeRemoved);
+            } else if (object instanceof JAXBElement<?>) {
+                JAXBElement<?> element = (JAXBElement<?>) object;
+                if (element.getValue() instanceof ContentAccessor) {
+                    recursiveRemove((ContentAccessor) element.getValue(), needToBeRemoved);
+                }
+            }
+        }
+    }	
 	
 	private static OutputField fieldFate = OutputField.REMOVED;
     /**
