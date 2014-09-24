@@ -424,6 +424,25 @@ public class MailMerger {
 			
 	}
 	
+	
+    /**
+     * Similar as {@code performMerge} method but better to merge labels template because of using the NEXT instruction to go to the next item.
+     * 
+     * @param input Document template
+     * @param data List of multiple datamap
+     * @throws Docx4JException
+     */
+    public static void performLabelMerge(WordprocessingMLPackage input, List<Map<DataFieldName, String>> data) throws Docx4JException {
+        // Required where converting MERGEFIELD to FORMTEXT
+        FormTextFieldNames formTextFieldNames = new FormTextFieldNames();
+
+        FieldsPreprocessor.complexifyFields(input.getMainDocumentPart());
+        List<Object> mdpResults = performOnInstance(input, input.getMainDocumentPart().getContent(), data, formTextFieldNames);
+        input.getMainDocumentPart().getContent().clear();
+        input.getMainDocumentPart().getContent().addAll(mdpResults);
+    }
+    
+	
 	/**
 	 * The idea is to be able to perform a mail merge
 	 * on content from main document part, or a header/footer etc.
@@ -602,6 +621,177 @@ public class MailMerger {
 		return shellClone.getContent();
 
 	}
+	
+    /**
+     * Perform the merge. Recognize the NEXT instruction to go to the next data.
+     * 
+     * @param input
+     * @param contentList
+     * @param data All datamap into a list
+     * @param formTextFieldNames
+     * @return
+     * @throws Docx4JException
+     */
+    private static List<Object> performOnInstance(WordprocessingMLPackage input, List<Object> contentList, List<Map<DataFieldName, String>> data,
+            FormTextFieldNames formTextFieldNames) throws Docx4JException {
+
+        // We need our fieldRefs point to the correct objects;
+        // the easiest way to do this is to create them after cloning!
+
+        // to facilitate cloning, wrap the list in a body
+        Body shell = Context.getWmlObjectFactory().createBody();
+        shell.getContent().addAll(contentList);
+        Body shellClone = (Body) XmlUtils.deepCopy(shell);
+
+        // find fields
+        ComplexFieldLocator fl = new ComplexFieldLocator();
+        new TraversalUtil(shellClone, fl);
+        log.info("Found " + fl.getStarts().size() + " fields ");
+
+        // canonicalise and setup fieldRefs
+        List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+        for (P p : fl.getStarts()) {
+            int index;
+            if (p.getParent() instanceof ContentAccessor) {
+                // 2.8.1
+                index = ((ContentAccessor) p.getParent()).getContent().indexOf(p);
+                P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+                log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+                ((ContentAccessor) p.getParent()).getContent().set(index, newP);
+            } else if (p.getParent() instanceof java.util.List) {
+                // 3.0
+                index = ((java.util.List) p.getParent()).indexOf(p);
+                P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+                log.debug("NewP length: " + newP.getContent().size());
+                ((java.util.List) p.getParent()).set(index, newP);
+            } else if (p.getParent() instanceof CTTextbox) {
+                // 3.0.1
+                index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
+                P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+                log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+                ((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
+            } else {
+                throw new Docx4JException("Unexpected parent: " + p.getParent().getClass().getName());
+            }
+        }
+
+        int datamapIndex = 0;
+        Map<DataFieldName, String> datamap = data.get(datamapIndex);
+
+        // Populate
+        for (FieldRef fr : fieldRefs) {
+
+            if (fr.getFldName().equals("MERGEFIELD")) {
+
+                String instr = extractInstr(fr.getInstructions());
+                String datafieldName = getDatafieldNameFromInstr(instr);
+                String val = datamap.get(new DataFieldName(datafieldName));
+                String gFormat = null; // required only for FORMTEXT conversion
+
+                if (val == null || val.length() == 0) {
+                    if (fieldFate.equals(OutputField.REMOVED)) {
+                        // Remove the mergefield from the document
+                        removeSimpleField(fr);
+
+                        // Concatenate all content still present in the parent
+                        String text = getTextInsideContent(fr.getParent());
+
+                        // If the parent still contains data, don't delete it
+                        if (StringUtils.isBlank(text)) {
+                            // Don't need to remove the paragraph if we've already inserted all data
+                            if (data.size() > datamapIndex) {
+                                recursiveRemove(shellClone, fr.getParent());
+                            }
+                        }
+                    }
+                } else {
+
+                    // Now format the result
+                    FldSimpleModel fsm = new FldSimpleModel();
+                    try {
+                        fsm.build(instr);
+                        val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val);
+
+                        gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
+                        // Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
+                        // We are in fact applying all formatting switches above.
+
+                    } catch (TransformerException e) {
+                        log.warn("Can't format the field", e);
+                    }
+
+                    fr.setResult(val);
+                }
+
+                if (fieldFate.equals(OutputField.AS_FORMTEXT_REGULAR)) {
+
+                    log.debug(gFormat);
+                    // TODO if we're going to use gFormat, setup FSM irrespective of whether we can find key
+
+                    // TODO: other format instructions
+                    // if (gFormat!=null) {
+                    // if (gFormat.equals("Upper")) {
+                    // gFormat = "UPPERCASE";
+                    // } else if (gFormat.equals("Lower")) {
+                    // gFormat = "LOWERCASE";
+                    // }
+                    // }
+
+                    // replace instrText
+                    // eg MERGEFIELD CLIENT.ORGANIZATIONSTATE \* Upper \* MERGEFORMAT
+                    // to FORMTEXT
+                    // Do this first, so we can abort without affecting output
+                    List<Object> instructions = fr.getInstructions();
+                    if (instructions.size() != 1) {
+                        log.error("TODO MERGEFIELD field contained complex instruction");
+                        continue;
+                    }
+                    Object o = XmlUtils.unwrap(instructions.get(0));
+                    if (o instanceof Text) {
+                        ((Text) o).setValue("FORMTEXT");
+                    } else {
+                        log.error("TODO: set FORMTEXT in" + o.getClass().getName());
+                        log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                        continue;
+                    }
+
+                    String fieldName = formTextFieldNames.generateName(datafieldName);
+                    log.debug("Field name normalisation: " + datafieldName + " -> " + fieldName);
+                    setFormFieldProperties(fr, fieldName, null);
+
+                    // remove <w:highlight w:val="lightGray"/>, if present
+                    // (corresponds in Word to clicking Legacy Forms > Form Field Shading)
+                    // so that the result is not printed in grey
+                    R resultR = fr.getResultsSlot();
+                    if (resultR.getRPr() != null && resultR.getRPr().getHighlight() != null) {
+                        resultR.getRPr().setHighlight(null);
+                    }
+
+                } else if (!fieldFate.equals(OutputField.KEEP_MERGEFIELD)) {
+                    // If doing an actual mail merge, the begin-separate run is removed, as is the end run
+                    fr.getParent().getContent().remove(fr.getBeginRun());
+                    fr.getParent().getContent().remove(fr.getEndRun());
+                }
+
+                // System.out.println("AFTER " +XmlUtils.marshaltoString(
+                // fr.getParent(), true, true));
+
+            } else if (fr.getFldName().equals("NEXT")) {
+                // Remove the NEXT field from the document
+                removeSimpleField(fr);
+
+                datamapIndex++;
+                if (datamapIndex >= data.size()) {
+                    datamap = new HashMap<DataFieldName, String>();
+                } else {
+                    datamap = data.get(datamapIndex);
+                }
+            }
+        }
+
+        return shellClone.getContent();
+
+    }	
 	
 	/**
 	 * Get the datafield name from, for example
