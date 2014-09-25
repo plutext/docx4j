@@ -205,7 +205,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tblPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -218,7 +218,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -231,7 +231,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(trPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -244,7 +244,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -272,20 +272,26 @@ public class HtmlCssHelper {
 				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
 			}
     		
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
-    
     
     public static void createCss(OpcPackage opcPackage, RPr rPr, StringBuilder result) {
 
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
     	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}
     }
 
+    private static void appendNonNull(StringBuilder result, Property p) {
+		String prop = p.getCssProperty();
+		if (prop!=null) {
+			result.append(prop);
+		}
+    }
+    
 	public static void applyAttributes(List<Property> properties, Element node) {
 	Map<String, Property> tempAttributeMap = null;
 	StringBuilder buffer = null;
