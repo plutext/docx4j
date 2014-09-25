@@ -162,8 +162,8 @@ public interface XHTMLImporter {
 	 * Support injecting a starting bookmark value, so bookmark numbers
 	 * can be managed across invocations.
 	 * @param val
-	 * @since 3.2.1
+	 * @since 3.3.0
 	 */
-	public void setBookmarkIdNext(AtomicInteger val);
+	//public void setBookmarkIdNext(AtomicInteger val);
     
 }

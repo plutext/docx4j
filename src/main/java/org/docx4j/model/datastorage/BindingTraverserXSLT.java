@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -337,8 +338,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		DocumentFragment docfrag = docContainer.createDocumentFragment();
 		
 		XHTMLImporter xHTMLImporter= null;
+		Class<?> xhtmlImporterClass = null;
 	    try {
-	    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
+	    	xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
 		    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
 		    xHTMLImporter = (XHTMLImporter) ctor.newInstance(pkg);
 	    } catch (Exception e) {
@@ -348,8 +350,29 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	    }		
 	    
 	    xHTMLImporter.setSequenceCounters(sequenceCounters);
-	    xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
 	    
+	    /* Find setBookmarkIdNext method.
+	     * It's not part of the interface until 3.3.0, so use reflection
+	     */
+		Method[] methods = xhtmlImporterClass.getMethods(); 
+		Method method = null;
+		for (int j=0; j<methods.length; j++) {
+			if (methods[j].getName().equals("setBookmarkIdNext")
+					&& methods[j].getParameterTypes().length==1) {
+				method = methods[j];
+				break;
+			}
+		}			
+		if (method==null) {
+			log.info("setBookmarkIdNext method not found.  If you are using docx4j-ImportXHTML v3.2.1 or later, it should be present.");				
+		} else {
+			try {
+			    //xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
+				method.invoke(xHTMLImporter, bookmarkCounter.bookmarkId);
+			} catch (Exception e1) {
+				log.error(e1.getMessage(), e1);
+			}
+		}
 		
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag, true);
