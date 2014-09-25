@@ -8,6 +8,8 @@
 	<property name="dist" value="./dist"/>
 	
 	<property name="version" value="3.2.0"/>
+	
+    <property name="release.dir" value="docx4j-community-${version}"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
@@ -79,6 +81,7 @@
 
         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar"/>
 
 <!-- 
         <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
@@ -307,6 +310,64 @@
     	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
     </target>
     
+    
+    
+    <target name="release"  >
+    
+        <delete dir="${release.dir}"/>
+        <mkdir dir="${release.dir}"/>
+        
+        <!-- docx4j itself, as built by maven -->
+		<copy file="${m2Repository}/org/docx4j/docx4j/3.2.0/docx4j-3.2.0.jar" todir="${release.dir}"/>        
+		<copy file="CHANGELOG.md" todir="${release.dir}"/>        
+    
+    	<!-- dependencies -->
+        <mkdir dir="${release.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${release.dir}/dependencies" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+			    <path refid="dist.classpath"/>
+			</path>
+		</copy>		
+    	 <delete file="${release.dir}/dependencies/JAXBNamespacePrefixMapper-2.2.4.jar" />			
+    
+    	<!-- documentation -->
+        <mkdir dir="${release.dir}/documentation"/>
+		<copy file="docs/Docx4j_GettingStarted.pdf" todir="${release.dir}/documentation" />
+    
+    	<!-- legals -->
+        <mkdir dir="${release.dir}/legals"/>
+		<copy includeemptydirs="false" todir="${release.dir}/legals">
+            <fileset dir="legals" />
+        </copy>
+    
+    	<!-- optional -->
+        <mkdir dir="${release.dir}/optional"/>
+
+    	<!-- ImportXHTML -->
+        <mkdir dir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/3.2.0/docx4j-ImportXHTML-3.2.0.jar" todir="${release.dir}/optional/ImportXHTML"/>        
+        <copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="../../docx4j-ImportXHTML/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+
+    	<!-- MOXy -->
+        <mkdir dir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.0.0/docx4j-MOXy-JAXBContext-3.0.0.jar" todir="${release.dir}/optional/MOXy"/>        
+
+    	<!-- resources -->
+        <mkdir dir="${release.dir}/resources"/>
+        <copy file="src/samples/_resources/docx4j.properties" todir="${release.dir}/resources"/>
+        <copy file="src/samples/_resources/log4j.xml" todir="${release.dir}/resources"/>
+        
+        <!--  zip it up -->
+    	<zip destfile="docx4j-community-${version}.zip" basedir="${release.dir}"/>
+    
+    </target>
+    
+    
+    
+    
     <target name="checkForIKVM">
         <condition property="IKVMAvailable">
             <and>
@@ -368,17 +429,20 @@
 	        <path refid="Maven Dependencies.libraryclasspath"/>
 	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
 	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
-	    	<path refid="FOP-stuff.classpath"/>        	        
+	    	<path refid="FOP-stuff.classpath"/>      
+	    	<!--   	        
 			<pathelement location="${dist}/docx4j-${version}.jar" />
+			 -->
+	        <pathelement location="${m2Repository}/org/docx4j/docx4j/3.2.0/docx4j-3.2.0.jar"/>  
 	    </path>
         <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
                  
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
-            <!-- 
+            <!--   For nuget, we don't snk; for Enterprise usage in GAC, we may
             <arg value="-keyfile:Plutext.snk" />
              -->
-            <arg value="-version:3.0.1.06" /> <!--  damn, should have used .00 -->
+            <arg value="-version:3.2.0.1" /> 
             <arg value="-reference:dll/slf4j-api.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
