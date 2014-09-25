@@ -39,6 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * A part containing binary (as opposed to XML) data.
+ * 
+ * The content of a binary parts is loaded lazily (ie only when required).
+ *
+ */
 public class BinaryPart extends Part {
 	
 	protected static Logger log = LoggerFactory.getLogger(BinaryPart.class);
@@ -103,6 +109,15 @@ public class BinaryPart extends Part {
 		return (this.bb != null);
 	}
 	
+	/**
+	 * Get the contents of this part.
+	 * 
+	 * NB: if you are moving this part from one pkg to another,
+	 * you'll probably want to invoke this first, since otherwise
+	 * the content may not be located (lazy loading).
+	 * 
+	 * @return
+	 */
 	public ByteBuffer getBuffer() {
 		
 		if (this.bb != null) {

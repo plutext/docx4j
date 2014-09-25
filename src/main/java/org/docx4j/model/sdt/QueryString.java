@@ -22,6 +22,7 @@ package org.docx4j.model.sdt;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class QueryString {
 	 * @param map
 	 * @return
 	 */
-	public static String create(HashMap<String, String> map){
+	public static String create(Map<String, String> map){
 
 		StringBuffer sb = new StringBuffer();
 

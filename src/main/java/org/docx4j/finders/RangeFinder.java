@@ -12,6 +12,10 @@ import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.Text;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
+/**
+ * This is a simplified version of 
+ * org.docx4j.model.datastorage.BookmarkRenumber.RangeTraverser
+ */
 public class RangeFinder extends CallbackImpl {
 	
 	List<CTBookmark> starts = new ArrayList<CTBookmark>();
