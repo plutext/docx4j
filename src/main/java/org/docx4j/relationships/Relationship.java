@@ -64,14 +64,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "value"
-})
+//@XmlType(name = "", propOrder = {
+//    "value"
+//})
 @XmlRootElement(name = "Relationship")
 public class Relationship implements Child {
 
-    @XmlValue
-    protected String value;
+//    @XmlValue
+//    protected String value;
     @XmlAttribute(name = "TargetMode")
     protected String targetMode;
     @XmlAttribute(name = "Target", required = true)
@@ -86,29 +86,29 @@ public class Relationship implements Child {
     @XmlSchemaType(name = "ID")
     protected String id;
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValue() {
-        return value;
-    }
-
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
+//    /**
+//     * Gets the value of the value property.
+//     * 
+//     * @return
+//     *     possible object is
+//     *     {@link String }
+//     *     
+//     */
+//    public String getValue() {
+//        return value;
+//    }
+//
+//    /**
+//     * Sets the value of the value property.
+//     * 
+//     * @param value
+//     *     allowed object is
+//     *     {@link String }
+//     *     
+//     */
+//    public void setValue(String value) {
+//        this.value = value;
+//    }
 
     /**
      * Gets the value of the targetMode property.
