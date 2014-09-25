@@ -456,6 +456,13 @@
 			<version>1.7.5</version>
 		</dependency>
 
+		<!--  instead of FOP's commons-logging -->		
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>jcl-over-slf4j</artifactId>
+		    <version>1.7.5</version>
+		</dependency>		
+
 		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.  -->
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
@@ -553,15 +560,14 @@
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis-ext</artifactId>
 			</exclusion>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>
 		</exclusions>
 	</dependency>
 
 
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 
 
 	<!-- these two are to correct issues in fop dependency -->
