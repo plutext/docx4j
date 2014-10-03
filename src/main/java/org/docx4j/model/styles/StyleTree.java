@@ -167,7 +167,9 @@ public class StyleTree {
         	if (tree.get(basedOnStyleName)==null) {
 //            	log.debug("..can disregard that null, but it shouldn't happen again for this style");        	
         		Node<AugmentedStyle> parent = addNode(basedOnStyleName, allStyles, tree);
-        		parent.addChild(n);
+        		if (parent!=null) {
+        			parent.addChild(n);
+        		}
         	} else {
         		tree.get(basedOnStyleName).addChild(n);
         	}
