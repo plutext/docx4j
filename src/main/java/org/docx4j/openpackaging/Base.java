@@ -142,6 +142,8 @@ public abstract class Base {
 	/**
 	 * The part name. (required by the specification [M1.1])
 	 * 
+	 * You should use the getter/setter, rather than accessing this field directly!
+	 * 
 	 * Note that in docx4J, part names should be resolved,
 	 * before being set, so that they are absolute
 	 * (ie start with '/').
@@ -149,7 +151,8 @@ public abstract class Base {
 	 * We will assume the Package has a part name of "/"
 	 * 
 	 */
-	private PartName partName;
+	@Deprecated
+	public PartName partName;
 
 	/**
 	 * @param partName
