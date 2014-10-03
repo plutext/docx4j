@@ -72,8 +72,12 @@
     <logger name="org.docx4j.convert.out">
   		<level value="warn"/> 
 	</logger>	
-	
-    <logger name="org.docx4j.convert.out.common.preprocess">
+
+    <logger name="org.docx4j.convert.out.common.Preprocess"> <!-- the class -->
+  		<level value="warn"/> 
+	</logger>	
+    
+    <logger name="org.docx4j.convert.out.common.preprocess"> <!-- the package -->
   		<level value="warn"/> 
 	</logger>	
 
@@ -84,7 +88,11 @@
     <logger name="org.docx4j.convert.out.common.writer.AbstractMessageWriter">
   		<level value="debug"/> 
 	</logger>	
-	
+
+    <logger name="org.docx4j.diff">
+  		<level value="warn"/> 
+	</logger>
+    	
     <logger name="org.docx4j.fonts">
   		<level value="warn"/> 
 	</logger>
@@ -101,7 +109,15 @@
 		<level value="warn"/> 
 	</logger>	
 
+	<logger name="org.docx4j.model.datastorage">
+		<level value="warn"/> 
+	</logger>	
+		
 	<logger name="org.docx4j.model.fields">
+		<level value="warn"/> 
+	</logger>	
+	
+	<logger name="org.docx4j.model.PropertyResolver">
 		<level value="warn"/> 
 	</logger>	
 	
@@ -129,6 +145,10 @@
   		<level value="info"/> 
 	</logger>
 
+    <logger name="org.docx4j.openpackaging.parts.Parts">
+  		<level value="info"/> 
+	</logger>
+    
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>

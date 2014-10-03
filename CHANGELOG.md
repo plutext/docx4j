@@ -2,6 +2,41 @@ CHANGELOG
 =========
 
 
+
+Version 3.2.1  minor release
+=============
+
+Release date
+------------
+
+3 October 2014
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/baudinseb/docx4j
+
+Jason Harrop
+
+
+Notable Changes in Version 3.2.1
+---------------------------------
+
+MailMergerWithNext (baudinseb): supports NEXT, useful for mailing labels
+
+OpenDoPE: bookmark ID management
+
+pkg Load classes: getSourceRelationships().add(r) for additional source rel 
+
+Improvements to diffx (still not production ready though)
+
+PresentationML/FontDataPart
+
+Expose Base.partName, so MergeDocx v1.6.6 can use this docx4j
+
+
+
 Version 3.2.0 
 =============
 

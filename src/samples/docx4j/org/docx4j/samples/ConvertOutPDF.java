@@ -109,7 +109,7 @@ public class ConvertOutPDF extends AbstractSample {
 		// Windows:
 		// String
 		// regex=".*(calibri|camb|cour|arial|symb|times|Times|zapf).*";
-		regex=".*(calibri|camb|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
+		//regex=".*(calibri|camb|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
 		// Mac
 		// String
 		// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
@@ -137,12 +137,13 @@ public class ConvertOutPDF extends AbstractSample {
 		// eg Glyph "ج" (0x62c, afii57420) not available in font "TimesNewRomanPS-ItalicMT".
 		// to a font which does
 		PhysicalFont font 
-				= PhysicalFonts.getPhysicalFonts().get("Arial Unicode MS"); 
+				= PhysicalFonts.get("Arial Unicode MS"); 
 			// make sure this is in your regex (if any)!!!
 		if (font!=null) {
-			fontMapper.getFontMappings().put("Times New Roman", font);
+			fontMapper.put("Times New Roman", font);
+			fontMapper.put("Arial", font);
 		}
-		fontMapper.getFontMappings().put("Libian SC Regular", PhysicalFonts.getPhysicalFonts().get("SimSun"));
+		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
 
 		// FO exporter setup (required)
 		// .. the FOSettings object

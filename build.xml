@@ -7,7 +7,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.2.0"/>
+	<property name="version" value="3.2.1"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
 
@@ -433,7 +433,7 @@
 	    	<!--   	        
 			<pathelement location="${dist}/docx4j-${version}.jar" />
 			 -->
-	        <pathelement location="${m2Repository}/org/docx4j/docx4j/3.2.0/docx4j-3.2.0.jar"/>  
+	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
 	    </path>
         <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
                  
@@ -442,7 +442,7 @@
             <!--   For nuget, we don't snk; for Enterprise usage in GAC, we may
             <arg value="-keyfile:Plutext.snk" />
              -->
-            <arg value="-version:3.2.0.1" /> 
+            <arg value="-version:${version}.0" /> 
             <arg value="-reference:dll/slf4j-api.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
@@ -486,7 +486,7 @@
 		
         <javadoc access="public" author="false" 
          destdir="javadoc" 
-         doctitle="docx4j 2.7.0" 
+         doctitle="docx4j ${version}" 
          nodeprecated="false" 
          nodeprecatedlist="false" 
          noindex="false" 

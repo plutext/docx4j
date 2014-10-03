@@ -588,8 +588,9 @@ public class PropertyResolver {
 		// Hmm, have to do the work
 		Style s = liveStyles.get(styleId);
 		
-		if (s==null) {
+		if (s==null) {			
 			log.error("Couldn't find style: " + styleId);
+			log.debug("Couldn't find style: " + styleId, new Throwable());
 			return null;
 		}
 

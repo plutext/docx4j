@@ -28,13 +28,23 @@ When it comes to the actual release, follow the below for:
 + .NET dist
 
 
-TODO: consider which (if either) of xhtmlrenderer and docx4j-ImportXHTML should contain .css & .conf resources
 
 TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
 
-TODO: fix AlteredParts test  
  
 ---------- 
+
+Update CHANGELOG.md, README.md with release info.
+
+    http://www.jukie.net/bart/blog/pimping-out-git-log
+        
+(refer to CHANGELOG.md to see what rnumber to start at)  
+
+    git lg b6c12c8..HEAD > stuff.txt  
+
+Update pom.xml with target version number (must still be -SNAPSHOT)
+
+Update build.xml so it has the same version as pom.xml (but without  -SNAPSHOT) 
 
 Check everything is committed
 
@@ -44,20 +54,9 @@ Check jar versions in pom.xml, build.xml
 
 mvn clean
 
-Run JarCheck on result of mvn install to check its compiled for 1.5 (run it on all jars in dist)
+Run JarCheck on result of mvn install to check its compiled for 1.6 (run it on all jars in dist)
 
-Update README.txt with release info.
-
-    http://www.jukie.net/bart/blog/pimping-out-git-log
-        
-(refer to README.txt to see what rnumber to start at)  
-
-    git lg b6c12c8..HEAD > stuff.txt  
-
-Update pom.xml with target version number (must still be -SNAPSHOT)
-
-For a clean jar:
-		<outputDirectory>bin-mvn</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+(Jar not clean? avoid mixing mvn and eclipse (test?) output)
 
 git commit / push upstream
 (uses git-remote-https, if you want to force a particular network connection)
@@ -196,7 +195,9 @@ so just do:
 
 	$ mvn release:perform -X 
 
-and be patient .. it may look like nothing is happening 
+(don't need to worry about presence of bin-testOutput dir etc)
+
+.. be patient .. it may look like nothing is happening 
 (frozen checking out... and no network traffic), but have faith....
 
 enter code signing password again [ie e..]
@@ -244,28 +245,28 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
+Repeat above for -ImportXHTML
 
-ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
-
-    (Remove the jaxb jars from dist dir)
-    
-    but for consistency, use the docx4j jar maven made.
-    
-    Create a dir structure:
-    
-    docx4j-3.x.y.jar
-    - dependencies
-    - documentation
-    - legals
-    - optional
-      + ImportXHTML (3 jars)
-      + MOXy (1 jar - users must download MOXY itself from EclipseLink)
-    - resources
-
-    Create docx4j-x.x.x.zip (ant dist, rename the jar as well)
-
-Update build.xml so it has the same version as pom.xml
+Run ant release (requires both docx4j and -ImportXHTML to be in maven)
+ 
 
 ----
 
 Announce release in docx4j forum
+
+----
+
+.NET releases
+
+Nuget publish procedure:
+1.	use ant to create the DLL
+	a.	(no SNK for Nuget)
+2.	in Visual Studio, remove reference to existing DLL; copy/add the new one
+3.	update docx4j.properties (don't need that in -ImportXHTML nuspec, since it is pulled in automatically)
+4.	test it works
+5.	open the existing .nuspec file (inNuGet Package Explorer)
+6.	update the version number etc
+7.	save it
+8.	publish (key is in user profiles doc)
+9.  extract new .nuspec file from .nupkg (since the tool doesn't seem to save it)
+9.  push to GitHub
