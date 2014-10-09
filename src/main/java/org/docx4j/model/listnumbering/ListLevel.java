@@ -131,6 +131,7 @@ public class ListLevel {
 	protected Counter getCounter() {
 		return counter;
 	}
+	
 
 	/**
      * Constructor for a ListLevel in an abstract definition.
@@ -262,6 +263,7 @@ public class ListLevel {
 
     public void setStartValue(BigInteger startValue) {
 		this.startValue = startValue;
+    	startAtUsed = false;		
 	}
 
 	/**
@@ -354,7 +356,8 @@ public class ListLevel {
      */
     public void IncrementCounter()
     {
-    	if (!counter.encounteredAlready) {
+    	if (startAtUsed==false
+    			|| (!counter.encounteredAlready)) {
     		// Defer setting the startValue until the list
     		// is actually encountered in the main document part,
     		// since otherwise earlier numbering (using the
@@ -362,12 +365,13 @@ public class ListLevel {
         	counter.setCurrentValue(this.startValue); 
         	log.debug("not encounteredAlready; set to startValue " + startValue);
         	counter.encounteredAlready = true;
+        	startAtUsed = true;
     	}
-    	
-    	
         counter.IncrementCounter();
-        
     }
+    
+	protected boolean startAtUsed = true;
+    
 
     /**
      * resets the counter to the start value
