@@ -496,6 +496,19 @@ public class XsltHTMLFunctions {
         		  "p" );
     	
     }
+
+    public static DocumentFragment createListItemBlockForPPr( 
+    		HTMLConversionContext context,
+    		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults ) {
+
+    	return createBlock( 
+        		 context,
+        		 pPrNodeIt,
+        		 pStyleVal,  childResults,
+        		  "li" );
+    	
+    }
     
     private static DocumentFragment createBlock( 
     		HTMLConversionContext context,

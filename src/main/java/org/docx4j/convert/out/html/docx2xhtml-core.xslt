@@ -180,6 +180,11 @@
 					
 						span>STUFF</span-->
 				</xsl:when>
+				<xsl:when test="contains( string(../../w:sdtPr/w:tag/@w:val), 'HTML_ELEMENT' )">
+					<!--  use HTML OL|UL and LI; -->								
+					<!--  don't number in this case, since we'll let li insert those -->
+					<xsl:apply-templates />		
+				</xsl:when>
 				<xsl:when test="count(child::node())=1 and count(w:pPr)=1">
 					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
 					<xsl:value-of select="
@@ -188,8 +193,6 @@
 					<!--  Don't apply templates, since there is nothing to do. -->
 				</xsl:when>				
 				<xsl:otherwise>
-					<!--  At present, this doesn't use HTML OL|UL and LI;
-					      we'll do that when we have a document model to work from -->								
 					<xsl:value-of select="
 						java:org.docx4j.convert.out.html.XsltHTMLFunctions.getNumberXmlNode( 
 					  					$conversionContext, $pPrNode, $pStyleVal, $numId, $levelId)" />		
@@ -200,8 +203,17 @@
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  
 		
-		<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForPPr( 
-	 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
+		<xsl:choose>
+			<xsl:when test="contains( string(../../w:sdtPr/w:tag/@w:val), 'HTML_ELEMENT' )">
+				<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createListItemBlockForPPr( 
+			 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
+			</xsl:when>
+			<!--  Usual case -->
+			<xsl:otherwise>
+				<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForPPr( 
+			 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
+			</xsl:otherwise>
+		</xsl:choose>
 			
 		
   </xsl:template>

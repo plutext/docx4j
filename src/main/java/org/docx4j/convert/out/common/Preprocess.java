@@ -32,6 +32,7 @@ import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInE
 import org.docx4j.convert.out.common.preprocess.PageBreak;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.convert.out.html.ListsToContentControls;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
@@ -113,7 +114,7 @@ public class Preprocess extends ConversionFeatures {
 	/** This method applies those features in the preprocessing, that may be used with an
 	 *  WordprocessingMLPackage. As the WordprocessingMLPackage is a OpcPackage it will
 	 *  call process(OpcPackage).<br>
-	 *  Features processed: 
+	 *  Features processed include, for example: 
 	 *  <ul>
 	 *  <li>PP_COMMON_MOVE_BOOKMARKS</li>
 	 *  <li>PP_COMMON_MOVE_PAGEBREAK</li>
@@ -162,6 +163,11 @@ public class Preprocess extends ConversionFeatures {
 		if (features.contains(PP_COMMON_CONTAINERIZATION)) {
 			log.debug("PP_COMMON_CONTAINERIZATION");
 			Containerization.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+		if (features.contains(PP_HTML_COLLECT_LISTS)) {
+			log.debug("PP_HTML_COLLECT_LISTS");
+			ListsToContentControls.process(ret);
 //			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {

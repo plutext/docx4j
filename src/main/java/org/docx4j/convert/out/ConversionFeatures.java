@@ -90,6 +90,11 @@ public abstract class ConversionFeatures {
 	 */
 	public static final String PP_COMMON_CREATE_SECTIONS = "pp.common.createsections";
 
+	/** In HTML the conversion process can create lists (OL, UL). 
+	 *  This step prepares for that, by inserting content controls around list items.
+	 */
+	public static final String PP_HTML_COLLECT_LISTS = "pp.html.collectlists";
+	
 	/** This step defines only one section for the complete document. The required data will be taken 
 	 *  from the body section pointers. In PDF the document will be treated as having only one section. 
 	 *  The use of <code>PP_COMMON_CREATE_SECTIONS</code> in HTML doesn't offer any advantage. 
@@ -155,6 +160,7 @@ public abstract class ConversionFeatures {
 		PP_COMMON_MOVE_BOOKMARKS,
 		PP_COMMON_MOVE_PAGEBREAK,
 		PP_COMMON_CONTAINERIZATION,
+		PP_HTML_COLLECT_LISTS, // post 3.2.1; implemented in via XSLT only; requires SdtToListSdtTagHandler to be configured
 		PP_COMMON_COMBINE_FIELDS,
 		PP_COMMON_DUMMY_PAGE_NUMBERING,
 		PP_COMMON_DUMMY_CREATE_SECTIONS,
