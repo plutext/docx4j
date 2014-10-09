@@ -240,24 +240,42 @@ public class ListNumberingDefinition {
     /// <param name="level"></param>
     public void IncrementCounter(String level)
     {
+        int otherLevelInt;
+        String otherLevelStr;
+    	
+    	if (!this.levels.get(level).getCounter().isEncounteredAlready()) {
+    		// We haven't encountered this level before,
+    		// so check that the lower levels have been initialised
+            otherLevelInt = Integer.parseInt(level)-1;
+            otherLevelStr =  Integer.toString(otherLevelInt);
+            
+            while (this.levels.containsKey(otherLevelStr) // will fail once negative
+            		&& !this.levels.get(otherLevelStr).getCounter().isEncounteredAlready()) 
+            {
+            	log.debug("Increment lower level " + otherLevelStr);
+                this.levels.get(otherLevelStr).IncrementCounter();
+                otherLevelInt--;
+                otherLevelStr = Integer.toString(otherLevelInt);
+            }
+    	}    		
+    		
     	
     	log.debug("Increment level " + level);
         this.levels.get(level).IncrementCounter();
 
-        // Now set all lower levels back to 1.
+        // Now set all higher levels back to 1.
         
         // here's a bit where the decision to use Strings as level IDs was bad 
         // - I need to loop through the derived levels and reset their counters
-        //UInt32 levelNumber = System.Convert.ToUInt32(level, CultureInfo.InvariantCulture) + 1;
-        int levelNumber = Integer.parseInt(level)+1;
-        String levelString =  Integer.toString(levelNumber);
+        otherLevelInt = Integer.parseInt(level)+1;
+        otherLevelStr =  Integer.toString(otherLevelInt);
 
-        while (this.levels.containsKey(levelString))
+        while (this.levels.containsKey(otherLevelStr))
         {
-        	log.debug("Reset level " + levelNumber);
-            this.levels.get(levelString).ResetCounter();
-            levelNumber++;
-            levelString = Integer.toString(levelNumber);
+        	log.debug("Reset level " + otherLevelInt);
+            this.levels.get(otherLevelStr).ResetCounter();
+            otherLevelInt++;
+            otherLevelStr = Integer.toString(otherLevelInt);
         }
     }
 
@@ -351,8 +369,6 @@ public class ListNumberingDefinition {
 
         for (int i = 0; i < formatString.length(); i++)
         {
-            //temp = formatString.SubString(i, 1);
-        	// C# pos i, length 1            	
         	temp = formatString.substring(i, i+1);
             if (temp.equals("%") )
             {
@@ -418,16 +434,4 @@ public class ListNumberingDefinition {
 
 }
 
-//    static String getAttributeValue(XmlNode node, String name)
-//    {
-//        String value = String.Empty;
-//
-//        XmlAttribute attribute = node.Attributes[name];
-//        if (attribute != null && attribute.Value != null)
-//        {
-//            value = attribute.Value;
-//        }
-//
-//        return value;
-//    }
 

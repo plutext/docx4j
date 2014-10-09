@@ -127,10 +127,12 @@ public class ListLevel {
 	 */
 	private Counter counter; 
 	
-	private boolean encounteredAlready = false;
-	
-	
-    /**
+
+	protected Counter getCounter() {
+		return counter;
+	}
+
+	/**
      * Constructor for a ListLevel in an abstract definition.
      */
     public ListLevel(Lvl levelNode)
@@ -352,13 +354,14 @@ public class ListLevel {
      */
     public void IncrementCounter()
     {
-    	if (!encounteredAlready) {
+    	if (!counter.encounteredAlready) {
     		// Defer setting the startValue until the list
     		// is actually encountered in the main document part,
     		// since otherwise earlier numbering (using the
     		// same abstract number) would use this startValue
-        	counter.setCurrentValue(this.startValue);  
-        	encounteredAlready = true;
+        	counter.setCurrentValue(this.startValue); 
+        	log.debug("not encounteredAlready; set to startValue " + startValue);
+        	counter.encounteredAlready = true;
     	}
     	
     	
@@ -420,6 +423,13 @@ public class ListLevel {
     }
     
     protected class Counter {
+    	
+    	protected boolean encounteredAlready = false;
+    	
+        protected boolean isEncounteredAlready() {
+    		return encounteredAlready;
+    	}
+    	
     	
         private BigInteger currentValue;
         
