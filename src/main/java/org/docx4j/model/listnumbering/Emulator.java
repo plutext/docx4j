@@ -190,14 +190,9 @@ public class Emulator {
     		}
     		
     		log.debug("no explicit numId; looking in styles");
-			style = propertyResolver.getStyle(pStyleVal); 
+			PPr ppr = propertyResolver.getEffectivePPr(pStyleVal); 
 			
-	    	if (style == null) {
-	    		log.debug("Couldn't find style '" + pStyleVal + "'");
-	    		return null;
-	    	} 
-	    	
-	    	if (style.getPPr() == null) {
+	    	if (ppr == null) {
 		    		log.debug("Style '" + pStyleVal + "' has no pPr");
 //		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
 //		        	System.out.println(
@@ -208,7 +203,7 @@ public class Emulator {
 	    	} 
 
 	    	
-    		NumPr numPr = style.getPPr().getNumPr();
+    		NumPr numPr = ppr.getNumPr();
     		
     		if (numPr==null) {
 	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
@@ -218,28 +213,6 @@ public class Emulator {
 	        	// So there is no numbering set on the style either
 	        	// That's ok ..
 	        	return null;
-    		}
-    		
-    		
-    		if (numPr.getNumId()==null) {
-    			log.debug("NumPr element has no numId");
-    			if (pStyleVal==null) {
-    				return null;
-    			} else {
-    	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
-        			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
-    				PPr ppr = propertyResolver.getEffectivePPr(pStyleVal);
-    				
-    				numPr = ppr.getNumPr();
-        			if (numPr==null) {	
-            			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
-        				return null; // Is this the right thing to do? Check!
-        			} else {        				
-        				log.info("Got numId: " + numPr.getNumId() );
-        			}
-    				
-    			}
-    			
     		}
     		
     		if (numPr.getNumId()==null) {
@@ -279,8 +252,6 @@ public class Emulator {
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
 				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 						levelId)) {
-			// XmlAttribute counterAttr =
-			// mainDoc.CreateAttribute("numString");
 
 			numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
 					levelId);
@@ -539,6 +510,11 @@ public class Emulator {
 		
 	    
 	    RPr rPr;
+	    /**
+	     * lvl rPr
+	     * 
+	     * @return
+	     */
 	    public RPr getRPr() {
 			return rPr;
 		}
