@@ -308,6 +308,7 @@ public class Docx4jDriver {
 
 				// So just feed the leftESC into the formatter and return
 				for(EventSequence es : leftES) {
+				    formatter.declarePrefixMapping(es.getPrefixMapping());
 					formatEventSequence(es,formatter);
 				}
 				closeResult(rootNodeName, out);
