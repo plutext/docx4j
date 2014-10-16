@@ -31,6 +31,7 @@ import java.util.jar.Manifest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.utils.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,10 +200,11 @@ public class Context {
 	    try {
 	        resEnum = loader.getResources(JarFile.MANIFEST_NAME);
 	        while (resEnum.hasMoreElements()) {
+	        	InputStream is = null;
 	            try {
 	                URL url = (URL)resEnum.nextElement();
 //	                System.out.println("\n\n" + url);
-	                InputStream is = url.openStream();
+	                is = url.openStream();
 	                if (is != null) {
 	                    Manifest manifest = new Manifest(is);
 
@@ -237,6 +239,8 @@ public class Context {
 	            catch (Exception e) {
 	                // Silently ignore 
 //	            	log.error(e.getMessage(), e);
+	            } finally {
+	            	IOUtils.closeQuietly(is);
 	            }
 	        }
 	    } catch (IOException e1) {
