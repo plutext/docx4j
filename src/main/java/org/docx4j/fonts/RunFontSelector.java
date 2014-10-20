@@ -807,7 +807,20 @@ public class RunFontSelector {
         	    		if (hAnsi==null) {
         	    			log.warn("TODO: how to handle char '" + c + "' lacking hAnsi?");
         	    		} else {
-        	    			vis.fontAction(hAnsi); 
+        	    			
+        	    			try {
+        						if (GlyphCheck.hasChar(hAnsi, c)) {
+        							vis.fontAction(hAnsi);        	    		
+        						} else if (GlyphCheck.hasChar("MS Gothic", c)) {
+        							// Word does this for Calibri 0x2751 (checkbox) 
+        							vis.fontAction("MS Gothic");        	    		
+        						} else {
+                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\u2000' && c<='\u2EFF'?");        							
+        						}
+        						
+        					} catch (ExecutionException e) {
+        						log.error(e.getMessage(), e);
+        					}        	    			
         	    		}         	    	}
         	    	vis.addCharacterToCurrent(c);
         	    	
