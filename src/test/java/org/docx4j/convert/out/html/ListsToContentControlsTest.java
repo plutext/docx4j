@@ -2,6 +2,7 @@ package org.docx4j.convert.out.html;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 
@@ -21,7 +22,12 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase;
 import org.docx4j.wml.R;
+import org.docx4j.wml.SdtBlock;
+import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
+import org.docx4j.wml.Tr;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,6 +177,68 @@ public class ListsToContentControlsTest {
 		System.out.println(mdp.getXML());
 		
 	}	
+		
+	@Test
+	public  void existingControl() throws Exception {	
+		
+		WordprocessingMLPackage wordMLPackage = createPkg();
+		
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+		
+		SdtBlock sdtBlock = new SdtBlock();
+		SdtContentBlock sdtContentBlock = new SdtContentBlock();
+		
+		sdtBlock.setSdtContent(sdtContentBlock);
+		
+		mdp.getContent().add(sdtBlock);
+		
+		sdtBlock.getSdtContent().getContent().add(createUnnumberedP());
+		
+		sdtBlock.getSdtContent().getContent().add(createNumberedP(1,0));
+		sdtBlock.getSdtContent().getContent().add(createNumberedP(1,0));
+
+		sdtBlock.getSdtContent().getContent().add(createUnnumberedP());
+
+		ListsToContentControls.process(wordMLPackage);
+		
+		System.out.println(mdp.getXML());
+		
+	}
+
+	@Test
+	public  void tableCell() throws Exception {	
+		
+		WordprocessingMLPackage wordMLPackage = createPkg();
+		
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+		
+		org.docx4j.wml.ObjectFactory wmlObjectFactory = new org.docx4j.wml.ObjectFactory();
+
+		Tbl tbl = wmlObjectFactory.createTbl(); 
+		JAXBElement<org.docx4j.wml.Tbl> tblWrapped = wmlObjectFactory.createCTFtnEdnTbl(tbl); 
+		    // Create object for tr
+		    Tr tr = wmlObjectFactory.createTr(); 
+		    tbl.getContent().add( tr); 
+		        // Create object for tc (wrapped in JAXBElement) 
+		        Tc tc = wmlObjectFactory.createTc(); 
+		        JAXBElement<org.docx4j.wml.Tc> tcWrapped = wmlObjectFactory.createTrTc(tc); 
+		        tr.getContent().add( tcWrapped); 		
+		
+		mdp.getContent().add(tbl);
+		
+		tc.getContent().add(createUnnumberedP());
+		
+		tc.getContent().add(createNumberedP(1,0));
+		tc.getContent().add(createNumberedP(1,0));
+
+		tc.getContent().add(createUnnumberedP());
+
+		ListsToContentControls.process(wordMLPackage);
+		
+		System.out.println(mdp.getXML());
+		
+	}
+	
 
 	@Test
 	public  void EndToEnd() throws Exception {	

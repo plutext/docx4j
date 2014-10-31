@@ -7,7 +7,11 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.finders.SdtFinder;
+import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
@@ -26,9 +30,11 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.Tc;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.slf4j.Logger;
@@ -56,9 +62,7 @@ import org.w3c.dom.Element;
  * 
  * 2.  use an SdtWriter to turn these into UL or OL.
  * 
- * This class does step 1.  For now, this proof of concept
- * on handles children of body.  (ie it won't handle lists
- * inside content controls, or table cells)
+ * This class does step 1.  
  * 
  * Step 2 is implemented by ....;  it will only be used if 
  * property docx4j.Convert.Out.HTML.Lists is set.
@@ -86,7 +90,7 @@ public class ListsToContentControls {
 	
 	private PropertyResolver propertyResolver;
 	
-    private LinkedList<ListSpec> listStack = new LinkedList<ListSpec>();
+    private LinkedList<ListSpec> listStack = null;
 
 	public static class ListSpec {
 		
@@ -111,9 +115,50 @@ public class ListsToContentControls {
 	}
 	
 	private void process() {
+		List<Object> content = null;
+		List<Object> groupedContent = null;
 		
-		List<Object> content = mainDocument.getContent();
-		List<Object> groupedContent = groupBodyContent(content);
+		///////////////////////////////////////////////
+		// First, contents of existing content controls
+		// .. find the content controls
+		SdtFinder sdtFinder = new SdtFinder();
+		new TraversalUtil(mainDocument.getContent(), sdtFinder);
+		
+		// .. loop through them
+		for (SdtElement sdtEl : sdtFinder.getSdtList()) {
+			content = sdtEl.getSdtContent().getContent();
+			groupedContent = groupContent(content);
+			
+			if (groupedContent != null) {
+				content.clear();
+				content.addAll(groupedContent);
+			}
+			
+		}
+		
+		
+		///////////////////////////////////////////////
+		// Second, contents of table cells
+		TcFinder tcFinder = new TcFinder();
+		tcFinder.setTraverseTables(true);
+		new TraversalUtil(mainDocument.getContent(), tcFinder);
+		for (Tc tc : tcFinder.tcList) {
+			
+			content = tc.getContent();
+			groupedContent = groupContent(content);
+			
+			if (groupedContent != null) {
+				content.clear();
+				content.addAll(groupedContent);
+			}
+			
+		}
+		
+		
+		///////////////////////////////////////////////
+		// Third, body level content
+		content = mainDocument.getContent();
+		groupedContent = groupContent(content);
 		
 		if (groupedContent != null) {
 			content.clear();
@@ -166,7 +211,10 @@ public class ListsToContentControls {
 		
 	}
 	
-	private List<Object> groupBodyContent(List<Object> bodyElts) {
+	private List<Object> groupContent(List<Object> bodyElts) {
+		
+		// Reset state
+		listStack = new LinkedList<ListSpec>();
 		
 		List<Object> resultElts = new ArrayList<Object>();
 		P paragraph = null;
@@ -317,6 +365,6 @@ public class ListsToContentControls {
 		return resultElts;
 	}	
 	
-
+		
 
 }
