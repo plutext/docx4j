@@ -207,6 +207,11 @@ public class MailMerger {
 			log.debug(XmlUtils.marshaltoString(target.getMainDocumentPart()
 					.getJaxbElement(), true, true));
 
+            // If this is the last document no need to add sectPr and process the headers and footers
+            if (mdpResults.size() == i + 1) {
+                continue;
+            }
+			
 			// add sectPr to final paragraph
 			Object last = content.get(content.size() - 1);
 			P lastP = null;
