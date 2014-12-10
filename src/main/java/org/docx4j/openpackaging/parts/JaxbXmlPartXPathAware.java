@@ -338,7 +338,7 @@ implements XPathEnabled<E> {
 					// Usually..
 				} else {
 					// eg java.lang.NumberFormatException
-					log.error( ue.getMessage(), ue);
+					log.warn( ue.getMessage(), ue);
 				}
 				
 				if (is.markSupported() ) {
