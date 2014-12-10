@@ -333,7 +333,9 @@ public class ParagraphStylesInTableFix {
 	    			log.debug(currentStyle);			    			
 	    			Style thisStyle = allStyles.get(currentStyle);
 	    			
-	    			if (thisStyle.getName().getVal().equals("Normal Table")) {
+	    			if (thisStyle!=null
+	    					&& thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
+	    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
 	    				// Very surprising, but testing using Word 2010 SP1,
 	    				// it turns out that table style with name "Normal Table" 
 	    				// is IGNORED (whatever its ID, and whether default or not)!! 
