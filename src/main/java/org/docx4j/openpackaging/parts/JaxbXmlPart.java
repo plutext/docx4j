@@ -343,6 +343,8 @@ public abstract class JaxbXmlPart<E> extends Part {
     	
 		try {
 			Marshaller marshaller = jc.createMarshaller();
+			marshaller.setProperty("jaxb.formatted.output", true);
+			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
 			log.info("marshalling " + this.getClass().getName() );	
