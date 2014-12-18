@@ -249,7 +249,8 @@ public abstract class JaxbXmlPart<E> extends Part {
 		}
 		
 		// Do the replacement
-		jaxbElement = (E)XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings);
+		jaxbElement = (E)XmlUtils.unwrap(
+							XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings, jc));
 		
 	}
 	
