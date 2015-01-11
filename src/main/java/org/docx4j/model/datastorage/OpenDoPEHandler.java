@@ -56,10 +56,12 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.w15.CTSdtRepeatedSection;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTLock;
 import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.Id;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.SdtElement;
@@ -82,7 +84,8 @@ public class OpenDoPEHandler {
 		this.wordMLPackage = wordMLPackage;
 
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
-			throw new Docx4JException("OpenDoPE XPaths part missing");
+			log.info("OpenDoPE XPaths part missing (ok if you are just processing w15 repeatingSection)");
+			xPaths = new org.opendope.xpaths.Xpaths(); 
 		} else {
 			xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
 					.getJaxbElement();
@@ -611,9 +614,12 @@ public class OpenDoPEHandler {
 					|| o instanceof org.docx4j.wml.CTSdtRow
 					|| o instanceof org.docx4j.wml.CTSdtCell) {
 
-				if (getSdtPr(o).getDataBinding() == null) {
+				SdtPr sdtPr = getSdtPr(o);
+				if (sdtPr.getDataBinding() == null)  {
 					// a real binding attribute trumps any tag
 					return processBindingRoleIfAny(wordMLPackage, o);
+				} else if (getW15RepeatingSection(sdtPr)!=null) {
+					return  processW15Repeat( o, wordMLPackage.getCustomXmlDataStorageParts());					
 				}
 
 			} else {
@@ -681,6 +687,11 @@ public class OpenDoPEHandler {
 		}
 
 	}
+	
+	private CTSdtRepeatedSection getW15RepeatingSection(SdtPr sdtPr) {
+		
+		return (CTSdtRepeatedSection)sdtPr.getByClass(CTSdtRepeatedSection.class);
+	}
 
 	/**
 	 * This applies to any sdt which might be a conditional|repeat
@@ -695,7 +706,12 @@ public class OpenDoPEHandler {
 	 */
 	private List<Object> processBindingRoleIfAny(
 			WordprocessingMLPackage wordMLPackage, Object sdt) {
-		log.debug("Processing " + getSdtPr(sdt).getId().getVal());
+		
+		Id id = getSdtPr(sdt).getId();
+		if (id!=null) {
+			log.debug("Processing " + id.getVal());
+		}
+		
 		Tag tag = getSdtPr(sdt).getTag();
 
 		if (tag == null) {
@@ -711,14 +727,14 @@ public class OpenDoPEHandler {
 		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
 		String xp = map.get(BINDING_ROLE_XPATH);
+		
 		if (conditionId == null && repeatId == null && xp == null) {
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
 		}
 
-		Map<String, CustomXmlPart> customXmlDataStorageParts = wordMLPackage
-				.getCustomXmlDataStorageParts();
+		Map<String, CustomXmlPart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();
 
 		if (conditionId != null) {
 
@@ -744,9 +760,9 @@ public class OpenDoPEHandler {
 
 		} else if (repeatId != null) {
 
-			log.info("Processing Repeat: " + tag.getVal());
+			log.info("Processing OpenDoPE Repeat: " + tag.getVal());
 
-			return processRepeat(sdt,
+			return processOpenDopeRepeat(sdt,
 					customXmlDataStorageParts, wordMLPackage
 							.getMainDocumentPart().getXPathsPart());
 
@@ -769,6 +785,9 @@ public class OpenDoPEHandler {
 			newContent.add(sdt);
 			return newContent;
 		}
+		
+
+		
 		// shouldn't happen
 		return null;
 	}
@@ -874,8 +893,7 @@ public class OpenDoPEHandler {
 //	}
 	 
 
-
-	private List<Object> processRepeat(Object sdt,
+	private List<Object> processOpenDopeRepeat(Object sdt,
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			XPathsPart xPathsPart) {
 
@@ -896,6 +914,60 @@ public class OpenDoPEHandler {
 		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 		String xpath = xpathObj.getDataBinding().getXpath();
 		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
+
+		return processRepeat(sdt, customXmlDataStorageParts, storeItemId,
+				xpath, prefixMappings);
+	}
+
+	/**
+	 * @param repeatingSectionSdt
+	 * @param customXmlDataStorageParts
+	 * @return
+	 * 
+	 * @since 3.2.2.
+	 */
+	private List<Object> processW15Repeat(Object repeatingSectionSdt,
+			Map<String, CustomXmlPart> customXmlDataStorageParts) {
+
+		CTDataBinding w15Databinding = getSdtPr(repeatingSectionSdt).getDataBinding();
+
+		String storeItemId = w15Databinding.getStoreItemID();
+		String xpath = w15Databinding.getXpath();
+		String prefixMappings = w15Databinding.getPrefixMappings();
+		
+		// for a w15 repeat, we clone the child repeatingSectionItem sdt
+		// TODO: improve this!
+		ContentAccessor ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
+		
+		// replace its content
+		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));
+		ca.getContent().clear();
+		ca.getContent().addAll(
+				processRepeat(repeatingItem, customXmlDataStorageParts, storeItemId, xpath, prefixMappings));
+		
+			// TODO: that method needs to mimic w15 zero case (which is to return 1!)
+		
+		// retain/return the repeatingSection sdt
+		List<Object> newContent = new ArrayList<Object>();
+		newContent.add(repeatingSectionSdt);	
+		return newContent;
+	}
+	
+	/**
+	 * Process a repeat, whether its an OpenDoPE repeat, or a w15:RepeatingSection
+	 * @param sdt
+	 * @param customXmlDataStorageParts
+	 * @param storeItemId
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 */
+	private List<Object> processRepeat(Object sdt,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			String storeItemId,
+			String xpath,
+			String prefixMappings) {
+
 
 		// Get the bound XML
 		String xpathBase;
@@ -954,7 +1026,12 @@ public class OpenDoPEHandler {
 			try {
 				
 				// Use the sdt id for uniqueness
-				long global= ((SdtElement)repeated.get(i)).getSdtPr().getId().getVal().longValue();
+				Id id = ((SdtElement)repeated.get(i)).getSdtPr().getId();
+				if (id==null) {
+					((SdtElement)repeated.get(i)).getSdtPr().setId();
+					id = ((SdtElement)repeated.get(i)).getSdtPr().getId();
+				}
+				long global= id.getVal().longValue();
 				
 				bookmarkRenumber.fixRange(
 						((SdtElement)repeated.get(i)).getSdtContent().getContent(), 
@@ -1078,6 +1155,12 @@ public class OpenDoPEHandler {
 	}
 
 	private void emptyRepeatTagValue(final Tag tag) {
+		
+		if (tag==null) {
+			// TODO: this is ok for a w15 repeat
+			log.warn("No tag");
+			return;
+		}
 
 		final String tagVal = tag.getVal();
 		final Pattern stripRepeatArgPattern = Pattern
@@ -1166,8 +1249,8 @@ public class OpenDoPEHandler {
 		sdtPr.setId();
 
 		// log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
-		CTDataBinding binding = (CTDataBinding) XmlUtils.unwrap(sdtPr
-				.getDataBinding());
+		
+		CTDataBinding binding = sdtPr.getDataBinding(); // could be a w15 binding
 
 		String thisXPath = null;
 
@@ -1178,11 +1261,16 @@ public class OpenDoPEHandler {
 
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
+		HashMap<String, String> map = null;
+		
 		Tag tag = sdtPr.getTag();
-		if (tag == null)
-			return;
-		HashMap<String, String> map = QueryString.parseQueryString(
-				tag.getVal(), true);
+		if (tag == null) {
+			
+			map = new HashMap<String, String>();
+//			return;
+		} else {
+			map = QueryString.parseQueryString(tag.getVal(), true);
+		}
 
 		if (binding == null) {
 
@@ -1238,10 +1326,18 @@ public class OpenDoPEHandler {
 
 			// Set this stuff up now
 			bindingId = map.get(BINDING_ROLE_XPATH);
-			xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+			try {
+				xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+			} catch (InputIntegrityException iie) {
+				log.warn(iie.getMessage());
+			}
 
 			// Sanity test
-			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
+			if (xpathObj==null) {
+				// a normal binding might not have a 
+				log.warn("No XPaths part object for " + binding.getXpath());
+				
+			} else if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
 				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. "
 						+ xpathObj.getDataBinding().getXpath());
 			}
@@ -1293,12 +1389,20 @@ public class OpenDoPEHandler {
 			binding.setXpath(newPath);
 
 			// Also need to create new xpath id, and add that
-			org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
-					newPath, xpathObj, index);
-
-			// set sdt to use it
-			map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
-			tag.setVal(QueryString.create(map));
+			if (xpathObj==null) {
+				// not required for w15 repeats, and why should it be required for a plain bind?
+				log.debug("Not setting tag");
+				
+			} else {
+				// Usual case (for OpenDoPE, anyway)
+				
+				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
+						newPath, xpathObj, index);
+	
+				// set sdt to use it
+				map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
+				tag.setVal(QueryString.create(map));
+			}
 		}
 
 	}

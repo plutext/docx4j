@@ -314,14 +314,13 @@ public class Docx4J {
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML );
 			startEvent.publish();
 			
-			if (wmlPackage.getMainDocumentPart().getXPathsPart()!=null) {
-				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
-				openDoPEHandler.preprocess();
-				
-				bookmarkId = openDoPEHandler.getNextBookmarkId();
-			}
+			// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
+			// and does that whether or not we have an XPaths part
+			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
+			openDoPEHandler.preprocess();
+			
 			BindingHandler bh = new BindingHandler(wmlPackage);
-			bh.setStartingIdForNewBookmarks(bookmarkId);
+			bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
 			bh.applyBindings();
 			
 			new EventFinished(startEvent).publish();
