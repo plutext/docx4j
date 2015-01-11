@@ -1845,7 +1845,31 @@ public class CTCompat implements Child
         }
         return this.compatSetting;
     }
+    
+    public CTCompatSetting getCompatSetting(String name, String uri) {
+    	
+    	for (CTCompatSetting setting : getCompatSetting() ) {
+    		
+    		if (name.equals(setting.getName())
+    				&& uri.equals(setting.getUri()) ) {
+    			return setting;
+    		}
+    	}
+    	return null;
+    }
 
+    public void setCompatSetting(String name, String uri, String val) {
+    	
+    	CTCompatSetting setting = getCompatSetting( name,  uri);
+    	if (setting==null) {
+    		setting = new CTCompatSetting();
+    		getCompatSetting().add(setting);
+    	}
+		setting.setName(name);
+		setting.setUri(uri);
+		setting.setVal(val);
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
