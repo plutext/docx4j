@@ -282,7 +282,7 @@ public class XmlUtils {
 		} catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
 			
 			// Provider org.apache.xalan.processor.TransformerFactoryImpl not found
-			log.error("Warning: Xalan jar missing from classpath; xslt not supported",e);
+			log.warn("Xalan jar missing from classpath; xslt not supported");
 			
 			// so try using whatever TransformerFactory is available
 			if (originalSystemProperty == null) {
