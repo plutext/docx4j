@@ -14,6 +14,7 @@ import org.xlsx4j.sml.Workbook;
 public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	
 	protected SharedStrings sharedStrings;
+	protected Styles stylesPart;
 	
 	public WorkbookPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -40,6 +41,9 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		return sharedStrings;
 	}
 	
+	public Styles getStylesPart() {
+		return stylesPart;
+	}
 	
 	public boolean setPartShortcut(Part part) {
 		
@@ -68,7 +72,10 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		
 		if (relationshipType.equals(Namespaces.SPREADSHEETML_SHARED_STRINGS)) {
 			sharedStrings = (SharedStrings)part;
-			return true;			
+			return true;
+		} else 	if (relationshipType.equals(Namespaces.SPREADSHEETML_STYLES)) {
+			stylesPart = (Styles)part;
+			return true;				
 		} else {	
 			return false;
 		}
