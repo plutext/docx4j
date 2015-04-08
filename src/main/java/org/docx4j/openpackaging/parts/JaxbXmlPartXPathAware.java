@@ -344,8 +344,8 @@ implements XPathEnabled<E> {
 				if (is.markSupported() ) {
 					// When reading from zip, we use a ByteArrayInputStream,
 					// which does support this.
-				
-					log.info("encountered unexpected content; pre-processing");
+									
+					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
 					/* Always try our preprocessor, since if what is first encountered is
 					 * eg:
 					 * 
@@ -409,6 +409,7 @@ implements XPathEnabled<E> {
 						
 					}
 				} else {
+					log.error("problem in " + this.getPartName() ); 					
 					log.error(ue.getMessage(), ue);
 					log.error(".. and mark not supported");
 					throw ue;

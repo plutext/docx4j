@@ -147,6 +147,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
+				log.error("Problem with part " + this.getPartName());
 				throw new Docx4JException(e.getMessage(), e);
 //			} catch (Docx4JException e) {
 //				log.error(e.getMessage(), e);
