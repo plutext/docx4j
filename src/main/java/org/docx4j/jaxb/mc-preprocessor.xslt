@@ -92,8 +92,6 @@
        
        and at 201504 <w:pgSz w:h="16839.0" w:w="11907.0"/>
        See http://www.docx4java.org/forums/docx-java-f6/parsing-error-when-reading-a-document-from-google-docs-t2160.html
-	   and https://productforums.google.com/forum/#!category-topic/docs/documents/report-an-issue/desktop--other-please-specify/chrome-browser/wMIZVQmcIdw
-	          
         -->
   
   <xsl:template match="@w:w" >
