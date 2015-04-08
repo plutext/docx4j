@@ -88,13 +88,19 @@
   
   <!-- Workaround for Google Docs as at 20140225 <w:tblW w:w="10206.0" w:type="dxa"/> 
        See http://www.docx4java.org/forums/docx-java-f6/problem-with-document-created-by-google-docs-t1802.html
-       Google Docs make the same error in many places..  -->
+       Google Docs make the same error in many places.. 
+       
+       and at 201504 <w:pgSz w:h="16839.0" w:w="11907.0"/>
+       See http://www.docx4java.org/forums/docx-java-f6/parsing-error-when-reading-a-document-from-google-docs-t2160.html
+	   and https://productforums.google.com/forum/#!category-topic/docs/documents/report-an-issue/desktop--other-please-specify/chrome-browser/wMIZVQmcIdw
+	          
+        -->
   
   <xsl:template match="@w:w" >
 
   	  <xsl:choose>
-  	  	<!--  limit fix to dxa case -->
-  		<xsl:when test="../@w:type='dxa'">
+  	  	<!--  limit fix to certain cases -->
+  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz'">
 		  	<xsl:attribute name="w:w"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   		</xsl:when>
   		<xsl:otherwise>
@@ -103,6 +109,11 @@
   	</xsl:choose> 
   	
   </xsl:template> 
+
+  <xsl:template match="w:pgSz/@w:h" >
+		  	<xsl:attribute name="w:h"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template> 
+  
   
   <!-- Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx, for example:
   
