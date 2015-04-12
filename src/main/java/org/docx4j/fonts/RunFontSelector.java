@@ -396,7 +396,9 @@ public class RunFontSelector {
 			return nullRPr(document, text);
 		}		
     	
-		text = this.arabicNumbering(text, rPr.getRtl(), rPr.getCs(), themeFontLang);
+		if (pPr!=null && pPr.getBidi()!=null && pPr.getBidi().isVal() ) {
+			text = this.arabicNumbering(text, rPr.getRtl(), rPr.getCs(), themeFontLang);
+		}
 		
     	/* If the run has the cs element ("[ISO/IEC-29500-1] §17.3.2.7; cs") 
     	 * or the rtl element ("[ISO/IEC-29500-1] §17.3.2.30; rtl"), 
