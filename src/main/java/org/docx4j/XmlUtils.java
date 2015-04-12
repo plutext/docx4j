@@ -1109,10 +1109,14 @@ public class XmlUtils {
 		if (refreshXmlFirst) 
 			node = binder.updateXML(jaxbElement);
 		node = binder.getXMLNode(jaxbElement);
+		if (node==null) {
+			throw new XPathBinderAssociationIsPartialException("binder.getXMLNode returned null");
+		}
 		
 		//log.debug("XPath will execute against: " + XmlUtils.w3CDomNodeToString(node));
 		
         List<JAXBAssociation> resultList = new ArrayList<JAXBAssociation>();
+        
         for( Node n : xpath(node, xpathExpr) ) {
         	resultList.add(new JAXBAssociation(n, binder.getJAXBNode(n)));
         }
