@@ -28,6 +28,7 @@ import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.model.fields.FieldUpdater;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -127,6 +128,10 @@ public class ConvertOutPDF extends AbstractSample {
 			System.out.println("Loading file from " + inputfilepath);
 			wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		}
+		
+		// Refresh the values of DOCPROPERTY fields 
+		FieldUpdater updater = new FieldUpdater(wordMLPackage);
+		updater.update(true);
 		
 		// Set up font mapper (optional)
 		Mapper fontMapper = new IdentityPlusMapper();
