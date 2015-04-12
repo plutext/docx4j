@@ -614,7 +614,12 @@ public class PropertyFactory {
 			} else if (name.equals(LineSpacing.CSS_NAME )) {
 				// line-height
 				return new LineSpacing(value);
-			}		
+			}
+			
+			// Note:  paragraph border
+			// and padding -> pBorder/[side]/@space
+			// are handled in XHTML Importer's ParagraphBorderHelper
+			
 		} catch (java.lang.UnsupportedOperationException uoe) {
 			// TODO: consider whether it is right to catch this,
 			// or whether calling code should handle a docx4j exception wrapping this

@@ -215,8 +215,8 @@ public abstract class Part extends Base {
 	// think through whether, and if so 
 	// where and how it should be set
 	public void setPackage( OpcPackage pack) {
-		log.debug("setPackage called for " + this.getClass().getName() );
-//		(new Throwable()).printStackTrace();
+		log.debug("setPackage to " + pack.name() + " called for " + this.getClass().getName() );
+		//(new Throwable()).printStackTrace();
 		this.pack = pack;
 	}
 

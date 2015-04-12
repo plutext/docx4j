@@ -101,6 +101,18 @@ public class FieldsPreprocessor {
 	}
 	
 	
+	/**
+	 * Convert the field(s) in the input P into a predictable
+	 * format, and add a FieldRef object to the list for each
+	 * top level field encountered.  
+	 * 
+	 * WARNING: this method should not be used where a field 
+	 * in the P extends into a subsequent P.
+	 * 
+	 * @param p
+	 * @param fieldRefs
+	 * @return the modified P
+	 */
 	public static P canonicalise(P p, List<FieldRef> fieldRefs) {
 		/*
 		 * Result is something like:

@@ -124,6 +124,10 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	
 	protected HashMap<String, CustomXmlPart> customXmlDataStorageParts
 		= new HashMap<String, CustomXmlPart>(); // NB key is lowercase
+	/**
+	 * keyed by item id (in lower case)
+	 * @return
+	 */
 	public HashMap<String, CustomXmlPart> getCustomXmlDataStorageParts() {
 		return customXmlDataStorageParts;
 	}	

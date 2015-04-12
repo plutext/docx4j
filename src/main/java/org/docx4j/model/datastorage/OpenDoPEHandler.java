@@ -990,7 +990,7 @@ public class OpenDoPEHandler {
 		// if (xpathBase.endsWith("]"))
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
-		log.info("/n/n Repeat: using xpath: " + xpathBase);
+		log.info("/n/n Repeat: using xpath: " + xpathBase + " and " + prefixMappings);
 		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
 				storeItemId, xpathBase, prefixMappings);
 		// storeItemId, xpathBase+"/*", prefixMappings);

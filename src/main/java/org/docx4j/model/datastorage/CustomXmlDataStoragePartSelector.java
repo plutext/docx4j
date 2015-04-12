@@ -50,12 +50,7 @@ public class CustomXmlDataStoragePartSelector {
 	
 	
 	/**
-	 * We need the item id of the custom xml part.  
-	 * 
-	 * There are several strategies we could use to find it,
-	 * including searching the docx for a bind element, but
-	 * here, we simply look in the xpaths part. 
-	 * 
+	 * We need the item id of the custom xml part.  	 * 
 	 * @param wordMLPackage
 	 * @return
 	 */

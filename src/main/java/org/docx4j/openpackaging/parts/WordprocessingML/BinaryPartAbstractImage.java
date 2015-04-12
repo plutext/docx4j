@@ -927,6 +927,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * to get the byte[] representing
 	 * the associated image 
 	 * 
+	 * The method assumes your image is in the main document part (as opposed to a header/footer etc)
+	 * 
 	 * @param wmlPkg
 	 * @param graphic
 	 * @return
@@ -1256,7 +1258,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	/**
 	 * Convert image formats which are not supported by Word (eg EPS, PDF),
 	 * into ones which are.  This requires ImageMagick to be on your
-	 * system's path; for EPS and PDF images, Ghostscript is also required.
+	 * system's path (renamed to imconvert); for EPS and PDF images, Ghostscript is also required.
 	 * 
 	 * @param is
 	 * @param os
