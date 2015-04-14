@@ -22,26 +22,28 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 		super(partName, jc);
 		init();
 	}
-
-	/**
-	 * @param id
-	 * @return
-	 * @since 3.0.0
-	 */
-	public  Xpath getXPathById(String id) {
-		
-		return getXPathById(this.getJaxbElement(), id);
-	}
 	
-	public static Xpath getXPathById(org.opendope.xpaths.Xpaths xpaths, String id) {
-		
-		for (Xpath x : xpaths.getXpath() ) {
-			
-			if (x.getId().equals(id))
-				return x;
-		}
-		throw new InputIntegrityException("Couldn't find xpath " + id );		
-	}
+	// TEMP
+
+//	/**
+//	 * @param id
+//	 * @return
+//	 * @since 3.0.0
+//	 */
+//	public  Xpath getXPathById(String id) {
+//		
+//		return getXPathById(this.getJaxbElement(), id);
+//	}
+//	
+//	public static Xpath getXPathById(org.opendope.xpaths.Xpaths xpaths, String id) {
+//		
+//		for (Xpath x : xpaths.getXpath() ) {
+//			
+//			if (x.getId().equals(id))
+//				return x;
+//		}
+//		throw new InputIntegrityException("Couldn't find xpath " + id );		
+//	}
 
 	/**
 	 * @param id

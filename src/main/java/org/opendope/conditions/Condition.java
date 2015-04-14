@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -62,6 +64,8 @@ import org.docx4j.openpackaging.parts.CustomXmlPart;
 @XmlRootElement(name = "condition")
 public class Condition implements Evaluable {
 
+	private static Logger log = LoggerFactory.getLogger(Condition.class);
+	
     @XmlElements({
         @XmlElement(name = "xpathref", type = Xpathref.class),
         @XmlElement(name = "and", type = And.class),
@@ -115,17 +119,17 @@ public class Condition implements Evaluable {
     
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		return particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+		return particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
 
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-    	particle.listXPaths(theList, conditions, xPaths);
+    	particle.listXPaths(theList, conditionsMap, xpathsMap);
 		
 	}
 	
@@ -141,25 +145,81 @@ public class Condition implements Evaluable {
 	}
 	
 	
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		return particle.toString(conditions, xPaths);
+		return particle.toString(conditionsMap, xpathsMap);
 	}
 	
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 		
-		// Create and add new condition
-		Condition newCondition = XmlUtils.deepCopy(this);
+		Condition newCondition;
+		
+		/* Avoid deepCopy for common simple cases:
+		 * 
+			<condition id="astInTrustSpouseCond">
+				<xpathref id="astInTrustSpouseXP"/>
+			</condition>
+			<condition id="astInTrustSpouseNotCond">
+				<not>
+					<xpathref id="astInTrustSpouseXP"/>
+				</not>
+			</condition>
+			 */
+		if (this.getParticle() instanceof Xpathref) 
+		{
+			newCondition = new Condition(); 
+			
+			// copy the xpathref
+			Xpathref xpathref = new Xpathref();
+			xpathref.setId( ((Xpathref)this.getParticle()).getId());
+			
+			newCondition.setParticle(xpathref);
+			
+		} else if ( (this.getParticle() instanceof Not)
+						&& (((Not)this.getParticle()).getParticle()  instanceof Xpathref) ) {
+			
+			newCondition = new Condition(); 
+			
+			Not notParticle = new Not();
+			newCondition.setParticle(notParticle);
+
+			// copy the xpathref
+			Xpathref xpathref = new Xpathref();
+			xpathref.setId( ((Xpathref)((Not)this.getParticle()).getParticle()).getId());
+			
+			notParticle.setParticle(xpathref);
+			
+		} else {
+		
+			// Create and add new condition
+			newCondition = XmlUtils.deepCopy(this);			
+		}
+
 		String newConditionId = id + "_" + index;
 		newCondition.setId(newConditionId);
-		conditions.getCondition().add(newCondition);
+		//conditions.getCondition().add(newCondition);		
+		Condition preExistingSanity = conditionsMap.put(newCondition.getId(), newCondition); 
+		if (preExistingSanity!=null) {
+			
+			String preExisting = XmlUtils.marshaltoString(preExistingSanity);
+			String newC = XmlUtils.marshaltoString(newCondition);
+			
+			if (preExistingSanity.equals(newC)) {
+				log.debug("Duplicate identical Condition being added: " + newCondition.getId());
+			} else {
+				log.error("Duplicate Condition " + newCondition.getId() + ": "
+						+ "\n"+ newC + " overwriting "
+						+ "\n"+ preExisting);				
+			}
+		}
+		
 		
 		// Fix its particles
-		newCondition.getParticle().repeat(xpathBase, index, conditions, xPaths);
+		newCondition.getParticle().repeat(xpathBase, index, conditionsMap, xpathsMap);
 		
 		return newCondition;
 	}

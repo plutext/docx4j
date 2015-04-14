@@ -78,10 +78,11 @@ public class Xpathref implements Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		//org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		org.opendope.xpaths.Xpaths.Xpath xpath = xpathsMap.get(id);
 		
 		String val = BindingHandler.xpathGetString(pkg,
 				customXmlDataStorageParts, xpath.getDataBinding()
@@ -94,10 +95,11 @@ public class Xpathref implements Evaluable {
     }
     
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		//org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		org.opendope.xpaths.Xpaths.Xpath xpath = xpathsMap.get(id);
     	theList.add(xpath);
 		
 	}
@@ -119,22 +121,24 @@ public class Xpathref implements Evaluable {
 		}
 	}
 	
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		//org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
+		org.opendope.xpaths.Xpaths.Xpath xpath = xpathsMap.get(id);
 		return xpath.getDataBinding().getXpath(); 	
 	}
 	
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 		
 		// this Xpathref is a clone already, 
 		// but it points to the original xpathObj
 		
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, id);	
+		//org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, id);	
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(id);
 		String thisXPath = xpathObj.getDataBinding().getXpath();
 
 		if (thisXPath.trim().startsWith("count") ) {
@@ -163,7 +167,7 @@ public class Xpathref implements Evaluable {
 		}
 
 		// Clone the xpath
-		org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(xPaths,
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(xpathsMap,
 				newPath, xpathObj, index);
 
 		// point this at it
@@ -172,15 +176,36 @@ public class Xpathref implements Evaluable {
 		return null;
 	}	
 	
-	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(org.opendope.xpaths.Xpaths xPaths,
+	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
-
-		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
-				.deepCopy(xpathObj);
-		String newXPathId = newXPathObj.getId() + "_" + index;
+		
+//		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils.deepCopy(xpathObj);
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
+		
+		String newXPathId = xpathObj.getId() + "_" + index;
 		newXPathObj.setId(newXPathId);
-		newXPathObj.getDataBinding().setXpath(newPath);
-		xPaths.getXpath().add(newXPathObj);
+		
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
+		newXPathObj.setDataBinding(dataBinding);
+		
+		dataBinding.setXpath(newPath);
+		dataBinding.setStoreItemID(
+				xpathObj.getDataBinding().getStoreItemID());
+		dataBinding.setPrefixMappings(
+				xpathObj.getDataBinding().getPrefixMappings());
+				
+		//xPaths.getXpath().add(newXPathObj);
+		org.opendope.xpaths.Xpaths.Xpath preExistingSanity = xpathsMap.put(newXPathId, newXPathObj); 
+		if (preExistingSanity!=null) {
+			if (preExistingSanity.getDataBinding().getXpath().equals(newXPathObj.getDataBinding().getXpath())) {
+				log.debug("Duplicate identical XPath being added: " + newXPathId);
+			} else {
+				log.error("Duplicate XPath " + newXPathId + ": "
+						+ "\n"+ newXPathObj.getDataBinding().getXpath() + " overwriting "
+						+ "\n"+ preExistingSanity.getDataBinding().getXpath());				
+			}
+		}
+		
 		return newXPathObj;
 	}
 	
