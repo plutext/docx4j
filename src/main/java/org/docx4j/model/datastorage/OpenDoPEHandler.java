@@ -58,11 +58,15 @@ import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Text;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
+import org.opendope.xpaths.Xpaths;
 import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {
 
 	private static Logger log = Logger.getLogger(OpenDoPEHandler.class);
+	
+	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null; 
+	private Map<String, Condition> conditionsMap = null; 
 
 	public OpenDoPEHandler(WordprocessingMLPackage wordMLPackage)
 			throws Docx4JException {
@@ -73,14 +77,33 @@ public class OpenDoPEHandler {
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 			throw new Docx4JException("OpenDoPE XPaths part missing");
 		} else {
-			xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
+			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
 					.getJaxbElement();
 			log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+			
+			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(2*xPaths.getXpath().size());
+			
+			for (Xpaths.Xpath xp : xPaths.getXpath() ) {
+				
+				if (xpathsMap.put(xp.getId(), xp)!=null) {
+					log.error("Duplicates in XPaths part: " + xp.getId());
+		}
+				// TODO key should include storeItemID?
+			}
+			
 		}
 		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
-			conditions = wordMLPackage.getMainDocumentPart()
+			org.opendope.conditions.Conditions conditions = wordMLPackage.getMainDocumentPart()
 					.getConditionsPart().getJaxbElement();
 			log.debug(XmlUtils.marshaltoString(conditions, true, true));
+			
+			conditionsMap = new HashMap<String, Condition>(2*conditions.getCondition().size());
+			
+			for (Condition c : conditions.getCondition()) {
+				if (conditionsMap.put(c.getId(), c)!=null) {
+					log.error("Duplicates in Conditions part: " + c.getId());
+		}
+			}
 		}
 		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
 			components = wordMLPackage.getMainDocumentPart()
@@ -117,8 +140,6 @@ public class OpenDoPEHandler {
 	 * "bindingrole"
 	 */
 
-	private org.opendope.conditions.Conditions conditions;
-	private org.opendope.xpaths.Xpaths xPaths;
 	private org.opendope.components.Components components;
 
 	private boolean removeSdtCellsOnFailedCondition;
@@ -218,6 +239,17 @@ public class OpenDoPEHandler {
 		} while (justGotAComponent);
 		// ie repeat the whole process if you got a component
 
+		// Write our maps back to their parts
+		// XPaths
+		wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath().clear();
+		wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath().addAll(xpathsMap.values());
+			
+		// Conditions
+		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
+			wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement().getCondition().clear();
+			wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement().getCondition().addAll(conditionsMap.values());
+		}
+		
 		return wordMLPackage;
 	}
 
@@ -670,7 +702,7 @@ public class OpenDoPEHandler {
 			return newContent;
 		}
 
-		log.info(tag.getVal());
+		log.debug(tag.getVal());
 
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
@@ -689,16 +721,16 @@ public class OpenDoPEHandler {
 
 		if (conditionId != null) {
 
-			log.info("Processing Conditional: " + tag.getVal());
+			log.debug("Processing Conditional: " + tag.getVal());
 
 			// At present, this only handles simple conditions
-			Condition c = ConditionsPart.getConditionById(conditions,
-					conditionId);
+			//Condition c = ConditionsPart.getConditionById(conditions, conditionId);
+			Condition c = conditionsMap.get(conditionId);
 			if (c == null) {
 				log.error("Missing condition " + conditionId);
 			}
 
-			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditions, xPaths) ) {
+			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap) ) {
 				log.debug("so keeping");
 
 				List<Object> newContent = new ArrayList<Object>();
@@ -711,7 +743,7 @@ public class OpenDoPEHandler {
 
 		} else if (repeatId != null) {
 
-			log.info("Processing Repeat: " + tag.getVal());
+			log.debug("Processing Repeat: " + tag.getVal());
 
 			final List<Object> repeatResult = processRepeat(sdt,
 					customXmlDataStorageParts, wordMLPackage
@@ -842,8 +874,9 @@ public class OpenDoPEHandler {
 		if (StringUtils.isEmpty(repeatId))
 			return new ArrayList<Object>();
 
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
-				xPaths, repeatId);
+//		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
+//				xPaths, repeatId);		
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(repeatId);
 
 		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 		String xpath = xpathObj.getDataBinding().getXpath();
@@ -870,7 +903,7 @@ public class OpenDoPEHandler {
 		// if (xpathBase.endsWith("]"))
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
-		log.info("/n/n Repeat: using xpath: " + xpathBase);
+		log.debug("/n/n Repeat: using xpath: " + xpathBase);
 		NamespaceContext nsContext = new NamespacePrefixMappings();
 		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
 				storeItemId, xpathBase, prefixMappings);
@@ -892,12 +925,12 @@ public class OpenDoPEHandler {
 		dt.xpathBase = xpathBase;
 		for (int i = 0; i < repeated.size(); i++) {
 
-			log.info("\n Traversing clone " + i);
+			log.debug("\n Traversing clone " + i);
 
 			dt.index = i;
 			new TraversalUtil(repeated.get(i), dt);
 		}
-		log.info(".. deep traversals done ");
+		log.debug(".. deep traversals done ");
 
 		return repeated;
 	}
@@ -1055,7 +1088,6 @@ public class OpenDoPEHandler {
 		String repeatId = null;
 		String bindingId = null;
 
-		Condition c = null;
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
 		Tag tag = sdtPr.getTag();
@@ -1090,13 +1122,16 @@ public class OpenDoPEHandler {
 
 			} else if (repeatId != null) {
 
-				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
+//				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
+				xpathObj = xpathsMap.get(repeatId);
+				
 				thisXPath = xpathObj.getDataBinding().getXpath();
 
 			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
 
-				xpathObj = XPathsPart.getXPathById(xPaths, 
-						map.get(BINDING_ROLE_XPATH) );
+//				xpathObj = XPathsPart.getXPathById(xPaths, map.get(BINDING_ROLE_XPATH) );
+				xpathObj = xpathsMap.get(map.get(BINDING_ROLE_XPATH));
+
 				thisXPath = xpathObj.getDataBinding().getXpath();
 				
 			} else {
@@ -1116,10 +1151,19 @@ public class OpenDoPEHandler {
 
 			// Set this stuff up now
 			bindingId = map.get(BINDING_ROLE_XPATH);
-			xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+			try {
+				//xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+				xpathObj = xpathsMap.get(bindingId);
+			} catch (InputIntegrityException iie) {
+				log.warn(iie.getMessage());
+			}
 
 			// Sanity test
-			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
+			if (xpathObj==null) {
+				// a normal binding might not have a 
+				log.warn("No XPaths part object for " + binding.getXpath());
+				
+			} else if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
 				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. " 
 						+ xpathObj.getDataBinding().getXpath());
 			}
@@ -1135,7 +1179,7 @@ public class OpenDoPEHandler {
 		
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 
-		System.out.println("newPath: " + newPath);
+//		System.out.println("newPath: " + newPath);
 		
 		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
 			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
@@ -1195,7 +1239,9 @@ public class OpenDoPEHandler {
 
 		if (conditionId != null) {
 
-			c = ConditionsPart.getConditionById(conditions, conditionId);
+			//c = ConditionsPart.getConditionById(conditions, conditionId);
+			c = conditionsMap.get(conditionId);
+			
 			if (c == null) {
 				log.error("Missing condition " + conditionId);
 				throw new InputIntegrityException("Required condition '" + conditionId + "' is missing");
@@ -1206,7 +1252,8 @@ public class OpenDoPEHandler {
 			log.debug("Using condition"
 					+ XmlUtils.marshaltoString(c, true, true));
 
-			Condition newCondition = c.repeat(xpathBase, index, conditions, xPaths);
+			Condition newCondition = c.repeat(xpathBase, index, conditionsMap, xpathsMap);
+
 
 			// set sdt to use it
 			map.put(BINDING_ROLE_CONDITIONAL, newCondition.getId() );
@@ -1218,12 +1265,27 @@ public class OpenDoPEHandler {
 	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(
 			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 
-		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
-				.deepCopy(xpathObj);
-		String newXPathId = newXPathObj.getId() + "_" + index;
+//		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
+//				.deepCopy(xpathObj);
+		
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
+		
+		String newXPathId = xpathObj.getId() + "_" + index;
 		newXPathObj.setId(newXPathId);
-		newXPathObj.getDataBinding().setXpath(newPath);
-		xPaths.getXpath().add(newXPathObj);
+		
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
+		newXPathObj.setDataBinding(dataBinding);
+		
+		dataBinding.setXpath(newPath);
+		dataBinding.setStoreItemID(
+				xpathObj.getDataBinding().getStoreItemID());
+		dataBinding.setPrefixMappings(
+				xpathObj.getDataBinding().getPrefixMappings());
+		
+		//xPaths.getXpath().add(newXPathObj);
+		if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
+			log.error("New xpath entry overwrites existing xpath " + newXPathId);
+		}
 		return newXPathObj;
 	}
 

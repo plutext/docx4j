@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -95,12 +94,12 @@ public class And implements Evaluable {
     
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 	
     	for (Evaluable particle : xpathrefOrAndOrOr) {
     		
-        	boolean result = particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+        	boolean result = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
         	if (result==false) {
         		return false;
         	}    		
@@ -109,24 +108,38 @@ public class And implements Evaluable {
     }
 	
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		particle.listXPaths(theList, conditions, xPaths);
+    		particle.listXPaths(theList, conditionsMap, xpathsMap);
     	}
 		
 	}
     
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap) {
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		particle.mapIds(xpathIdMap, conditionIdMap);
+    	}
+	}
+	
+    
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
 		StringBuilder sb = new StringBuilder();
 		
 		int i = 0;
 		int total = xpathrefOrAndOrOr.size();
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		sb.append(particle.toString(conditions, xPaths));
+    		sb.append(particle.toString(conditionsMap, xpathsMap));
     		i++;
     		if (i<total) {
     			sb.append(" and ");
@@ -138,11 +151,11 @@ public class And implements Evaluable {
 	
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		particle.repeat(xpathBase, index, conditions, xPaths);
+    		particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
     	}
 		return null;
 	}	

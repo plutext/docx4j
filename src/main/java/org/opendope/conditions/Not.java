@@ -79,24 +79,36 @@ public class Not implements Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		return !particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+		return !particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
 	
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-    	particle.listXPaths(theList, conditions, xPaths);
+    	particle.listXPaths(theList, conditionsMap, xpathsMap);
 		
 	}
-
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
 		
-		return "not(" + particle.toString(conditions, xPaths) + ")";
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap) {
+		particle.mapIds(xpathIdMap, conditionIdMap);
+	}
+
+		
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+		
+		return "not(" + particle.toString(conditionsMap, xpathsMap) + ")";
 	}
     
     /**
@@ -117,10 +129,10 @@ public class Not implements Evaluable {
 
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
-    	particle.repeat(xpathBase, index, conditions, xPaths);
+    	particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
 		return null;
 	}	
     

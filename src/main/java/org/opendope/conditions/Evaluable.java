@@ -10,8 +10,8 @@ public interface Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * List the XPaths used in this condition.
@@ -20,8 +20,8 @@ public interface Evaluable {
 	 * @param xPaths
 	 */
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * Build the XPath expression
@@ -29,8 +29,8 @@ public interface Evaluable {
 	 * @param xPaths
 	 * @return
 	 */
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * Create a condition for this instance of a repeat.
@@ -43,6 +43,15 @@ public interface Evaluable {
 	 */
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
+	
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap);
 }

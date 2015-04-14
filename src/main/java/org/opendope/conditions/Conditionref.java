@@ -71,36 +71,60 @@ public class Conditionref implements Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-    	return particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+    	return particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
 	
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-    	particle.listXPaths(theList, conditions, xPaths);
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+
+    	particle.listXPaths(theList, conditionsMap, xpathsMap);
 		
 	}
 	
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	/**
+	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.
+	 * 
+	 * @param xpathIdMap
+	 * @param conditionIdMap
+	 * @since 3.0.0
+	 */
+	public void mapIds(Map<String, String> xpathIdMap, Map<String, String> conditionIdMap) {
+		
+		if (conditionIdMap==null) return;
+		
+		String newId = conditionIdMap.get(getId());
+		if (newId!=null) {
+			setId(newId);
+		}
+	}
+	
 
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-		return particle.toString(conditions, xPaths);
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+		return particle.toString(conditionsMap, xpathsMap);
 	}
     
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-		Condition newCondition = particle.repeat(xpathBase, index, conditions, xPaths);
+		// Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+
+		Condition newCondition = particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
 		
 		this.id = newCondition.getId();
 
