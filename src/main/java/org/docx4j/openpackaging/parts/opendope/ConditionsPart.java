@@ -23,18 +23,25 @@ public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 		init();
 	}
 	
-//	public static Condition getConditionById(
-//			org.opendope.conditions.Conditions conditions,
-//			String id) {
-//		
-//		for (Condition c : conditions.getCondition() ) {
-//			
-//			if (c.getId().equals(id))
-//				return c;
-//		}
-//		
-//		throw new InputIntegrityException("No Condition with id " + id );		
-//	}
+	/**
+	 * For performance reasons, avoid using this method if you have a lot of Conditions
+	 * 
+	 * @param conditions
+	 * @param id
+	 * @return
+	 */
+	public static Condition getConditionById(
+			org.opendope.conditions.Conditions conditions,
+			String id) {
+		
+		for (Condition c : conditions.getCondition() ) {
+			
+			if (c.getId().equals(id))
+				return c;
+		}
+		
+		throw new InputIntegrityException("No Condition with id " + id );		
+	}
 	
 
 //	/**
