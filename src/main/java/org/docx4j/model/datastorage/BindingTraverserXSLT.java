@@ -106,7 +106,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 */
 	public Object traverseToBind(JaxbXmlPart part,
 			org.docx4j.openpackaging.packages.OpcPackage pkg,
-			XPathsPart xPathsPart)
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)
 			throws Docx4JException {
 		
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
@@ -123,7 +123,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 					part.getPackage().getCustomXmlDataStorageParts());			
 			transformParameters.put("wmlPackage", (WordprocessingMLPackage)pkg);			
 			transformParameters.put("sourcePart", part);			
-			transformParameters.put("xPathsPart", xPathsPart);			
+			transformParameters.put("xPathsMap", xpathsMap);			
 			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
 			transformParameters.put("bookmarkIdCounter", new BookmarkCounter(bookmarkId)  );
 					
@@ -324,7 +324,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			//String storeItemId, String xpath, String prefixMappings,
-			XPathsPart xPathsPart,				
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			String sdtParent,
 			String contentChild,				
 			NodeIterator rPrNodeIt, 
@@ -382,7 +382,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		log.info("Looking for xpath by id: " + xpathId);
 	
 		
-		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		Xpath xpath = xpathsMap.get(xpathId);
 		
 		if (xpath==null) {
 			log.warn("Couldn't find xpath with id: " + xpathId);
@@ -727,7 +728,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			XPathsPart xPathsPart,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			NodeIterator sdtPrNodeIt, 
 			String sdtParent,
 			String contentChild,				
@@ -751,7 +752,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 		Xpath xpath = null;
 		try {
-			xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			//xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			xpath = xpathsMap.get(xpathId);
+
 		} catch (InputIntegrityException iie) {
 			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
 			throw iie;
@@ -1147,7 +1150,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	public static String xpathInjectImageRelId(WordprocessingMLPackage wmlPackage,
 			JaxbXmlPart sourcePart,
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			XPathsPart xPathsPart,		
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			String tag) {
 
 		QueryString qs = new QueryString();
@@ -1158,7 +1161,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		log.info("Looking for xpath by id: " + xpathId);
 	
 		
-		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		Xpath xpath = xpathsMap.get(xpathId);
 		
 		if (xpath==null) {
 			log.warn("Couldn't find xpath with id: " + xpathId);
@@ -1232,7 +1236,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	}
 	
 	public static String getRepeatPositionCondition(
-			XPathsPart xPathsPart,				
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			String odTag) {
 
 		QueryString qs = new QueryString();
@@ -1241,7 +1245,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_RPT_POS_CON);
 		
 		log.info("Looking for xpath by id: " + xpathId);
-		Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		Xpath xpath = xpathsMap.get(xpathId);
 		
 		String expression =xpath.getDataBinding().getXpath() ;
 		log.info(expression);
@@ -1408,7 +1413,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			//String storeItemId, String xpath, String prefixMappings,
-			XPathsPart xPathsPart,				
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
 			String sdtParent,
 			String contentChild,				
 			NodeIterator rPrNodeIt, 
@@ -1425,7 +1430,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.info("Looking for xpath by id: " + xpathId);
 		
 			
-			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			Xpath xpath = xpathsMap.get(xpathId);
 			
 			if (xpath==null) {
 				log.warn("Couldn't find xpath with id: " + xpathId);

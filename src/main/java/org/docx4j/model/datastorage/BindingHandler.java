@@ -20,10 +20,12 @@
 package org.docx4j.model.datastorage;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -37,6 +39,7 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTDataBinding;
+import org.opendope.xpaths.Xpaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,23 +202,41 @@ public class BindingHandler {
 		
 		public void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
-			org.docx4j.openpackaging.packages.OpcPackage pkg 
-				= part.getPackage();		
-				// Binding is a concept which applies more broadly
-				// than just Word documents.
+//			org.docx4j.openpackaging.packages.OpcPackage pkg 
+//				= part.getPackage();		
+//				// Binding is a concept which applies more broadly
+//				// than just Word documents.
 			
-			if (pkg instanceof WordprocessingMLPackage) {
-				getHyperlinkResolver().activateHyperlinkStyle((WordprocessingMLPackage)pkg);
-			}
-						
-			XPathsPart xPathsPart = null;
+//			if (pkg instanceof WordprocessingMLPackage) {
+				getHyperlinkResolver().activateHyperlinkStyle(wordMLPackage);
+//			}
+				
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
 			
-			if ( ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart() == null) {
+			if ( wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 				log.warn("OpenDoPE XPaths part missing"); // OK if no OpenDoPE stuff is used
+				xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>();
 			} else {
-				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
+				org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
+						.getJaxbElement();
 				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+				
+				xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(xPaths.getXpath().size());
+				
+				for (Xpaths.Xpath xp : xPaths.getXpath() ) {
+					
+					if (xpathsMap.put(xp.getId(), xp)!=null) {
+						log.error("Duplicates in XPaths part: " + xp.getId());
+					}
+					// TODO key should include storeItemID?
+				}
+				
 			}
+				
+//			} else {
+//				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
+//				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+//			}
 			
 			
 			BindingTraverserInterface traverser = new BindingTraverserXSLT();
@@ -223,7 +244,7 @@ public class BindingHandler {
 			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
 			
 				part.setJaxbElement(
-						traverser.traverseToBind(part, pkg, xPathsPart) );
+						traverser.traverseToBind(part, wordMLPackage, xpathsMap) );
 			
 			bookmarkId = traverser.getNextBookmarkId();
 					

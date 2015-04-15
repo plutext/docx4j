@@ -23,7 +23,7 @@
 <xsl:param name="customXmlDataStorageParts"/> <!-- select="'passed in'"-->	
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="sourcePart"/> <!-- select="'passed in'"-->	
-<xsl:param name="xPathsPart"/> <!-- select="'passed in'"-->	
+<xsl:param name="xPathsMap"/> <!-- select="'passed in'"-->	
 <xsl:param name="sequenceCounters"/>
 <xsl:param name="bookmarkIdCounter"/>
 
@@ -137,7 +137,7 @@
 								$wmlPackage,
 								$sourcePart,
 								$customXmlDataStorageParts,
-								$xPathsPart,
+								$xPathsMap,
 								$tag )}" />
 								
 <!--  if it was @r:link, it is now embedded -->
@@ -286,7 +286,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -307,7 +307,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -327,7 +327,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -349,7 +349,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -370,7 +370,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -408,7 +408,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
@@ -460,7 +460,7 @@
 		
 			<xsl:variable name="expression"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.getRepeatPositionCondition(								
-										$xPathsPart,
+										$xPathsMap,
 										string(w:sdtPr/w:tag/@w:val))" />
 							
 		
@@ -514,7 +514,7 @@
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
-														$xPathsPart,
+														$xPathsMap,
 														w:sdtPr,
 														$parent,
 														$child,
@@ -537,7 +537,7 @@
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
-													$xPathsPart,
+													$xPathsMap,
 													w:sdtPr,
 													$parent,
 													$child,
@@ -560,7 +560,7 @@
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
-												$xPathsPart,
+												$xPathsMap,
 												w:sdtPr,
 												$parent,
 												$child,
@@ -579,7 +579,7 @@
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
-											$xPathsPart,
+											$xPathsMap,
 											w:sdtPr,
 											$parent,
 											$child,
@@ -593,7 +593,7 @@
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										w:sdtPr,
 										$parent,
 										$child,

@@ -19,6 +19,7 @@
  **/
 package org.docx4j.model.datastorage;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -29,7 +30,7 @@ public interface BindingTraverserInterface {
 	
 	public Object traverseToBind(JaxbXmlPart part,
 			org.docx4j.openpackaging.packages.OpcPackage pkg,
-			XPathsPart xPathsPart)
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)
 			throws Docx4JException;
 	
 	

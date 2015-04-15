@@ -69,16 +69,17 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	
 	JaxbXmlPart part;
 	org.docx4j.openpackaging.packages.OpcPackage pkg;
-	XPathsPart xPathsPart;
+	//XPathsPart xPathsPart;
+	Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap; // not currently used; will be when this is fixed to handle XHTML, images, RepeatPositionCondition, FlatOPC
 	
 	public Object traverseToBind(JaxbXmlPart part,
 			org.docx4j.openpackaging.packages.OpcPackage pkg,
-			XPathsPart xPathsPart)
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)
 			throws Docx4JException {
 		
 		this.part = part;
 		this.pkg = pkg;
-		this.xPathsPart = xPathsPart;
+		this.xpathsMap = xpathsMap;
 		
 		Object clone = XmlUtils.deepCopy(part.getJaxbElement());
 		
