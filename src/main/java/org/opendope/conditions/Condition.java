@@ -201,8 +201,11 @@ public class Condition implements Evaluable {
 
 		String newConditionId = id + "_" + index;
 		newCondition.setId(newConditionId);
-		//conditions.getCondition().add(newCondition);		
+
+		// Add it
 		Condition preExistingSanity = conditionsMap.put(newCondition.getId(), newCondition); 
+		//conditions.getCondition().add(newCondition);		
+		
 		if (preExistingSanity!=null) {
 			
 			String preExisting = XmlUtils.marshaltoString(preExistingSanity);
