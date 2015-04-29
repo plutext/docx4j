@@ -191,7 +191,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 				
 			} else {
 				
-				System.out.println("Not processing " + XmlUtils.marshaltoString(sdtPr, true));
+				log.warn("Not processing " + XmlUtils.marshaltoString(sdtPr, true));
 				 
 			}
 			

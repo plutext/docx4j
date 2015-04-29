@@ -1368,24 +1368,4 @@ public class OpenDoPEHandler {
 		return part.getData().xpathGetNodes(xpath, prefixMappings);
 	}
 
-	public static void main(String[] args) throws Exception {
-		
-		String inputfilepath = System.getProperty("user.dir") + "/item.docx";
-		
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
-		
-		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
-		System.out.println(filepathprefix);
-		
-		StringBuilder timingSummary = new StringBuilder();
-		
-
-		// Process conditionals and repeats
-		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.preprocess();
-		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);	
-		}	
 }

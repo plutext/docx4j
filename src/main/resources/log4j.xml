@@ -42,9 +42,13 @@
 	</logger>
 
     <logger name="org.docx4j">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>	
-	
+
+    <logger name="org.docx4j.TraversalUtil">
+  		<level value="error"/> 
+	</logger>	
+    
 	<logger name="org.docx4j.jaxb">
 		  		<level value="error"/> 
 	</logger>	
@@ -54,6 +58,7 @@
   		<level value="info"/> 
 	</logger>
 	
+<!--     
     <logger name="org.docx4j.openpackaging">
   		<level value="info"/> 
 	</logger>
@@ -67,14 +72,19 @@
 	</logger>
 
     <logger name="org.docx4j.openpackaging.parts">
-  		<level value="debug"/> 
+  		<level value="warn"/> 
 	</logger>
 
     <logger name="org.docx4j.fonts">
   		<level value="debug"/> 
 	</logger>
-  
-
+   -->
+   
+    <logger name="org.opendope.conditions">
+  		<level value="warn"/> 
+	</logger>
+    
+    
     <root>
         <level value="info" />
         <appender-ref ref="console"/>
