@@ -27,6 +27,8 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
 
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -55,7 +57,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 	
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 
-		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+		setContentType(new org.docx4j.openpackaging.contenttype.ContentType(
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_FONTTABLE));
 
 		// Used when this Part is added to a rels 
@@ -86,8 +88,12 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	
     	return unmarshal( is );    	
     }
-    
-    public void processEmbeddings() {
+
+		public void processEmbeddings() {
+			processEmbeddings(null);
+		}
+
+    public void processEmbeddings(Mapper fontMapper) {
     	
     	Fonts fonts = (org.docx4j.wml.Fonts)this.getJaxbElement();
 		for (Fonts.Font font : fonts.getFont() ) {
@@ -97,20 +103,24 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 			FontRel embedBold = font.getEmbedBold();
 			FontRel embedBoldItalic = font.getEmbedBoldItalic();
 			FontRel embedItalic = font.getEmbedItalic();
-			
-			getObfuscatedFontFromRelationship(fontName, embedRegular);
-			getObfuscatedFontFromRelationship(fontName, embedBold);
-			getObfuscatedFontFromRelationship(fontName, embedBoldItalic);
-			getObfuscatedFontFromRelationship(fontName, embedItalic);
-    	
+
+			PhysicalFont pfRegular = getObfuscatedFontFromRelationship(fontName, fontName, embedRegular);
+			PhysicalFont pfBold = getObfuscatedFontFromRelationship(fontName, fontName + "-bold", embedBold);
+			PhysicalFont pfItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-italic", embedItalic);
+			PhysicalFont pfBoldItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-bold-italic", embedBoldItalic);
+				fontMapper.registerBoldForm(fontName, pfBold);
+				fontMapper.registerItalicForm(fontName, pfItalic);
+				fontMapper.registerBoldItalicForm(fontName, pfBoldItalic);
+			}
+
 		}
     }
     
-    private void getObfuscatedFontFromRelationship(String fontName, FontRel fontRel) {
+    private PhysicalFont getObfuscatedFontFromRelationship(String fontNameAsInFontTablePart, String fontFileName, FontRel fontRel) {
     
     	if (fontRel == null) {
     		//log.debug("fontRel not found for '" + fontName + "'");
-    		return;
+    		return null;
     	}
     	
     	String id = fontRel.getId();    	
@@ -118,10 +128,11 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	    	 
     	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
     	if (obfuscatedFont != null) {
-    		obfuscatedFont.deObfuscate(fontName, fontKey);
+    		return obfuscatedFont.deObfuscate(fontNameAsInFontTablePart, fontFileName, fontKey);
     	} else {
     		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
     	}
+			return null;
     }
 
 	public static void main(String[] args) throws Exception {

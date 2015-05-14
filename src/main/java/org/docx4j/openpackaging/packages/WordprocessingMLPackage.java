@@ -330,7 +330,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 				log.warn("FontTable missing; creating default part.");
 				fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
 				fontTablePart.unmarshalDefaultFonts();
-				fontTablePart.processEmbeddings();
+				fontTablePart.processEmbeddings(fontMapper);
 			}
 			
 			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
