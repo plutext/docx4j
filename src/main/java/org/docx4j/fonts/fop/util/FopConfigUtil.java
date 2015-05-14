@@ -133,7 +133,7 @@ public class FopConfigUtil {
 		    result.append("</font>" );
 		    
 		    // bold, italic etc
-		    PhysicalFont pfVariation = fontMapper.getBoldForm(pf);
+		    PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no bold form");
 		    } else {
@@ -141,7 +141,7 @@ public class FopConfigUtil {
 		    	addFontTriplet(result, pf.getName(), "normal", "bold");
 			    result.append("</font>" );
 		    }
-		    pfVariation = fontMapper.getBoldItalicForm(pf);
+		    pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no bold italic form");
 		    } else {
@@ -149,7 +149,7 @@ public class FopConfigUtil {
 		    	addFontTriplet(result, pf.getName(), "italic", "bold");
 			    result.append("</font>" );
 		    }
-		    pfVariation = fontMapper.getItalicForm(pf);
+		    pfVariation = fontMapper.getItalicForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no italic form");
 		    } else {
