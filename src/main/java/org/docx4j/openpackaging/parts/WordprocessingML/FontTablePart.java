@@ -108,6 +108,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 			PhysicalFont pfBold = getObfuscatedFontFromRelationship(fontName, fontName + "-bold", embedBold);
 			PhysicalFont pfItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-italic", embedItalic);
 			PhysicalFont pfBoldItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-bold-italic", embedBoldItalic);
+			if (fontMapper != null && pfRegular != null) {
 				fontMapper.registerBoldForm(fontName, pfBold);
 				fontMapper.registerItalicForm(fontName, pfItalic);
 				fontMapper.registerBoldItalicForm(fontName, pfBoldItalic);
