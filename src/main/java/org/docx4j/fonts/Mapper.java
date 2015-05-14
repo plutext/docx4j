@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,10 @@ public abstract class Mapper {
 	
 	
 	protected static Logger log = LoggerFactory.getLogger(Mapper.class);
+
+	private ConcurrentHashMap<String, PhysicalFont> boldForms = new ConcurrentHashMap<String, PhysicalFont>();
+	private ConcurrentHashMap<String, PhysicalFont> italicForms = new ConcurrentHashMap<String, PhysicalFont>();
+	private ConcurrentHashMap<String, PhysicalFont> boldItalicForms = new ConcurrentHashMap<String, PhysicalFont>();
 
 	public Mapper() {
 		super();
@@ -222,5 +227,31 @@ public abstract class Mapper {
 		 */
 		
 	}
-	
+
+	public void registerBoldForm(String fontNameAsInFontTablePart, PhysicalFont pfBold) {
+		boldForms.put(fontNameAsInFontTablePart, pfBold);
+	}
+
+	public void registerItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfItalic) {
+		italicForms.put(fontNameAsInFontTablePart, pfItalic);
+	}
+
+	public void registerBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfBoldItalic) {
+		boldItalicForms.put(fontNameAsInFontTablePart, pfBoldItalic);
+	}
+
+	public PhysicalFont getBoldForm(PhysicalFont pf) {
+		final PhysicalFont pfBold = boldForms.get(pf.getName());
+		return (pfBold != null) ? pfBold : PhysicalFonts.getBoldForm(pf);
+	}
+
+	public PhysicalFont getItalicForm(PhysicalFont pf) {
+		final PhysicalFont pfItalic = italicForms.get(pf.getName());
+		return (pfItalic != null) ? pfItalic : PhysicalFonts.getItalicForm(pf);
+	}
+
+	public PhysicalFont getBoldItalicForm(PhysicalFont pf) {
+		final PhysicalFont pfBoldItalic = boldItalicForms.get(pf.getName());
+		return (pfBoldItalic != null) ? pfBoldItalic : PhysicalFonts.getBoldItalicForm(pf);
+	}
 }
