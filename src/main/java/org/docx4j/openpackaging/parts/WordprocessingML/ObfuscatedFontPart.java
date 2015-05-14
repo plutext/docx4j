@@ -23,9 +23,11 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EncodingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
@@ -209,8 +211,8 @@ public class ObfuscatedFontPart extends BinaryPart {
 
 		// Add this font to our known physical fonts  
         try {
-					org.docx4j.fonts.PhysicalFonts.addPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path) );
-					return org.docx4j.fonts.PhysicalFonts.get(fontNameAsInTablePart);
+					List<PhysicalFont> fonts = PhysicalFonts.addPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path));
+					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 
 			// This needs to be done before populateFontMappings, 

@@ -229,29 +229,41 @@ public abstract class Mapper {
 	}
 
 	public void registerBoldForm(String fontNameAsInFontTablePart, PhysicalFont pfBold) {
-		boldForms.put(fontNameAsInFontTablePart, pfBold);
+		if (pfBold == null) {
+			boldForms.remove(fontNameAsInFontTablePart);
+		} else {
+			boldForms.put(fontNameAsInFontTablePart, pfBold);
+		}
 	}
 
 	public void registerItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfItalic) {
-		italicForms.put(fontNameAsInFontTablePart, pfItalic);
+		if (pfItalic == null) {
+			italicForms.remove(fontNameAsInFontTablePart);
+		} else {
+			italicForms.put(fontNameAsInFontTablePart, pfItalic);
+		}
 	}
 
 	public void registerBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfBoldItalic) {
-		boldItalicForms.put(fontNameAsInFontTablePart, pfBoldItalic);
+		if (pfBoldItalic == null) {
+			boldItalicForms.remove(fontNameAsInFontTablePart);
+		} else {
+			boldItalicForms.put(fontNameAsInFontTablePart, pfBoldItalic);
+		}
 	}
 
-	public PhysicalFont getBoldForm(PhysicalFont pf) {
-		final PhysicalFont pfBold = boldForms.get(pf.getName());
+	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		final PhysicalFont pfBold = boldForms.get(fontNameAsInFontTablePart);
 		return (pfBold != null) ? pfBold : PhysicalFonts.getBoldForm(pf);
 	}
 
-	public PhysicalFont getItalicForm(PhysicalFont pf) {
-		final PhysicalFont pfItalic = italicForms.get(pf.getName());
+	public PhysicalFont getItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		final PhysicalFont pfItalic = italicForms.get(fontNameAsInFontTablePart);
 		return (pfItalic != null) ? pfItalic : PhysicalFonts.getItalicForm(pf);
 	}
 
-	public PhysicalFont getBoldItalicForm(PhysicalFont pf) {
-		final PhysicalFont pfBoldItalic = boldItalicForms.get(pf.getName());
+	public PhysicalFont getBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		final PhysicalFont pfBoldItalic = boldItalicForms.get(fontNameAsInFontTablePart);
 		return (pfBoldItalic != null) ? pfBoldItalic : PhysicalFonts.getBoldItalicForm(pf);
 	}
 }
