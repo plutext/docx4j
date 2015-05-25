@@ -98,6 +98,11 @@ public class MainDocumentPartMceIgnorableHelper {
 				*/
 				uuid = uuid.replace("-", "").substring(0, 7);
 				
+				// It should be 8 digits though
+				// https://msdn.microsoft.com/en-us/library/ff530320%28v=office.12%29.aspx
+				
+				uuid = "3"+uuid;  // any digit from 1 to 7 would do
+				
 				p.setParaId(uuid);
 				p.setTextId(uuid);
 			}
