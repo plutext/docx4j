@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.lang.StringUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.TcFinder;
@@ -51,8 +52,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPar
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
-import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -792,8 +791,15 @@ public class OpenDoPEHandler {
 				newContent.add(sdt);
 				return newContent;
 
-			} else {
+			} else if (reverterSupported){
 				return conditionFalse(sdt);
+			} else {
+				return new ArrayList<Object>(); // effectively, delete
+				// Potentially slightly faster processing, since 
+				// the conditionFalse sdt doesn't need to be created.
+				// The document is only slightly smaller, since conditionFalse sdt doesn't have a lot of content.
+				// OpenDoPEIntegrity is responsible for handling the case where
+				// this creates an empty table cell
 			}
 
 		} else if (repeatId != null) {
@@ -828,6 +834,8 @@ public class OpenDoPEHandler {
 		return null;
 	}
 	
+	boolean reverterSupported = Docx4jProperties.getProperty("docx4j.model.datastorage.OpenDoPEReverter.Supported", true);
+		
 	/**
 	 * Insert an empty placeholder SDT, to facilitate round-tripping
 	 * (ie ability to convert instance docx back to original template),
@@ -915,7 +923,7 @@ public class OpenDoPEHandler {
 //				contentChildCount++;
 //		return contentChildCount;
 //	}
-
+//
 //	private List<Object> obtainChildren(Object element) {
 //		Object unwrapped = XmlUtils.unwrap(element);
 //		if (unwrapped instanceof ContentAccessor) {
@@ -1041,10 +1049,17 @@ public class OpenDoPEHandler {
 		log.debug("yields REPEATS: " + numRepeats);
 
 		if (numRepeats == 0) {
-			//return new ArrayList<Object>(); // effectively, delete
 			
-			// Change tag to od:resultRepeatZero=id
-			return repeatZero(sdt);
+			if (reverterSupported){
+				// Change tag to od:resultRepeatZero=id
+				return repeatZero(sdt);
+			} else {
+				return new ArrayList<Object>(); // effectively, delete
+				// The document is only slightly smaller, since the repeatZero sdt doesn't have a lot of content.
+				
+				// OpenDoPEIntegrity is responsible for handling the case where
+				// this creates an empty table cell
+			}
 		}
 
 		// duplicate content here ...
