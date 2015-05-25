@@ -152,7 +152,10 @@
 	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
   	
   	<xsl:choose>
-
+  	
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'w15:resultRepeatZero')">
+			     <xsl:copy-of select="."/>  		
+		</xsl:when>  
 
 		<!--  3.0.1 rich text cc containing w:drawing -->
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">

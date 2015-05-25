@@ -157,6 +157,7 @@ public class OpenDoPEHandler {
 
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_RESULT_RPTD_ZERO = "od:resultRepeatZero";
+	public final static String BINDING_RESULT_RPTD_ZERO_W15 = "w15:resultRepeatZero";
 	public final static String BINDING_RESULT_RPTD = "od:rptd";
 	
 	// Repeat position condition (eg second last entry)
@@ -959,8 +960,13 @@ public class OpenDoPEHandler {
 		String xpath = xpathObj.getDataBinding().getXpath();
 		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
 
-		return processRepeat(sdt, customXmlDataStorageParts, storeItemId,
-				xpath, prefixMappings);
+		try {
+			return processRepeat(sdt, customXmlDataStorageParts, storeItemId,
+					xpath, prefixMappings, false);
+		} catch (W15RepeatZeroException w15) {
+			// won't happen in this case
+			return null;
+		}
 	}
 
 	/**
@@ -980,16 +986,35 @@ public class OpenDoPEHandler {
 		String prefixMappings = w15Databinding.getPrefixMappings();
 		
 		// for a w15 repeat, we clone the child repeatingSectionItem sdt
-		// TODO: improve this!
+		// TODO: review
 		ContentAccessor ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
 		
 		// replace its content
 		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));
-		ca.getContent().clear();
-		ca.getContent().addAll(
-				processRepeat(repeatingItem, customXmlDataStorageParts, storeItemId, xpath, prefixMappings));
 		
-			// TODO: that method needs to mimic w15 zero case (which is to return 1!)
+		try {
+			List<Object> repeatingSectionItems = processRepeat(repeatingItem, customXmlDataStorageParts, storeItemId, xpath, prefixMappings, true);
+			//that'll throw an exception for repeat zero
+			
+			ca.getContent().clear();
+			ca.getContent().addAll(repeatingSectionItems);
+
+		} catch (W15RepeatZeroException w15) {
+			log.warn(w15.getMessage());
+			// mimic w15 zero case (which is to leave the document surface unaltered!)
+			// achieved by falling through to the below
+			
+			// If the binding step were to try binding the contents,
+			// it'd insert empty placeholders (at least for anything repeated).
+			// TODO: see what Word does with any content which is bound to outside the repeat. 
+			// So we'll signal to the binding step that it should not process the contents
+			// of the repeat.
+			
+			SdtPr sdtPr = getSdtPr(repeatingSectionSdt);
+			Tag tag = new Tag();
+			tag.setVal(BINDING_RESULT_RPTD_ZERO_W15 + "=true");
+			sdtPr.setTag(tag);
+		}
 		
 		// retain/return the repeatingSection sdt
 		List<Object> newContent = new ArrayList<Object>();
@@ -1013,7 +1038,8 @@ public class OpenDoPEHandler {
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			String storeItemId,
 			String xpath,
-			String prefixMappings) {
+			String prefixMappings,
+			boolean isW15RepeatingSection) throws W15RepeatZeroException {
 
 
 		long startTime = System.currentTimeMillis();
@@ -1050,7 +1076,9 @@ public class OpenDoPEHandler {
 
 		if (numRepeats == 0) {
 			
-			if (reverterSupported){
+			if (isW15RepeatingSection) {
+				throw new W15RepeatZeroException("Zero repeats found for " + xpathBase + "; leaving existing content (as Word does)!");
+			} else if (reverterSupported){
 				// Change tag to od:resultRepeatZero=id
 				return repeatZero(sdt);
 			} else {
