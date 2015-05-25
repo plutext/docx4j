@@ -943,7 +943,7 @@
         <xsd:documentation>Stroke Line Style</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
-    <xsd:attribute name="miterlimit" type="xsd:decimal" use="optional">
+    <xsd:attribute name="miterlimit" type="xsd:string" use="optional">
       <xsd:annotation>
         <xsd:documentation>Miter Joint Limit</xsd:documentation>
       </xsd:annotation>

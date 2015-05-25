@@ -92,7 +92,7 @@ public class CTStroke implements Child
     @XmlAttribute(name = "linestyle")
     protected STStrokeLineStyle linestyle;
     @XmlAttribute(name = "miterlimit")
-    protected BigDecimal miterlimit;
+    protected String miterlimit;
     @XmlAttribute(name = "joinstyle")
     protected STStrokeJoinStyle joinstyle;
     @XmlAttribute(name = "endcap")
@@ -412,7 +412,7 @@ public class CTStroke implements Child
      *     {@link BigDecimal }
      *     
      */
-    public BigDecimal getMiterlimit() {
+    public String getMiterlimit() {
         return miterlimit;
     }
 
@@ -424,7 +424,7 @@ public class CTStroke implements Child
      *     {@link BigDecimal }
      *     
      */
-    public void setMiterlimit(BigDecimal value) {
+    public void setMiterlimit(String value) {
         this.miterlimit = value;
     }
 
