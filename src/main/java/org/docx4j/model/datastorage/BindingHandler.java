@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
@@ -239,7 +240,18 @@ public class BindingHandler {
 //			}
 			
 			
-			BindingTraverserInterface traverser = new BindingTraverserXSLT();
+			BindingTraverserInterface traverser = null;
+			
+			if ( Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT")
+					.equals("BindingTraverserNonXSLT") ) {
+				// Use the non-XSLT approach.  This is faster, but doesn't have feature parity.
+				log.info("Using BindingTraverserNonXSLT, which is faster, but missing some features");
+				traverser = new BindingTraverserNonXSLT();
+			} else {
+				// Slower, fully featured. The default.
+				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
+				traverser = new BindingTraverserXSLT();
+			}
 			
 			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
 			
