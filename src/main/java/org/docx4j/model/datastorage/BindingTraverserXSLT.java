@@ -57,12 +57,16 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
+import org.docx4j.w14.CTSdtCheckbox;
+import org.docx4j.w14.CTSdtCheckboxSymbol;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
@@ -1068,7 +1072,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        
 	        
 	        // Now add the inline in w:p/w:r/w:drawing
-			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			org.docx4j.wml.Tc tc  = factory.createTc();
 			org.docx4j.wml.P  p   = factory.createP();
 			if (sdtParent.equals("tr")) {
@@ -1258,7 +1262,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 		try
 		{
-			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			org.docx4j.wml.R  run = factory.createR();	
 			org.docx4j.wml.Text text = factory.createText();
 			text.setValue(message);
@@ -1346,7 +1350,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			}
 			
 			Format formatter = new SimpleDateFormat(format);
-			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			
 			Date date;
 			RPr rPr = null;
@@ -1495,6 +1499,156 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			return null;
 		}
 		
+	}
+	
+	/**
+	 * Support for w14 checkbox.
+	 * 
+	 * @since 3.2.2
+	 */
+	public static DocumentFragment w14Checkbox(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,			
+			NodeIterator sdtPrNodeIt,
+			String sdtParent,
+			String contentChild) {
+
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		if (sdtPrNode==null) {
+			log.error("Couldn't get sdtPr!");
+			return null;			
+		} else {
+			try {
+				sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode, Context.jc, SdtPr.class);
+			} catch (JAXBException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		
+		/*
+	        <w14:checkbox>
+	          <w14:checked w14:val="0"/>
+	          <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
+	          <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+	        </w14:checkbox>
+        */
+		CTSdtCheckbox sdtCheckbox = (CTSdtCheckbox)sdtPr.getByClass(CTSdtCheckbox.class);
+
+		CTDataBinding dataBinding = sdtPr.getDataBinding();
+		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+				
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
+			return null;
+		}
+		
+		try {
+			String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
+			log.debug(dataBinding.getXpath() + " yielded result " + r);
+			if (r==null) return nullResultParagraph(sdtParent, "[missing!]");
+
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
+			
+			org.docx4j.wml.Text text = factory.createText();
+			
+			// At present we ignore the checkedState and uncheckedState, except to warn..
+			if (r.equals("true") || r.equals("1")) {
+				
+				if (log.isWarnEnabled() && sdtCheckbox.getCheckedState()!=null) {
+					CTSdtCheckboxSymbol sdtCheckboxSymbol = sdtCheckbox.getCheckedState();
+					if (sdtCheckboxSymbol.getVal()!=null
+							&& !sdtCheckboxSymbol.getVal().equals("2612") ) {
+						log.warn("TODO: handle checkedState " + sdtCheckboxSymbol.getVal());
+					}
+				}
+				text.setValue("☒");
+				
+			} else { // Word treats everything else as false
+
+				if (log.isWarnEnabled() && sdtCheckbox.getUncheckedState()!=null) {
+					CTSdtCheckboxSymbol sdtCheckboxSymbol = sdtCheckbox.getUncheckedState();
+					if (sdtCheckboxSymbol.getVal()!=null
+							&& !sdtCheckboxSymbol.getVal().equals("2610") ) {
+						log.warn("TODO: handle uncheckedState " + sdtCheckboxSymbol.getVal());
+					}
+				}
+				
+				text.setValue("☐");
+			}
+			
+			/*
+		        <w:p>
+		          <w:r>
+		            <w:rPr>
+		              <w:rFonts w:ascii="MS Gothic" w:eastAsia="MS Gothic" w:hAnsi="MS Gothic" w:hint="eastAsia"/>
+		            </w:rPr>
+		            <w:t>☐</w:t>
+		          </w:r>
+		        </w:p>
+			 */
+			org.docx4j.wml.P  p   = factory.createP();
+			
+			org.docx4j.wml.R  run = factory.createR();					
+			RPr rpr = factory.createRPr(); 
+		    RFonts rfonts = factory.createRFonts(); 
+		    rpr.setRFonts(rfonts); 
+		        rfonts.setEastAsia( "MS Gothic"); 
+		        rfonts.setHint(org.docx4j.wml.STHint.EAST_ASIA);
+		        rfonts.setHAnsi( "MS Gothic"); 
+		        rfonts.setAscii( "MS Gothic");	
+		    run.setRPr(rpr);
+		    
+		    run.getContent().add(text);
+			
+			org.docx4j.wml.Tc tc  = factory.createTc();
+			if (sdtParent.equals("tr")) {
+				tc.getContent().add(p);
+			}
+
+			if (sdtParent.equals("body")
+					|| sdtParent.equals("tr") 
+					|| sdtParent.equals("tc") ) {
+				p.getContent().add(run);
+			} 
+			
+			Document document = null;
+			
+			if (sdtParent.equals("body")
+					|| sdtParent.equals("tc") ) {
+				document = XmlUtils.marshaltoW3CDomDocument(p);
+				log.debug(XmlUtils.marshaltoString(p, true, true));
+			} else if ( sdtParent.equals("tr") ) {
+				document = XmlUtils.marshaltoW3CDomDocument(tc);
+				log.debug(XmlUtils.marshaltoString(tc, true, true));
+			} else if ( sdtParent.equals("p") ) {
+				document = XmlUtils.marshaltoW3CDomDocument(run);
+				log.debug(XmlUtils.marshaltoString(run, true, true));
+			} else if ( sdtParent.equals("sdtContent") ) {					
+				log.info("contentChild: " + contentChild);
+				if (contentChild.equals("p")) {
+					p.getContent().add(run);
+					document = XmlUtils.marshaltoW3CDomDocument(p);						
+					log.debug(XmlUtils.marshaltoString(p, true, true));
+				} else if (contentChild.equals("r")) {
+					document = XmlUtils.marshaltoW3CDomDocument(run);						
+					log.debug(XmlUtils.marshaltoString(run, true, true));
+				} else {
+					log.error("how to inject checkbox for unexpected sdt's content: " + contentChild);					
+				}
+			} else {
+				log.error("how to inject checkbox for unexpected sdt's parent: " + sdtParent);
+			}
+			
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+
+			return docfrag;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} 			
 	}
 	
 	// TODO - add something like this to RelationshipsPart?? 

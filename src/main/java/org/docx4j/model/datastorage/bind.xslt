@@ -1,6 +1,9 @@
 ﻿
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" 
+    xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" 
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
     xmlns:o="urn:schemas-microsoft-com:office:office"
     xmlns:v="urn:schemas-microsoft-com:vml"
@@ -173,6 +176,32 @@
 			     
 			</xsl:copy>
 				
+		</xsl:when>  		
+
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w14:checkbox">
+  			<!--  since 3.2.2, honour w:dataBinding -->
+  			
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+			     	
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14Checkbox(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												w:sdtPr,
+												$parent,
+												$child)" />
+			     </w:sdtContent>
+			     
+			</xsl:copy>    			
+
 		</xsl:when>  		
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
