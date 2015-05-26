@@ -280,9 +280,9 @@ public class RunFontSelector {
     			el.setAttribute("font-family", val );
     		}
     		
-			// Any reason not to always do this?
-//			el.setAttribute( "white-space-collapse", "false");
-//			el.setAttribute( "white-space", "pre");
+			// NB, for FOP, we always set @white-space="pre" on the parent fo:block; 
+    		// see XsltFOFunctions (for XSLT), and AbstractVisitorExporterGenerator (non XSLT)
+    		// Doing it here (ie at the inline level) would not be effective.
     		
     	} 
     }

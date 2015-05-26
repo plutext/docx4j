@@ -594,6 +594,9 @@ public class XsltFOFunctions {
 				
 			}
 			
+			// 3.2.2
+			((Element)foBlockElement).setAttribute( "white-space", "pre");
+			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
 

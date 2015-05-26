@@ -213,6 +213,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if (o instanceof P) {
 			
 			currentP = createNode(document, NODE_BLOCK);
+			
+			// 3.2.2
+			currentP.setAttribute( "white-space", "pre");
+			
 			currentSpan = null;
 			if (tc.peek()!=null) {
 				tc.peek().appendChild( currentP  );
