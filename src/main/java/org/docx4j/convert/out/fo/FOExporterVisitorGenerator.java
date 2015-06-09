@@ -202,9 +202,12 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	    		
 	    		// xsl:when test="count($p/w:pPr/w:tabs/w:tab[1][@w:leader='dot' and @w:val='right'])=1"
 	    		CTTabStop tabStop = pPr.getTabs().getTab().get(0);
+	    			    		
 	    		if (tabStop!=null
-	    				&& tabStop.getLeader().equals(STTabTlc.DOT)
-	    				&& tabStop.getVal().equals(STTabJc.RIGHT) ) {
+	    				&& tabStop.getVal()!=null     // unlikely
+	    				&& tabStop.getVal().equals(STTabJc.RIGHT)
+	    				&& tabStop.getLeader()!=null  // more likely
+	    				&& tabStop.getLeader().equals(STTabTlc.DOT) ) {
 	    			
 					// <fo:leader leader-length.minimum="12pt" leader-length.optimum="40pt"
 					//		    leader-length.maximum="100%" leader-pattern="dots">
