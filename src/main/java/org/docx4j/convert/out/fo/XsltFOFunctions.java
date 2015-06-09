@@ -25,6 +25,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -40,6 +41,7 @@ import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTwipsMeasure;
 import org.docx4j.wml.JcEnumeration;
@@ -48,6 +50,7 @@ import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STTabJc;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TcPr;
@@ -897,6 +900,81 @@ public class XsltFOFunctions {
     			context.getSections().getCurrentSection().getPageNumberInformation().getPageStart();
     	//may return empty string if no start page number supplied
     	return (ret == -1 ? "" : Integer.toString(ret));
+    }
+    
+    /**
+     * FOP inserts a blank page if necessary so that a section with page numbering
+     * from 1 would be face up when printed double sided. Word doesn't do that
+     * (unless you have an odd section type), so this function mimics Word's 
+     * behaviour. 
+     * 
+     * @param context
+     * @return
+     * @since 3.2.2
+     */
+    public static String getForcePageCount(FOConversionContext context) {
+    	
+    	// see http://www.w3.org/TR/xsl/#force-page-count
+    	
+    	ConversionSectionWrapper wrapper = context.getSections().peekNextSection();
+    	
+    	if (wrapper==null) {
+    		// final section
+    		return "no-force";
+    	} else {
+    		SectPr.Type secType = wrapper.getSectPr().getType();
+    		
+    		CTPageNumber pgNumType = wrapper.getSectPr().getPgNumType();
+    		Boolean isExplicitOdd = null; // null means numbering will continue from the highest page number in the previous section
+    		if (pgNumType!=null && pgNumType.getStart()!=null) {
+    			int start = pgNumType.getStart().intValue();
+    			if ( start % 2 == 0) {
+    				isExplicitOdd = Boolean.FALSE;    				
+    			} else {
+    				isExplicitOdd = Boolean.TRUE;    				    				
+    			}
+    		}
+    		
+    		if (secType==null || secType.getVal().equals("nextPage") ) {
+        		return "no-force";  
+    		} else if (isExplicitOdd==null  // LIMITATION: We don't get this right after the user has set the page number explicitly in a previous section
+    						|| isExplicitOdd) {
+    			// The normal case
+    			if ( secType.getVal().equals("evenPage") ) {
+	    			// Even page section breaks, which begin the new section on the next even-numbered page.
+	    			// (What happens if that section has w:pgNumType/@w:start="1"?)
+	    			return "end-on-odd";
+	    		} else if ( secType.getVal().equals("oddPage") ) {
+	    			// Odd page section breaks, which begin the new section on the next odd-numbered page
+	    			return "end-on-even";
+	    		} else {
+	    			// continuous (!)
+	        		return "no-force";    			    			
+	    		}
+    		} else {
+    			// section starts with p2 or p4
+    			if ( secType.getVal().equals("evenPage") ) {
+	    			// Even page section breaks, which begin the new section on the next even-numbered page.
+	    			// (What happens if that section has w:pgNumType/@w:start="1"?)
+	    			return "end-on-even";
+	    		} else if ( secType.getVal().equals("oddPage") ) {
+	    			// Odd page section breaks, which begin the new section on the next odd-numbered page
+	    			return "end-on-odd";
+	    		} else {
+	    			// continuous (!)
+	        		return "no-force";    			    			
+	    		}
+    			
+    		}
+    	}
+
+    }
+    
+    private static boolean isOdd(SectPr sectPr) {
+    	
+    	CTPageNumber pgNumType = sectPr.getPgNumType();
+    	
+    	return true;
     }
 
     public static boolean hasPgNumTypeStart(FOConversionContext context) {

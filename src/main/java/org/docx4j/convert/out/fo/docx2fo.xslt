@@ -162,7 +162,11 @@
 				which is to be used to layout the text contained in this
 				page-sequence-->
 				
-			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" id="section_{@name}" >
+			<xsl:variable name="pageCountVal" 
+				select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getForcePageCount($conversionContext)"/>
+				
+				
+			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" id="section_{@name}" force-page-count="{$pageCountVal}">
 				<xsl:if test="java:org.docx4j.convert.out.fo.XsltFOFunctions.hasPgNumTypeStart($conversionContext)">
 					<xsl:attribute name="initial-page-number"><xsl:value-of 
 						select="java:org.docx4j.convert.out.fo.XsltFOFunctions.getPageNumberInitial($conversionContext)"/></xsl:attribute>
@@ -325,7 +329,7 @@
        font-family and size, line-height etc. -->
   <xsl:template match="w:p">
   
-    	<xsl:call-template name="pretty-print-block"/>
+<!--     	<xsl:call-template name="pretty-print-block"/>   -->
   
  			<!--  Invoke an extension function, so we can use
  			      docx4j to populate the fo:block -->

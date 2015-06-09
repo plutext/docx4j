@@ -127,4 +127,16 @@ public class ConversionSectionWrappers {
 			throw new IllegalArgumentException("There is no current section"); //?????
 		}
 	}
+	
+	public ConversionSectionWrapper peekNextSection() {
+		
+		int nextSectionIndex=currentSectionIndex+1; 
+		if ((nextSectionIndex >= 0) && (nextSectionIndex < conversionSections.size())) {
+			return conversionSections.get(nextSectionIndex);
+		} else {
+			return null;
+		}
+		
+	}
+	
 }
