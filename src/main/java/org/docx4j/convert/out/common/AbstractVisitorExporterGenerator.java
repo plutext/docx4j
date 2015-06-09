@@ -214,8 +214,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 			currentP = createNode(document, NODE_BLOCK);
 			
-			// 3.2.2
-			currentP.setAttribute( "white-space", "pre");
+			// "pre" is no good, since wrapping does not happen
+			// (so paragraph continues right over edge of page)
+			//currentP.setAttribute( "white-space", "pre");
 			
 			currentSpan = null;
 			if (tc.peek()!=null) {

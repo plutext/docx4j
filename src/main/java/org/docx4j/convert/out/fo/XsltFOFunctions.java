@@ -594,8 +594,9 @@ public class XsltFOFunctions {
 				
 			}
 			
-			// 3.2.2
-			((Element)foBlockElement).setAttribute( "white-space", "pre");
+			// FOP doesn't support "ignore-if-surrounding-linefeed", and "pre" is no good, since wrapping does not happen
+			// (so paragraph continues right over edge of page)
+			//((Element)foBlockElement).setAttribute( "white-space", "ignore");
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

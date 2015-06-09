@@ -280,9 +280,13 @@ public class RunFontSelector {
     			el.setAttribute("font-family", val );
     		}
     		
-			// NB, for FOP, we always set @white-space="pre" on the parent fo:block; 
+			// NB, for PDF/FOP, white space handling on the parent fo:block, 
     		// see XsltFOFunctions (for XSLT), and AbstractVisitorExporterGenerator (non XSLT)
-    		// Doing it here (ie at the inline level) would not be effective.
+    		
+//    		if (spacePreserve) {
+//    			el.setAttribute("white-space-treatment","preserve");
+//    		}
+    		// NB, that on its own may stop FOP 1.x from line wrapping!
     		
     	} 
     }
