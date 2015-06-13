@@ -112,33 +112,27 @@ public class FopConfigUtil {
 	 * @return
 	 */
 	protected static void declareFonts(Mapper fontMapper, Set<String> fontsInUse, StringBuilder result) {
+
 		
 		for (String fontName : fontsInUse) {		    
 		    
 		    PhysicalFont pf = fontMapper.get(fontName);
+		    String subFontAtt = "";
 		    
 		    if (pf==null) {
-		    	
-		    	// Workaround/Special case: Cambria, if embedded, may be embedded as Cambria-bold
-		    	// if in the docx the text was bold.
-		    	if (fontName.equals("Cambria")) {
-		    		pf = fontMapper.getBoldForm(fontName); // could potentially do this for other fonts as well.
-		    	}
-		    	if (pf==null) {
-			    	log.error("Document font " + fontName + " is not mapped to a physical font!");
-			    	continue;
-		    	}
+		    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
+		    	// We may still have eg Cambria-bold embedded
+		    } else {
+		    
+			    if (pf.getEmbedFontInfo().getSubFontName()!=null)
+			    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+			    
+			    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
+			    	// now add the first font triplet
+				    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+				    addFontTriplet(result, fontTriplet);
+			    result.append("</font>" );
 		    }
-		    
-		    String subFontAtt = "";
-		    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-		    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
-		    
-		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	// now add the first font triplet
-			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    addFontTriplet(result, fontTriplet);
-		    result.append("</font>" );
 		    
 		    // bold, italic etc
 		    PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);

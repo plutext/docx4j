@@ -272,21 +272,20 @@ public abstract class Mapper {
 	}
 	
 	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return boldForms.get(fontNameAsInFontTablePart); // for where eg Cambria-bold was embedded, but Cambria is not present
 		final PhysicalFont pfBold = PhysicalFonts.getBoldForm(pf); // prefer the physical font if present on the system (this potentially helps if we need a glyph which is not embedded) 
 		return (pfBold != null) ? pfBold : boldForms.get(fontNameAsInFontTablePart); // otherwise, look for embedded
 		// (we could do this the other way around, or make it configurable)
 	}
-
-	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart) {
-		return boldForms.get(fontNameAsInFontTablePart); // special case, for Cambria
-	}
 	
 	public PhysicalFont getItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return italicForms.get(fontNameAsInFontTablePart);
 		final PhysicalFont pfItalic = PhysicalFonts.getItalicForm(pf);
 		return (pfItalic != null) ? pfItalic : italicForms.get(fontNameAsInFontTablePart);
 	}
 
 	public PhysicalFont getBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return boldItalicForms.get(fontNameAsInFontTablePart);
 		final PhysicalFont pfBoldItalic = PhysicalFonts.getBoldItalicForm(pf);
 		return (pfBoldItalic != null) ? pfBoldItalic : boldItalicForms.get(fontNameAsInFontTablePart);
 	}
