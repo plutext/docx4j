@@ -2,10 +2,7 @@ package org.docx4j.fonts;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -227,7 +224,7 @@ public class PhysicalFonts {
 	 * 
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static void addPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+	public static List<PhysicalFont> addPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
 
 		
 		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
@@ -240,11 +237,11 @@ public class PhysicalFonts {
 			// Quite a few fonts exist that we can't seem to get
 			// EmbedFontInfo for. To be investigated.
 			log.warn("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
-			return;
+			return null;
 		}
 		
 		StringBuffer debug = new StringBuffer();
-		
+		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
 			/* EmbedFontInfo has:
@@ -403,6 +400,7 @@ public class PhysicalFonts {
 		    	
 		        
 		        if (pf!=null) {
+							pfList.add(pf);
 		        	
 		        	// Add it to the map
 		        	put(pf.getName(), pf);
@@ -446,6 +444,7 @@ public class PhysicalFonts {
 			}            	
 		
 		log.debug(debug.toString() );
+		return pfList;
 	}
 	
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {

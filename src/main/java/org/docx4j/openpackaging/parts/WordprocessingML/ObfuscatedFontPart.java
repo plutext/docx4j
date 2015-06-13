@@ -23,8 +23,11 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EncodingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
@@ -120,12 +123,12 @@ public class ObfuscatedFontPart extends BinaryPart {
 	/**
 	 * deObfuscate this font, and save it using fontName
 	 * 
-	 * @param fontName - the name to save the font as. We
+	 * @param fontNameAsInTablePart - the name to save the font as. We
 	 * could read the font name from the deObfuscated data,
 	 * but FontLoader can't readily load from a byte array. 
 	 * @param fontKey
 	 */
-	public void deObfuscate(String fontName, String fontKey ) {
+	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey ) {
 		
 		byte[] fontData = this.getBytes();
 		
@@ -163,7 +166,7 @@ public class ObfuscatedFontPart extends BinaryPart {
 		}
 		
 		// Save the result
-		java.io.File f = new File(tmpFontDir, fontName +".ttf"); 
+		java.io.File f = new File(tmpFontDir, fontFileName +".ttf");
 		String path = null; 
 		
 		java.io.FileOutputStream fos = null; 
@@ -205,11 +208,13 @@ public class ObfuscatedFontPart extends BinaryPart {
 	        	}
 	        }
 		}
-		
+
 		// Add this font to our known physical fonts  
         try {
-			org.docx4j.fonts.PhysicalFonts.addPhysicalFont(fontName, new java.net.URL("file:" + path) );
-			
+					List<PhysicalFont> fonts = PhysicalFonts.addPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path));
+					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
+
+
 			// This needs to be done before populateFontMappings, 
 			// otherwise this font will be ignored, and references
 			// to it mapped to some substitute font!
@@ -218,6 +223,7 @@ public class ObfuscatedFontPart extends BinaryPart {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return null;
 		
 	}
 	
