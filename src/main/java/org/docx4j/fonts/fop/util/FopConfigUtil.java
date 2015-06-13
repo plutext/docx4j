@@ -118,8 +118,16 @@ public class FopConfigUtil {
 		    PhysicalFont pf = fontMapper.get(fontName);
 		    
 		    if (pf==null) {
-		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
-		    	continue;
+		    	
+		    	// Workaround/Special case: Cambria, if embedded, may be embedded as Cambria-bold
+		    	// if in the docx the text was bold.
+		    	if (fontName.equals("Cambria")) {
+		    		pf = fontMapper.getBoldForm(fontName); // could potentially do this for other fonts as well.
+		    	}
+		    	if (pf==null) {
+			    	log.error("Document font " + fontName + " is not mapped to a physical font!");
+			    	continue;
+		    	}
 		    }
 		    
 		    String subFontAtt = "";

@@ -276,6 +276,10 @@ public abstract class Mapper {
 		return (pfBold != null) ? pfBold : boldForms.get(fontNameAsInFontTablePart); // otherwise, look for embedded
 		// (we could do this the other way around, or make it configurable)
 	}
+
+	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart) {
+		return boldForms.get(fontNameAsInFontTablePart); // special case, for Cambria
+	}
 	
 	public PhysicalFont getItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
 		final PhysicalFont pfItalic = PhysicalFonts.getItalicForm(pf);
