@@ -130,11 +130,19 @@ public class ObfuscatedFontPart extends BinaryPart {
 	 */
 	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey ) {
 		
+		/*  NB deobfuscation is done multiple times during PDF output.
+		 *  
+		 *  This could be avoided, if we cloned the fontMapper.
+		 *  TODO for 3.3 
+		 *  
+		 *  // (new Throwable()).printStackTrace(); 
+		 */
+		
 		byte[] fontData = this.getBytes();
 		
 		log.debug("bytes: " + fontData.length);
 		
-		log.info("deObfuscating with fontkey: " + fontKey);			
+		log.info("deObfuscating '" + fontFileName + "' with fontkey: " + fontKey);			
 		// INPUT: {1DF903E3-2F14-4575-8028-881FEBABF2AB}
 
 		// See http://openiso.org/Ecma/376/Part4/2.8.1
@@ -181,9 +189,11 @@ public class ObfuscatedFontPart extends BinaryPart {
 			log.error(e.getMessage(), e);
 		} 
 		
-		log.info("Done!");
+//		log.info("Done!");
 		
 		// Save to "Temporary Font Files" directory.
+		// TODO 1 write to a subdir controlled by FontTablePart
+		// TODO 2 add a method there which can be called to delete the dir when the docx is closed/unloaded
         FontResolver fontResolver = FontSetup.createMinimalFontResolver();
 
 		if (log.isDebugEnabled()) {
@@ -209,9 +219,9 @@ public class ObfuscatedFontPart extends BinaryPart {
 	        }
 		}
 
-		// Add this font to our known physical fonts  
+		// Get this font as a PhysicalFont object; do NOT add it to physical fonts (since those are available to all documents)  
         try {
-					List<PhysicalFont> fonts = PhysicalFonts.addPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path));
+					List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path));
 					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 

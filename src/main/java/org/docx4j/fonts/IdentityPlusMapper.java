@@ -122,6 +122,23 @@ public class IdentityPlusMapper extends Mapper {
         		put(documentFontname,         				 
         				mappedTo );	
         			log.debug(".. mapped to " + mappedTo.getName() );
+	        } else if (regularForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				regularForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded regular form " );
+	        } else if (boldForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				boldForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded bold form " );
+	        } else if (italicForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				italicForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded italic form " );
+	        } else if (boldItalicForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				boldItalicForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded bold italic form " );
+	        	
 	        } else {
 	        	
 	        	log.warn("- - No physical font for: " + documentFontname);

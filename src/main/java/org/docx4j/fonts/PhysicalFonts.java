@@ -28,6 +28,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
  * They can be discovered automatically, or you can
  * just add specific fonts.
  * 
+ * Do NOT add fonts embedded in a docx to physicalFontMap!
+ * 
  * @author dev
  *
  */
@@ -38,7 +40,8 @@ public class PhysicalFonts {
 	protected static FontCache fontCache;
 
 	
-	/** These are the physical fonts on the system which we have discovered. */ 
+	/** These are the physical fonts on the system which we have discovered. 
+	 * Do NOT add fonts embedded in a docx to physicalFontMap! */ 
 	private final static Map<String, PhysicalFont> physicalFontMap;
 	
 	@Deprecated // want to enforce case insensitive
@@ -68,6 +71,9 @@ public class PhysicalFonts {
 	 * @param pf
 	 */
 	public static void put(String key, PhysicalFont pf) {
+		if (physicalFontMap.get(key.toLowerCase())!=null) {
+			log.warn("Overwriting existing physicalFontMap entry: " + key.toLowerCase());
+		}
 		physicalFontMap.put(key.toLowerCase(), pf);
 	}
 
@@ -184,12 +190,13 @@ public class PhysicalFonts {
         }
         
 
-        // Add fonts from our Temporary Embedded Fonts dir
-        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = getURL(iter.next());
-            addPhysicalFont( fontUrl);
-        }
+// docx4j 3.2.2: no, these are document specific, so don't belong in PhysicalFonts        
+//        // Add fonts from our Temporary Embedded Fonts dir
+//        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
+//        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+//            URL fontUrl = getURL(iter.next());
+//            addPhysicalFont( fontUrl);
+//        }
         
         fontCache.save();
         
@@ -211,20 +218,80 @@ public class PhysicalFonts {
 	private static boolean loggedWarningAlready = false;
 	
 	/**
-	 * Add a physical font's EmbedFontInfo object.
+	 * Add a physical font's EmbedFontInfo object.  Not to be used for embedded fonts.
 	 *
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
 	public static void addPhysicalFont(URL fontUrl) {
-		addPhysicalFont(null, fontUrl);
+		addPhysicalFonts(null, fontUrl);
 	}
 
 	/**
-	 * Add a physical font's EmbedFontInfo object.
+	 * Add a physical font's EmbedFontInfo object.  Not to be used for embedded fonts.
 	 * 
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static List<PhysicalFont> addPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+	public static void addPhysicalFonts(String nameAsInFontTablePart, URL fontUrl) {
+
+		List<PhysicalFont> physicalFonts = getPhysicalFont( nameAsInFontTablePart,  fontUrl);
+		if (physicalFonts==null) return;
+		for (PhysicalFont pf : physicalFonts) {
+			
+	        if (pf!=null) {
+	        		        	
+	        	// Add it to the map
+	        	put(pf.getName(), pf);
+	    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
+
+				if (nameAsInFontTablePart != null 
+						&& get(nameAsInFontTablePart)==null) {
+					
+					put(nameAsInFontTablePart, pf);
+					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
+				}
+	    		
+	    		// We also need to add it to map by filename
+	    		String filename = pf.getEmbeddedFile();
+	    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
+	    				    		
+	    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
+	    		
+	    		if (osName.startsWith("Mac")) {
+	    			filename = filename.replace("%20", " "); 
+	    			/* there are a few like this on Windows as well, but they're exotic, 
+	    			 * eg  biondi%20light.ttf catriel ligurino *Tiger* tandelle
+	    			 */
+	    		}
+	    		physicalFontMapByFilenameLowercase.put(filename, pf);
+	    		log.debug("added to filename map: " + filename);
+	        	
+//	        	String familyName = triplet.getName();
+//	        	pf.setFamilyName(familyName);
+//	        	
+//	        	PhysicalFontFamily pff;
+//	        	if (physicalFontFamiliesMap.get(familyName)==null) {
+//	        		pff = new PhysicalFontFamily(familyName);
+//	        		physicalFontFamiliesMap.put(familyName, pff);
+//	        	} else {
+//	        		pff = physicalFontFamiliesMap.get(familyName);
+//	        	}
+//	        	pff.addFont(pf);
+	        	
+	        }			
+		}
+		
+	}
+	
+	/**
+	 * Get a physical font's EmbedFontInfo object.
+	 * 
+	 * @param fontUrl eg new java.net.URL("file:" + path)
+	 */
+	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+
+		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
+		
+		log.debug(nameAsInFontTablePart);
 
 		
 		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
@@ -241,7 +308,6 @@ public class PhysicalFonts {
 		}
 		
 		StringBuffer debug = new StringBuffer();
-		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
 			/* EmbedFontInfo has:
@@ -397,50 +463,11 @@ public class PhysicalFonts {
 		        } else {                    	
 		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 		        }
-		    	
 		        
 		        if (pf!=null) {
-							pfList.add(pf);
-		        	
-		        	// Add it to the map
-		        	put(pf.getName(), pf);
-		    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
-
-				if (nameAsInFontTablePart != null 
-						&& get(nameAsInFontTablePart)==null) {
-					
-					put(nameAsInFontTablePart, pf);
-					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
-				}
-		    		
-		    		// We also need to add it to map by filename
-		    		String filename = pf.getEmbeddedFile();
-		    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
-		    				    		
-		    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
-		    		
-		    		if (osName.startsWith("Mac")) {
-		    			filename = filename.replace("%20", " "); 
-		    			/* there are a few like this on Windows as well, but they're exotic, 
-		    			 * eg  biondi%20light.ttf catriel ligurino *Tiger* tandelle
-		    			 */
-		    		}
-		    		physicalFontMapByFilenameLowercase.put(filename, pf);
-		    		log.debug("added to filename map: " + filename);
-		        	
-//		        	String familyName = triplet.getName();
-//		        	pf.setFamilyName(familyName);
-//		        	
-//		        	PhysicalFontFamily pff;
-//		        	if (physicalFontFamiliesMap.get(familyName)==null) {
-//		        		pff = new PhysicalFontFamily(familyName);
-//		        		physicalFontFamiliesMap.put(familyName, pff);
-//		        	} else {
-//		        		pff = physicalFontFamiliesMap.get(familyName);
-//		        	}
-//		        	pff.addFont(pf);
-		        	
+					pfList.add(pf);
 		        }
+
 			}            	
 		
 		log.debug(debug.toString() );

@@ -309,6 +309,24 @@ public class WordprocessingMLPackage extends OpcPackage {
     public void setFontMapper(Mapper fm, boolean populate) throws Exception {
     	log.debug("setFontMapper invoked");
     	
+    	/* The two font mappers included in docx4j (IdentityPlusMapper
+    	 * and BestMatchingMapper), both populate physical fonts statically
+    	 * when they are constructed.
+    	 * 
+    	 * So by now, we know what physical fonts exist on the 
+    	 * system.
+    	 * 
+    	 * A mapper is per document.
+    	 * 
+    	 * This method:
+    	 * - adds fonts embedded in the docx to the mapper
+    	 * - optionally, populates the mapper for fonts actually used in the docx,  
+    	 * 
+    	 * Since an embedded font is document specific, it must NOT be added to
+    	 * PhysicalFonts! It is ok to have a PhysicalFont object representing it,
+    	 * but that should be stored in the document specific mapper object.   
+    	 */
+    	
     	if (fm == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
@@ -318,23 +336,21 @@ public class WordprocessingMLPackage extends OpcPackage {
 		// 1.  Get a list of all the fonts in the document
 		Set<String> fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
-		//if ( fm instanceof BestMatchingMapper ) {
-		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {
-			
+//		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {
 			
 			// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
 			//     - do this in a general way, since docx4all needs this as well to display fonts		
-			FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
-			
+			FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();				
 			if (fontTablePart==null) {
 				log.warn("FontTable missing; creating default part.");
 				fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
 				fontTablePart.unmarshalDefaultFonts();
-				fontTablePart.processEmbeddings(fontMapper);
 			}
 			
+			fontTablePart.processEmbeddings(fontMapper);
+			
 			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		}
+//		}
 		
 		if (populate) {
 			fontMapper.populateFontMappings(fontsInUse, fonts);

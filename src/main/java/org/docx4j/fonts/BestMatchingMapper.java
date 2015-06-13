@@ -245,9 +245,7 @@ public class BestMatchingMapper extends Mapper {
 	        	        
 	        // Since docx4all invokes this method when opening
 	        // each new document, the mapping may have been done
-	        // last time.  We don't need to do it again, unless
-	        // new physical fonts have been added (eg via
-	        // an embedding)
+	        // last time.  We don't need to do it again
 	        if (get(documentFontName) != null ) {
 	        	log.info(documentFontName + " already mapped.");
         		if ( lastSeenNumberOfPhysicalFonts == 
@@ -262,6 +260,29 @@ public class BestMatchingMapper extends Mapper {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
+	        
+	        // Embedded fonts - bypass panose for these
+	        if (regularForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				regularForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded regular form " );
+    			continue;
+	        } else if (boldForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				boldForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded bold form " );
+    			continue;
+	        } else if (italicForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				italicForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded italic form " );
+    			continue;
+	        } else if (boldItalicForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				boldItalicForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded bold italic form " );
+    			continue;
+	        }	        
 	
 //	        boolean normalFormFound = false;
 	        			
@@ -326,9 +347,9 @@ public class BestMatchingMapper extends Mapper {
 					
 					if (fontMatched!=null) {
 					
-					put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
-					log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
-							+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
+						put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
+						log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
+								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
 					} else {
 						
 						log.debug("font with key " + panoseKey + " doesn't exist!");
