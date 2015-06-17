@@ -16,6 +16,7 @@ import org.apache.fop.apps.MimeConstants;
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
@@ -175,6 +176,10 @@ public class FOPAreaTreeHelper {
         foSettings.setLayoutMasterSetCalculationInProgress(true); // avoid recursion
         
 //        foSettings.getFeatures().add(ConversionFeatures.PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM); // in 3.0.1, this is off by default
+        
+        // Since hfPkg is already a clone, we don't need PP_COMMON_DEEP_COPY
+        // Plus it invokes setFontMapper, which does processEmbeddings again, and those fonts aren't much use to us here
+        foSettings.getFeatures().remove(ConversionFeatures.PP_COMMON_DEEP_COPY);
         
         if (log.isDebugEnabled()) {
         	foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/hf.fo"));

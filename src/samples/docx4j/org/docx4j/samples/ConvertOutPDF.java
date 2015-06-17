@@ -144,11 +144,11 @@ public class ConvertOutPDF extends AbstractSample {
 		PhysicalFont font 
 				= PhysicalFonts.get("Arial Unicode MS"); 
 			// make sure this is in your regex (if any)!!!
-		if (font!=null) {
-			fontMapper.put("Times New Roman", font);
-			fontMapper.put("Arial", font);
-		}
-		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
+//		if (font!=null) {
+//			fontMapper.put("Times New Roman", font);
+//			fontMapper.put("Arial", font);
+//		}
+//		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
 
 		// FO exporter setup (required)
 		// .. the FOSettings object
@@ -189,6 +189,17 @@ public class ConvertOutPDF extends AbstractSample {
 		// Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
     	
 		System.out.println("Saved: " + outputfilepath);
+
+		// Clean up, so any ObfuscatedFontPart temp files can be deleted 
+		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
+			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
+		}		
+		// This would also do it, via finalize() methods
+		updater = null;
+		foSettings = null;
+		wordMLPackage = null;
+		
+		
     }
     
     

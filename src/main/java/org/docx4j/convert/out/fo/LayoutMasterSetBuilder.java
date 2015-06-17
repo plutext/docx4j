@@ -38,6 +38,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
@@ -143,9 +144,15 @@ public class LayoutMasterSetBuilder {
 			
 			FOPAreaTreeHelper.adjustLayoutMasterSet(lms, context.getSections(), headerBpda, footerBpda);				
 			
+			// Clean up
+			// this isn't really necessary since its done in WordprocessingMLPackagefinalize(), but this gets rid of them a bit sooner than GC may happen
+			FontTablePart ftp = hfPkg.getMainDocumentPart().getFontTablePart();
+			if (ftp!=null) {
+				ftp.deleteEmbeddedFontTempFiles();
+			}
+			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
 		log.debug("resulting LMS: " + XmlUtils.marshaltoString(lms, Context.getXslFoContext()));
 		

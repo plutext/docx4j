@@ -26,6 +26,7 @@ import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,18 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			
 			postprocess(conversionSettings, conversionContext, intermediateOutputStream, outputStream);			
 			currentTime = logDebugStep(log, "Postprocessing", currentTime);
+			
+			if (conversionSettings.getWmlPackage()!=preprocessedPackage) {
+				// We made a temp pkg, so clean up; 
+				// this isn't really necessary since its done in WordprocessingMLPackagefinalize(), but this gets rid of them a bit sooner than GC may happen
+				if (preprocessedPackage instanceof WordprocessingMLPackage) {
+					FontTablePart ftp = ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getFontTablePart();
+					if (ftp!=null) {
+						ftp.deleteEmbeddedFontTempFiles();
+					}
+				}
+			}
+			
 			logDebugStep(log, "Conversion done", startTime);
 			
 //		} catch (Docx4JException e) {

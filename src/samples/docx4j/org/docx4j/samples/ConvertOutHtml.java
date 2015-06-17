@@ -138,6 +138,13 @@ public class ConvertOutHtml extends AbstractSample {
 			System.out.println( ((ByteArrayOutputStream)os).toString() );
 		}
 
+		// Clean up, so any ObfuscatedFontPart temp files can be deleted 
+		if (wordMLPackage.getMainDocumentPart().getFontTablePart()!=null) {
+			wordMLPackage.getMainDocumentPart().getFontTablePart().deleteEmbeddedFontTempFiles();
+		}		
+		// This would also do it, via finalize() methods
+		htmlSettings = null;
+		wordMLPackage = null;
     }
     
 //    class ResettingStyleHandler implements ConversionHTMLStyleElementHandler {

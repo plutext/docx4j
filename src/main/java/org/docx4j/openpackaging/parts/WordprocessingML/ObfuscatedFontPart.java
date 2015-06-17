@@ -42,6 +42,9 @@ public class ObfuscatedFontPart extends BinaryPart {
 
 	private static Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);		
 	
+	java.io.File f; // the temp embedded font file
+	
+	
     /** docx4j's user directory name */
     private static final String DOCX4J_USER_DIR = ".docx4all"; 
     	// docx4all already creates a dir; no point creating a second 
@@ -82,6 +85,7 @@ public class ObfuscatedFontPart extends BinaryPart {
     }
     
     public static String getTemporaryEmbeddedFontsDir() {
+    	
     	if (tmpFontDir==null) {
     		throw new RuntimeException("No dir configured for temp fonts!  Either set system property user.home to a writable dir, or configure docx4j property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
     	}
@@ -103,6 +107,7 @@ public class ObfuscatedFontPart extends BinaryPart {
         }
         return null;
     }
+    
 
 	public ObfuscatedFontPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -128,7 +133,7 @@ public class ObfuscatedFontPart extends BinaryPart {
 	 * but FontLoader can't readily load from a byte array. 
 	 * @param fontKey
 	 */
-	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey ) {
+	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey, String filenamePrefix ) {
 		
 		/*  NB deobfuscation is done multiple times during PDF output.
 		 *  
@@ -174,7 +179,8 @@ public class ObfuscatedFontPart extends BinaryPart {
 		}
 		
 		// Save the result
-		java.io.File f = new File(tmpFontDir, fontFileName +".ttf");
+		f = new File(tmpFontDir, filenamePrefix + "-"+fontFileName +".ttf");
+		f.deleteOnExit();
 		String path = null; 
 		
 		java.io.FileOutputStream fos = null; 
@@ -249,6 +255,40 @@ public class ObfuscatedFontPart extends BinaryPart {
 	static java.lang.CharSequence target = (new String("-")).subSequence(0, 1);
     static java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);
 	
+    protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
+    	
+    	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
+    	// (when it is invoked first; sometimes it isn't - note this is a static method)
+    	
+    	for(File f: tmpFontDir.listFiles() ) {
+    		
+    	    if(f.getName().startsWith(filenamePrefix)) {
+    	        f.delete();
+    	    }
+    	}
+    	if (log.isWarnEnabled()) {
+    		int count = tmpFontDir.listFiles().length;
+    		if (count>0) {
+	    		try {
+					log.warn(count + " files remain in " + tmpFontDir.getCanonicalPath());
+				} catch (IOException e) {
+				}
+	    	}
+    	}
+    }
 	
+	@Override
+	protected void finalize() throws Throwable {
+		
+        try {
+    		log.debug("Deleting  " + f.getName());
+			f.delete();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			super.finalize();
+		}
+		
+	}
 	
 }

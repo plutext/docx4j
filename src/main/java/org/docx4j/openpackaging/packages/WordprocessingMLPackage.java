@@ -460,6 +460,19 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 	}
 	
+	
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			FontTablePart ftp = this.getMainDocumentPart().getFontTablePart();
+			if (ftp != null) {
+				ftp.deleteEmbeddedFontTempFiles();
+			}
+		} finally {
+			super.finalize();
+		}
+		
+	}
 
 	public static class FilterSettings {
 		

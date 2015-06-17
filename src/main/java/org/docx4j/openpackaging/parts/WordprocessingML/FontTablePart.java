@@ -89,13 +89,24 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	return unmarshal( is );    	
     }
 
-		public void processEmbeddings() {
-			processEmbeddings(null);
-		}
+	public void processEmbeddings() {
+		processEmbeddings(null);
+	}
+		
+	private String filenamePrefix = null;
 
     public void processEmbeddings(Mapper fontMapper) {
     	
     	Fonts fonts = (org.docx4j.wml.Fonts)this.getJaxbElement();
+    	
+    	if (fonts==null) {
+    		log.warn("No content in font table part");
+    		return;
+    	} else {
+			filenamePrefix = "" + System.currentTimeMillis(); 
+			log.info("Writing temp embedded fonts " + filenamePrefix);
+    	}
+    	
 		for (Fonts.Font font : fonts.getFont() ) {
 			String fontName =  font.getName();
     	
@@ -130,11 +141,25 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	    	 
     	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
     	if (obfuscatedFont != null) {
-    		return obfuscatedFont.deObfuscate(fontNameAsInFontTablePart, fontFileName, fontKey);
+    		return obfuscatedFont.deObfuscate(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
     	} else {
     		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
     	}
 			return null;
+    }
+    
+    
+    /**
+     *  Temporary embedded fonts should be deleted on exit, but for a long running app
+     *  that may not be adequate, in which case you'll want to invoke this method
+     *  when you have finished with a WordML pkg.  You can get this part from your MainDocumentPart,
+     *  using getFontTablePart()
+     */
+    public void deleteEmbeddedFontTempFiles() {
+    	if (filenamePrefix!=null) {
+    		log.debug("Deleting temp embedded fonts " + filenamePrefix);
+    		ObfuscatedFontPart.deleteEmbeddedFontTempFiles(filenamePrefix);
+    	}
     }
 
 	public static void main(String[] args) throws Exception {
