@@ -46,7 +46,9 @@ import org.docx4j.relationships.Relationship;
 import org.w3c.dom.Document;
 
 /**
- * Tool to remove Structured Document Tags from an OpenXML document part.
+ * Tool to remove content controls (Structured Document Tags) from an OpenXML document part.
+ * 
+ * But only if they contain an OpenDoPE tag (od:).
  *
  * <p>
  * This tool removes SDTs tagged with a certain quantifier from the document part. It supports to remove any set of

@@ -55,6 +55,7 @@
    -->
 
   <xsl:template match="w:sdt">
+  <!--  Strips OpenDoPE content controls only. -->
     <xsl:choose>
        <!--  picture content control: need this special case, since contains no w:t -->
       <xsl:when
