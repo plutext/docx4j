@@ -121,8 +121,8 @@ public abstract class JaxbXmlPart<E> extends Part {
 			}
 			PartStore partStore = this.getPackage().getSourcePartStore();
 			if (partStore==null) {
-				log.warn("No PartStore defined for this package (it was probably created, not loaded). " );
-				log.warn(this.getPartName().getName() + ": did you initialise its contents to something?");
+				log.info("No PartStore defined for this package (it was probably created, not loaded). " );
+				log.info(this.getPartName().getName() + ": did you initialise its contents to something?");
 				return null;
 				// or we could create it, with a bit of effort;
 				// as to which see http://stackoverflow.com/questions/1090458/instantiating-a-generic-class-in-java
@@ -143,7 +143,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 				if (is==null) {
 					log.warn(name + " missing from part store");
 				} else {
-					log.info("Lazily unmarshalling " + name);
+					log.debug("Lazily unmarshalling " + name);
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
@@ -307,7 +307,6 @@ public abstract class JaxbXmlPart<E> extends Part {
 			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
 		} catch (JAXBException e) {
-//			e.printStackTrace();
 			log.error(e.getMessage(), e);
 			throw e;
 		}
@@ -349,7 +348,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
-			log.info("marshalling " + this.getClass().getName() );	
+			log.debug("marshalling " + this.getClass().getName() );	
 			getContents();
 //			if (jaxbElement==null) {
 //				log.error("No JAXBElement has been created for this part, yet!");
@@ -362,7 +361,6 @@ public abstract class JaxbXmlPart<E> extends Part {
 			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
 		} catch (JAXBException e) {
-			//e.printStackTrace();
 			log.error(e.getMessage(), e);
 			throw e;
 		}

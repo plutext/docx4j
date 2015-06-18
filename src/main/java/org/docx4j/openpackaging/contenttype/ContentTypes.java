@@ -149,8 +149,13 @@ public class ContentTypes {
 	
 	public final static String WORDPROCESSINGML_SETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml";
+	
 	public final static String WORDPROCESSINGML_STYLES = 
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+	
+	public final static String WORDPROCESSINGML_STYLESWITHEFFECTS = 
+			"application/vnd.ms-word.stylesWithEffects+xml";
+	
 	public final static String WORDPROCESSINGML_WEBSETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 

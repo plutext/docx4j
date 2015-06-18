@@ -100,7 +100,7 @@ implements XPathEnabled<E> {
 				if (is==null) {
 					log.warn(name + " missing from part store");
 				} else {
-					log.info("Lazily unmarshalling " + name);
+					log.debug("Lazily unmarshalling " + name);
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
@@ -154,7 +154,7 @@ implements XPathEnabled<E> {
 	public E createBinderAndJaxbElement(E source) throws JAXBException {
 		
 		// In order to create binder:-
-		log.info("creating binder");
+		log.debug("creating binder");
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(source);
 		unmarshal(doc.getDocumentElement());
 		// return the newly created object, so calling code can use it in place
@@ -316,7 +316,7 @@ implements XPathEnabled<E> {
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
 		try {
 			
-			log.info("For " + this.getClass().getName() + ", unmarshall via binder");
+			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 			// InputStream to Document
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is);
 
@@ -409,9 +409,9 @@ implements XPathEnabled<E> {
 						
 					}
 				} else {
-					log.error("problem in " + this.getPartName() ); 					
-					log.error(ue.getMessage(), ue);
-					log.error(".. and mark not supported");
+					log.warn("problem in " + this.getPartName() ); 					
+					log.warn(ue.getMessage(), ue);
+					log.warn(".. and mark not supported");
 					throw ue;
 				}
 			}
@@ -448,7 +448,7 @@ implements XPathEnabled<E> {
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
-			log.info("For " + this.getClass().getName() + ", unmarshall via binder");
+			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 
 			binder = jc.createBinder();
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -465,7 +465,7 @@ implements XPathEnabled<E> {
 					// Usually..
 				} else {
 					// eg java.lang.NumberFormatException
-					log.error( ue.getMessage(), ue);
+					log.warn( ue.getMessage(), ue);
 					log.info(".. can recover if problem is w:tblW/@w:w");					
 				}
 				log.info("encountered unexpected content; pre-processing");

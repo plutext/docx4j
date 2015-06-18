@@ -166,7 +166,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		if (refresh || styleTree==null) {
 			
-			log.info("Preparing StyleTree");
+			log.debug("Preparing StyleTree");
 
 		    try {
 				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
@@ -203,7 +203,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      */
     public Set<String> fontsInUse() {
     	
-    	log.info("fontsInUse..");
+    	log.debug("fontsInUse..");
     	
     	getPropertyResolver();  // this inits our virtual DocDefaults style
     	
@@ -697,7 +697,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 //		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
 //		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
-				
+
+        if (styleDefinitionsPart==null) {        	
+        	log.info("Style definitions part was null!");
+        	return;
+        }
+		
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
@@ -709,14 +714,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		for( String styleName : stylesInUse) {
 	        log.debug("Inspecting style: " + styleName );
 	        
-	        if (styleDefinitionsPart==null) {
-	        	
-	        	log.warn("Style definitions part was null!");
-	        	
-	        } else if (getPropertyResolver().activateStyle(styleName)) {
+	        if (getPropertyResolver().activateStyle(styleName)) {
 	        	// Cool
 	        } else {
-	        	log.warn(styleName + " couldn't be activated!");
+	        	log.info(styleName + " couldn't be activated!");
 	        }
 	        
 	    }

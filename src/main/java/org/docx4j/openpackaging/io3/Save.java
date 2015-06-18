@@ -68,7 +68,7 @@ public class Save {
 		PartStore targetPartStore;
 		if (p.getSourcePartStore()==null) // eg a newly created package
 		{
-			log.warn("sourcePartStore undefined");
+			log.debug("sourcePartStore undefined");
 			targetPartStore = new ZipPartStore();
 		} else {
 			targetPartStore = p.getSourcePartStore();
@@ -83,7 +83,7 @@ public class Save {
 		this.p = p;
 //		sourcePartStore = p.getSourcePartStore(); 
 		if (p.getSourcePartStore()==null) {
-			log.warn("sourcePartStore undefined");
+			log.debug("sourcePartStore undefined");
 		} else {
 			targetPartStore.setSourcePartStore(p.getSourcePartStore());
 		}
@@ -206,7 +206,7 @@ public class Save {
 			}
 	    }
 
-	    log.info("...Done!" );		
+	    log.debug("...Done!" );		
 
 		 return true;
 	}
@@ -338,7 +338,7 @@ public class Save {
 				// As at 1 May 2008, we don't have a Part for these;
 				// there is just the relationship.
 
-				log.warn("Encountered external resource " + r.getTarget() 
+				log.debug("Encountered external resource " + r.getTarget() 
 						   + " of type " + r.getType() );
 				
 				// So

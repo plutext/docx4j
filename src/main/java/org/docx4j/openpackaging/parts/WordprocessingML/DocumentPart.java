@@ -20,12 +20,6 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-//import java.io.InputStream;
-//import java.io.OutputStream;
-//import java.net.URI;
-//
-//import javax.xml.bind.JAXBContext;
-//import java.net.URI;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -43,12 +37,17 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
 
 public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
+	
+	protected static Logger log = LoggerFactory.getLogger(DocumentPart.class);
+	
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document
@@ -249,7 +248,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		if (styleDefinitionsPart==null
 				&& create) {
 			// HTML, PDF output won't work without this
-			log.warn("No StyleDefinitionsPart detected. Adding default part.");
+			log.info("No StyleDefinitionsPart detected. Adding default part.");
 			try {
 				styleDefinitionsPart = new StyleDefinitionsPart();
 				styleDefinitionsPart.unmarshalDefaultStyles();

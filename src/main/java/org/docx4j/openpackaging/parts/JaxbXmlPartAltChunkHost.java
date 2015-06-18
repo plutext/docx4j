@@ -198,8 +198,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
 				    xHTMLImporter = (XHTMLImporter) ctor.newInstance(clonePkg);
 			    } catch (Exception e) {
-			        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
-					log.error(e.getMessage(), e);
+			        log.warn("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
+					log.warn(e.getMessage(), e);
 					return null;
 			    }		
 				
@@ -303,25 +303,25 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				
 			} catch (SecurityException e) {
 				log.error(e.getMessage(), e);
-				log.warn("* Skipping altChunk of type docx ");
+				log.warn("Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (ClassNotFoundException e) {
 				extensionMissing(e);
 				return clonePkg;
 			} catch (IllegalArgumentException e) {
 				log.error(e.getMessage(), e);
-				log.warn("* Skipping altChunk of type docx ");
+				log.warn("Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (NoSuchMethodException e) {
 				extensionMissing(e);
 				return clonePkg;
 			} catch (IllegalAccessException e) {
 				log.error(e.getMessage(), e);
-				log.warn("* Skipping altChunk of type docx ");
+				log.warn("Skipping altChunk of type docx ");
 				return clonePkg;
 			} catch (InvocationTargetException e) {
 				log.error(e.getMessage(), e);
-				log.warn("* Skipping altChunk of type docx ");
+				log.warn("Skipping altChunk of type docx ");
 				return clonePkg;
 			} 
 			

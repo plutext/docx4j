@@ -446,8 +446,16 @@ public class ContentTypeManager  {
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
 			// will catch the error and load it as a binary part instead.
-			log.warn("DefaultPart used for part '" + partName 
-					+ "' of content type '" + contentType + "'");
+			
+			if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLESWITHEFFECTS)) {
+				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");
+				
+			} else {
+				log.warn("DefaultPart used for part '" + partName 
+						+ "' of content type '" + contentType + "'");				
+			}
+			
+			
 			return CreateDefaultXmlPartObject(partName );
 			
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_FONT_DATA)) {
