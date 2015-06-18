@@ -523,13 +523,14 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				// Debug ... note that these figures 
 				// aren't necessarily accurate for EPS
 				displayImageInfo(info);
-			} catch (org.apache.xmlgraphics.image.loader.ImageException e) {
+			} catch (Exception e) {
 				
 				// Assume: The file format is not supported. No ImagePreloader found for /tmp/img55623.img
 				// There is no preloader for eg PDFs.
 				// (To use an image natively, we do need a preloader)
 				imagePreloaderFound = false;
                 log.warn(e.getMessage());
+                log.info(e.getMessage(),e);
 			}
 			
             if (imagePreloaderFound

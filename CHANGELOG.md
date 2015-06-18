@@ -2,6 +2,49 @@ CHANGELOG
 =========
 
 
+Version 3.2.2  minor release
+=============
+
+Release date
+------------
+
+nn June 2015
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/sgrachov
+
+Jason Harrop
+
+
+Notable Changes in Version 3.2.1
+---------------------------------
+
+tune down certain logging
+
+temp embedded font handling improvements (sgrachov, jharrop)
+
+PDF (FO via XSL): insert blank page to honour sectPr/w:type oddPage|evenPage set on the following section
+
+databinding/OpenDoPE: 
+
+- support w14 checkbox, w15:repeatingSection
+
+- property docx4j.model.datastorage.BindingHandler.Implementation (which defaults to BindingTraverserXSLT)
+ 
+- ODH minor performance optimization
+
+(X)HTML output: use ul|ol list items, if feature PP_HTML_COLLECT_LISTS is set and SdtToListSdtTagHandler is registered.
+
+xlsx4j
+------
+
+Variable replacement in xlsx4j
+
+
+
 
 Version 3.2.1  minor release
 =============
@@ -34,6 +77,8 @@ Improvements to diffx (still not production ready though)
 PresentationML/FontDataPart
 
 Expose Base.partName, so MergeDocx v1.6.6 can use this docx4j
+
+
 
 
 

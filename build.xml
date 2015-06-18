@@ -7,7 +7,8 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.2.1"/>
+	<property name="version" value="3.2.2-SNAPSHOT"/>
+	<property name="importxhtml-version" value="3.2.2"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
 
@@ -139,7 +140,7 @@
                 
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>  -->
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.10/commons-codec-1.10.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
 
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.5/xmlgraphics-commons-1.5.jar"/>
@@ -318,7 +319,7 @@
         <mkdir dir="${release.dir}"/>
         
         <!-- docx4j itself, as built by maven -->
-		<copy file="${m2Repository}/org/docx4j/docx4j/3.2.0/docx4j-3.2.0.jar" todir="${release.dir}"/>        
+		<copy file="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar" todir="${release.dir}"/>        
 		<copy file="CHANGELOG.md" todir="${release.dir}"/>        
     
     	<!-- dependencies -->
@@ -346,7 +347,7 @@
 
     	<!-- ImportXHTML -->
         <mkdir dir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/3.2.0/docx4j-ImportXHTML-3.2.0.jar" todir="${release.dir}/optional/ImportXHTML"/>        
+		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>        
         <copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="../../docx4j-ImportXHTML/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
@@ -377,7 +378,7 @@
         </condition>
     </target>
 
-    <target name="dist.NET" depends="checkForIKVM,dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
+    <target name="dist.NET" depends="checkForIKVM, dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
         <echo>Building docx4j.DLL</echo>
         
 <!--         
@@ -431,19 +432,19 @@
 	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
 	    	<path refid="FOP-stuff.classpath"/>      
 	    	<!--   	        
-			<pathelement location="${dist}/docx4j-${version}.jar" />
-			 -->
 	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
+			 -->
+			<pathelement location="${dist}/docx4j-${version}.jar" />
 	    </path>
         <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
                  
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
             <!--   For nuget, we don't snk; for Enterprise usage in GAC, we may
-            <arg value="-keyfile:Plutext.snk" />
              -->
+            <arg value="-keyfile:Plutext.snk" />
             <arg value="-version:${version}.0" /> 
-            <arg value="-reference:dll/slf4j-api.dll" />            
+            <arg value="-reference:dll/slf4j-api-1.7.5-snk.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
             -->            
