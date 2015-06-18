@@ -299,7 +299,7 @@ public abstract class Base {
 		// Finally, set part shortcut if there is one to set
 		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());
 		if (shortcutSet) {
-			log.info("shortcut was set");			
+			log.debug("shortcut was set");			
 		}
 		
 		return rel;

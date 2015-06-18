@@ -773,7 +773,7 @@ public class ContentTypeManager  {
 			
 			marshaller.marshal(buildTypes(), node);
 			
-			log.info("content types marshalled \n\n" );									
+			log.debug("content types marshalled \n\n" );									
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();
@@ -790,7 +790,7 @@ public class ContentTypeManager  {
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper() );
 			
-			log.info("marshalling " + this.getClass().getName() + " ..." );									
+			log.debug("marshalling " + this.getClass().getName() + " ..." );									
 			marshaller.marshal(buildTypes(), os);
 
 		} catch (JAXBException e) {

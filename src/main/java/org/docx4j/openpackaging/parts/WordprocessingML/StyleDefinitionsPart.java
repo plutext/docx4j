@@ -239,7 +239,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     		
     	} else {
     		
-    		log.info("Found existing style named " + ROOT_NAME);
+    		log.debug("Found existing style named " + ROOT_NAME);
     		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
     		
         	// TODO: could be a name collision; some other app using that name :-(
@@ -263,7 +263,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		DocDefaults docDefaults = this.getJaxbElement().getDocDefaults(); 		
 		
 		if (docDefaults == null) {
-			log.warn("No DocDefaults present");
+			log.info("No DocDefaults present");
 			// The only way this can happen is if the
 			// styles definition part is missing the docDefaults element
 			// (these are present in docs created from Word, and
@@ -282,7 +282,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Setup documentDefaultPPr
 		PPr documentDefaultPPr;
 		if (docDefaults.getPPrDefault() == null) {
-			log.warn("No PPrDefault present");
+			log.info("No PPrDefault present");
 			try {
 				documentDefaultPPr = (PPr) XmlUtils
 						.unmarshalString(pPrDefaultsString);
@@ -311,7 +311,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Setup documentDefaultRPr
 		RPr documentDefaultRPr;
 		if (docDefaults.getRPrDefault() == null) {
-			log.warn("No RPrDefault present");
+			log.info("No RPrDefault present");
 			try {
 				documentDefaultRPr = (RPr) XmlUtils
 						.unmarshalString(rPrDefaultsString);
@@ -347,7 +347,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		// Now point Normal at this
 		Style normal = getDefaultParagraphStyle();
 		if (normal==null) {
-			log.warn("No default paragraph style!!");
+			log.info("No default paragraph style!!");
 			normal = Context.getWmlObjectFactory().createStyle();
 			normal.setType("paragraph");
 			normal.setStyleId("Normal");
@@ -364,7 +364,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		based.setVal(ROOT_NAME);		
 		normal.setBasedOn(based);
 		
-		log.info("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
+		log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
 		
 		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
 		
@@ -447,7 +447,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     			if( s.getType().equals("paragraph")
     					&& s.getName()!=null
     					&& s.getName().getVal().equals("Default") ) {
-    				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+    				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
     				defaultParagraphStyle=s;
     				break;
     			}
@@ -458,7 +458,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
     			if( s.getType().equals("paragraph")
     					&& s.getStyleId().equals("style0") ) {
-    				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+    				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
     				defaultParagraphStyle=s;
     				break;
     			}
@@ -485,7 +485,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	
 		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
 			if( s.isDefault() && s.getType().equals(type)) {
-				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
 				return s;
 			}
 		}
@@ -541,13 +541,13 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		
 		Style rStyle = getStyleById(rStyleVal);
 		if (rStyle==null) {
-			log.warn("Couldn't find rStyle " + rStyleVal);
+			log.info("Couldn't find rStyle " + rStyleVal);
 			return null;
 		} else {
 			// We have a run level style.  Is there a linked pStyle?
 			Style.Link linkedStyle = rStyle.getLink();
 			if (linkedStyle==null) {
-				log.warn("No linked style for rStyle " + rStyleVal);							
+				log.info("No linked style for rStyle " + rStyleVal);							
 				return null;
 			} else {
 				String pStyleVal = linkedStyle.getVal();
@@ -555,7 +555,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 				Style pStyle = getStyleById(pStyleVal);
 				
 				if (pStyle==null) {
-					log.warn("Couldn't find linked pStyle " + pStyleVal 
+					log.info("Couldn't find linked pStyle " + pStyleVal 
 							+ " for rStyle " + rStyleVal);		
 				}
 				return pStyle;

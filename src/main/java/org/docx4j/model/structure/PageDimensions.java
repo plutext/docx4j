@@ -79,7 +79,7 @@ public class PageDimensions {
 	private void init(PgSz pgSz, PgMar pgMar) {
 		
 		if (pgSz == null) {
-			log.warn("No pgSz in this section; defaulting.");
+			log.info("No pgSz in this section; defaulting.");
 			this.pgSz = Context.getWmlObjectFactory().createSectPrPgSz();			
 			setPgSize();
 		} else {
@@ -87,7 +87,7 @@ public class PageDimensions {
 		}
 		
 		if (pgMar ==null) {
-			log.warn("No pgMar in this section; defaulting.");
+			log.info("No pgMar in this section; defaulting.");
 			this.pgMar = Context.getWmlObjectFactory().createSectPrPgMar();			
 			setMargins();
 		} else {
@@ -206,11 +206,11 @@ public class PageDimensions {
 	public void setPgSize() {
 		
 		String papersize= Docx4jProperties.getProperties().getProperty("docx4j.PageSize", "A4");
-		log.info("Using paper size: " + papersize);
+		log.debug("Using paper size: " + papersize);
 		
 		String landscapeString = Docx4jProperties.getProperties().getProperty("docx4j.PageOrientationLandscape", "false");
 		boolean landscape= Boolean.parseBoolean(landscapeString);
-		log.info("Landscape orientation: " + landscape);
+		log.debug("Landscape orientation: " + landscape);
 				
 		setPgSize(PageSizePaper.valueOf(papersize), landscape);		
 	}	

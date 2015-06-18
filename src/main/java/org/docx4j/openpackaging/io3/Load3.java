@@ -280,7 +280,7 @@ public class Load3 extends Load {
 		if (r.getType().equals(Namespaces.HYPERLINK)) {
 			// Could be Internal or External
 			// Example of Internal is w:drawing/wp:inline/wp:docPr/a:hlinkClick
-			log.info("Encountered (but not loading) hyperlink " + r.getTarget()  );				
+			log.debug("Encountered (but not loading) hyperlink " + r.getTarget()  );				
 			return;			
 		} else 
 			if (r.getTargetMode() == null
@@ -308,12 +308,12 @@ public class Load3 extends Load {
 					r.getType().equals( Namespaces.IMAGE ) ) {
 					// It could instead be, for example, of type hyperlink,
 					// and we don't want to try to fetch that
-				log.info("Loading external resource " + r.getTarget() 
+				log.debug("Loading external resource " + r.getTarget() 
 						   + " of type " + r.getType() );
 				BinaryPart bp = ExternalResourceUtils.getExternalResource(r.getTarget());
 				pkg.getExternalResources().put(bp.getExternalTarget(), bp);			
 			} else {				
-				log.info("Encountered (but not loading) external resource " + r.getTarget() 
+				log.debug("Encountered (but not loading) external resource " + r.getTarget() 
 						   + " of type " + r.getType() );				
 			}						
 			return;

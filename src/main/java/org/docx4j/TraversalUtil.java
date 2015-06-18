@@ -525,7 +525,7 @@ public class TraversalUtil {
 
 		 */
 
-		log.debug("Clearing " + o.getClass().getName() );
+		//log.debug("Clearing " + o.getClass().getName() );
 		
 		if (o instanceof org.docx4j.wml.ContentAccessor) {
 
@@ -544,7 +544,7 @@ public class TraversalUtil {
 
 		} else {
 			
-			log.warn("Don't know how to replaceChildren in " + o.getClass().getName() ); 
+			log.info("Don't know how to replaceChildren in " + o.getClass().getName() ); 
 
 			if (o instanceof org.w3c.dom.Node) {
 				log.warn(" IGNORED " + ((org.w3c.dom.Node) o).getNodeName());
