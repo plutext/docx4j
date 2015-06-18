@@ -150,7 +150,7 @@ public abstract class ConversionFeatures {
 		PP_COMMON_CREATE_SECTIONS,
 		PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH,
 		PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX // 3.0.2 helps a bit (not as much as for HTML)
-		//, PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM // experimental in 3.0.1
+		, PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM // experimental in 3.0.1
 	};
 
 	/** Default features, that get applied to a HTML conversion
