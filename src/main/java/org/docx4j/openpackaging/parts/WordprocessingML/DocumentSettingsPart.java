@@ -20,7 +20,15 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.poifs.crypt.CryptoFunctions;
+import org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
@@ -60,9 +68,15 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		setRelationshipType(Namespaces.SETTINGS);
 				
 	}
-		
+	
 	@Override
-	protected void setMceIgnorable() {
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+
+		/* 
+		 * In DocumentSettingsPart, the namespaces are actually used somewhere in the body,
+		 * so JAXB will declare them. 
+		 * Our job is simply to set the value of ignorable suitable.
+		 */
 
 		boolean needW14 = false;
 		if (this.jaxbElement.getDocId14()!=null) {
@@ -90,9 +104,10 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		if (needW15) {
 			mceIgnorableVal += " w15";
 		} 
-		log.warn(mceIgnorableVal);
+		log.debug(mceIgnorableVal);
 		
 		this.jaxbElement.setIgnorable(mceIgnorableVal);
+				
     }
 	
 	/**

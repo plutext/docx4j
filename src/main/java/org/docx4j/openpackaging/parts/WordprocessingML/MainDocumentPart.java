@@ -38,6 +38,7 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -117,13 +118,21 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	}	
 	
 	@Override
-	protected void setMceIgnorable() {
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 
-		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
-		this.jaxbElement.setIgnorable(
-				helper.getMceIgnorable(this.getJaxbElement().getBody()));
-	}
+//		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
+//		this.jaxbElement.setIgnorable(
+//				helper.getMceIgnorable(this.getJaxbElement().getBody()));
 		
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+    protected String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+	
     
     
 
