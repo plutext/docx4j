@@ -122,6 +122,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "r";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/digital-signature")) {
+    		return "mdssi";
+    	}    	
+    	
     	// DrawingML 
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
     		return "wp";
@@ -162,10 +166,31 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordml")) {
     		return "w14";
     	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas")) {
+    		return "wpc";
+    	}
 
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")) {
+    		return "wp14";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingGroup")) {
+    		return "wpg";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingInk")) {
+    		return "wpi";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingShape")) {
+    		return "wps";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2012/wordml")) {
     		return "w15";
     	}
+    	
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
     		return "aml";
@@ -300,6 +325,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
 
 		if (prefix.equals("rel"))
 			return "http://schemas.openxmlformats.org/package/2006/relationships";
+		
+		if (prefix.equals("mdssi"))
+			return "http://schemas.openxmlformats.org/package/2006/digital-signature";
+		
 
 		// DrawingML
 		if (prefix.equals("wp"))
@@ -334,7 +363,22 @@ public class NamespacePrefixMappings implements NamespaceContext {
 
 		if (prefix.equals("w14"))
 			return "http://schemas.microsoft.com/office/word/2010/wordml";
+		
+		if (prefix.equals("wpc"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas";
+		
+		if (prefix.equals("wp14"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+		
+		if (prefix.equals("wpg"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup";
+		
+		if (prefix.equals("wpi"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingInk";
 
+		if (prefix.equals("wps"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
+		
 		if (prefix.equals("w15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordml";
 		
