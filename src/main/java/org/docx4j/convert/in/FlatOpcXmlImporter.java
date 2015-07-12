@@ -479,10 +479,15 @@ public class FlatOpcXmlImporter  {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );										
+										
+				} else if (part.getClass().getName().equals("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart") ) {
 
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );										
+//										((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
 					
 				} else if (part instanceof JaxbPmlPart) {
 
