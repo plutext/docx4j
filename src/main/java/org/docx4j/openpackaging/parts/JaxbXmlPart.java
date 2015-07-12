@@ -30,19 +30,25 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
+import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.org.apache.xml.security.Init;
+import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -298,9 +304,11 @@ public abstract class JaxbXmlPart<E> extends Part {
     	
 		try {
 			Marshaller marshaller = jc.createMarshaller();
+//			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
+			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
-	    	setMceIgnorable();
+	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 			marshaller.marshal(jaxbElement, node);
 
 		} catch (Docx4JException e) {
@@ -344,7 +352,10 @@ public abstract class JaxbXmlPart<E> extends Part {
     	
 		try {
 			Marshaller marshaller = jc.createMarshaller();
-			marshaller.setProperty("jaxb.formatted.output", true);
+			if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
+				marshaller.setProperty("jaxb.formatted.output", true);
+			}
+//			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);			
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
@@ -354,8 +365,39 @@ public abstract class JaxbXmlPart<E> extends Part {
 //				log.error("No JAXBElement has been created for this part, yet!");
 //				throw new JAXBException("No JAXBElement has been created for this part, yet!");
 //			}
-	    	setMceIgnorable();
-			marshaller.marshal(jaxbElement, os);
+	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
+	    	
+	    	if (false)  
+	    	{
+	    		/* The below code removes superflouous namespaces.
+	    		 * 
+	    		 * We don't need it for signing, provided at signature verification,
+	    		 * the part is verified as saved (ie none of the namespaces are first removed.
+	    		 * 
+	    		 * But it does make things neater, at the cost of some extra processing.
+	    		 * 
+	    		 * So currently, I'm undecided as to whether to keep it or remove it.
+	    		 * 
+	    		 * If kept, it could be configurable in docx4j props, and/or it could be
+	    		 * configurable for signing.
+	    		 */
+	    		
+	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
+	    		
+	    		// Example of what to do for a namespace not known to JAXB
+	    		//doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
+	    		//		"xmlns:wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing");
+	    		
+	    		log.debug("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
+	    		
+	    		Init.init();
+	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
+	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+	    		IOUtils.write(bytes, os);
+	    		
+	    	} else {
+	    		marshaller.marshal(jaxbElement, os);
+	    	}
 
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
@@ -363,15 +405,22 @@ public abstract class JaxbXmlPart<E> extends Part {
 		} catch (JAXBException e) {
 			log.error(e.getMessage(), e);
 			throw e;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new JAXBException(e);  // avoid change to method signature
 		}
 	}
+    
+    protected String getMceIgnorable() {
+    	return null;
+    }
     
     /**
      * Where the mc:Ignorable attribute is present,
      * ensure its contents matches the ignorable namespaces
      * actually present.
      */
-    protected void setMceIgnorable() {
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
     /*	
     	ECMA-376, Office Open XML File Formats, Part 3 deals with "Markup Compatibility and Extensibility", 
     	and specifies mc:Ignorable.
