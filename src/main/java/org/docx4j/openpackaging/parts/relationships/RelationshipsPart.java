@@ -279,6 +279,24 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}		
 		return null;
 	}
+
+	/**
+	 * @param type
+	 * @return
+	 * @since 3.3.0
+	 */
+	public List<Relationship> getRelationshipsByType(String type) {
+		
+		List<Relationship> rels = new ArrayList<Relationship>();
+		
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			
+			if (r.getType().equals(type) ) {
+				rels.add(r);
+			}			
+		}		
+		return rels;
+	}
 	
 
 	public Part getPart(Relationship r ) {
