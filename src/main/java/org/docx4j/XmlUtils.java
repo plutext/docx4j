@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -851,6 +852,29 @@ public class XmlUtils {
 			} 
     }
 
+    /**
+     * @param n
+     * @param os
+     * @throws TransformerException 
+     * @throws IllegalArgumentException 
+     * @throws TransformerConfigurationException 
+     * 
+     * @Since 3.3.0
+     */
+    public static void w3CDomNodeToOutputStream(Node n, OutputStream os) throws TransformerConfigurationException, IllegalArgumentException, TransformerException {
+      	 
+		// Q: Why doesn't Java have a nice neat way of getting the XML as a String??   
+		// A: See comments at http://stackoverflow.com/questions/2325388/java-shortest-way-to-pretty-print-to-stdout-a-org-w3c-dom-document
+   	 		
+		StringWriter sw = new StringWriter();
+		Transformer serializer = transformerFactory.newTransformer();
+		serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+		serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
+		//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+		serializer.transform( new DOMSource(n) , new StreamResult(os) );				
+		//log.debug("serialised:" + n);
+    }
+    
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
 	public static org.w3c.dom.Document neww3cDomDocument() {
 		
