@@ -278,6 +278,14 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/markup-compatibility/2006")) {
     		return "mc";
     	}
+
+    	if (namespaceUri.equals("http://uri.etsi.org/01903/v1.3.2#")) {
+    		return "xd";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/digsig")) {
+    		return "dssi";
+    	}
     	
     	return suggestion;
     }
@@ -434,7 +442,13 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			return Namespaces.XML_EVENTS;
 		else if (prefix.equals("xs"))
 			return Namespaces.XML_SCHEMA;
+		
+		if (prefix.equals("xd"))
+			return "http://uri.etsi.org/01903/v1.3.2#";
 
+		if (prefix.equals("dssi"))
+			return "http://schemas.microsoft.com/office/2006/digsig";
+		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
 		if (result==null) {
