@@ -100,7 +100,28 @@ public class Docx4J {
 	/** Save the document as a flat xml document
 	 */
 	public static final int FLAG_SAVE_FLAT_XML = 2;
+	
 
+	/**
+	 * RC4 is weak, so don't use it unless you have to for backwards compatibility purposes
+	 * (ie the applications to be used for reading your docx don't support anything better). 
+	 * See further http://blogs.msdn.com/b/david_leblanc/archive/2010/04/16/don-t-use-office-rc4-encryption-really-just-don-t-do-it.aspx
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_BINARYRC4 = 3;
+			
+	/**
+	 * Standard encryption: This approach uses a binary EncryptionInfo structure. 
+	 * It uses Advanced Encryption Standard (AES) as an encryption algorithm and SHA-1 as a hashing algorithm.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_STANDARD = 4;
+	
+	/**
+	 * Agile encryption: This is used by Word 2010, it uses an XML EncryptionInfo structure.  
+	 * 
+	 * The encryption and hashing algorithms are specified in the structure and can be for any encryption supported on the host computer.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_AGILE = 5;
+	
 	/** inject the passed xml into the document
 	 *  if you don't do this step, then the xml in 
 	 *  the document will be used.
@@ -206,7 +227,8 @@ public class Docx4J {
 	
 	
 	/**
-	 *  Save a Docx Document to a File
+	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
 		
@@ -214,11 +236,38 @@ public class Docx4J {
 	}
 	
 	/**
-	 *  Save a Docx Document to an OutputStream
+	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
 		
 		wmlPackage.save(outStream, flags);
+		
+	}
+
+	/**
+	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outFile, flags, password);
+	}
+	
+	/**
+	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outStream, flags, password);
 		
 	}
 	

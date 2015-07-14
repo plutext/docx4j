@@ -39,9 +39,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.apache.poi.poifs.crypt.Decryptor;
-import org.apache.poi.poifs.crypt.EncryptionInfo;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
@@ -73,6 +70,11 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.org.apache.poi.poifs.crypt.Decryptor;
+import org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.docx4j.org.apache.poi.poifs.crypt.EncryptionMode;
+import org.docx4j.org.apache.poi.poifs.crypt.Encryptor;
+import org.docx4j.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -440,7 +442,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 * @return
 	 * @throws Docx4JException
 	 * 
-	 * @Since 3.1.0      
+	 * @Since 3.3.0      
 	 */
 	private static OpcPackage load(PackageIdentifier pkgIdentifier, final InputStream is, Filetype type, String password) throws Docx4JException {
 
@@ -473,28 +475,39 @@ public class OpcPackage extends Base implements PackageIdentifier {
 				POIFSFileSystem fs = new POIFSFileSystem(is);
 				EncryptionInfo info = new EncryptionInfo(fs); 
 		        Decryptor d = Decryptor.getInstance(info); 
-		        d.verifyPassword(password); 
+		        log.debug("Decrypting with " + d.getClass().getName());
+		        if (d.verifyPassword(password))   {
+	                 log.debug("Password works");
+	             } else {
+	 				throw new Docx4JException("Problem reading encrypted document: wrong password?");
+	             }
 		        
 				InputStream is2 = d.getDataStream(fs);
-				final LoadFromZipNG loader = new LoadFromZipNG();
-				return loader.get(is2);				
+				/* Note, this uses getCipher again:
+				 * 
+						at org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions.getCipher(CryptoFunctions.java:208)
+						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.initCipherForBlock(AgileDecryptor.java:305)
+						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.initCipherForBlock(AgileDecryptor.java:351)
+						at org.docx4j.org.apache.poi.poifs.crypt.ChunkedCipherInputStream.<init>(ChunkedCipherInputStream.java:56)
+						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.<init>(AgileDecryptor.java:343)
+						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.getDataStream(AgileDecryptor.java:287)
+						at org.docx4j.org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:95)
+					
+					but at this point you'll have a null key if verifyPassword failed! 
+						
+					 */
+				final ZipPartStore partLoader = new ZipPartStore(is2);
+				final Load3 loader = new Load3(partLoader);
+				OpcPackage opcPackage = loader.get();
 				
-			} catch (java.security.InvalidKeyException e) {
-		        /* Wrong password results in:
-		         * 
-			        Caused by: java.security.InvalidKeyException: No installed provider supports this key: (null)
-			    	at javax.crypto.Cipher.a(DashoA13*..)
-			    	at javax.crypto.Cipher.init(DashoA13*..)
-			    	at javax.crypto.Cipher.init(DashoA13*..)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getCipher(AgileDecryptor.java:216)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.access$200(AgileDecryptor.java:39)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor$ChunkedCipherInputStream.<init>(AgileDecryptor.java:127)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getDataStream(AgileDecryptor.java:103)
-			    	at org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:85)		        
-		         */
-				throw new Docx4JException("Problem reading compound file: wrong password?", e);
+				if (pkgIdentifier!=null) {
+					opcPackage.setName(pkgIdentifier.name());
+				}
+				
+				return opcPackage;
+				
 			} catch (Exception e) {
-				throw new Docx4JException("Problem reading compound file", e);
+				throw new Docx4JException("Problem reading encrypted document", e);
 			} finally {
 				new EventFinished(startEvent).publish();				
 			}
@@ -524,18 +537,6 @@ public class OpcPackage extends Base implements PackageIdentifier {
 		}
 	}	
 
-	// TODO: support for writing password protected files 
-	
-//			// Create the compound file
-//	        try {
-//	        	// Write the package to a stream
-//	        	
-//	        	// .. then encrypt
-//	        	
-//	        	// TODO.  See for example http://code.google.com/p/ooxmlcrypto/source/browse/trunk/OfficeCrypto/OfficeCrypto.cs
-//				
-
-	
 	/**
 	 *  Save this pkg to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
 	 *  or Docx4J.FLAG_SAVE_FLAT_XML
@@ -543,11 +544,24 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 *  @since 3.1.0
 	 */	
 	public void save(File outFile, int flags) throws Docx4JException {
+		save( outFile,  flags,  null);
+	}
+	
+	/**
+	 *  Save this pkg to a file. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE)
+	 *   
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+	 *  	 *  
+	 *  @since 3.3.0
+	 */	
+	public void save(File outFile, int flags, String password) throws Docx4JException {
 		
 		OutputStream outStream = null;
 		try {
 			outStream = new FileOutputStream(outFile);
-			save(outStream, flags);
+			save(outStream, flags, password);
 		} catch (FileNotFoundException e) {
 			throw new Docx4JException("Exception creating output stream: " + e.getMessage(), e);
 		}
@@ -572,7 +586,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 		save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);						
 	}
 
-	
+
 	/**
 	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
 	 *  or Docx4J.FLAG_SAVE_FLAT_XML
@@ -580,6 +594,20 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	 *  @since 3.1.0
 	 */	
 	public void save(OutputStream outStream, int flags) throws Docx4JException {
+		
+		save( outStream,  flags, null);
+	}
+	
+	/**
+	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+	 *  
+	 *  @since 3.3.0
+	 */	
+	public void save(OutputStream outStream, int flags, String password) throws Docx4JException {
 		
 		StartEvent startEvent = new StartEvent( this,  WellKnownProcessSteps.PKG_SAVE );
 		startEvent.publish();
@@ -597,8 +625,47 @@ public class OpcPackage extends Base implements PackageIdentifier {
 			} catch (JAXBException e) {
 				throw new Docx4JException("Exception marshalling document for output: " + e.getMessage(), e);
 			}
-		}
-		else {
+		} else if (
+				flags == Docx4J.FLAG_SAVE_ENCRYPTED_BINARYRC4
+				|| flags == Docx4J.FLAG_SAVE_ENCRYPTED_STANDARD 
+				|| flags == Docx4J.FLAG_SAVE_ENCRYPTED_AGILE 							
+				) {
+			
+			if (password==null || password.trim().length()==0) {
+				// If in Word you hit enter when asked to set the password, the docx will be saved unencrypted
+				throw new Docx4JException("Encryption requested, but a new password not provided.");
+			}
+
+			EncryptionInfo info = null;			
+			if (flags == Docx4J.FLAG_SAVE_ENCRYPTED_BINARYRC4) {
+				info = new EncryptionInfo(EncryptionMode.binaryRC4);
+				
+			} else if (flags == Docx4J.FLAG_SAVE_ENCRYPTED_STANDARD ) {
+				info = new EncryptionInfo(EncryptionMode.standard);	
+				
+			} else if (flags == Docx4J.FLAG_SAVE_ENCRYPTED_AGILE ) {
+				info = new EncryptionInfo(EncryptionMode.agile);
+				// EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile, CipherAlgorithm.aes192, HashAlgorithm.sha384, -1, -1, null);
+
+			}  			
+
+			Encryptor enc = info.getEncryptor();
+			enc.confirmPassword(password); 
+
+			try {
+				POIFSFileSystem fs = new POIFSFileSystem();
+				OutputStream os = enc.getDataStream(fs);	
+				
+				Save saver = new Save(this);
+				saver.save(os);
+				
+				fs.writeFilesystem(outStream);
+				
+			} catch (Exception e) {
+				throw new  Docx4JException("Error encrypting as OLE compound file", e);
+			}
+			
+		} else {
 //			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
 			Save saver = new Save(this);
 			saver.save(outStream);

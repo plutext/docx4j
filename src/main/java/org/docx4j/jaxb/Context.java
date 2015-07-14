@@ -60,7 +60,7 @@ public class Context {
 	private static JAXBContext jcXslFo;
 	public static JAXBContext jcSectionModel;
 
-	public static JAXBContext jcXmlDSig;
+	public static JAXBContext jcEncryption;
 
 	/** @since 3.0.1 */
 	public static JAXBContext jcMCE;
@@ -137,7 +137,8 @@ public class Context {
 					"org.docx4j.docProps.coverPageProps:" +
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
-					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
+					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing", classLoader );
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
@@ -156,7 +157,16 @@ public class Context {
 			
 			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
 			
-			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
+			try {
+				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
+				jcEncryption = JAXBContext.newInstance(
+						 "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
+						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
+						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
+						,classLoader );
+			} catch (javax.xml.bind.JAXBException e) {
+				log.error(e.getMessage());
+			}
 
 			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader );
 			
