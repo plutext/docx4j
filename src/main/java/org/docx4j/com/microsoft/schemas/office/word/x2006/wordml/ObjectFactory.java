@@ -1,5 +1,5 @@
 
-package org.docx4j.schemas.microsoft.com.office.word_2006.wordml;
+package org.docx4j.com.microsoft.schemas.office.word.x2006.wordml;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
@@ -10,7 +10,7 @@ import javax.xml.namespace.QName;
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the org.docx4j.schemas.microsoft.com.office.word_2006.wordml package. 
+ * generated in the org.docx4j.com.microsoft.schemas.office.word.x2006.wordml package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -27,7 +27,7 @@ public class ObjectFactory {
     private final static QName _VbaSuppData_QNAME = new QName("http://schemas.microsoft.com/office/word/2006/wordml", "vbaSuppData");
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.schemas.microsoft.com.office.word_2006.wordml
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.com.microsoft.schemas.office.word.x2006.wordml
      * 
      */
     public ObjectFactory() {

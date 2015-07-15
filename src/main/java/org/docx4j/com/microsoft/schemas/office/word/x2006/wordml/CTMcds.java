@@ -1,5 +1,5 @@
 
-package org.docx4j.schemas.microsoft.com.office.word_2006.wordml;
+package org.docx4j.com.microsoft.schemas.office.word.x2006.wordml;
 
 import java.util.ArrayList;
 import java.util.List;
