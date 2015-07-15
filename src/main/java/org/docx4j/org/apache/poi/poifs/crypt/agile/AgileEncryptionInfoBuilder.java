@@ -61,7 +61,7 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
     public void initialize(EncryptionInfo info, LittleEndianInput dis) throws IOException {
         this.info = info;
         
-        EncryptionDocument ed = parseDescriptor((InputStream)dis);
+        CTEncryption ed = parseDescriptor((InputStream)dis);
         header = new AgileEncryptionHeader(ed);
         verifier = new AgileEncryptionVerifier(ed);
         if (info.getVersionMajor() == EncryptionMode.agile.versionMajor
@@ -128,7 +128,7 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
         return info;
     }
     
-    protected static EncryptionDocument parseDescriptor(String descriptor) {
+    protected static CTEncryption parseDescriptor(String descriptor) {
 //        try {
 //            return EncryptionDocument.Factory.parse(descriptor);
 //        } catch (XmlException e) {
@@ -144,13 +144,11 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        EncryptionDocument ed = new EncryptionDocument();
-        ed.setEncryption(encryption);
-        return ed;
+        return encryption;
         
     }
 
-    protected static EncryptionDocument parseDescriptor(InputStream descriptor) {
+    protected static CTEncryption parseDescriptor(InputStream descriptor) {
 //        try {
 //            return EncryptionDocument.Factory.parse(descriptor);
 //        } catch (Exception e) {
@@ -173,9 +171,7 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        EncryptionDocument ed = new EncryptionDocument();
-        ed.setEncryption(encryption);
-        return ed;
+        return encryption;
         
     }
 }

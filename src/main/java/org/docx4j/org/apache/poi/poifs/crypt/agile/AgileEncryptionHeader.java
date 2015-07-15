@@ -23,6 +23,7 @@
 package org.docx4j.org.apache.poi.poifs.crypt.agile;
 
 import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTDataIntegrity;
+import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTEncryption;
 import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTKeyData;
 import org.docx4j.com.microsoft.schemas.office.x2006.encryption.STCipherChaining;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
@@ -38,10 +39,10 @@ public class AgileEncryptionHeader extends EncryptionHeader {
         this(AgileEncryptionInfoBuilder.parseDescriptor(descriptor));
     }
     
-    protected AgileEncryptionHeader(EncryptionDocument ed) {
+    protected AgileEncryptionHeader(CTEncryption ed) {
         CTKeyData keyData;
         try {
-            keyData = ed.getEncryption().getKeyData();
+            keyData = ed.getKeyData();
             if (keyData == null) {
                 throw new NullPointerException("keyData not set");
             }
@@ -85,7 +86,7 @@ public class AgileEncryptionHeader extends EncryptionHeader {
             throw new EncryptedDocumentException("Invalid salt length");
         }
         
-        CTDataIntegrity di = ed.getEncryption().getDataIntegrity();
+        CTDataIntegrity di = ed.getDataIntegrity();
         setEncryptedHmacKey(di.getEncryptedHmacKey());
         setEncryptedHmacValue(di.getEncryptedHmacValue());
     }

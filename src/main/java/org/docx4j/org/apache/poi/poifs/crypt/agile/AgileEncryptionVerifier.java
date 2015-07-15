@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTEncryption;
 import org.docx4j.com.microsoft.schemas.office.x2006.encryption.CTKeyEncryptor;
 import org.docx4j.com.microsoft.schemas.office.x2006.encryption.STCipherChaining;
 import org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate.CTCertificateKeyEncryptor;
@@ -57,8 +58,8 @@ public class AgileEncryptionVerifier extends EncryptionVerifier {
         this(AgileEncryptionInfoBuilder.parseDescriptor(descriptor));
     }
     
-    protected AgileEncryptionVerifier(EncryptionDocument ed) {
-        Iterator<CTKeyEncryptor> encList = ed.getEncryption().getKeyEncryptors().getKeyEncryptor().iterator();
+    protected AgileEncryptionVerifier(CTEncryption ed) {
+        Iterator<CTKeyEncryptor> encList = ed.getKeyEncryptors().getKeyEncryptor().iterator();
         CTPasswordKeyEncryptor keyData;
         try {
             keyData = encList.next().getEncryptedPasswordKey();

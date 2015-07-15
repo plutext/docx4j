@@ -296,12 +296,11 @@ public class AgileEncryptor extends Encryptor {
     private final String certificateUri = 
         HTTP_SCHEMAS_MICROSOFT_COM_OFFICE_2006_KEY_ENCRYPTOR_CERTIFICATE;
     
-    protected EncryptionDocument createEncryptionDocument() {
+    protected CTEncryption createEncryptionDocument() {
         AgileEncryptionVerifier ver = builder.getVerifier();
         AgileEncryptionHeader header = builder.getHeader(); 
         
-        EncryptionDocument ed = new EncryptionDocument();
-        CTEncryption edRoot = ed.addNewEncryption();
+        CTEncryption edRoot = new CTEncryption();
         
         CTKeyData keyData = new CTKeyData();
         edRoot.setKeyData(keyData);
@@ -387,7 +386,7 @@ public class AgileEncryptor extends Encryptor {
             certData.setCertVerifier(ace.certVerifier);
         }
         
-        return ed;
+        return edRoot;
     }
     
 //    protected void marshallEncryptionDocument(EncryptionDocument ed, LittleEndianByteArrayOutputStream os) {
@@ -414,7 +413,7 @@ public class AgileEncryptor extends Encryptor {
 //        }
 //    }
 
-    protected void marshallEncryptionDocument(EncryptionDocument ed, LittleEndianByteArrayOutputStream os) {
+    protected void marshallEncryptionDocument(CTEncryption ed, LittleEndianByteArrayOutputStream os) {
 
 		try {
 			Marshaller marshaller = Context.jcEncryption.createMarshaller();
@@ -448,7 +447,7 @@ public class AgileEncryptor extends Encryptor {
 			
 
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			marshaller.marshal(ed.getEncryption(), bos);
+			marshaller.marshal(ed, bos);
 			
 			os.write(bos.toByteArray());
 
@@ -484,8 +483,7 @@ public class AgileEncryptor extends Encryptor {
                 // Reserved (4 bytes): A value that MUST be 0x00000040
                 bos.writeInt(info.getEncryptionFlags());
 
-                EncryptionDocument ed = createEncryptionDocument();
-                marshallEncryptionDocument(ed, bos);
+                marshallEncryptionDocument(createEncryptionDocument(), bos);
             }
         };
         
