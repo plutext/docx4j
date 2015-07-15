@@ -1,3 +1,9 @@
+/* NOTICE: This file contains code licensed to the Apache Software Foundation (ASF) 
+ * under one or more contributor license agreements.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+
 /*
  *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
@@ -24,9 +30,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.poifs.crypt.CryptoFunctions;
-import org.apache.poi.poifs.crypt.HashAlgorithm;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -34,9 +37,19 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.org.apache.poi.EncryptedDocumentException;
+import org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions;
+import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTCompat;
 import org.docx4j.wml.CTCompatSetting;
+import org.docx4j.wml.CTDocProtect;
 import org.docx4j.wml.CTSettings;
+import org.docx4j.wml.STAlgClass;
+import org.docx4j.wml.STAlgType;
+import org.docx4j.wml.STCryptProv;
+import org.docx4j.wml.STDocProtect;
+//import org.docx4j.wml.STOnOff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,4 +179,232 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		theSetting.setVal(val);
 	}
 	
+	
+    /**
+     * Verifies the documentProtection tag inside settings.xml file 
+     * if the protection is enforced (w:enforcement="1") 
+     * and if the kind of protection equals to passed (STDocProtect.Enum editValue) 
+     *
+     * @return true if documentProtection is enforced with option readOnly
+     */
+    public boolean isEnforcedWith(STDocProtect editValue) {
+        CTDocProtect ctDocProtect = this.jaxbElement.getDocumentProtection();
+
+        if (ctDocProtect == null) {
+            return false;
+        }
+
+        return ctDocProtect.isEnforcement() && ctDocProtect.getEdit().equals(editValue);
+    }
+    
+
+    /**
+     * Enforces the protection with the option specified by passed editValue.<br/>
+     * <br/>
+     * In the documentProtection tag inside settings.xml file <br/>
+     * it sets the value of enforcement to "1" (w:enforcement="1") <br/>
+     * and the value of edit to the passed editValue (w:edit="[passed editValue]")<br/>
+     * <br/>
+     * sample snippet from settings.xml
+     * <pre>
+     *     &lt;w:settings  ... &gt;
+     *         &lt;w:documentProtection w:edit=&quot;[passed editValue]&quot; w:enforcement=&quot;1&quot;/&gt;
+     * </pre>
+     */
+    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue) {
+    	
+    	setEnforcementEditValue(editValue, null, null);
+    }
+
+    /**
+     * Enforces the protection with the option specified by passed editValue and password,
+     * using rsaFull (sha1) (like Word 2010).
+     * 
+     * WARNING: this functionality may give a false sense of security, since it only affects
+     * the behaviour of Word's user interface. A mischevious user could still edit the document
+     * in some other program, and subsequent users would *not* be warned it has been tampered with. 
+     *
+     * @param editValue the protection type
+     * @param password  the plaintext password, if null no password will be applied
+     * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
+     *                  if null, it will default default to sha1
+     */
+    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
+                                        String password) {
+
+    	setEnforcementEditValue(editValue, password, HashAlgorithm.sha1);
+    }
+    
+    /**
+     * Enforces the protection with the option specified by passed editValue, password, and 
+     * HashAlgorithm for the password.
+
+     *
+     * @param editValue the protection type
+     * @param password  the plaintext password, if null no password will be applied
+     * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
+     *                  if null, it will default default to sha1
+     */
+    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
+                                        String password, HashAlgorithm hashAlgo) {
+    	
+        safeGetDocumentProtection().setEnforcement(true);    	
+        safeGetDocumentProtection().setEdit(editValue);
+        
+        // Word 2010 doesn't enforce TRACKED_CHANGES,
+        // unless <w:trackRevisions/> is also set!
+        if (editValue==STDocProtect.TRACKED_CHANGES) {
+        	if (this.jaxbElement.getTrackRevisions()==null) {
+        		this.jaxbElement.setTrackRevisions(new BooleanDefaultTrue());
+        	}
+        }
+
+        if (password == null) {
+        	// unset
+            safeGetDocumentProtection().setCryptProviderType(null);
+            safeGetDocumentProtection().setCryptAlgorithmClass(null);
+            safeGetDocumentProtection().setCryptAlgorithmType(null);
+            safeGetDocumentProtection().setCryptAlgorithmSid(null);
+            safeGetDocumentProtection().setSalt(null);
+            safeGetDocumentProtection().setCryptSpinCount(null);
+            safeGetDocumentProtection().setHash(null);
+            
+            return;
+            
+        } else {
+            final STCryptProv providerType;
+            final int sid;
+            switch (hashAlgo) {
+                case md2:
+                    providerType = STCryptProv.RSA_FULL;
+                    sid = 1;
+                    break;
+                case md4:
+                    providerType = STCryptProv.RSA_FULL;
+                    sid = 2;
+                    break;
+                case md5:
+                    providerType = STCryptProv.RSA_FULL;
+                    sid = 3;
+                    break;
+                case sha1:
+                    providerType = STCryptProv.RSA_FULL;
+                    sid = 4;
+                    break;
+                case sha256:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 12;
+                    break;
+                case sha384:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 13;
+                    break;
+                case sha512:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 14;
+                    break;
+                default:
+                    throw new EncryptedDocumentException
+                            ("Hash algorithm '" + hashAlgo + "' is not supported for document write protection.");
+            }
+
+
+            SecureRandom random = new SecureRandom();
+            byte salt[] = random.generateSeed(16);
+
+            // Iterations specifies the number of times the hashing function shall be iteratively run (using each
+            // iteration's result as the input for the next iteration).
+            int spinCount = 100000;
+
+            if (hashAlgo == null) hashAlgo = HashAlgorithm.sha1;
+
+            String legacyHash = CryptoFunctions.xorHashPasswordReversed(password);
+            // Implementation Notes List:
+            // --> In this third stage, the reversed byte order legacy hash from the second stage shall
+            //     be converted to Unicode hex string representation
+            byte hash[] = CryptoFunctions.hashPassword(legacyHash, hashAlgo, salt, spinCount, false);
+
+            safeGetDocumentProtection().setSalt(salt);
+            safeGetDocumentProtection().setHash(hash);
+            safeGetDocumentProtection().setCryptSpinCount(BigInteger.valueOf(spinCount));
+            safeGetDocumentProtection().setCryptAlgorithmType(STAlgType.TYPE_ANY);
+            safeGetDocumentProtection().setCryptAlgorithmClass(STAlgClass.HASH);
+            safeGetDocumentProtection().setCryptProviderType(providerType);
+            safeGetDocumentProtection().setCryptAlgorithmSid(BigInteger.valueOf(sid));
+        }
+    }
+
+    /**
+     * Validates the existing password
+     *
+     * @param password
+     * @return true, only if password was set and equals, false otherwise
+     */
+    public boolean validateProtectionPassword(String password) {
+        BigInteger sid = safeGetDocumentProtection().getCryptAlgorithmSid();
+        byte hash[] = safeGetDocumentProtection().getHash();
+        byte salt[] = safeGetDocumentProtection().getSalt();
+        BigInteger spinCount = safeGetDocumentProtection().getCryptSpinCount();
+
+        if (sid == null || hash == null || salt == null || spinCount == null) return false;
+
+        HashAlgorithm hashAlgo;
+        switch (sid.intValue()) {
+            case 1:
+                hashAlgo = HashAlgorithm.md2;
+                break;
+            case 2:
+                hashAlgo = HashAlgorithm.md4;
+                break;
+            case 3:
+                hashAlgo = HashAlgorithm.md5;
+                break;
+            case 4:
+                hashAlgo = HashAlgorithm.sha1;
+                break;
+            case 12:
+                hashAlgo = HashAlgorithm.sha256;
+                break;
+            case 13:
+                hashAlgo = HashAlgorithm.sha384;
+                break;
+            case 14:
+                hashAlgo = HashAlgorithm.sha512;
+                break;
+            default:
+                return false;
+        }
+
+        String legacyHash = CryptoFunctions.xorHashPasswordReversed(password);
+        // Implementation Notes List:
+        // --> In this third stage, the reversed byte order legacy hash from the second stage shall
+        //     be converted to Unicode hex string representation
+        byte hash2[] = CryptoFunctions.hashPassword(legacyHash, hashAlgo, salt, spinCount.intValue(), false);
+
+        return Arrays.equals(hash, hash2);
+    }
+
+    /**
+     * Removes protection enforcement.<br/>
+     * In the documentProtection tag inside settings.xml file <br/>
+     * it sets the value of enforcement to "0" (w:enforcement="0") <br/>
+     */
+    public void removeEnforcement() {
+//        safeGetDocumentProtection().setEnforcement(STOnOff.X_0);
+        safeGetDocumentProtection().setEnforcement(false);    	
+    }	
+    
+    private CTDocProtect safeGetDocumentProtection() {
+    	
+    	if (this.getJaxbElement()==null) {
+    		this.jaxbElement=new CTSettings();
+    	}
+    	
+        CTDocProtect documentProtection = this.jaxbElement.getDocumentProtection();
+        if (documentProtection == null) {
+            documentProtection = Context.getWmlObjectFactory().createCTDocProtect();
+            this.jaxbElement.setDocumentProtection(documentProtection);
+        }
+        return this.jaxbElement.getDocumentProtection();
+    }    
 }
