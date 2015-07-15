@@ -10,9 +10,10 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.2.2-SNAPSHOT</version>
+	<version>3.3.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
+	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format as used in docx
@@ -270,6 +271,42 @@
 					</echos>
 				</configuration>
 			</plugin>
+<!-- 			
+		<plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <version>1.2.0</version>
+            <executions>
+                <execution>
+                    <id>default</id>
+                    <phase>verify</phase>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <printEqualFiles>false</printEqualFiles>
+                <failBuildInCaseOfDifferentContentConflict>true</failBuildInCaseOfDifferentContentConflict>
+                <failBuildInCaseOfEqualContentConflict>false</failBuildInCaseOfEqualContentConflict>
+                <failBuildInCaseOfConflict>false</failBuildInCaseOfConflict>
+                <checkCompileClasspath>true</checkCompileClasspath>
+                <checkRuntimeClasspath>true</checkRuntimeClasspath>
+                <checkTestClasspath>true</checkTestClasspath>
+                <skip>false</skip>
+                <quiet>false</quiet>
+                <preferLocal>true</preferLocal>
+                <useResultFile>true</useResultFile>
+                <resultFileMinClasspathCount>2</resultFileMinClasspathCount>
+                <resultFile>${project.build.directory}/duplicate-finder-result.xml</resultFile>
+                
+				<includeBootClasspath>true</includeBootClasspath>
+                <bootClasspathProperty>sun.boot.class.path</bootClasspathProperty>                
+
+            </configuration>
+        </plugin>
+ -->
+         			
 		</plugins>
     	<pluginManagement>
 			<plugins>
@@ -376,17 +413,17 @@
 		Dependency version 2.4.1 had some issues,
 		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
 		details.
-		
+
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-			<dependency>
-				<groupId>org.eclipse.persistence</groupId>
-				<artifactId>org.eclipse.persistence.moxy</artifactId>
-				<version>2.5.1</version>
-			</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.moxy</artifactId>
+			<version>2.5.1</version>
+		</dependency>
 		 -->
  
   <!--  Uncomment this if you are using Java 5.
@@ -436,11 +473,14 @@
 			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
 			<version>1.0.1</version>
 		</dependency>
+		
+		<!-- Not for 3.3 
 		<dependency>
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-xmldsig-core</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		 -->
 		
 		<!--  events -->
 		<dependency>
@@ -613,11 +653,14 @@
     <version>0.9.0</version>
 </dependency>
 
+<!-- Not for v3.3
+
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
 			<version>3.8</version>
 		</dependency>
+		 -->
 
 		<!-- Ensure both the Java 6 and RI interfaces are present,
 		     even if the user has just one.
@@ -751,6 +794,7 @@
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 		-->
+		
 
 	</dependencies>
 
