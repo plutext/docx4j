@@ -44,6 +44,7 @@ import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.docProps.custom.Properties;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.PackageIdentifier;
 import org.docx4j.events.PackageIdentifierTransient;
@@ -757,6 +758,50 @@ public class OpcPackage extends Base implements PackageIdentifier {
 //		}
 		
 		return docPropsCustomPart;
+	}
+	
+	private void addDocPropsCustomPart() {
+		
+		if (docPropsCustomPart==null) {
+			try {
+				docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
+				docPropsCustomPart.setJaxbElement(new Properties());
+
+				this.addTargetPart(docPropsCustomPart);
+				
+			} catch (InvalidFormatException e) {
+				//Won't happen, so don't throw
+				log.error(e.getMessage(), e);
+			}			
+		}
+	}
+
+	
+	/**
+	 * @since 3.3.0
+	 */	
+	public boolean getMarkAsFinal() {
+		
+		if (getDocPropsCustomPart()==null) return false;
+		
+		return docPropsCustomPart.getMarkAsFinal();
+		
+	}
+	
+	
+	/**
+	 * @since 3.3.0
+	 */	
+	public void setMarkAsFinal(boolean val) {
+
+		if (getDocPropsCustomPart()==null
+				&& val) // only create it if we're setting the value 
+		{
+			addDocPropsCustomPart();			
+		}
+		
+		getDocPropsCustomPart().setMarkAsFinal(val);
+		
 	}
 	
 	/**
