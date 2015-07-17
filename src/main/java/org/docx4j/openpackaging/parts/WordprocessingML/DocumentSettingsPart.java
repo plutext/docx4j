@@ -29,6 +29,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.List;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
@@ -179,6 +180,59 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		theSetting.setVal(val);
 	}
 	
+	/**
+	 * Restrict allowed formatting to specified styles.  You don't want to use this directly; 
+	 * use the method with the same name in WordprocessingMLPackage
+	 * 
+	 * @param allowedStyleNames
+	 * @param autoFormatOverride
+	 * @param styleLockTheme
+	 * @param styleLockQFSet
+	 * @since 3.3.0
+	 */
+	public void protectRestrictFormatting( boolean autoFormatOverride, boolean styleLockTheme, boolean styleLockQFSet,
+			String password, HashAlgorithm hashAlgo) throws Docx4JException {
+		
+		if (password==null && hashAlgo!=null) throw new IllegalArgumentException("Unless you set a password, a HashAlgorithm makes no sense");
+		
+		if (password!=null && hashAlgo==null) throw new IllegalArgumentException("If you set a password, a HashAlgorithm must be specified");
+		
+		/*
+			  <w:documentProtection w:formatting="1" w:enforcement="1"/>
+			  <w:autoFormatOverride/>
+			  <w:styleLockTheme/>
+			  <w:styleLockQFSet/>
+		 */
+
+        safeGetDocumentProtection().setFormatting(true);
+        safeGetDocumentProtection().setEnforcement(true);  
+        
+        if (autoFormatOverride) {
+        	if (this.jaxbElement.getAutoFormatOverride()==null) {
+        		this.jaxbElement.setAutoFormatOverride(new BooleanDefaultTrue());
+        	}        	
+        }
+
+        if (styleLockTheme) {
+        	if (this.jaxbElement.getStyleLockTheme()==null) {
+        		this.jaxbElement.setStyleLockTheme(new BooleanDefaultTrue());
+        	}        	
+        }
+
+        if (styleLockQFSet) {
+        	if (this.jaxbElement.getStyleLockQFSet()==null) {
+        		this.jaxbElement.setStyleLockQFSet(new BooleanDefaultTrue());
+        	}        	
+        }
+        
+        if (password!=null) {
+        	// Note, you could set formatting restrictions and track changes.
+        	// Formatting restrictions and read only wouldn't make sense.
+        	setProtectionPassword(password, hashAlgo);
+        }
+
+	}
+	
 	
     /**
      * Verifies the documentProtection tag inside settings.xml file 
@@ -186,6 +240,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * and if the kind of protection equals to passed (STDocProtect.Enum editValue) 
      *
      * @return true if documentProtection is enforced with option readOnly
+	 * @since 3.3.0
      */
     public boolean isEnforcedWith(STDocProtect editValue) {
         CTDocProtect ctDocProtect = this.jaxbElement.getDocumentProtection();
@@ -210,6 +265,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      *     &lt;w:settings  ... &gt;
      *         &lt;w:documentProtection w:edit=&quot;[passed editValue]&quot; w:enforcement=&quot;1&quot;/&gt;
      * </pre>
+	 * @since 3.3.0
      */
     public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue) {
     	
@@ -228,13 +284,14 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
      *                  if null, it will default default to sha1
+	 * @since 3.3.0
      */
     public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
                                         String password) {
 
     	setEnforcementEditValue(editValue, password, HashAlgorithm.sha1);
     }
-    
+
     /**
      * Enforces the protection with the option specified by passed editValue, password, and 
      * HashAlgorithm for the password.
@@ -244,6 +301,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
      *                  if null, it will default default to sha1
+	 * @since 3.3.0
      */
     public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
                                         String password, HashAlgorithm hashAlgo) {
@@ -258,6 +316,21 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
         		this.jaxbElement.setTrackRevisions(new BooleanDefaultTrue());
         	}
         }
+
+        setProtectionPassword(password, hashAlgo);
+    }
+    
+    /**
+     * Enforces the protection with the option specified by passed editValue, password, and 
+     * HashAlgorithm for the password.
+
+     *
+     * @param password  the plaintext password, if null no password will be applied
+     * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
+     *                  if null, it will default default to sha1
+	 * @since 3.3.0
+     */
+    private void setProtectionPassword(String password, HashAlgorithm hashAlgo) {
 
         if (password == null) {
         	// unset
@@ -339,6 +412,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      *
      * @param password
      * @return true, only if password was set and equals, false otherwise
+	 * @since 3.3.0
      */
     public boolean validateProtectionPassword(String password) {
         BigInteger sid = safeGetDocumentProtection().getCryptAlgorithmSid();
@@ -388,9 +462,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * Removes protection enforcement.<br/>
      * In the documentProtection tag inside settings.xml file <br/>
      * it sets the value of enforcement to "0" (w:enforcement="0") <br/>
+	 * @since 3.3.0
      */
     public void removeEnforcement() {
-//        safeGetDocumentProtection().setEnforcement(STOnOff.X_0);
         safeGetDocumentProtection().setEnforcement(false);    	
     }	
     

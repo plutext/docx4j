@@ -22,7 +22,12 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -37,6 +42,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.ResourceUtils;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
@@ -45,8 +51,12 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Style.BasedOn;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Styles.LatentStyles.LsdException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 
 public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
@@ -563,6 +573,175 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		}
 	}
 
+	
+	/**
+	 * Restrict allowed formatting to specified styles.  You don't want to use this directly; 
+	 * use the method with the same name in WordprocessingMLPackage
+	 * 
+	 * Formatting or styles that aren't allowed are not removed.
+	 * 
+	 * @param allowedStyleNames
+	 * @since 3.3.0
+	 */
+	public void protectRestrictFormatting(List<String> allowedStyleNames, boolean removedNotAllowedFormatting,
+			Set<String> stylesInUse) throws Docx4JException {
+
+		// Check preconditions
+		if (this.getJaxbElement()==null) 
+			throw new Docx4JException("StyleDefinitionsPart null content");
+		
+		if (this.getJaxbElement().getLatentStyles()==null) 
+			throw new Docx4JException("StyleDefinitionsPart content missing latentStyles");
+		
+		// Set  <w:latentStyles w:defLockedState="1" >
+		this.getJaxbElement().getLatentStyles().setDefLockedState(Boolean.TRUE);
+		
+		
+		//We need a map 
+		Map<String, LsdException> lsdExceptions = new HashMap<String, LsdException>(); 
+		for (LsdException lsdException : this.getJaxbElement().getLatentStyles().getLsdException()) {
+			
+			lsdExceptions.put(lsdException.getName(), lsdException);
+			
+			lsdException.setLocked(true); // lock each, until proven otherwise
+		}
+		
+		// Normal is always allowed
+		getDefaultParagraphStyle();
+		String defaultParagraphStyleName = "Normal";
+		if (defaultParagraphStyle!=null) {
+			defaultParagraphStyleName=defaultParagraphStyle.getName().getVal();
+		}
+		LsdException defaultLsd = lsdExceptions.get(defaultParagraphStyleName);
+		if (defaultLsd==null) {
+			log.warn("No lsdException for " + defaultParagraphStyleName);
+		} else {
+			defaultLsd.setLocked(false);
+		}
+		
+		// OK, now the others
+		for (String styleName : allowedStyleNames) {
+
+			LsdException lsdEx = lsdExceptions.get(styleName);
+			if (lsdEx==null) {
+				log.debug("No lsdException for " + styleName);
+			} else {
+				lsdEx.setLocked(false);
+			}			
+		}
+		
+		/*
+		 * In Word 2010, if you say you just want h2 and h3, that's what
+		 * you'll see in the Word UI.
+		 * 
+		 * But if h1 and Title are in use, the styles part will contain:
+		 * 
+			    <w:lsdException w:name="heading 1" w:locked="0" w:semiHidden="0" w:uiPriority="9" w:unhideWhenUsed="0" w:qFormat="1"/>
+			    <w:lsdException w:name="heading 2" w:locked="0" w:uiPriority="9" w:qFormat="1"/>
+			    <w:lsdException w:name="heading 3" w:locked="0" w:uiPriority="9" w:qFormat="1"/>
+			    :
+			    <w:lsdException w:name="Title" w:locked="0" w:semiHidden="0" w:uiPriority="10" w:unhideWhenUsed="0" w:qFormat="1"/>
+			    
+		 * ie h1 and Title also have w:locked="0"!  But w:semiHidden="0" and w:uiPriority="10"  
+		 * 
+		 * That's if you say remove yes.  If you say remove no, 
+		 * 
+			    <w:lsdException w:name="heading 1" w:locked="0" w:semiHidden="0" w:uiPriority="9" w:unhideWhenUsed="0" w:qFormat="1"/>
+			    <w:lsdException w:name="Title" w:locked="0" w:semiHidden="0" w:uiPriority="10" w:unhideWhenUsed="0" w:qFormat="1"/>	
+    
+    	 * What's the algorithm for setting w:uiPriority?
+    	 * 
+    	 * In either case, the style is kept, but set to locked.
+    	 * 
+    	 * So in either case, do the same thing here. Where we differ is whether we remove the style from the content or not.
+    	 */ 		
+		for (String styleName : stylesInUse) {
+
+			LsdException lsdEx = lsdExceptions.get(styleName);
+			if (lsdEx==null) {
+				log.debug("No lsdException for " + styleName);
+			} else {
+				lsdEx.setLocked(false);
+				lsdEx.setSemiHidden(false);
+			}			
+		}
+		
+		// Remove style definitions which aren't in the list;
+		// restricting formatting doesn't work if any styles are listed!
+		allowedStyleNames.add(defaultParagraphStyleName);
+		List<Style> deletions = new ArrayList<Style>(); 
+		for (Style s : this.getJaxbElement().getStyle()) {
+			
+			if (!allowedStyleNames.contains(s.getName().getVal())) {
+
+				if (stylesInUse.contains(s.getName().getVal())) {
+					
+					s.setLocked(new BooleanDefaultTrue());
+					
+				} else {				
+					deletions.add(s);
+				}
+			}
+		}
+		this.getJaxbElement().getStyle().removeAll(deletions);
+		
+	}
+	
+	private BiMap<String,String> styleIdToName; // = HashBiMap.create();
+	private BiMap<String,String> styleNameToId;
+	
+	/**
+	 * Given the ID of a style known in this part, return the corresponding style name.
+	 * 
+	 * @param id
+	 * @return
+	 * @since 3.3.0
+	 */
+	public String getNameForStyleID(String id) {
+		
+		if (styleIdToName==null) {
+			refreshNameIdBiMaps();
+		}
+		
+		return styleIdToName.get(id);
+	}
+	
+	/**
+	 * Given the name of a style known in this part, return the corresponding style ID.
+	 * 
+	 * @param name
+	 * @return
+	 * @since 3.3.0
+	 */
+	public String getIDForStyleName(String name) {
+
+		if (styleIdToName==null) {
+			refreshNameIdBiMaps();
+		}
+		
+		return styleNameToId.get(name);
+	}
+
+	/**
+	 * Refresh the style name - ID bimaps, based on styles currently defined in this part.
+	 * @since 3.3.0
+	 */
+	public void refreshNameIdBiMaps() {
+		
+		styleIdToName= HashBiMap.create();
+		for (Style s : this.getJaxbElement().getStyle()) {
+			if (s.getName()==null
+					|| s.getName().getVal()==null) {
+				log.info("style has no name!");
+			} else if (s.getStyleId()==null
+					|| s.getStyleId().trim().length()==0) {
+				log.info("style has no id!");				
+			} else {
+				styleIdToName.put(s.getStyleId(), s.getName().getVal());
+			}
+		}
+		styleNameToId = styleIdToName.inverse();
+	}
 	
     
 //	public static void main(String[] args) throws Exception {

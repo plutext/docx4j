@@ -166,6 +166,27 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	public DocumentSettingsPart getDocumentSettingsPart() {
 		return documentSettingsPart;
 	}
+	
+	/**
+	 * @param createIfAbsent
+	 * @return
+	 * @throws InvalidFormatException 
+	 * @since 3.3.0
+	 */
+	public DocumentSettingsPart getDocumentSettingsPart(boolean createIfAbsent) throws InvalidFormatException {
+		if (documentSettingsPart==null) {
+			if (createIfAbsent) {
+				documentSettingsPart = new DocumentSettingsPart();
+				this.addTargetPart(documentSettingsPart);	
+			} else {
+				return null;
+			}
+		} 
+		return documentSettingsPart;		
+	}
+	
+
+	
 
 
 	public EndnotesPart getEndNotesPart() {
