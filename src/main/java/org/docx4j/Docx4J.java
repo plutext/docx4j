@@ -225,6 +225,15 @@ public class Docx4J {
 		return (WordprocessingMLPackage)OpcPackage.load(pkgIdentifier, inStream);
 	}
 	
+	/**
+	 *  Save a Docx Document to a File. 
+	 *  
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile) throws Docx4JException {
+		
+		wmlPackage.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
+	}
 	
 	/**
 	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
@@ -233,6 +242,16 @@ public class Docx4J {
 	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
 		
 		wmlPackage.save(outFile, flags);
+	}
+
+	/**
+	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream) throws Docx4JException {
+		
+		wmlPackage.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
 	}
 	
 	/**
