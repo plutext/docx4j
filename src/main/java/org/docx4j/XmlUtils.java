@@ -1230,7 +1230,9 @@ public class XmlUtils {
 
     public static List<Node> xpath(Node node, String xpathExpression, NamespaceContext nsContext) {
     	
-        log.debug(w3CDomNodeToString(node));
+    	if (log.isDebugEnabled()) {
+        	log.debug(w3CDomNodeToString(node));
+    	}
         
         // create XPath
         XPath xpath = XPathFactoryUtil.newXPath();
