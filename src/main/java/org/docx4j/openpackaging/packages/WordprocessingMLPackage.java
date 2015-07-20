@@ -120,6 +120,12 @@ public class WordprocessingMLPackage extends OpcPackage {
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
 	
+	private ProtectDocument documentProtectionSettings = new ProtectDocument(this);
+	public ProtectDocument getProtectionSettings() {
+		return documentProtectionSettings;
+	}
+	
+	
 	private DocumentModel documentModel;
 	public DocumentModel getDocumentModel() {
 		if (documentModel==null) {
@@ -160,6 +166,8 @@ public class WordprocessingMLPackage extends OpcPackage {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
 	}
+	
+	
 	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
@@ -490,163 +498,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 	}
 
 	
-	/**
-	 * Restrict allowed formatting to specified styles, no password.
-	 * 
-	 * @param allowedStyleNames
-	 * @param removedNotAllowedFormatting whether existing usages of styles which aren't allowed are removed
-	 * @param autoFormatOverride
-	 * @param styleLockTheme
-	 * @param styleLockQFSet
-	 * @throws Docx4JException
-	 * @since 3.3.0
-	 */
-	public void protectRestrictFormatting(List<String> allowedStyleNames, boolean removedNotAllowedFormatting,
-			boolean autoFormatOverride, boolean styleLockTheme, boolean styleLockQFSet) throws Docx4JException {
-		
-		protectRestrictFormatting(allowedStyleNames, removedNotAllowedFormatting,
-				autoFormatOverride, styleLockTheme, styleLockQFSet,
-				null, null);
-	}
-
-	/**
-	 * Restrict allowed formatting to specified styles, password protected.
-	 * 
-	 * @param allowedStyleNames
-	 * @param removedNotAllowedFormatting whether existing usages of styles which aren't allowed are removed
-	 * @param autoFormatOverride
-	 * @param styleLockTheme
-	 * @param styleLockQFSet
-	 * @param password
-	 * @throws Docx4JException
-	 * @since 3.3.0
-	 */
-	public void protectRestrictFormatting(List<String> allowedStyleNames, boolean removedNotAllowedFormatting,
-			boolean autoFormatOverride, boolean styleLockTheme, boolean styleLockQFSet,
-			String password) throws Docx4JException {
-		
-		protectRestrictFormatting(allowedStyleNames, removedNotAllowedFormatting,
-				autoFormatOverride, styleLockTheme, styleLockQFSet,
-				password, HashAlgorithm.sha1);		
-	}
-	
-	/**
-	 * Restrict allowed formatting to specified styles. Specify password and HashAlgorithm 
-	 * 
-	 * @param allowedStyleNames
-	 * @param removedNotAllowedFormatting whether existing usages of styles which aren't allowed are removed
-	 * @param autoFormatOverride
-	 * @param styleLockTheme
-	 * @param styleLockQFSet
-	 * @param password
-	 * @param hashAlgo
-	 * @throws Docx4JException
-	 * @since 3.3.0
-	 */
-	public void protectRestrictFormatting(List<String> allowedStyleNames, boolean removedNotAllowedFormatting,
-			boolean autoFormatOverride, boolean styleLockTheme, boolean styleLockQFSet,
-			String password, HashAlgorithm hashAlgo) throws Docx4JException {
-
-		if (this.getMainDocumentPart()==null) 
-			throw new Docx4JException("No MainDocumentPart in this WordprocessingMLPackage");
-		
-		if (this.getMainDocumentPart().getStyleDefinitionsPart()==null)  
-			throw new Docx4JException("No StyleDefinitionsPart in this WordprocessingMLPackage");
-
-		Set<String> stylesInUse = this.getMainDocumentPart().getStylesInUse();
-		
-		// The styles part
-		StyleDefinitionsPart sdp = this.getMainDocumentPart().getStyleDefinitionsPart();
-		sdp.protectRestrictFormatting(allowedStyleNames, removedNotAllowedFormatting, stylesInUse);
-		
-			// TODO: do the same to stylesWithEffects.xml
-
-		
-		// The main document part (and other content parts)
-		if (removedNotAllowedFormatting) {
-			
-			List<TraversalUtilVisitor> visitors = new ArrayList<TraversalUtilVisitor>();	
-			visitors.add(new VisitorRemovePFormatting(sdp, allowedStyleNames));
-			visitors.add(new VisitorRemoveRFormatting(sdp, allowedStyleNames));
-			visitors.add(new VisitorRemoveTableFormatting(sdp, allowedStyleNames));
-			
-			CompoundTraversalUtilVisitorCallback compound = new CompoundTraversalUtilVisitorCallback(visitors);
-			
-			for( Part p : this.getParts().getParts().values()) {
-				
-				if (p instanceof ContentAccessor) {
-					compound.walkJAXBElements(((ContentAccessor)p).getContent());								
-				}
-			}
-			
-		}
-		
-		// The document settings part
-		DocumentSettingsPart documentSettingsPart = this.getMainDocumentPart().getDocumentSettingsPart(true);
-		documentSettingsPart.protectRestrictFormatting(autoFormatOverride, styleLockTheme, styleLockQFSet, password, hashAlgo);
-	}
-	
-	private static class VisitorRemovePFormatting extends TraversalUtilVisitor<P> {
-		
-		StyleDefinitionsPart sdp;		
-		List<String> allowedStyleNames;
-		
-		VisitorRemovePFormatting(StyleDefinitionsPart sdp, List<String> allowedStyleNames) {
-			this.sdp = sdp;
-			this.allowedStyleNames = allowedStyleNames;
-		}
-		
-		@Override
-		public void apply(P p, Object parent, List<Object> siblings) {
-			
-			if (p.getPPr()!=null && p.getPPr().getPStyle()!=null && 
-					!allowedStyleNames.contains(sdp.getNameForStyleID(p.getPPr().getPStyle().getVal()))) {
-				p.getPPr().setPStyle(null);
-			}
-		}	
-	}	
-
-	private static class VisitorRemoveRFormatting extends TraversalUtilVisitor<R> {
-		
-		StyleDefinitionsPart sdp;		
-		List<String> allowedStyleNames;
-		
-		VisitorRemoveRFormatting(StyleDefinitionsPart sdp, List<String> allowedStyleNames) {
-			this.sdp = sdp;
-			this.allowedStyleNames = allowedStyleNames;
-		}
-		
-		@Override
-		public void apply(R r, Object parent, List<Object> siblings) {
-			
-			if (r.getRPr()!=null && r.getRPr().getRStyle()!=null && 
-					!allowedStyleNames.contains(sdp.getNameForStyleID(r.getRPr().getRStyle().getVal()))) {
-				r.getRPr().setRStyle(null);
-			}
-		}	
-	}	
-
-	private static class VisitorRemoveTableFormatting extends TraversalUtilVisitor<Tbl> {
-		
-		StyleDefinitionsPart sdp;		
-		List<String> allowedStyleNames;
-		
-		VisitorRemoveTableFormatting(StyleDefinitionsPart sdp, List<String> allowedStyleNames) {
-			this.sdp = sdp;
-			this.allowedStyleNames = allowedStyleNames;
-		}
-		
-		@Override
-		public void apply(Tbl table, Object parent, List<Object> siblings) {
-			
-			if (table.getTblPr()!=null && table.getTblPr().getTblStyle()!=null && 
-					!allowedStyleNames.contains(sdp.getNameForStyleID(table.getTblPr().getTblStyle().getVal()))) {
-				table.getTblPr().setTblStyle(null);
-			}
-		}	
-	}	
-	
-	
 	@Override
 	protected void finalize() throws Throwable {
 		try {
@@ -696,7 +547,5 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		
 	}
-
-
 	
 }

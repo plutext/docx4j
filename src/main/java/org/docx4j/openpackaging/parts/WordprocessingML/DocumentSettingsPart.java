@@ -242,7 +242,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * @return true if documentProtection is enforced with option readOnly
 	 * @since 3.3.0
      */
-    public boolean isEnforcedWith(STDocProtect editValue) {
+    public boolean isRestrictEditingWith(STDocProtect editValue) {
         CTDocProtect ctDocProtect = this.jaxbElement.getDocumentProtection();
 
         if (ctDocProtect == null) {
@@ -252,45 +252,6 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
         return ctDocProtect.isEnforcement() && ctDocProtect.getEdit().equals(editValue);
     }
     
-
-    /**
-     * Enforces the protection with the option specified by passed editValue.<br/>
-     * <br/>
-     * In the documentProtection tag inside settings.xml file <br/>
-     * it sets the value of enforcement to "1" (w:enforcement="1") <br/>
-     * and the value of edit to the passed editValue (w:edit="[passed editValue]")<br/>
-     * <br/>
-     * sample snippet from settings.xml
-     * <pre>
-     *     &lt;w:settings  ... &gt;
-     *         &lt;w:documentProtection w:edit=&quot;[passed editValue]&quot; w:enforcement=&quot;1&quot;/&gt;
-     * </pre>
-	 * @since 3.3.0
-     */
-    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue) {
-    	
-    	setEnforcementEditValue(editValue, null, null);
-    }
-
-    /**
-     * Enforces the protection with the option specified by passed editValue and password,
-     * using rsaFull (sha1) (like Word 2010).
-     * 
-     * WARNING: this functionality may give a false sense of security, since it only affects
-     * the behaviour of Word's user interface. A mischevious user could still edit the document
-     * in some other program, and subsequent users would *not* be warned it has been tampered with. 
-     *
-     * @param editValue the protection type
-     * @param password  the plaintext password, if null no password will be applied
-     * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
-     *                  if null, it will default default to sha1
-	 * @since 3.3.0
-     */
-    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
-                                        String password) {
-
-    	setEnforcementEditValue(editValue, password, HashAlgorithm.sha1);
-    }
 
     /**
      * Enforces the protection with the option specified by passed editValue, password, and 
@@ -303,7 +264,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      *                  if null, it will default default to sha1
 	 * @since 3.3.0
      */
-    public void setEnforcementEditValue(org.docx4j.wml.STDocProtect editValue,
+    public void protectRestrictEditing(org.docx4j.wml.STDocProtect editValue,
                                         String password, HashAlgorithm hashAlgo) {
     	
         safeGetDocumentProtection().setEnforcement(true);    	

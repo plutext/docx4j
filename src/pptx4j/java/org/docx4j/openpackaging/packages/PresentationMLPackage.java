@@ -89,6 +89,11 @@ public class PresentationMLPackage  extends OpcPackage {
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
 	
+	private ProtectPresentation presentationProtectionSettings = new ProtectPresentation(this);
+	public ProtectPresentation getProtectionSettings() {
+		return presentationProtectionSettings;
+	}	
+	
 	
 	/**
 	 * Convenience method to create a PresentationMLPackage

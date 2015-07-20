@@ -85,7 +85,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Jason Harrop
  */
-public class OpcPackage extends Base implements PackageIdentifier {
+public abstract class OpcPackage extends Base implements PackageIdentifier {
 
 	private static Logger log = LoggerFactory.getLogger(OpcPackage.class);
 
@@ -505,6 +505,8 @@ public class OpcPackage extends Base implements PackageIdentifier {
 					opcPackage.setName(pkgIdentifier.name());
 				}
 				
+//				opcPackage.getProtectionSettings().setWasEncrypted(true);
+				
 				return opcPackage;
 				
 			} catch (Exception e) {
@@ -760,7 +762,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 		return docPropsCustomPart;
 	}
 	
-	private void addDocPropsCustomPart() {
+	public void addDocPropsCustomPart() {
 		
 		if (docPropsCustomPart==null) {
 			try {
@@ -777,32 +779,7 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	}
 
 	
-	/**
-	 * @since 3.3.0
-	 */	
-	public boolean getMarkAsFinal() {
-		
-		if (getDocPropsCustomPart()==null) return false;
-		
-		return docPropsCustomPart.getMarkAsFinal();
-		
-	}
-	
-	
-	/**
-	 * @since 3.3.0
-	 */	
-	public void setMarkAsFinal(boolean val) {
 
-		if (getDocPropsCustomPart()==null
-				&& val) // only create it if we're setting the value 
-		{
-			addDocPropsCustomPart();			
-		}
-		
-		getDocPropsCustomPart().setMarkAsFinal(val);
-		
-	}
 	
 	/**
 	 * @since 3.0.0
@@ -881,5 +858,5 @@ public class OpcPackage extends Base implements PackageIdentifier {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+		
 }
