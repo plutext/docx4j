@@ -18,7 +18,7 @@ public class ProtectPresentation extends ProtectionSettings {
 	protected static Logger log = LoggerFactory.getLogger(ProtectPresentation.class);
 	
 	
-	public ProtectPresentation(OpcPackage pkg) {
+	public ProtectPresentation(PresentationMLPackage pkg) {
 		super(pkg);
 	}
 	

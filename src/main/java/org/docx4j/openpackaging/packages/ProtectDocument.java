@@ -32,7 +32,7 @@ public class ProtectDocument extends ProtectionSettings {
 	protected static Logger log = LoggerFactory.getLogger(ProtectDocument.class);
 	
 	
-	public ProtectDocument(OpcPackage pkg) {
+	public ProtectDocument(WordprocessingMLPackage pkg) {
 		super(pkg);
 	}
 	
