@@ -27,15 +27,16 @@ import java.util.Arrays;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
-import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
-import org.docx4j.wml.STCryptProv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xlsx4j.exceptions.Xlsx4jException;
 import org.xlsx4j.sml.CTSheetProtection;
+import org.xlsx4j.sml.CTWorkbookProtection;
+import org.xlsx4j.sml.Workbook;
 import org.xlsx4j.sml.Worksheet;
 
 /**
@@ -46,13 +47,169 @@ public class ProtectWorkbook extends ProtectionSettings {
 	protected static Logger log = LoggerFactory.getLogger(ProtectWorkbook.class);
 	
 	
-	public ProtectWorkbook(OpcPackage pkg) {
+	public ProtectWorkbook(SpreadsheetMLPackage pkg) {
 		super(pkg);
 	}
 
+	/**
+	 * Remove protection from this package.
+	 * 
+	 * @throws Xlsx4jException
+	 */
+	public void removeWorkbookProtection() throws Xlsx4jException {
+
+		WorkbookPart workbookPart = ((SpreadsheetMLPackage)this.pkg).getWorkbookPart();
+		if (workbookPart==null) throw new Xlsx4jException("No WorkbookPart in this pkg!");
+		
+		Workbook workbook = workbookPart.getJaxbElement();
+		if (workbook==null) throw new Xlsx4jException("WorkbookPart not initialised with Workbook content");
+		
+		workbook.setWorkbookProtection(null);
+
+	}
+	/**
+     * Enforce Workbook Protection, with the specified password, 
+     * using sha512 (like Excel 2013).
+     * 
+	 * @param password  if null, no password will be used
+	 * @param lockRevision
+	 * @param lockStructure
+	 * @param lockWindows
+	 * @throws Xlsx4jException
+	 */
+	public void setWorkbookProtection(String password, boolean lockRevision, boolean lockStructure, boolean lockWindows) throws Xlsx4jException {
+		
+		setWorkbookProtection(password, HashAlgorithm.sha512, lockRevision, lockStructure, lockWindows);
+	}
+
+	/**
+     * Enforce Workbook Protection, with the specified password, 
+     * using hashAlgo.
+     * 
+	 * @param password if null, no password will be used
+	 * @param hashAlgo
+	 * @param lockRevision
+	 * @param lockStructure
+	 * @param lockWindows
+	 * @throws Xlsx4jException
+	 */
+	public void setWorkbookProtection(String password, HashAlgorithm hashAlgo, 
+			boolean lockRevision, boolean lockStructure, boolean lockWindows) throws Xlsx4jException {
+
+		WorkbookPart workbookPart = ((SpreadsheetMLPackage)this.pkg).getWorkbookPart();
+		if (workbookPart==null) throw new Xlsx4jException("No WorkbookPart in this pkg!");
+		
+		Workbook workbook = workbookPart.getJaxbElement();
+		if (workbook==null) throw new Xlsx4jException("WorkbookPart not initialised with Workbook content");
+		
+		CTWorkbookProtection workbookProtection = workbook.getWorkbookProtection();
+		if (workbookProtection==null) {
+			workbookProtection = new CTWorkbookProtection();
+			workbook.setWorkbookProtection(workbookProtection);
+		}
+		
+		workbookProtection.setLockRevision(lockRevision);
+		workbookProtection.setLockStructure(lockStructure);
+		workbookProtection.setLockWindows(lockWindows);
+
+		
+		// known initial state
+		workbookProtection.setWorkbookAlgorithmName(null);
+		workbookProtection.setWorkbookSaltValue(null);
+		workbookProtection.setWorkbookSpinCount(null);
+		workbookProtection.setWorkbookHashValue(null);
+		workbookProtection.setWorkbookPassword(null);
+		
+        if (hashAlgo == null) hashAlgo = HashAlgorithm.sha512;  // Excel 2013
+		
+        if (password == null) {
+        	        	
+            return; // we've already done what we need to do
+            
+        } else if (hashAlgo == HashAlgorithm.none) {
+        
+    		int hash = CryptoFunctions.createXorVerifier1(password);
+    		workbookProtection.setWorkbookPassword(
+    	    		DatatypeConverter.parseHexBinary(Integer.toHexString(hash))
+    	    		);	
+    	    return;
+        } 
+            
+        SecureRandom random = new SecureRandom();
+        byte salt[] = random.generateSeed(16);
+
+        int spinCount = 100000;
+        
+        byte hash[] = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount, false);
+		
+        // be sure to use the format at https://msdn.microsoft.com/en-us/library/dd920692(v=office.12).aspx
+        if (hashAlgo.jceId.startsWith("SHA")) {
+        	workbookProtection.setWorkbookAlgorithmName(hashAlgo.jceId);            	
+        } else {
+        	workbookProtection.setWorkbookAlgorithmName(hashAlgo.ecmaString);  
+        }
+        
+        workbookProtection.setWorkbookSaltValue(salt);
+        workbookProtection.setWorkbookSpinCount((long) spinCount);
+        workbookProtection.setWorkbookHashValue(hash);
+	}
+	
+    /**
+     * Check the password is correct?
+     * 
+     * @param password
+     * @return
+     * @throws Xlsx4jException
+     */
+    public boolean validateWorkbookProtectionPassword(String password) throws Xlsx4jException {
+
+        if (password == null) return false;
+    	
+		WorkbookPart workbookPart = ((SpreadsheetMLPackage)this.pkg).getWorkbookPart();
+		if (workbookPart==null) throw new Xlsx4jException("No WorkbookPart in this pkg!");
+		
+		Workbook workbook = workbookPart.getJaxbElement();
+		if (workbook==null) throw new Xlsx4jException("WorkbookPart not initialised with Workbook content");
+		
+		CTWorkbookProtection workbookProtection = workbook.getWorkbookProtection();
+		if (workbookProtection==null) {
+			return false;
+		}
+    	
+        
+        byte[] xorHashVal = workbookProtection.getWorkbookPassword();
+        
+
+        if (xorHashVal != null) {
+        	
+        	// DatatypeConverter.parseHexBinary(Integer.toHexString(hash))
+        	int hash1 = Integer.parseInt(
+        			DatatypeConverter.printHexBinary(xorHashVal), 16);
+        	
+            int hash2 = CryptoFunctions.createXorVerifier1(password);
+            return hash1 == hash2;
+            
+        } else {
+
+            byte[] hash1 = workbookProtection.getWorkbookHashValue();
+            byte[] salt = workbookProtection.getWorkbookSaltValue();
+            String algoName = workbookProtection.getWorkbookAlgorithmName();
+            Long spinCount =workbookProtection.getWorkbookSpinCount();
+        	
+            if (hash1 == null || algoName == null || salt == null || spinCount == null) {
+                return false;
+            }
+            
+            HashAlgorithm hashAlgo = HashAlgorithm.fromString(algoName);         
+            byte hash2[] = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount.intValue(), false);
+            return Arrays.equals(hash1, hash2);
+        }
+    }
+	
+	
 	
 	/**
-	 * Use this method to get the CTSheetProtection object, so you can set its
+	 * Use this method to get the CTSheetProtection object for the specified worksheet, so you can set its
 	 * parameters as you see fit. 
 	 * 
 	 * @param worksheetPart
@@ -136,43 +293,6 @@ public class ProtectWorkbook extends ProtectionSettings {
     	    		);	
     	    return;
         } 
-        
-        final STCryptProv providerType;
-        final int sid;
-        switch (hashAlgo) {
-            case md2:
-                providerType = STCryptProv.RSA_FULL;
-                sid = 1;
-                break;
-            case md4:
-                providerType = STCryptProv.RSA_FULL;
-                sid = 2;
-                break;
-            case md5:
-                providerType = STCryptProv.RSA_FULL;
-                sid = 3;
-                break;
-            case sha1:
-                providerType = STCryptProv.RSA_FULL;
-                sid = 4;
-                break;
-            case sha256:
-                providerType = STCryptProv.RSA_AES;
-                sid = 12;
-                break;
-            case sha384:
-                providerType = STCryptProv.RSA_AES;
-                sid = 13;
-                break;
-            case sha512:
-                providerType = STCryptProv.RSA_AES;
-                sid = 14;
-                break;
-            default:
-                throw new EncryptedDocumentException
-                        ("Hash algorithm '" + hashAlgo + "' is not supported for document write protection.");
-        }
-
             
         SecureRandom random = new SecureRandom();
         byte salt[] = random.generateSeed(16);

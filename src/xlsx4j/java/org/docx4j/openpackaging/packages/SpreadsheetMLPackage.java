@@ -78,6 +78,12 @@ public class SpreadsheetMLPackage extends OpcPackage {
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
 	
+	private ProtectWorkbook workbookProtectionSettings = new ProtectWorkbook(this);
+	public ProtectWorkbook getProtectionSettings() {
+		return workbookProtectionSettings;
+	}	
+	
+	
 	// Workbook part
 	WorkbookPart wb;
 	public WorkbookPart getWorkbookPart() {
