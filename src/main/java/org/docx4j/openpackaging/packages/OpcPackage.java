@@ -43,6 +43,7 @@ import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.docProps.core.CoreProperties;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.docProps.custom.Properties;
 import org.docx4j.events.EventFinished;
@@ -638,6 +639,10 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				// If in Word you hit enter when asked to set the password, the docx will be saved unencrypted
 				throw new Docx4JException("Encryption requested, but a new password not provided.");
 			}
+			
+			// We could set DocSecurity=1, but it seems completely irrelevant,
+			// so why bother, until proven that some Microsoft software somewhere uses it?
+			// If/when we do so, use ProtectionSettings.setDocSecurity
 
 			EncryptionInfo info = null;			
 			if (flags == Docx4J.FLAG_SAVE_ENCRYPTED_BINARYRC4) {
@@ -695,69 +700,58 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		}
 	}
 
+	/**
+	 * Get the DocPropsCorePart, if any.
+	 * 
+	 * @return
+	 */
 	public DocPropsCorePart getDocPropsCorePart() {
-//		if (docPropsCorePart==null) {
-//			try {
-//				docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
-//				this.addTargetPart(docPropsCorePart);
-//				
-//				org.docx4j.docProps.core.ObjectFactory factory = 
-//					new org.docx4j.docProps.core.ObjectFactory();				
-//				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJaxbElement((Object)properties);
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJAXBContext(Context.jcDocPropsCore);						
-//			} catch (InvalidFormatException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}			
-//		}
 		return docPropsCorePart;
 	}
 
+	public void addDocPropsCorePart() {
+		if (docPropsCorePart==null) {
+			try {
+				docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
+				this.addTargetPart(docPropsCorePart);
+				
+				docPropsCorePart.setJaxbElement(new CoreProperties());
+			} catch (InvalidFormatException e) {
+				//Won't happen, so don't throw
+				log.error(e.getMessage(), e);
+			}			
+		}
+	}
+	
+	/**
+	 * Get the DocPropsExtendedPart, if any.
+	 * 
+	 * @return
+	 */
 	public DocPropsExtendedPart getDocPropsExtendedPart() {
-//		if (docPropsExtendedPart==null) {
-//			try {
-//				docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
-//				this.addTargetPart(docPropsExtendedPart);
-//				
-//				org.docx4j.docProps.extended.ObjectFactory factory = 
-//					new org.docx4j.docProps.extended.ObjectFactory();				
-//				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJaxbElement((Object)properties);
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJAXBContext(Context.jcDocPropsExtended);										
-//			} catch (InvalidFormatException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}			
-//		}
 		return docPropsExtendedPart;
 	}
 
+	public void addDocPropsExtendedPart() {
+		if (docPropsExtendedPart==null) {
+			try {
+				docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
+				this.addTargetPart(docPropsExtendedPart);
+				
+				docPropsExtendedPart.setJaxbElement(new org.docx4j.docProps.extended.Properties());
+			} catch (InvalidFormatException e) {
+				//Won't happen, so don't throw
+				log.error(e.getMessage(), e);
+			}			
+		}
+	}
+	
 	/**
 	 * Get DocPropsCustomPart, if any.
 	 * 
 	 * @return
 	 */
 	public DocPropsCustomPart getDocPropsCustomPart() {
-		
-//		if (docPropsCustomPart==null) {
-//			try {
-//				docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
-//				this.addTargetPart(docPropsCustomPart);
-//				
-//				org.docx4j.docProps.custom.ObjectFactory factory = 
-//					new org.docx4j.docProps.custom.ObjectFactory();
-//				
-//				org.docx4j.docProps.custom.Properties properties = factory.createProperties();
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJaxbElement((Object)properties);
-//
-//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJAXBContext(Context.jcDocPropsCustom);										
-//				
-//			} catch (InvalidFormatException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}			
-//		}
 		
 		return docPropsCustomPart;
 	}
