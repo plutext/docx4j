@@ -261,7 +261,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      * @param editValue the protection type
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
-     *                  if null, it will default default to sha1
+     *                  if null, it will default default to sha512 (like Word 2013)
 	 * @since 3.3.0
      */
     public void protectRestrictEditing(org.docx4j.wml.STDocProtect editValue,
@@ -288,7 +288,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
      *
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
-     *                  if null, it will default default to sha1
+     *                  if null, it will default default to sha512 (like Word 2013)
 	 * @since 3.3.0
      */
     private void setProtectionPassword(String password, HashAlgorithm hashAlgo) {
@@ -350,7 +350,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
             // iteration's result as the input for the next iteration).
             int spinCount = 100000;
 
-            if (hashAlgo == null) hashAlgo = HashAlgorithm.sha1;
+            if (hashAlgo == null) hashAlgo = HashAlgorithm.sha512;
 
             String legacyHash = CryptoFunctions.xorHashPasswordReversed(password);
             // Implementation Notes List:

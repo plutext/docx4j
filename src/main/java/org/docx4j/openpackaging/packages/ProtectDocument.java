@@ -18,6 +18,7 @@ import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.STCryptProv;
 import org.docx4j.wml.STDocProtect;
 import org.docx4j.wml.Tbl;
 import org.slf4j.Logger;
@@ -77,7 +78,8 @@ public class ProtectDocument extends ProtectionSettings {
 		
 		restrictFormatting(allowedStyleNames, removedNotAllowedFormatting,
 				autoFormatOverride, styleLockTheme, styleLockQFSet,
-				password, HashAlgorithm.sha1);		
+				password, HashAlgorithm.sha1);	
+		
 	}
 	
 	/**
@@ -247,13 +249,35 @@ public class ProtectDocument extends ProtectionSettings {
      * @param editValue the protection type
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
-     *                  if null, it will default default to sha1
+     *                  if null, it will default default to sha512 (like Word 2013)
 	 * @since 3.3.0
      */
     public void restrictEditing(org.docx4j.wml.STDocProtect editValue,
                                         String password) {
 
-    	restrictEditing(editValue, password, HashAlgorithm.sha1);
+    	restrictEditing(editValue, password, HashAlgorithm.sha512);
+    	
+		/* Word 2013
+		 * 
+                        w:cryptProviderType="rsaAES" w:cryptAlgorithmClass="hash" w:cryptAlgorithmType="typeAny" 
+                        w:cryptAlgorithmSid="14" w:cryptSpinCount="100000"
+                        
+           corresponds to sha512
+           
+                case sha256:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 12;
+                    break;
+                case sha384:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 13;
+                    break;
+                case sha512:
+                    providerType = STCryptProv.RSA_AES;
+                    sid = 14;
+                                            
+          */
+    	
     }
 
     /**
@@ -264,7 +288,7 @@ public class ProtectDocument extends ProtectionSettings {
      * @param editValue the protection type
      * @param password  the plaintext password, if null no password will be applied
      * @param hashAlgo  the hash algorithm - only md2, m5, sha1, sha256, sha384 and sha512 are supported.
-     *                  if null, it will default default to sha1
+     *                  if null, it will default default to sha512 (like Word 2013)
 	 * @since 3.3.0
      */
     public void restrictEditing(org.docx4j.wml.STDocProtect editValue,
