@@ -136,6 +136,13 @@ public class ProtectDocument extends ProtectionSettings {
 		// The document settings part
 		DocumentSettingsPart documentSettingsPart = getPkg().getMainDocumentPart().getDocumentSettingsPart(true);
 		documentSettingsPart.protectRestrictFormatting(autoFormatOverride, styleLockTheme, styleLockQFSet, password, hashAlgo);
+		
+		// app.xml DocSecurity
+		if (pkg.getDocPropsExtendedPart()==null) 
+		{
+			pkg.addDocPropsExtendedPart();
+		}		
+		this.setDocSecurity(0); // same as Word 2013
 	}
 	
 	private static class VisitorRemovePFormatting extends TraversalUtilVisitor<P> {
@@ -302,6 +309,27 @@ public class ProtectDocument extends ProtectionSettings {
 		}
 		
 		documentSettingsPart.protectRestrictEditing(editValue, password, hashAlgo);
+		
+		// app.xml DocSecurity
+		if (pkg.getDocPropsExtendedPart()==null) 
+		{
+			pkg.addDocPropsExtendedPart();
+		}	
+		
+		// same as Word 2013:	
+		if (editValue==STDocProtect.COMMENTS) {
+			this.setDocSecurity(8); // verified		
+		} else if (editValue==STDocProtect.FORMS) {
+			this.setDocSecurity(0); // I think		
+		}  else if (editValue==STDocProtect.NONE) {
+			this.setDocSecurity(0); // I guess	
+		} else if (editValue==STDocProtect.READ_ONLY) {
+			this.setDocSecurity(8); // verified			
+		} else if (editValue==STDocProtect.TRACKED_CHANGES) {
+			this.setDocSecurity(0); 	
+		}
+		
+		
 
     }
     

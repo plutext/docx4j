@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import org.docx4j.docProps.extended.Properties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,15 +48,51 @@ public abstract class ProtectionSettings {
 	 */	
 	public void setMarkAsFinal(boolean val) {
 
+		// First
 		if (pkg.getDocPropsCustomPart()==null
 				&& val) // only create it if we're setting the value 
 		{
 			pkg.addDocPropsCustomPart();			
 		}
 		
-		pkg.getDocPropsCustomPart().setMarkAsFinal(val);
+		if (pkg.getDocPropsCustomPart()==null) {
+			return;
+		} else {
+			pkg.getDocPropsCustomPart().setMarkAsFinal(val);
+		}
 		
-	}	
+		// Second
+		if (pkg.getDocPropsExtendedPart()==null
+				&& val) // only create it if we're setting the value 
+		{
+			pkg.addDocPropsExtendedPart();
+		}
+		setDocSecurity(0); // surprising, but this is what Word 2013 does (you'd expect 2)
+				
+		
+		// Third: <cp:contentStatus>Final</cp:contentStatus>
+		if (pkg.getDocPropsCorePart()==null
+				&& val) // only create it if we're setting the value 
+		{
+			pkg.addDocPropsCorePart();
+		}
+		if (pkg.getDocPropsCorePart()!=null) {
+			pkg.getDocPropsCorePart().getJaxbElement().setContentStatus("Final");
+		}
+		
+	}
+	
+	/**
+	 * Note, this won't create the DocPropsExtendedPart (app.xml) if it doesn't exist
+	 * @param val
+	 */
+	protected void setDocSecurity(int val) {
+
+		if (pkg.getDocPropsExtendedPart()!=null) {
+			pkg.getDocPropsExtendedPart().setDocSecurity(val);
+		}
+		
+	}
 	
 	// Encrypt with Password - this is implemented in OpcPackage's load & save methods
 	// All we do here is record whether it was encrypted.
@@ -123,7 +160,6 @@ public abstract class ProtectionSettings {
 	 */
 	public Object getSignatureHelper(InputStream certificateIS, String password) throws Docx4JException {
 
-		Signing signing = null;
 	    try {
 	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
 		    Constructor<?> ctor = signingClass.getConstructor(InputStream.class, String.class);
@@ -136,7 +172,6 @@ public abstract class ProtectionSettings {
 
 	public boolean isSignatureValid() throws Docx4JException {
 		
-		Signing signing = null;
 	    try {
 	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
 	    	Method method = signingClass.getMethod("isSignatureValidStatic", OpcPackage.class);
