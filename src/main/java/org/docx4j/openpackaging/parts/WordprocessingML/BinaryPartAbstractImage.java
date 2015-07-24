@@ -572,6 +572,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
                     //We convert
                     convertToPNG(bais, fos, density);
+                    
+                    bais.close();
 
                     //We don't forget to change locFile because the new image file is the converted image file!!
                     imageFile = tmpImageFile;
@@ -581,6 +583,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
 					fos = new FileOutputStream(imageFile); 
 					convertToPNG(bais, fos, density);
+					bais.close();
                 }
 
 				fos.close();
@@ -864,6 +867,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				getImageManager().getImageContext(), null);
 
 		ImageInfo info = getImageManager().getImageInfo(url.toString(), sessionContext);
+		getImageManager().closeImage(url.toString(), sessionContext);
 		
 		// Note that these figures do not appear to be reliable for EPS
 		// eg ImageMagick 6.2.4 10/02/07 Q16
