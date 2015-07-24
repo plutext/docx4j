@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
+  <!-- <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
-  </parent>
+  </parent> -->
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
@@ -170,8 +170,8 @@
 						mirrors this in Eclipse's compiler settings, and Eclipse then complains about
 						the @Override annotations :-( So you must manually change the Eclipse compiler
 						setting back to 1.6. -->
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.6</source>
+					<target>1.6</target>
 
 					<verbose>false</verbose>
 					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
@@ -224,13 +224,13 @@
 			</plugin>
 			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
 				out if your build is failing because you don't have enough. -->
-			<plugin>
+			<!-- <plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.8</version>
 				<configuration>
 					<maxmemory>512m</maxmemory>
-					<!-- 18 MB without the exclusion; still 15MB with -->
-					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+					18 MB without the exclusion; still 15MB with
+					<excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames>
 				 </configuration>
 				<executions>
 					<execution>
@@ -240,7 +240,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 			<plugin>
 				<groupId>com.soebes.maven.plugins</groupId>
 				<artifactId>maven-echo-plugin</artifactId>
@@ -800,7 +800,7 @@
 			        <plugin>
 			            <groupId>com.github.github</groupId>
 			            <artifactId>site-maven-plugin</artifactId>
-			            <version>0.8</version>
+			            <version>0.12</version>
 			            <configuration>
 			                <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
 			                <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
@@ -808,7 +808,7 @@
 			                <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
 			                <includes><include>**/*</include></includes>
 			                <repositoryName>docx4j</repositoryName>      <!-- github repo name -->
-			                <repositoryOwner>plutext</repositoryOwner>    <!-- github username  -->
+			                <repositoryOwner>illucit</repositoryOwner>    <!-- github username  -->
 			            </configuration>
 			            <executions>
 			              <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
@@ -882,13 +882,13 @@
 
    				-->
    				
-<!-- Uncomment to deploy to GitHub.  MUST Comment out for real release
+<!-- Uncomment to deploy to GitHub.  MUST Comment out for real release -->
 <distributionManagement>
     <repository>
         <id>internal.repo</id>
-        <name>Temporary Staging Repository</name>
+        <name>illucIT Staging Repository</name>
         <url>file://${project.build.directory}/mvn-repo</url>
     </repository>
 </distributionManagement>   				
--->
+
 </project>
