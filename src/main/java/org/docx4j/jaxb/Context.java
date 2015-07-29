@@ -221,8 +221,8 @@ public class Context {
                     	Attributes mainAttribs = manifest.getMainAttributes();
                     	String impTitle = mainAttribs.getValue("Implementation-Title");
                     	if (impTitle!=null
-                    			&& impTitle.contains("JAXB Reference Implementation")
-                    					|| impTitle.contains("org.eclipse.persistence") ) {
+                    			&& (impTitle.contains("JAXB Reference Implementation")
+                    					|| impTitle.contains("org.eclipse.persistence")) ) {
 	                    
         	                log.info("\n" + url);
 		                    for(Object key2  : mainAttribs.keySet() ) {
