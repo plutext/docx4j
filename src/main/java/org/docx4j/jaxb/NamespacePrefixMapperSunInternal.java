@@ -120,9 +120,24 @@ public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.
      * @since
      *      JAXB RI 1.0.2 
      */
-//    public String[] getPreDeclaredNamespaceUris() {
-//        return new String[] { "urn:abc", "urn:def" };
-//    }
+    public String[] getPreDeclaredNamespaceUris() {
+    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable);
+    }
+    /* like getPreDeclaredNamespaceUris2(),
+     * this can cause fatal duplicate namespace declarations, 
+     * still not fixed in the JAXB in 1.9.0-ea
+
+		[Fatal Error] :2:592: Attribute "xmlns:v" was already specified for element "p:sld".
+		org.xml.sax.SAXParseException: Attribute "xmlns:v" was already specified for element "p:sld".
+			at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(Unknown Source)
+			at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+			at javax.xml.parsers.DocumentBuilder.parse(Unknown Source)
+			at org.docx4j.openpackaging.parts.PresentationML.SlidePart.unmarshal(SlidePart.java:156)
+			
+		Workaround would be to only set this if the part doesn't use the ns elsewhere.
+		 	
+	     * 
+     */
 
     /**
      * Similar to {@link #getPreDeclaredNamespaceUris()} but allows the
