@@ -128,27 +128,28 @@ public abstract class ProtectionSettings {
 	// Digital Signature
 	
 	
-	/**
-	 * Sign the pkg, using default settings.
-	 * 
-	 * @param certificateIS
-	 * @param password
-	 * @throws Docx4JException
-	 */
-	public void sign(InputStream certificateIS, String password) throws Docx4JException {
-
-		Signing signing = null;
-	    try {
-	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
-		    Constructor<?> ctor = signingClass.getConstructor(InputStream.class, String.class);
-		    signing = (Signing) ctor.newInstance(certificateIS, password);
-	    } catch (Exception e) {
-	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
-			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
-	    }			
-	    
-	    signing.sign(pkg);
-	}
+//	/**
+//	 * Sign the pkg, using default settings.
+//	 * 
+//	 * @param certificateIS
+//	 * @param password
+//	 * @throws Docx4JException
+//	 */
+//	public void sign(InputStream PKCS12stream, String password) throws Docx4JException {
+//
+//		Signing signing = null;
+//	    try {
+//	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
+//		    Constructor<?> ctor = signingClass.getConstructor(OpcPackage.class);
+//		    signing = (Signing) ctor.newInstance(this.pkg);
+//	    } catch (Exception e) {
+//	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
+//			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
+//	    }			
+//	    
+//	    signing.configureSignature(PKCS12stream, password);
+//	    signing.sign();
+//	}
 	
 	/**
 	 * get the SignatureHelper object, so you can sign the package using custom settings.
@@ -158,29 +159,29 @@ public abstract class ProtectionSettings {
 	 * @return
 	 * @throws Docx4JException
 	 */
-	public Object getSignatureHelper(InputStream certificateIS, String password) throws Docx4JException {
+	public Object getSignatureHelper() throws Docx4JException {
 
 	    try {
 	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
-		    Constructor<?> ctor = signingClass.getConstructor(InputStream.class, String.class);
-		    return ctor.newInstance(certificateIS, password);
+		    Constructor<?> ctor = signingClass.getConstructor(OpcPackage.class);
+		    return (Signing) ctor.newInstance(this.pkg);
 	    } catch (Exception e) {
 	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
 			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
 	    }			
 	}
 
-	public boolean isSignatureValid() throws Docx4JException {
-		
-	    try {
-	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
-	    	Method method = signingClass.getMethod("isSignatureValidStatic", OpcPackage.class);
-	    	Boolean result = (Boolean)method.invoke(null, pkg);
-	    	return result;
-	    } catch (Exception e) {
-	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
-			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
-	    }			
-		
-	}
+//	public boolean areSignaturesValid() throws Docx4JException {
+//		
+//		Signing signing = null;
+//	    try {
+//	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
+//		    Constructor<?> ctor = signingClass.getConstructor(OpcPackage.class);
+//		    signing = (Signing) ctor.newInstance(this.pkg);
+//		    // TODO: get method etc
+//	    } catch (Exception e) {
+//	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
+//			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
+//	    }			
+//	}
 }
