@@ -91,6 +91,8 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		return resolvedLayout;
 	}	
 
+	
+	private static final String VML_DECL = "xmlns:v=\"urn:schemas-microsoft-com:vml\"";
 
     /**
 	 * Marshal the content tree rooted at <tt>jaxbElement</tt> into an output
@@ -111,14 +113,18 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
         // <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
         // <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">		
 		// How?  Could marshall to a DOM doc, but there is no way to force the xmlns to be included
-		// where it is not required.
+		// where it is not required.  Well, JAXB namespace prefix mapping stuff promises a way, but it is buggy.
 		// So do string manipulation
     	
 		String xmlString = XmlUtils.marshaltoString( getJaxbElement(), false, true, jc ); 
 			// include the XML declaration; it'll be UTF-8
 		int pos = xmlString.indexOf(":sld ");
-		xmlString = xmlString.substring(0, pos + 5 ) + "xmlns:v=\"urn:schemas-microsoft-com:vml\" " 
-						+ xmlString.substring(pos + 5 );
+		int closeTagPos = xmlString.indexOf(">", pos);
+		if (xmlString.substring(pos, closeTagPos).contains(VML_DECL)) {
+			// nothing to do; vml namespace is already declared
+		} else {
+			xmlString = xmlString.substring(0, pos + 5 ) +  VML_DECL + " " + xmlString.substring(pos + 5 );
+		}
 		
 		try {
 			IOUtils.write(xmlString, os, "UTF-8"); // be sure to write UTF-8 irrespective of default encoding
@@ -158,7 +164,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 			
 			/* Note: 2013 04 25
 			 * 
-			 * If a slide contains:
+			 * If a slide (or slide master etc) contains:
 			 * 
 		          <a:graphicData uri="http://schemas.openxmlformats.org/presentationml/2006/ole">
 		            <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
@@ -197,6 +203,10 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		     *  that'll do its own thing with namespaces, but we could with regex).
 		     *  
 		     *  But it is better, I think to always get rid of the alternate content entirely.
+		     *  
+		     *  2015 07 29 Update:  since we do add the VML namespace (see marshal method above),
+		     *  there is no need to remove it during unmashalling, so we could get rid of this
+		     *  Override.  But not for 3.2.2 which is so close to release.
 			 */
 			
 			log.info("proactively pre-processing to remove any AlternateContent");
