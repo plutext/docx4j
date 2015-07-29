@@ -61,7 +61,7 @@ public class PartsList extends AbstractSample {
 			
 		// Load the Package as an OpcPackage, since this 
 		// works for docx, pptx, and xlsx
-		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath));		
+		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath));
 		
 		if (printContentTypes)
 			printContentTypes(opcPackage);
@@ -69,7 +69,7 @@ public class PartsList extends AbstractSample {
 		// List the parts by walking the rels tree
 		RelationshipsPart rp = opcPackage.getRelationshipsPart();
 		StringBuilder sb = new StringBuilder();
-		printInfo(rp, sb, "");
+		printInfo(rp.getPartName().getName(), null, rp, sb, "");
 		traverseRelationships(opcPackage, rp, sb, "    ");
 		
 		System.out.println(sb.toString());
@@ -90,14 +90,19 @@ public class PartsList extends AbstractSample {
 				ctm.toString() );		
 	}
 	
-	public static void  printInfo(Part p, StringBuilder sb, String indent) {
+	public static void  printInfo(String parentName, Relationship r, Part p, StringBuilder sb, String indent) {
 		
 		String relationshipType = "";
 		if (p.getSourceRelationships().size()>0 ) {
 			relationshipType = p.getSourceRelationships().get(0).getType();
 		}
 		
-		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );
+		if (r==null) {
+			sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );			
+		} else {
+			sb.append("\n" + indent +  parentName + "'s " + r.getId() + " is " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );
+		}
+		
 		
 //		System.out.println("//" + p.getPartName() );
 //		System.out.println("public final static String XX =");
@@ -126,7 +131,7 @@ public class PartsList extends AbstractSample {
 			
 		}
 		
-		sb.append("\n content type: " + p.getContentType() + "\n");
+//		sb.append("\n content type: " + p.getContentType() + "\n");
 //		sb.append("\n reltype: " + p.getRelationshipType() + "\n");
 		
 		if (p instanceof OleObjectBinaryPart) {
@@ -178,7 +183,7 @@ public class PartsList extends AbstractSample {
 			Part part = rp.getPart(r);
 						
 			
-			printInfo(part, sb, indent);
+			printInfo(rp.getSourceP().getPartName().getName(), r, part, sb, indent);
 			if (handled.get(part)!=null) {
 				sb.append(" [additional reference] ");
 				continue;
