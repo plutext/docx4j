@@ -310,7 +310,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 			getContents();
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 			marshaller.marshal(jaxbElement, node);
-
+			
+			// Now unset it
+			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
+			
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
@@ -398,6 +401,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 	    	} else {
 	    		marshaller.marshal(jaxbElement, os);
 	    	}
+	    	
+			// Now unset it
+			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
+	    	
 
 		} catch (Docx4JException e) {
 			log.error(e.getMessage(), e);
@@ -442,7 +449,8 @@ public abstract class JaxbXmlPart<E> extends Part {
     	in the resulting XML document.
 
     	The problem is that if "v2" is included in the value of @mc:Ignorable, and there is no declaration 
-    	of that prefix, then Microsoft Word 2010 will report the document to be corrupt.
+    	of that prefix, then Microsoft Word 2010 will report the document to be corrupt. (Powerpoint 2010
+    	is the same)
 
     	So the challenge is, when marshalling, how to populate the mc:Ignorable attribute, and guarantee 
     	a matching set of namespace declarations will be present.
