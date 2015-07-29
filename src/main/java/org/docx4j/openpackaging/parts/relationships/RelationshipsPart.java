@@ -240,7 +240,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("looking for: " + id);
 		
 		Relationship r = getRelationshipByID(id);
-    	log.info(id + " points to " + r.getTarget());
+    	log.debug(id + " points to " + r.getTarget());
 		
 		return getPart(r);		
 	}
