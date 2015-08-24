@@ -30,6 +30,9 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -427,6 +430,26 @@ public abstract class JaxbXmlPart<E> extends Part {
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
+			/* To avoid possible XML External Entity Injection attack,
+			 * we need to configure the processor.
+			 * 
+			 * We use STAX XMLInputFactory to do that.
+			 * 
+			 * createXMLStreamReader(is) is 40% slower than unmarshal(is).
+			 * 
+			 * But it seems to be the best we can do ... 
+			 * 
+			 *   org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is)
+			 *   unmarshal(doc)
+			 * 
+			 * ie DOM is 5x slower than unmarshal(is)
+			 * 
+			 */
+		    
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
 		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
@@ -439,8 +462,21 @@ public abstract class JaxbXmlPart<E> extends Part {
 			
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
-						u.unmarshal( is ));						
+						u.unmarshal( xsr ));						
 			} catch (UnmarshalException ue) {
+				
+				if (ue.getLinkedException()!=null 
+						&& ue.getLinkedException().getMessage().contains("entity")) {
+					
+					/*
+						Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
+						Message: The entity "xxe" was referenced, but not declared.
+							at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+						 */
+					log.error(ue.getMessage(), ue);
+					throw ue;
+				}
 				
 				if (is.markSupported() ) {
 					// When reading from zip, we use a ByteArrayInputStream,
@@ -469,9 +505,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 			}
 			
 
-		} catch (JAXBException e ) {
-			log.error(e.getMessage(), e);
-			throw e;
+		} catch (XMLStreamException e1) {
+			log.error(e1.getMessage(), e1);
+			throw new JAXBException(e1);
 		}
     	
 		return jaxbElement;
