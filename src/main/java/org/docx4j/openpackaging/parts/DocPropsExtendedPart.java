@@ -23,6 +23,8 @@ package org.docx4j.openpackaging.parts;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
 
 import org.slf4j.Logger;
@@ -108,8 +110,15 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
      */
 	@Override
     public Properties unmarshal( java.io.InputStream is ) throws JAXBException {
+		
+		// TODO: delete this method?		
     	
 		try {
+			
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(is);												
 			
 //			if (jc==null) {
 //				setJAXBContext(Context.jc);				
@@ -122,7 +131,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			log.info("unmarshalling " + this.getClass().getName() );									
-			jaxbElement = (Properties) u.unmarshal( is );
+			jaxbElement = (Properties) u.unmarshal( xsr );
 
 		} catch (Exception e ) {
 			e.printStackTrace();

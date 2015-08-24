@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
@@ -196,7 +197,12 @@ public final class XMLIndenter extends DefaultHandler implements ContentHandler 
     factory.setValidating(false);
     InputSource source = new InputSource(r);
     // parse the XML
-    XMLReader xmlreader = factory.newSAXParser().getXMLReader();
+    SAXParser parser = factory.newSAXParser();
+    parser.setProperty("http://xml.org/sax/features/external-general-entities", false);
+    parser.setProperty("http://xml.org/sax/features/external-parameter-entities", false);
+    parser.setProperty("http://apache.org/xml/features/disallow-doctype-decl", true);
+    
+    XMLReader xmlreader = parser.getXMLReader();
     xmlreader.setContentHandler(indenter);
     xmlreader.parse(source);
   }

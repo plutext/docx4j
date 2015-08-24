@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
@@ -39,7 +40,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.fonts.apps.TTFReader;
 
@@ -84,8 +84,14 @@ public class FontReader extends DefaultHandler {
         }
 
         try {
-            parser.setFeature("http://xml.org/sax/features/namespace-prefixes",
-                              false);
+            parser.setProperty("http://apache.org/xml/features/disallow-doctype-decl", true);
+        } catch (Exception e) {}
+        
+        try {
+            parser.setProperty("http://xml.org/sax/features/external-general-entities", false);
+            parser.setProperty("http://xml.org/sax/features/external-parameter-entities", false);
+        	
+            parser.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
         } catch (SAXException e) {
             throw new FOPException("You need a SAX parser which supports SAX version 2",
                                    e);

@@ -28,6 +28,8 @@ import java.util.Iterator;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,8 +184,13 @@ public class Load {
 					
 					// Is it a part we know?
 					try {
+				        XMLInputFactory xif = XMLInputFactory.newInstance();
+				        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
+						
 						Unmarshaller u = Context.jc.createUnmarshaller();
-						Object o = u.unmarshal( is );						
+						Object o = u.unmarshal( xsr );						
 						log.info(o.getClass().getName());
 						
 						PartName name = part.getPartName();

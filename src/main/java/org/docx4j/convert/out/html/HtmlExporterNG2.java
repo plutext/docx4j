@@ -26,6 +26,7 @@ import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -165,6 +166,9 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			
 		    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance(); // as opposed to XmlUtils.getNewDocumentBuilder()
 		    dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);	
+		    dbFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		    dbFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		    
 		    DocumentBuilder db = dbFactory.newDocumentBuilder();
 		    // that feature is enough; alternatively, the below also works.  Use both for good measure.
 		    db.setEntityResolver(new EntityResolver() {
