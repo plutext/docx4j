@@ -45,6 +45,9 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -160,6 +163,8 @@ public class XmlUtils {
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
 				|| (System.getProperty("java.version").startsWith("1.8")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.9")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
@@ -397,10 +402,22 @@ public class XmlUtils {
 	}
 
 	public static Object unmarshal(InputStream is, JAXBContext jc) throws JAXBException {
+		
+		// Guard against XXE
+        XMLInputFactory xif = XMLInputFactory.newInstance();
+        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+        XMLStreamReader xsr = null;
+        try {
+			xsr = xif.createXMLStreamReader(is);
+		} catch (XMLStreamException e) {
+			throw new JAXBException(e);
+		}			
+		
 		Object o = null;
 		Unmarshaller u = jc.createUnmarshaller();						
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		o = u.unmarshal( is );
+		o = u.unmarshal( xsr );
 		return o;
 	}
 	
