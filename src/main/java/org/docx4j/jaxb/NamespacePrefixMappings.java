@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
@@ -493,7 +493,7 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		// once!
 		
 		// first tokenise on space
-		StrTokenizer tokens = new StrTokenizer(prefixMappings);
+		StrTokenizer tokens = new org.apache.commons.lang3.text.StrTokenizer(prefixMappings);
 		while (tokens.hasNext() ) {
 			String token = tokens.nextToken();
 			//log.debug("Got: " + token);

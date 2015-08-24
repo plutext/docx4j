@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;

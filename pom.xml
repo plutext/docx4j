@@ -533,13 +533,23 @@
 				</exclusions>
 		</dependency>
 		
-		 
+ 		 
 		<dependency>
-			<!--  required for our diffx -->
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+		</dependency>
+		 
+		 
+		 <!--  supports org.apache.commons.lang.NotImplementedException -->
+		 <!-- 
+		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<version>2.4</version>
+			<version>2.4</version> 
 		</dependency>
+		 -->
+		
 		<dependency>
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
