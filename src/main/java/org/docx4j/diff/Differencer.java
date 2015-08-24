@@ -334,6 +334,9 @@ public class Differencer {
 		try {
 			
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+			
 			/*
 			 * With JDK 1.5, you need to supply a stax jar, or you
 			 * will get:
@@ -649,6 +652,9 @@ public class Differencer {
 			try {
 				
 				XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+				inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				
 				//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
 				Reader reader = new StringReader(naive);
 				String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
@@ -1368,6 +1374,9 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
 		try {
 			
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+			
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
 			String simplified = combineAdjacent(
 					inputFactory.createXMLStreamReader(new FileInputStream(new File("tmp_adj.xml"))) );

@@ -58,6 +58,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -926,12 +928,16 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
     	
 		try {
 			
-			Unmarshaller u = jc.createUnmarshaller();
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(is);												
 			
+			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			log.debug("unmarshalling " + this.getClass().getName() );									
-			jaxbElement = (Relationships) u.unmarshal( is );
+			jaxbElement = (Relationships) u.unmarshal( xsr );
 
 		} catch (Exception e ) {
 			e.printStackTrace();

@@ -41,6 +41,8 @@ import java.util.zip.ZipInputStream;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
@@ -593,8 +595,14 @@ public class LoadFromZipNG extends Load {
 					
 					// Is it a part we know?
 					try {
+						
+				        XMLInputFactory xif = XMLInputFactory.newInstance();
+				        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
+						
 						Unmarshaller u = Context.jc.createUnmarshaller();
-						Object o = u.unmarshal( is );						
+						Object o = u.unmarshal( xsr );						
 						log.debug(o.getClass().getName());
 						
 						PartName name = part.getPartName();

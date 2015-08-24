@@ -60,6 +60,8 @@ import java.util.TreeMap;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -683,7 +685,11 @@ public class ContentTypeManager  {
 		CTTypes types;
 		
 		try {
-		    		    
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(contentTypes);			
+	        
 			Unmarshaller u = Context.jcContentTypes.createUnmarshaller();
 			
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
@@ -691,7 +697,7 @@ public class ContentTypeManager  {
 
 			log.debug("unmarshalling " + this.getClass().getName() );		
 			
-			Object res = XmlUtils.unwrap(u.unmarshal( contentTypes ));
+			Object res = XmlUtils.unwrap(u.unmarshal( xsr ));
 			//types = (CTTypes)((JAXBElement)res).getValue();				
 			types = (CTTypes)res;
 			//log.debug( types.getClass().getName() + " unmarshalled" );
