@@ -47,6 +47,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -491,18 +492,9 @@ public class FlatOpcXmlCreator implements Output {
 	// Implement the interface
 	public void output(javax.xml.transform.Result result) throws Docx4JException {
 		
-		// Do this via identity transform
-		
-		javax.xml.transform.TransformerFactory tfactory = XmlUtils.getTransformerFactory();
-	
-		try {
-			Transformer serializer = tfactory.newTransformer();
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-			serializer.transform( new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)) , result );				
-		} catch (Exception e) {
-			throw new Docx4JException("Failed to create Flat OPC output", e);
-		} 
-		
+		XmlSerializerUtil.serialize(new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)), result, 
+				true, false);
+				// we haven't explicitly set METHOD=xml here, but I don't see why we shouldn't. 
 	}
 	
 	

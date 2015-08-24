@@ -70,6 +70,7 @@ import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.utils.XPathFactoryUtil;
+import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -855,41 +856,31 @@ public class XmlUtils {
    	 		
 		StringWriter sw = new StringWriter();
 		try {
-				Transformer serializer = transformerFactory.newTransformer();
-				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-				serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
-				//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
-				return sw.toString();
+			
+			XmlSerializerUtil.serialize(new DOMSource(n) , new StreamResult(sw), true, true);
+			return sw.toString();
 				//log.debug("serialised:" + n);
-			} catch (Exception e) {
-				// Unexpected!
-				e.printStackTrace();
-				return null;
-			} 
+			
+		} catch (Exception e) {
+			// Unexpected!
+			log.error(e.getMessage(), e);
+			return null;
+		} 
     }
 
     /**
      * @param n
      * @param os
-     * @throws TransformerException 
-     * @throws IllegalArgumentException 
-     * @throws TransformerConfigurationException 
+     * @throws Docx4JException 
      * 
      * @Since 3.3.0
      */
-    public static void w3CDomNodeToOutputStream(Node n, OutputStream os) throws TransformerConfigurationException, IllegalArgumentException, TransformerException {
+    public static void w3CDomNodeToOutputStream(Node n, OutputStream os) throws Docx4JException   {
       	 
 		// Q: Why doesn't Java have a nice neat way of getting the XML as a String??   
 		// A: See comments at http://stackoverflow.com/questions/2325388/java-shortest-way-to-pretty-print-to-stdout-a-org-w3c-dom-document
-   	 		
-		StringWriter sw = new StringWriter();
-		Transformer serializer = transformerFactory.newTransformer();
-		serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-		serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
-		//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-		serializer.transform( new DOMSource(n) , new StreamResult(os) );				
-		//log.debug("serialised:" + n);
+
+		XmlSerializerUtil.serialize(new DOMSource(n) , new StreamResult(os), true, true);
     }
     
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
@@ -981,6 +972,10 @@ public class XmlUtils {
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Docx4JException {
     	
+    	/* WARNING: Xalan may break things if your XML contains Unicode astral characters!
+    	 * See https://issues.apache.org/jira/browse/XALANJ-2419
+    	 */
+    	
     	if (source == null ) {
     		Throwable t = new Throwable();
     		throw new Docx4JException( "Null Source doc", t);
@@ -992,11 +987,12 @@ public class XmlUtils {
 		// A Transformer may be used multiple times. Parameters and output properties 
 		// are preserved across transformations.		
 		javax.xml.transform.Transformer xformer;
-    try {
-      xformer = template.newTransformer();
-    } catch (TransformerConfigurationException e) {
-      throw new Docx4JException("The Transformer is ill-configured", e);
-    }
+	    try {
+	      xformer = template.newTransformer();
+	    } catch (TransformerConfigurationException e) {
+	      throw new Docx4JException("The Transformer is ill-configured", e);
+	    }
+	    
 		if (!xformer.getClass().getName().equals(
 				"org.apache.xalan.transformer.TransformerImpl")) {
 			log

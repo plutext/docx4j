@@ -57,6 +57,7 @@ import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,16 +205,8 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		} catch (FOPException e) {
 			throw new Docx4JException("Exception setting up result for fo transformation: " + e.getMessage(), e);
 		}
-
-		Transformer transformer;
-		try {
-			transformer = XmlUtils.getTransformerFactory().newTransformer();
-			transformer.transform(foDocumentSrc, result);
-		} catch (TransformerConfigurationException e) {
-			throw new Docx4JException("Exception setting up transformer: " + e.getMessage(), e);
-		} catch (TransformerException e) {
-			throw new Docx4JException("Exception executing transformer: " + e.getMessage(), e);
-		}
+		
+		XmlSerializerUtil.serialize(foDocumentSrc, result, false, false);
 	}
 	
 	
@@ -238,15 +231,8 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			throw new Docx4JException("Exception setting up result for fo transformation: " + e.getMessage(), e);
 		}
 
-		Transformer transformer;
-		try {
-			transformer = XmlUtils.getTransformerFactory().newTransformer();
-			transformer.transform(foDocumentSrc, result);
-		} catch (TransformerConfigurationException e) {
-			throw new Docx4JException("Exception setting up transformer: " + e.getMessage(), e);
-		} catch (TransformerException e) {
-			throw new Docx4JException("Exception executing transformer: " + e.getMessage(), e);
-		}
+		XmlSerializerUtil.serialize(foDocumentSrc, result, false, false);
+		
 		return fop.getResults();
 	}
 	
