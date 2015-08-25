@@ -31,6 +31,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.Callback;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.ProtectDocument;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
@@ -55,14 +56,17 @@ public class ProtectRestrictFormatting extends AbstractSample {
 		List<String> allowedStyleNames = new ArrayList<String>();
 		allowedStyleNames.add("heading 2");
 		allowedStyleNames.add("heading 3");
-		wordMLPackage.protectRestrictFormatting(allowedStyleNames, true, //remove!
+		
+		ProtectDocument protection = new ProtectDocument(wordMLPackage);
+		protection.restrictFormatting(allowedStyleNames, true, //remove!
 				false, true, false);
 		
-			String filename = System.getProperty("user.dir") + "/OUT_restrict_formatting_remove.docx";
-			
-			Docx4J.save(wordMLPackage, new java.io.File(filename)); // , Docx4J.FLAG_SAVE_ENCRYPTED_AGILE, "foobaa");
-			
-			System.out.println("Saved " + filename);
+		
+		String filename = System.getProperty("user.dir") + "/OUT_restrict_formatting_remove.docx";
+		
+		Docx4J.save(wordMLPackage, new java.io.File(filename)); // , Docx4J.FLAG_SAVE_ENCRYPTED_AGILE, "foobaa");
+		
+		System.out.println("Saved " + filename);
 		}
 
 	}
