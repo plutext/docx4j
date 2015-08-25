@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBContext;
@@ -955,7 +956,17 @@ public class XmlUtils {
 			  javax.xml.transform.Source xsltSource) throws TransformerConfigurationException {
     	    
     	return transformerFactory.newTemplates(xsltSource);
-    }    
+    }   
+    
+    private static final String S_BUILTIN_EXTENSIONS_URL = "http://xml.apache.org/xalan"; 
+    
+    
+    private static final String S_BUILTIN_EXTENSIONS_UNIVERSAL =
+            "{" + S_BUILTIN_EXTENSIONS_URL + "}";
+    
+    
+    private static final String S_KEY_CONTENT_HANDLER =
+            S_BUILTIN_EXTENSIONS_UNIVERSAL + "content-handler";    
 
     /**
      * 
@@ -971,11 +982,7 @@ public class XmlUtils {
     					  javax.xml.transform.Templates template, 
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Docx4JException {
-    	
-    	/* WARNING: Xalan may break things if your XML contains Unicode astral characters!
-    	 * See https://issues.apache.org/jira/browse/XALANJ-2419
-    	 */
-    	
+    	    	
     	if (source == null ) {
     		Throwable t = new Throwable();
     		throw new Docx4JException( "Null Source doc", t);
@@ -992,14 +999,69 @@ public class XmlUtils {
 	    } catch (TransformerConfigurationException e) {
 	      throw new Docx4JException("The Transformer is ill-configured", e);
 	    }
+	    	    
+	    log.info("Using " + xformer.getClass().getName());
 	    
-		if (!xformer.getClass().getName().equals(
+		if (xformer.getClass().getName().equals(
 				"org.apache.xalan.transformer.TransformerImpl")) {
+			
+			if (Docx4jProperties.getProperty("docx4j.xalan.XALANJ-2419.workaround", false)) {
+			    // Use our patched serializer, which fixes Unicode astral character
+		    	// issue. See https://issues.apache.org/jira/browse/XALANJ-2419
+
+			    log.info("Working around https://issues.apache.org/jira/browse/XALANJ-2419" );
+				
+			    Properties p = xformer.getOutputProperties();
+			    String method = p.getProperty("method");
+			    System.out.println("method: " + method);
+			    if (method==null || method.equals("xml")) {
+			    
+					((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToXMLStream"); 
+				
+			    } else if ( method.equals("html")) {
+
+			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToHTMLStream"); 
+				
+			    } else if ( method.equals("text")) {
+			    	
+			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToTextStream"); 
+			    	
+			    } else {
+			    	
+			    	log.warn("fallback for method: " + method);
+			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToUnknownStream"); 
+			    	
+			    }
+			    	
+				/* That wasn't quite enough:
+				 * 
+					at org.docx4j.org.apache.xml.serializer.ToXMLStream.startDocumentInternal(ToXMLStream.java:143)
+					at org.docx4j.org.apache.xml.serializer.SerializerBase.startDocument(SerializerBase.java:1190)
+					at org.apache.xml.serializer.ToSAXHandler.startDocumentInternal(ToSAXHandler.java:97)
+					at org.apache.xml.serializer.ToSAXHandler.flushPending(ToSAXHandler.java:273)
+					at org.apache.xml.serializer.ToXMLSAXHandler.startPrefixMapping(ToXMLSAXHandler.java:350)
+					at org.apache.xml.serializer.ToXMLSAXHandler.startPrefixMapping(ToXMLSAXHandler.java:320)
+					at org.apache.xalan.templates.ElemLiteralResult.execute(ElemLiteralResult.java:1317)
+				 *
+				 * (TransformerImpl's createSerializationHandler makes a new org.apache.xml.serializer.ToXMLSAXHandler.ToXMLSAXHandler
+				 * and that's hard coded.)
+				 * 
+				 * But it seems to be enough now...
+					 
+				 */
+			}
+			
+		} else {
+			
 			log
 					.error("Detected "
 							+ xformer.getClass().getName()
 							+ ", but require org.apache.xalan.transformer.TransformerImpl. "
-							+ "Ensure Xalan 2.7.0 is on your classpath!");
+							+ "Ensure Xalan 2.7.x is on your classpath!");
 		}
 		LoggingErrorListener errorListener = new LoggingErrorListener(false);
 		xformer.setErrorListener(errorListener);
