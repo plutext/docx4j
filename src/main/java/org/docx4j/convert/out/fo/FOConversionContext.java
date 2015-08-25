@@ -123,7 +123,13 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 				public void addCharacterToCurrent(char c) {
 			    	sb.append(c);		
 				}
-	
+
+				@Override
+				public void addCodePointToCurrent(int cp) {
+					
+					sb.append(new String(Character.toChars(cp)));
+				}
+				
 				public void finishPrevious() {
 					
 			    	if (sb.length()>0) {
@@ -181,6 +187,7 @@ public class FOConversionContext extends AbstractWmlConversionContext {
 					fallbackFontName = fontname;
 					
 				}
+
 
 				
 			}, RunFontActionType.XSL_FO);

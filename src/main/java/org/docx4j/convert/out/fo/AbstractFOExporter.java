@@ -120,8 +120,36 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 
 		try {
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString("UTF-8");
+			
+			// DEBuGGING for https://issues.apache.org/jira/browse/XALANJ-2419 (astral character serialization issue)
+			if (log.isDebugEnabled()) {
+				
+				for (int i = 0; i < foDocument.length(); i=foDocument.offsetByCodePoints(i, 1)){
+	
+		    	    char c1 = foDocument.charAt(i);
+	//	    		int cp = text.codePointAt(i);
+		    	    
+		    	    if (Character.isHighSurrogate(c1)) {
+		    	    	// Process this and the next
+						System.out.println("added as code point OK");
+						
+	//				   	char c2 = foDocument.charAt(i+1);
+	//				   	
+	//				   	System.out.println(
+	//				   			String.format("%04x", (int) c1));
+	//				   	System.out.println(
+	//				   			String.format("%04x", (int) c2));					
+						
+		    	    } else if (c1=='#') {
+		    	    	System.out.println("Unintended " + foDocument.substring(i-1, i+7) + "?"); 
+		    	    }
+				}
+			}
+			
+			
 		} catch (UnsupportedEncodingException e) {
 			//if UTF-8 is unsupported, then anything will do... (java without utf-8??)
+			log.error("No UTF-8!? " + e.getMessage());
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString();
 		}
 		if (log.isDebugEnabled()) {

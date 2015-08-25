@@ -363,6 +363,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 		public void setDocument(Document document) {}
 		public void addCharacterToCurrent(char c) {}
+		public void addCodePointToCurrent(int cp) {}
 		public void finishPrevious() {}
 		public void createNew() {}
 		public void setRunFontSelector(RunFontSelector runFontSelector) {}
