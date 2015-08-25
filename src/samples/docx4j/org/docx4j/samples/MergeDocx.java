@@ -34,7 +34,7 @@ public class MergeDocx extends AbstractSample {
 
 	final static String BASE_DIR = System.getProperty("user.dir") + "/sample-docs/word/";
 
-	final static String[] sourceDocxNames = { "Table.docx", "Images.docx"};  
+	final static String[] sourceDocxNames = { "tables.docx", "Images.docx"};  
 
 	static boolean save = true;
 	static String outputfilepath = System.getProperty("user.dir") +"OUT_MergeDocx.docx";		

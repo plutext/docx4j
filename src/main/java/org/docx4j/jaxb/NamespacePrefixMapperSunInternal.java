@@ -135,6 +135,8 @@ public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.
 			at org.docx4j.openpackaging.parts.PresentationML.SlidePart.unmarshal(SlidePart.java:156)
 			
 		Workaround would be to only set this if the part doesn't use the ns elsewhere.
+		
+		Needs further testing!!
 		 	
 	     * 
      */

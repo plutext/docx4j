@@ -76,7 +76,8 @@ import org.w3c.dom.Document;
  *  
  *  @param <E> type of the content tree object
  * */
-public abstract class JaxbXmlPart<E> extends Part {
+public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Rels part, FontTablePart */ 
+	extends Part {
 	
 	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPart.class);
 	
