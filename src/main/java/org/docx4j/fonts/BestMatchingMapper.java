@@ -129,8 +129,10 @@ public class BestMatchingMapper extends Mapper {
 	 * 1. On Microsoft platform, to embed in PDF output
 	 * 2. docx4all - all platforms - to populate font dropdown list */	
 	private final static void setupMicrosoftFontFilenames() throws Exception {
-				
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
+
+		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();				
+		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft", classLoader);
+		
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
@@ -182,7 +184,9 @@ public class BestMatchingMapper extends Mapper {
 	 *  */	
 	private final static void setupExplicitSubstitutionsMap() throws Exception {
 				
-		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions");		
+		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();						
+		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions", classLoader);
+		
 		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
 		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
