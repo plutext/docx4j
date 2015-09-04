@@ -8,15 +8,12 @@ docx4j is an open source (Apache v2) library for creating, editing, and saving O
 
 It uses JAXB to create the Java representation.
 
-- Open existing docx/pptx/xlsx (from filesystem, SMB/CIFS, WebDAV using VFS)
-- Create new docx
-- Programmatically manipulate the docx document (of course)
-- CustomXML binding (with OpenDoPE extensions for repeats & conditionals) 
+- Open existing docx/pptx/xlsx 
+- Create new docx/pptx/xlsx 
+- Programmatically manipulate docx/pptx/xlsx (anything the file format allows)
+- CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats & conditionals, and importing XHTML) 
 - Export as HTML or PDF
-- Diff/compare documents, paragraphs or sdt (content controls)
-- Import a binary doc (uses Apache POI's HWPF)
 - Produce/consume Word 2007's xmlPackage (pkg) format
-- Save docx to filesystem as a docx (ie zipped), or to JCR (unzipped)
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
@@ -41,15 +38,15 @@ How do I get started?
 
 See the Getting Started guide.
 
+And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
+
+
 Where to get help?
 ------------------
 
 http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
 
-To subscribe, send an email to docx4j-user-subscribe@docx4java.org
-
-The forum is gatewayed to a mailing list, so you can interact via your email
-client if you prefer.  To subscribe, send an email to docx4j-user-subscribe@docx4java.org
+Please post to one or the other, not both
 
 
 Legal Information
@@ -61,9 +58,3 @@ text, please see the following files in the legals directory:
 - NOTICE
 Legal information on libraries used by docx4j can be found in the 
 "legals/NOTICE" file.
-Here is a (TODO: non exhaustive?) list of files included in docx4j but not published under Apache
-License version 2.0:
-
-- DocX2Html.xslt (though docx2xhtmlNG2.xslt is our supported transform, not that) 
-- src/diffx (ARTISTIC LICENCE)
-- xsd/**

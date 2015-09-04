@@ -8,7 +8,7 @@ Version 3.2.2  minor release
 Release date
 ------------
 
-nn June 2015
+4 Sept 2015
 
 
 Contributors to this release
@@ -21,6 +21,8 @@ Jason Harrop
 
 Notable Changes in Version 3.2.1
 ---------------------------------
+
+guard against XML Enternal Entity Injection attacks for some additional cases (the main cases were addressed in v3.2.0)
 
 tune down certain logging
 
@@ -42,6 +44,11 @@ xlsx4j
 ------
 
 Variable replacement in xlsx4j
+
+pptx4j
+------
+
+Ensure VML namespace is declared on key parts
 
 
 

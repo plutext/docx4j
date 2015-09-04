@@ -81,6 +81,8 @@
   		<level value="warn"/> 
 	</logger>	
 
+<!--     
+    
 	<logger name="org.docx4j.convert.out.common.preprocess.FieldsCombiner">
 		  <level value="warn"/> 
 	</logger>	
@@ -97,6 +99,10 @@
   		<level value="warn"/> 
 	</logger>
 
+    <logger name="org.docx4j.fonts.PhysicalFonts">
+  		<level value="debug"/> 
+	</logger>    
+	
     <logger name="org.docx4j.fonts.RunFontSelector">
   		<level value="warn"/> 
 	</logger>
@@ -157,7 +163,7 @@
   		<level value="warn"/> 
 	</logger>
 	
-    
+     -->
     
     <!--  Enterprise edition loggers -->
     <logger name="com.plutext.docx.toc">
