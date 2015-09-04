@@ -156,23 +156,6 @@ public class SAXHandlerToCodeString extends SAXIdentityHandler {
 		if (IS_PRETTY_PRINTED) {
 
 			if (needToClose) {
-				write("/"+TAG_CLOSE+"\"", false);
-				needToClose = false;
-			} else if (charactersIncludeNewline) {
-				// Workaround for case where source is pretty printed
-				// and so has whitespace 
-				write("+ \"" + TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", true);
-				charactersIncludeNewline= false;
-			} else if (encounteredText) {
-				write(TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", false);
-			} else {
-				write("+ \"" + TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", true);
-			}
-			
-			
-		} else {
-
-			if (needToClose) {
 				write("/"+TAG_CLOSE+"\"\n", false);
 				needToClose = false;
 			} else if (charactersIncludeNewline) {
@@ -184,6 +167,22 @@ public class SAXHandlerToCodeString extends SAXIdentityHandler {
 				write(TAG_OPEN+"/" + qName + TAG_CLOSE+"\"\n", false);
 			} else {
 				write("+ \"" + TAG_OPEN+"/" + qName + TAG_CLOSE+"\"\n", true);
+			}
+			
+		} else {
+
+			if (needToClose) {
+				write("/"+TAG_CLOSE+"\"", false);
+				needToClose = false;
+			} else if (charactersIncludeNewline) {
+				// Workaround for case where source is pretty printed
+				// and so has whitespace 
+				write("+ \"" + TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", true);
+				charactersIncludeNewline= false;
+			} else if (encounteredText) {
+				write(TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", false);
+			} else {
+				write("+ \"" + TAG_OPEN+"/" + qName + TAG_CLOSE+"\"", true);
 			}
 			
 		}

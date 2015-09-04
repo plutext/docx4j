@@ -200,13 +200,25 @@ public class CompareDocuments {
 		Map<Relationship, Part> newRels = pd.getComposedRels();
 		for (Relationship nr : newRels.keySet()) {	
 			
-			Part part = newRels.get(nr);
-			if (part instanceof BinaryPart) { // ensure contents are loaded, before moving to new pkg
-				((BinaryPart)part).getBuffer();
+			if (nr.getTargetMode()!=null 
+					&& nr.getTargetMode().equals("External")) {
+				
+				newMDP.getRelationshipsPart().getRelationships().getRelationship().add(nr);
+				
+			} else {
+				
+				Part part = newRels.get(nr);
+				if (part==null) {
+					System.out.println("ERROR! Couldn't find part for rel " + nr.getId() + "  " + nr.getTargetMode() );
+				} else {
+					
+					if (part instanceof BinaryPart) { // ensure contents are loaded, before moving to new pkg
+						((BinaryPart)part).getBuffer();
+					}
+					
+					newMDP.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS, nr.getId());
+				}
 			}
-			
-			newMDP.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS, nr.getId());
-
 		}
 		
 		//System.out.println("after: \n" + rp.getXML());

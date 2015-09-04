@@ -237,7 +237,6 @@ public class Docx4J {
 	
 	/**
 	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
-
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
 		
@@ -256,7 +255,6 @@ public class Docx4J {
 	
 	/**
 	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
-
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
 		

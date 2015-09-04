@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBContext;
 
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 
 
 public class XlsxRoundTrip {
@@ -43,10 +44,9 @@ public class XlsxRoundTrip {
 				
 		// Open a document from the file system
 		// 1. Load the Package
-		OpcPackage pkg = OpcPackage.load(new java.io.File(inputfilepath));
+		SpreadsheetMLPackage pkg = (SpreadsheetMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
 		
 		// Save it
-		
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(pkg);
 			saver.save(outputfilepath);
