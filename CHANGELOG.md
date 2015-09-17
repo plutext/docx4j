@@ -1,6 +1,55 @@
 CHANGELOG
 =========
 
+Version 3.3 branch (work in progress)
+==================
+
+Notable Changes (as at 17 Sept 2015)
+---------------
+
+Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
+NB: Digital signature support is in Enterprise Ed. 
+See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
+
+Xalan <= 2.7.2 can't handle astral characters: https://issues.apache.org/jira/browse/XALANJ-2419
+So:
+(i)  workaround this when serializing XML
+(ii) optionally workaround this when we use Xalan for XSLT, controlled by docx4j.properties docx4j.xalan.XALANJ-2419.workaround=true|false
+[Comment: When will Xalan make a release which fixes this issue? This code will be removed if they do.]
+
+RunFontSelector: basic support for Unicode astral characters
+
+Performance improvement: property docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.* allows us to avoid unmarshalling via DOM
+
+Handle McIgnorableNamespaces within NamespacePrefixMapper classes
+[Comment: need to understand whether any JAXB versions can't handle this] 
+
+XJC generated code for word/2010/wordprocessingDrawing
+
+Repackage portions of org.apache.poi (mainly poifs) as org.docx4j.org.apache.poi
+(and remove dependency on poi-scratchpad; remove Doc import since poi.hwpf dep is now absent)
+
+Repackage santuario c14n (org.apache.xml.security) as org.docx4j.org.apache.xml.security. 
+[Comment: Useful for c14n, but not essential to docx4j, so may yet be removed. Opinions welcome]
+
+
+
+Dependency Changes (relative to 3.2.x)
+------------------
+
+Removed: jaxb-xmldsig-core, poi-scratchpad, commons-lang
+
+Added: 
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
+
+
+
+
 
 Version 3.2.2  minor release
 =============
@@ -8,7 +57,7 @@ Version 3.2.2  minor release
 Release date
 ------------
 
-nn June 2015
+4 Sept 2015
 
 
 Contributors to this release
@@ -19,8 +68,10 @@ https://github.com/sgrachov
 Jason Harrop
 
 
-Notable Changes in Version 3.2.1
+Notable Changes in Version 3.2.2
 ---------------------------------
+
+guard against XML Enternal Entity Injection attacks for some additional cases (the main cases were addressed in v3.2.0)
 
 tune down certain logging
 
@@ -43,6 +94,10 @@ xlsx4j
 
 Variable replacement in xlsx4j
 
+pptx4j
+------
+
+Ensure VML namespace is declared on key parts
 
 
 
