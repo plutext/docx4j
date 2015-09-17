@@ -156,7 +156,7 @@ public class CTSRgbColor {
      *     {@link String }
      *     
      */
-    public Strin getVal() {
+    public String getVal() {
         return val;
     }
 
