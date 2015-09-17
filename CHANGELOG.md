@@ -19,7 +19,7 @@ https://github.com/sgrachov
 Jason Harrop
 
 
-Notable Changes in Version 3.2.1
+Notable Changes in Version 3.2.2
 ---------------------------------
 
 guard against XML Enternal Entity Injection attacks for some additional cases (the main cases were addressed in v3.2.0)
