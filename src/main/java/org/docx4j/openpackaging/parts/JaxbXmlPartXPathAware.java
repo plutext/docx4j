@@ -357,7 +357,6 @@ implements XPathEnabled<E> {
 			org.w3c.dom.Document doc = null;
 			
 			try {
-				log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 				
 				boolean wantBinder = forceBinder;
 				
@@ -372,6 +371,7 @@ implements XPathEnabled<E> {
 				}
 				
 				if (wantBinder) {
+					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 				
 					// InputStream to Document
 					doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
@@ -387,6 +387,7 @@ implements XPathEnabled<E> {
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
 					
 				} else {
+					log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
 					
 					// Guard against XXE
 			        XMLInputFactory xif = XMLInputFactory.newInstance();
@@ -440,6 +441,7 @@ implements XPathEnabled<E> {
 				}
 				
 				if (is.markSupported() ) {
+					is.reset();
 					// when reading from zip, we use a ByteArrayInputStream, which does support mark.
 					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
 									
