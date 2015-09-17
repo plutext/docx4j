@@ -8,7 +8,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
-import org.apache.poi.poifs.filesystem.DocumentInputStream;
+import org.docx4j.org.apache.poi.poifs.filesystem.DocumentInputStream;
 
 public class OLEExtractEmbeddedPDF {
 
