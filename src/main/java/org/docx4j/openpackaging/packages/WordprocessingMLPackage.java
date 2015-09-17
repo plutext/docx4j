@@ -22,9 +22,6 @@ package org.docx4j.openpackaging.packages;
 
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +35,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.dml.CTBlip;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
@@ -56,24 +52,13 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
-import org.docx4j.samples.ImageConvertEmbeddedToLinked.TraversalUtilBlipVisitor;
-import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
-import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
-import org.docx4j.utils.TraversalUtilVisitor;
-import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Document;
-import org.docx4j.wml.P;
-import org.docx4j.wml.R;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Styles;
-import org.docx4j.wml.Tbl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
