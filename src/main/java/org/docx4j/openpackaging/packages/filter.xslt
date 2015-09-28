@@ -21,13 +21,14 @@
 <xsl:param name="removeProofErrors"/> <!-- select="'passed in'"-->	
 <xsl:param name="removeContentControls"/>
 <xsl:param name="removeRsids"/>	
+<xsl:param name="removeBookmarks"/>
 <xsl:param name="tidyForDocx4all"/> <!--  this cleans up stuff not specifically supported by docx4all -->	
 		
 <xsl:template match="@*|node()">
   <xsl:copy>
     <xsl:apply-templates select="@*|node()"/>
   </xsl:copy>
-</xsl:template>
+</xsl:template
 
 <xsl:template match="w:lastRenderedPageBreak">
 	
@@ -42,7 +43,7 @@
 		</xsl:otherwise>
 	</xsl:choose>
 	
-</xsl:template>	
+</xsl:template>
 
 <xsl:template match="w:tab">
 	
@@ -64,6 +65,36 @@
 	
 	<xsl:choose>
 		<xsl:when test="$removeProofErrors=true()">
+			<!-- ignore it -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+
+<xsl:template match="w:bookmarkStart">
+	
+	<xsl:choose>
+		<xsl:when test="$removeBookmarks=true()">
+			<!-- ignore it -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+
+<xsl:template match="w:bookmarkEnd">
+	
+	<xsl:choose>
+		<xsl:when test="$removeBookmarks=true()">
 			<!-- ignore it -->
 		</xsl:when>
 		<xsl:otherwise>

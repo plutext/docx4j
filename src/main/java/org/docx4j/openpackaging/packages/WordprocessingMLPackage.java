@@ -496,6 +496,11 @@ public class WordprocessingMLPackage extends OpcPackage {
 			tidyForDocx4all = new Boolean(val);
 		}
 		
+		Boolean removeBookmarks = Boolean.FALSE;		
+		public void setRemoveBookmarks(boolean val) {
+			removeBookmarks = new Boolean(val);
+		}
+
 		
 		public Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
@@ -503,6 +508,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 			settings.put("removeProofErrors", removeProofErrors);
 			settings.put("removeContentControls", removeContentControls);
 			settings.put("removeRsids", removeRsids);
+			settings.put("removeBookmarks", removeBookmarks);
 			settings.put("tidyForDocx4all", tidyForDocx4all);
 			
 			return settings;
