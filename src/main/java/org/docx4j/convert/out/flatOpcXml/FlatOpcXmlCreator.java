@@ -134,7 +134,7 @@ public class FlatOpcXmlCreator implements Output {
 			}
 	    }
 
-	    log.info("...Done!" );		
+	    log.debug("...Done!" );		
 
 		 return pkgResult;
 	}
@@ -235,7 +235,7 @@ public class FlatOpcXmlCreator implements Output {
 					 * have been causing problems as well?? 
 					 */
 		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
-				log.info( "PUT SUCCESS: " + partName);		
+				log.debug( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("Problem saving part " + partName, e);
@@ -246,7 +246,7 @@ public class FlatOpcXmlCreator implements Output {
 			try {
 				dataResult.setAny(
 						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().getDocument().getDocumentElement());
-				log.info("PUT SUCCESS: " + partName);
+				log.debug("PUT SUCCESS: " + partName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("Problem saving part " + partName, e);
@@ -285,7 +285,7 @@ public class FlatOpcXmlCreator implements Output {
 
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.debug("For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
 		
@@ -293,13 +293,7 @@ public class FlatOpcXmlCreator implements Output {
 			if (r.getTargetMode() != null
 					&& r.getTargetMode().equals("External") ) {
 				
-				// ie its EXTERNAL
-				// As at 1 May 2008, we don't have a Part for these;
-				// there is just the relationship.
-
-				log.warn("Encountered external resource " + r.getTarget() 
-						   + " of type " + r.getType() );
-				
+				//log.debug("Encountered external resource " + r.getTarget() + " of type " + r.getType() );
 				// So
 				continue;				
 			}
@@ -325,14 +319,14 @@ public class FlatOpcXmlCreator implements Output {
 				// TODO - if this is already in our hashmap, skip
 				// to the next				
 				if (!false) {
-					log.info("Getting part /" + resolvedPartUri );
+					log.debug("Getting part /" + resolvedPartUri );
 					
 					Part part = packageIn.getParts().get(new PartName("/" + resolvedPartUri));
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
 					} else {
-						log.info(part.getClass().getName() );
+						log.debug(part.getClass().getName() );
 					}
 					
 					savePart(part);
@@ -367,11 +361,11 @@ public class FlatOpcXmlCreator implements Output {
 		}
 		
 		if (part instanceof BinaryPart ) {
-			log.info(".. saving binary stuff" );
+			log.debug(".. saving binary stuff" );
 			saveRawBinaryPart( part );
 			
 		} else {
-			log.info(".. saving " );					
+			log.debug(".. saving " );					
 			saveRawXmlPart( part );
 		}
 		handled.put(resolvedPartUri, resolvedPartUri);		
@@ -382,15 +376,15 @@ public class FlatOpcXmlCreator implements Output {
 				&& part.getRelationshipsPart().getJaxbElement().getRelationship()!=null
 				&& part.getRelationshipsPart().getJaxbElement().getRelationship().size()>0) {
 			RelationshipsPart rrp = part.getRelationshipsPart();
-			log.info("Found relationships " + rrp.getPartName() );
+			log.debug("Found relationships " + rrp.getPartName() );
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
-			log.info("Cf constructed name " + relPart );
+			log.debug("Cf constructed name " + relPart );
 			
 			saveRawXmlPart( rrp);
 			//, "/" + relPart );  // '/' necessary for Xml Pkg format.
 			addPartsFromRelationships( rrp );
 		} else {
-			log.info("No relationships for " + resolvedPartUri );					
+			log.debug("No relationships for " + resolvedPartUri );					
 		}
 	}
 	
@@ -425,7 +419,7 @@ public class FlatOpcXmlCreator implements Output {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
 
-		log.info( "PUT SUCCESS: " + resolvedPartUri);		
+		log.debug( "PUT SUCCESS: " + resolvedPartUri);		
 		return partResult;
 	}	
 	
