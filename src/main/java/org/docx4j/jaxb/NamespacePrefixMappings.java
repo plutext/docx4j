@@ -133,6 +133,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chart")) {
     		return "c";
     	}    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")) {
+    		return "b";
+    	}    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
     		return "a";
     	}    	
@@ -345,6 +348,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		if (prefix.equals("c"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/chart";
 
+		if (prefix.equals("b"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/bibliography";
+		
 		if (prefix.equals("a"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/main";
 
