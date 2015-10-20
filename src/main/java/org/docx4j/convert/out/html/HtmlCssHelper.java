@@ -25,6 +25,7 @@ import java.util.TreeMap;
 
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
@@ -129,7 +130,7 @@ public class HtmlCssHelper {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -159,7 +160,7 @@ public class HtmlCssHelper {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -248,7 +249,11 @@ public class HtmlCssHelper {
     	}    
     }
     
-    public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders) {
+    public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders, boolean isListItem) {
+    	
+    	if (isListItem) {
+    		result.append("display: list-item;");
+    	}
     	
 		if (pPr==null) {
 			return;
@@ -262,6 +267,13 @@ public class HtmlCssHelper {
 							|| (p instanceof PBorderBottom))) {
 				continue;
 			}
+
+	    	if (isListItem
+	    			&& p instanceof Indent) {
+	    		// Avoid indent settings which would overwrite the bullet 
+	    		// eg "position: relative; margin-left: 0.5in;text-indent: -0.25in;
+				continue;	    		
+	    	}
 			
 			if (p instanceof PShading) {
     	    	// To close the gap between divs, we need to avoid

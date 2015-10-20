@@ -26,7 +26,10 @@ import java.io.OutputStream;
 
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;
+import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.convert.out.html.SdtToListSdtTagHandler;
+import org.docx4j.convert.out.html.SdtWriter;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -113,6 +116,12 @@ public class ConvertOutHtml extends AbstractSample {
 		
 //		SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox() );
 //		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
+    	
+    	
+    	// list numbering:  comment out 1 or other of the following, depending on whether
+    	// you want list numbering hardcoded, or done using <li>.
+    	SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler()); 
+//    	htmlSettings.getFeatures().remove(ConversionFeatures.PP_HTML_COLLECT_LISTS);
 		
 		// output to an OutputStream.		
 		OutputStream os; 
