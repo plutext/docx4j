@@ -1,8 +1,5 @@
 package org.docx4j.fonts;
 
-import java.awt.font.NumericShaper;
-import java.util.concurrent.ExecutionException;
-
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.PropertyResolver;
@@ -23,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+
+import java.awt.font.NumericShaper;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Apply the appropriate font to the characters in the run,
@@ -369,8 +369,10 @@ public class RunFontSelector {
     	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr); 
     	// TODO use effective rPr, but don't inherit theme val,
     	// TODO, add cache?
-    	
-    	log.debug("effective\n" + XmlUtils.marshaltoString(rPr));
+
+    	if(log.isDebugEnabled()) {
+            log.debug("effective\n" + XmlUtils.marshaltoString(rPr));
+        }
     	
     	/* eg
     	 * 
@@ -433,8 +435,10 @@ public class RunFontSelector {
 //    					|| fontName.trim().length()==0
     					) {
     				// then what?
-    				log.warn("font name is null, for " + text);
-    				log.warn(XmlUtils.marshaltoString(rPr, true, true));
+                    if(log.isWarnEnabled()) {
+                        log.warn("font name is null, for " + text);
+                        log.warn(XmlUtils.marshaltoString(rPr, true, true));
+                    }
     				(new Throwable()).printStackTrace();
     			}    		
     			

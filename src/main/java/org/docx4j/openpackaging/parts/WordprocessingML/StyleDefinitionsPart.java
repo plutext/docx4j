@@ -20,14 +20,6 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.BrokenStyleRemediator;
@@ -47,6 +39,13 @@ import org.docx4j.wml.Style.BasedOn;
 import org.docx4j.wml.Styles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
 
 
 public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
@@ -238,9 +237,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     		this.getJaxbElement().getStyle().add(styleDocDefaults);
     		
     	} else {
-    		
-    		log.debug("Found existing style named " + ROOT_NAME);
-    		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+
+            if(log.isDebugEnabled()) {
+                log.debug("Found existing style named " + ROOT_NAME);
+                log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+            }
     		
         	// TODO: could be a name collision; some other app using that name :-(
     		// We could check whether normal is based on it (see towards end of this method)
@@ -363,10 +364,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
 		based.setVal(ROOT_NAME);		
 		normal.setBasedOn(based);
-		
-		log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
-		
-		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+
+        if(log.isDebugEnabled()) {
+            log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '" + styleDocDefaults.getName().getVal() + "'");
+            log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+        }
 		
 		
     	

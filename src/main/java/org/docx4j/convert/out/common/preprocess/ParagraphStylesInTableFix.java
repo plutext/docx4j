@@ -19,14 +19,6 @@
  */
 package org.docx4j.convert.out.common.preprocess;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -52,6 +44,14 @@ import org.docx4j.wml.TblPr;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 
@@ -281,8 +281,10 @@ public class ParagraphStylesInTableFix {
 					tableStyle = defaultTableStyle.getStyleId();
 					// shouldn't happen, but just in case..
 					if (tableStyle==null) {
-						log.error("Default table style has no ID!"); 
-						log.error(XmlUtils.marshaltoString(tableStyle));
+                        if(log.isErrorEnabled()) {
+                            log.error("Default table style has no ID!");
+                            log.error(XmlUtils.marshaltoString(tableStyle));
+                        }
 						return null;						
 					}
 				}
@@ -318,11 +320,15 @@ public class ParagraphStylesInTableFix {
 			
 			// First, docDefaults
 			Style styleToApply = hierarchy.get(hierarchy.size()-1); // DocDefault
-			log.debug("DocDefault");
-			log.debug(XmlUtils.marshaltoString(styleToApply, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug("DocDefault");
+                log.debug(XmlUtils.marshaltoString(styleToApply, true, true));
+            }
 			StyleUtil.apply(styleToApply, newStyle);
-			log.debug("Result");
-			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug("Result");
+                log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            }
 			
 			// Next, table style - first/temporarily in tableStyleContrib
 			Style tableStyleContrib = null;
@@ -359,10 +365,15 @@ public class ParagraphStylesInTableFix {
 
 	    		for (int i = tblStyles.size()-1; i>=0; i--) {
 	    			styleToApply = tblStyles.get(i);
-	    			log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+                    if(log.isDebugEnabled()) {
+                        log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+
+                    }
 	    			
 	    			tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
-	    			log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
+                    if(log.isDebugEnabled()) {
+                        log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
+                    }
 	    		}
 			}
 			
@@ -384,17 +395,23 @@ public class ParagraphStylesInTableFix {
 			// As these are different style types:-
 			newStyle.setPPr(StyleUtil.apply(tableStyleContrib.getPPr(), newStyle.getPPr()));
 			newStyle.setRPr(StyleUtil.apply(tableStyleContrib.getRPr(), newStyle.getRPr()));
-			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            }
 			
 			
 			// Finally, rest of list in reverse
 			for (int i = hierarchy.size()-2; i>=0; i--) {
 				styleToApply = hierarchy.get(i);
-				log.debug("Applying " + styleToApply.getStyleId() +
-						"\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+                if(log.isDebugEnabled()) {
+                    log.debug("Applying " + styleToApply.getStyleId() +
+                            "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+                }
 				StyleUtil.apply(styleToApply, newStyle);
-				log.debug("Result: " + 
-						"\n" + XmlUtils.marshaltoString(newStyle, true, true));
+                if(log.isDebugEnabled()) {
+                    log.debug("Result: " +
+                            "\n" + XmlUtils.marshaltoString(newStyle, true, true));
+                }
 			}
 			
 		    /*
@@ -494,7 +511,9 @@ public class ParagraphStylesInTableFix {
 			// required for PDF (but not XHTML) output
 			propertyResolver.activateStyle(newStyle);
 
-			log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+            }
 			
 			return resultStyleID;
 		}

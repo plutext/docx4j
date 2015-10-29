@@ -19,14 +19,6 @@
  **/
 package org.docx4j.model.datastorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.xml.bind.JAXBException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.TraversalUtil;
@@ -42,7 +34,6 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
@@ -62,6 +53,13 @@ import org.docx4j.wml.Tr;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	
@@ -211,8 +209,9 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 							null, false));
 				
 			} else {
-				
-				log.debug("Not processing " + XmlUtils.marshaltoString(sdtPr, true));
+				if(log.isDebugEnabled()) {
+                    log.debug("Not processing " + XmlUtils.marshaltoString(sdtPr, true));
+                }
 				 
 			}
 			
@@ -337,8 +336,10 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 						if (sdtParent instanceof SdtRun) {
 							return run;							
 						} else {
-						log.error("empty image template in sdt: " + XmlUtils.marshaltoString(sdt.getSdtPr(), true)
-								+  sdtParent.getClass().getName());
+                            if(log.isErrorEnabled()) {
+                                log.error("empty image template in sdt: " + XmlUtils.marshaltoString(sdt.getSdtPr(), true)
+                                        + sdtParent.getClass().getName());
+                            }
 						}
 					} else {
 						Object contentChild = sdtContent.get(0);

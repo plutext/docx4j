@@ -83,18 +83,18 @@
  */
 package org.docx4j.model.listnumbering;
 
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents:
@@ -188,11 +188,15 @@ public class ListNumberingDefinition {
 				 * </w:lvlOverride>
 				 */
 				for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes) {
-					log.debug("found LvlOverride "
-							+ XmlUtils.marshaltoString(overrideNode, true));
+                    if(log.isDebugEnabled()) {
+                        log.debug("found LvlOverride "
+                                + XmlUtils.marshaltoString(overrideNode, true));
+                    }
 					
 					if (overrideNode.getIlvl() == null) {
-						log.warn("Missing @w:ilvl! " + XmlUtils.marshaltoString(overrideNode, true));
+                        if(log.isWarnEnabled()) {
+                            log.warn("Missing @w:ilvl! " + XmlUtils.marshaltoString(overrideNode, true));
+                        }
 					} else {
 						String overrideLevelId = overrideNode.getIlvl().toString(); 
 						log.debug(".. " + overrideLevelId);

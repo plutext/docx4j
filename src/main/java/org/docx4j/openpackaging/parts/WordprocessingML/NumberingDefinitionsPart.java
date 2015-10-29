@@ -21,12 +21,6 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.HashMap;
-
-import javax.xml.bind.JAXBException;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -52,6 +46,11 @@ import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.HashMap;
 
 
 
@@ -285,7 +284,9 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		if (numPr.getIlvl()!=null) ilvlString = numPr.getIlvl().getVal().toString();
 		
 		if (numPr.getNumId()==null) {
-			log.warn("numPr without numId: " + XmlUtils.marshaltoString(numPr, true, true));
+            if(log.isWarnEnabled()) {
+                log.warn("numPr without numId: " + XmlUtils.marshaltoString(numPr, true, true));
+            }
 						
 			return null;
 		} else {		

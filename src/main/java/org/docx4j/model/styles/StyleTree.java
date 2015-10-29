@@ -1,17 +1,17 @@
 package org.docx4j.model.styles;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represent a style hierarchy as a tree.
@@ -72,7 +72,9 @@ public class StyleTree {
                 	log.warn("Couldn't find style: " + styleId);
                 	continue;
                 } else if (style.getType()==null) {
-                	log.warn("missing type: " + XmlUtils.marshaltoString(style)); 
+                    if(log.isWarnEnabled()) {
+                        log.warn("missing type: " + XmlUtils.marshaltoString(style));
+                    }
                 } else
         		// Is it a table style?
         		if (style.getType().equals("table")) {                

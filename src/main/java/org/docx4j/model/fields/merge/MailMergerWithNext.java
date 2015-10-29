@@ -1,12 +1,5 @@
 package org.docx4j.model.fields.merge;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.transform.TransformerException;
-
 import org.apache.commons.lang.StringUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -18,14 +11,17 @@ import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.fields.FormattingSwitchHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.vml.CTTextbox;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.ContentAccessor;
-import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.transform.TransformerException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MailMergerWithNext extends MailMerger {
 	
@@ -155,8 +151,10 @@ public class MailMergerWithNext extends MailMerger {
                     if (o instanceof Text) {
                         ((Text) o).setValue("FORMTEXT");
                     } else {
-                        log.error("TODO: set FORMTEXT in" + o.getClass().getName());
-                        log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                        if(log.isErrorEnabled()) {
+                            log.error("TODO: set FORMTEXT in" + o.getClass().getName());
+                            log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                        }
                         continue;
                     }
 

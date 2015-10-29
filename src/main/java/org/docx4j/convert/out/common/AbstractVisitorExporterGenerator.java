@@ -19,9 +19,6 @@
  */
 package org.docx4j.convert.out.common;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
@@ -45,6 +42,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The …ExporterGenerator is the visitor, that gets used in those cases where a document is done 
@@ -391,8 +391,10 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		//CTMarkupRange is the w:bookmarkEnd
 			
 		} else {
-			log.warn("Need to handle " + o.getClass().getName() );	
-			log.debug(XmlUtils.marshaltoString(o));
+			log.warn("Need to handle " + o.getClass().getName() );
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(o));
+            }
 		}
 		
 		return null;

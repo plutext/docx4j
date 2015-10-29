@@ -1,12 +1,5 @@
 package org.docx4j.model.fields;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.transform.TransformerException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -22,6 +15,12 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.transform.TransformerException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Refreshes the values of certain fields in the
@@ -271,8 +270,10 @@ public class FieldUpdater {
 		if (o instanceof Text) {
 			return ((Text)o).getValue();
 		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+            if(log.isErrorEnabled()) {
+                log.error("TODO: extract field name from " + o.getClass().getName());
+                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+            }
 			return null;
 		}
 	}

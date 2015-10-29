@@ -1,10 +1,10 @@
 package org.docx4j.utils;
 
-import java.util.List;
-
 import org.docx4j.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /** 
  * Use this if there is only a single object type (eg just P's)
@@ -36,9 +36,11 @@ public class SingleTraversalUtilVisitorCallback extends AbstractTraversalUtilVis
 			log.warn("visitorClass==null for some element with parent " + parent.getClass().getName() );
 			//log.warn(XmlUtils.marshaltoString(parent));
 		} else if (child==null) {
-			log.warn("child==null for some element with parent " + parent.getClass().getName() );
-			// eg <w:t/>
-			log.warn(XmlUtils.marshaltoString(parent));
+            if(log.isWarnEnabled()) {
+                log.warn("child==null for some element with parent " + parent.getClass().getName());
+                // eg <w:t/>
+                log.warn(XmlUtils.marshaltoString(parent));
+            }
 		} else if (visitorClass.isAssignableFrom(child.getClass())) {
 			visitor.apply(child, parent, siblings);
 		}
