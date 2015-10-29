@@ -95,7 +95,9 @@ public class OpenDoPEHandler {
 		} else {
 			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
 					.getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+            }
 			
 			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(2*xPaths.getXpath().size());
 			
@@ -111,7 +113,9 @@ public class OpenDoPEHandler {
 		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
 			org.opendope.conditions.Conditions conditions = wordMLPackage.getMainDocumentPart()
 					.getConditionsPart().getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(conditions, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(conditions, true, true));
+            }
 			
 			conditionsMap = new HashMap<String, Condition>(2*conditions.getCondition().size());
 			
@@ -124,7 +128,9 @@ public class OpenDoPEHandler {
 		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
 			components = wordMLPackage.getMainDocumentPart()
 					.getComponentsPart().getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(components, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(components, true, true));
+            }
 		}
 
 		shallowTraversor = new ShallowTraversor();
@@ -1213,7 +1219,9 @@ public class OpenDoPEHandler {
 
 		SdtPr sdtPr = getSdtPr(sdt);
 
-		log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
+        if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
+        }
 
 		// CTDataBinding binding =
 		// (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
@@ -1524,8 +1532,10 @@ public class OpenDoPEHandler {
 
 			// TODO: this code assumes the condition contains
 			// a simple xpath
-			log.debug("Using condition"
-					+ XmlUtils.marshaltoString(c, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug("Using condition"
+                        + XmlUtils.marshaltoString(c, true, true));
+            }
 
 			Condition newCondition = c.repeat(xpathBase, index, conditionsMap, xpathsMap);
 

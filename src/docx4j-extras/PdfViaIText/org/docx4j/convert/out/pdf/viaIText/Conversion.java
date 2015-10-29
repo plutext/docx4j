@@ -258,7 +258,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						}
 						
 						if (documentFont==null) {
-							log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+                            if(log.isErrorEnabled() {
+                                log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+                            }
 							documentFont=Mapper.FONT_FALLBACK;
 						}
 						

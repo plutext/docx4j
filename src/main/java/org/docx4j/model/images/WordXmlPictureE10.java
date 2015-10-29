@@ -136,7 +136,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	private void findImageData() {
 		
     	if (shape.getPathOrFormulasOrHandles()==null) {
-    		log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
+            if(log.isDebugEnabled()) {
+                log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
+            }
     	} else {
     		for (Object o : shape.getPathOrFormulasOrHandles() ) {
     			

@@ -135,7 +135,9 @@ public class MailMerger {
 		
 		// create contents destined for the main document part
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+        if(log.isDebugEnabled()) {
+            log.debug("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+        }
 		List<List<Object>> mdpResults = performOverList(input, input.getMainDocumentPart().getContent(), data, formTextFieldNames );
 
 		// headers/footers
@@ -159,8 +161,10 @@ public class MailMerger {
 				
 				JaxbXmlPart part = (JaxbXmlPart)input.getMainDocumentPart().getRelationshipsPart().getPart(relId);
 				FieldsPreprocessor.complexifyFields(part );
-				
-				log.debug("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+
+                if(log.isDebugEnabled()) {
+                    log.debug("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+                }
 				
 				hfTemplates.put(rel, part);
 			}
@@ -210,7 +214,9 @@ public class MailMerger {
 			// now inject the content
 			target.getMainDocumentPart().getContent().addAll(content);
 
-			log.debug(XmlUtils.marshaltoString(target.getMainDocumentPart().getJaxbElement(), true, true) );
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(target.getMainDocumentPart().getJaxbElement(), true, true));
+            }
 			
 			// add sectPr to final paragraph
 			Object last = content.get( content.size()-1);
@@ -401,21 +407,27 @@ public class MailMerger {
 					
 					JaxbXmlPart part = (JaxbXmlPart)rp.getPart(r);
 
-					log.debug("\n\n BEFORE " + part.getPartName().getName() + "\n\n"
-							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                    if(log.isDebugEnabled()) {
+                        log.debug("\n\n BEFORE " + part.getPartName().getName() + "\n\n"
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                    }
 					
 					FieldsPreprocessor.complexifyFields(part );
-					
-					log.debug("\n\n COMPLEXIFIED " + part.getPartName().getName() + "\n\n"
-							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+
+                    if(log.isDebugEnabled()) {
+                        log.debug("\n\n COMPLEXIFIED " + part.getPartName().getName() + "\n\n"
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                    }
 					
 					List<Object> results = performOnInstance(input,
 							((ContentAccessor)part).getContent(), data, formTextFieldNames );
 					((ContentAccessor)part).getContent().clear();
 					((ContentAccessor)part).getContent().addAll(results);
-					
-					log.debug("\n\n AFTER " + part.getPartName().getName() + "\n\n"
-							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+
+                    if(log.isDebugEnabled()) {
+                        log.debug("\n\n AFTER " + part.getPartName().getName() + "\n\n"
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                    }
 					
 				}			
 			}		
@@ -550,8 +562,10 @@ public class MailMerger {
 					if (o instanceof Text) {
 						((Text)o).setValue("FORMTEXT");
 					} else {
-						log.error("TODO: set FORMTEXT in" + o.getClass().getName() );
-						log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+                        if(log.isErrorEnabled()) {
+                            log.error("TODO: set FORMTEXT in" + o.getClass().getName());
+                            log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                        }
 						continue;
 					}
 					
@@ -597,7 +611,9 @@ public class MailMerger {
 				// 2.8.1
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));				
+                if(log.isDebugEnabled()) {
+                    log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+                }
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
 			} else if (p.getParent() instanceof java.util.List) {
 				// 3.0
@@ -609,7 +625,9 @@ public class MailMerger {
 				// 3.0.1
 				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				log.debug("Canonicalised: "+ XmlUtils.marshaltoString(newP, true, true));
+                if(log.isDebugEnabled()) {
+                    log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
+                }
 				((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
 			} else {
 				throw new Docx4JException("Unexpected parent: "+ p.getParent().getClass().getName());
@@ -682,8 +700,10 @@ public class MailMerger {
 		if (o instanceof Text) {
 			return ((Text)o).getValue();
 		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+            if(log.isErrorEnabled()) {
+                log.error("TODO: extract field name from " + o.getClass().getName());
+                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+            }
 			return null;
 		}
 	}

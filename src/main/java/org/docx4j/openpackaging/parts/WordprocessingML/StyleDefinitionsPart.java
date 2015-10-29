@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -248,9 +247,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     		this.getJaxbElement().getStyle().add(styleDocDefaults);
     		
     	} else {
-    		
-    		log.debug("Found existing style named " + ROOT_NAME);
-    		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+
+            if(log.isDebugEnabled()) {
+                log.debug("Found existing style named " + ROOT_NAME);
+                log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+            }
     		
         	// TODO: could be a name collision; some other app using that name :-(
     		// We could check whether normal is based on it (see towards end of this method)
@@ -373,10 +374,11 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
 		based.setVal(ROOT_NAME);		
 		normal.setBasedOn(based);
-		
-		log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '"+ styleDocDefaults.getName().getVal() + "'");
-		
-		log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+
+        if(log.isDebugEnabled()) {
+            log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '" + styleDocDefaults.getName().getVal() + "'");
+            log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+        }
 		
 		
     	

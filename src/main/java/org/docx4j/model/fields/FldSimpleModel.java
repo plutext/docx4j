@@ -1,16 +1,15 @@
 package org.docx4j.model.fields;
 
+import org.docx4j.XmlUtils;
+import org.docx4j.wml.CTSimpleField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
+
+import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.xml.transform.TransformerException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
-import org.docx4j.wml.CTSimpleField;
-import org.w3c.dom.Node;
 
 /** Just a basic model for w:fldSimple that gets used in the 
  *  FldSimpleModelConverter for the conversion to pdf/html
@@ -30,7 +29,9 @@ public class FldSimpleModel {
 	
 	public void build(CTSimpleField fldSimple, Node content) throws TransformerException {
 		this.fldSimple = fldSimple;
-		log.debug("\n" + XmlUtils.marshaltoString(fldSimple, true, true));
+        if(log.isDebugEnabled()) {
+            log.debug("\n" + XmlUtils.marshaltoString(fldSimple, true, true));
+        }
 		this.content = content;
 		setupNameParameterString(fldSimple.getInstr());
 	}

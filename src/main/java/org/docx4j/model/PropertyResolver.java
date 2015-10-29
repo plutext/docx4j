@@ -175,7 +175,9 @@ public class PropertyResolver {
 		initialiseLiveStyles();		
 		
 		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
-		log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
+        if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
+        }
 		documentDefaultPPr = docDefaults.getPPr();
 		documentDefaultRPr = docDefaults.getRPr();
 
@@ -343,7 +345,9 @@ public class PropertyResolver {
 		} else {
 			styleId = expressPPr.getPStyle().getVal();
 			if (styleId==null) {
-				log.warn("Missing style id: " + XmlUtils.marshaltoString(expressPPr));
+                if(log.isWarnEnabled()) {
+                    log.warn("Missing style id: " + XmlUtils.marshaltoString(expressPPr));
+                }
 				if (log.isDebugEnabled()) {
 					Throwable t = new Throwable();
 					log.debug("Null styleId produced by code path", t);
@@ -617,7 +621,9 @@ public class PropertyResolver {
 		// Now, apply the properties starting at the top of the stack
 		while (!rPrStack.empty() ) {
 			RPr rPr = rPrStack.pop();
-			log.debug("applying " + XmlUtils.marshaltoString(rPr));
+            if(log.isDebugEnabled()) {
+                log.debug("applying " + XmlUtils.marshaltoString(rPr));
+            }
 			applyRPr(rPr, resolvedRPr);
 		}
 		resolvedStyleRPrComponent.put(styleId, resolvedRPr);
@@ -751,9 +757,10 @@ public class PropertyResolver {
 	
 	
 	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
-		
-		log.debug( "apply " + XmlUtils.marshaltoString(pPrToApply,  true, true)
-			+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+        if(log.isDebugEnabled()) {
+            log.debug("apply " + XmlUtils.marshaltoString(pPrToApply, true, true)
+                    + "\n\r to " + XmlUtils.marshaltoString(effectivePPr, true, true));
+        }
 		
 		StyleUtil.apply(pPrToApply, effectivePPr);
 		
@@ -769,7 +776,9 @@ public class PropertyResolver {
 //			}
 //    	}
 
-		log.debug( "result " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+        if(log.isDebugEnabled()) {
+            log.debug("result " + XmlUtils.marshaltoString(effectivePPr, true, true));
+        }
     	
 	}
 	

@@ -31,9 +31,11 @@ public class BrokenStyleRemediator {
     public static void remediate(Style s) {
     	
     	if (s.getStyleId()==null) {
-    		
-    		log.warn("Style is missing ID(!)");
-    		log.warn(XmlUtils.marshaltoString(s));
+
+            if(log.isWarnEnabled()) {
+                log.warn("Style is missing ID(!)");
+                log.warn(XmlUtils.marshaltoString(s));
+            }
     		
     		// Set the ID to the name
     		if (s.getName()!=null

@@ -94,10 +94,14 @@ public class AbstractTableWriterModelCell {
 		tcPr = tc.getTcPr();
 
 		if (content==null) {
-			logger.error("No content for row " + row + ", col " + col + "\n" 
-							+ XmlUtils.marshaltoString(tc, true, true));
+            if(logger.isErrorEnabled()) {
+                logger.error("No content for row " + row + ", col " + col + "\n"
+                        + XmlUtils.marshaltoString(tc, true, true));
+            }
 		} else {
-			logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+            if(logger.isDebugEnabled()) {
+                logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+            }
 		}
 
 		/* xhtmlTc.appendChild(

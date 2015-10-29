@@ -19,12 +19,6 @@
  */
 package org.docx4j.model.styles;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.sharedtypes.STOnOff;
@@ -111,6 +105,11 @@ import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.math.BigInteger;
+import java.util.List;
 
 /*
  *  @author Alberto Zerolo
@@ -1107,7 +1106,9 @@ public class StyleUtil {
 		else {
 
 			log.warn("style type is currently unknown or null");
-			log.debug(XmlUtils.marshaltoString(style));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(style));
+            }
 			
 			return isEmpty(style.getPPr()) &&
 					   isEmpty(style.getRPr()) &&
