@@ -21,45 +21,6 @@
 
 package org.docx4j;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -78,6 +39,43 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.bind.Binder;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class XmlUtils {
 	
@@ -786,37 +784,11 @@ public class XmlUtils {
 		}
 		
 		try {
-			JAXBElement<?> elem;
-			Class<?> valueClass;
-			if (value instanceof JAXBElement<?>) {
-				log.debug("deep copy of JAXBElement..");
-				elem = (JAXBElement<?>) value;
-				valueClass = elem.getDeclaredType();
-			} else {
-				log.debug("deep copy of " + value.getClass().getName() );
-				@SuppressWarnings("unchecked")
-				Class<T> classT = (Class<T>) value.getClass();
-				elem = new JAXBElement<T>(new QName("temp"), classT, value);
-				valueClass = classT;
-			}
-
-			Marshaller mar = jc.createMarshaller();
-			ByteArrayOutputStream bout = new ByteArrayOutputStream(256);
-			mar.marshal(elem, bout);
-			
-//			byte[] bytes = bout.toByteArray();
-//			try {
-//				System.out.println(new String(bytes, "UTF-8"));
-//			} catch (UnsupportedEncodingException e) {
-//				e.printStackTrace();
-//			}
-
-			Unmarshaller unmar = jc.createUnmarshaller();
-			if (log.isDebugEnabled()){
-				unmar.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			}
-			elem = unmar.unmarshal(new StreamSource(new ByteArrayInputStream(
-					bout.toByteArray())), valueClass);
+            @SuppressWarnings("unchecked")
+            Class<T> clazz = (Class<T>) value.getClass();
+            JAXBElement<T> contentObject = new JAXBElement<T>(new QName(clazz.getSimpleName()), clazz, value);
+            JAXBSource source = new JAXBSource(jc, contentObject);
+            JAXBElement<T> elem = jc.createUnmarshaller().unmarshal(source, clazz);
 			
 			/*
 			 * Losing content here?
