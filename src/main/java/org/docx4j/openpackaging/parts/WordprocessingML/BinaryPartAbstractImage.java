@@ -1163,10 +1163,16 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			log.debug("writableWidthTwips: " + writableWidthTwips);
 			
 			  ImageSize size = imageInfo.getSize();
+
+			  // get image size in pixels
+			  Dimension2D dpx = size.getDimensionPx();
 			  
-			  Dimension2D dPt = size.getDimensionPt();
-			double imageWidthTwips = dPt.getWidth() * 20;
-			log.debug("imageWidthTwips: " + imageWidthTwips);
+			  // convert pixels to twips (uses configured DPI setting - NOT the image DPI)
+           int imageWidthTwips = UnitsOfMeasurement.pxToTwip((float)dpx.getWidth());
+           int imageHeightTwips = UnitsOfMeasurement.pxToTwip((float)dpx.getHeight());
+
+           log.debug("imageWidthTwips: " + imageWidthTwips);
+           log.debug("imageHeightTwips: " + imageHeightTwips);
 			
 			long cx;
 			long cy;
@@ -1177,14 +1183,14 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				scaled = true;
 				
 				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
-                cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips / imageWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(imageHeightTwips * writableWidthTwips / imageWidthTwips);
 				
 			} else {
 
 				log.debug("Scaling image - not necessary");
 				
 				cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
-				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
+				cy = UnitsOfMeasurement.twipToEMU(imageHeightTwips);			
 				
 			}
 			
