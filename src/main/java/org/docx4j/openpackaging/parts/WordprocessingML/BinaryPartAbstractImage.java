@@ -1168,8 +1168,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			  Dimension2D dpx = size.getDimensionPx();
 			  
 			  // convert pixels to twips (uses configured DPI setting - NOT the image DPI)
-           int imageWidthTwips = UnitsOfMeasurement.pxToTwip((float)dpx.getWidth());
-           int imageHeightTwips = UnitsOfMeasurement.pxToTwip((float)dpx.getHeight());
+           double imageWidthTwips = UnitsOfMeasurement.pxToTwipDouble(dpx.getWidth());
+           double imageHeightTwips = UnitsOfMeasurement.pxToTwipDouble(dpx.getHeight());
 
            log.debug("imageWidthTwips: " + imageWidthTwips);
            log.debug("imageHeightTwips: " + imageHeightTwips);
