@@ -134,7 +134,7 @@ public class PStyle12PtInTableGridOverrideFalseTest extends PStyleTableAbstract 
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
-		Style s = getStyle(wordMLPackage, STYLE_NAME);
+		Style s = getStyle(wordMLPackage, getStyleName());
 		Assert.assertTrue(s.getRPr().getSz().getVal().intValue()==EXPECTED_RESULT); 
 	}
 	

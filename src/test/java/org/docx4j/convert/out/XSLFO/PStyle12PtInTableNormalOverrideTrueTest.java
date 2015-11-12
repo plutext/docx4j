@@ -59,10 +59,13 @@ public class PStyle12PtInTableNormalOverrideTrueTest extends PStyleTableAbstract
 		
 		initTbls(false);  // use TableNormal
 		initOtherXml();	
-		
-		STYLE_NAME = "Normal-TableNormal-BR";		
+
 	}
 	
+	@Override
+	protected String getStyleName() {
+	   return "Normal-TableNormal-BR";
+	}
 
 
 	@Test
@@ -114,7 +117,7 @@ public class PStyle12PtInTableNormalOverrideTrueTest extends PStyleTableAbstract
 		
 		ParagraphStylesInTableFix.process(wordMLPackage);
 		
-		Style s = getStyle(wordMLPackage, STYLE_NAME);
+		Style s = getStyle(wordMLPackage, getStyleName());
 		Assert.assertTrue(s.getRPr().getSz()==null); 
 	}
 	

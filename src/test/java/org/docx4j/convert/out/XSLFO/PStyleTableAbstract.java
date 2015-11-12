@@ -22,8 +22,10 @@ public abstract class PStyleTableAbstract {
 	
 	protected static boolean OVERRIDE;
 	protected static int EXPECTED_RESULT;
-	
-	protected static String STYLE_NAME = "Normal-TableGrid-BR";
+
+	protected String getStyleName() {
+	   return "Normal-TableGrid-BR";
+	}
 	
 	static String styles_inRPrDefault;
 	static String styles_inNormal;
@@ -74,7 +76,8 @@ public abstract class PStyleTableAbstract {
 //		
 //		this.saveDocx(wordMLPackage, null);
 		
-		Style s = getStyle(wordMLPackage, STYLE_NAME);
+		Style s = getStyle(wordMLPackage, getStyleName());
+
 		Assert.assertTrue(s.getRPr().getSz().getVal().intValue()==expectedResult);
 		
 		return wordMLPackage;
