@@ -371,7 +371,10 @@ public class LayoutMasterSetBuilder {
 		RegionBody rb = getFactory().createRegionBody();		
 		rb.setMarginLeft("0mm");
 		rb.setMarginRight("0mm");
-		
+
+		rb.setColumnCount(String.valueOf(page.getColsNum())); //Number of Equal Width Columns
+		rb.setColumnGap(UnitsOfMeasurement.twipToBest(page.getColsSpacing())); //Spacing Between Equal Width Columns
+
 		float halfPageHeight = page.getPgSz().getH().intValue()/40; // convert from twips, then * 0.5
 		String halfPageHeightPts = halfPageHeight + "pt";  
 		
@@ -423,8 +426,8 @@ public class LayoutMasterSetBuilder {
 		
 		return spm;
 	}
-	
-	
+
+
 	private static ObjectFactory getFactory() {
 		if (factory == null) factory = new ObjectFactory();
 		return factory;
