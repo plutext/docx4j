@@ -16,7 +16,7 @@ public abstract class AbstractSample {
 
 		if (args.length<2) throw new IllegalArgumentException("Output file arg missing");
 
-		outputfilepath = args[0];
+		outputfilepath = args[1];
 	}
 	
 
