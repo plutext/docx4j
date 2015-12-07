@@ -87,7 +87,7 @@ public class ContentControlBindingExtensions {
 		//If a document doesn't include the Opendope definitions, eg. the XPathPart,
 		//then the only thing you can do is insert the xml
 		//the example document binding-simple.docx doesn't have an XPathPart....
-		Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_BIND_INSERT_XML | Docx4J.FLAG_BIND_BIND_XML);
+		Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_BIND_INSERT_XML | Docx4J.FLAG_BIND_BIND_XML | Docx4J.FLAG_BIND_REMOVE_SDT);
 		
 		//Save the document 
 		Docx4J.save(wordMLPackage, new File(OUTPUT_DOCX), Docx4J.FLAG_NONE);
