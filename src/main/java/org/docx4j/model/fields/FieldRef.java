@@ -304,7 +304,9 @@ public class FieldRef {
 				log.error("Nested field " + nested.getFldName() );				
 				
 			} else {
-				log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+                if(log.isErrorEnabled()) {
+                    log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                }
 			}
 			return null;
 		}
@@ -368,8 +370,10 @@ public class FieldRef {
 					mergeFormat = Boolean.TRUE;
 				}
 			} else {
-				log.error("TODO: extract field name from " + o.getClass().getName() );
-				log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );				
+                if(log.isErrorEnabled()) {
+                    log.error("TODO: extract field name from " + o.getClass().getName());
+                    log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+                }
 			}
 		}
 		return mergeFormat;

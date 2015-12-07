@@ -1,18 +1,5 @@
 package org.docx4j.model.fields;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -26,6 +13,18 @@ import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -149,8 +148,9 @@ public class FieldsPreprocessor {
 //		fieldRPr = null;
 		
 		stack = new LinkedList<FieldRef>();
-		
-		log.debug(XmlUtils.marshaltoString(p));
+		if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(p));
+        }
 		handleContent(p.getContent(), newP);
 
 		// log.debug(XmlUtils.marshaltoString(newP, true));
@@ -279,8 +279,10 @@ public class FieldsPreprocessor {
 		// note that the newR object persists between invocations of this method,
 		// so you have to be careful to actually add it to the docx 
 		// before re-creating it
-		
-		log.debug("\nInput run: \n " + XmlUtils.marshaltoString(existingRun, true, true));
+
+        if(log.isDebugEnabled()) {
+            log.debug("\nInput run: \n " + XmlUtils.marshaltoString(existingRun, true, true));
+        }
 		
 		for (Object o2 : existingRun.getContent() ) {
 			
@@ -339,7 +341,9 @@ public class FieldsPreprocessor {
 					newR.getContent().add(o2);
 					if (!newAttachPoint.getContent().contains(newR)) {
 						newAttachPoint.getContent().add(newR);
-						log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        if(log.isDebugEnabled()) {
+                            log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        }
 					}
 					
 					if ( fieldIsTopLevel() ) {
@@ -402,7 +406,9 @@ public class FieldsPreprocessor {
 							 */
 							if (!newAttachPoint.getContent().contains(newR)) {
 								newAttachPoint.getContent().add(newR);
-								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                }
 							}
 							newR = Context.getWmlObjectFactory().createR();						
 						}						
@@ -431,7 +437,9 @@ public class FieldsPreprocessor {
 													
 							if (!newAttachPoint.getContent().contains(newR)) {
 								newAttachPoint.getContent().add(newR);
-								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                }
 							}
 							
 						}					
@@ -444,7 +452,9 @@ public class FieldsPreprocessor {
 						}
 						if (!newAttachPoint.getContent().contains(newR)) { // test, since this is also done immediately before each loop ends
 							newAttachPoint.getContent().add(newR);
-							log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                            if(log.isDebugEnabled()) {
+                                log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                            }
 						}
 						
 						
@@ -476,7 +486,9 @@ public class FieldsPreprocessor {
 
 					if (!newAttachPoint.getContent().contains(newR)) {
 						newAttachPoint.getContent().add(newR);
-						log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        if(log.isDebugEnabled()) {
+                            log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        }
 					}
 				
 					newR = Context.getWmlObjectFactory().createR();						
@@ -540,7 +552,9 @@ public class FieldsPreprocessor {
 				
 				// we only want a single run between SEPARATOR and END,
 				// and we added that in the SEPARATE stuff above
-				log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
+                if(log.isDebugEnabled()) {
+                    log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
+                }
 				
 			} 
 

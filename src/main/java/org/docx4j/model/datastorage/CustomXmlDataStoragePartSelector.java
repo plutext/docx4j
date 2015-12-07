@@ -20,9 +20,6 @@
  */
 package org.docx4j.model.datastorage;
 
-import java.util.HashMap;
-import java.util.List;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -35,6 +32,9 @@ import org.docx4j.wml.SdtElement;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Mechanism to find the user's XML data part
@@ -94,7 +94,10 @@ public class CustomXmlDataStoragePartSelector {
 				CustomXmlDataStoragePart customXmlDataStoragePart 
 					= (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
 				if (customXmlDataStoragePart==null) {
-					log.warn("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(xp));
+                    if(log.isWarnEnabled()) {
+                        log.warn("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(xp));
+
+                    }
 					continue;			
 				} else {
 					log.debug("Using " + xp.getDataBinding().getStoreItemID());

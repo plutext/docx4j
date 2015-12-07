@@ -1,8 +1,5 @@
 package org.docx4j.model.datastorage.migration;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.fields.ComplexFieldLocator;
@@ -15,6 +12,9 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class will help you to migrate
@@ -52,8 +52,10 @@ public class FromMergeFields extends AbstractMigrator {
 		createParts(pkgOut);
 		
 		FieldsPreprocessor.complexifyFields(pkgOut.getMainDocumentPart() );
-		log.debug("complexified: " 
-				+ XmlUtils.marshaltoString(pkgOut.getMainDocumentPart().getJaxbElement(), true));
+        if(log.isDebugEnabled()) {
+            log.debug("complexified: "
+                    + XmlUtils.marshaltoString(pkgOut.getMainDocumentPart().getJaxbElement(), true));
+        }
 		
 		// find fields
 		ComplexFieldLocator fl = new ComplexFieldLocator();
@@ -143,8 +145,10 @@ public class FromMergeFields extends AbstractMigrator {
 		if (o instanceof Text) {
 			return ((Text)o).getValue();
 		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			log.error(XmlUtils.marshaltoString(instructions.get(0), true, true) );
+            if(log.isErrorEnabled()) {
+                log.error("TODO: extract field name from " + o.getClass().getName());
+                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+            }
 			return null;
 		}
 	}

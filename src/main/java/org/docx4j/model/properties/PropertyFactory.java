@@ -19,10 +19,6 @@
  */
 package org.docx4j.model.properties;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Bidi;
@@ -80,6 +76,10 @@ import org.docx4j.wml.TrPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.css.CSSValue;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PropertyFactory {
 	
@@ -443,7 +443,9 @@ public class PropertyFactory {
 		}
 		
 		if (pPr.getInd() != null) {
-			log.debug("Indent from ppr: " + XmlUtils.marshaltoString(pPr.getInd(),  true, true)) ; 
+            if(log.isDebugEnabled()) {
+                log.debug("Indent from ppr: " + XmlUtils.marshaltoString(pPr.getInd(), true, true));
+            }
 			properties.add(new Indent(pPr.getInd()));			
 		}
 		
