@@ -141,9 +141,11 @@ public class TableWriter extends AbstractTableWriter {
 			cellNode.setAttribute("border-style", "none");
 			cellNode.setAttribute("background-color", "transparent");
 			cellNode.appendChild(cellNode.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block"));
+			return;
   		}
   		
 		if (tableCell.getExtraCols() > 0) {
+			
 			cellNode.setAttribute("number-columns-spanned", Integer.toString(tableCell.getExtraCols() + 1));
 			
 		}

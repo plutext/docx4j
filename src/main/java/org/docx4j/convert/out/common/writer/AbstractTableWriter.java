@@ -255,8 +255,12 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 				// process cell
 				
 				if (cell.isDummy()) {
-					if (!cell.isVMerged()) {
+					if (cell.isVMerged()) {
+
 						//Dummy-Cells resulting from vertical merged cells shouldn't be included
+						
+					} else if (cell.dummyBefore || cell.dummyAfter) {
+						
 						cellNode = createNode(doc, row, (inHeader ? NODE_TABLE_HEADER_CELL : NODE_TABLE_BODY_CELL));
 						row.appendChild(cellNode);
 						applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, true);
