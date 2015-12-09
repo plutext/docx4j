@@ -867,7 +867,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				getImageManager().getImageContext(), null);
 
 		ImageInfo info = getImageManager().getImageInfo(url.toString(), sessionContext);
-		getImageManager().closeImage(url.toString(), sessionContext);
+//		getImageManager().closeImage(url.toString(), sessionContext);
 		
 		// Note that these figures do not appear to be reliable for EPS
 		// eg ImageMagick 6.2.4 10/02/07 Q16
