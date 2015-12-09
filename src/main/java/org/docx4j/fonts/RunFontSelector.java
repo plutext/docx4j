@@ -934,7 +934,7 @@ public class RunFontSelector {
         	    	currentRangeLower = '\uFB00';
         	    	currentRangeUpper = '\uFB4F';
         	    } else if (c>='\uFB50' && c<='\uFDFF') {
-    				vis.fontAction(eastAsia); 
+    				    vis.fontAction(ascii);
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\uFB50';
