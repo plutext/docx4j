@@ -409,6 +409,12 @@
 	
 	<dependencies>
 
+		<dependency>
+			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
+			<version>1.0.2</version>
+		</dependency>
+
 	<!-- To use MOXy, uncomment the following 2 dependencies.
 		Dependency version 2.4.1 had some issues,
 		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
@@ -462,17 +468,18 @@
   			</dependency>
 	  -->
 
-
+<!-- 
 		<dependency>
 			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
+			<artifactId>jaxb-svg11</artifactId>previously part of docx4j source 
 			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
+			<artifactId>jaxb-xslfo</artifactId>
 			<version>1.0.1</version>
 		</dependency>
+-->
 		
 		<!-- Not for 3.3 
 		<dependency>
@@ -591,35 +598,6 @@
 		</exclusions>
 	</dependency>
 		
-	<dependency>
-		<groupId>org.apache.xmlgraphics</groupId>
-		<artifactId>fop</artifactId>
-		<version>1.1</version>
-		<exclusions>
-			<exclusion>
-				<artifactId>avalon-framework-api</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>avalon-framework-impl</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis-ext</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-
-
 
 
 	<!-- these two are to correct issues in fop dependency -->

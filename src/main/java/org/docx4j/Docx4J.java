@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -36,8 +37,6 @@ import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
-import org.docx4j.convert.out.fo.FOExporterVisitor;
-import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
 import org.docx4j.convert.out.html.HTMLExporterXslt;
 import org.docx4j.events.Docx4jEvent;
@@ -64,6 +63,8 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 
@@ -77,6 +78,8 @@ import org.w3c.dom.Document;
  * 
  */
 public class Docx4J {
+	
+	private static Logger log = LoggerFactory.getLogger(Docx4J.class);		
 	
 	public static final String MIME_PDF = FOSettings.MIME_PDF;
 	public static final String MIME_FO = FOSettings.INTERNAL_FO_MIME;
@@ -548,16 +551,49 @@ public class Docx4J {
 		new EventFinished(startEvent).publish();
 	}
 	
-	protected static Exporter<FOSettings> getFOExporter(int flags) {
+	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
 		switch (flags) {
 			case FLAG_EXPORT_PREFER_NONXSL:
-				return FOExporterVisitor.getInstance();
+				return FOExporterVisitorGetInstance();
 			case FLAG_EXPORT_PREFER_XSL:
 			default:
-				return FOExporterXslt.getInstance();
+				return FOExporterXsltGetInstance();
 		}
 	}
+	
+	private static Exporter<FOSettings> FOExporterVisitorGetInstance() throws Docx4JException {
+		
+		// Use reflection to return FOExporterVisitor.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterVisitor");
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.error("org.docx4j.convert.out.fo.FOExporterVisitor not found; add docx4j-export-FO to your path", e);
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+	}
 
+	private static Exporter<FOSettings> FOExporterXsltGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return FOExporterXslt.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterXslt");			
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.error("org.docx4j.convert.out.fo.FOExporterVisitor not found; add docx4j-export-FO to your path", e);
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+		
+	}
+	
 	/**
 	 *  Create the configuration object for conversions to html
 	 */	
