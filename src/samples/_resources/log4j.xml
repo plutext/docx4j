@@ -160,7 +160,7 @@
     
     
     <!--  Enterprise edition loggers -->
-    <logger name="com.plutext.docx.toc">
+    <logger name="org.docx4j.toc">
   		<level value="warn"/> 
 	</logger>
 

@@ -578,6 +578,19 @@
 			<artifactId>converter</artifactId>
 			<version>1.2</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.6.1</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-databind</artifactId>
+			<version>2.6.1</version>
+		</dependency>		
+		
  
 <!-- To use a version of FOP more recent than 1.1
      (eg built from source), comment out
