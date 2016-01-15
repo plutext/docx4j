@@ -20,7 +20,9 @@
 package org.docx4j;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -67,6 +69,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import com.plutext.converter.ConversionException;
+import com.plutext.converter.Converter;
+import com.plutext.converter.ConverterHttp;
+import com.plutext.converter.Format;
+
 
 /** This is a facade for some typical uses of Docx4J:
  * <ul>
@@ -96,6 +103,33 @@ public class Docx4J {
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
 
+	public static Boolean EXPORT_FO_DETECTED = null;
+	
+	/**
+	 * If the docx4j-export-fo project is present, 
+	 * we'll use FO for PDF export.
+	 * 
+	 * Otherwise, we'll try to use Plutext's PDF Converter.
+	 * 
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static boolean pdfViaFO() {
+		
+		if (EXPORT_FO_DETECTED==null) {
+			
+			try {
+				Object o = FOExporterVisitorGetInstance();
+				EXPORT_FO_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_FO_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_FO_DETECTED;
+	}
+	
+	
 	/** Save the document in a zip container (default docx)
 	 */
 	public static final int FLAG_SAVE_ZIP_FILE = 1;
@@ -539,14 +573,34 @@ public class Docx4J {
 	 *  Convenience method to convert the document to PDF
 	 */	
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) throws Docx4JException {
-		
+				
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
 		
-		FOSettings settings = createFOSettings();
-		settings.setWmlPackage(wmlPackage);
-		settings.setApacheFopMime("application/pdf");
-		toFO(settings, outputStream, FLAG_NONE);
+		if (pdfViaFO()) {
+			FOSettings settings = createFOSettings();
+			settings.setWmlPackage(wmlPackage);
+			settings.setApacheFopMime("application/pdf");
+			toFO(settings, outputStream, FLAG_NONE);
+		} else {
+			
+			// Configure this property to point to your own Converter instance.
+			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert");
+			
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			save(wmlPackage, baos);
+			
+			Converter converter = new ConverterHttp(URL); 
+			try {
+				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
+				baos.close();
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+				new EventFinished(startEvent).publish();
+				throw new Docx4JException("Problem converting to PDF; check URL " + URL + "\n" + e.getMessage(), e);
+			}
+			
+		}
 		
 		new EventFinished(startEvent).publish();
 	}
@@ -572,7 +626,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.error("org.docx4j.convert.out.fo.FOExporterVisitor not found; add docx4j-export-FO to your path", e);
+			log.warn("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter.", e);
 			throw new Docx4JException(e.getMessage(), e);
 		}			
 	}
@@ -588,7 +642,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.error("org.docx4j.convert.out.fo.FOExporterVisitor not found; add docx4j-export-FO to your path", e);
+			log.warn("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path", e);
 			throw new Docx4JException(e.getMessage(), e);
 		}			
 		

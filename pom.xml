@@ -569,6 +569,15 @@
 			<artifactId>commons-io</artifactId>
 			<version>1.3.1</version> <!--  2.2 works -->
 		</dependency>
+		
+		<!-- you can comment out if you don't want
+			 to use Plutext's commercial PDF Converter.	
+		 -->
+		<dependency>
+			<groupId>com.plutext</groupId>
+			<artifactId>converter</artifactId>
+			<version>1.2</version>
+		</dependency>
  
 <!-- To use a version of FOP more recent than 1.1
      (eg built from source), comment out
