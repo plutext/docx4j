@@ -51,6 +51,10 @@ import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.services.client.ConversionException;
+import org.docx4j.services.client.Converter;
+import org.docx4j.services.client.ConverterHttp;
+import org.docx4j.services.client.Format;
 import org.docx4j.toc.switches.SwitchProcessor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
@@ -76,10 +80,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plutext.converter.ConversionException;
-import com.plutext.converter.Converter;
-import com.plutext.converter.ConverterHttp;
-import com.plutext.converter.Format;
 
 public class TocGenerator {
 	

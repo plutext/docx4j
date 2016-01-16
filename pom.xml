@@ -574,11 +574,11 @@
 			 to use Plutext's commercial PDF Converter.	
 		 -->
 		<dependency>
-			<groupId>com.plutext</groupId>
-			<artifactId>converter</artifactId>
-			<version>1.2</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.6</version>
 		</dependency>
-		
+						
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>

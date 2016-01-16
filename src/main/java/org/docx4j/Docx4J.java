@@ -62,17 +62,16 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.services.client.ConversionException;
+import org.docx4j.services.client.Converter;
+import org.docx4j.services.client.ConverterHttp;
+import org.docx4j.services.client.Format;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-
-import com.plutext.converter.ConversionException;
-import com.plutext.converter.Converter;
-import com.plutext.converter.ConverterHttp;
-import com.plutext.converter.Format;
 
 
 /** This is a facade for some typical uses of Docx4J:
@@ -626,7 +625,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.warn("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter.", e);
+			log.info("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage());
 			throw new Docx4JException(e.getMessage(), e);
 		}			
 	}
@@ -642,7 +641,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.warn("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path", e);
+			log.info("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage());
 			throw new Docx4JException(e.getMessage(), e);
 		}			
 		
