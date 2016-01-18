@@ -232,6 +232,7 @@
 					<maxmemory>512m</maxmemory>
 					<!-- 18 MB without the exclusion; still 15MB with -->
 					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+			        <additionalparam>-Xdoclint:none</additionalparam> <!-- for Java 8 -->
 				 </configuration>
 				<executions>
 					<execution>
