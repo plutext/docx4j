@@ -177,12 +177,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			
 			log.debug("Preparing StyleTree");
 
-		    try {
-				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
-			} catch (Docx4JException e) {
-				// Shouldn't happen, so catch here
-				log.error(e.getMessage(), e);
-			}
+//		    try {
+//				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
+//			} catch (Docx4JException e) {
+//				// Shouldn't happen, so catch here
+//				log.error(e.getMessage(), e);
+//			}
 	    	
 //			// Get these first, so we can be sure they are defined... 
 //			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
@@ -195,7 +195,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				allStyles.put(s.getStyleId(), s);	
 				//log.debug("live style: " + s.getStyleId() );
 			}
-			styleTree = new StyleTree(getStylesInUse(), allStyles);
+			styleTree = new StyleTree(getStylesInUse(), allStyles,
+					getStyleDefinitionsPart().getJaxbElement().getDocDefaults(), 
+					getStyleDefinitionsPart().getDefaultParagraphStyle());
 				
 		}
 		return styleTree;

@@ -1700,6 +1700,55 @@ public class StyleUtil {
 // see similar ImmutablePropertyResolver
 //	
 /////////////////////////////////////////////
+
+	
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static Style apply(PPr source, Style destination) {
+
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createStyle();
+				// what style type, though?
+			} 
+		
+			if (CHARACTER_STYLE.equals(destination.getType())) {
+				
+				log.warn("Can't apply PPr to a character style!");
+				
+			}
+			else  {
+				
+				destination.setPPr(apply(source, destination.getPPr()));
+			}
+		}
+		return destination;
+	}
+
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static Style apply(RPr source, Style destination) {
+
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createStyle();
+				// what style type, though?
+			} 
+			destination.setRPr(apply(source, destination.getRPr()));
+		}
+		return destination;
+	}
+	
 	
 	/**
 	 * Note that this method does not climb the hierarchy

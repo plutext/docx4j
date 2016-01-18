@@ -17,6 +17,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
@@ -96,6 +97,9 @@ public class PropertyResolver {
 	public RPr getDocumentDefaultRPr() {
 		return documentDefaultRPr;
 	}
+	public PPr getDocumentDefaultPPr() {
+		return documentDefaultPPr;
+	}
 
 	private StyleDefinitionsPart styleDefinitionsPart;
 	
@@ -157,7 +161,7 @@ public class PropertyResolver {
 	
 	private void init() throws Docx4JException {
 
-		styleDefinitionsPart.createVirtualStylesForDocDefaults();
+//		styleDefinitionsPart.createVirtualStylesForDocDefaults();
 		
 		try {
 			defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
@@ -174,12 +178,13 @@ public class PropertyResolver {
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+//		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+		DocDefaults docDefaults = styleDefinitionsPart.getJaxbElement().getDocDefaults();
         if(log.isDebugEnabled()) {
             log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
         }
-		documentDefaultPPr = docDefaults.getPPr();
-		documentDefaultRPr = docDefaults.getRPr();
+		documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+		documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 
 			addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
@@ -315,6 +320,8 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public PPr getEffectivePPr(PPr expressPPr) {
+		
+		// Used by docx4j-export-fo project.
 		
 		PPr effectivePPr = null;
 		//	First, the document defaults are applied
@@ -1027,14 +1034,17 @@ public class PropertyResolver {
     }	
 	
 	/**
-	 * Ascend the style hierarchy, capturing the pPr bit
+	 * Ascend (recursively) the style hierarchy, capturing the pPr bit.
+	 * 
+	 * Doesn't use StyleTree.
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
 	 */
 	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
 		// The return value is the style on which styleId is based.
-		// It is purely for the purposes of ascertainNumId.
+		
+		// It is purely for the purposes of ascertainNumId (? no, its used by getEffectivePPr(styleId))
 		
 		if (styleId==null) {
 			if (log.isDebugEnabled()) {

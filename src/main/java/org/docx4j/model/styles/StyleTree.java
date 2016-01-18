@@ -1,17 +1,29 @@
 package org.docx4j.model.styles;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.HpsMeasure;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.Style.BasedOn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.bind.JAXBException;
 
 /**
  * Represent a style hierarchy as a tree.
@@ -52,6 +64,10 @@ public class StyleTree {
 		return cTree;
 	}
 
+	private StyleTree() {};
+	
+	String ROOT_NAME = "DocDefaults";
+	
 	
 	/**
 	 * Build a StyleTree for stylesInUse. 
@@ -59,7 +75,8 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part, headers/footers, footnotes/endnotes 
 	 * @param allStyles styles defined in the style definitions part
 	 */
-	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles) {
+	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, 
+			DocDefaults docDefaults, Style normal) {
 		
 		
 		// Set up Table style tree 
@@ -86,12 +103,19 @@ public class StyleTree {
 		
 
 		// Set up Paragraph style tree 
-        Style rootStyle = allStyles.get("DocDefaults");
+        try {
+			createVirtualStylesForDocDefaults(docDefaults, normal);
+		} catch (Docx4JException e) {
+			// shouldn't happen
+			log.error(e.getMessage(), e);
+			return;
+		}
+        Style rootStyle = this.styleDocDefaults;
         if (rootStyle==null) {
         	pTree.setRootElement(new Node<AugmentedStyle>(pTree, "p-root", null));
         } else {
         	AugmentedStyle as = new AugmentedStyle(rootStyle);        	
-        	pTree.setRootElement(new Node<AugmentedStyle>(pTree, "DocDefaults", as));        	
+        	pTree.setRootElement(new Node<AugmentedStyle>(pTree, ROOT_NAME, as));        	
         }
         	
         for (String styleId : stylesInUse ) {
@@ -149,21 +173,34 @@ public class StyleTree {
         	return null;
         } 	        		
 		
-    	AugmentedStyle as = new AugmentedStyle(style);        	
-    	Node<AugmentedStyle> n = 
-    		 new Node<AugmentedStyle>(tree, styleId, as); 
     	
     	// Find its parent
     	if (style.getBasedOn()==null) {
+
+			// Make it basedOn DocDefaults.
+    		// But we have to clone it first, so we don't alter the document proper
+    		Style clonedStyle = XmlUtils.deepCopy(style);
     		
+    		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
+    		based.setVal(ROOT_NAME);		
+    		clonedStyle.setBasedOn(based);
+    		    		
+        	AugmentedStyle as = new AugmentedStyle(clonedStyle);        	
+        	Node<AugmentedStyle> n = 
+        		 new Node<AugmentedStyle>(tree, styleId, as); 
+    		    		
     		// You can have more than 1 node which isn't based on anything
 			log.debug("Style " + styleId + " is not based on anything.");
 			tree.getRootElement().addChild(n);
 			
-			// TODO: this should be basedOn DocDefaults.    Consider whether to do this
-			// at this point, or in SDP.createVirtualStylesForDocDefaults()
+        	return n;
 						
     	} else if (style.getBasedOn().getVal()!=null) {
+    		
+        	AugmentedStyle as = new AugmentedStyle(style);        	
+        	Node<AugmentedStyle> n = 
+        		 new Node<AugmentedStyle>(tree, styleId, as); 
+    		
         	String basedOnStyleName = style.getBasedOn().getVal();   
         	log.debug("..based on " + basedOnStyleName);        	
         	if (tree.get(basedOnStyleName)==null) {
@@ -175,12 +212,14 @@ public class StyleTree {
         	} else {
         		tree.get(basedOnStyleName).addChild(n);
         	}
+
+        	return n;
         	
     	} else {
     		log.error("No basedOn set for: " + style.getStyleId() );
+        	return null;
     	}
     	
-    	return n;
 		
 	}
 	
@@ -200,8 +239,10 @@ public class StyleTree {
 			allStyles.put(s.getStyleId(), s);	
 			log.debug("live style: " + s.getStyleId() );
 		}
+		
     	
-		StyleTree st = new StyleTree(stylesInUse, allStyles);
+		StyleTree st = new StyleTree(stylesInUse, allStyles,
+				styles.getDocDefaults(), allStyles.get("Normal"));
 		
 		log.debug("\nParagraph styles\n");
 		log.debug(st.pTree.toString());
@@ -274,5 +315,181 @@ public class StyleTree {
 		}
 		
 	}
+	
+	Style styleDocDefaults;
+	
+	/**
+	 * Manufacture a paragraph style from the following, so it can be used as the 
+	 * root of our paragraph style tree.
+	 * 
+	 * 	<w:docDefaults>
+			<w:rPrDefault>
+				<w:rPr>
+					<w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi" />
+					<w:sz w:val="22" />
+					<w:szCs w:val="22" />
+					<w:lang w:val="en-US" w:eastAsia="en-US" w:bidi="ar-SA" />
+				</w:rPr>
+			</w:rPrDefault>
+			<w:pPrDefault>
+				<w:pPr>
+					<w:spacing w:after="200" w:line="276" w:lineRule="auto" />
+				</w:pPr>
+			</w:pPrDefault>
+		</w:docDefaults>
+		
+		BEWARE: in a table, paragraph style ppr generally trumps table style ppr (but see below).
+		The effect of including w:docDefaults in the style hierarchy
+		is that they trump table style ppr, but they should not!
+		
+	 * There is no need for a doc defaults character style.
+	 * The reason for this is that Word seems to ignore Default Paragraph Style!
+	 * So the run formatting comes from paragraph style + explicit character style (if any),
+	 * plus direct formatting.
+	 * 
+	 * ------------------
+	 * 		
+     * w:compatSetting[w:name="overrideTableStyleFontSizeAndJustification"]
+     * is defined in [MS-DOCX] 
+     * 
+     * If this value is true, then the style hierarchy of the document is evaluated as specified 
+     * in [ISO/IEC29500-1:2011] section 17.7.2.
+     * 
+		If this value is false, which is the default, then the following additional rules apply:
+		
+		If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
+		specifies a font size of 11pt or 12pt, then that setting will not override the font size 
+		specified by the table style for paragraphs in tables.
+		
+		If the default paragraph style (as specified in [ISO/IEC29500-1:2011] section 17.7.4.17) 
+		specifies a justification of left, then that setting will not override the justification 
+		specified by the table style for paragraphs in tables.
+		
+
+		Note org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix		
+		
+
+	 */
+    private void createVirtualStylesForDocDefaults(DocDefaults docDefaults, Style normal) throws Docx4JException {
+    	
+    	if (styleDocDefaults!=null) return; // been done already
+    	
+    	styleDocDefaults = Context.getWmlObjectFactory().createStyle();
+    	styleDocDefaults.setStyleId(ROOT_NAME);
+    	
+    	styleDocDefaults.setType("paragraph");
+    	
+		org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
+    	n.setVal(ROOT_NAME);
+    	styleDocDefaults.setName(n);
+    					
+		if (docDefaults == null) {
+			log.info("No DocDefaults present");
+			// The only way this can happen is if the
+			// styles definition part is missing the docDefaults element
+			// (these are present in docs created from Word, and
+			// in our default styles, so maybe the user created it using
+			// some 3rd party program?)
+			try {
+
+				docDefaults = (DocDefaults) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.docDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.docDefaultsString, e);
+			}
+		}
+
+		// Setup documentDefaultPPr
+		PPr documentDefaultPPr;
+		if (docDefaults.getPPrDefault() == null) {
+			log.info("No PPrDefault present");
+			try {
+				documentDefaultPPr = (PPr) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.pPrDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.pPrDefaultsString, e);
+			}
+
+		} else {
+			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+			if (documentDefaultPPr==null) {
+				documentDefaultPPr = Context.getWmlObjectFactory().createPPr();
+			}
+		}
+		
+		// If the docDefaults have no setting for w:spacing
+		// then add it:
+		if (documentDefaultPPr.getSpacing()==null) {
+			Spacing spacing = Context.getWmlObjectFactory().createPPrBaseSpacing();
+			documentDefaultPPr.setSpacing(spacing);
+			spacing.setBefore(BigInteger.ZERO);
+			spacing.setAfter(BigInteger.ZERO);
+			spacing.setLine(BigInteger.valueOf(240));
+		}
+
+		// Setup documentDefaultRPr
+		RPr documentDefaultRPr;
+		if (docDefaults.getRPrDefault() == null) {
+			log.info("No RPrDefault present");
+			try {
+				documentDefaultRPr = (RPr) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.rPrDefaultsString);
+					// that includes font size 10
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.rPrDefaultsString, e);
+			}
+		} else {
+			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+			if (documentDefaultRPr==null) {
+				documentDefaultRPr = Context.getWmlObjectFactory().createRPr();
+			}
+			// If default font size is not specified, set it to match Word default when unspecified (ie 10)
+			// It is useful to have this explicitly, especially for XHTML Import
+//	        <w:sz w:val="20"/>
+//	        <w:szCs w:val="20"/>			
+			if (documentDefaultRPr.getSz()==null) {
+				HpsMeasure s10pt = Context.getWmlObjectFactory().createHpsMeasure();
+				s10pt.setVal(BigInteger.valueOf(20));
+				documentDefaultRPr.setSz(s10pt);
+			}
+			if (documentDefaultRPr.getSzCs()==null) {
+				HpsMeasure s10pt = Context.getWmlObjectFactory().createHpsMeasure();
+				s10pt.setVal(BigInteger.valueOf(20));
+				documentDefaultRPr.setSzCs(s10pt);
+			}
+		}
+    	
+		styleDocDefaults.setPPr(documentDefaultPPr);
+		styleDocDefaults.setRPr(documentDefaultRPr);
+		
+		// Now point Normal at this
+//		Style normal = getDefaultParagraphStyle();
+		if (normal==null) {
+			log.info("No default paragraph style!!");
+			normal = Context.getWmlObjectFactory().createStyle();
+			normal.setType("paragraph");
+			normal.setStyleId("Normal");
+			
+			n = Context.getWmlObjectFactory().createStyleName();
+			n.setVal("Normal");
+			normal.setName(n);
+//			this.getJaxbElement().getStyle().add(normal);	
+			
+			normal.setDefault(Boolean.TRUE); // @since 3.2.0
+		}
+		
+
+        if(log.isDebugEnabled()) {
+            log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '" + styleDocDefaults.getName().getVal() + "'");
+            log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
+        }
+		
+		
+    	
+    }
+	
 
 }

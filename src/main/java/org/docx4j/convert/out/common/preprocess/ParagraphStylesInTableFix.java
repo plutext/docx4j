@@ -318,17 +318,17 @@ public class ParagraphStylesInTableFix {
 			Style newStyle = Context.getWmlObjectFactory().createStyle();
 			newStyle.setType("paragraph");
 			
+			Style styleToApply;
+			
 			// First, docDefaults
-			Style styleToApply = hierarchy.get(hierarchy.size()-1); // DocDefault
-            if(log.isDebugEnabled()) {
-                log.debug("DocDefault");
-                log.debug(XmlUtils.marshaltoString(styleToApply, true, true));
-            }
-			StyleUtil.apply(styleToApply, newStyle);
-            if(log.isDebugEnabled()) {
-                log.debug("Result");
-                log.debug(XmlUtils.marshaltoString(newStyle, true, true));
-            }
+			StyleUtil.apply(
+					this.propertyResolver.getDocumentDefaultPPr(),
+					newStyle);
+			StyleUtil.apply(
+					this.propertyResolver.getDocumentDefaultRPr(),
+					newStyle);
+			// or we could have just cloned those thing, and used the clones
+			
 			
 			// Next, table style - first/temporarily in tableStyleContrib
 			Style tableStyleContrib = null;
@@ -447,8 +447,8 @@ public class ParagraphStylesInTableFix {
 				 * justification (which is assumed to follow the same logic we have here).
 				 * 
 				 * Where Normal is basedOn our DocDefaults style, Word *does* override the table style!
-				 * We'll ignore that for now, because the next version of docx4j (v3.3) needs to
-				 * stop creating a DocDefaults style. 
+				 * We'll ignore that for now, because the next version of docx4j (v3.3) 
+				 * stops creating a DocDefaults style. 
 			     */
 				
 				// Font size
