@@ -17,10 +17,9 @@ instance, by setting docx4j property, eg:
 
 com.plutext.converter.URL=http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
 
-     See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
+See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
 
-    If you want to use the existing XSL FO + Apache FOP PDF Conversion, just 
-add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
+If you want to use the existing XSL FO + Apache FOP PDF Conversion, just add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
 
 docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
 
