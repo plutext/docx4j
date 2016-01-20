@@ -4,12 +4,26 @@ CHANGELOG
 Version 3.3 branch (work in progress)
 ==================
 
-Notable Changes (as at 17 Sept 2015)
+Notable Changes 
 ---------------
 
 Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
 NB: Digital signature support is in Enterprise Ed. 
 See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
+
+XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
+converter-eval.plutext.com is used by default, but you can (and should!) alter it to your own
+instance, by setting docx4j property, eg:
+
+com.plutext.converter.URL=http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
+
+     See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
+
+    If you want to use the existing XSL FO + Apache FOP PDF Conversion, just 
+add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
+
+docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
+
 
 Xalan <= 2.7.2 can't handle astral characters: https://issues.apache.org/jira/browse/XALANJ-2419
 So:
@@ -47,7 +61,9 @@ Added:
 			<version>3.4</version>
 		</dependency>
 
+Moved FOP/batik jars to separate project docx4j-export-fo
 
+Bumped various jar versions
 
 
 

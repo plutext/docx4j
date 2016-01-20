@@ -94,7 +94,11 @@
         <pathelement location="${m2Repository}/net/engio/mbassador/1.1.10/mbassador-1.1.10.jar"/>
 
         <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+        
+        <!-- 
         <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar"/>
+         -->
+         
         <!-- 
         <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
@@ -144,26 +148,8 @@
         (but you'd be better off using CMIS)
 		-->
  
-<!--    Uncomment for the PDF conversion via HTML or iText, which
-		may be found in docx4j-extras.
-		
-		If you are planning to use that, you'll also want to uncomment
-		the BaseFont stuff in PhysicalFonts. 	
-		
-        <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
-	    -->	    
-<!--    Uncomment for the PDF conversion via HTML, which
-		may be found in docx4j-extras. Note that core-renderer R8pre2 incompatible with iText SVN 	
-        <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2009.0324/pdf-renderer-0.2009.0324.jar"/>
-        <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
-        <pathelement location="${m2Repository}/xhtmlrenderer/core-renderer/R8pre2/core-renderer-R8pre2.jar"/>
--->
-
-<!-- As from 2010 09 17 source is included (see src/main/java/org/jvnet..)
-	 so this is no longer required.
-        <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
- -->
     </path>
+    
     <path id="docx4j.classpath">
         <pathelement location="bin"/>
         <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>    
@@ -175,6 +161,35 @@
         <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
         <path refid="docx4j.classpath"/>
     </path>
+    
+    <!--  for release only; build docx4j-export-fo first! -->
+    <path id="docx4j-export-fo.classpath">
+
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.0-SNAPSHOT/docx4j-export-fo-3.3.0-SNAPSHOT.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar"/>
+         
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.7/batik-css-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.7/batik-dom-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.7/batik-parser-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.7/batik-util-1.7.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.7/batik-bridge-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.7/batik-script-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/> 
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.7/batik-xml-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.7/batik-awt-util-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.7/batik-gvt-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.7/batik-transcoder-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.7/batik-svggen-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
+        
+	</path>    
 
     <path id="junit.classpath">
         <path refid="docx4j.classpath"/>
@@ -317,6 +332,15 @@
         <copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="../../docx4j-ImportXHTML/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+
+    	<!-- export-fo -->
+        <mkdir dir="${release.dir}/optional/export-fo"/>
+		<copy todir="${release.dir}/optional/export-fo" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+			    <path refid="docx4j-export-fo.classpath"/>
+			</path>
+		</copy>		
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
