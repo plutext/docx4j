@@ -301,7 +301,7 @@ public class FieldRef {
 			if (o instanceof FieldRef) {
 				// contains a nested field?!
 				FieldRef nested = (FieldRef)o;
-				log.error("Nested field " + nested.getFldName() );				
+//				/log.error("Nested field " + nested.getFldName() );				
 				
 			} else {
                 if(log.isErrorEnabled()) {
