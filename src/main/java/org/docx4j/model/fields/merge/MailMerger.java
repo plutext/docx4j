@@ -493,7 +493,9 @@ public class MailMerger {
 		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
-			
+			if (fr.isNestedField())
+				continue;
+
 			if ( fr.getFldName().equals("MERGEFIELD") ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
