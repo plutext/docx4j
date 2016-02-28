@@ -338,12 +338,12 @@ public class ListsToContentControls {
 						}
 						
 					} else {
-						System.out.println("popping");
+						log.debug("popping");
 						// shallower, so pop levels
 						for (int i=listSpec.ilvl.intValue(); i>ilvl.intValue(); i--) {
 							listStack.pop();
 							listSpec = listStack.peek();
-							System.out.println("popped!");
+							log.debug("popped!");
 						}
 						
 					}
