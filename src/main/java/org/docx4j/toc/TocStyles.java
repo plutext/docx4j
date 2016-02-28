@@ -149,7 +149,7 @@ public class TocStyles {
 		
 		String id = styleNameToID.get(name);
 		
-		System.out.println(name + " --> " + id);
+		log.debug(name + " --> " + id);
 		
 		if (id!=null) {  // style is defined in this docx
 			return id;

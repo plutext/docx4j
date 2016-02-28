@@ -609,7 +609,7 @@ public class TocGenerator {
 		 */
 		
 		byte[] json = baos.toByteArray();
-		System.out.println(json);
+//		System.out.println(json);
 		
 		Map<String,Integer> map = new HashMap<String,Integer>();
 		ObjectMapper m = new ObjectMapper();
@@ -618,7 +618,7 @@ public class TocGenerator {
 		try {
 			rootNode = m.readTree(json);
 		} catch (Exception e) {
-			System.err.println(json);
+//			System.err.println(json);
 			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
 		}
 		JsonNode bookmarksNode = rootNode.path("bookmarks");

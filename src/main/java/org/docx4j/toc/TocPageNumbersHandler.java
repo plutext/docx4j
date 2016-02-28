@@ -22,11 +22,15 @@ package org.docx4j.toc;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class TocPageNumbersHandler extends DefaultHandler {
+	
+	private static Logger log = LoggerFactory.getLogger(TocPageNumbersHandler.class);	
 
     private static final String L_BRACKET_P = "\\(P";
     private static final String R_BRACKET = ")";
@@ -61,7 +65,7 @@ public class TocPageNumbersHandler extends DefaultHandler {
         try{
             pageNumber = Integer.parseInt(split[0].replaceAll(L_BRACKET_P, ""));
         } catch(NumberFormatException ex){
-            System.out.println("Invalid page number");
+            log.info("Invalid page number: " + value, ex);
         }
         pageNumbers.put(pageRef, pageNumber);
     }
