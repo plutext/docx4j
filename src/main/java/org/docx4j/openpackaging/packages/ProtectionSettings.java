@@ -164,7 +164,7 @@ public abstract class ProtectionSettings {
 	    try {
 	    	Class<?> signingClass = Class.forName("com.plutext.dsig.SignatureHelper");
 		    Constructor<?> ctor = signingClass.getConstructor(OpcPackage.class);
-		    return (Signing) ctor.newInstance(this.pkg);
+		    return ctor.newInstance(this.pkg);
 	    } catch (Exception e) {
 	        log.warn("Docx4j Enterprise jar v3.3 or greater not found. Required for Digital Signatures.");
 			throw new Docx4JException("missing Enterprise version required for Digital Signature functionality");
