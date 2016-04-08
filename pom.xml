@@ -368,7 +368,13 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
-			<!-- 
+			<resource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>			<!-- 
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
@@ -429,8 +435,6 @@
 		
 		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
 		needs javax.mail
-		
-			
 
 		<dependency>
 			<groupId>org.docx4j</groupId>
