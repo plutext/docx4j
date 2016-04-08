@@ -66,7 +66,18 @@ public class Context {
 	public static JAXBContext jcMCE;
 	
 	private static Logger log = LoggerFactory.getLogger(Context.class);
+	
+	
+	public static JAXBImplementation jaxbImplementation = null;
 		
+	/** 
+	 * Return the JAXB implementation detected to be in use.
+	 * 
+	 * @since 3.3.0 */
+	public static JAXBImplementation getJaxbImplementation() {
+		return jaxbImplementation;
+	}
+
 	static {
 		JAXBContext tempContext = null;
 
@@ -94,6 +105,7 @@ public class Context {
 			// Is MOXy configured?
 			jaxbPropsIS = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 			log.info("MOXy JAXB implementation intended..");
+			jaxbImplementation = JAXBImplementation.ECLIPSELINK_MOXy;
 		} catch (Exception e3) {
 			log.info("No MOXy JAXB config found; assume not intended..");
 			log.debug(e3.getMessage());
@@ -105,8 +117,12 @@ public class Context {
 				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 					// Java 6
 					log.info("Using Java 6/7 JAXB implementation");
+					jaxbImplementation = JAXBImplementation.ORACLE_JRE;
+
 				} else {
-					log.info("Using JAXB Reference Implementation");			
+					log.info("Using JAXB Reference Implementation");
+					jaxbImplementation = JAXBImplementation.REFERENCE;
+
 				}
 				
 			} catch (JAXBException e) {
