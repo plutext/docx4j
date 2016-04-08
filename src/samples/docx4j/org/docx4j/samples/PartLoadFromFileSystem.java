@@ -32,7 +32,12 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 
 /**
- * Import foreign parts 
+ * Import foreign parts, relying on docx4j to work out which part
+ * to create.
+ * 
+ * If you know which part you want, it is simpler / more comprehensible
+ * to unmarshall an input stream, then set the content of a new part
+ * to that.
  * 
  * @author Jason Harrop
  */
