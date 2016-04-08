@@ -71,9 +71,17 @@ public class ListNumberIndTest {
 				JAXBContext jc = Context.jcXmlPackage;
 				Unmarshaller u = jc.createUnmarshaller();
 				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-						new javax.xml.transform.stream.StreamSource(new FileInputStream(BASE_DIR + filename)))).getValue(); 
+				
+				Object o = u.unmarshal(
+						new javax.xml.transform.stream.StreamSource(new FileInputStream(BASE_DIR + filename)));
+				
+				org.docx4j.xmlPackage.Package wmlPackageEl = null;
+				if (o instanceof org.docx4j.xmlPackage.Package) {
+					// MOXy
+					wmlPackageEl = (org.docx4j.xmlPackage.Package)o;
+				} else {
+					wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)o).getValue(); 
+				}
 
 				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 
