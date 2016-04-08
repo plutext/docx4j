@@ -349,6 +349,12 @@
 				</includes>
 			</resource>
 			<resource>
+				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+			<resource>
 				<directory>src/pptx4j/java</directory>
 				<includes>
 					<include>**/*.xslt</include>
@@ -416,22 +422,34 @@
 			<version>1.0.2</version>
 		</dependency>
 
-	<!-- To use MOXy, uncomment the following 2 dependencies.
+	<!-- To use MOXy, uncomment the following 2 dependencies. 
 		Dependency version 2.4.1 had some issues,
 		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
-		details.
+		details.  	
+		
+		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
+		needs javax.mail
+		
+			
 
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>3.0.0</version>
+			<version>3.3.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.moxy</artifactId>
 			<version>2.5.1</version>
 		</dependency>
-		 -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
+		</dependency>
+				 -->
+		
+
  
   <!--  Uncomment this if you are using Java 5.
 

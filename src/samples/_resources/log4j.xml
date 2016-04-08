@@ -152,6 +152,10 @@
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
+	
+    <logger name="org.docx4j.toc">
+  		<level value="warn"/> 
+	</logger>	
     
     <logger name="org.docx4j.wml">
   		<level value="warn"/> 
@@ -160,9 +164,6 @@
     
     
     <!--  Enterprise edition loggers -->
-    <logger name="org.docx4j.toc">
-  		<level value="warn"/> 
-	</logger>
 
     <logger name="com.plutext.merge">
   		<level value="warn"/> 
@@ -175,6 +176,19 @@
     <logger name="com.plutext.cmis">
   		<level value="warn"/> 
 	</logger>
+	
+    <logger name="org.apache.jcp.xml.dsig.internal.dom">
+  		<level value="debug"/> 
+	</logger>
+
+	<logger name="com.plutext.crypt.dsig">
+  		<level value="debug"/> 
+	</logger>
+	
+    <logger name="org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart">
+  		<level value="debug"/> 
+	</logger>
+	
     
  
     <!--  Root logger -->
