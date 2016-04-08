@@ -183,10 +183,25 @@ public class PropertyResolver {
         if(log.isDebugEnabled()) {
             log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
         }
-		documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
-		documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 
-			addNormalToResolvedStylePPrComponent();
+		documentDefaultPPr = new PPr();
+		documentDefaultRPr = new RPr();        	
+
+		if (docDefaults!=null
+				&& docDefaults.getPPrDefault()!=null
+				&& docDefaults.getPPrDefault().getPPr()!=null) {
+			
+			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+        }
+		
+		if (docDefaults!=null
+				&& docDefaults.getRPrDefault()!=null
+				&& docDefaults.getRPrDefault().getRPr()!=null) {
+			
+			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+        }
+
+		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
 
