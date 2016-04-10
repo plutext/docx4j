@@ -18,6 +18,7 @@ import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
@@ -200,6 +201,13 @@ public class PropertyResolver {
 			
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
         }
+		
+		if (documentDefaultRPr.getSz()==null) {
+			// Make Word default explicit
+			HpsMeasure sz20 = new HpsMeasure(); 
+			sz20.setVal(BigInteger.valueOf(20));
+			documentDefaultRPr.setSz(sz20);
+		}
 
 		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
@@ -1281,9 +1289,8 @@ public class PropertyResolver {
     		result1 = true;
     	} else {
     		
-    		log.warn("Expected " + s.getStyleId() + " to have <w:basedOn ??");
-    		// Not properly activated
-    		result1 = false;
+    		log.debug( s.getStyleId() + "  not w:basedOn anything, but that's ok");
+    		result1 = true;
     	}
     	
     	// Also add the linked style, if any
