@@ -303,9 +303,11 @@ public class ParagraphStylesInTableFix {
 			Style basedOn = null;
 			String currentStyle = styleVal;
 			do {
-//				System.out.println("Getting " + currentStyle);
 				Style thisStyle = allStyles.get(currentStyle);
 				hierarchy.add(thisStyle);
+				if (log.isDebugEnabled()) {
+					log.debug("adding to hierarchy: " + currentStyle);
+				}
 				if (thisStyle.getBasedOn()!=null) {
 					currentStyle = thisStyle.getBasedOn().getVal();
 				} else {
@@ -397,11 +399,17 @@ public class ParagraphStylesInTableFix {
 			newStyle.setRPr(StyleUtil.apply(tableStyleContrib.getRPr(), newStyle.getRPr()));
             if(log.isDebugEnabled()) {
                 log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+                
+                log.debug("hierarchy.size(): " + hierarchy.size());
             }
 			
 			
 			// Finally, rest of list in reverse
-			for (int i = hierarchy.size()-2; i>=0; i--) {
+            
+			for (int i = hierarchy.size()-1; i>=0; i--) 
+				// NB 2016 04 09: for 3.3.0, this changed to -1,
+				// since 
+			{
 				styleToApply = hierarchy.get(i);
                 if(log.isDebugEnabled()) {
                     log.debug("Applying " + styleToApply.getStyleId() +
@@ -452,6 +460,10 @@ public class ParagraphStylesInTableFix {
 			     */
 				
 				// Font size
+				if (log.isDebugEnabled()) {
+					log.debug("styleVal: " + styleVal);
+					log.debug("defaultParagraphStyle: " + defaultParagraphStyle);
+				}
 				if ((!styleVal.equals(defaultParagraphStyle)) 
 						&& expressStyleFontSize!=null) {
 					// Not normal (but assume based on it)
@@ -475,6 +487,9 @@ public class ParagraphStylesInTableFix {
 					
 					// the table style doesn't set it
 					// .. so nothing to do
+					
+					// OR if no Sz setting in the style,
+					// we could set explicitly
 				}
 					
 
@@ -497,6 +512,9 @@ public class ParagraphStylesInTableFix {
 					// the table style doesn't set it
 					// .. so nothing to do
 				}
+				
+			} else {
+				log.debug("allowing default paragraph style to overrideTableStyleFontSizeAndJustification, as per this docx w:compatSetting");
 				
 			}
 			
