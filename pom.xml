@@ -128,6 +128,9 @@
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
 		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
+			     You need to run mvn test from the command line to recompile, then Eclipse can run 
+			     the new code.  -->
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -348,10 +351,18 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
+			<!-- 
 			<resource>
 				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
 				<includes>
 					<include>*.properties</include>
+				</includes>
+			</resource>
+			 -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.properties</include>
 				</includes>
 			</resource>
 			<resource>

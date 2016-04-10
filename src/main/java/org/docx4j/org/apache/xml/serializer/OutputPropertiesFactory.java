@@ -33,6 +33,9 @@ import javax.xml.transform.OutputKeys;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
 import org.docx4j.org.apache.xml.serializer.utils.WrappedRuntimeException;
+import org.docx4j.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is a factory to generate a set of default properties
@@ -83,6 +86,9 @@ import org.docx4j.org.apache.xml.serializer.utils.WrappedRuntimeException;
  */
 public final class OutputPropertiesFactory
 {
+	
+	protected static Logger log = LoggerFactory.getLogger(OutputPropertiesFactory.class);	
+	
     /** S_BUILTIN_EXTENSIONS_URL is a mnemonic for the XML Namespace 
      *(http://xml.apache.org/xalan) predefined to signify Xalan's
      * built-in XSLT Extensions. When used in stylesheets, this is often 
@@ -188,13 +194,13 @@ public final class OutputPropertiesFactory
     /** the directory in which the various method property files are located */
     private static final String PROP_DIR = SerializerBase.PKG_PATH+'/';
     /** property file for default XML properties */
-    private static final String PROP_FILE_XML =  "docx4j_xalan_output_xml.properties";
+    private static final String PROP_FILE_XML =  PROP_DIR + "docx4j_xalan_output_xml.properties";  // Eclipse puts these in /bin/ (ie without dir path)
     /** property file for default TEXT properties */
-    private static final String PROP_FILE_TEXT = "docx4j_xalan_output_text.properties";
+    private static final String PROP_FILE_TEXT = PROP_DIR + "docx4j_xalan_output_text.properties";
     /** property file for default HTML properties */
-    private static final String PROP_FILE_HTML = "docx4j_xalan_output_html.properties";
+    private static final String PROP_FILE_HTML = PROP_DIR + "docx4j_xalan_output_html.properties";
     /** property file for default UNKNOWN (Either XML or HTML, to be determined later) properties */
-    private static final String PROP_FILE_UNKNOWN = "docx4j_xalan_output_unknown.properties";
+    private static final String PROP_FILE_UNKNOWN = PROP_DIR + "docx4j_xalan_output_unknown.properties";
 
     //************************************************************
     //*  PRIVATE STATIC FIELDS
@@ -319,6 +325,8 @@ public final class OutputPropertiesFactory
         }
         catch (IOException ioe)
         {
+        	log.error(ioe.getMessage(), ioe);
+        	
             throw new WrappedRuntimeException(
                 Utils.messages.createMessage(
                     MsgKey.ER_COULD_NOT_LOAD_METHOD_PROPERTY,
@@ -359,25 +367,30 @@ public final class OutputPropertiesFactory
 
         try
         {
-            if (ACCESS_CONTROLLER_CLASS != null)
-            {
-                is = (InputStream) AccessController
-                    .doPrivileged(new PrivilegedAction() {
-                        public Object run()
-                        {
-                            return OutputPropertiesFactory.class
-                                .getResourceAsStream(resourceName);
-                        }
-                    });
-            }
-            else
-            {
-                // User may be using older JDK ( JDK < 1.2 )
-                is = OutputPropertiesFactory.class
-                    .getResourceAsStream(resourceName);
-            }
-
-            bis = new BufferedInputStream(is);
+//            if (ACCESS_CONTROLLER_CLASS != null)
+//            {
+//            	log.debug("there is an access controller: " + ACCESS_CONTROLLER_CLASS.getName() );
+//            	
+//                is = (InputStream) AccessController
+//                    .doPrivileged(new PrivilegedAction() {
+//                        public Object run()
+//                        {
+//                            return OutputPropertiesFactory.class
+//                                .getResourceAsStream(resourceName);
+//                        }
+//                    });
+//            }
+//            else
+//            {
+//                // User may be using older JDK ( JDK < 1.2 )
+//                is = OutputPropertiesFactory.class
+//                    .getResourceAsStream(resourceName);
+//            }
+//
+//            bis = new BufferedInputStream(is);
+            
+            bis = new BufferedInputStream(ResourceUtils.getResource(resourceName));
+            
             props.load(bis);
         }
         catch (IOException ioe)
