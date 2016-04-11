@@ -130,9 +130,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 	 * @return
 	 * @throws Docx4JException
 	 */
-	public CTCompatSetting getWordCompatSetting(String name) throws Docx4JException {
+	public CTCompatSetting getWordCompatSetting(String name) { 
 	
-		CTCompat compat = this.getContents().getCompat();
+		CTCompat compat = this.getJaxbElement().getCompat();
 		if (compat==null) {
 			log.warn("No w:settings/w:compat element");
 			return null;
@@ -153,14 +153,14 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		return theSetting;
 	}
 
-	public void setWordCompatSetting(String name, String val) throws Docx4JException {
+	public void setWordCompatSetting(String name, String val) { 
 		
-		CTCompat compat = this.getContents().getCompat();
+		CTCompat compat = this.getJaxbElement().getCompat();
 		if (compat==null) {
 			log.debug("No w:settings/w:compat element; creating..");
 		}
 		compat = Context.getWmlObjectFactory().createCTCompat();
-		this.getContents().setCompat(compat);
+		this.getJaxbElement().setCompat(compat);
 		
 		CTCompatSetting theSetting = null;
 		for (CTCompatSetting setting : compat.getCompatSetting() ) {
@@ -179,6 +179,36 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		}
 		theSetting.setVal(val);
 	}
+	
+	/**
+	 * Get the value of compatSetting overrideTableStyleFontSizeAndJustification
+	 * 
+	 * @since 3.3.0
+	 */
+	public boolean overrideTableStyleFontSizeAndJustification() {
+		
+		CTCompatSetting overrideTableStyleFontSizeAndJustification 
+			= this.getWordCompatSetting("overrideTableStyleFontSizeAndJustification");
+				
+		// false is the default, though Word 2010/13/16 set it to true
+		if (overrideTableStyleFontSizeAndJustification==null
+				|| overrideTableStyleFontSizeAndJustification.getVal()==null) return false;
+    	
+    	return  ( overrideTableStyleFontSizeAndJustification.getVal().equals("1")
+				|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("true")
+				|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("yes")
+				);
+    }		
+
+	public void setOverrideTableStyleFontSizeAndJustification(boolean val) {
+				
+		if (val) {
+			setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "1");
+		} else {
+			setWordCompatSetting("overrideTableStyleFontSizeAndJustification", "0");			
+		}
+				
+    }		
 	
 	/**
 	 * Restrict allowed formatting to specified styles.  You don't want to use this directly; 
