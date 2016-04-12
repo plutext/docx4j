@@ -150,7 +150,11 @@ public class TraversalUtil {
 										R rtr = (R)rtp.getContent().get(0);
 										System.out.println(rtr.getParent().getClass().getName() );
 								 */
-						// TODO: other corrections
+						} else if (parent instanceof List){
+							// Do nothing
+							if (log.isDebugEnabled()) {
+								log.debug("Unknown parent for " + o.getClass().getName());
+							}
 						} else {
 							((Child)o).setParent(parent);
 						}
