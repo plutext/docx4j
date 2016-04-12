@@ -107,14 +107,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		} catch (Exception e) {
 			log.error("Exception exporting package", e);
 			throw new Docx4JException("Exception exporting package", e);
-		} finally {
-			// Clean-up
-			try {
-				outputStream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		} 
 	}
 
 	protected long logDebugStep(Logger log, String stepLabel, long startTime) {
