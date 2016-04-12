@@ -98,7 +98,7 @@ public class RunFontSelectorChinese2Test {
 			Element foInline = (Element)df.getFirstChild();
 //			System.out.println(foInline.getAttribute("font-family"));
 			
-			assertEquals(foInline.getAttribute("font-family"), expectedFont[i]);
+			assertEquals("iteration "+i, foInline.getAttribute("font-family"), expectedFont[i]);
 		}
 		
 	}	

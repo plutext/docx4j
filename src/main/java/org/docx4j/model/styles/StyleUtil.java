@@ -1760,9 +1760,14 @@ public class StyleUtil {
 	 */
 	public static Style apply(Style source, Style destination) {
 
-		if (!isEmpty(source)) {
+		if (isEmpty(source)) {
+			
+			log.debug("empty source style");
+			
+		} else {
 			
 			if (destination == null) {
+				log.debug("new destination style");
 				destination = Context.getWmlObjectFactory().createStyle();
 				if (source.getType()!=null) {
 					destination.setType(source.getType());
@@ -2411,7 +2416,7 @@ public class StyleUtil {
 	}
 
 	public static RFonts apply(RFonts source, RFonts destination) {
-
+		
 		if (destination == null)
 			destination = Context.getWmlObjectFactory().createRFonts();
 		
@@ -2419,6 +2424,10 @@ public class StyleUtil {
 			
 			if (source!=null && source.getHint()!=null) {
 				destination.setHint(source.getHint());
+			} else {
+				//return null; // causes RunFontSelectorChinese2Test to fail
+				// if we don't return null, it creates empty rFonts element
+				// see comment at line 401 of RunFontSelector
 			}
 			
 		} else {

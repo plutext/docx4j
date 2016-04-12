@@ -398,7 +398,8 @@ public class RunFontSelector {
 		
 		
 		RFonts rFonts = rPr.getRFonts();
-		if (rFonts==null) {
+		if (rFonts==null) // compare empty, which RunFontSelectorChinese2Test is sensitive to; with empty on a quick skim it looks like unicodeRangeToFont is used. 
+		{
 			return nullRPr(document, text);
 		}		
     	
