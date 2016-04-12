@@ -761,7 +761,10 @@ public class MailMerger {
                             org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o2).getValue();
                             result.append(t.getValue());
                         }
-                    }
+                    } else if(o2 instanceof org.docx4j.wml.Text){
+                        org.docx4j.wml.Text t = (org.docx4j.wml.Text) o2;
+                        result.append(t.getValue());
+                    } 
                 }
             }
         }
