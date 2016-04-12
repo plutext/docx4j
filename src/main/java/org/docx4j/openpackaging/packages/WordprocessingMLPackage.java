@@ -52,10 +52,12 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Styles;
@@ -476,6 +478,14 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
 		app.setJaxbElement(extFactory.createProperties() );
 		wmlPack.addTargetPart(app);	
+		
+    	// DocumentSettingsPart (/word/settings.xml)
+        // Set overrideTableStyleFontSizeAndJustification to true,
+        // like Word 2010/2013/2016.  Since v3.3.0
+    	DocumentSettingsPart dsp = new DocumentSettingsPart();
+    	wmlPack.getMainDocumentPart().addTargetPart(dsp);
+    	dsp.setJaxbElement(new CTSettings());
+    	dsp.setOverrideTableStyleFontSizeAndJustification(true);
 				
 		// Return the new package
 		return wmlPack;
