@@ -280,7 +280,7 @@ public class Docx4J {
 	}
 
 	/**
-	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  Save a Docx Document to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
 	 *
 	 *  @since 3.3.0
 	 */	
