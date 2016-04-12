@@ -46,12 +46,14 @@ import org.docx4j.wml.CTFFData;
 import org.docx4j.wml.CTFFName;
 import org.docx4j.wml.CTFFTextInput;
 import org.docx4j.wml.CTFFTextType;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Text;
@@ -497,6 +499,7 @@ public class MailMerger {
 			if ( fr.getFldName().equals("MERGEFIELD") ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
+				String lang = extractLang(fr.getResultsSlot());
 				String datafieldName = getDatafieldNameFromInstr(instr);
 				String val = datamap.get( new DataFieldName(datafieldName));
 				String gFormat = null; // required only for FORMTEXT conversion
@@ -521,7 +524,7 @@ public class MailMerger {
 					FldSimpleModel fsm = new FldSimpleModel();
 					try {
 						fsm.build(instr);
-						val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val);
+						val = FormattingSwitchHelper.applyFormattingSwitch(input, fsm, val, lang);
 						
 						gFormat = FormattingSwitchHelper.findFirstSwitchValue("\\*", fsm.getFldParameters(), true);
 						// Solely for potential use in OutputField.AS_FORMTEXT_REGULAR
@@ -596,6 +599,25 @@ public class MailMerger {
 		
 		return shellClone.getContent();
 
+	}
+
+	/**
+	 * Extract language information from run parameters to be able to 
+	 * format month, day, week, etc. in its abbreviated form according to the 
+	 * language specified by the lang element on the run containing the field instructions.
+	 * Also it will be used to use language specific <code>DecimalFormatSymbols</code> for number formating
+	 * @param R Run
+	 * @returns string language like "fr-CA" abbreviation or null
+	 */
+	private static String extractLang(R resultsSlot) {
+		RPr rPr = resultsSlot.getRPr();
+		if(rPr != null){
+			CTLanguage lang = rPr.getLang();
+			if(lang != null){
+				return lang.getVal();
+			}
+		}
+		return null;
 	}
 
 	/**
