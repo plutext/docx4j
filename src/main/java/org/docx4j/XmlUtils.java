@@ -486,26 +486,26 @@ public class XmlUtils {
 	 * @see JaxbXmlPart.variableReplace which can invoke this more efficiently
 	 */
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
-			java.util.HashMap<String, String> mappings) throws JAXBException {
+			java.util.Map<String, ?> mappings) throws JAXBException {
 	    return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
 	 }
 	
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
-			java.util.HashMap<String, String> mappings, JAXBContext jc) throws JAXBException {
+			java.util.Map<String, ?> mappings, JAXBContext jc) throws JAXBException {
 	    String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
 	    log.debug("Results of substitution: " + wmlString);
 	    return unmarshalString(wmlString, jc);
 	 }
 	
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
-			java.util.HashMap<String, String> mappings, JAXBContext jc, Class<?> declaredType) throws JAXBException {
+			java.util.Map<String, ?> mappings, JAXBContext jc, Class<?> declaredType) throws JAXBException {
 	      String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
 	      return unmarshalString(wmlString, jc, declaredType);
 	   }
 	
 	
 	 private static StringBuilder replace(String wmlTemplateString, int offset, StringBuilder strB, 
-			 java.util.HashMap<String, String> mappings) {
+			 java.util.Map<String, ?> mappings) {
 		 
 	    int startKey = wmlTemplateString.indexOf("${", offset);
 	    if (startKey == -1)
@@ -514,7 +514,7 @@ public class XmlUtils {
 	       strB.append(wmlTemplateString.substring(offset, startKey));
 	       int keyEnd = wmlTemplateString.indexOf('}', startKey);
 	       String key = wmlTemplateString.substring(startKey + 2, keyEnd);
-	       String val = mappings.get(key);
+	       String val = mappings.get(key).toString();
 	       if (val==null) {
 	    	   log.warn("Invalid key '" + key + "' or key not mapped to a value");
 	    	   strB.append(key );
