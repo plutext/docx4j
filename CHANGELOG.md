@@ -1,15 +1,30 @@
 CHANGELOG
 =========
 
-Version 3.3 branch (work in progress)
+Version 3.3 beta
 ==================
 
-Notable Changes 
----------------
+Contributors to this release
+----------------------------
 
-Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
-NB: Digital signature support is in Enterprise Ed. 
-See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
+https://github.com/crherman7
+
+https://github.com/increatum
+
+https://github.com/jerryorr
+
+https://github.com/MaciejDobrowolski
+
+https://github.com/pwarncke
+
+https://github.com/rasmusfaber
+
+https://github.com/tfcporciuncula
+
+Jason Harrop
+
+Notable Changes - PDF
+---------------------
 
 XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
 converter-eval.plutext.com is used by default, but you can (and should!) alter it to your own
@@ -20,6 +35,13 @@ com.plutext.converter.URL=http://converter-eval.plutext.com:80/v1/00000000-0000-
 See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
 
 If you want to use the existing XSL FO + Apache FOP PDF Conversion, just add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
+
+Notable Changes - Other
+-----------------------
+
+Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
+NB: Digital signature support is in Enterprise Ed. 
+See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
 
 docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
 
@@ -45,6 +67,8 @@ Repackage portions of org.apache.poi (mainly poifs) as org.docx4j.org.apache.poi
 Repackage santuario c14n (org.apache.xml.security) as org.docx4j.org.apache.xml.security. 
 [Comment: Useful for c14n, but not essential to docx4j, so may yet be removed. Opinions welcome]
 
+Avoid adding virtual styles to docx representing DocDefaults; this is now internal to StyleTree
+
 
 
 Dependency Changes (relative to 3.2.x)
@@ -62,7 +86,7 @@ Added:
 
 Moved FOP/batik jars to separate project docx4j-export-fo
 
-Bumped various jar versions
+Bumped most deps to most recent available (except MOXy, where bumped to most recent compiled for Java 6)
 
 
 
