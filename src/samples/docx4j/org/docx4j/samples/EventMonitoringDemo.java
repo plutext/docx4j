@@ -25,6 +25,7 @@ import java.io.File;
 
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;
+import net.engio.mbassy.bus.config.Feature;
 import net.engio.mbassy.listener.Handler;
 
 import org.docx4j.Docx4J;
@@ -60,7 +61,11 @@ public class EventMonitoringDemo extends AbstractSample {
 		
 		// Creation of message bus
 		MBassador<Docx4jEvent> bus = new MBassador<Docx4jEvent>(
-				BusConfiguration.Default());
+				new BusConfiguration()
+			     .addFeature(Feature.SyncPubSub.Default()) // configure the synchronous message publication
+			     .addFeature(Feature.AsynchronousHandlerInvocation.Default()) // configure asynchronous invocation of handlers
+			     .addFeature(Feature.AsynchronousMessageDispatch.Default()) // configure asyncronous message publication (fire&forget)
+			     );
 		Docx4jEvent.setEventNotifier(bus);
 		
 		//  and registration of listeners
