@@ -24,53 +24,54 @@
 	
 		org.docx4j:docx4j:jar:3.3.0-SNAPSHOT
 		+- org.plutext:jaxb-svg11:jar:1.0.2
-		+- net.engio:mbassador:jar:1.1.10
+		+- net.engio:mbassador:jar:1.2.4.2
 		
-		+- org.slf4j:slf4j-api:jar:1.7.5
-		+- org.slf4j:jcl-over-slf4j:jar:1.7.5
-		+- org.slf4j:slf4j-log4j12:jar:1.7.5
+		+- org.slf4j:slf4j-api:jar:1.7.21
+		+- org.slf4j:jcl-over-slf4j:jar:1.7.21
+		+- org.slf4j:slf4j-log4j12:jar:1.7.21		
 		+- log4j:log4j:jar:1.2.17
 		
 		+- org.apache.commons:commons-lang3:jar:3.4
 		+- commons-codec:commons-codec:jar:1.10
-		+- commons-io:commons-io:jar:1.3.1
+		+- commons-io:commons-io:jar:2.4
 		
-		+- org.apache.httpcomponents:httpclient:jar:4.3.6
-		|  +- org.apache.httpcomponents:httpcore:jar:4.3.3
-		|  \- commons-logging:commons-logging:jar:1.1.3
+		+- org.apache.httpcomponents:httpclient:jar:4.5.2
+		|  +- org.apache.httpcomponents:httpcore:jar:4.4.4
+		|  \- commons-logging:commons-logging:jar:1.2
+		+- com.fasterxml.jackson.core:jackson-core:jar:2.7.3
+		+- com.fasterxml.jackson.core:jackson-databind:jar:2.7.3
+		|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.7.0
 		
-		+- com.fasterxml.jackson.core:jackson-core:jar:2.6.1
-		+- com.fasterxml.jackson.core:jackson-databind:jar:2.6.1
-		|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.6.0
-		
-		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:1.5
+		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.1
 		+- org.apache.avalon.framework:avalon-framework-api:jar:4.3.1
 		+- org.apache.avalon.framework:avalon-framework-impl:jar:4.3.1
 		
-		+- xalan:xalan:jar:2.7.1
-		|  \- xalan:serializer:jar:2.7.1
+		+- xalan:xalan:jar:2.7.2
+		|  \- xalan:serializer:jar:2.7.2
 		
-		+- net.arnx:wmf2svg:jar:0.9.0
-		+- com.googlecode.jaxb-namespaceprefixmapper-interfaces:JAXBNamespacePrefixMapper:jar:2.2.4
+		+- net.arnx:wmf2svg:jar:0.9.8
 		
-		+- org.antlr:antlr-runtime:jar:3.3
+		+- org.antlr:antlr-runtime:jar:3.5.2
 		+- org.antlr:stringtemplate:jar:3.2.1
 		|  \- antlr:antlr:jar:2.7.7
 		
-		+- com.google.guava:guava:jar:17.0
-
-		\- junit:junit:jar:4.8:test
-
+		+- com.google.guava:guava:jar:19.0
+		
+		\- junit:junit:jar:4.12:test
+		   \- org.hamcrest:hamcrest-core:jar:1.3:test
 
 		Optional:
 		 
-		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.0-SNAPSHOT:compile
-		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.5.1:compile
-		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.5.1:compile
-		|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.5.1:compile
-		|  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:2.5.1:compile
-		+- javax.mail:mail:jar:1.4.7:compile
-		|  \- javax.activation:activation:jar:1.1:compile		 
+		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.0-SNAPSHOT
+		
+		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.6.2
+		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.6.2
+		|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.6.2
+		|  +- javax.validation:validation-api:jar:1.1.0.Final
+		|  \- org.glassfish:javax.json:jar:1.0.4
+		
+		+- javax.mail:mail:jar:1.4.7
+		|  \- javax.activation:activation:jar:1.1		 
 	 -->
 	 
 	 
@@ -85,10 +86,13 @@
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
     	
     	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.0.0/docx4j-MOXy-JAXBContext-3.0.0.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.1/org.eclipse.persistence.moxy-2.5.1.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.1/org.eclipse.persistence.core-2.5.1.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.1/org.eclipse.persistence.asm-2.5.1.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.1/org.eclipse.persistence.antlr-2.5.1.jar"/>
+    	
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.6.2/org.eclipse.persistence.moxy-2.6.2.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.6.2/org.eclipse.persistence.core-2.6.2.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.6.2/org.eclipse.persistence.asm-2.6.2.jar"/>
+        <pathelement location="${m2Repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar"/>
+        <pathelement location="${m2Repository}/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar"/>
+        
         <pathelement location="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar"/>
         <pathelement location="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
         
@@ -97,16 +101,16 @@
            
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
 
-        <pathelement location="${m2Repository}/net/engio/mbassador/1.1.10/mbassador-1.1.10.jar"/>
+        <pathelement location="${m2Repository}/net/engio/mbassador/1.2.4.2/mbassador-1.2.4.2.jar"/>
 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar"/>
         
         <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.21/jcl-over-slf4j-1.7.21.jar"/>
          -->
          
         <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.21/slf4j-log4j12-1.7.21.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
          -->
         <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>  -->
@@ -114,32 +118,35 @@
                 
         <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar"/>
         <pathelement location="${m2Repository}/commons-codec/commons-codec/1.10/commons-codec-1.10.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.3.6/httpclient-4.3.6.jar"/>
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.3.3/httpcore-4.3.3.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.2/httpclient-4.5.2.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.4/httpcore-4.4.4.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar"/>
 
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.6.1/jackson-core-2.6.1.jar"/>
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.6.1/jackson-databind-2.6.1.jar"/>
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.6.0/jackson-annotations-2.6.0.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.5/xmlgraphics-commons-1.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.1/xmlgraphics-commons-2.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
         
     	<!-- Xalan 2.7.1 and dependencies: see further below -->
 
-        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.0/wmf2svg-0.9.0.jar"/>
+        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.8/wmf2svg-0.9.8.jar"/>
 
 
-        <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.3/antlr-runtime-3.3.jar"/>    
+        <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar"/>
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
         <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/> 
 
-        <pathelement location="${m2Repository}/com/google/guava/guava/17.0/guava-17.0.jar"/>
-    	
-        <!--<pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>-->
+        <pathelement location="${m2Repository}/com/google/guava/guava/19.0/guava-19.0.jar"/>
+
+<!--     	
+        <pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
+        <pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+         -->
         
 <!-- Uncomment to use the vfs stuff in docx4j-extras
 
@@ -163,8 +170,8 @@
     </path>
 
     <path id="dist.classpath">
-        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
-        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
         <path refid="docx4j.classpath"/>
     </path>
     
@@ -174,8 +181,7 @@
         <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.0-SNAPSHOT/docx4j-export-fo-3.3.0-SNAPSHOT.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.1/fop-1.1.jar"/>
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.1/fop-2.1.jar"/>
          
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
@@ -350,11 +356,14 @@
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.0-SNAPSHOT/docx4j-MOXy-JAXBContext-3.3.0-SNAPSHOT.jar" todir="${release.dir}/optional/MOXy"/>        
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.1/org.eclipse.persistence.moxy-2.5.1.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.1/org.eclipse.persistence.core-2.5.1.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.1/org.eclipse.persistence.asm-2.5.1.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.1/org.eclipse.persistence.antlr-2.5.1.jar" todir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.0-SNAPSHOT/docx4j-MOXy-JAXBContext-3.3.0-SNAPSHOT.jar" todir="${release.dir}/optional/MOXy"/>
+		        
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.6.2/org.eclipse.persistence.moxy-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.6.2/org.eclipse.persistence.core-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.6.2/org.eclipse.persistence.asm-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar" todir="${release.dir}/optional/MOXy"/>
+        
         <copy file="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar" todir="${release.dir}/optional/MOXy"/>
 
@@ -430,8 +439,8 @@
          
 	    <path id="docx4j-main.classpath">
 	        <path refid="Maven Dependencies.libraryclasspath"/>
-	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
-	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
 	    	<path refid="FOP-stuff.classpath"/>      
 	    	<!--   	        
 	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
@@ -524,8 +533,8 @@
 	    <path id="tests.classpath">
 	    	<pathelement location="${dist}/docx4j.jar" />
 	        <path refid="Maven Dependencies.libraryclasspath"/>
-	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
-	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
 	        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
 	        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>	    	
 	    </path>    	
