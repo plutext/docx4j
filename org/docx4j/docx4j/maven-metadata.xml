@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j</artifactId>
+  <versioning>
+    <release>3.3.0-RC</release>
+    <versions>
+      <version>3.3.0-RC</version>
+    </versions>
+    <lastUpdated>20160415095124</lastUpdated>
+  </versioning>
+</metadata>
