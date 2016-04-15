@@ -975,7 +975,8 @@ public class FormattingSwitchHelper {
 		Map<String, SimpleDateFormat> dateFormatsMap = DATE_FORMATS.get();
 		SimpleDateFormat dateFormat = dateFormatsMap.get(lang);
 		if (dateFormat == null) {
-			dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, Locale.forLanguageTag(lang));
+			dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, 					
+					localeforLanguageTag(lang));
 			dateFormatsMap.put(lang, dateFormat);
 		}
 		return dateFormat;
