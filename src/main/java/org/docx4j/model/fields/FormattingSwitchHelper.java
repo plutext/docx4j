@@ -629,7 +629,12 @@ public class FormattingSwitchHelper {
 		DecimalFormat formatter = null;
 		try {
 			if(lang != null){
-				formatter = new DecimalFormat(javaFormatter, new DecimalFormatSymbols(Locale.forLanguageTag(lang)));
+				
+				formatter = new DecimalFormat(javaFormatter, 
+						new DecimalFormatSymbols(localeforLanguageTag(lang)));
+				// lang is eg "fr-CA"  IETF BCP 47 tag
+				
+				
 			} else {
 				formatter = new DecimalFormat(javaFormatter);
 			}
@@ -644,6 +649,29 @@ public class FormattingSwitchHelper {
 		return formatter.format(dub);
 		
 	}
+	
+	/**
+	 * Substitute for Java 7's Locale.forLanguageTag
+	 * 
+	 * @param locale
+	 * @return
+	 */
+	private static Locale localeforLanguageTag(String locale) {
+		
+		// Adapted from http://stackoverflow.com/a/15238594/1031689
+		log.debug(locale + " to Locale");
+		
+		String parts[] = locale.split("-", -1);
+		if (parts.length == 1) {
+			return new Locale(parts[0]);
+		} else if (parts.length == 2
+//				|| (parts.length == 3 && parts[2].startsWith("#"))
+				) {
+			return new Locale(/* language */parts[0], /* country */parts[1]);
+		} else {
+			return new Locale(parts[0], parts[1], parts[2]);
+		}
+	}	
 	
 	private static void appendNumberItem(StringBuilder buffer, String dateItem) {
 		// identity for now		
