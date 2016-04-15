@@ -64,11 +64,10 @@
 		 
 		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.0-SNAPSHOT
 		
-		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.6.2
-		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.6.2
-		|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.6.2
-		|  +- javax.validation:validation-api:jar:1.1.0.Final
-		|  \- org.glassfish:javax.json:jar:1.0.4
+		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.5.2
+		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.5.2
+		|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.5.2
+		|  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:2.5.2
 		
 		+- javax.mail:mail:jar:1.4.7
 		|  \- javax.activation:activation:jar:1.1		 
@@ -87,11 +86,10 @@
     	
     	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.0.0/docx4j-MOXy-JAXBContext-3.0.0.jar"/>
     	
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.6.2/org.eclipse.persistence.moxy-2.6.2.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.6.2/org.eclipse.persistence.core-2.6.2.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.6.2/org.eclipse.persistence.asm-2.6.2.jar"/>
-        <pathelement location="${m2Repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar"/>
-        <pathelement location="${m2Repository}/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.2/org.eclipse.persistence.asm-2.5.2.jar"/>
+        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.2/org.eclipse.persistence.antlr-2.5.2.jar"/>
         
         <pathelement location="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar"/>
         <pathelement location="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
@@ -358,11 +356,10 @@
         <mkdir dir="${release.dir}/optional/MOXy"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.0-SNAPSHOT/docx4j-MOXy-JAXBContext-3.3.0-SNAPSHOT.jar" todir="${release.dir}/optional/MOXy"/>
 		        
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.6.2/org.eclipse.persistence.moxy-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.6.2/org.eclipse.persistence.core-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.6.2/org.eclipse.persistence.asm-2.6.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.2/org.eclipse.persistence.asm-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
+        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.2/org.eclipse.persistence.antlr-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
         
         <copy file="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar" todir="${release.dir}/optional/MOXy"/>
