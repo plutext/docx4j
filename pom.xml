@@ -800,6 +800,7 @@
 			            <version>0.12</version>
 			            <configuration>
 			            	<server>github</server>
+			            	<merge>true</merge>
 			                <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
 			                <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
 			                <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
