@@ -103,7 +103,13 @@ ValidationEventHandler{
 
     		   try {
 	     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
-	   				Field field = com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext.class.getDeclaredField("errorsCounter");
+	   				Field field = null;
+	   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
+						field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					} else {
+						field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					}
+	   				
 	   		        field.setAccessible(true);
 	   		        field.set(null, 10);
 	   		        log.warn(".. reset successful");
