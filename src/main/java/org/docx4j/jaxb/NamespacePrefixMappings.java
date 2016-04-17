@@ -194,6 +194,11 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "w15";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2015/wordml/symex")) {
+    		return "w16se";
+    	}
+    	
+    	
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
     		return "aml";
@@ -395,6 +400,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		
 		if (prefix.equals("w15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordml";
+
+		if (prefix.equals("w16se"))
+			return "http://schemas.microsoft.com/office/word/2015/wordml/symex";
 		
 		if (prefix.equals("aml"))
 			return "http://schemas.microsoft.com/aml/2001/core";
