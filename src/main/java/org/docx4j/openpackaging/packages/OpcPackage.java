@@ -475,29 +475,42 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			
 	        try {
 				POIFSFileSystem fs = new POIFSFileSystem(is);
-				EncryptionInfo info = new EncryptionInfo(fs); 
-		        Decryptor d = Decryptor.getInstance(info); 
-		        log.debug("Decrypting with " + d.getClass().getName());
-		        if (d.verifyPassword(password))   {
-	                 log.debug("Password works");
-	             } else {
-	 				throw new Docx4JException("Problem reading encrypted document: wrong password?");
-	             }
-		        
-				InputStream is2 = d.getDataStream(fs);
-				/* Note, this uses getCipher again:
-				 * 
-						at org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions.getCipher(CryptoFunctions.java:208)
-						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.initCipherForBlock(AgileDecryptor.java:305)
-						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.initCipherForBlock(AgileDecryptor.java:351)
-						at org.docx4j.org.apache.poi.poifs.crypt.ChunkedCipherInputStream.<init>(ChunkedCipherInputStream.java:56)
-						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.<init>(AgileDecryptor.java:343)
-						at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.getDataStream(AgileDecryptor.java:287)
-						at org.docx4j.org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:95)
-					
-					but at this point you'll have a null key if verifyPassword failed! 
+				InputStream is2 = null;
+				try {
+					EncryptionInfo info = new EncryptionInfo(fs); 
+			        Decryptor d = Decryptor.getInstance(info); 
+			        log.debug("Decrypting with " + d.getClass().getName());
+			        if (d.verifyPassword(password))   {
+		                 log.debug("Password works");
+		             } else {
+		 				throw new Docx4JException("Problem reading encrypted document: wrong password?");
+		             }
+			        
+					 is2 = d.getDataStream(fs);
+					/* Note, this uses getCipher again:
+					 * 
+							at org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions.getCipher(CryptoFunctions.java:208)
+							at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.initCipherForBlock(AgileDecryptor.java:305)
+							at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.initCipherForBlock(AgileDecryptor.java:351)
+							at org.docx4j.org.apache.poi.poifs.crypt.ChunkedCipherInputStream.<init>(ChunkedCipherInputStream.java:56)
+							at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor$AgileCipherInputStream.<init>(AgileDecryptor.java:343)
+							at org.docx4j.org.apache.poi.poifs.crypt.agile.AgileDecryptor.getDataStream(AgileDecryptor.java:287)
+							at org.docx4j.org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:95)
 						
-					 */
+						but at this point you'll have a null key if verifyPassword failed! 
+							
+						 */
+				} catch (FileNotFoundException fnf) {
+					
+					/*
+						java.io.FileNotFoundException: no such entry: "EncryptionInfo", had: [Data, CompObj, ObjectPool, 1Table, DocumentSummaryInformation, SummaryInformation, WordDocument, Macros, MsoDataStore]
+							at org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode.getEntry(DirectoryNode.java:406)
+							at org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode.createDocumentInputStream(DirectoryNode.java:194)
+							at org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfo.<init>(EncryptionInfo.java:103)					 
+							*/
+					throw new Docx4JException("This file seems to be a binary doc/ppt/xls, not an encrypted OLE2 file containing a doc/pptx/xlsx");
+					
+				}
 				final ZipPartStore partLoader = new ZipPartStore(is2);
 				final Load3 loader = new Load3(partLoader);
 				OpcPackage opcPackage = loader.get();
@@ -509,7 +522,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 //				opcPackage.getProtectionSettings().setWasEncrypted(true);
 				
 				return opcPackage;
-				
+			} catch (Docx4JException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new Docx4JException("Problem reading encrypted document", e);
 			} finally {
