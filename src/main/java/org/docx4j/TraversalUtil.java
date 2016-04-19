@@ -274,8 +274,14 @@ public class TraversalUtil {
 			return (List<Object>) o;
 		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
+			
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
-			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			if (((org.docx4j.wml.SdtElement) o).getSdtContent()!=null) {
+				return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			} else {
+				log.warn("SdtElement is missing content element");
+				return null;						
+			}		
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
             org.docx4j.dml.wordprocessingDrawing.Anchor anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -292,6 +298,7 @@ public class TraversalUtil {
             }
             if (!artificialList.isEmpty())
                 return artificialList;
+            
         } else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
             org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -375,8 +382,24 @@ public class TraversalUtil {
 				artificialList.add(ctObject.getControl() ); // CTControl
 			}
 			return artificialList;
+			
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+
+		} else if (o instanceof org.docx4j.dml.CTGvmlShape) {
+			
+			org.docx4j.dml.CTGvmlShape sp = (org.docx4j.dml.CTGvmlShape)o; 
+			if (sp!=null
+					&& sp.getTxSp()!=null
+					&& sp.getTxSp().getTxBody()!=null) {
+
+				List<Object> artificialList = new ArrayList<Object>();
+				artificialList.addAll(sp.getTxSp().getTxBody().getP());
+				
+				return artificialList;				
+			}
+			return null;
+			
 		} else if(o instanceof FldChar) {
 			FldChar fldChar = ((FldChar)o);
 			List<Object> artificialList = new ArrayList<Object>();
