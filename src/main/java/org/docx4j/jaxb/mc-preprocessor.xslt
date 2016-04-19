@@ -112,6 +112,9 @@
 		  	<xsl:attribute name="w:h"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template> 
   
+  <xsl:template match="w:spacing/@w:line" >
+		  	<xsl:attribute name="w:line"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template> 
   
   <!-- Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx, for example:
   
