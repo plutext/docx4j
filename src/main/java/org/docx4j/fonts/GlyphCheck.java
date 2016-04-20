@@ -3,6 +3,7 @@
  */
 package org.docx4j.fonts;
 
+import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
 import org.docx4j.fonts.fop.fonts.Typeface;
@@ -37,10 +38,10 @@ public class GlyphCheck {
 		
 		boolean exists = cache.get(physicalFont).hasChar(c);
 		
-		if (log.isWarnEnabled() 
+		if (log.isInfoEnabled() 
 				&& !exists) {
 			
-            log.warn("Glyph " + (int) c + " (0x"
+            log.info("Glyph " + (int) c + " (0x"
                     + Integer.toHexString(c) 
                     + ") not available in font " + physicalFont.name);
 			
@@ -49,12 +50,16 @@ public class GlyphCheck {
 		return exists;
 	}
 
+	private static HashSet<String> warnedAlready = new HashSet<String>();
 
 	public static boolean hasChar(String fontName, char c) throws ExecutionException {
 		
 		PhysicalFont pf = PhysicalFonts.get(fontName);
 		if (pf==null) {
-			log.error("Couldn't get font " + fontName);
+			if (!warnedAlready.contains(fontName)) {
+				log.error("Couldn't get font " + fontName);
+				warnedAlready.add(fontName);
+			}
 			return false;
 		}
 		
