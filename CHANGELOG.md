@@ -1,8 +1,14 @@
 CHANGELOG
 =========
 
-Version 3.3 beta
-==================
+Version 3.3.0
+=============
+
+Release date
+------------
+
+21 April 2016
+
 
 Contributors to this release
 ----------------------------
@@ -26,7 +32,8 @@ Jason Harrop
 Notable Changes - PDF
 ---------------------
 
-XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
+XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter 
+changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
 converter-eval.plutext.com is used by default, but you can (and should!) alter it to your own
 instance, by setting docx4j property, eg:
 
@@ -45,8 +52,10 @@ See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/o
 
 docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
 
+Workaround for JAXB behaviour change (for recent releases of JAXB, mcPreprocessor only worked the first 10 times);
+see/subscribe to https://github.com/gf-metro/jaxb/issues/22
 
-Xalan <= 2.7.2 can't handle astral characters: https://issues.apache.org/jira/browse/XALANJ-2419
+Xalan <= 2.7.2 can't handle astral characters: see/vote for https://issues.apache.org/jira/browse/XALANJ-2419
 So:
 (i)  workaround this when serializing XML
 (ii) optionally workaround this when we use Xalan for XSLT, controlled by docx4j.properties docx4j.xalan.XALANJ-2419.workaround=true|false
@@ -57,7 +66,6 @@ RunFontSelector: basic support for Unicode astral characters
 Performance improvement: property docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.* allows us to avoid unmarshalling via DOM
 
 Handle McIgnorableNamespaces within NamespacePrefixMapper classes
-[Comment: need to understand whether any JAXB versions can't handle this] 
 
 XJC generated code for word/2010/wordprocessingDrawing
 
