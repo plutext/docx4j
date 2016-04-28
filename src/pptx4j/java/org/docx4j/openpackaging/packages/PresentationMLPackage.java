@@ -50,6 +50,7 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.ResourceUtils;
+import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
@@ -88,6 +89,11 @@ public class PresentationMLPackage  extends OpcPackage {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
+	
+	private ProtectPresentation presentationProtectionSettings = new ProtectPresentation(this);
+	public ProtectPresentation getProtectionSettings() {
+		return presentationProtectionSettings;
+	}	
 	
 	
 	/**
@@ -327,7 +333,11 @@ public class PresentationMLPackage  extends OpcPackage {
 				map.put(s.getStyleId(), s);
 				list.add(s.getStyleId());
 			}
-			styleTree = new StyleTree(list, map);
+			
+			// TEMP - manufacture wml DocDefaults docDefaults, Style normal!
+			
+			
+			styleTree = new StyleTree(list, map, TextStyles.generateDocDefaults(), null);
 				// TODO: We don't have defaultParagraphStyleId, defaultCharacterStyleId
 				// so use DocDefaults for now.
 		}

@@ -150,7 +150,11 @@ public class TraversalUtil {
 										R rtr = (R)rtp.getContent().get(0);
 										System.out.println(rtr.getParent().getClass().getName() );
 								 */
-						// TODO: other corrections
+						} else if (parent instanceof List){
+							// Do nothing
+							if (log.isDebugEnabled()) {
+								log.debug("Unknown parent for " + o.getClass().getName());
+							}
 						} else {
 							((Child)o).setParent(parent);
 						}
@@ -270,8 +274,14 @@ public class TraversalUtil {
 			return (List<Object>) o;
 		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
+			
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
-			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			if (((org.docx4j.wml.SdtElement) o).getSdtContent()!=null) {
+				return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			} else {
+				log.warn("SdtElement is missing content element");
+				return null;						
+			}		
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
             org.docx4j.dml.wordprocessingDrawing.Anchor anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -288,6 +298,7 @@ public class TraversalUtil {
             }
             if (!artificialList.isEmpty())
                 return artificialList;
+            
         } else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
             org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -371,8 +382,24 @@ public class TraversalUtil {
 				artificialList.add(ctObject.getControl() ); // CTControl
 			}
 			return artificialList;
+			
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+
+		} else if (o instanceof org.docx4j.dml.CTGvmlShape) {
+			
+			org.docx4j.dml.CTGvmlShape sp = (org.docx4j.dml.CTGvmlShape)o; 
+			if (sp!=null
+					&& sp.getTxSp()!=null
+					&& sp.getTxSp().getTxBody()!=null) {
+
+				List<Object> artificialList = new ArrayList<Object>();
+				artificialList.addAll(sp.getTxSp().getTxBody().getP());
+				
+				return artificialList;				
+			}
+			return null;
+			
 		} else if(o instanceof FldChar) {
 			FldChar fldChar = ((FldChar)o);
 			List<Object> artificialList = new ArrayList<Object>();
@@ -410,79 +437,6 @@ public class TraversalUtil {
 	}
 	
 
-	public static void main(String[] args) throws Exception {
-
-		String inputfilepath = System.getProperty("user.dir")
-				+ "/sample-docs/sample-docx.xml";
-
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
-				.load(new java.io.File(inputfilepath));
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document) documentPart
-				.getJaxbElement();
-		Body body = wmlDocumentEl.getBody();
-
-		new TraversalUtil(body,
-
-		new Callback() {
-
-			String indent = "";
-			
-			@Override
-			public List<Object> apply(Object o) {
-				
-				String text = "";
-				if (o instanceof org.docx4j.wml.Text)
-					text = ((org.docx4j.wml.Text)o).getValue();
-				
-				System.out.println(indent + o.getClass().getName() + "  \"" + text + "\"");
-				return null;
-			}
-
-			@Override
-			public boolean shouldTraverse(Object o) {
-				return true;
-			}
-
-			// Depth first
-			@Override
-			public void walkJAXBElements(Object parent) {
-
-				indent += "    ";
-				
-				List children = getChildren(parent);
-				if (children != null) {
-
-					for (Object o : children) {
-
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
-						// value; this is ok, provided the results of the Callback
-						// won't be marshalled
-						o = XmlUtils.unwrap(o);
-
-						this.apply(o);
-
-						if (this.shouldTraverse(o)) {
-							walkJAXBElements(o);
-						}
-
-					}
-				}
-				
-				indent = indent.substring(0, indent.length()-4);
-			}
-
-			@Override
-			public List<Object> getChildren(Object o) {
-				return TraversalUtil.getChildrenImpl(o);
-			}
-
-		}
-
-		);
-
-	}
 
 	public static void replaceChildren(Object o, List<Object> newChildren) {
 		

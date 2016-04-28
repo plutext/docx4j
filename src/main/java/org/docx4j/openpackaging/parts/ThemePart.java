@@ -250,6 +250,8 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return getMinorLatin();
 	}
     
+	
+	private boolean reportedEmptyMINOR_EAST_ASIA = false;
        
 	public String getFontFromTheme(STTheme type) throws Docx4JException {
 
@@ -266,7 +268,18 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     			return null;
     		} else {
     			if (typeface.trim().length()==0) {
-        			log.warn("Empty typeface in font for " + type.toString() ); 
+    				
+    				if (type.toString().equals(STTheme.MINOR_EAST_ASIA) ) {
+    					
+    					if (!reportedEmptyMINOR_EAST_ASIA) {
+    	        			log.info("Empty typeface in font for " + type.toString() ); 
+    	        			reportedEmptyMINOR_EAST_ASIA = true; // suppress extra warnings
+    					}
+    					
+    				} else {
+            			log.info("Empty typeface in font for " + type.toString() );     					
+    				}
+    				
         			// eg <a:ea typeface=""/>
         	        // or <a:cs typeface=""/>
         			return null;
@@ -330,7 +343,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     private boolean isMajor(STTheme type) {
     	
     	if (type == STTheme.MAJOR_ASCII 
-    			|| type == STTheme.MAJOR_BIDI 
+    			|| type == STTheme.MAJOR_BIDI  
     			|| type == STTheme.MAJOR_EAST_ASIA 
     			|| type == STTheme.MAJOR_H_ANSI) {
     		return true;

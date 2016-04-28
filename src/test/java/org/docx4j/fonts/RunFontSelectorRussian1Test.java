@@ -484,6 +484,12 @@ public class RunFontSelectorRussian1Test {
 				public void addCharacterToCurrent(char c) {
 			    	sb.append(c);		
 				}
+				
+				@Override
+				public void addCodePointToCurrent(int cp) {
+					sb.append(
+							new String(Character.toChars(cp)));
+				}				
 	
 				public void finishPrevious() {
 					

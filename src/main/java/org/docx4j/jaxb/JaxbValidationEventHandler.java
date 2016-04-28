@@ -21,6 +21,7 @@
 package org.docx4j.jaxb;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
@@ -95,7 +96,30 @@ ValidationEventHandler{
 //                locator.getColumnNumber() + 
 //                " at line number " + locator.getLineNumber());
        } else if (ve.getSeverity()==ve.WARNING) {
-    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());    	   
+    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());  
+    	   
+    	   // Workaround for issue with recent non-MOXy JAXB (eg RI 2.2.11)
+    	   if (ve.getMessage().startsWith("Errors limit exceeded")) {
+
+    		   try {
+	     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
+	   				Field field = null;
+	   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
+						field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					} else {
+						field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					}
+	   				
+	   		        field.setAccessible(true);
+	   		        field.set(null, 10);
+	   		        log.warn(".. reset successful");
+	   			} catch (Exception e) {
+	   				log.error(e.getMessage());
+	   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");
+	   			} 
+    		   
+    	   }
+    	   
        }
       // JAXB provider should attempt to continue its current operation. 
       // (Marshalling, Unmarshalling, Validating)

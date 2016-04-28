@@ -170,6 +170,28 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		return nsContext;
 	}
 	
+	/**
+	 * @param val
+	 * @since 3.3.0
+	 */
+	public void setDocSecurity(int val) {
+		
+		// See http://webapp.docx4java.org/OnlineDemo/ecma376/SharedML/DocSecurity.html
+		// It is set by Word 2013 restrict editing read only, or comments, to 8.
+		
+		// May also be set by Excel to something other than 0
+		// for for certain protect sheet, protect workbook values,
+		// but not for the default values, so nothing is implemented in xlsx4j yet
+
+
+		if (this.getJaxbElement()==null) {
+			this.setJaxbElement(new Properties());
+		}
+		this.getJaxbElement().setDocSecurity(val);
+		
+	}
+	
+	
 }
 
 	

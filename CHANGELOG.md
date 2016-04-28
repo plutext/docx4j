@@ -1,6 +1,102 @@
 CHANGELOG
 =========
 
+Version 3.3.0
+=============
+
+Release date
+------------
+
+21 April 2016
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/crherman7
+
+https://github.com/increatum
+
+https://github.com/jerryorr
+
+https://github.com/MaciejDobrowolski
+
+https://github.com/pwarncke
+
+https://github.com/rasmusfaber
+
+https://github.com/tfcporciuncula
+
+Jason Harrop
+
+Notable Changes - PDF
+---------------------
+
+XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter 
+changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
+converter-eval.plutext.com is used by default, but you can (and should!) alter it to your own
+instance, by setting docx4j property, eg:
+
+com.plutext.converter.URL=http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
+
+See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
+
+If you want to use the existing XSL FO + Apache FOP PDF Conversion, just add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
+
+Notable Changes - Other
+-----------------------
+
+Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
+NB: Digital signature support is in Enterprise Ed. 
+See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
+
+docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
+
+Workaround for JAXB behaviour change (for recent releases of JAXB, mcPreprocessor only worked the first 10 times);
+see/subscribe to https://github.com/gf-metro/jaxb/issues/22
+
+Xalan <= 2.7.2 can't handle astral characters: see/vote for https://issues.apache.org/jira/browse/XALANJ-2419
+So:
+(i)  workaround this when serializing XML
+(ii) optionally workaround this when we use Xalan for XSLT, controlled by docx4j.properties docx4j.xalan.XALANJ-2419.workaround=true|false
+[Comment: When will Xalan make a release which fixes this issue? This code will be removed if they do.]
+
+RunFontSelector: basic support for Unicode astral characters
+
+Performance improvement: property docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.* allows us to avoid unmarshalling via DOM
+
+Handle McIgnorableNamespaces within NamespacePrefixMapper classes
+
+XJC generated code for word/2010/wordprocessingDrawing
+
+Repackage portions of org.apache.poi (mainly poifs) as org.docx4j.org.apache.poi
+(and remove dependency on poi-scratchpad; remove Doc import since poi.hwpf dep is now absent)
+
+Repackage santuario c14n (org.apache.xml.security) as org.docx4j.org.apache.xml.security. 
+[Comment: Useful for c14n, but not essential to docx4j, so may yet be removed. Opinions welcome]
+
+Avoid adding virtual styles to docx representing DocDefaults; this is now internal to StyleTree
+
+
+
+Dependency Changes (relative to 3.2.x)
+------------------
+
+Removed: jaxb-xmldsig-core, poi-scratchpad, commons-lang
+
+Added: 
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
+
+Moved FOP/batik jars to separate project docx4j-export-fo
+
+Bumped most deps to most recent available (except MOXy, where bumped to most recent compiled for Java 6)
+
+
 
 Version 3.2.2  minor release
 =============
@@ -49,7 +145,6 @@ pptx4j
 ------
 
 Ensure VML namespace is declared on key parts
-
 
 
 

@@ -60,13 +60,24 @@ public class Context {
 	private static JAXBContext jcXslFo;
 	public static JAXBContext jcSectionModel;
 
-	public static JAXBContext jcXmlDSig;
+	public static JAXBContext jcEncryption;
 
 	/** @since 3.0.1 */
 	public static JAXBContext jcMCE;
 	
 	private static Logger log = LoggerFactory.getLogger(Context.class);
+	
+	
+	public static JAXBImplementation jaxbImplementation = null;
 		
+	/** 
+	 * Return the JAXB implementation detected to be in use.
+	 * 
+	 * @since 3.3.0 */
+	public static JAXBImplementation getJaxbImplementation() {
+		return jaxbImplementation;
+	}
+
 	static {
 		JAXBContext tempContext = null;
 
@@ -94,6 +105,7 @@ public class Context {
 			// Is MOXy configured?
 			jaxbPropsIS = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 			log.info("MOXy JAXB implementation intended..");
+			jaxbImplementation = JAXBImplementation.ECLIPSELINK_MOXy;
 		} catch (Exception e3) {
 			log.info("No MOXy JAXB config found; assume not intended..");
 			log.debug(e3.getMessage());
@@ -105,8 +117,12 @@ public class Context {
 				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 					// Java 6
 					log.info("Using Java 6/7 JAXB implementation");
+					jaxbImplementation = JAXBImplementation.ORACLE_JRE;
+
 				} else {
-					log.info("Using JAXB Reference Implementation");			
+					log.info("Using JAXB Reference Implementation");
+					jaxbImplementation = JAXBImplementation.REFERENCE;
+
 				}
 				
 			} catch (JAXBException e) {
@@ -130,14 +146,15 @@ public class Context {
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
 			tempContext = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
-					"org.docx4j.schemas.microsoft.com.office.word_2006.wordml:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2006.wordml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
 					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
 					"org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.vml.wordprocessingDrawing:org.docx4j.vml.presentationDrawing:org.docx4j.vml.spreadsheetDrawing:org.docx4j.vml.root:" +
 					"org.docx4j.docProps.coverPageProps:" +
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
-					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
+					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing", classLoader );
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
@@ -156,7 +173,16 @@ public class Context {
 			
 			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
 			
-			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
+			try {
+				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
+				jcEncryption = JAXBContext.newInstance(
+						 "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
+						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
+						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
+						,classLoader );
+			} catch (javax.xml.bind.JAXBException e) {
+				log.error(e.getMessage());
+			}
 
 			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader );
 			
@@ -211,8 +237,8 @@ public class Context {
                     	Attributes mainAttribs = manifest.getMainAttributes();
                     	String impTitle = mainAttribs.getValue("Implementation-Title");
                     	if (impTitle!=null
-                    			&& impTitle.contains("JAXB Reference Implementation")
-                    					|| impTitle.contains("org.eclipse.persistence") ) {
+                    			&& (impTitle.contains("JAXB Reference Implementation")
+                    					|| impTitle.contains("org.eclipse.persistence")) ) {
 	                    
         	                log.info("\n" + url);
 		                    for(Object key2  : mainAttribs.keySet() ) {

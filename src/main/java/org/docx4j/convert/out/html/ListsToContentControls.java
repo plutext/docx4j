@@ -64,8 +64,8 @@ import org.w3c.dom.Element;
  * 
  * This class does step 1.  
  * 
- * Step 2 is implemented by ....;  it will only be used if 
- * property docx4j.Convert.Out.HTML.Lists is set.
+ * Step 2 is implemented by SdtToListSdtTagHandler;  it will only be used if you invoke
+ * SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler())
  * 
  * @author jharrop
  *
@@ -338,12 +338,12 @@ public class ListsToContentControls {
 						}
 						
 					} else {
-						System.out.println("popping");
+						log.debug("popping");
 						// shallower, so pop levels
 						for (int i=listSpec.ilvl.intValue(); i>ilvl.intValue(); i--) {
 							listStack.pop();
 							listSpec = listStack.peek();
-							System.out.println("popped!");
+							log.debug("popped!");
 						}
 						
 					}

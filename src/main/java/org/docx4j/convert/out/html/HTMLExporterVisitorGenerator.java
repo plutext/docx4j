@@ -104,7 +104,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = true;
 			StringBuilder inlineStyle =  new StringBuilder();
-			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders);				
+			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders, false);				
 			if (!inlineStyle.toString().equals("") ) {
 				currentParent.setAttribute("style", inlineStyle.toString() );
 			}

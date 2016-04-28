@@ -34,6 +34,7 @@ import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.utils.XmlSerializerUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -197,15 +198,7 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
 	}
 
 	protected void writeDocument(CC conversionContext, Document document, OutputStream outputStream) throws Docx4JException {
-		Transformer serializer = null;
-		try {
-			serializer = XmlUtils.getTransformerFactory().newTransformer();
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
-			//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-			serializer.transform( new DOMSource(document) , new StreamResult(outputStream) );				
-		} catch (Exception e) {
-			throw new Docx4JException("Exception writing Document to OutputStream: " + e.getMessage(), e);
-		}
+		
+		XmlSerializerUtil.serialize(new DOMSource(document) , new StreamResult(outputStream), true, true);
 	}
 }

@@ -20,7 +20,12 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
+public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements McIgnorableNamespaceDeclarator {
+	
+//	private String mcIgnorable;
+	public void setMcIgnorable(String mcIgnorable) {
+//		this.mcIgnorable = mcIgnorable;
+	}
 	
     /**
      * Returns a preferred prefix for the given namespace URI;

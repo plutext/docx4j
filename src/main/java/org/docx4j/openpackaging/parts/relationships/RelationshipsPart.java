@@ -242,7 +242,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("looking for: " + id);
 		
 		Relationship r = getRelationshipByID(id);
-    	log.info(id + " points to " + r.getTarget());
+    	log.debug(id + " points to " + r.getTarget());
 		
 		return getPart(r);		
 	}
@@ -280,6 +280,24 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			}			
 		}		
 		return null;
+	}
+
+	/**
+	 * @param type
+	 * @return
+	 * @since 3.3.0
+	 */
+	public List<Relationship> getRelationshipsByType(String type) {
+		
+		List<Relationship> rels = new ArrayList<Relationship>();
+		
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			
+			if (r.getType().equals(type) ) {
+				rels.add(r);
+			}			
+		}		
+		return rels;
 	}
 	
 

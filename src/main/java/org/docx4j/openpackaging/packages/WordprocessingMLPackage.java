@@ -52,10 +52,12 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Styles;
@@ -105,6 +107,12 @@ public class WordprocessingMLPackage extends OpcPackage {
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
 	
+	private ProtectDocument documentProtectionSettings = new ProtectDocument(this);
+	public ProtectDocument getProtectionSettings() {
+		return documentProtectionSettings;
+	}
+	
+	
 	private DocumentModel documentModel;
 	public DocumentModel getDocumentModel() {
 		if (documentModel==null) {
@@ -145,6 +153,8 @@ public class WordprocessingMLPackage extends OpcPackage {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
 	}
+	
+	
 	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
@@ -380,6 +390,9 @@ public class WordprocessingMLPackage extends OpcPackage {
 	 * Creates a WordprocessingMLPackage, using default page size and orientation.
 	 * From 2.7.1, these are read from docx4j.properties, or if not found, default
 	 * to A4 portrait.
+	 * 
+	 * The WordprocessingMLPackage contains a MainDocumentPart (with content), 
+	 * Styles part, DocPropsCorePart part, and DocPropsExtendedPart.
 	 */
 	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
 		
@@ -394,6 +407,17 @@ public class WordprocessingMLPackage extends OpcPackage {
 				PageSizePaper.valueOf(papersize), landscape); 
 	}
 	
+	/**
+	 * Creates a WordprocessingMLPackage, containing a MainDocumentPart (with content), 
+	 * Styles part, DocPropsCorePart part, and DocPropsExtendedPart.
+	 * 
+	 * The content contains sectPr specifying paper size and orientation.
+	 * 
+	 * @param sz
+	 * @param landscape
+	 * @return
+	 * @throws InvalidFormatException
+	 */
 	public static WordprocessingMLPackage createPackage(PageSizePaper sz, boolean landscape ) throws InvalidFormatException {
 		
 				
@@ -454,12 +478,20 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
 		app.setJaxbElement(extFactory.createProperties() );
 		wmlPack.addTargetPart(app);	
+		
+    	// DocumentSettingsPart (/word/settings.xml)
+        // Set overrideTableStyleFontSizeAndJustification to true,
+        // like Word 2010/2013/2016.  Since v3.3.0
+    	DocumentSettingsPart dsp = new DocumentSettingsPart();
+    	wmlPack.getMainDocumentPart().addTargetPart(dsp);
+    	dsp.setJaxbElement(new CTSettings());
+    	dsp.setOverrideTableStyleFontSizeAndJustification(true);
 				
 		// Return the new package
 		return wmlPack;
 		
 	}
-	
+
 	
 	@Override
 	protected void finalize() throws Throwable {
@@ -516,7 +548,5 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		
 	}
-
-
 	
 }

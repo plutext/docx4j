@@ -20,10 +20,13 @@
 package org.docx4j;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -36,8 +39,6 @@ import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
-import org.docx4j.convert.out.fo.FOExporterVisitor;
-import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
 import org.docx4j.convert.out.html.HTMLExporterXslt;
 import org.docx4j.events.Docx4jEvent;
@@ -61,9 +62,15 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.services.client.ConversionException;
+import org.docx4j.services.client.Converter;
+import org.docx4j.services.client.ConverterHttp;
+import org.docx4j.services.client.Format;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 
@@ -77,6 +84,8 @@ import org.w3c.dom.Document;
  * 
  */
 public class Docx4J {
+	
+	private static Logger log = LoggerFactory.getLogger(Docx4J.class);		
 	
 	public static final String MIME_PDF = FOSettings.MIME_PDF;
 	public static final String MIME_FO = FOSettings.INTERNAL_FO_MIME;
@@ -93,6 +102,33 @@ public class Docx4J {
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
 
+	public static Boolean EXPORT_FO_DETECTED = null;
+	
+	/**
+	 * If the docx4j-export-fo project is present, 
+	 * we'll use FO for PDF export.
+	 * 
+	 * Otherwise, we'll try to use Plutext's PDF Converter.
+	 * 
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static boolean pdfViaFO() {
+		
+		if (EXPORT_FO_DETECTED==null) {
+			
+			try {
+				Object o = FOExporterVisitorGetInstance();
+				EXPORT_FO_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_FO_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_FO_DETECTED;
+	}
+	
+	
 	/** Save the document in a zip container (default docx)
 	 */
 	public static final int FLAG_SAVE_ZIP_FILE = 1;
@@ -100,7 +136,28 @@ public class Docx4J {
 	/** Save the document as a flat xml document
 	 */
 	public static final int FLAG_SAVE_FLAT_XML = 2;
+	
 
+	/**
+	 * RC4 is weak, so don't use it unless you have to for backwards compatibility purposes
+	 * (ie the applications to be used for reading your docx don't support anything better). 
+	 * See further http://blogs.msdn.com/b/david_leblanc/archive/2010/04/16/don-t-use-office-rc4-encryption-really-just-don-t-do-it.aspx
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_BINARYRC4 = 3;
+			
+	/**
+	 * Standard encryption: This approach uses a binary EncryptionInfo structure. 
+	 * It uses Advanced Encryption Standard (AES) as an encryption algorithm and SHA-1 as a hashing algorithm.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_STANDARD = 4;
+	
+	/**
+	 * Agile encryption: This is used by Word 2010, it uses an XML EncryptionInfo structure.  
+	 * 
+	 * The encryption and hashing algorithms are specified in the structure and can be for any encryption supported on the host computer.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_AGILE = 5;
+	
 	/** inject the passed xml into the document
 	 *  if you don't do this step, then the xml in 
 	 *  the document will be used.
@@ -204,6 +261,15 @@ public class Docx4J {
 		return (WordprocessingMLPackage)OpcPackage.load(pkgIdentifier, inStream);
 	}
 	
+	/**
+	 *  Save a Docx Document to a File. 
+	 *  
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile) throws Docx4JException {
+		
+		wmlPackage.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
+	}
 	
 	/**
 	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
@@ -212,6 +278,16 @@ public class Docx4J {
 		
 		wmlPackage.save(outFile, flags);
 	}
+
+	/**
+	 *  Save a Docx Document to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
+	 *
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream) throws Docx4JException {
+		
+		wmlPackage.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
+	}
 	
 	/**
 	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
@@ -219,6 +295,32 @@ public class Docx4J {
 	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
 		
 		wmlPackage.save(outStream, flags);
+		
+	}
+
+	/**
+	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outFile, flags, password);
+	}
+	
+	/**
+	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outStream, flags, password);
 		
 	}
 	
@@ -470,28 +572,81 @@ public class Docx4J {
 	 *  Convenience method to convert the document to PDF
 	 */	
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) throws Docx4JException {
-		
+				
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
 		
-		FOSettings settings = createFOSettings();
-		settings.setWmlPackage(wmlPackage);
-		settings.setApacheFopMime("application/pdf");
-		toFO(settings, outputStream, FLAG_NONE);
+		if (pdfViaFO()) {
+			FOSettings settings = createFOSettings();
+			settings.setWmlPackage(wmlPackage);
+			settings.setApacheFopMime("application/pdf");
+			toFO(settings, outputStream, FLAG_NONE);
+		} else {
+			
+			// Configure this property to point to your own Converter instance.
+			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert");
+			
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			save(wmlPackage, baos);
+			
+			Converter converter = new ConverterHttp(URL); 
+			try {
+				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
+				baos.close();
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+				new EventFinished(startEvent).publish();
+				throw new Docx4JException("Problem converting to PDF; check URL " + URL + "\n" + e.getMessage(), e);
+			}
+			
+		}
 		
 		new EventFinished(startEvent).publish();
 	}
 	
-	protected static Exporter<FOSettings> getFOExporter(int flags) {
+	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
 		switch (flags) {
 			case FLAG_EXPORT_PREFER_NONXSL:
-				return FOExporterVisitor.getInstance();
+				return FOExporterVisitorGetInstance();
 			case FLAG_EXPORT_PREFER_XSL:
 			default:
-				return FOExporterXslt.getInstance();
+				return FOExporterXsltGetInstance();
 		}
 	}
+	
+	private static Exporter<FOSettings> FOExporterVisitorGetInstance() throws Docx4JException {
+		
+		// Use reflection to return FOExporterVisitor.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterVisitor");
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.info("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage());
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+	}
 
+	private static Exporter<FOSettings> FOExporterXsltGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return FOExporterXslt.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterXslt");			
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.info("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage());
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+		
+	}
+	
 	/**
 	 *  Create the configuration object for conversions to html
 	 */	

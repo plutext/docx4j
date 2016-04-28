@@ -33,7 +33,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -98,6 +98,25 @@ public class RemovalHandler {
                 }
         }
 
+        /**
+         * Removes Structured Document Tags from the main document part, headers, and footer, 
+         * preserving their contents.
+         *
+         * In case key "empty" is specified, value bindings (xpath) are removed only
+         * if they have void contents (e.g. the XML points nowhere).
+         *
+         * @param part
+         *            The document part to modify (in situ).
+         * @param quantifier
+         *            The quantifier regarding which kinds of parts are to be
+         *            removed.
+         * @param keys
+         *            In case of {@link Quantifier#NAMED}, quantifier names. All
+         *            strings except "xpath", "condition", "repeat", "empty" are
+         *            ignored.
+         * @throws Docx4JException
+         *             In case any transformation error occurs.
+         */
         public void removeSDTs(WordprocessingMLPackage wordMLPackage,
                         final Quantifier quantifier, final String... keys) throws Docx4JException {
 
@@ -135,7 +154,7 @@ public class RemovalHandler {
          *            removed.
          * @param keys
          *            In case of {@link Quantifier#NAMED}, quantifier names. All
-         *            strings expect "xpath", "condition", "repeat", "empty" are
+         *            strings except "xpath", "condition", "repeat", "empty" are
          *            ignored.
          * @throws Docx4JException
          *             In case any transformation error occurs.
@@ -169,18 +188,20 @@ public class RemovalHandler {
         public static enum Quantifier {
 
                 /**
-                 * Every SDT shall be removed.
+                 * Every SDT shall be removed.  From 3.3.0, this really means all SDTs in the main document part.
                  */
                 ALL,
-
+                
+                /**
+                 * The default SDTs shall be removed, that is, condition and repeat.
+                 * 
+                 * (If you want to remove xpaths, either use Quantifier.ALL, or pass key "xpath")
+                 */
+                DEFAULT,
+                
                 /**
                  * Named SDTs shall be removed, the names given separately.
                  */
-                NAMED,
-
-                /**
-                 * The default SDTs shall be removed, that is, condition and repeat.
-                 */
-                DEFAULT;
+                NAMED;                
         }
 }

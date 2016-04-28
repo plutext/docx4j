@@ -30,6 +30,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTColorMapping;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -68,6 +69,27 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		setRelationshipType(Namespaces.PRESENTATIONML_SLIDE_MASTER);
 		
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.docx4j.openpackaging.parts.JaxbXmlPart#setMceIgnorable(org.docx4j.jaxb.McIgnorableNamespaceDeclarator)
+	 * 
+	 * @since 3.3.0
+	 */
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+		
+		/* Ensure we declare the namespace.  Otherwise Powerpoint 2010 treats the pptx as corrupt.
+		 * 2013 and Mac version might repair it, at leat..
+		 * 
+            <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+              <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">
+		 */
+		
+		
+		// Unlike MainDocumentPart, there is no this.getJaxbElement().getIgnorable()
+		
+		namespacePrefixMapper.setMcIgnorable("v");
+	}	
 	
 	private ResolvedLayout resolvedLayout;
 	public ResolvedLayout getResolvedLayout() {

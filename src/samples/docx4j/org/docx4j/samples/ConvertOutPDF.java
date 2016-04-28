@@ -34,50 +34,24 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 /**
  * Demo of PDF output.
  * 
- * PDF output is via XSL FO.
- * First XSL FO is created, then FOP
- * is used to convert that to PDF.
+ * From v3.3.0, PDF output is by default via Plutext's commercial PDF Converter.
  * 
- * Don't worry if you get a class not
- * found warning relating to batik. It
- * doesn't matter.
+ * By default, the evaluation instance at:
  * 
- * If you don't have logging configured, 
- * your PDF will say "TO HIDE THESE MESSAGES, 
- * TURN OFF debug level logging for 
- * org.docx4j.convert.out.pdf.viaXSLFO".  The thinking is
- * that you need to be able to be warned if there
- * are things in your docx which the PDF output
- * doesn't support...
+ *  	http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
+ *  
+ * is used.  To specify your own instance, please set docx4j.properties property: 
  * 
- * docx4j used to also support creating
- * PDF via iText and via HTML. As of docx4j 2.5.0, 
- * only viaXSLFO is supported.  The viaIText and 
- * viaHTML source code can be found in src/docx4j-extras directory
+ *      com.plutext.converter.URL=http://your.host:80/v1/00000000-0000-0000-0000-000000000000/convert
+ * 
+ * If you don't want to use Plutext's PDF Converter, you can still use XSL FO and Apache FOP;
+ * just put docx4j-export-fo and its depedencies on your classpath and use Docx4J.toFO
+ * as per the example below.
  * 
  * @author jharrop
- *
  */
 public class ConvertOutPDF extends AbstractSample {
 	
-	/*
-	 * NOT WORKING?
-	 * 
-	 * If you are getting:
-	 * 
-	 *   "fo:layout-master-set" must be declared before "fo:page-sequence"
-	 * 
-	 * please check:
-	 * 
-	 * 1.  the jaxb-xslfo jar is on your classpath
-	 * 
-	 * 2.  that there is no stack trace earlier in the logs
-	 * 
-	 * 3.  your JVM has adequate memory, eg
-	 * 
-	 *           -Xmx1G -XX:MaxPermSize=128m
-	 * 
-	 */
 	
 	// Config for non-command line use
 	static {
@@ -132,6 +106,78 @@ public class ConvertOutPDF extends AbstractSample {
 		// Refresh the values of DOCPROPERTY fields 
 		FieldUpdater updater = new FieldUpdater(wordMLPackage);
 		updater.update(true);
+
+		String outputfilepath;
+		if (inputfilepath==null) {
+			outputfilepath = System.getProperty("user.dir") + "/OUT_FontContent.pdf";			
+		} else {
+			outputfilepath = inputfilepath + ".pdf";
+		}
+		
+		// All methods write to an output stream
+		OutputStream os = new java.io.FileOutputStream(outputfilepath);
+		
+		
+		if (!Docx4J.pdfViaFO()) {
+			
+			// Since 3.3.0, Plutext's PDF Converter is used by default
+
+			System.out.println("Using Plutext's PDF Converter; add docx4j-export-fo if you don't want that");
+
+			Docx4J.toPDF(wordMLPackage, os);
+			System.out.println("Saved: " + outputfilepath);
+
+			return;
+		}
+
+		System.out.println("Attempting to use XSL FO");
+		
+		/**
+		 * Demo of PDF output.
+		 * 
+		 * PDF output is via XSL FO.
+		 * First XSL FO is created, then FOP
+		 * is used to convert that to PDF.
+		 * 
+		 * Don't worry if you get a class not
+		 * found warning relating to batik. It
+		 * doesn't matter.
+		 * 
+		 * If you don't have logging configured, 
+		 * your PDF will say "TO HIDE THESE MESSAGES, 
+		 * TURN OFF debug level logging for 
+		 * org.docx4j.convert.out.pdf.viaXSLFO".  The thinking is
+		 * that you need to be able to be warned if there
+		 * are things in your docx which the PDF output
+		 * doesn't support...
+		 * 
+		 * docx4j used to also support creating
+		 * PDF via iText and via HTML. As of docx4j 2.5.0, 
+		 * only viaXSLFO is supported.  The viaIText and 
+		 * viaHTML source code can be found in src/docx4j-extras directory
+		 *
+		 */
+		
+		
+		/*
+		 * NOT WORKING?
+		 * 
+		 * If you are getting:
+		 * 
+		 *   "fo:layout-master-set" must be declared before "fo:page-sequence"
+		 * 
+		 * please check:
+		 * 
+		 * 1.  the jaxb-xslfo jar is on your classpath
+		 * 
+		 * 2.  that there is no stack trace earlier in the logs
+		 * 
+		 * 3.  your JVM has adequate memory, eg
+		 * 
+		 *           -Xmx1G -XX:MaxPermSize=128m
+		 * 
+		 */
+		
 		
 		// Set up font mapper (optional)
 		Mapper fontMapper = new IdentityPlusMapper();
@@ -166,15 +212,6 @@ public class ConvertOutPDF extends AbstractSample {
 		// FOSettings.INTERNAL_FO_MIME if you want the fo document as the result.
 		//foSettings.setApacheFopMime(FOSettings.INTERNAL_FO_MIME);
 		
-		// exporter writes to an OutputStream.		
-		String outputfilepath;
-		if (inputfilepath==null) {
-			outputfilepath = System.getProperty("user.dir") + "/OUT_FontContent.pdf";			
-		} else {
-			outputfilepath = inputfilepath + ".pdf";
-		}
-		OutputStream os = new java.io.FileOutputStream(outputfilepath);
-    	
 		// Specify whether PDF export uses XSLT or not to create the FO
 		// (XSLT takes longer, but is more complete).
 		

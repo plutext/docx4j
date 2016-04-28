@@ -21,9 +21,14 @@
 package org.docx4j.jaxb;
 
 
-public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper 
-	{
+public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper  implements McIgnorableNamespaceDeclarator {
+
 	// Must use 'internal' for Java 6
+	
+	private String mcIgnorable;
+	public void setMcIgnorable(String mcIgnorable) {
+		this.mcIgnorable = mcIgnorable;
+	}
 
 	
     /**
@@ -115,9 +120,112 @@ public class NamespacePrefixMapperSunInternal extends com.sun.xml.internal.bind.
      * @since
      *      JAXB RI 1.0.2 
      */
-//    public String[] getPreDeclaredNamespaceUris() {
-//        return new String[] { "urn:abc", "urn:def" };
-//    }
+    public String[] getPreDeclaredNamespaceUris() {
+    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable);
+    }
+    /* like getPreDeclaredNamespaceUris2(),
+     * this can cause fatal duplicate namespace declarations, 
+     * still not fixed in the JAXB in 1.9.0-ea
 
+		[Fatal Error] :2:592: Attribute "xmlns:v" was already specified for element "p:sld".
+		org.xml.sax.SAXParseException: Attribute "xmlns:v" was already specified for element "p:sld".
+			at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(Unknown Source)
+			at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+			at javax.xml.parsers.DocumentBuilder.parse(Unknown Source)
+			at org.docx4j.openpackaging.parts.PresentationML.SlidePart.unmarshal(SlidePart.java:156)
+			
+		Workaround would be to only set this if the part doesn't use the ns elsewhere.
+		
+		Needs further testing!!
+		 	
+	     * 
+     */
+
+    /**
+     * Similar to {@link #getPreDeclaredNamespaceUris()} but allows the
+     * (prefix,nsUri) pairs to be returned.
+     *
+     * <p>
+     * With {@link #getPreDeclaredNamespaceUris()}, applications who wish to control
+     * the prefixes as well as the namespaces needed to implement both
+     * {@link #getPreDeclaredNamespaceUris()} and {@link #getPreferredPrefix(String, String, boolean)}.
+     *
+     * <p>
+     * This version eliminates the needs by returning an array of pairs.
+     *
+     * @return
+     *      always return a non-null (but possibly empty) array. The array stores
+     *      data like (prefix1,nsUri1,prefix2,nsUri2,...) Use an empty string to represent
+     *      the empty namespace URI and the default prefix. Null is not allowed as a value
+     *      in the array.
+     *
+     * @since
+     *      JAXB RI 2.0 beta
+     */
+//      public String[] getPreDeclaredNamespaceUris2() {    	
+//      return EMPTY_STRING;    	
+//    }
+    
+    /*  WARNING: don't use getPreDeclaredNamespaceUris2; it is buggy, at least in Java 1.6.0_27
+     * 
+		Attribute "xmlns:w14" was already specified for element "w:document".
+		org.xml.sax.SAXParseException: Attribute "xmlns:w14" was already specified for element "w:document".
+			at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(Unknown Source)
+			at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(Unknown Source)
+			at org.docx4j.org.apache.xml.security.utils.XMLUtils$DocumentBuilderProxy.parse(XMLUtils.java:1140)
+			at org.docx4j.org.apache.xml.security.c14n.Canonicalizer.canonicalize(Canonicalizer.java:286)
+	     */
+
+    /**
+     * Returns a list of (prefix,namespace URI) pairs that represents
+     * namespace bindings available on ancestor elements (that need not be repeated
+     * by the JAXB RI.)
+     *
+     * <p>
+     * Sometimes JAXB is used to marshal an XML document, which will be
+     * used as a subtree of a bigger document. When this happens, it's nice
+     * for a JAXB marshaller to be able to use in-scope namespace bindings
+     * of the larger document and avoid declaring redundant namespace URIs.
+     *
+     * <p>
+     * This is automatically done when you are marshalling to {@link XMLStreamWriter},
+     * {@link XMLEventWriter}, {@link DOMResult}, or {@link Node}, because
+     * those output format allows us to inspect what's currently available
+     * as in-scope namespace binding. However, with other output format,
+     * such as {@link OutputStream}, the JAXB RI cannot do this automatically.
+     * That's when this method comes into play.
+     *
+     * <p>
+     * Namespace bindings returned by this method will be used by the JAXB RI,
+     * but will not be re-declared. They are assumed to be available when you insert
+     * this subtree into a bigger document.
+     *
+     * <p>
+     * It is <b>NOT</b> OK to return  the same binding, or give
+     * the receiver a conflicting binding information.
+     * It's a responsibility of the caller to make sure that this doesn't happen
+     * even if the ancestor elements look like:
+     * <pre><xmp>
+     *   <foo:abc xmlns:foo="abc">
+     *     <foo:abc xmlns:foo="def">
+     *       <foo:abc xmlns:foo="abc">
+     *         ... JAXB marshalling into here.
+     *       </foo:abc>
+     *     </foo:abc>
+     *   </foo:abc>
+     * </xmp></pre>
+     *
+     * @return
+     *      always return a non-null (but possibly empty) array. The array stores
+     *      data like (prefix1,nsUri1,prefix2,nsUri2,...) Use an empty string to represent
+     *      the empty namespace URI and the default prefix. Null is not allowed as a value
+     *      in the array.
+     *
+     * @since JAXB RI 2.0 beta
+     */
+//    public String[] getContextualNamespaceDecls() {
+//        return EMPTY_STRING;
+//    }    
+    
     
 }

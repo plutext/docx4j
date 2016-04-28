@@ -724,6 +724,34 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         return createImageInline(filenameHint, altText,
                 id1, id2, cxcy.getCx(), cxcy.getCy(), link);
 	}
+
+	/**
+	 * @param filenameHint
+	 * @param altText
+	 * @param id1
+	 * @param id2
+	 * @param link
+	 * @param maxWidth
+	 * @return
+	 * @throws Exception
+	 * @since 3.3.0
+	 */
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2, boolean link, int maxWidth) throws Exception {
+		
+		// This signature can scale the image to specified maxWidth
+				
+        WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage) this.getPackage());
+		
+		List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
+        PageDimensions page = sections.get(sections.size() - 1).getPageDimensions();
+		
+		CxCy cxcy = CxCy.scale(imageInfo, page, maxWidth);
+ 
+        return createImageInline(filenameHint, altText,
+                id1, id2, cxcy.getCx(), cxcy.getCy(), link);
+	}
+
 	
 	/**
 	 * Create a <wp:inline> element suitable for this image,
@@ -867,7 +895,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				getImageManager().getImageContext(), null);
 
 		ImageInfo info = getImageManager().getImageInfo(url.toString(), sessionContext);
-//		getImageManager().closeImage(url.toString(), sessionContext);
+		//getImageManager().closeImage(url.toString(), sessionContext); // until we can use xmlgraphics-commons 2.0.1
 		
 		// Note that these figures do not appear to be reliable for EPS
 		// eg ImageMagick 6.2.4 10/02/07 Q16
@@ -1160,11 +1188,30 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			this.scaled = scaled;
 			
 		}
-		
+
 		public static CxCy scale(ImageInfo imageInfo, PageDimensions page) {
+			return scale( imageInfo,  page, -1);
+		}
+		
+		/**
+		 * Return scaling values constrained by specified maxWidth.
+		 * Useful if the image is to be inserted into a table cell of known width.
+		 * 
+		 * @param imageInfo
+		 * @param page
+		 * @param maxWidth
+		 * @return
+		 * @since 3.3.0
+		 */
+		public static CxCy scale(ImageInfo imageInfo, PageDimensions page, int maxWidth) {
 			
 			double writableWidthTwips = page.getWritableWidthTwips(); 				
 			log.debug("writableWidthTwips: " + writableWidthTwips);
+			
+			if (maxWidth>0 && maxWidth<writableWidthTwips) {
+				writableWidthTwips = maxWidth;
+				log.debug("reduced to: " + writableWidthTwips);
+			}
 			
 			  ImageSize size = imageInfo.getSize();
 			  

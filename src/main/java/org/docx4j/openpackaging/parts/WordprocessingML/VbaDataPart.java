@@ -23,11 +23,11 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import javax.xml.bind.JAXBElement;
 
+import org.docx4j.com.microsoft.schemas.office.word.x2006.wordml.CTVbaSuppData;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.schemas.microsoft.com.office.word_2006.wordml.CTVbaSuppData;
 
 
 /**

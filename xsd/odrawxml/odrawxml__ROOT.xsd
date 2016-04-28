@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!--   
+	
+		This file currently just generates xmlns:wp14="http://schemas.openxmlformats.org/drawingml/2006/main"
+		which we need for mc Ignorable processing.
+		
+		We could/should apply xjc to the other xsds in this directory.
+		 
+	
+	jaxb-ri-2.2.6\bin\xjc   odrawxml__ROOT.xsd -d tmp  -no-header -target 2.0	
+	
+	cd to the directory containing the new sources
+	
+	Then add the copyright notice:
+	
+	 sed -s -i -f script *.java
+	
+	where script is
+	
+	# sed script to insert "header.txt" above the first line
+	1{h; r header.txt
+	  D; }
+	2{x; G; }
+	#- - -end of sed script- - - 
+	
+	and header.txt contains the copyright notice.	
+	
+	
+	  -->
+	
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+  
+	<xsd:include schemaLocation="../dml/dml-baseTypes.xsd" />
+	   
+	<xsd:import schemaLocation="oartworddrawing2010.xsd"
+		namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" />
+
+</xsd:schema>

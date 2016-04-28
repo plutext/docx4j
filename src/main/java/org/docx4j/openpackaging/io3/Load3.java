@@ -449,7 +449,7 @@ public class Load3 extends Load {
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart
 						|| part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart
-						|| part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart
+//						|| part.getClass().getName().equals("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart")
 						|| part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 					
 					// Nothing to do here

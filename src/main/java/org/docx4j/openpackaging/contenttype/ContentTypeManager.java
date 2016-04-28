@@ -50,6 +50,8 @@ package org.docx4j.openpackaging.contenttype;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
@@ -437,9 +439,34 @@ public class ContentTypeManager  {
 				return new BinaryPart( new PartName(partName));				
 			}
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME_OVERRIDE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));		
+			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));	
+			
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
-			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
+//			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
+			
+			// Use reflection, since the dig sig functionality is in Enterprise only
+			try {
+				Class<?> xmlSignaturePart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart");
+				Constructor<?> cons = xmlSignaturePart.getConstructor(PartName.class);
+				PartName pn = new PartName(partName);
+				return (Part) cons.newInstance(pn);
+			} catch (Exception e) {
+				return CreateDefaultXmlPartObject(partName );				
+			}			
+			
+		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_ORIGIN_PART)) {
+//			return new org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart(new PartName(partName));
+			
+			// Use reflection, since the dig sig functionality is in Enterprise only
+			try {
+				Class<?> originPart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart");
+				Constructor<?> cons = originPart.getConstructor(PartName.class);
+				PartName pn = new PartName(partName);
+				return (Part) cons.newInstance(pn);
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}			
+			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			
@@ -456,7 +483,6 @@ public class ContentTypeManager  {
 				log.warn("DefaultPart used for part '" + partName 
 						+ "' of content type '" + contentType + "'");				
 			}
-			
 			
 			return CreateDefaultXmlPartObject(partName );
 			

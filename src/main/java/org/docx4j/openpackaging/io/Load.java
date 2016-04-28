@@ -305,7 +305,7 @@ public class Load {
 			Part entry = (Part)iterator.next();
 			
 			if (entry instanceof CustomXmlPart) {
-				log.info("Found a CustomXmlPart, named " + entry.getPartName().getName() );
+				log.debug("Found a CustomXmlPart, named " + entry.getPartName().getName() );
 				String itemId = null;
 				if (entry.getRelationshipsPart()==null) { 
 					continue; 
@@ -347,7 +347,7 @@ public class Load {
 						itemId = customXmlProps.getItemId().toLowerCase();
 					}
 				}
-				log.info("Identified/registered ds:itemId " + itemId);
+				log.debug("Identified/registered ds:itemId " + itemId);
 				if (pkg.getCustomXmlDataStorageParts().get(itemId.toLowerCase())!=null) {
 					log.warn("Duplicate CustomXML itemId " + itemId + "; check your source docx!");
 				}

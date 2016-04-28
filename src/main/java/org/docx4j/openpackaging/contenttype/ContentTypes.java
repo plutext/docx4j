@@ -349,11 +349,11 @@ public class ContentTypes {
 //	 */
 //	public static final String DIGITAL_SIGNATURE_CERTIFICATE_PART = "application/vnd.openxmlformats-package.digital-signature-certificate";
 //
-//	/**
-//	 * Digital Signature Origin part.
-//	 */
-//	public static final String DIGITAL_SIGNATURE_ORIGIN_PART = "application/vnd.openxmlformats-package.digital-signature-origin";
-//
+	/**
+	 * Digital Signature Origin part.
+	 */
+	public static final String DIGITAL_SIGNATURE_ORIGIN_PART = "application/vnd.openxmlformats-package.digital-signature-origin";
+
 	/**
 	 * Digital Signature XML Signature part.
 	 */

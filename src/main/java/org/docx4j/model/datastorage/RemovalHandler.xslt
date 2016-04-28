@@ -55,11 +55,15 @@
    -->
 
   <xsl:template match="w:sdt">
-  <!--  Strips OpenDoPE content controls only. -->
     <xsl:choose>
-       <!--  picture content control: need this special case, since contains no w:t -->
+    
+       <!--  picture content control: need this special case, since contains no w:t
+             and we have a test sensitive to w:t below -->
       <xsl:when
         test="count(w:sdtPr/w:picture)=1 and $xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=')">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+       </xsl:when>
+      <xsl:when test="$all and (count(w:sdtPr/w:picture)=1) ">
         <xsl:apply-templates select="w:sdtContent/node()" />
        </xsl:when>
       <xsl:when test="count(w:sdtPr/w:picture)=1 ">
@@ -82,15 +86,8 @@
           		</w:tc>
           	</xsl:if>
         
-        </xsl:when>
-      <xsl:when
-        test="$xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=')
-            or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:repeat=')
-            or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:rptd=')
-            or $condition and contains(w:sdtPr/w:tag/@w:val, 'od:condition=')
-            ">
-        <xsl:apply-templates select="w:sdtContent/node()" />
       </xsl:when>
+
       <xsl:when
         test="$repeat and contains(w:sdtPr/w:tag/@w:val, 'od:resultRepeatZero=')
             or $condition and contains(w:sdtPr/w:tag/@w:val, 'od:resultConditionFalse=')
@@ -105,6 +102,38 @@
           	</xsl:if>
             
       </xsl:when>
+      
+      
+      <!--  @since 3.3.0 --> 
+      <xsl:when test="$all">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+       </xsl:when>       
+      
+      <!--  excluded when key 'xpath' is used -->
+      <xsl:when
+        test="($xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath='))
+            or ($xpath and contains(w:sdtPr/w:tag/@w:val, 'od:ContentType='))
+            or ($xpath and contains(w:sdtPr/w:tag/@w:val, 'od:progid='))
+            ">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+      </xsl:when>
+
+      <xsl:when
+        test="$condition and contains(w:sdtPr/w:tag/@w:val, 'od:condition=')">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+      </xsl:when>
+
+      <!--  excluded by Quantifier.DEFAULT, or when key 'repeat' is used -->
+      <xsl:when
+        test="($repeat and contains(w:sdtPr/w:tag/@w:val, 'od:repeat='))
+            or ($repeat and contains(w:sdtPr/w:tag/@w:val, 'od:rptd='))
+            or ($repeat and contains(w:sdtPr/w:tag/@w:val, 'w15:resultRepeatZero='))
+            ">
+        <xsl:apply-templates select="w:sdtContent/node()" />
+      </xsl:when>
+
+      
+
       <xsl:otherwise>
         <xsl:copy>
           <xsl:apply-templates select="@* | node()" />

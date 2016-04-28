@@ -30,8 +30,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -92,8 +90,7 @@ public class CTSRgbColor {
     })
     protected List<JAXBElement<?>> egColorTransform;
     @XmlAttribute(required = true)
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] val;
+    protected String val;
 
     /**
      * Gets the value of the egColorTransform property.
@@ -159,7 +156,7 @@ public class CTSRgbColor {
      *     {@link String }
      *     
      */
-    public byte[] getVal() {
+    public String getVal() {
         return val;
     }
 
@@ -171,8 +168,8 @@ public class CTSRgbColor {
      *     {@link String }
      *     
      */
-    public void setVal(byte[] value) {
-        this.val = ((byte[]) value);
+    public void setVal(String value) {
+        this.val = value;
     }
 
 }

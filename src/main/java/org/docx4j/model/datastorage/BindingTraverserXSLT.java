@@ -35,12 +35,14 @@ import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.TblWidth;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,6 +127,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			transformParameters.put("xPathsMap", xpathsMap);			
 			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
 			transformParameters.put("bookmarkIdCounter", new BookmarkCounter(bookmarkId)  );
+			transformParameters.put("bindingTraverserState", new BindingTraverserState()  );  // new for 3.3.0
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
@@ -318,6 +322,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * in order to function.
 	 */
 	public static DocumentFragment convertXHTML(
+			BindingTraverserState bindingTraverserState,
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
@@ -371,6 +376,30 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				log.error(e1.getMessage(), e1);
 			}
 		}
+		
+		// If we are in a table cell, ensure oversized images are scaled
+		xHTMLImporter.setMaxWidth(-1); // re-init
+		if (bindingTraverserState.tc!=null) {
+			log.debug("inserting in a tc" );
+			
+			if( bindingTraverserState.tc.getTcPr()!=null  
+					&& bindingTraverserState.tc.getTcPr().getTcW()!=null  
+			) {
+		
+				TblWidth tcW = bindingTraverserState.tc.getTcPr().getTcW();
+				
+				if (tcW.getW()!=null && tcW.getType().equals(TblWidth.TYPE_DXA)) {
+					xHTMLImporter.setMaxWidth(tcW.getW().intValue());
+					
+					log.debug("inserting in a tc, with maxwidth: " + tcW.getW().intValue());
+				} else {
+					log.debug("w:tcPr/w:tcW present, but width not in dxa units ");
+				}
+			} else {
+				log.debug("w:tcPr/w:tcW not present");				
+			}
+			
+		} 
 		
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag, true);

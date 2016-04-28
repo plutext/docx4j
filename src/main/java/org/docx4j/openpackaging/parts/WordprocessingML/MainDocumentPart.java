@@ -38,6 +38,7 @@ import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -117,13 +118,21 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	}	
 	
 	@Override
-	protected void setMceIgnorable() {
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 
-		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
-		this.jaxbElement.setIgnorable(
-				helper.getMceIgnorable(this.getJaxbElement().getBody()));
-	}
+//		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
+//		this.jaxbElement.setIgnorable(
+//				helper.getMceIgnorable(this.getJaxbElement().getBody()));
 		
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+    protected String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+	
     
     
 
@@ -168,12 +177,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			
 			log.debug("Preparing StyleTree");
 
-		    try {
-				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
-			} catch (Docx4JException e) {
-				// Shouldn't happen, so catch here
-				log.error(e.getMessage(), e);
-			}
+//		    try {
+//				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
+//			} catch (Docx4JException e) {
+//				// Shouldn't happen, so catch here
+//				log.error(e.getMessage(), e);
+//			}
 	    	
 //			// Get these first, so we can be sure they are defined... 
 //			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
@@ -186,7 +195,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				allStyles.put(s.getStyleId(), s);	
 				//log.debug("live style: " + s.getStyleId() );
 			}
-			styleTree = new StyleTree(getStylesInUse(), allStyles);
+			styleTree = new StyleTree(getStylesInUse(), allStyles,
+					getStyleDefinitionsPart().getJaxbElement().getDocDefaults(), 
+					getStyleDefinitionsPart().getDefaultParagraphStyle());
 				
 		}
 		return styleTree;
@@ -354,6 +365,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 		public void setDocument(Document document) {}
 		public void addCharacterToCurrent(char c) {}
+		public void addCodePointToCurrent(int cp) {}
 		public void finishPrevious() {}
 		public void createNew() {}
 		public void setRunFontSelector(RunFontSelector runFontSelector) {}

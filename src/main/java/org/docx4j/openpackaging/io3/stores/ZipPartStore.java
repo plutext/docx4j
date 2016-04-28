@@ -393,7 +393,7 @@ public class ZipPartStore implements PartStore {
 			throw new Docx4JException("Failed to put binary part", e);
 		}
 
-		log.info( "success writing part: " + resolvedPartUri);
+		log.debug( "success writing part: " + resolvedPartUri);
 
 	}
 

@@ -24,7 +24,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.openpackaging.exceptions.Docx4JException;

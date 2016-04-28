@@ -303,9 +303,11 @@ public class ParagraphStylesInTableFix {
 			Style basedOn = null;
 			String currentStyle = styleVal;
 			do {
-//				System.out.println("Getting " + currentStyle);
 				Style thisStyle = allStyles.get(currentStyle);
 				hierarchy.add(thisStyle);
+				if (log.isDebugEnabled()) {
+					log.debug("adding to hierarchy: " + currentStyle);
+				}
 				if (thisStyle.getBasedOn()!=null) {
 					currentStyle = thisStyle.getBasedOn().getVal();
 				} else {
@@ -318,17 +320,17 @@ public class ParagraphStylesInTableFix {
 			Style newStyle = Context.getWmlObjectFactory().createStyle();
 			newStyle.setType("paragraph");
 			
+			Style styleToApply;
+			
 			// First, docDefaults
-			Style styleToApply = hierarchy.get(hierarchy.size()-1); // DocDefault
-            if(log.isDebugEnabled()) {
-                log.debug("DocDefault");
-                log.debug(XmlUtils.marshaltoString(styleToApply, true, true));
-            }
-			StyleUtil.apply(styleToApply, newStyle);
-            if(log.isDebugEnabled()) {
-                log.debug("Result");
-                log.debug(XmlUtils.marshaltoString(newStyle, true, true));
-            }
+			StyleUtil.apply(
+					this.propertyResolver.getDocumentDefaultPPr(),
+					newStyle);
+			StyleUtil.apply(
+					this.propertyResolver.getDocumentDefaultRPr(),
+					newStyle);
+			// or we could have just cloned those thing, and used the clones
+			
 			
 			// Next, table style - first/temporarily in tableStyleContrib
 			Style tableStyleContrib = null;
@@ -397,11 +399,16 @@ public class ParagraphStylesInTableFix {
 			newStyle.setRPr(StyleUtil.apply(tableStyleContrib.getRPr(), newStyle.getRPr()));
             if(log.isDebugEnabled()) {
                 log.debug(XmlUtils.marshaltoString(newStyle, true, true));
+                log.debug("hierarchy.size(): " + hierarchy.size());
             }
 			
 			
 			// Finally, rest of list in reverse
-			for (int i = hierarchy.size()-2; i>=0; i--) {
+            
+			for (int i = hierarchy.size()-1; i>=0; i--) 
+				// NB 2016 04 09: for 3.3.0, this changed to -1,
+				// since 
+			{
 				styleToApply = hierarchy.get(i);
                 if(log.isDebugEnabled()) {
                     log.debug("Applying " + styleToApply.getStyleId() +
@@ -447,11 +454,15 @@ public class ParagraphStylesInTableFix {
 				 * justification (which is assumed to follow the same logic we have here).
 				 * 
 				 * Where Normal is basedOn our DocDefaults style, Word *does* override the table style!
-				 * We'll ignore that for now, because the next version of docx4j (v3.3) needs to
-				 * stop creating a DocDefaults style. 
+				 * We'll ignore that for now, because the next version of docx4j (v3.3) 
+				 * stops creating a DocDefaults style. 
 			     */
 				
 				// Font size
+				if (log.isDebugEnabled()) {
+					log.debug("styleVal: " + styleVal);
+					log.debug("defaultParagraphStyle: " + defaultParagraphStyle);
+				}
 				if ((!styleVal.equals(defaultParagraphStyle)) 
 						&& expressStyleFontSize!=null) {
 					// Not normal (but assume based on it)
@@ -475,6 +486,9 @@ public class ParagraphStylesInTableFix {
 					
 					// the table style doesn't set it
 					// .. so nothing to do
+					
+					// OR if no Sz setting in the style,
+					// we could set explicitly
 				}
 					
 
@@ -497,6 +511,9 @@ public class ParagraphStylesInTableFix {
 					// the table style doesn't set it
 					// .. so nothing to do
 				}
+				
+			} else {
+				log.debug("allowing default paragraph style to overrideTableStyleFontSizeAndJustification, as per this docx w:compatSetting");
 				
 			}
 			

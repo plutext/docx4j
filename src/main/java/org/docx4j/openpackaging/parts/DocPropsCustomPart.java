@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.docProps.custom.Properties;
+import org.docx4j.docProps.custom.Properties.Property;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -77,6 +78,8 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 	 * 
 	 */
 	public static final String fmtidValLpwstr = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
+	
+	public static final String MARK_AS_FINAL = "_MarkAsFinal";
 	
 	 /** 
 	 * @throws InvalidFormatException
@@ -155,57 +158,24 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
     	
     }
 	
-	private Map<String, String> props = null;
     
-    public String getProperty(String propName) {
+    public Property getProperty(String propName) {
     	
-		// NB, at present this assumes the property is a string
-
-    	if (props==null) {
-    		initMap();
-    	}
+		for (org.docx4j.docProps.custom.Properties.Property prop: getJaxbElement().getProperty() ) {
     	
-		return props.get(propName);    	
-    }
-    
-    private void initMap() {
-    	
-		props = new HashMap<String, String>();
-		
-    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
-		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
-			
-//			log.debug(prop.getName());
-			
-			props.put(prop.getName(), prop.getLpwstr());
-			
-//			if (prop.getName().equals(propName)) {
-//				log.debug("GOT IT! returning " + prop.getLpwstr());
-//				return prop.getLpwstr();
-//			}
-			
+			if (prop.getName().equals(propName)) {
+				return prop;
+			}
 		}
-    	
+		return null;
     }
+    
     
     public void setProperty(String propName, String propValue) {
-    	
-		// NB, at present this assumes the property is a string
-    	
+    	    	
     	// does it exist already?
-    	org.docx4j.docProps.custom.Properties.Property newProp = null;
-    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
-		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
-			if (prop.getName().equals(propName)) {
-				log.warn("Replacing existing property: " + propName);
-				newProp = prop;
-				if (!newProp.getFmtid().equals(fmtidValLpwstr )) {
-					log.warn("Wrong fmtid?  This might not work...");
-				}
-				break;
-			}			
-		}
-    	
+    	org.docx4j.docProps.custom.Properties.Property newProp = getProperty(propName);
+    	    	
 		// If not, let's add one.
 		if (newProp==null) {
 			org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
@@ -215,19 +185,49 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 			newProp.setFmtid(fmtidValLpwstr ); // Magic string
 			newProp.setPid( getNextPid() ); 
 			
-			customProps.getProperty().add(newProp);
+			getJaxbElement().getProperty().add(newProp);
+		}
+
+		if (!newProp.getFmtid().equals(fmtidValLpwstr )) {
+			log.warn("Wrong fmtid?  This might not work...");
 		}
 		
 		// set the value
 		newProp.setLpwstr(propValue);
-		
-		// Add it to our lookup
-    	if (props==null) {
-    		initMap();
-    	}
-		props.put(propName, propValue);
-		    	
+				    	
     }
+    
+    /**
+     * @param propName
+     * @param propValue
+     * 
+     * @since 3.3.0
+     */
+    public void setProperty(String propName, boolean propValue) {
+    	
+    	// does it exist already?
+    	org.docx4j.docProps.custom.Properties.Property newProp = getProperty(propName);
+    	    	
+		// If not, let's add one.
+		if (newProp==null) {
+			org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
+			newProp = factory.createPropertiesProperty();
+
+			newProp.setName(propName);
+			newProp.setFmtid(fmtidValLpwstr ); // Magic string
+			newProp.setPid( getNextPid() ); 
+			
+			getJaxbElement().getProperty().add(newProp);
+		}
+
+		if (!newProp.getFmtid().equals(fmtidValLpwstr )) {
+			log.warn("Wrong fmtid?  This might not work...");
+		}
+		
+		// set the value
+		newProp.setBool(propValue);				    	
+    }
+    
     
     /**
      * Find the first available Pid 
@@ -249,99 +249,78 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
     }
 	
 		
-//	/* Create a Java object tree from the XML document 
-//	 */
-//	public void unmarshall(Document doc) {
-//		
-//		String name;
-//		String value;
-//		
-//		try {
-//			//debugPrint(doc);
-//		    Element root = doc.getRootElement();
-//		    Iterator elementIterator = root.elementIterator();
-//		    while(elementIterator.hasNext()){
-//		      Element element = (Element)elementIterator.next();
-//		      
-//			  if (element.getName()=="property" ) {
-//				  
-////					<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Grouping">
-////						<vt:lpwstr>p</vt:lpwstr>
-////					</property>
-//				  
-//				  name = element.attributeValue("name");
-//				  
-//				  if (element.element("lpwstr")!=null ) {
-//					  value = element.element("lpwstr").getText();
-//					  setProperty(name, value);					  
-//					  log.info("Registering property " + name + "=" + value);
-//				  } else {
-//					  	// TODO - handle 
-//					  log.warn("Handle " + name );
-//					  debugPrint(doc);
-//					  
-//				  }
-//			  } else {
-//			      log.warn("Encountered unexpected element '" + element.getName() + "'");
-//			  }
-//		    }
-//		} catch (Exception e ) {
-//			e.printStackTrace();
-//		}
-//		
-//	}
-//	
-//
-//		
-//	
-//	/* Create an XML document from the Java object tree
-//	 *  
-//	 */
-//	private Document marshall() {
-//
-////		<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
-////		<Properties 
-////			xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" 
-////			xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
-////			<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Grouping">
-////				<vt:lpwstr>p</vt:lpwstr>
-////			</property>
-////			<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="CheckinComments">
-////				<vt:lpwstr>true</vt:lpwstr>
-////			</property>
-////		</Properties>
-//
-//		Document doc = DocumentHelper.createDocument();
-//
-//		// Note carefully how namespaces are handled here.
-//		// It seems we have to be syntactically identical to how
-//		// Word does it - semantic equivalence is not enough!
-//		
-//		Namespace docPropsVTypes = new Namespace("vt",
-//				"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
-//		
-//		Element elDocument = doc.addElement("Properties",
-//				"http://schemas.openxmlformats.org/officeDocument/2006/custom-properties");
-//		elDocument.addNamespace("vt",
-//				"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
-//
-//		Integer pid = 2; // NB @pid="1" will cause Word to regard the document as corrupt.
-//		Iterator i = properties.entrySet().iterator();
-//		while (i.hasNext()) {
-//			Map.Entry e = (Map.Entry)i.next();	
-//			Element property = elDocument.addElement("property",
-//			"http://schemas.openxmlformats.org/officeDocument/2006/custom-properties");
-//			property.addAttribute( "fmtid", fmtidVal);
-//			property.addAttribute( "pid", pid.toString() );
-//			property.addAttribute( "name", (String)e.getKey() );
-//			Element lpwstr = new DefaultElement(new QName("lpwstr", docPropsVTypes));
-//			lpwstr.setText( (String)e.getValue() );
-//			property.add(lpwstr);
-//			pid++;
-//		}
-//		return doc;
-//	}
+    
+	/**
+	 * @since 3.3.0
+	 */	
+	public boolean getMarkAsFinal() {
+		
+		Property prop = getProperty(MARK_AS_FINAL);
+		
+		if (prop==null) return false;
+				
+		return prop.isBool();
+	}
+	
+	
+	/**
+	 * @since 3.3.0
+	 */	
+	public void setMarkAsFinal(boolean val) {
+		
+		setProperty(MARK_AS_FINAL, val);		
+	}
+    
 			
+//	
+//
+///* Create an XML document from the Java object tree
+// *  
+// */
+//private Document marshall() {
+//
+////	<?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
+////	<Properties 
+////		xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" 
+////		xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+////		<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Grouping">
+////			<vt:lpwstr>p</vt:lpwstr>
+////		</property>
+////		<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="CheckinComments">
+////			<vt:lpwstr>true</vt:lpwstr>
+////		</property>
+////	</Properties>
+//
+//	Document doc = DocumentHelper.createDocument();
+//
+//	// Note carefully how namespaces are handled here.
+//	// It seems we have to be syntactically identical to how
+//	// Word does it - semantic equivalence is not enough!
+//	
+//	Namespace docPropsVTypes = new Namespace("vt",
+//			"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+//	
+//	Element elDocument = doc.addElement("Properties",
+//			"http://schemas.openxmlformats.org/officeDocument/2006/custom-properties");
+//	elDocument.addNamespace("vt",
+//			"http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes");
+//
+//	Integer pid = 2; // NB @pid="1" will cause Word to regard the document as corrupt.
+//	Iterator i = properties.entrySet().iterator();
+//	while (i.hasNext()) {
+//		Map.Entry e = (Map.Entry)i.next();	
+//		Element property = elDocument.addElement("property",
+//		"http://schemas.openxmlformats.org/officeDocument/2006/custom-properties");
+//		property.addAttribute( "fmtid", fmtidVal);
+//		property.addAttribute( "pid", pid.toString() );
+//		property.addAttribute( "name", (String)e.getKey() );
+//		Element lpwstr = new DefaultElement(new QName("lpwstr", docPropsVTypes));
+//		lpwstr.setText( (String)e.getValue() );
+//		property.add(lpwstr);
+//		pid++;
+//	}
+//	return doc;
+//}
 	
 }
 

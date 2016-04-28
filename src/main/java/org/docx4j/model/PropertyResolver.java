@@ -17,6 +17,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
@@ -96,6 +98,9 @@ public class PropertyResolver {
 	public RPr getDocumentDefaultRPr() {
 		return documentDefaultRPr;
 	}
+	public PPr getDocumentDefaultPPr() {
+		return documentDefaultPPr;
+	}
 
 	private StyleDefinitionsPart styleDefinitionsPart;
 	
@@ -157,7 +162,7 @@ public class PropertyResolver {
 	
 	private void init() throws Docx4JException {
 
-		styleDefinitionsPart.createVirtualStylesForDocDefaults();
+//		styleDefinitionsPart.createVirtualStylesForDocDefaults();
 		
 		try {
 			defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
@@ -174,14 +179,37 @@ public class PropertyResolver {
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+//		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+		DocDefaults docDefaults = styleDefinitionsPart.getJaxbElement().getDocDefaults();
         if(log.isDebugEnabled()) {
             log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
         }
-		documentDefaultPPr = docDefaults.getPPr();
-		documentDefaultRPr = docDefaults.getRPr();
 
-			addNormalToResolvedStylePPrComponent();
+		documentDefaultPPr = new PPr();
+		documentDefaultRPr = new RPr();        	
+
+		if (docDefaults!=null
+				&& docDefaults.getPPrDefault()!=null
+				&& docDefaults.getPPrDefault().getPPr()!=null) {
+			
+			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+        }
+		
+		if (docDefaults!=null
+				&& docDefaults.getRPrDefault()!=null
+				&& docDefaults.getRPrDefault().getRPr()!=null) {
+			
+			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+        }
+		
+		if (documentDefaultRPr.getSz()==null) {
+			// Make Word default explicit
+			HpsMeasure sz20 = new HpsMeasure(); 
+			sz20.setVal(BigInteger.valueOf(20));
+			documentDefaultRPr.setSz(sz20);
+		}
+
+		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
 
@@ -315,6 +343,8 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public PPr getEffectivePPr(PPr expressPPr) {
+		
+		// Used by docx4j-export-fo project.
 		
 		PPr effectivePPr = null;
 		//	First, the document defaults are applied
@@ -1027,14 +1057,17 @@ public class PropertyResolver {
     }	
 	
 	/**
-	 * Ascend the style hierarchy, capturing the pPr bit
+	 * Ascend (recursively) the style hierarchy, capturing the pPr bit.
+	 * 
+	 * Doesn't use StyleTree.
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
 	 */
 	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
 		// The return value is the style on which styleId is based.
-		// It is purely for the purposes of ascertainNumId.
+		
+		// It is purely for the purposes of ascertainNumId (? no, its used by getEffectivePPr(styleId))
 		
 		if (styleId==null) {
 			if (log.isDebugEnabled()) {
@@ -1256,9 +1289,8 @@ public class PropertyResolver {
     		result1 = true;
     	} else {
     		
-    		log.warn("Expected " + s.getStyleId() + " to have <w:basedOn ??");
-    		// Not properly activated
-    		result1 = false;
+    		log.debug( s.getStyleId() + "  not w:basedOn anything, but that's ok");
+    		result1 = true;
     	}
     	
     	// Also add the linked style, if any

@@ -165,5 +165,7 @@ public interface XHTMLImporter {
 	 * @since 3.3.0
 	 */
 	//public void setBookmarkIdNext(AtomicInteger val);
+	
+	public void setMaxWidth(int maxWidth);
     
 }

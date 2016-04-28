@@ -72,6 +72,11 @@
     <logger name="org.docx4j.convert.out">
   		<level value="warn"/> 
 	</logger>	
+	
+	
+    <logger name="org.docx4j.convert.out.common.AbstractConversionContext">
+  		<level value="debug"/> 
+	</logger>	
 
     <logger name="org.docx4j.convert.out.common.Preprocess"> <!-- the class -->
   		<level value="warn"/> 
@@ -87,6 +92,7 @@
 		  <level value="warn"/> 
 	</logger>	
     	
+    <!-- PDF output via XSL FO: change this to warn to hide messages -->	
     <logger name="org.docx4j.convert.out.common.writer.AbstractMessageWriter">
   		<level value="debug"/> 
 	</logger>	
@@ -158,6 +164,10 @@
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
+	
+    <logger name="org.docx4j.toc">
+  		<level value="warn"/> 
+	</logger>	
     
     <logger name="org.docx4j.wml">
   		<level value="warn"/> 
@@ -166,9 +176,6 @@
      -->
     
     <!--  Enterprise edition loggers -->
-    <logger name="com.plutext.docx.toc">
-  		<level value="warn"/> 
-	</logger>
 
     <logger name="com.plutext.merge">
   		<level value="warn"/> 
@@ -181,6 +188,19 @@
     <logger name="com.plutext.cmis">
   		<level value="warn"/> 
 	</logger>
+	
+    <logger name="org.apache.jcp.xml.dsig.internal.dom">
+  		<level value="info"/> 
+	</logger>
+
+	<logger name="com.plutext.crypt.dsig">
+  		<level value="info"/> 
+	</logger>
+	
+    <logger name="org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart">
+  		<level value="info"/> 
+	</logger>
+	
     
  
     <!--  Root logger -->

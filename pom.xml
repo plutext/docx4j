@@ -10,9 +10,10 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.2.3-SNAPSHOT</version>
+	<version>3.3.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
+	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format as used in docx
@@ -127,6 +128,9 @@
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
 		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
+			     You need to run mvn test from the command line to recompile, then Eclipse can run 
+			     the new code.  -->
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -231,6 +235,7 @@
 					<maxmemory>512m</maxmemory>
 					<!-- 18 MB without the exclusion; still 15MB with -->
 					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+			        <additionalparam>-Xdoclint:none</additionalparam> <!-- for Java 8 -->
 				 </configuration>
 				<executions>
 					<execution>
@@ -270,6 +275,49 @@
 					</echos>
 				</configuration>
 			</plugin>
+<!-- 			
+		<plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <version>1.2.0</version>
+            <executions>
+                <execution>
+                    <id>default</id>
+                    <phase>verify</phase>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <printEqualFiles>false</printEqualFiles>
+                <failBuildInCaseOfDifferentContentConflict>true</failBuildInCaseOfDifferentContentConflict>
+                <failBuildInCaseOfEqualContentConflict>false</failBuildInCaseOfEqualContentConflict>
+                <failBuildInCaseOfConflict>false</failBuildInCaseOfConflict>
+                <checkCompileClasspath>true</checkCompileClasspath>
+                <checkRuntimeClasspath>true</checkRuntimeClasspath>
+                <checkTestClasspath>true</checkTestClasspath>
+                <skip>false</skip>
+                <quiet>false</quiet>
+                <preferLocal>true</preferLocal>
+                <useResultFile>true</useResultFile>
+                <resultFileMinClasspathCount>2</resultFileMinClasspathCount>
+                <resultFile>${project.build.directory}/duplicate-finder-result.xml</resultFile>
+                
+				<includeBootClasspath>true</includeBootClasspath>
+                <bootClasspathProperty>sun.boot.class.path</bootClasspathProperty>                
+
+            </configuration>
+        </plugin>
+ -->
+ 
+ 			<!--  mvn versions:display-dependency-updates -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.2</version>
+			</plugin> 
+         			
 		</plugins>
     	<pluginManagement>
 			<plugins>
@@ -310,6 +358,20 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
+			<!-- 
+			<resource>
+				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+			 -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
 			<resource>
 				<directory>src/pptx4j/java</directory>
 				<includes>
@@ -324,7 +386,13 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
-			<!-- 
+			<resource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>			<!-- 
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
@@ -372,22 +440,41 @@
 	
 	<dependencies>
 
-	<!-- To use MOXy, uncomment the following 2 dependencies.
+		<dependency>
+			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
+			<version>1.0.2</version>
+		</dependency>
+
+	<!-- To use MOXy, uncomment the following 2 dependencies. 
 		Dependency version 2.4.1 had some issues,
 		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
-		details.
+		details.  	
 		
+		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
+		needs javax.mail
+		
+		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
+		so stick with 2.5.2 (since all our other deps still support Java 6)
+
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>3.0.0</version>
+			<version>3.3.0</version>
 		</dependency>
-			<dependency>
-				<groupId>org.eclipse.persistence</groupId>
-				<artifactId>org.eclipse.persistence.moxy</artifactId>
-				<version>2.5.1</version>
-			</dependency>
-		 -->
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.moxy</artifactId>
+			<version>2.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
+		</dependency>
+		
+				 -->
+
  
   <!--  Uncomment this if you are using Java 5.
 
@@ -425,49 +512,33 @@
   			</dependency>
 	  -->
 
-
-		<dependency>
-			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
-			<version>1.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-xmldsig-core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 		
 		<!--  events -->
 		<dependency>
 		    <groupId>net.engio</groupId>
 		    <artifactId>mbassador</artifactId>
-		    <version>1.1.10</version>
+		    <version>1.2.4.2</version>
 		</dependency>
 
 		<!--  From 3.0, docx4j uses slf4j --> 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>1.7.21</version>
 		</dependency>
 
 		<!--  instead of FOP's commons-logging -->		
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.5</version>
+		    <version>1.7.21</version>
 		</dependency>		
 
 		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.  -->
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
-		  <version>1.7.5</version>
+		  <version>1.7.21</version>
 		</dependency>		
 		<dependency>
 			<groupId>log4j</groupId>
@@ -493,13 +564,23 @@
 				</exclusions>
 		</dependency>
 		
-		 
+ 		 
 		<dependency>
-			<!--  required for our diffx -->
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+		</dependency>
+		 
+		 
+		 <!--  supports org.apache.commons.lang.NotImplementedException -->
+		 <!-- 
+		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<version>2.4</version>
+			<version>2.4</version> 
 		</dependency>
+		 -->
+		
 		<dependency>
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
@@ -510,27 +591,35 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>1.3.1</version> <!--  2.2 works -->
+			<version>2.4</version> <!--  2.2 works -->
 		</dependency>
- 
-<!-- To use a version of FOP more recent than 1.1
-     (eg built from source), comment out
-     xmlgraphics-commons:1.5 and fop below,
-     and add the following classes to your
-     class path:
-
-           http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/batik-all-1.7.jar
-           (there is probably something in maven
-
-     	   http://svn.apache.org/viewvc/xmlgraphics/fop/trunk/lib/xmlgraphics-commons-svn-trunk.jar
-
-     	-->
-
+		
+		<!-- you can comment out if you don't want
+			 to use Plutext's commercial PDF Converter.	
+		 -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+						
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.7.3</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-databind</artifactId>
+			<version>2.7.3</version>
+		</dependency>		
+		
 
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
 		<artifactId>xmlgraphics-commons</artifactId>
-		<version>1.5</version>
+		<version>2.1</version>
 		<exclusions>
 			<exclusion>
 				<groupId>commons-logging</groupId>
@@ -539,35 +628,6 @@
 		</exclusions>
 	</dependency>
 		
-	<dependency>
-		<groupId>org.apache.xmlgraphics</groupId>
-		<artifactId>fop</artifactId>
-		<version>1.1</version>
-		<exclusions>
-			<exclusion>
-				<artifactId>avalon-framework-api</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>avalon-framework-impl</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis-ext</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-
-
 
 
 	<!-- these two are to correct issues in fop dependency -->
@@ -584,7 +644,7 @@
 	<dependency>
 		<groupId>xalan</groupId>
 		<artifactId>xalan</artifactId>
-		<version>2.7.1</version>
+		<version>2.7.2</version>
 		<exclusions>
 			<exclusion>
 				<groupId>xml-apis</groupId>
@@ -610,14 +670,9 @@
 <dependency>
     <groupId>net.arnx</groupId>
     <artifactId>wmf2svg</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.8</version>
 </dependency>
 
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-scratchpad</artifactId>
-			<version>3.8</version>
-		</dependency>
 
 		<!-- Ensure both the Java 6 and RI interfaces are present,
 		     even if the user has just one.
@@ -635,7 +690,7 @@
 		<dependency>
     		<groupId>org.antlr</groupId>
     		<artifactId>antlr-runtime</artifactId>
-    		<version>3.3</version>
+    		<version>3.5.2</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.antlr</groupId>
@@ -647,13 +702,13 @@
 		<dependency>
 		    <groupId>com.google.guava</groupId>
 		    <artifactId>guava</artifactId>
-		    <version>17.0</version>
-		</dependency>		
-
+		    <version>19.0</version>
+		</dependency>	
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -667,83 +722,6 @@
 		-->
 
 
-<!--	Uncomment for the PDF conversion via HTML or iText, which
-		may be found in docx4j-extras.
-
-		If you are planning to use that, you'll also want to uncomment
-		the BaseFont stuff in PhysicalFonts.
-
- 		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext-unsigned</artifactId>
-			<version>2.0.8</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>bouncycastle</artifactId>
-					<groupId>bcmail-jdk14</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bouncycastle</artifactId>
-					<groupId>bcprov-jdk14</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-	-->
-
-
-<!-- Uncomment for the PDF conversion via HTML, which
-		may be found in docx4j-extras.
-
-		<dependency>
-			<groupId>pdf-renderer</groupId>
-			<artifactId>pdf-renderer</artifactId>
-			<version>0.2009.0324</version>
-		</dependency>
-		<dependency>
-			<groupId>xhtmlrenderer</groupId>
-			<artifactId>minium</artifactId>
-			<version>0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>xhtmlrenderer</groupId>
-			<artifactId>core-renderer</artifactId>
-			<version>R8pre2</version>
-		</dependency>
- -->
-
-
-
-		<!-- if you want to use the vfs stuff in docx4j-extras, you'll need commons-vfs
-		     (one of the two versions below), and jdom.
-
- 			 required by commons-vfs;
-			 TODO that POM should declare this.
-			<dependency>
-				<groupId>jdom</groupId>
-				<artifactId>jdom</artifactId>
-				<version>1.0</version>
-			</dependency>
-
-			<dependency>
-			    <groupId>commons-vfs</groupId>
-			    <artifactId>commons-vfs</artifactId>
-			    <version>1.0</version>
-			</dependency>
-
-			This patched version of VFS is required for WebDAV
-
-		     In the meantime, this may be found in
-		     https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2/org/apache/commons/commons-vfs-patched/
-
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-vfs-patched</artifactId>
-				<version>1.9.1</version>
-			</dependency>
-		-->
-
-
   		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 			(stuff not available in public repositories)
@@ -751,10 +729,19 @@
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 		-->
+		
 
 	</dependencies>
 
-
+<!-- 
+<distributionManagement>
+    <repository>
+        <id>internal.repo</id>
+        <name>Temporary Staging Repository</name>
+        <url>file://${project.build.directory}/mvn-repo</url>
+    </repository>
+</distributionManagement>
+ -->
 
 	<profiles> <!--  use -P eg mvn -Psign-artifacts  -->
 		<profile>
@@ -785,27 +772,39 @@
 			 See http://stackoverflow.com/questions/14013644/hosting-a-maven-repository-on-github
 			 
 			 To do this:
-			 0. change outputDirectory, for a clean jar
+			 0. uncomment distribution management above
 			 1. comment out parent element (top of pom), since this is what makes deploy push to https://oss.sonatype.org
 			 2. comment out maven-javadoc-plugin, since its not worth bothering with that large upload
 			 3. execute 
 			  
-			       mvn clean deploy -DskipTests -Pgithub-mvn-repo
+			       mvn clean deploy  -Pgithub-mvn-repo
 		
 		 -->		
 		<profile>
 			<id>github-mvn-repo</id>
 			<build>
+			
 				<plugins>
+				
+				    <plugin>
+				        <artifactId>maven-deploy-plugin</artifactId>
+				        <version>2.8.1</version>
+				        <configuration>
+				            <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+				        </configuration>
+				    </plugin>
+				
 			        <plugin>
 			            <groupId>com.github.github</groupId>
 			            <artifactId>site-maven-plugin</artifactId>
-			            <version>0.8</version>
+			            <version>0.12</version>
 			            <configuration>
+			            	<server>github</server>
+			            	<merge>true</merge>
 			                <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
 			                <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
 			                <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
-			                <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
+			                <branch>refs/heads/mvn-repo</branch>                        <!-- remote branch name -->
 			                <includes><include>**/*</include></includes>
 			                <repositoryName>docx4j</repositoryName>      <!-- github repo name -->
 			                <repositoryOwner>plutext</repositoryOwner>    <!-- github username  -->

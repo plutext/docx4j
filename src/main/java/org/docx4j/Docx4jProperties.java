@@ -42,7 +42,7 @@ public class Docx4jProperties {
 	}
 	
 	/**
-	 * @since 2.8.1
+	 * @since 3.3.0
 	 */
 	public static boolean getProperty(String key, boolean defaultValue) {
 		
@@ -50,6 +50,21 @@ public class Docx4jProperties {
 		String result = properties.getProperty(key, Boolean.toString(defaultValue));
 		return Boolean.parseBoolean(result);
 	}
+
+	public static int getProperty(String key, int defaultValue) {
+		
+		if (properties==null) {init();}
+		String val = properties.getProperty(key);
+		if (val==null) return defaultValue;
+		
+		try {
+			return (Integer.parseInt(val));
+		} catch (NumberFormatException e) {
+			log.info(e.getMessage(),e);
+			return defaultValue;
+		}
+	}
+
 	
 	public static Properties getProperties() {
 		

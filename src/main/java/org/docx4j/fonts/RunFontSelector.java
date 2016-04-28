@@ -398,7 +398,8 @@ public class RunFontSelector {
 		
 		
 		RFonts rFonts = rPr.getRFonts();
-		if (rFonts==null) {
+		if (rFonts==null) // compare empty, which RunFontSelectorChinese2Test is sensitive to; with empty on a quick skim it looks like unicodeRangeToFont is used. 
+		{
 			return nullRPr(document, text);
 		}		
     	
@@ -609,8 +610,8 @@ public class RunFontSelector {
     	// and http://stackoverflow.com/questions/8894258/fastest-way-to-iterate-over-all-the-chars-in-a-string
     	
     	// The ranges specified at http://msdn.microsoft.com/en-us/library/ff533743.aspx
-    	// are from 0000-FFFF, so here we'll assume there are no characters outside 
-    	// Unicode Basic Multilingual Plane...
+    	// are from 0000-FFFF, 
+    	// but we do also handle astral characters (those outside Unicode Basic Multilingual Plane)
     	
     	char currentRangeLower='\u0000';
     	char currentRangeUpper='\u0000';
@@ -618,10 +619,34 @@ public class RunFontSelector {
     	if (text==null) {
     		return null; 
     	}
-    	for (int i = 0; i < text.length(); i++){
+    	for (int i = 0; i < text.length(); i=text.offsetByCodePoints(i, 1)){
     		
-    	    char c = text.charAt(i);        
-    	    if (vis.isReusable() && 
+    	    char c = text.charAt(i);
+//    		int cp = text.codePointAt(i);
+    	    
+    	    if (Character.isHighSurrogate(c)) {
+
+    	    	// Populate previous span
+    	    	vis.finishPrevious();
+    	    	
+    	    	// Create new span
+    		    vis.createNew();
+    		    vis.setMustCreateNewFlag(false);
+    		    
+    		    // 
+				vis.fontAction(hAnsi); 
+				
+    	    	//vis.addCharacterToCurrent(c);
+				vis.addCodePointToCurrent(text.codePointAt(i));
+				
+				log.debug("added as code point");
+    	    	
+    	    	currentRangeLower='\u0000';
+    	    	currentRangeUpper='\u0000';    		    
+    	    }
+    	    else 
+    	    	
+    	    	if (vis.isReusable() && 
     	    		(c==' ' ||
     	    		(c>=currentRangeLower && c<=currentRangeUpper))) {
     	    	// Add it to existing
@@ -1078,6 +1103,8 @@ public class RunFontSelector {
 		
 		void addCharacterToCurrent(char c);
 
+		void addCodePointToCurrent(int cp); //@since 3.3.0
+		
 		void finishPrevious();
 
 		void createNew();

@@ -604,12 +604,12 @@ public class XsltHTMLFunctions {
 				}
 				
 				StringBuilder inlineStyle =  new StringBuilder();
-				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
+				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
+						xhtmlBlock.getNodeName().equals("li"));	
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
 			}
-			
 
 			// Our element (eg <p>) wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
