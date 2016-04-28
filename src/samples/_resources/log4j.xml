@@ -86,7 +86,6 @@
   		<level value="warn"/> 
 	</logger>	
 
-<!--     
     
 	<logger name="org.docx4j.convert.out.common.preprocess.FieldsCombiner">
 		  <level value="warn"/> 
@@ -173,7 +172,6 @@
   		<level value="warn"/> 
 	</logger>
 	
-     -->
     
     <!--  Enterprise edition loggers -->
 
