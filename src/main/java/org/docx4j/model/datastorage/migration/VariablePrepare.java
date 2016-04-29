@@ -76,6 +76,7 @@ public class VariablePrepare {
 		filterSettings.setRemoveProofErrors(true);
 		filterSettings.setRemoveContentControls(true);
 		filterSettings.setRemoveRsids(true);
+		filterSettings.setRemoveBookmarks(true);
 		wmlPackage.filter(filterSettings);
 		// Note the filter is deprecated, since its questionable whether this
 		// is important enough to live in WordprocessingMLPackage,
