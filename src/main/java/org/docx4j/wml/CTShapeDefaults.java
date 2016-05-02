@@ -21,16 +21,17 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.w3c.dom.Element;
 
 
@@ -61,7 +62,7 @@ public class CTShapeDefaults implements Child
 {
 
     @XmlAnyElement(lax = true)
-    protected List<Object> any;
+    protected List<Object> any  = new ArrayListWml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -90,7 +91,7 @@ public class CTShapeDefaults implements Child
      */
     public List<Object> getAny() {
         if (any == null) {
-            any = new ArrayList<Object>();
+            any  = new ArrayListWml<Object>(this);
         }
         return this.any;
     }

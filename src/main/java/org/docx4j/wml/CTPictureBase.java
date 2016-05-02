@@ -21,16 +21,17 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.w3c.dom.Element;
 
 
@@ -62,7 +63,7 @@ public class CTPictureBase implements Child
 {
 
     @XmlAnyElement(lax = true)
-    protected List<Object> anyAndAny;
+    protected List<Object> anyAndAny  = new ArrayListWml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -91,7 +92,7 @@ public class CTPictureBase implements Child
      */
     public List<Object> getAnyAndAny() {
         if (anyAndAny == null) {
-            anyAndAny = new ArrayList<Object>();
+            anyAndAny  = new ArrayListWml<Object>(this);
         }
         return this.anyAndAny;
     }

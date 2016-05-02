@@ -21,10 +21,9 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,6 +32,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -85,7 +86,7 @@ public class CTFrameset implements Child
         @XmlElement(name = "frameset", type = CTFrameset.class),
         @XmlElement(name = "frame", type = CTFrame.class)
     })
-    protected List<Object> framesetOrFrame;
+    protected List<Object> framesetOrFrame  = new ArrayListWml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -186,7 +187,7 @@ public class CTFrameset implements Child
      */
     public List<Object> getFramesetOrFrame() {
         if (framesetOrFrame == null) {
-            framesetOrFrame = new ArrayList<Object>();
+            framesetOrFrame  = new ArrayListWml<Object>(this);
         }
         return this.framesetOrFrame;
     }

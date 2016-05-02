@@ -21,10 +21,9 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -34,6 +33,8 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -180,7 +181,7 @@ public class CTRPrChange
             @XmlElementRef(name = "u", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = U.class),
             @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
         })
-        protected List<Object> egrPrBase;
+        protected List<Object> egrPrBase  = new ArrayListWml<Object>(this);
         @XmlTransient
         private Object parent;
 
@@ -246,7 +247,7 @@ public class CTRPrChange
          */
         public List<Object> getEGRPrBase() {
             if (egrPrBase == null) {
-                egrPrBase = new ArrayList<Object>();
+                egrPrBase  = new ArrayListWml<Object>(this);
             }
             return this.egrPrBase;
         }

@@ -122,6 +122,7 @@ public class TraversalUtil {
 					o = XmlUtils.unwrap(o);
 					
 					// workaround for broken getParent (since 3.0.0)
+					// In 3.3.1, this ought not be necessary for common cases in org.docx4j.wml package
 					if (o instanceof Child) {
 						if (parent instanceof SdtBlock) {
 							((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
