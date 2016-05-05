@@ -211,6 +211,8 @@ public class XmlUtils {
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
 				|| (System.getProperty("java.version").startsWith("1.8")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))
+				|| (System.getProperty("java.version").startsWith("1.9")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))						
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Jeroen")) // IKVM
 				) {
