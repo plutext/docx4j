@@ -25,6 +25,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -80,6 +81,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserXSLT.class);		
 	
+	public static boolean ENABLE_XPATH_CACHE = true;
 
 	static Templates xslt;			
 	static {
@@ -127,18 +129,59 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			transformParameters.put("xPathsMap", xpathsMap);			
 			transformParameters.put("sequenceCounters", new HashMap<String, Integer>() );
 			transformParameters.put("bookmarkIdCounter", new BookmarkCounter(bookmarkId)  );
-			transformParameters.put("bindingTraverserState", new BindingTraverserState()  );  // new for 3.3.0
+			BindingTraverserState bindingTraverserState = new BindingTraverserState();
+			transformParameters.put("bindingTraverserState",  bindingTraverserState );  // new for 3.3.0
+			
+			// Set up XPath "cache"; substantially quicker than Xalan XPath for many lookups in large XML data files
+			// Our strategy is to try the cache first (if enabled),
+			// then if there is a cache miss, use org.apache.xpath.CachedXPathAPI 
+			// (which is quicker than default javax.xml.xpath.XPath implementations)
+			if (ENABLE_XPATH_CACHE) {
+				
+//				Xpath xp = xpathsMap.values().iterator().next();
+//				CustomXmlPart cxp  = pkg.getCustomXmlDataStorageParts().get(xp.getDataBinding().getStoreItemID().toLowerCase());
+//				System.out.println("mycxp: " + cxp.getClass().getName());
+//				org.docx4j.openpackaging.parts.CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
+				
+				// We're only caching the first one we encounter
+				// (even though, in principle, there could be multiple)
+				CustomXmlDataStoragePart cdsp = 
+						CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
+								(WordprocessingMLPackage)pkg);
+				
+				if (cdsp==null) {
+					log.warn("No CustomXmlDataStoragePart found; can't cache.");
+					/* TODO: would fail on StandardisedAnswersPart
+					 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
+					 */
+				} else {
+					
+					long start = System.currentTimeMillis();
+				
+					Document data = cdsp.getData().getDocument();
+					
+					DomToXPathMap mapper = new DomToXPathMap(data);
+					Map<String, String> pathMap = mapper.map();
+					long end = System.currentTimeMillis();
+					long time = end - start;
+		
+					log.debug("Mapped " + pathMap.size() + " in " + time + "ms");
+					
+					bindingTraverserState.setPathMap(pathMap);
+				}
+			}
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
-			if (log.isDebugEnabled()) {
-				
-				org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
-				
-				log.debug(XmlUtils.w3CDomNodeToString(docResult));
-				
-				return XmlUtils.unmarshal(docResult);
-			} else {
+//			if (log.isDebugEnabled()) {
+//				
+//				org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
+//				
+//				log.debug(XmlUtils.w3CDomNodeToString(docResult));
+//				
+//				return XmlUtils.unmarshal(docResult);
+//			} else 
+			{
 				//part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
 				return XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
 			}
@@ -420,8 +463,23 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		String storeItemId = xpath.getDataBinding().getStoreItemID();
 		String xpathExp = xpath.getDataBinding().getXpath();
 		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
-					
-		String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+		
+		String r=null;
+		if (bindingTraverserState.getPathMap()!=null ) {
+			// Try the "cache"
+			r = bindingTraverserState.getPathMap().get(normalisePath(xpathExp));
+		}
+		if (r==null) {			
+			log.debug("cache miss for " + xpathExp);
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+		} else if (r.trim().length()==0) {	
+			// fallback: TODO remove this for further speed improvement once we are comfortable there are no "cache query"
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+			// sanity check - results should never differ!
+			if (r.trim().length()>0) {	
+				log.warn("cache query " + xpathExp);
+			}
+		} 
 		
 		try {
 
@@ -753,6 +811,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * bind.xslt calls this, for case where 'od:xpath' is present
 	 */	
 	public static DocumentFragment xpathGenerateRuns(
+			BindingTraverserState bindingTraverserState,
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
@@ -795,6 +854,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
 		
 		return xpathGenerateRuns(
+				bindingTraverserState.getPathMap(),
 				 pkg, 
 				 sourcePart,				
 				 customXmlDataStorageParts,
@@ -808,6 +868,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * bind.xslt calls this, for case where 'od:xpath' is not present
 	 */
 	public static DocumentFragment xpathGenerateRuns(
+			BindingTraverserState bindingTraverserState,			
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
@@ -826,6 +887,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 		
 		return xpathGenerateRuns(
+				bindingTraverserState.getPathMap(),				
 				 pkg, 
 				 sourcePart,				
 				 customXmlDataStorageParts,
@@ -836,7 +898,21 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				  multiLine);
 	}
 	
+	/**
+	 * Massage an XPath into the form it is in in our cache, 
+	 * so a hit is likely.  For example, finding[6][1]/assets[1]/asset[32][1] 
+	 * to finding[6]/assets[1]/asset[32] 
+	 * 
+	 * @param xpIn
+	 * @return
+	 */
+	private static String normalisePath(String xpIn) {
+		
+		return xpIn.replace("][1]", "]");
+	}
+	
 	public static DocumentFragment xpathGenerateRuns(
+			Map<String, String> pathMap,
 			WordprocessingMLPackage pkg, 
 			JaxbXmlPart sourcePart,				
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
@@ -855,12 +931,29 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		 * - inline and block level sdt
 		 */
 
-		String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
-
+		String r=null;
+		if (pathMap!=null ) {
+			// Try the "cache"
+			r = pathMap.get(normalisePath(xpath));
+		}
+		if (r==null) {
+			log.debug("cache miss for " + xpath);
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+			
+		} else if (r.trim().length()==0) {
+			// fallback: TODO remove this for further speed improvement once we are comfortable there are no "cache query"
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+			// sanity check - results should never differ!
+			if (r.trim().length()>0) {	
+				log.warn("cache query "+ xpath);
+			}
+		} 
 		
+		// trim whitespace. 
+		r = r.trim();
 		
 		try {
-			log.info(xpath + " yielded result '" + r + "'");
+			log.info(xpath + "\n yielded result '" + r + "'");
 			
 			RPr rPr = null;
 			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {

@@ -1,5 +1,7 @@
 package org.docx4j.model.datastorage;
 
+import java.util.Map;
+
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -10,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
+/**
+ * @author jharrop
+ * @since 3.3.0
+ */
 public class BindingTraverserState {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserState.class);
@@ -38,6 +44,23 @@ public class BindingTraverserState {
 	public static void exitedTc(BindingTraverserState btState) {
 		
 		btState.tc = null;
+	}
+	
+	
+	/**
+	 *  Our cache of XPath values, available 
+	 *  if ENABLE_XPATH_CACHE = true.
+	 *  
+	 *  @since 3.3.1
+	 */
+	private Map<String, String> pathMap;
+
+	protected Map<String, String> getPathMap() {
+		return pathMap;
+	}
+
+	protected void setPathMap(Map<String, String> pathMap) {
+		this.pathMap = pathMap;
 	}
 	
 }

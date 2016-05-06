@@ -49,6 +49,31 @@ public interface CustomXmlDataStorage {
 	 * @return
 	 */
 	public String xpathGetString(String xpath, String prefixMappings) throws Docx4JException;
+	
+	/**
+	 * Uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
+	 * have the drawback of instantiating a new XPathContext 
+	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
+	 * XPathAPIObject instead retains its context as long as the object persists, 
+	 * reusing the DTMs. 
+	 * 
+	 * @see discardCacheXPathObject
+
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.3.1
+	 */
+	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException;
+	
+	/**
+	 * Use this to null out the org.apache.xpath.CachedXPathAPI object, which you should do
+	 * if you've changed your source document, or want to reclaim memory.
+	 * @since 3.3.1
+	 */
+	public void discardCacheXPathObject();
+
 		
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings);
 	

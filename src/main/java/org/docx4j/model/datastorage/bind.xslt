@@ -549,6 +549,7 @@
 							  				
 											<xsl:copy-of
 											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+														$bindingTraverserState,
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
@@ -572,6 +573,7 @@
 						  				
 										<xsl:copy-of
 										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+													$bindingTraverserState,										
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
@@ -595,6 +597,7 @@
 					  				<!--  create runs -->
 									<xsl:copy-of
 									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+												$bindingTraverserState,										
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
@@ -614,6 +617,7 @@
 				  				<!--  create runs -->
 								<xsl:copy-of
 								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+											$bindingTraverserState,										
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
@@ -628,6 +632,7 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+										$bindingTraverserState,										
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -678,6 +683,7 @@
 							  				
 											<xsl:copy-of
 											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+														$bindingTraverserState,										
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
@@ -703,6 +709,7 @@
 						  				
 										<xsl:copy-of
 										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+													$bindingTraverserState,										
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
@@ -728,6 +735,7 @@
 					  				<!--  create runs -->
 									<xsl:copy-of
 									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+												$bindingTraverserState,										
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
@@ -749,6 +757,7 @@
 				  				<!--  create runs -->
 								<xsl:copy-of
 								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+											$bindingTraverserState,										
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
@@ -765,6 +774,7 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+										$bindingTraverserState,										
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,

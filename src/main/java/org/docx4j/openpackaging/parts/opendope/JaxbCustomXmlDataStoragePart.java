@@ -114,6 +114,18 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		}
 	}
 	
+	
+	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException {
+
+		if (log.isDebugEnabled()) {
+			log.debug("cachedXPath not implemented for " + this.getClass().getName() + " ; falling back to xpathGetString");
+		}
+		return xpathGetString( xpath,  prefixMappings);
+		
+	}
+	
+	public void discardCacheXPathObject() {}	
+	
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings)  throws Docx4JException {
 
 		if (doc==null) {

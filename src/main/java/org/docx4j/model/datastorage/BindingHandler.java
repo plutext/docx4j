@@ -315,7 +315,8 @@ public class BindingHandler {
 //					return null;
 				}
 				
-				String r = part.xpathGetString(xpath, prefixMappings);
+				//String r = part.xpathGetString(xpath, prefixMappings);
+				String r = part.cachedXPathGetString(xpath, prefixMappings); // EXPERIMENTAL
 				if (r==null) {
 					// never expect null, since an empty result set is converted to an empty string
 					log.error(xpath + " unexpectedly null!");

@@ -23,6 +23,39 @@ public interface CustomXmlPart {
 	
 	public String xpathGetString(String xpath, String prefixMappings) throws Docx4JException;	
 
+	
+	/**
+	 * Use org.apache.xpath.CachedXPathAPI, since this is much quicker than default javax.xml.xpath.XPath implementations
+	 * (Apache's anyway) for large XML files.
+
+	 * This is because Apache's old XPathAPI classinstantiated a new XPathContext 
+	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
+	 * XPathAPIObject instead retains its context as long as the object persists, 
+	 * reusing the DTMs. 
+	 * 
+	 * There was the question of whether to implement it here or just in CustomXmlDataStoragePart
+	 * (since this is mostly of value in binding the user's XML data file).  It is here since otherwise
+	 * BindingHandler would fail on DocPropsCoverPagePart and StandardisedAnswersPart (both of which 
+	 * extend JaxbCustomXmlDataStoragePart).
+	 * 
+	 * @see discardCacheXPathObject
+	 * 
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.3.1
+	 */
+	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException;
+	
+	/**
+	 * Use this to null out the org.apache.xpath.CachedXPathAPI object, which you should do
+	 * if you've changed your source document, or want to reclaim memory.
+	 * @since 3.3.1
+	 */
+	public void discardCacheXPathObject();
+	
+	
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings)  throws Docx4JException;
 
 	/**

@@ -26,6 +26,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
@@ -50,9 +51,11 @@ public class CustomXmlDataStoragePartSelector {
 	
 	
 	/**
-	 * We need the item id of the custom xml part.  	 * 
+	 * We need the item id of the custom xml part.  
+	 * It skips coverPageProps, properties and core-properties parts. 
+	 *  
 	 * @param wordMLPackage
-	 * @return
+	 * @return 
 	 */
 	public static CustomXmlDataStoragePart getCustomXmlDataStoragePart(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
@@ -90,21 +93,34 @@ public class CustomXmlDataStoragePartSelector {
 				// OK, this one looks ok
 				String itemId = xp.getDataBinding().getStoreItemID().toLowerCase();
 				System.out.println("Attempting to use item id: " + itemId);
-				
-				CustomXmlDataStoragePart customXmlDataStoragePart 
-					= (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
-				if (customXmlDataStoragePart==null) {
+								
+				if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId)==null) {
+
                     if(log.isWarnEnabled()) {
                         log.warn("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(xp));
 
                     }
 					continue;			
+					
 				} else {
-					log.debug("Using " + xp.getDataBinding().getStoreItemID());
-					return customXmlDataStoragePart;
+					
+					if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId) instanceof CustomXmlDataStoragePart) {
+						
+						log.debug("Using " + xp.getDataBinding().getStoreItemID());
+						return (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
+
+					} else if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId) instanceof StandardisedAnswersPart) {
+						
+						log.warn("TODO: support StandardisedAnswersPart");
+						return null;	
+						
+					} else {
+						log.warn(wordMLPackage.getCustomXmlDataStorageParts().get(itemId).getClass().getName() + " --> can't cast");
+						continue;			
+					}
 					
 				}
-				
+								
 				
 			}
 			log.error("Couldn't identify XML part from XPaths part entries");
@@ -197,6 +213,32 @@ public class CustomXmlDataStoragePartSelector {
 					} else {
 						log.debug("Using " + itemId);
 					}
+					
+					if (customXmlParts.get(itemId)==null) {
+
+	                    if(log.isWarnEnabled()) {
+	                        log.warn("Couldn't find CustomXmlDataStoragePart referenced from " + XmlUtils.marshaltoString(element));
+
+	                    }
+						
+					} else {
+						
+						if (customXmlParts.get(itemId) instanceof CustomXmlDataStoragePart) {
+							
+							log.debug("Using " + element.getSdtPr().getDataBinding().getStoreItemID());
+							customXmlDataStoragePart = (CustomXmlDataStoragePart)customXmlParts.get(itemId);
+
+						} else if (customXmlParts.get(itemId) instanceof StandardisedAnswersPart) {
+							
+							log.warn("TODO: support StandardisedAnswersPart");
+							return;	
+							
+						} else {
+							log.warn(customXmlParts.get(itemId).getClass().getName() + " --> can't cast");
+						}
+						
+					}
+					
 					
 				}
 				

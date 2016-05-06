@@ -29,6 +29,7 @@ import javax.xml.namespace.NamespaceContext;
 
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.w3c.dom.Node;
 
 /**
  * NamespacePrefixMappings, required for JAXB, and XPath.
@@ -48,7 +49,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * @author jharrop
  *
  */
-public class NamespacePrefixMappings implements NamespaceContext {
+public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml.utils.PrefixResolver {
+
 
 	
     /**
@@ -519,6 +521,37 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			namespaces.put(prefix, uri);
 		}
 		
+	}
+
+
+/* Implement org.apache.xml.utils.PrefixResolver, for org.apache.xpath.CachedXPathAPI */
+	
+	@Override
+	public String getNamespaceForPrefix(String prefix) {
+		return getNamespaceURI( prefix);
+	}
+
+
+
+	@Override
+	public String getNamespaceForPrefix(String prefix, Node context) {
+		return getNamespaceURI( prefix);
+	}
+
+
+
+	@Override
+	public String getBaseIdentifier() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	@Override
+	public boolean handlesNullPrefixes() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
     
