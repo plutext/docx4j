@@ -146,6 +146,8 @@ public class DomToXPathMap {
                 break;
 
             case Node.TEXT_NODE:
+            	
+            	// better than doing getTextContent() at the element level??
             	            	
             	String xpath = getXPath();
             	String existing = pathMap.get(xpath);

@@ -472,8 +472,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		if (r==null) {			
 			log.debug("cache miss for " + xpathExp);
 			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
-		} else if (r.trim().length()==0) {	
-			// fallback: TODO remove this for further speed improvement once we are comfortable there are no "cache query"
+		} else if (log.isDebugEnabled()
+				&& r.trim().length()==0) {	
+			// fallback removed for further speed improvement since we are comfortable there are no "cache query"
 			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
 			// sanity check - results should never differ!
 			if (r.trim().length()>0) {	
@@ -940,8 +941,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			log.debug("cache miss for " + xpath);
 			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
 			
-		} else if (r.trim().length()==0) {
-			// fallback: TODO remove this for further speed improvement once we are comfortable there are no "cache query"
+		} else if (log.isDebugEnabled()
+				&& r.trim().length()==0) {
+			// fallback removed for further speed improvement since we are comfortable there are no "cache query"
 			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
 			// sanity check - results should never differ!
 			if (r.trim().length()>0) {	
