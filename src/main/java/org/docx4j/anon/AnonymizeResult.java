@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.wml.CTLanguage;
 
@@ -102,6 +104,43 @@ public class AnonymizeResult {
 		
 		return ((unsafeParts.size()==0)
 				&& (anyUnsafeObjects == false));
+		
+	}
+	
+	public String reportUnsafeObjects() {
+
+		StringBuilder sb = new StringBuilder(); 
+		
+		if (hasAnyUnsafeObjects()) {
+			sb.append("The following objects may leak info: \n");
+			for(Entry<Part, Set<Object>> entry :  getUnsafeObjectsByPart().entrySet()) {
+				
+				Part p = entry.getKey();
+				
+				if ( !entry.getValue().isEmpty()) {
+					sb.append(p.getPartName().getName() + ", of type " + p.getClass().getName() + "\n" );
+					
+					for (Object o : entry.getValue() ) {
+						
+						if (o instanceof String ) {
+							sb.append(o+ "\n" );
+						} else if (o instanceof org.docx4j.math.CTOMathPara) { 
+							sb.append("math\n" );						
+						} else {
+							sb.append(o.getClass().getName());
+							try {
+								sb.append(XmlUtils.marshaltoString(o)+ "\n" );							
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						
+					}
+				}
+				
+			}
+		}
+		return sb.toString();
 		
 	}
 	

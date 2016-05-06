@@ -2,13 +2,9 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.docx4j.Docx4J;
-import org.docx4j.XmlUtils;
 import org.docx4j.anon.Anonymize;
 import org.docx4j.anon.AnonymizeResult;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -188,36 +184,8 @@ public class AnonCorpus {
 			}
 			
 			// unsafe objects
-			if (result.hasAnyUnsafeObjects()) {
-				reportLeak("The following objects may leak info:");
-				for(Entry<Part, Set<Object>> entry :  result.getUnsafeObjectsByPart().entrySet()) {
-					
-					Part p = entry.getKey();
-					
-					if ( !entry.getValue().isEmpty()) {
-						reportLeak(p.getPartName().getName() + ", of type " + p.getClass().getName() );
-						
-						for (Object o : entry.getValue() ) {
-							
-							if (o instanceof String ) {
-								reportLeak((String)o);
-							} else if (o instanceof org.docx4j.math.CTOMathPara) { 
-								reportLeak("math");						
-							} else {
-								reportLeak(o.getClass().getName());
-								try {
-									reportLeak(XmlUtils.marshaltoString(o));							
-								} catch (Exception e) {
-									reportLeak(e.getMessage());
-									e.printStackTrace();
-								}
-							}
-							
-						}
-					}
-					
-				}
-			}
+			reportLeak(result.reportUnsafeObjects());
+
 			System.out.println("\n\n .. end REPORT for " + fIn.getName()  + "\n\n");
 			
 		}

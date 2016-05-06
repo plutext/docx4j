@@ -1,11 +1,7 @@
 package org.docx4j.samples;
 
 
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.docx4j.Docx4J;
-import org.docx4j.XmlUtils;
 import org.docx4j.anon.Anonymize;
 import org.docx4j.anon.AnonymizeResult;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -17,10 +13,7 @@ public class AnonSingle {
 
 	public static void main(String[] args) throws Docx4JException {
 
-		// String inputfilepath = System.getProperty("user.dir") +
-		// "/UN-Declaration.docx";
-		String inputfilepath = System.getProperty("user.dir")
-				+ "/FORM_27_template.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 
 		String outputfilepath = System.getProperty("user.dir")
 				+ "/OUT_Anon.docx";
@@ -48,36 +41,7 @@ public class AnonSingle {
 			}
 			
 			// unsafe objects
-			if (result.hasAnyUnsafeObjects()) {
-				System.out.println("The following objects may leak info:");
-				for(Entry<Part, Set<Object>> entry :  result.getUnsafeObjectsByPart().entrySet()) {
-					
-					Part p = entry.getKey();
-					
-					if ( !entry.getValue().isEmpty()) {
-						System.out.println(p.getPartName().getName() + ", of type " + p.getClass().getName() );
-						
-						for (Object o : entry.getValue() ) {
-							
-							if (o instanceof String ) {
-								System.out.println(o);
-							} else if (o instanceof org.docx4j.math.CTOMathPara) { 
-								System.out.println("math");						
-							} else {
-								System.out.println(o.getClass().getName());
-								try {
-									System.out.println(XmlUtils.marshaltoString(o));							
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-							
-						}
-					}
-					
-				}
-			}
-			
+			System.out.println(result.reportUnsafeObjects());
 		}
 		
 		System.out.println("\n\n .. end REPORT for " + inputfilepath  + "\n\n");
