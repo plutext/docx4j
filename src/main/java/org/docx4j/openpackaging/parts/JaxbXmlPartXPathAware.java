@@ -243,8 +243,9 @@ implements XPathEnabled<E> {
 			String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		E el = getJaxbElement();
-		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), el, xpathExpr, refreshXmlFirst);
+		
+		Binder<Node> binder = getBinder(); // do this first!
+		return XmlUtils.getJAXBAssociationsForXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
 		
 	}	
 	
