@@ -1186,9 +1186,17 @@ public class XmlUtils {
 			Object jaxbElement, String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 		
+		if (binder == null) {
+			log.warn("null binder");
+		}
+		if (jaxbElement == null) {
+			log.warn("null jaxbElement");
+		}
+		
 		Node node;
-		if (refreshXmlFirst) 
+		if (refreshXmlFirst) {
 			node = binder.updateXML(jaxbElement);
+		}
 		node = binder.getXMLNode(jaxbElement);
 		if (node==null) {
 			throw new XPathBinderAssociationIsPartialException("binder.getXMLNode returned null");
