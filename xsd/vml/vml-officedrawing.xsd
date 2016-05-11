@@ -236,17 +236,20 @@
         <xsd:documentation>Suggested Signer E-mail Address</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
-    <xsd:attribute name="signinginstructions" type="xsd:string">
+    <!--  [2014 07 31] to conform with Word 2010 x64 behaviour, the 3 attributes below have been made namespace qualified! 
+          see further,  https://github.com/plutext/docx4j/issues/121.
+    -->
+    <xsd:attribute name="signinginstructions" type="xsd:string"  form="qualified">
       <xsd:annotation>
         <xsd:documentation>Instructions for Signing</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
-    <xsd:attribute name="addlxml" type="xsd:string">
+    <xsd:attribute name="addlxml" type="xsd:string"  form="qualified">
       <xsd:annotation>
         <xsd:documentation>Additional Signature Information</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
-    <xsd:attribute name="sigprovurl" type="xsd:string">
+    <xsd:attribute name="sigprovurl" type="xsd:string"  form="qualified">
       <xsd:annotation>
         <xsd:documentation>Signature Provider Download URL</xsd:documentation>
       </xsd:annotation>
@@ -940,7 +943,7 @@
         <xsd:documentation>Stroke Line Style</xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
-    <xsd:attribute name="miterlimit" type="xsd:decimal" use="optional">
+    <xsd:attribute name="miterlimit" type="xsd:string" use="optional">
       <xsd:annotation>
         <xsd:documentation>Miter Joint Limit</xsd:documentation>
       </xsd:annotation>

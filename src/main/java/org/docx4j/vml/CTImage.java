@@ -77,7 +77,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Image", propOrder = {
     "egShapeElements"
 })
-public class CTImage implements Child
+public class CTImage implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({

@@ -25,21 +25,6 @@
 
 package org.docx4j.fonts.fop.fonts.apps;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.slf4j.LoggerFactory;
-import org.docx4j.fonts.fop.Version;
-import org.docx4j.fonts.fop.fonts.FontUtil;
-import org.docx4j.fonts.fop.fonts.truetype.FontFileReader;
-import org.docx4j.fonts.fop.fonts.truetype.TTFCmapEntry;
-import org.docx4j.fonts.fop.fonts.truetype.TTFFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 

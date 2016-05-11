@@ -22,7 +22,6 @@ package org.docx4j.convert.out.common;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.docx4j.Docx4J;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
@@ -43,7 +42,9 @@ import org.w3c.dom.traversal.NodeIterator;
  *
  */
 public abstract class AbstractConversionContext {
-	private static final Logger log = LoggerFactory.getLogger(Docx4J.class);
+	
+	private static final Logger log = LoggerFactory.getLogger(AbstractConversionContext.class);
+	
 	public static final String CONVERSION_CONTEXT_ID = "conversionContext";
 	
 	protected static final AbstractMessageWriter DUMMY_WRITER = new AbstractMessageWriter() {
@@ -70,6 +71,14 @@ public abstract class AbstractConversionContext {
 	private ConversionHyperlinkHandler hyperlinkHandler = null;
 	private AbstractMessageWriter messageWriter = null;
 
+	private AbstractConversionSettings settings = null;
+	/**
+	 * @since 3.0.1
+	 */
+	public AbstractConversionSettings getConversionSettings() {
+		return settings;
+	}
+
 	protected AbstractConversionContext(AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, OpcPackage localOpcPackage) {
 		initializeSettings(conversionSettings, localOpcPackage);
 		this.messageWriter = initializeMessageWriter(messageWriter);
@@ -77,6 +86,7 @@ public abstract class AbstractConversionContext {
 	
 	protected void initializeSettings(AbstractConversionSettings settings, OpcPackage localOpcPackage) {
 		if (settings != null) {
+			this.settings=settings;
 			if ((localOpcPackage == null) && (settings.getWmlPackage() == null)) {
 				throw new IllegalArgumentException("The OpcPackage is missing in the settings.");
 			}
@@ -145,7 +155,14 @@ public abstract class AbstractConversionContext {
 	public Map<String, Object> getXsltParameters() {
 		return xsltParameters;
 	}
+
 	
+	/**
+	 * This method shouldn't be used from regular Java methods, since it
+	 * means the log entry doesn't should the actual class causing the problem.
+	 * 
+	 * @return
+	 */
 	public Logger getLog() {
 		return log;
 	}

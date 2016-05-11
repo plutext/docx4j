@@ -1,10 +1,6 @@
 package org.docx4j.model.images;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -13,6 +9,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart.SvgDocument;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -41,13 +39,7 @@ public abstract class AbstractWordXmlPicture {
     	try {
         	if (picture==null) {
     			log.warn("picture was null!");
-            	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-    			 try {
-    				d = factory.newDocumentBuilder().newDocument();
-    			} catch (ParserConfigurationException e1) {
-    				// TODO Auto-generated catch block
-    				e1.printStackTrace();
-    			}
+    				d = XmlUtils.getNewDocumentBuilder().newDocument();
     			Element span = d.createElement("span");
     			span.setAttribute("style", "color:red;");
     			d.appendChild(span);
@@ -66,8 +58,7 @@ public abstract class AbstractWordXmlPicture {
 			} 
 			else if (picture.metaFile instanceof MetafileEmfPart) {
 				
-	        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-				 d = factory.newDocumentBuilder().newDocument();
+				 d = XmlUtils.getNewDocumentBuilder().newDocument();
 				
 				//log.info("Document: " + document.getClass().getName() );
 
@@ -80,13 +71,7 @@ public abstract class AbstractWordXmlPicture {
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			 try {
-				d = factory.newDocumentBuilder().newDocument();
-			} catch (ParserConfigurationException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+				d = XmlUtils.getNewDocumentBuilder().newDocument();
 			Element span = d.createElement("span");
 			span.setAttribute("style", "color:red;");
 			d.appendChild(span);
@@ -105,11 +90,7 @@ public abstract class AbstractWordXmlPicture {
 
         try {
             // Create a DOM builder and parse the fragment
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            
-            Document document = factory.newDocumentBuilder().newDocument();
-            
-            
+            Document document = XmlUtils.getNewDocumentBuilder().newDocument();
             Element imageElement  = document.createElement("img");
 
             if (src !=null && !src.equals(""))
@@ -180,10 +161,7 @@ public abstract class AbstractWordXmlPicture {
 
         try {
             // Create a DOM builder and parse the fragment
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            
-            Document document = factory.newDocumentBuilder().newDocument();
-                        
+            Document document = XmlUtils.getNewDocumentBuilder().newDocument();
             Element imageElement  = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
 			"fo:external-graphic"); 	
 

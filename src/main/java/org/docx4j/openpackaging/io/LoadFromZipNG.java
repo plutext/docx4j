@@ -35,16 +35,16 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -72,8 +72,9 @@ import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -85,6 +86,7 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  * 
  */
+@Deprecated
 public class LoadFromZipNG extends Load {
 	
 	//public HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	
@@ -218,11 +220,8 @@ public class LoadFromZipNG extends Load {
 		}
 		
 		// .. now find the name of the main part
-		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(null, partByteArrays, partName);
-		if (rp==null) {
-			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
-		}
+		RelationshipsPart rp = RelationshipsPart.createPackageRels();
+		populatePackageRels(partByteArrays, rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		String pkgContentType = ctm.getContentType(new PartName("/" + mainPartName));
@@ -259,20 +258,29 @@ public class LoadFromZipNG extends Load {
 		 return p;
 	}
 	
+	private void populatePackageRels(HashMap<String, ByteArray> partByteArrays, RelationshipsPart rp) 
+			throws Docx4JException {
+		
+		InputStream is = null;
+		try {
+			is =  getInputStreamFromZippedPart( partByteArrays,  "_rels/.rels");
+			if (is==null) {
+				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
+			}
+			rp.unmarshal(is);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
+			
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
+	
 	//private RelationshipsPart getRelationshipsPartFromZip(Base p, ZipFile zf, String partName) 
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, HashMap<String, ByteArray> partByteArrays, String partName) 
 			throws Docx4JException {
-//			Document contents = null;
-//			try {
-//				contents = getDocumentFromZippedPart( zf,  partName);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				throw new Docx4JException("Error getting document from Zipped Part", e);
-//				
-//			} 
-//		// debugPrint(contents);
-//		// TODO - why don't any of the part names in this document start with "/"?
-//		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
 		
 		RelationshipsPart rp = null;
 		
@@ -280,8 +288,9 @@ public class LoadFromZipNG extends Load {
 		try {
 			is =  getInputStreamFromZippedPart( partByteArrays,  partName);
 			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
-			rp = new RelationshipsPart(new PartName("/" + partName) );
-			rp.setSourceP(p);
+//			rp = new RelationshipsPart(new PartName("/" + partName) );
+//			rp.setSourceP(p);
+			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
@@ -434,7 +443,11 @@ public class LoadFromZipNG extends Load {
 			if (source.setPartShortcut(part, relationshipType ) ) {
 				log.debug("Convenience method established from " + source.getPartName() 
 						+ " to " + part.getPartName());
-			}			
+			}	
+			
+			// v3.2.1: also note this additional source rel 
+			part.getSourceRelationships().add(r);  
+			
 			return;
 		}
 		
@@ -463,8 +476,8 @@ public class LoadFromZipNG extends Load {
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
 			addPartsFromRelationships(partByteArrays, part, rrp, ctm );
-			String relPart = PartName.getRelationshipsPartName(
-					part.getPartName().getName().substring(1) );
+//			String relPart = PartName.getRelationshipsPartName(
+//					part.getPartName().getName().substring(1) );
 //			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}
@@ -561,10 +574,15 @@ public class LoadFromZipNG extends Load {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 
-				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					
+				} else if (part.getClass().getName().equals("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart") ) {
 
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );					
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
@@ -582,8 +600,14 @@ public class LoadFromZipNG extends Load {
 					
 					// Is it a part we know?
 					try {
+						
+				        XMLInputFactory xif = XMLInputFactory.newInstance();
+				        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
+						
 						Unmarshaller u = Context.jc.createUnmarshaller();
-						Object o = u.unmarshal( is );						
+						Object o = u.unmarshal( xsr );						
 						log.debug(o.getClass().getName());
 						
 						PartName name = part.getPartName();

@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class AddPartTests {
 	
-	protected static Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
+	protected static Logger log = LoggerFactory.getLogger(AddPartTests.class);
 	
 	/**
 	 * @throws java.lang.Exception
@@ -104,8 +104,13 @@ public class AddPartTests {
 		// Add it again 
 		// Note that we're adding this ELSEWHERE in the pkg for the purposes of this test only
 		HeaderPart part2 = new HeaderPart();	
-		part2.getContent().add(Context.getWmlObjectFactory().createP() );
 		Relationship rel = wordMLPackage.addTargetPart(part2, mode);
+		if (mode==AddPartBehaviour.REUSE_EXISTING) {
+			// In the REUSE_EXISTING case, we won't be adding this part, so 
+			// we can't add content to it (since its pkg isn't set)
+			part2 = (HeaderPart)wordMLPackage.getRelationshipsPart().getPart(rel);
+		} 
+		part2.getContent().add(Context.getWmlObjectFactory().createP() );
 		
 		// Just added a part
 		//Assert.assertTrue("hmm", wordMLPackage.getMainDocumentPart().getRelationshipsPart().size()==mdpRelsCountBefore+expectedIncrement);

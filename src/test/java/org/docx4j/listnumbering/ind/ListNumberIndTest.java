@@ -19,23 +19,17 @@
  */
 package org.docx4j.listnumbering.ind;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.FileInputStream;
 
-import org.docx4j.diff.Differencer;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamResult;
 
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.P;
 import org.docx4j.wml.PPrBase.Ind;
 import org.junit.Test;
 
@@ -77,9 +71,17 @@ public class ListNumberIndTest {
 				JAXBContext jc = Context.jcXmlPackage;
 				Unmarshaller u = jc.createUnmarshaller();
 				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-						new javax.xml.transform.stream.StreamSource(new FileInputStream(BASE_DIR + filename)))).getValue(); 
+				
+				Object o = u.unmarshal(
+						new javax.xml.transform.stream.StreamSource(new FileInputStream(BASE_DIR + filename)));
+				
+				org.docx4j.xmlPackage.Package wmlPackageEl = null;
+				if (o instanceof org.docx4j.xmlPackage.Package) {
+					// MOXy
+					wmlPackageEl = (org.docx4j.xmlPackage.Package)o;
+				} else {
+					wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)o).getValue(); 
+				}
 
 				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 

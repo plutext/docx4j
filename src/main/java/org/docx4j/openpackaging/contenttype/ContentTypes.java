@@ -99,6 +99,12 @@ public class ContentTypes {
 
 	public final static String OFFICEDOCUMENT_VBA_DATA =
 		"application/vnd.ms-word.vbaData+xml";
+
+	/**
+	 * @since 3.2.0
+	 */
+	public final static String OFFICEDOCUMENT_VBA_PROJECT_SIGNATURE =
+			"application/vnd.ms-office.vbaProjectSignature";
 	
 	public final static String OFFICEDOCUMENT_OLE_OBJECT =
 		"application/vnd.openxmlformats-officedocument.oleObject";
@@ -143,8 +149,13 @@ public class ContentTypes {
 	
 	public final static String WORDPROCESSINGML_SETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml";
+	
 	public final static String WORDPROCESSINGML_STYLES = 
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+	
+	public final static String WORDPROCESSINGML_STYLESWITHEFFECTS = 
+			"application/vnd.ms-word.stylesWithEffects+xml";
+	
 	public final static String WORDPROCESSINGML_WEBSETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 
@@ -175,10 +186,27 @@ public class ContentTypes {
 	// embedded presentation
 	public final static String PRESENTATION = 
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+	public final static String PRESENTATIONML_COMMENTS = 
+			"application/vnd.openxmlformats-officedocument.presentationml.comments+xml";
+
+	public final static String PRESENTATIONML_FONT_DATA = 
+			"application/x-fontdata";
+	
+	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
+			"application/vnd.openxmlformats-officedocument.presentationml.commentAuthors+xml";
 	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";	
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
+	
+	// .pptm
+	public final static String PRESENTATIONML_MACROENABLED = 
+			"application/vnd.ms-powerpoint.presentation.macroEnabled.main+xml";
+	// .potm |
+	public final static String PRESENTATIONML_TEMPLATE_MACROENABLED = 
+			"application/vnd.ms-powerpoint.template.macroEnabled.main+xml";
+	
 	// .potx | 
 	public final static String PRESENTATIONML_TEMPLATE = 
 		"application/vnd.openxmlformats-officedocument.presentationml.template.main+xml";
@@ -289,6 +317,10 @@ public class ContentTypes {
 	public final static String SPREADSHEETML_CONNECTIONS =
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";	
 	
+	///xl/externalLinks/externalLink1.xml
+	public final static String SPREADSHEETML_EXTERNAL_LINK =
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.externalLink+xml";
+	
 	// /xl/charts/chart1.xml
 	public final static String DRAWINGML_CHART =
 		"application/vnd.openxmlformats-officedocument.drawingml.chart+xml";
@@ -296,6 +328,9 @@ public class ContentTypes {
 	// /xl/drawings/drawing1.xml
 	public final static String DRAWINGML_DRAWING =
 		"application/vnd.openxmlformats-officedocument.drawing+xml";
+
+	public final static String DRAWINGML_CHART_SHAPES =
+			"application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml";	
 
 	public final static String VML_DRAWING =
 		"application/vnd.openxmlformats-officedocument.vmlDrawing";
@@ -314,11 +349,11 @@ public class ContentTypes {
 //	 */
 //	public static final String DIGITAL_SIGNATURE_CERTIFICATE_PART = "application/vnd.openxmlformats-package.digital-signature-certificate";
 //
-//	/**
-//	 * Digital Signature Origin part.
-//	 */
-//	public static final String DIGITAL_SIGNATURE_ORIGIN_PART = "application/vnd.openxmlformats-package.digital-signature-origin";
-//
+	/**
+	 * Digital Signature Origin part.
+	 */
+	public static final String DIGITAL_SIGNATURE_ORIGIN_PART = "application/vnd.openxmlformats-package.digital-signature-origin";
+
 	/**
 	 * Digital Signature XML Signature part.
 	 */

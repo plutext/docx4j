@@ -36,8 +36,8 @@ public class Namespaces {
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 	
 	public final static String DIGITAL_SIGNATURE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/signature";
-//	public final static String DIGITAL_SIGNATURE_CERTIFICATE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/certificate";
-//	public final static String DIGITAL_SIGNATURE_ORIGIN = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/origin";
+	public final static String DIGITAL_SIGNATURE_CERTIFICATE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/certificate";
+	public final static String DIGITAL_SIGNATURE_ORIGIN = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/origin";
 	
 	
 	// Ones found in Package relationship
@@ -124,6 +124,18 @@ public class Namespaces {
 	
 	public final static String AF = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
+	
+	/* The standard states that the relationship type is 
+	 * 
+	 *     http://schemas.openxmlformats.org/officeDocument/2006/relationships/afChunk
+	 *   
+	 *  but Word uses 
+	 *  
+	 *     http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk
+	 *     
+	 *  (see [MS-OE376]; we do the same)
+	 */
+		
 
 	public final static String SUBDOCUMENT  = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/subDocument";
@@ -135,6 +147,12 @@ public class Namespaces {
 		"http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 	public final static String VBA_DATA_WORD = 
 		"http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
+	
+	/**
+	 * @since 3.2.0
+	 */
+	public final static String VBA_PROJECT_SIGNATURE = 
+			"http://schemas.microsoft.com/office/2006/relationships/vbaProjectSignature";
 
 	public final static String OLE_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject"; 
@@ -166,6 +184,14 @@ public class Namespaces {
 	public final static String DRAWINGML_DIAGRAM_DRAWING =
 		"http://schemas.microsoft.com/office/2007/relationships/diagramDrawing";
 	
+	public final static String PRESENTATIONML_COMMENTS = 
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+
+	public final static String PRESENTATIONML_COMMENT_AUTHORS = 
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/commentAuthors";
+
+	public final static String PRESENTATIONML_FONT_DATA = 	
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"; 
 	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	
@@ -250,6 +276,9 @@ public class Namespaces {
 	// since it is also used in PresentationML
 	public final static String SPREADSHEETML_CHART =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
+	
+	public final static String CHART_USER_SHAPES =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes";	
 
 	// /xl/comments1.xml 
 	public final static String SPREADSHEETML_COMMENTS =
@@ -278,6 +307,10 @@ public class Namespaces {
 	///xl/pivotCache/pivotCacheRecords1.xml
 	public final static String SPREADSHEETML_PIVOT_CACHE_RECORDS =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
+	
+	///xl/externalLinks/externalLink1.xml
+	public final static String SPREADSHEETML_EXTERNAL_LINK =
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink";
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 

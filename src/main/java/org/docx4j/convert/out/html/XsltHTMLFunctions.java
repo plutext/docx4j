@@ -25,12 +25,9 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.common.RunFontSelector;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -44,16 +41,17 @@ import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.PPrBase.Ind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -70,31 +68,8 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class XsltHTMLFunctions {
 	
-    public static DocumentFragment fontSelector(HTMLConversionContext conversionContext, 
-    		NodeIterator rPrNodeIt,
-    		String text) {
-
-		RPr rPr = null;
-    	if (rPrNodeIt!=null) { //It is never null
-    		Node n = rPrNodeIt.nextNode();
-    		if (n!=null) {
-    			try {
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			Object jaxb = u.unmarshal(n);
-    				rPr =  (RPr)jaxb;
-    			} catch (ClassCastException e) {
-    				conversionContext.getLog().error("Couldn't cast  to RPr!");
-    			} catch (JAXBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}        	        			
-    		}
-    	}
-    	
-    	return conversionContext.getRunFontSelector().fontSelector(rPr, text);
-
-    }
+	private static Logger log = LoggerFactory.getLogger(XsltHTMLFunctions.class);
+    
 	
 	/*
 		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -170,46 +145,40 @@ public class XsltHTMLFunctions {
 		// There is a similar method for the non XSLT case, in HTMLExporterVisitorDelegate
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 		
-		    Element	headEl = document.createElement("head");
-			Element meta = document.createElement("meta");
-			Element element = null;
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	document.appendChild(headEl);   
-	    	
-	    	// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	    	meta.setAttribute("http-equiv", "Content-Type");
-	    	meta.setAttribute("content", "text/html; charset=utf-8");
-	    	headEl.appendChild(meta);
-	    	
-	    	// <style..
-	    	element = createStyleElement(conversionContext, document, buffer);
-			if (element != null) {
-				headEl.appendChild(element);
-			}
+	    Element	headEl = document.createElement("head");
+		Element meta = document.createElement("meta");
+		Element element = null;
+		StringBuilder buffer = new StringBuilder(10240);
+		
+    	document.appendChild(headEl);   
+    	
+    	// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    	meta.setAttribute("http-equiv", "Content-Type");
+    	meta.setAttribute("content", "text/html; charset=utf-8");
+    	headEl.appendChild(meta);
+    	
+    	// <style..
+    	element = createStyleElement(conversionContext, document, buffer);
+		if (element != null) {
+			headEl.appendChild(element);
+		}
 
-			
-			// <script
-			buffer.setLength(0);
-			element = createScriptElement(conversionContext, document, buffer);
-			if (element != null) {
-				headEl.appendChild(element);
-			}
-			
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
-	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
-		}			
-		return null;
+		
+		// <script
+		buffer.setLength(0);
+		element = createScriptElement(conversionContext, document, buffer);
+		if (element != null) {
+			headEl.appendChild(element);
+		}
+		
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+
+		return docfrag;
+		
+
 	}
 
 	/**
@@ -222,30 +191,21 @@ public class XsltHTMLFunctions {
 	public static DocumentFragment appendStyleElement(HTMLConversionContext conversionContext) {
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	// <style..
-	    	Element element = createStyleElement(conversionContext, document, buffer);
-			if (element == null) {
-				return null;
-			}
-			document.appendChild(element);
+		StringBuilder buffer = new StringBuilder(10240);
 		
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
+    	// <style..
+    	Element element = createStyleElement(conversionContext, document, buffer);
+		if (element == null) {
+			return null;
+		}
+		document.appendChild(element);
 	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
-		}			
-		return null;
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
 
+		return docfrag;
 	}
 
 	/**
@@ -260,29 +220,21 @@ public class XsltHTMLFunctions {
 		// actually invokes ConversionHTMLScriptElementHandler
 		
         // Create a DOM document to take the results			
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
+		Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 
-			StringBuilder buffer = new StringBuilder(10240);
-			
-	    	// <script..
-	    	Element element = createScriptElement(conversionContext, document, buffer);
-			if (element == null) {
-				return null;
-			}
-			document.appendChild(element);
+		StringBuilder buffer = new StringBuilder(10240);
 		
-			DocumentFragment docfrag = document.createDocumentFragment();
-			docfrag.appendChild(document.getDocumentElement());
+    	// <script..
+    	Element element = createScriptElement(conversionContext, document, buffer);
+		if (element == null) {
+			return null;
+		}
+		document.appendChild(element);
 	
-			return docfrag;
-			
-		} catch (ParserConfigurationException e) {
-			conversionContext.getLog().error(e.getMessage(), e);
-		}			
-		return null;
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+
+		return docfrag;
 
 	}
 	
@@ -544,6 +496,19 @@ public class XsltHTMLFunctions {
         		  "p" );
     	
     }
+
+    public static DocumentFragment createListItemBlockForPPr( 
+    		HTMLConversionContext context,
+    		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults ) {
+
+    	return createBlock( 
+        		 context,
+        		 pPrNodeIt,
+        		 pStyleVal,  childResults,
+        		  "li" );
+    	
+    }
     
     private static DocumentFragment createBlock( 
     		HTMLConversionContext context,
@@ -560,8 +525,8 @@ public class XsltHTMLFunctions {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
 		Style defaultParagraphStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle() :
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultParagraphStyle() :
 				null);
 		
     	String defaultParagraphStyleId;
@@ -602,8 +567,7 @@ public class XsltHTMLFunctions {
         	}
         	
             // Create a DOM document to take the results			
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();			
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();			
 				//log.info("Document: " + document.getClass().getName() );
 			Element xhtmlBlock = document.createElement(htmlElementName);			
 			document.appendChild(xhtmlBlock);
@@ -616,9 +580,8 @@ public class XsltHTMLFunctions {
 			context.getLog().debug(pStyleVal);
 			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-			xhtmlBlock.setAttribute("class", 
-					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
-			);
+			String classVal = StyleTree.getHtmlClassAttributeValue(pTree, asn);			
+			xhtmlBlock.setAttribute("class", classVal);
 		
 			
 			// Does our pPr contain anything else?
@@ -641,63 +604,86 @@ public class XsltHTMLFunctions {
 				}
 				
 				StringBuilder inlineStyle =  new StringBuilder();
-				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
+				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
+						xhtmlBlock.getNodeName().equals("li"));	
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
 			}
-			
-						
-			// Our fo:block wraps whatever result tree fragment
+
+			// Our element (eg <p>) wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			// init
 			Node n = childResults.nextNode();
-			do {	
+			
+			if (xhtmlBlock.getNodeName().equals("p") 
+					&& context.getBookmarkStart()!=null ) {
 				
-//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
+				xhtmlBlock.setAttribute("id", context.getBookmarkStart().getName() );
+				context.setBookmarkStart(null);
+			}
+			
+			
+			if (xhtmlBlock.getNodeName().equals("p")
+					&& n.hasChildNodes()
+					&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+					// old XSLT won't produce a span for w:r unless there is w:rPr
 				
-				// getNumberXmlNode creates a span node, which is empty
-				// if there is no numbering.
-				// Let's get rid of any such <span/>.
+				mergeSpans(n.getChildNodes(), document, xhtmlBlock);
 				
-				// What we actually get is a document node
-				if (n.getNodeType()==Node.DOCUMENT_NODE) {
-					context.getLog().debug("handling DOCUMENT_NODE");
-					// Do just enough of the handling here
-	                NodeList nodes = n.getChildNodes();
-	                if (nodes != null) {
-	                    for (int i=0; i<nodes.getLength(); i++) {
-	                    	
-	        				if (((Node)nodes.item(i)).getLocalName().equals("span")
-	        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
-	        					// ignore
-	        					context.getLog().debug(".. ignoring <span/> ");
-	        				} else {
-	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
-	        				}
-	                    }
-	                }					
-				} else {
+			} else {
+			
+				do {	
 					
-	//					log.info("Node we are importing: " + n.getClass().getName() );
-	//					foBlockElement.appendChild(
-	//							document.importNode(n, true) );
-					/*
-					 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-					 * which causes
-					 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-					 * 
-					 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-					 * 
-					 * So instead of importNode, use 
-					 */
-					XmlUtils.treeCopy( n,  xhtmlBlock );
-				}
-				// next 
-				n = childResults.nextNode();
-				
-			} while ( n !=null ); 
+	//				System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(n) + "\n\n");
+					
+					// getNumberXmlNode creates a span node, which is empty
+					// if there is no numbering.
+					// Let's get rid of any such <span/>.
+					
+					// What we actually get is a document node
+					if (n.getNodeType()==Node.DOCUMENT_NODE) {
+						context.getLog().debug("handling DOCUMENT_NODE");
+						
+						// Do just enough of the handling here
+		                NodeList nodes = n.getChildNodes();
+		                if (nodes != null) {
+		                    for (int i=0; i<nodes.getLength(); i++) {
+		                    	
+		        				if (((Node)nodes.item(i)).getLocalName().equals("span")
+		        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
+		        					// ignore
+		        					context.getLog().debug(".. ignoring <span/> ");
+		        				} else {
+		        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
+		        				}
+		                    }
+		                }	
+		                
+		                
+					} else {
+						
+		//					log.info("Node we are importing: " + n.getClass().getName() );
+		//					foBlockElement.appendChild(
+		//							document.importNode(n, true) );
+						/*
+						 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+						 * which causes
+						 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+						 * 
+						 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+						 * 
+						 * So instead of importNode, use 
+						 */
+						XmlUtils.treeCopy( n,  xhtmlBlock );
+					}
+					// next 
+					n = childResults.nextNode();
+					
+				} while ( n !=null ); 
+			}
+			
 			
 			if (xhtmlBlock.getNodeName().equals("p")
 					&& !xhtmlBlock.hasChildNodes() ) {
@@ -720,8 +706,107 @@ public class XsltHTMLFunctions {
 		} 
     	
     	return null;
-    	
     }
+    
+    /**
+     * Merge adjacent spans if @class and @style are the same
+     * @param nodes
+     * @param result
+     */
+    private static void mergeSpans(NodeList nodes, Document document, Element xhtmlBlock) {
+    	
+    	if (nodes==null || nodes.getLength()==0) return;
+    	
+    	// init .. skip children until we find a span
+    	int startIndex = 0;
+    	Element currentEl; 
+    	while (true) {
+    		currentEl = ((Element)nodes.item(startIndex));
+    		    		
+        	if (currentEl.getLocalName().equals("span")) {
+            	break;        		
+        	} else {
+            	XmlUtils.treeCopy( currentEl,  xhtmlBlock );
+        	}
+        	
+        	startIndex++;
+        	if (startIndex == nodes.getLength() ) return;
+    	}
+    	
+    	Element currentSpan = currentEl;
+    	String currentClass = currentSpan.getAttribute("class");
+    	String currentStyle = currentSpan.getAttribute("style");
+    		// should work for anything with @class, @style
+    	
+    	// Can't reuse existing span, since we'll get org.apache.xml.dtm.DTMDOMException
+		Element newSpan = document.createElement("span");	
+		if (currentClass!=null) {
+			newSpan.setAttribute("class", currentClass);
+		}
+		if (currentStyle!=null) {
+			newSpan.setAttribute("style", currentStyle);
+		}
+
+    	XmlUtils.treeCopy( currentSpan.getChildNodes(),  newSpan );
+    	xhtmlBlock.appendChild(newSpan);
+    	
+    	//System.out.println(XmlUtils.w3CDomNodeToString(xhtmlBlock));
+    	
+//    	if (nodes.getLength()==1) return;
+    	
+    	for (int i=(startIndex+1); i<nodes.getLength(); i++) {
+    		
+        	Element thisSpan = ((Element)nodes.item(i));
+        	
+        	// Handle elements other than span eg img
+        	if (!thisSpan.getLocalName().equals("span")) {
+            	XmlUtils.treeCopy( thisSpan,  xhtmlBlock );
+        		
+            	// Get read for next span
+        		newSpan = document.createElement("span");	
+            	xhtmlBlock.appendChild(newSpan); // might end up with an empty span
+        		if (currentClass!=null) {
+        			newSpan.setAttribute("class", currentClass);
+        		}
+        		if (currentStyle!=null) {
+        			newSpan.setAttribute("style", currentStyle);
+        		}
+        		continue;
+        	}
+        	
+        	// Handle span
+        	if (!thisSpan.hasChildNodes()) continue;
+        	
+        	String thisClass = thisSpan.getAttribute("class");
+        	String thisStyle = thisSpan.getAttribute("style");
+    		
+        	boolean classSame = (currentClass==null && thisClass==null)
+        			|| (currentClass!=null && currentClass.equals(thisClass));
+        	boolean styleSame = (currentStyle==null && thisStyle==null)
+        			|| (currentStyle!=null && currentStyle.equals(thisStyle));
+        		// TODO handle case where only difference is "white-space:pre-wrap;"
+        	
+        	if (classSame && styleSame) {
+        		// add to existing
+				XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
+        		
+        	} else {
+        		newSpan = document.createElement("span");	
+        		if (thisClass!=null) {
+        			newSpan.setAttribute("class", thisClass);
+        		}
+        		if (thisStyle!=null) {
+        			newSpan.setAttribute("style", thisStyle);
+        		}
+            	
+            	XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
+            	xhtmlBlock.appendChild(newSpan);
+            	currentClass = thisClass;
+            	currentStyle = thisStyle;
+        	}
+    	}
+    }
+    
 
     public static DocumentFragment createBlockForRPr( 
     		HTMLConversionContext context,
@@ -730,8 +815,8 @@ public class XsltHTMLFunctions {
     		NodeIterator childResults ) {
 
 		Style defaultRunStyle = 
-				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null ?
-				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle() :
+				(context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false) != null ?
+				context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart(false).getDefaultCharacterStyle() :
 				null);
 		
     	String defaultCharacterStyleId;
@@ -773,55 +858,47 @@ public class XsltHTMLFunctions {
         			}        	        			
         		}
         	}
-        	        	
-            // Create a DOM builder and parse the fragment
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			
-			//log.info("Document: " + document.getClass().getName() );
 
-			Node span = document.createElement("span");			
-			document.appendChild(span);
-			
-			// Set @class	
-			String rStyleVal = defaultCharacterStyleId;
-			if ( rPr!=null && rPr.getRStyle()!=null) {
-				rStyleVal = rPr.getRStyle().getVal();
-			}
-			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-			if (asn==null) {
-				context.getLog().warn("No style node for: " + rStyleVal);
-			} else {
-				((Element)span).setAttribute("class", 
-						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-				);		
-			}
-			
-			if (rPr!=null) {
-				
-				if (context.getLog().isDebugEnabled()) {					
-					context.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
-				}
-				
-				// Does our rPr contain anything else?
-				StringBuilder inlineStyle =  new StringBuilder();
-				HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
-				if (!inlineStyle.toString().equals("") ) {
-					((Element)span).setAttribute("style", inlineStyle.toString() );
-				}
-			}
-			
-			// Our fo:block wraps whatever result tree fragment
+			// Our span wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			Node n = childResults.nextNode();
-			XmlUtils.treeCopy( n,  span );			
 			
+//	    	System.out.println(XmlUtils.w3CDomNodeToString(n));
+			
+
+            // Create a DOM builder and parse the fragment
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+				
+			Element span = document.createElement("span");			
+			document.appendChild(span);
+			
+    		// Avoid unnecessary nested span for common case of single child
+        	if (n.hasChildNodes() && n.getChildNodes().getLength()==1
+        			&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+        		        		
+        		String existingStyle = ((Element)n.getChildNodes().item(0)).getAttribute("style");
+				span.setAttribute("style", existingStyle );				
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				XmlUtils.treeCopy( n.getChildNodes().item(0).getChildNodes(),  span );			
+        		
+//        	} else if (!n.getChildNodes().item(0).getLocalName().equals("span")) {
+//        		
+//        		// EXP - for backwards compat with old code where w:t didn't create span
+//				XmlUtils.treeCopy( n,  span );
+
+        	} else {
+        		
+				setSpanAttr(context, defaultCharacterStyleId, styleTree, rPr, span);
+				//XmlUtils.treeCopy( n,  span );
+				mergeSpans(n.getChildNodes(), document, span);
+				
+        	}
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
 
 			return docfrag;
+        	
 						
 		} catch (Exception e) {
 			context.getLog().error(e.getMessage(), e);
@@ -830,4 +907,55 @@ public class XsltHTMLFunctions {
     	return null;
     	
     }
+
+	/**
+	 * @param context
+	 * @param defaultCharacterStyleId
+	 * @param styleTree
+	 * @param rPr
+	 * @param span
+	 */
+	private static void setSpanAttr(HTMLConversionContext context,
+			String defaultCharacterStyleId, StyleTree styleTree, RPr rPr,
+			Element span) {
+		
+		// Set @class	
+		String rStyleVal = defaultCharacterStyleId;
+		if ( rPr!=null && rPr.getRStyle()!=null) {
+			rStyleVal = rPr.getRStyle().getVal();
+		}
+		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+		org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+		if (asn==null) {
+			context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
+		} else {
+			String classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);
+			if (classVal!=null && !classVal.equals("")) {
+				((Element)span).setAttribute("class", classVal);
+			}
+		}
+		
+		if (rPr!=null) {
+			
+			if (context.getLog().isDebugEnabled()) {					
+				context.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
+			}
+			
+			// Does our rPr contain anything else?
+			StringBuilder inlineStyle =  new StringBuilder();
+			HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
+			if (inlineStyle.toString().equals("") ) {
+				// Do nothing here - just keep existing style
+				// (which if present, is a font definition obtained at w:t level)
+			} else {
+				String existingStyle = span.getAttribute("style");
+				if (existingStyle==null
+						|| existingStyle.trim().equals("")) {
+					span.setAttribute("style", inlineStyle.toString() );
+				} else {
+					span.setAttribute("style", inlineStyle.toString() + ";" + existingStyle );					
+				}
+			}
+		}
+	}
 }

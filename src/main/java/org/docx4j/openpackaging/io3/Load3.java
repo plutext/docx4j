@@ -22,18 +22,16 @@ package org.docx4j.openpackaging.io3;
 
 
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -49,11 +47,9 @@ import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.io.ExternalResourceUtils;
 import org.docx4j.openpackaging.io.Load;
 import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCoverPagePart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
@@ -61,13 +57,14 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
-import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -144,11 +141,8 @@ public class Load3 extends Load {
 		}
 		
 		// .. now find the name of the main part
-		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(null, partName);
-		if (rp==null) {
-			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
-		}
+		RelationshipsPart rp = RelationshipsPart.createPackageRels();
+		populatePackageRels(rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		PartName mainPartNameObj;
@@ -164,7 +158,7 @@ public class Load3 extends Load {
 		// 2. Create a new Package; this'll return the appropriate subclass
 		OpcPackage p = ctm.createPackage(pkgContentType);
 		log.info("Instantiated package of type " + p.getClass().getName() );
-		p.setPartStore(partStore);
+		p.setSourcePartStore(partStore);
 
 		p.setRelationships(rp);
 		rp.setSourceP(p); //
@@ -186,6 +180,26 @@ public class Load3 extends Load {
 		 
 		 return p;
 	}
+
+	private void populatePackageRels(RelationshipsPart rp) 
+			throws Docx4JException {
+		
+		InputStream is = null;
+		try {
+			is =  partStore.loadPart( "_rels/.rels");
+			if (is==null) {
+				throw new Docx4JException("_rels/.rels appears to be missing from this package!");
+			}
+			rp.unmarshal(is);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
+			
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
 	
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, String partName) 
 			throws Docx4JException {
@@ -199,8 +213,7 @@ public class Load3 extends Load {
 			if (is==null) {
 				return null; // that's ok
 			}
-			rp = new RelationshipsPart(new PartName("/" + partName) );
-			rp.setSourceP(p);
+			rp = p.getRelationshipsPart(true);
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
@@ -269,7 +282,7 @@ public class Load3 extends Load {
 		if (r.getType().equals(Namespaces.HYPERLINK)) {
 			// Could be Internal or External
 			// Example of Internal is w:drawing/wp:inline/wp:docPr/a:hlinkClick
-			log.info("Encountered (but not loading) hyperlink " + r.getTarget()  );				
+			log.debug("Encountered (but not loading) hyperlink " + r.getTarget()  );				
 			return;			
 		} else 
 			if (r.getTargetMode() == null
@@ -297,12 +310,12 @@ public class Load3 extends Load {
 					r.getType().equals( Namespaces.IMAGE ) ) {
 					// It could instead be, for example, of type hyperlink,
 					// and we don't want to try to fetch that
-				log.info("Loading external resource " + r.getTarget() 
+				log.debug("Loading external resource " + r.getTarget() 
 						   + " of type " + r.getType() );
 				BinaryPart bp = ExternalResourceUtils.getExternalResource(r.getTarget());
 				pkg.getExternalResources().put(bp.getExternalTarget(), bp);			
 			} else {				
-				log.info("Encountered (but not loading) external resource " + r.getTarget() 
+				log.debug("Encountered (but not loading) external resource " + r.getTarget() 
 						   + " of type " + r.getType() );				
 			}						
 			return;
@@ -320,7 +333,11 @@ public class Load3 extends Load {
 			if (source.setPartShortcut(part, relationshipType ) ) {
 				log.debug("Convenience method established from " + source.getPartName() 
 						+ " to " + part.getPartName());
-			}			
+			}
+			
+			// v3.2.1: also note this additional source rel 
+			part.getSourceRelationships().add(r);  
+			
 			return;
 		}
 		
@@ -340,6 +357,10 @@ public class Load3 extends Load {
 			part.setRelationshipType(relationshipType);
 		}
 		rp.loadPart(part, r);
+		 // That loads a pre-existing target part into the package
+		 // (but does not load its contents as such; that is
+		 //  done elsewhere).
+		
 		pkg.handled.put(resolvedPartUri, resolvedPartUri);
 
 		
@@ -349,8 +370,8 @@ public class Load3 extends Load {
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
 			addPartsFromRelationships(part, rrp, ctm );
-			String relPart = PartName.getRelationshipsPartName(
-					part.getPartName().getName().substring(1) );
+//			String relPart = PartName.getRelationshipsPartName(
+//					part.getPartName().getName().substring(1) );
 //			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}
@@ -421,14 +442,14 @@ public class Load3 extends Load {
 				// first, as we do above.
 				part = ctm.getPart("/" + resolvedPartUri, rel);				
 
-				log.info("ctm returned " + part.getClass().getName() );
+				log.debug("ctm returned " + part.getClass().getName() );
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart
 						|| part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart
-						|| part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart
+//						|| part.getClass().getName().equals("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart")
 						|| part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 					
 					// Nothing to do here
@@ -436,6 +457,9 @@ public class Load3 extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
+					
+					// Note that this is done lazily, since the below lines are commented out
+					
 //					is = partStore.loadPart( resolvedPartUri);
 //					((BinaryPart)part).setBinaryData(is);
 
@@ -446,8 +470,14 @@ public class Load3 extends Load {
 					// Is it a part we know?
 					is = partStore.loadPart( resolvedPartUri);
 					try {
+						
+				        XMLInputFactory xif = XMLInputFactory.newInstance();
+				        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
+						
 						Unmarshaller u = Context.jc.createUnmarshaller();
-						Object o = u.unmarshal( is );						
+						Object o = u.unmarshal( xsr );						
 						log.debug(o.getClass().getName());
 						
 						PartName name = part.getPartName();

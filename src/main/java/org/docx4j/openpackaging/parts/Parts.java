@@ -53,7 +53,6 @@ import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.openpackaging.packages.OpcPackage;
 
 /**
  * A collection of all the parts in the package
@@ -73,7 +72,9 @@ public class Parts {
 
 	public void put(Part part) {
 		if (get(part.getPartName()) != null) {
-			log.warn("Overwriting existing part " + part.getPartName());
+			log.info("Overwriting existing part " + part.getPartName());
+		} else {
+			log.debug("put part " + part.getPartName());			
 		}
 
 		parts.put(part.getPartName(), part);

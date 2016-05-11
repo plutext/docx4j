@@ -24,6 +24,7 @@ import java.util.Map;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.ConversionHyperlinkHandler;
 import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
+import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -31,6 +32,8 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.wml.STFldCharType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * See /docs/developer/Convert_Out.docx for an overview of
@@ -40,6 +43,9 @@ import org.docx4j.wml.STFldCharType;
  *
  */
 public abstract class AbstractWmlConversionContext extends AbstractConversionContext {
+	
+	private static Logger log = LoggerFactory.getLogger(AbstractWmlConversionContext.class);
+	
 	
 	private Map<String, Writer.TransformState> transformStates = null;
 	private AbstractWriterRegistry writerRegistry = null;
@@ -62,14 +68,18 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	private RunFontSelector runFontSelector = null;
 	
-	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers) {
+	protected AbstractWmlConversionContext(AbstractWriterRegistry writerRegistry, 
+			AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, 
+			WordprocessingMLPackage wmlPackage, ConversionSectionWrappers conversionSectionWrappers,
+			RunFontSelector runFontSelector) {
+		
 		super(messageWriter, conversionSettings, wmlPackage);
+		
 		this.writerRegistry = initializeWriterRegistry(writerRegistry);
 		this.transformStates = initializeTransformStates();
 		this.conversionSectionWrappers = conversionSectionWrappers;
 		this.styleTree = initializeStyleTree();
-		runFontSelector = new RunFontSelector(getWmlPackage(), this.getLog());
-		
+		this.runFontSelector = runFontSelector; 		
 	}
 
 	@Override
@@ -92,11 +102,11 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	protected void resolveLinkedAbstractNum(WordprocessingMLPackage wmlPkg) {
 		
-		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart()!=null
+		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false)!=null
 				&& wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart()!=null) {
 			
 			 wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().resolveLinkedAbstractNum(
-					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart());
+					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false));
 		}
 	}
 

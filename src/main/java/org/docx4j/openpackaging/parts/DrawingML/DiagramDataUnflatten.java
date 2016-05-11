@@ -25,8 +25,6 @@ import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
@@ -44,11 +42,13 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.opendope.SmartArt.dataHierarchy.SibTransBody;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy;
-import org.opendope.SmartArt.dataHierarchy.TextBody;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images;
-import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images.Image;
+import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts.IdentifiedText;
+import org.opendope.SmartArt.dataHierarchy.TextBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Convert dgm:dataModel to OpenDoPE SmartArtDataHierarchy
@@ -239,12 +239,7 @@ public class DiagramDataUnflatten {
 					image.setContentType(bpai.getContentType());
 					image.setId(imgPt.getModelId());
 					
-		            java.nio.ByteBuffer bb = bpai.getBuffer();
-		            byte[] bytes = null;
-		            bytes = new byte[bb.limit()];
-		            bb.get(bytes);	        
-					
-					image.setValue(bytes);
+					image.setValue(bpai.getBytes());
 					
 					images.getImage().add(image);
 					

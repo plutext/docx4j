@@ -91,7 +91,6 @@ public class IdentityPlusMapper extends Mapper {
 		
 		// documentFontNames comes from MDP's fontsInUse()
 		// which contains getPropertyResolver().getFontnameFromStyle
-		// TODO: that needs to be extended to handle EastAsian (Chinese) etc
 				
 		/* org.docx4j.wml.Fonts fonts is obtained as follows:
 		 * 
@@ -115,13 +114,31 @@ public class IdentityPlusMapper extends Mapper {
 
 		for( String documentFontname : documentFontNames) {
 	        log.debug("Document font: " + documentFontname);
-	        
-	        if ( PhysicalFonts.getPhysicalFonts().get(documentFontname)!=null ) {
+	        PhysicalFont mappedTo = PhysicalFonts.get(documentFontname);
+	        if ( mappedTo!=null ) {
 	        	
 	        	// An identity mapping; that is all
 	        	// this class knows how to do!
-        		fontMappings.put(documentFontname,         				 
-        						PhysicalFonts.getPhysicalFonts().get(documentFontname) );	        		        	
+        		put(documentFontname,         				 
+        				mappedTo );	
+        			log.debug(".. mapped to " + mappedTo.getName() );
+	        } else if (regularForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				regularForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded regular form " );
+	        } else if (boldForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				boldForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded bold form " );
+	        } else if (italicForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				italicForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded italic form " );
+	        } else if (boldItalicForms.get(documentFontname)!=null) {
+        		put(documentFontname,         				 
+        				boldItalicForms.get(documentFontname) );	
+        			log.debug(".. mapped to embedded bold italic form " );
+	        	
 	        } else {
 	        	
 	        	log.warn("- - No physical font for: " + documentFontname);

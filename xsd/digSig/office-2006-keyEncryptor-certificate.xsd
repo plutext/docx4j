@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+   ====================================================================
+-->
+<xs:schema
+	xmlns="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"
+	xmlns:e="http://schemas.microsoft.com/office/2006/encryption" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<xs:import namespace="http://schemas.microsoft.com/office/2006/encryption" schemaLocation="office-2006-encryption.xsd"/>
+	
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings/>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+	
+	<xs:simpleType name="ST_PasswordKeyEncryptorUri">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="CT_CertificateKeyEncryptor">
+		<xs:attribute name="encryptedKeyValue" type="xs:base64Binary" use="required">
+			<xs:annotation><xs:documentation>A base64-encoded value that specifies the encrypted form of the intermediate key, which is encrypted with the public key contained within the X509Certificate attribute.</xs:documentation></xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="X509Certificate" type="xs:base64Binary" use="required">
+			<xs:annotation><xs:documentation>A base64-encoded value that specifies a DER-encoded X.509 certificate (1) used to encrypt the intermediate key. The certificate (1) MUST contain only the public portion of the public-private key pair.</xs:documentation></xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="certVerifier" type="xs:base64Binary" use="required">
+			<xs:annotation><xs:documentation>A base64-encoded value that specifies the HMAC of the binary data obtained by base64-decoding the X509Certificate attribute. The hashing algorithm used to derive the HMAC MUST be the hashing algorithm specified for the Encryption.keyData element. The secret key used to derive the HMAC MUST be the intermediate key. If the intermediate key is reset, any CertificateKeyEncryptor elements are also reset to contain the new intermediate key, except that the certVerifier attribute MUST match the value calculated using the current intermediate key, to verify that the CertificateKeyEncryptor element actually encrypted the current intermediate key. If a CertificateKeyEncryptor element does not have a correct certVerifier attribute, it MUST be discarded.</xs:documentation></xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="encryptedKey" type="CT_CertificateKeyEncryptor">
+		<xs:annotation>
+			<xs:appinfo>
+				<jaxb:property name="encryptedCertificateKey"/>
+			</xs:appinfo>
+		</xs:annotation>
+	</xs:element>	
+</xs:schema>

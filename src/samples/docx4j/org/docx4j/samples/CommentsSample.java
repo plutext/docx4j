@@ -28,6 +28,8 @@ import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
+import org.docx4j.wml.CommentRangeEnd;
+import org.docx4j.wml.CommentRangeStart;
 import org.docx4j.wml.Comments;
 import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.P;
@@ -35,8 +37,7 @@ import org.docx4j.wml.P;
 /**
  * Creates a WordprocessingML document from scratch, and adds a comment.
  * 
- * Note that only w:commentReference is required; this example 
- * doesn't add w:commentRangeStart or w:commentRangeEnd 
+ * Note that only w:commentReference is required
  * 
           <w:p>
             <w:commentRangeStart w:id="0"/>
@@ -88,8 +89,37 @@ public class CommentsSample extends AbstractSample {
 		comments.getComment().add(theComment);
 		
 		// Add comment reference to document
-		P paraToCommentOn = wordMLPackage.getMainDocumentPart().addParagraphOfText("here is some content");
-		paraToCommentOn.getContent().add(createRunCommentReference(commentId));
+		//P paraToCommentOn = wordMLPackage.getMainDocumentPart().addParagraphOfText("here is some content");
+		P p = new P();
+		
+		wordMLPackage.getMainDocumentPart().getContent().add(p);
+		
+	    // Create object for commentRangeStart
+	    CommentRangeStart commentrangestart = factory.createCommentRangeStart(); 
+	        commentrangestart.setId( commentId );  // substitute your comment id
+	        
+	        
+	        // The actual content, in the middle
+	        p.getContent().add(commentrangestart);
+
+			org.docx4j.wml.Text  t = factory.createText();
+			t.setValue("hello");
+
+			org.docx4j.wml.R  run = factory.createR();
+			run.getContent().add(t);	
+			
+	        p.getContent().add(run);
+	        
+	    // Create object for commentRangeEnd
+	    CommentRangeEnd commentrangeend = factory.createCommentRangeEnd(); 
+	        commentrangeend.setId( commentId );  // substitute your comment id
+
+	        p.getContent().add(commentrangeend);
+	        
+		p.getContent().add(createRunCommentReference(commentId));
+		
+		System.out.println(wordMLPackage.getMainDocumentPart().getXML());
+		
 
 		// ++, for next comment ...
 		commentId = commentId.add(java.math.BigInteger.ONE);

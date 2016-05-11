@@ -103,6 +103,8 @@ public class GraphicData {
     public org.docx4j.dml.picture.Pic getPic() {
 
 		for (Object o : getAny() ) {
+			
+			if (o instanceof Pic) return (Pic)o;
 
 			if (o instanceof JAXBElement
 					&& ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {

@@ -1,14 +1,20 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
+import java.util.List;
+
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.xlsx4j.exceptions.Xlsx4jException;
+import org.xlsx4j.sml.Sheet;
 import org.xlsx4j.sml.Workbook;
 
 public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	
 	protected SharedStrings sharedStrings;
+	protected Styles stylesPart;
 	
 	public WorkbookPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -35,6 +41,9 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		return sharedStrings;
 	}
 	
+	public Styles getStylesPart() {
+		return stylesPart;
+	}
 	
 	public boolean setPartShortcut(Part part) {
 		
@@ -63,10 +72,43 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		
 		if (relationshipType.equals(Namespaces.SPREADSHEETML_SHARED_STRINGS)) {
 			sharedStrings = (SharedStrings)part;
-			return true;			
+			return true;
+		} else 	if (relationshipType.equals(Namespaces.SPREADSHEETML_STYLES)) {
+			stylesPart = (Styles)part;
+			return true;				
 		} else {	
 			return false;
 		}
+	}
+	
+	/**
+	 * @param index
+	 * @return
+	 * @throws Xlsx4jException
+	 * @ since 3.0.1
+	 */
+	public WorksheetPart getWorksheet(int index) throws Xlsx4jException {
+		
+		List<Sheet> sheets;
+		try {
+			sheets = this.getContents().getSheets().getSheet();
+		} catch (Docx4JException e1) {
+			throw new Xlsx4jException(e1.getMessage(), e1);
+		} 
+
+		int zeroBasedCount = sheets.size() -1; 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Xlsx4jException("No sheet at index " + index + ".  (There are " + sheets.size() + " sheets) ");			
+		}
+
+		try {
+			Sheet s = sheets.get(index);
+			return (WorksheetPart)this.getRelationshipsPart().getPart(s.getId());
+		} catch (Exception e) {
+			throw new Xlsx4jException("Sheet " + index + " not found", e);
+		}
+		
 	}
 
 }

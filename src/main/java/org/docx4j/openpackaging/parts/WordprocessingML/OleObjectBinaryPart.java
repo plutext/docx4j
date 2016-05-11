@@ -30,14 +30,14 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.poi.poifs.dev.POIFSViewEngine;
-import org.apache.poi.poifs.filesystem.DirectoryNode;
-import org.apache.poi.poifs.filesystem.DocumentNode;
-import org.apache.poi.poifs.filesystem.Entry;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.org.apache.poi.poifs.dev.POIFSViewEngine;
+import org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode;
+import org.docx4j.org.apache.poi.poifs.filesystem.DocumentNode;
+import org.docx4j.org.apache.poi.poifs.filesystem.Entry;
+import org.docx4j.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 
 /**
@@ -91,11 +91,7 @@ public class OleObjectBinaryPart extends BinaryPart {
 			// so, for now, brute force..
 
 			log.info("initing POIFSFileSystem from existing data");
-			getBuffer().clear();
-	        byte[] bytes = new byte[getBuffer().capacity()];
-	        getBuffer().get(bytes, 0, bytes.length);
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+			ByteArrayInputStream bais = new ByteArrayInputStream(this.getBytes());
 			fs = new POIFSFileSystem(bais);
 			
 		} else {
@@ -158,7 +154,7 @@ public class OleObjectBinaryPart extends BinaryPart {
     }
     
     /**
-     * Adapted from org.apache.poi.poifs.dev.POIFSLister
+     * Adapted from org.docx4j.org.apache.poi.poifs.dev.POIFSLister
      * @param dir
      * @param indent
      * @param withSizes

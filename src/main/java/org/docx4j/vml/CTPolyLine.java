@@ -79,7 +79,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_PolyLine", propOrder = {
     "pathOrFormulasOrHandles"
 })
-public class CTPolyLine implements Child
+public class CTPolyLine implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({
@@ -265,12 +265,24 @@ public class CTPolyLine implements Child
      * 
      * 
      */
+    @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
             pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
         }
         return this.pathOrFormulasOrHandles;
     }
+    
+    /* (non-Javadoc)
+     * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+     * @since 3.0.1
+     */
+    public List<JAXBElement<?>> getEGShapeElements() {
+        if (pathOrFormulasOrHandles == null) {
+            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+        }
+        return this.pathOrFormulasOrHandles;    	
+    }    
 
     /**
      * Gets the value of the points property.

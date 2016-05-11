@@ -1,22 +1,12 @@
 package org.docx4j.model;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import javax.xml.bind.JAXBException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
-import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
-import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -25,13 +15,18 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTLanguage;
+import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TblPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class works out the actual set of properties (paragraph or run)
@@ -100,6 +95,13 @@ public class PropertyResolver {
 	private PPr documentDefaultPPr;
 	private RPr documentDefaultRPr;
 	
+	public RPr getDocumentDefaultRPr() {
+		return documentDefaultRPr;
+	}
+	public PPr getDocumentDefaultPPr() {
+		return documentDefaultPPr;
+	}
+
 	private StyleDefinitionsPart styleDefinitionsPart;
 	
 	private WordprocessingMLPackage wordMLPackage;
@@ -133,11 +135,17 @@ public class PropertyResolver {
 		
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
-		styleDefinitionsPart = mdp.getStyleDefinitionsPart();
+		styleDefinitionsPart = mdp.getStyleDefinitionsPart(true);
 		themePart = mdp.getThemePart();
 		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
-		init();
+		if (wordMLPackage.getMainDocumentPart().getDocumentSettingsPart()!=null
+				&& wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents()!=null) {
+			themeFontLang = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getContents().getThemeFontLang();
+		}
+		init();		
 	}
+	
+	CTLanguage themeFontLang = null;
 	
 //	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
 //							ThemePart themePart,
@@ -154,34 +162,54 @@ public class PropertyResolver {
 	
 	private void init() throws Docx4JException {
 
-		// Make sure we have a styles definitions part
+//		styleDefinitionsPart.createVirtualStylesForDocDefaults();
+		
 		try {
-			if (styleDefinitionsPart==null) {
-				styleDefinitionsPart = new StyleDefinitionsPart();
-				styleDefinitionsPart.unmarshalDefaultStyles();
-				
-				// For this case, should we provide a way
-				// to add this new part to the package?
-				
-			}
-		} catch (Exception e) {
-			throw new Docx4JException("Couldn't create default StyleDefinitionsPart", e);
+			defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
+		} catch (NullPointerException npe) {
+			log.warn("No default paragraph style!!");
 		}
-		
-		styleDefinitionsPart.createVirtualStylesForDocDefaults();
-		
-		defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
-		defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
+		try {
+			defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
+		} catch (NullPointerException npe) {
+			log.warn("No default character style!!");
+		}
 
 		// Initialise styles
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
 		initialiseLiveStyles();		
 		
-		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
-		documentDefaultPPr = docDefaults.getPPr();
-		documentDefaultRPr = docDefaults.getRPr();
+//		Style docDefaults = styleDefinitionsPart.getStyleById("DocDefaults");
+		DocDefaults docDefaults = styleDefinitionsPart.getJaxbElement().getDocDefaults();
+        if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(docDefaults, true, true));
+        }
 
-			addNormalToResolvedStylePPrComponent();
+		documentDefaultPPr = new PPr();
+		documentDefaultRPr = new RPr();        	
+
+		if (docDefaults!=null
+				&& docDefaults.getPPrDefault()!=null
+				&& docDefaults.getPPrDefault().getPPr()!=null) {
+			
+			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+        }
+		
+		if (docDefaults!=null
+				&& docDefaults.getRPrDefault()!=null
+				&& docDefaults.getRPrDefault().getRPr()!=null) {
+			
+			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+        }
+		
+		if (documentDefaultRPr.getSz()==null) {
+			// Make Word default explicit
+			HpsMeasure sz20 = new HpsMeasure(); 
+			sz20.setVal(BigInteger.valueOf(20));
+			documentDefaultRPr.setSz(sz20);
+		}
+
+		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}
 
@@ -241,8 +269,11 @@ public class PropertyResolver {
 			result = XmlUtils.deepCopy(tableStyleStack.pop());
 		} else {
 			result = Context.getWmlObjectFactory().createStyle();
+			CTTblPrBase emptyPr = Context.getWmlObjectFactory().createCTTblPrBase();
+			result.setTblPr(emptyPr);
 			if (tblPr==null) {
 				// Return empty style object
+				log.info("Generated empty tblPr" );
 				return result;
 			}			
 		}
@@ -252,6 +283,11 @@ public class PropertyResolver {
 		
 		// Finally apply the tblPr we were passed
 		result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
+		
+		// Sanity check
+		if (result.getTblPr()==null) {
+			log.error("Null tblPr. FIXME" );
+		}
 		
 		return result;
 	}
@@ -308,6 +344,8 @@ public class PropertyResolver {
 	 */
 	public PPr getEffectivePPr(PPr expressPPr) {
 		
+		// Used by docx4j-export-fo project.
+		
 		PPr effectivePPr = null;
 		//	First, the document defaults are applied
 		
@@ -336,6 +374,18 @@ public class PropertyResolver {
 			
 		} else {
 			styleId = expressPPr.getPStyle().getVal();
+			if (styleId==null) {
+                if(log.isWarnEnabled()) {
+                    log.warn("Missing style id: " + XmlUtils.marshaltoString(expressPPr));
+                }
+				if (log.isDebugEnabled()) {
+					Throwable t = new Throwable();
+					log.debug("Null styleId produced by code path", t);
+				} else {
+					log.warn("Enable debug level logging to see code path");					
+				}
+				styleId = defaultParagraphStyleId;
+			}
 		}
 		resolvedPPr = getEffectivePPr(styleId);
 		
@@ -379,7 +429,7 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public PPr getEffectivePPr(String styleId) {
-
+		
 		PPr resolvedPPr = resolvedStylePPrComponent.get(styleId);
 		
 		if (resolvedPPr!=null) {
@@ -394,14 +444,14 @@ public class PropertyResolver {
 			return null;
 		}
 		
-		PPr expressPPr = s.getPPr();
-		if (expressPPr==null) {
-			// A paragraph style may have no w:pPr component
-			log.debug("style: " + styleId + " has no PPr");
-			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
-			resolvedPPr = resolvedStylePPrComponent.get(normalId);
-			return resolvedPPr;
-		}
+//		PPr expressPPr = s.getPPr();
+//		if (expressPPr==null) {
+//			// A paragraph style may have no w:pPr component
+//			log.debug("style: " + styleId + " has no PPr");
+//			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
+//			resolvedPPr = resolvedStylePPrComponent.get(normalId);
+//			return resolvedPPr;
+//		}
 		
 		//  Next, paragraph and run properties are 
 		//	applied to each paragraph as defined by the paragraph style.
@@ -430,7 +480,52 @@ public class PropertyResolver {
 		
 		// NB Currently used in PDF viaXSLFO only
 		
-		log.debug("in getEffectiveRPr");
+		if (pPr==null) {
+			log.debug("pPr was null");
+		} else {
+			// At the pPr level, what rPr do we have?
+			// .. ascend the paragraph style tree
+			if (pPr.getPStyle()==null) {
+//					log.warn("No pstyle:");
+//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+			} else {
+				log.debug("pstyle:" + pPr.getPStyle().getVal());
+				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
+				// .. and apply those
+				
+				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
+			}
+			// Check Paragraph rPr (our special hack of using ParaRPr to format a fo:block)
+			// 2013 10 02: doubts whether this is right?
+			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
+				return getEffectiveRPrUsingPStyleRPr(expressRPr, 
+						StyleUtil.apply(pPr.getRPr(), Context.getWmlObjectFactory().createRPr()));
+			} 
+		}
+
+		return getEffectiveRPrUsingPStyleRPr( expressRPr, null);
+		
+	}
+
+	/**
+	 * Return effective rPr, as follows: Starting with the rPr from the pStyle, 
+	 * apply character style (if any) specified on the run,
+	 * then any other direct (ad-hoc) run formatting.
+	 * 
+	 * @param expressRPr
+	 * @param rPrFromPStyle should be rPr from the paragraph style (as opposed to rPr in the direct pPr, which is only relevant to the paragraph mark)
+	 * @return
+	 */
+	public RPr getEffectiveRPrUsingPStyleRPr(RPr expressRPr, RPr rPrFromPStyle) {
+		
+		// Note, RPr pPrLevelRunStyle should be rPr from the paragraph style
+		// (as opposed to rPr in the direct pPr, which is only
+		//  relevant to the paragraph mark)
+		
+		log.debug("in getEffectiveRPrUsingPStyle");
+//		Throwable t = new Throwable();
+//		t.printStackTrace();
+		
 		
 //		Idea is that you pass pPr if you are using this for XSL FO,
 //		since we need to take account of rPr in paragraph styles
@@ -441,17 +536,29 @@ public class PropertyResolver {
 //		 * the class attribute).  But, in the CSS case, this
 		// function is not used - since the rPr is made into a style as well.
 		
+
+// Not necessary, since docdefaults are part of the stack		
+//		//	First, the document defaults are applied
+//		
+//			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+//			
+//			// Apply DefaultParagraphFont.  We only do it explicitly
+//			// here as per conditions, because if there is a run style,
+//			// walking the hierarchy will include this if it is needed
+//			if (expressRPr == null || expressRPr.getRStyle() == null ) {
+//				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
+//			}
 		
-		//	First, the document defaults are applied
+		RPr effectiveRPr = null;		
+		if (rPrFromPStyle==null) {
+			effectiveRPr = Context.getWmlObjectFactory().createRPr();
+		} else {
+			effectiveRPr=(RPr)XmlUtils.deepCopy(rPrFromPStyle);
+		}		
 		
-			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
-			
-			// Apply DefaultParagraphFont.  We only do it explicitly
-			// here as per conditions, because if there is a run style,
-			// walking the hierarchy will include this if it is needed
-			if (expressRPr == null || expressRPr.getRStyle() == null ) {
-				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
-			}
+		
+//    	System.out.println("start\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
+		
 		
 		//	Next, the table style properties are applied to each table in the document, 
 		//	following the conditional formatting inclusions and exclusions specified 
@@ -470,27 +577,8 @@ public class PropertyResolver {
 		// (this includes run properties defined in a paragraph style,
 		//  but not run properties directly included in a pPr in the
 		//  document (those only apply to a paragraph mark).
-			
-			if (pPr==null) {
-				log.debug("pPr was null");
-			} else {
-				// At the pPr level, what rPr do we have?
-				// .. ascend the paragraph style tree
-				if (pPr.getPStyle()==null) {
-//					log.warn("No pstyle:");
-//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
-				} else {
-					log.debug("pstyle:" + pPr.getPStyle().getVal());
-					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
-					// .. and apply those
-					applyRPr(pPrLevelRunStyle, effectiveRPr);
-				}
-				// Check Paragraph rPr (our special hack of using ParaRPr
-				// to format a fo:block) 
-				if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
-					applyRPr(pPr.getRPr(), effectiveRPr);
-				} 
-			}
+//		applyRPr(pPrLevelRunStyle, effectiveRPr);
+					
 		//	Next, run properties are applied to each run with a specific character style 
 		//	applied. 		
 		RPr resolvedRPr = null;
@@ -498,19 +586,29 @@ public class PropertyResolver {
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();
 			resolvedRPr = getEffectiveRPr(runStyleId);
-			applyRPr(resolvedRPr, effectiveRPr);  
+			StyleUtil.apply(resolvedRPr, effectiveRPr);
+//	    	System.out.println("resolved=\n" + XmlUtils.marshaltoString(resolvedRPr, true, true));
+			
 		}
+//    	System.out.println("effective is now\n" + XmlUtils.marshaltoString(effectiveRPr, true, true));
 				
 		//	Finally, we apply direct formatting (run properties not from 
 		//	styles).		
 		if (hasDirectRPrFormatting(expressRPr) ) {			
 			//effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);			
-			applyRPr(expressRPr, effectiveRPr);
+//	    	System.out.println("applying express\n" + XmlUtils.marshaltoString(expressRPr, true, true));
+			StyleUtil.apply(expressRPr, effectiveRPr);
 		} 
 		return effectiveRPr;
 		
 	}
 	
+	/**
+	 * apply the rPr in the stack of styles, including documentDefaultRPr
+	 * 
+	 * @param styleId
+	 * @return
+	 */
 	public RPr getEffectiveRPr(String styleId) {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
@@ -524,8 +622,9 @@ public class PropertyResolver {
 		// Hmm, have to do the work
 		Style s = liveStyles.get(styleId);
 		
-		if (s==null) {
+		if (s==null) {			
 			log.error("Couldn't find style: " + styleId);
+			log.debug("Couldn't find style: " + styleId, new Throwable());
 			return null;
 		}
 
@@ -546,12 +645,15 @@ public class PropertyResolver {
 		// Haven't done this one yet				
 		fillRPrStack(styleId, rPrStack);
 		// Finally, on top
-		rPrStack.push(documentDefaultRPr);
+		rPrStack.push(documentDefaultRPr); // is this necessary? didn't we make these into a style?
 						
 		resolvedRPr = factory.createRPr();			
 		// Now, apply the properties starting at the top of the stack
 		while (!rPrStack.empty() ) {
 			RPr rPr = rPrStack.pop();
+            if(log.isDebugEnabled()) {
+                log.debug("applying " + XmlUtils.marshaltoString(rPr));
+            }
 			applyRPr(rPr, resolvedRPr);
 		}
 		resolvedStyleRPrComponent.put(styleId, resolvedRPr);
@@ -584,6 +686,11 @@ public class PropertyResolver {
 		//PPrBase.PStyle pStyle;
 		
 			// Ignore
+
+		if (pPrToApply.getBidi()!=null) {
+			return true;		
+		}
+		
 		
 		//BooleanDefaultTrue keepNext;
 		if (pPrToApply.getKeepNext()!=null) {
@@ -680,23 +787,28 @@ public class PropertyResolver {
 	
 	
 	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
+        if(log.isDebugEnabled()) {
+            log.debug("apply " + XmlUtils.marshaltoString(pPrToApply, true, true)
+                    + "\n\r to " + XmlUtils.marshaltoString(effectivePPr, true, true));
+        }
 		
-		log.debug( "apply " + XmlUtils.marshaltoString(pPrToApply,  true, true)
-			+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+		StyleUtil.apply(pPrToApply, effectivePPr);
 		
-		if (pPrToApply==null) {
-			return;
-		}
-		
-    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
-    	for( Property p :  properties ) {
-			if (p!=null) {
-//				log.debug("applying pPr " + p.getClass().getName() );
-				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+//		if (pPrToApply==null) {
+//			return;
+//		}
+//		
+//    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
+//    	for( Property p :  properties ) {
+//			if (p!=null) {
+////				log.debug("applying pPr " + p.getClass().getName() );
+//				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 
-		log.debug( "result " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+        if(log.isDebugEnabled()) {
+            log.debug("result " + XmlUtils.marshaltoString(effectivePPr, true, true));
+        }
     	
 	}
 	
@@ -897,13 +1009,15 @@ public class PropertyResolver {
 			return;
 		}
 		
-    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-    	
-    	for( Property p :  properties ) {
-			if (p!=null) {    		
-				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+		StyleUtil.apply(rPrToApply, effectiveRPr);
+		
+//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+//    	
+//    	for( Property p :  properties ) {
+//			if (p!=null) {    		
+//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 		
 	}	
 	
@@ -912,26 +1026,58 @@ public class PropertyResolver {
 		if (rPrToApply==null) {
 			return;
 		}
+
+		StyleUtil.apply(rPrToApply, effectiveRPr);
 		
-    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
-    	
-    	for( Property p :  properties ) {
-			if (p!=null) {    		
-				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
-			}
-    	}
+//    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+//    	
+//    	for( Property p :  properties ) {
+//			if (p!=null) {    		
+//				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+//			}
+//    	}
 	}	
 	
+    private static final String HEADING_STYLE = "Heading";
+	
+    /*
+     * @since 3.0.2
+     */
+    public int getLvlFromHeadingStyle(String style){
+    	// Note that this is done using the style ID, not its OutlineLevel,
+    	// since Word does it purely on the name of the style!
+        int level = -1;
+        try{
+            level = Integer.parseInt(style.substring(HEADING_STYLE.length(), style.length()).trim());
+        } catch (NumberFormatException ex){
+            //log.debug(style + " - what level is this? ");
+        }
+
+        return level;
+    }	
 	
 	/**
-	 * Ascend the style hierarchy, capturing the pPr bit
+	 * Ascend (recursively) the style hierarchy, capturing the pPr bit.
+	 * 
+	 * Doesn't use StyleTree.
 	 *  
 	 * @param stylename
 	 * @param effectivePPr
 	 */
 	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
 		// The return value is the style on which styleId is based.
-		// It is purely for the purposes of ascertainNumId.
+		
+		// It is purely for the purposes of ascertainNumId (? no, its used by getEffectivePPr(styleId))
+		
+		if (styleId==null) {
+			if (log.isDebugEnabled()) {
+				Throwable t = new Throwable();
+				log.debug("Null styleId produced by code path", t);
+			} else {
+				log.warn("Null styleId; Enable debug level logging to see code path");					
+			}
+			return;
+		}
 		
 		// get the style
 		Style style = liveStyles.get(styleId);
@@ -940,7 +1086,8 @@ public class PropertyResolver {
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
-			if (styleId.equals("DocDefaults")) {
+			if (styleId!=null
+					&& styleId.equals("DocDefaults")) {
 				
 				// Don't worry about this.
 				// SDP.createVirtualStylesForDocDefaults()
@@ -965,7 +1112,28 @@ public class PropertyResolver {
 			}
 			return;
 		}
-		pPrStack.push(style.getPPr());
+		
+		// For heading styles, check the outline level is as expected
+		if (styleId.startsWith(HEADING_STYLE)) {
+			
+			int level = getLvlFromHeadingStyle(styleId);
+			if (level>0
+					&& style.getPPr()!=null
+					&& style.getPPr().getOutlineLvl()!=null
+					&& style.getPPr().getOutlineLvl().getVal()!=null
+					&& style.getPPr().getOutlineLvl().getVal().intValue()!=(level-1)) {
+				
+				// must use the outline level appropriate to this heading!
+				// No need to clone, since Microsoft Word automatically overwrites like this!
+				log.info(styleId + " - reset actual outline level with " + (level-1));
+				style.getPPr().getOutlineLvl().setVal(BigInteger.valueOf(level-1));
+			} 
+			
+			pPrStack.push(style.getPPr());				
+		} else {
+			pPrStack.push(style.getPPr());
+		}
+		
 		log.debug("Added " + styleId + " to pPr stack");
 		
 		// Some styles contain numPr, without specifying
@@ -1032,7 +1200,7 @@ public class PropertyResolver {
 			return;
 		}
 		rPrStack.push(style.getRPr());
-		log.debug("Added " + styleId + " to pPr stack");
+		log.debug("Added " + styleId + " to rPr stack");
 		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
@@ -1058,190 +1226,7 @@ public class PropertyResolver {
 		}
     	
     }
-		
 
-	public String getDefaultMajorFontLatin() {
-		
-		if (themePart==null) {
-			// No  theme part - default to Cambria
-			log.info("No theme part - default to Cambria");								
-			return "Cambria"; 			
-		} else {
-			org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-			if (fontScheme.getMajorFont()!=null
-					&& fontScheme.getMajorFont().getLatin()!=null) {
-														
-				org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-				log.debug("majorFont/latin font is " + textFont.getTypeface() );
-				return textFont.getTypeface(); 
-			} else {
-				// No majorFont/latin in theme part - default to Cambria
-				log.info("No majorFont/latin in theme part - default to Cambria");								
-				return "Cambria"; 
-			}
-		} 
-	}
-	
-	/**
-	 * Returns default document font, by attempting to look at styles/docDefaults/rPrDefault/rPr/rFonts.
-	 * 
-	 * @return default document font. 
-	 */
-	public String getDefaultFont() {
-		
-		// First look at the defaults
-		// 3 look at styles/rPrDefault 
-		//   eg <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" 
-		//				  w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi"/>
-		// 3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
-		//     in which case if there is no theme part, default to "internally stored settings"
-		//	   (there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
-		//	   in this case Calibri and Cambria)
-		// 3.2 if there is no rFonts element, default to Times New Roman.
-		
-		/* Per the spec:
-		 * 
-		 * The ASCII font formats all characters in the ASCII range (character values 0–127). 
-		 * This font is specified using the ascii attribute on the rFonts element.
-		 * 
-		 * The East Asian font formats all characters that belong to Unicode sub ranges for East Asian languages. 
-		 * This font is specified using the eastAsia attribute on the rFonts element.
-		 * 
-		 * The complex script font formats all characters that belong to Unicode sub ranges for complex script languages. 
-		 * This font is specified using the cs attribute on the rFonts element.
-		 * 
-		 * The high ANSI font formats all characters that belong to Unicode sub ranges other than those explicitly included 
-		 * by one of the groups above. This font is specified using the hAnsi attribute on the rFonts element.	
-		 * 
-		 * Per Tristan Davis
-		 * http://openxmldeveloper.org/discussions/formats/f/13/t/150.aspx
-		 * 
-		 * First, the characters are classified into the high ansi / east asian / complex script buckets [per above]
-		 * 
-		 * Next, we grab *one* theme font from the theme for each bucket - in the settings part, there's an element called themeFontLang
-		 * The three attributes on that specify the language to use for the characters in each bucket
-		 * 
-		 * Then you take the language specified for each attribute and look out for the right language in the theme - and you use that font
-		 * 
-		 * See also http://blogs.msdn.com/b/officeinteroperability/archive/2013/04/22/office-open-xml-themes-schemes-and-fonts.aspx
-		 * regarding what to do if the font is not available on the computer.
-		 **/	
-		
-		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();
-		if (rFonts==null) {
-			log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to Times New Roman");
-			// Yes, Times New Roman is still buried in Word 2007
-			return "Times New Roman"; 						
-		} else {						
-			// Usual case
-			if (rFonts.getAsciiTheme()!=null ) {
-				// for example minorHAnsi, which I think translates to minorFont/latin 
-				if (rFonts.getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-					if (themePart!=null) {
-						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-						if (fontScheme.getMinorFont()!=null
-								&& fontScheme.getMinorFont().getLatin()!=null) {
-																	
-							org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-							log.debug("minorFont/latin font is " + textFont.getTypeface() );
-							return textFont.getTypeface(); 
-						} else {
-							// No minorFont/latin in theme part - default to Calibri
-							log.info("No minorFont/latin in theme part - default to Calibri");								
-							return "Calibri"; 
-						}
-					} else {
-						// No theme part - default to Calibri
-						log.info("No theme part - default to Calibri");
-						return "Calibri"; 
-					}
-				} else {
-					// TODO
-					log.error("Don't know how to handle: "
-							+ rFonts.getAsciiTheme());
-					return null;
-				}
-			} else if (rFonts.getAscii()!=null ) {
-				log.info("rPrDefault/rFonts referenced " + rFonts.getAscii());								
-				return rFonts.getAscii(); 							
-			} else {
-				// TODO
-				log.error("Neither ascii or asciTheme.  What to do? ");
-				return null;
-			}						
-		} 
-	}
-
-	public String getDefaultFontEastAsia() {
-				
-		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();
-		if (rFonts==null) {
-			log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to SimSun");
-			return "SimSun"; 						
-		} else {						
-			// Usual case
-
-			if (rFonts.getEastAsiaTheme()!=null ) {
-				// for example minorEastAsia 
-				if (rFonts.getEastAsiaTheme().equals(org.docx4j.wml.STTheme.MINOR_EAST_ASIA)) {
-					if (themePart!=null) {
-						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-						if (fontScheme.getMinorFont()!=null
-								&& fontScheme.getMinorFont().getEa()!=null
-								&& !fontScheme.getMinorFont().getEa().getTypeface().equals("") ) {
-																	
-							log.debug("minorFont/EA font is " + fontScheme.getMinorFont().getEa().getTypeface() );
-							return fontScheme.getMinorFont().getEa().getTypeface();
-						} else {
-							// No minorFont/EA in theme part - default to SimSun
-							log.info("No minorFont/ea in theme part - default to SimSun");								
-							return "SimSun"; 
-						}
-					} else {
-						// No theme part - default to SimSun
-						log.info("No theme part - default to SimSun");
-						return "SimSun"; 
-					}
-				} else if (rFonts.getEastAsiaTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-					// Should use the minorHAnsi theme font as defined in the document's themes part (for text in a high range)
-					// But this isn't part of org.docx4j.dml.FontCollection
-					// http://us.generation-nt.com/answer/how-does-theme1-xml-work-help-38707532.html?page=2 suggests to use latin
-					// but really TODO, should use the algorithm described by Tristan Davis above.
-					if (themePart!=null) {
-						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-						if (fontScheme.getMinorFont()!=null
-								&& fontScheme.getMinorFont().getLatin()!=null) {
-																	
-							org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-							log.debug("minorFont/latin font is " + textFont.getTypeface() );
-							return textFont.getTypeface(); 
-						} else {
-							// No minorFont/latin in theme part - default to Calibri
-							log.info("No minorFont/latin in theme part - default to Calibri");								
-							return "Calibri"; 
-						}
-					} else {
-						// No theme part - default to Calibri
-						log.info("No theme part - default to Calibri");
-						return "Calibri"; 
-					}
-				} else {
-					// TODO
-					log.error("Don't know how to handle: "
-							+ rFonts.getEastAsiaTheme());
-					return null;
-				}
-			} else if (rFonts.getEastAsia()!=null ) {
-				log.info("rPrDefault/rFonts referenced " + rFonts.getEastAsia());								
-				return rFonts.getEastAsia(); 							
-			} else {
-				// TODO
-				log.error("Neither EastAsia or EastAsiaTheme.  What to do? ");
-				return null;
-			}						
-		} 
-	}
-	
 	
     public boolean activateStyle( String styleId  ) {
     	
@@ -1249,9 +1234,9 @@ public class PropertyResolver {
     		// Its already live - nothing to do
     		return true;    		
     	}
-    	
+    	// Assumption here is that it doesn't exist in your styles part, so..
     	java.util.Map<String, org.docx4j.wml.Style> knownStyles 
-    		= StyleDefinitionsPart.getKnownStyles();
+    		= StyleDefinitionsPart.getKnownStyles(); // NB KnownStyles.xml, not those in docx!
     	
     	org.docx4j.wml.Style s = knownStyles.get(styleId);
     	
@@ -1304,9 +1289,8 @@ public class PropertyResolver {
     		result1 = true;
     	} else {
     		
-    		log.error("Expected " + s.getStyleId() + " to have <w:basedOn ??");
-    		// Not properly activated
-    		result1 = false;
+    		log.debug( s.getStyleId() + "  not w:basedOn anything, but that's ok");
+    		result1 = true;
     	}
     	
     	// Also add the linked style, if any
@@ -1328,151 +1312,91 @@ public class PropertyResolver {
     	return liveStyles.get(styleId);
     }
 	
-// TODO - what follows is old code.  It is however necessary to be able to
-// get all fonts.  
-// 1.  can the above code be modified to just get a single property (ie fonts)?
-// 2.  we only really want to climb the hierarchy once per style, so 
-//     introduce an effectivePr map?
-    
-    /**
-     * Determine the font used in this style, using the inheritance rules.
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part - see getDefaultFont to do that).
-     * 
-     * @see getDefaultFont
-     */	
-    public String getFontnameFromStyle(org.docx4j.wml.Style style) {
-    	
-    	return getFontnameFromStyle(styleDefinitionsPart, themePart, style); 
-    	
-    }
-	
-    /**
-     * Determine the font used in this style, using the inheritance rules.
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part - see getDefaultFont to do that).
-     * 
-     * @see getDefaultFont
-     */	
-    public static String getFontnameFromStyle(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart,  org.docx4j.wml.Style style) {
+//		/*
+//		a paragraph style does not inherit anything from its linked character style.
+//
+//		A linked character style seems to be just a Word 2007 user interface
+//		hint.  ie if you select some characters in a paragraph and select to
+//		apply "Heading 1", what you are actually doing is applying "Heading 1
+//		char".  This is determined by looking at the definition of the
+//		"Heading 1" style to see what its linked style is.
+//		
+//		(Interestingly, in Word 2007, if you right click to modify something 
+//		 which is Heading 1 char, it modifies both the Heading 1 style and the
+//		 Heading 1 char style!.  Haven't looked to see what happens to Heading 1 char
+//		 style if you right click to modify a Heading 1 par.)
+//
+//		 The algorithm Word 2007 seems to use is:
+//		    look at the specified style:
+//		        1 does it have its own rPr which contains rFonts?
+//		        2 if not, what does this styles basedOn style say? (Ignore
+//		any linked char style)
+//				3 look at styles/rPrDefault 
+//				3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
+//				    in which case if there is no theme part, default to "internally stored settings"
+//					(there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
+//					in this case Calibri and Cambria)
+//				3.2 if there is no rFonts element, default to Times New Roman.
+//		
 
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
-//		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
-
-		// It is convenient to have a HashMap of styles
-		Map stylesDefined = new java.util.HashMap();
-	     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-	            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
-	            log.debug("adding " + s.getStyleId());
-	            stylesDefined.put(s.getStyleId(), s);
-	     }
-	     
-	    return getFontnameFromStyle(stylesDefined, themePart, style);
-    }
-    /**
-     * 
-     * @return the font name, or null if there is no rFonts element in any style
-     * in the style inheritance hierarchy (ie
-     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
-     * or from there, the theme part).
-     */
-    public static String getFontnameFromStyle(Map stylesDefined, ThemePart themePart, org.docx4j.wml.Style style) {
-    	
-		/*
-		a paragraph style does not inherit anything from its linked character style.
-
-		A linked character style seems to be just a Word 2007 user interface
-		hint.  ie if you select some characters in a paragraph and select to
-		apply "Heading 1", what you are actually doing is applying "Heading 1
-		char".  This is determined by looking at the definition of the
-		"Heading 1" style to see what its linked style is.
-		
-		(Interestingly, in Word 2007, if you right click to modify something 
-		 which is Heading 1 char, it modifies both the Heading 1 style and the
-		 Heading 1 char style!.  Haven't looked to see what happens to Heading 1 char
-		 style if you right click to modify a Heading 1 par.)
-
-		 The algorithm Word 2007 seems to use is:
-		    look at the specified style:
-		        1 does it have its own rPr which contains rFonts?
-		        2 if not, what does this styles basedOn style say? (Ignore
-		any linked char style)
-				3 look at styles/rPrDefault 
-				3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
-				    in which case if there is no theme part, default to "internally stored settings"
-					(there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
-					in this case Calibri and Cambria)
-				3.2 if there is no rFonts element, default to Times New Roman.
-		
-		
-		For efficiency reasons, we don't do 3 in this method.
-		 */
-    	
-
-        // 1 does it have its own rPr which contains rFonts?
-    	org.docx4j.wml.RPr rPr = style.getRPr();
-    	if (rPr!=null && rPr.getRFonts()!=null) {
-    		if (rPr.getRFonts().getAscii()!=null) {
-        		return rPr.getRFonts().getAscii();
-    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
-    					&& themePart != null) {
-    			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
-    			
-				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
-				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
-					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
-						fontScheme = theme.getThemeElements().getFontScheme();
-						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-						log.info("minorFont/latin font is " + textFont.getTypeface());
-						return (textFont.getTypeface());
-					} else {
-						// No minorFont/latin in theme part - default to Calibri
-						log.info("No minorFont/latin in theme part - default to Calibri");
-						return ("Calibri");
-					}
-				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
-					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
-						fontScheme = theme.getThemeElements().getFontScheme();
-						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-						log.debug("majorFont/latin font is " + textFont.getTypeface());
-						return (textFont.getTypeface());
-					} else {
-						// No minorFont/latin in theme part - default to Cambria
-						log.info("No majorFont/latin in theme part - default to Cambria");
-						return ("Cambria");
-					}
-				} else {
-					log.error("Don't know how to handle: "
-							+ rPr.getRFonts().getAsciiTheme());
-				}
-    		}
-    	}
-        		
-        // 2 if not, what does this styles basedOn style say? (recursive)
-    	
-    	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();    		
-    		//log.debug("recursing into basedOn:" + basedOnStyleName);
-            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
-            if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
-            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
-            }
-    	     // If we get here the style is missing!
-     		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
-    	     return null;
-    	} else {
-    		//log.debug("No basedOn set for: " + style.getStyleId() );
-    		return null;
-    	}
-    	
-    }
-
+    //        // 1 does it have its own rPr which contains rFonts?
+//    	org.docx4j.wml.RPr rPr = style.getRPr();
+//    	if (rPr!=null && rPr.getRFonts()!=null) {
+//    		if (rPr.getRFonts().getAscii()!=null) {
+//        		return rPr.getRFonts().getAscii();
+//    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
+//    					&& themePart != null) {
+//    			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
+//    			
+//				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
+//				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+//				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
+//					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
+//						fontScheme = theme.getThemeElements().getFontScheme();
+//						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
+//						log.info("minorFont/latin font is " + textFont.getTypeface());
+//						return (textFont.getTypeface());
+//					} else {
+//						// No minorFont/latin in theme part - default to Calibri
+//						log.info("No minorFont/latin in theme part - default to Calibri");
+//						return ("Calibri");
+//					}
+//				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
+//					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
+//						fontScheme = theme.getThemeElements().getFontScheme();
+//						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
+//						log.debug("majorFont/latin font is " + textFont.getTypeface());
+//						return (textFont.getTypeface());
+//					} else {
+//						// No minorFont/latin in theme part - default to Cambria
+//						log.info("No majorFont/latin in theme part - default to Cambria");
+//						return ("Cambria");
+//					}
+//				} else {
+//					log.error("Don't know how to handle: "
+//							+ rPr.getRFonts().getAsciiTheme());
+//				}
+//    		}
+//    	}
+//        		
+//        // 2 if not, what does this styles basedOn style say? (recursive)
+//    	
+//    	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
+//        	String basedOnStyleName = style.getBasedOn().getVal();    		
+//    		//log.debug("recursing into basedOn:" + basedOnStyleName);
+//            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
+//            if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
+//            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
+//            }
+//    	     // If we get here the style is missing!
+//     		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
+//    	     return null;
+//    	} else {
+//    		//log.debug("No basedOn set for: " + style.getStyleId() );
+//    		return null;
+//    	}
+//    	
+//    }
+//
 	
 }

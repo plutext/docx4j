@@ -21,11 +21,8 @@
 package org.docx4j.openpackaging.parts;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.ExternalTarget;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.vml.root.Xml;
 
 
 /**

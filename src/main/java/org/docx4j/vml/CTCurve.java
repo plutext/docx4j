@@ -80,7 +80,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Curve", propOrder = {
     "egShapeElements"
 })
-public class CTCurve implements Child
+public class CTCurve implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,14 +64,54 @@ public abstract class Mapper {
 	
 	protected static Logger log = LoggerFactory.getLogger(Mapper.class);
 
+	// For embedded fonts, which we can't store in our system-wide PhysicalFonts,
+	// but we can and do put them in the local field fontMappings
+	protected ConcurrentHashMap<String, PhysicalFont> regularForms = new ConcurrentHashMap<String, PhysicalFont>();
+	protected ConcurrentHashMap<String, PhysicalFont> boldForms = new ConcurrentHashMap<String, PhysicalFont>();
+	protected ConcurrentHashMap<String, PhysicalFont> italicForms = new ConcurrentHashMap<String, PhysicalFont>();
+	protected ConcurrentHashMap<String, PhysicalFont> boldItalicForms = new ConcurrentHashMap<String, PhysicalFont>();
+
 	public Mapper() {
 		super();
 	}
 	
 	protected final static Map<String, PhysicalFont> fontMappings;
+	
+	@Deprecated // in order to avoid case sensitivity
 	public Map<String, PhysicalFont> getFontMappings() {
 		return fontMappings;
 	}	
+	
+	/**
+	 * Get a PhysicalFont from FontMappings, 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public PhysicalFont get(String key) {
+		return fontMappings.get(key.toLowerCase());
+	}
+	/**
+	 * Put a PhysicalFont into FontMappings, 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @param pf
+	 */
+	public void put(String key, PhysicalFont pf) {
+		if (fontMappings.get(key.toLowerCase())!=null) {
+			log.warn("Overwriting existing fontMapping: " + key.toLowerCase());
+		}		
+		fontMappings.put(key.toLowerCase(), pf);
+	}
+	public int size() {
+		return fontMappings.size();
+	}
 	
 	public final static String FONT_FALLBACK = "Times New Roman"; 
 
@@ -109,7 +150,7 @@ public abstract class Mapper {
 
 		
 		
-		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
+		PhysicalFont physicalFont = get((documentStyleId));
 		if (physicalFont==null) {
 
 			log.error("No mapping for: " + documentStyleId);
@@ -192,5 +233,60 @@ public abstract class Mapper {
 		 */
 		
 	}
+
+	public void registerRegularForm(String fontNameAsInFontTablePart, PhysicalFont pfRegular) {
+		if (pfRegular == null) {
+			regularForms.remove(fontNameAsInFontTablePart);
+		} else {
+			regularForms.put(fontNameAsInFontTablePart, pfRegular);
+		}
+	}
 	
+	public void registerBoldForm(String fontNameAsInFontTablePart, PhysicalFont pfBold) {
+		if (pfBold == null) {
+			boldForms.remove(fontNameAsInFontTablePart);
+		} else {
+			boldForms.put(fontNameAsInFontTablePart, pfBold);
+		}
+	}
+
+	public void registerItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfItalic) {
+		if (pfItalic == null) {
+			italicForms.remove(fontNameAsInFontTablePart);
+		} else {
+			italicForms.put(fontNameAsInFontTablePart, pfItalic);
+		}
+	}
+
+	public void registerBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pfBoldItalic) {
+		if (pfBoldItalic == null) {
+			boldItalicForms.remove(fontNameAsInFontTablePart);
+		} else {
+			boldItalicForms.put(fontNameAsInFontTablePart, pfBoldItalic);
+		}
+	}
+
+	public PhysicalFont getRegularForm(String fontNameAsInFontTablePart) {
+		final PhysicalFont pfRegular = PhysicalFonts.get(fontNameAsInFontTablePart);
+		return (pfRegular != null) ? pfRegular : regularForms.get(fontNameAsInFontTablePart);
+	}
+	
+	public PhysicalFont getBoldForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return boldForms.get(fontNameAsInFontTablePart); // for where eg Cambria-bold was embedded, but Cambria is not present
+		final PhysicalFont pfBold = PhysicalFonts.getBoldForm(pf); // prefer the physical font if present on the system (this potentially helps if we need a glyph which is not embedded) 
+		return (pfBold != null) ? pfBold : boldForms.get(fontNameAsInFontTablePart); // otherwise, look for embedded
+		// (we could do this the other way around, or make it configurable)
+	}
+	
+	public PhysicalFont getItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return italicForms.get(fontNameAsInFontTablePart);
+		final PhysicalFont pfItalic = PhysicalFonts.getItalicForm(pf);
+		return (pfItalic != null) ? pfItalic : italicForms.get(fontNameAsInFontTablePart);
+	}
+
+	public PhysicalFont getBoldItalicForm(String fontNameAsInFontTablePart, PhysicalFont pf) {
+		if (pf==null) return boldItalicForms.get(fontNameAsInFontTablePart);
+		final PhysicalFont pfBoldItalic = PhysicalFonts.getBoldItalicForm(pf);
+		return (pfBoldItalic != null) ? pfBoldItalic : boldItalicForms.get(fontNameAsInFontTablePart);
+	}
 }

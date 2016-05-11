@@ -29,8 +29,12 @@ import javax.xml.transform.stream.StreamResult;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.utils.XmlSerializerUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,13 +63,17 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
 
 	@Override
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
-	Document document = null;
-	Element documentRoot = null;
-	Element documentRootBody = null;
-	Element sectionRoot = null;
-	Element sectionRootBody = null;
-	Element currentParent = null;
-	Element flow = null;
+		
+		StartEvent startEvent = new StartEvent( conversionSettings.getWmlPackage(), WellKnownProcessSteps.OUT_AbstractVisitorExporterDelegate );
+		startEvent.publish();		
+		
+		Document document = null;
+		Element documentRoot = null;
+		Element documentRootBody = null;
+		Element sectionRoot = null;
+		Element sectionRootBody = null;
+		Element currentParent = null;
+		Element flow = null;
 
 		conversionContext.setCurrentPartMainDocument(); 
     	document = XmlUtils.neww3cDomDocument();
@@ -121,6 +129,9 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
     	appendDocumentFooter(conversionContext, document, documentRoot); 
     	
     	writeDocument(conversionContext, document, outputStream);
+    	
+		new EventFinished(startEvent).publish();
+    	
 	}
 
 
@@ -187,15 +198,7 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
 	}
 
 	protected void writeDocument(CC conversionContext, Document document, OutputStream outputStream) throws Docx4JException {
-		Transformer serializer = null;
-		try {
-			serializer = XmlUtils.getTransformerFactory().newTransformer();
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
-			//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
-			serializer.transform( new DOMSource(document) , new StreamResult(outputStream) );				
-		} catch (Exception e) {
-			throw new Docx4JException("Exception writing Document to OutputStream: " + e.getMessage(), e);
-		}
+		
+		XmlSerializerUtil.serialize(new DOMSource(document) , new StreamResult(outputStream), true, true);
 	}
 }

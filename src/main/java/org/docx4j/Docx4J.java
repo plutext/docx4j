@@ -20,45 +20,41 @@
 package org.docx4j;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilder;
+import net.engio.mbassy.bus.MBassador;
 
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.convert.out.fo.FOExporterVisitor;
-import org.docx4j.convert.out.fo.FOExporterXslt;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
 import org.docx4j.convert.out.html.HTMLExporterXslt;
-import org.docx4j.customXmlProperties.DatastoreItem;
-import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.events.Docx4jEvent;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.PackageIdentifier;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownJobTypes;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -66,11 +62,17 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.services.client.ConversionException;
+import org.docx4j.services.client.Converter;
+import org.docx4j.services.client.ConverterHttp;
+import org.docx4j.services.client.Format;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
-import org.opendope.xpaths.Xpaths.Xpath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+
 
 /** This is a facade for some typical uses of Docx4J:
  * <ul>
@@ -82,6 +84,9 @@ import org.w3c.dom.Document;
  * 
  */
 public class Docx4J {
+	
+	private static Logger log = LoggerFactory.getLogger(Docx4J.class);		
+	
 	public static final String MIME_PDF = FOSettings.MIME_PDF;
 	public static final String MIME_FO = FOSettings.INTERNAL_FO_MIME;
 	
@@ -97,6 +102,33 @@ public class Docx4J {
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
 
+	public static Boolean EXPORT_FO_DETECTED = null;
+	
+	/**
+	 * If the docx4j-export-fo project is present, 
+	 * we'll use FO for PDF export.
+	 * 
+	 * Otherwise, we'll try to use Plutext's PDF Converter.
+	 * 
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static boolean pdfViaFO() {
+		
+		if (EXPORT_FO_DETECTED==null) {
+			
+			try {
+				Object o = FOExporterVisitorGetInstance();
+				EXPORT_FO_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_FO_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_FO_DETECTED;
+	}
+	
+	
 	/** Save the document in a zip container (default docx)
 	 */
 	public static final int FLAG_SAVE_ZIP_FILE = 1;
@@ -104,7 +136,28 @@ public class Docx4J {
 	/** Save the document as a flat xml document
 	 */
 	public static final int FLAG_SAVE_FLAT_XML = 2;
+	
 
+	/**
+	 * RC4 is weak, so don't use it unless you have to for backwards compatibility purposes
+	 * (ie the applications to be used for reading your docx don't support anything better). 
+	 * See further http://blogs.msdn.com/b/david_leblanc/archive/2010/04/16/don-t-use-office-rc4-encryption-really-just-don-t-do-it.aspx
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_BINARYRC4 = 3;
+			
+	/**
+	 * Standard encryption: This approach uses a binary EncryptionInfo structure. 
+	 * It uses Advanced Encryption Standard (AES) as an encryption algorithm and SHA-1 as a hashing algorithm.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_STANDARD = 4;
+	
+	/**
+	 * Agile encryption: This is used by Word 2010, it uses an XML EncryptionInfo structure.  
+	 * 
+	 * The encryption and hashing algorithms are specified in the structure and can be for any encryption supported on the host computer.
+	 */
+	public static final int FLAG_SAVE_ENCRYPTED_AGILE = 5;
+	
 	/** inject the passed xml into the document
 	 *  if you don't do this step, then the xml in 
 	 *  the document will be used.
@@ -125,6 +178,11 @@ public class Docx4J {
 	 *  are used with the content controls.
 	 */
 	public static final int FLAG_BIND_REMOVE_XML = 8;
+	
+	private static MBassador<Docx4jEvent> bus;
+	public static void setEventNotifier(MBassador<Docx4jEvent> eventbus) {
+		bus = eventbus;
+	}
 	
 	protected static class FindContentControlsVisitor extends TraversalUtilVisitor<SdtElement> {
 		public static class BreakException extends RuntimeException {
@@ -168,11 +226,23 @@ public class Docx4J {
 		PART_TO_REMOVE_SCHEMA_TYPES.add(NS_COMPONENTS);
 	}
 
+
 	/**
 	 *  Load a Docx Document from a File
 	 */	
 	public static WordprocessingMLPackage load(File inFile) throws Docx4JException {
+		
 		return WordprocessingMLPackage.load(inFile);
+	}
+
+	/**
+	 *  Load a Docx Document from a File, assigning it an identifier for eventing
+	 *  
+	 *  @since 3.1.0
+	 */	
+	public static WordprocessingMLPackage load(PackageIdentifier pkgIdentifier, File inFile) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(pkgIdentifier, inFile);
 	}
 	
 	/**
@@ -181,50 +251,77 @@ public class Docx4J {
 	public static WordprocessingMLPackage load(InputStream inStream) throws Docx4JException {
 		return WordprocessingMLPackage.load(inStream);
 	}
-	
+
 	/**
-	 *  Save a Docx Document to a File
+	 *  Load a Docx Document from an InputStream, assigning it an identifier for eventing
+	 *  
+	 *  @since 3.1.0
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
-	OutputStream outStream = null;
-		try {
-			outStream = new FileOutputStream(outFile);
-			save(wmlPackage, outStream, flags);
-		} catch (FileNotFoundException e) {
-			throw new Docx4JException("Exception creating output stream: " + e.getMessage(), e);
-		}
-		finally {
-			if (outStream != null) {
-				try {
-					outStream.close();
-				} catch (IOException e) {}
-				outStream = null;
-			}
-		}
+	public static WordprocessingMLPackage load(PackageIdentifier pkgIdentifier, InputStream inStream) throws Docx4JException {
+		return (WordprocessingMLPackage)OpcPackage.load(pkgIdentifier, inStream);
 	}
 	
 	/**
-	 *  Save a Docx Document to an OutputStream
+	 *  Save a Docx Document to a File. 
+	 *  
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile) throws Docx4JException {
+		
+		wmlPackage.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
+	}
+	
+	/**
+	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
+		
+		wmlPackage.save(outFile, flags);
+	}
+
+	/**
+	 *  Save a Docx Document to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
+	 *
+	 *  @since 3.3.0
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream) throws Docx4JException {
+		
+		wmlPackage.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
+	}
+	
+	/**
+	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
 	 */	
 	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
-		if (flags == FLAG_SAVE_FLAT_XML) {
-			JAXBContext jc = Context.jcXmlPackage;
-			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(wmlPackage);
-			org.docx4j.xmlPackage.Package pkg = opcXmlCreator.get();
-			Marshaller marshaller;
-			try {
-				marshaller = jc.createMarshaller();
-				NamespacePrefixMapperUtils.setProperty(marshaller, 
-						NamespacePrefixMapperUtils.getPrefixMapper());			
-				marshaller.marshal(pkg, outStream);				
-			} catch (JAXBException e) {
-				throw new Docx4JException("Exception marshalling document for output: " + e.getMessage(), e);
-			}
-		}
-		else {
-			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
-			saver.save(outStream);
-		}
+		
+		wmlPackage.save(outStream, flags);
+		
+	}
+
+	/**
+	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outFile, flags, password);
+	}
+	
+	/**
+	 *  Save this pkg to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
+	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
+	 *  
+	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
+	 */	
+	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags, String password) throws Docx4JException {
+		
+		wmlPackage.save(outStream, flags, password);
+		
 	}
 	
 	/**
@@ -254,6 +351,10 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, InputStream xmlDocument, int flags) throws Docx4JException {
+		
+		StartEvent bindJobStartEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage );
+		bindJobStartEvent.publish();
+		
 		if (flags == FLAG_NONE) {
 			//do everything
 			flags = (FLAG_BIND_INSERT_XML |
@@ -263,25 +364,29 @@ public class Docx4J {
 		}
 	    Document xmlDoc = null;
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
-		    DocumentBuilder documentBuilder = null; 
 				try {
-		            documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder(); 
-		            xmlDoc = documentBuilder.parse(xmlDocument);
+		            xmlDoc = XmlUtils.getNewDocumentBuilder().parse(xmlDocument);
 				} catch (Exception e) {
 					throw new Docx4JException("Problems creating a org.w3c.dom.Document for the passed input stream.", e);
 				}
 		}
         bind(wmlPackage, xmlDoc, flags);
+        
+		new EventFinished(bindJobStartEvent).publish();
+        
 	}
 	
 	/**
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags) throws Docx4JException {
-	OpenDoPEHandler	openDoPEHandler = null;
-	CustomXmlDataStoragePart customXmlDataStoragePart = null;
-	RemovalHandler removalHandler = null;
-	String xpathStorageItemId = null;
+		
+		OpenDoPEHandler	openDoPEHandler = null;
+		CustomXmlDataStoragePart customXmlDataStoragePart = null;
+		RemovalHandler removalHandler = null;
+		//String xpathStorageItemId = null;
+		
+		AtomicInteger bookmarkId = null;
 
 		if (flags == FLAG_NONE) {
 			//do everything
@@ -291,66 +396,62 @@ public class Docx4J {
 					 FLAG_BIND_REMOVE_XML);
 		}
 		
-		xpathStorageItemId = findXPathStorageItemIdInXPathsPart(wmlPackage);
-		if ((xpathStorageItemId == null) && (flags == FLAG_BIND_INSERT_XML)) {
-			//If no XPathsPart found and the user only wants to inject the XML 
-			//then search for a storageItemId via the content controls.
-			//If the user wants to do more, then it won't work as the BindingHandler
-			//relies on the XPathsPart
-			xpathStorageItemId = findXPathStorageItemIdInContentControls(wmlPackage);
+		customXmlDataStoragePart 
+			= CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(wmlPackage);
+		if (customXmlDataStoragePart==null) {
+			throw new Docx4JException("Couldn't find CustomXmlDataStoragePart! exiting..");
 		}
-		if (xpathStorageItemId == null) {
-			throw new Docx4JException("No xpathStorageItemId found, does the document contain content controls that are bound?");
-		}
-		
+	
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
-			insertXMLData(wmlPackage, xpathStorageItemId, xmlDocument);
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_INSERT_XML );
+			startEvent.publish();
+			
+			insertXMLData(customXmlDataStoragePart, xmlDocument);
+			
+			new EventFinished(startEvent).publish();
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML );
+			startEvent.publish();
+			
+			// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
+			// and does that whether or not we have an XPaths part
 			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
 			openDoPEHandler.preprocess();
-			BindingHandler.applyBindings(wmlPackage);
+			
+			BindingHandler bh = new BindingHandler(wmlPackage);
+			bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
+			bh.applyBindings();
+			
+			new EventFinished(startEvent).publish();
 		}
 		if ((flags & FLAG_BIND_REMOVE_SDT) == FLAG_BIND_REMOVE_SDT) {
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_SDT );
+			startEvent.publish();
+
 			removeSDTs(wmlPackage);
+			
+			new EventFinished(startEvent).publish();
 		}
 		if ((flags & FLAG_BIND_REMOVE_XML) == FLAG_BIND_REMOVE_XML) {
-			removeDefinedCustomXmlParts(wmlPackage, xpathStorageItemId);
+			
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_XML );
+			startEvent.publish();
+			
+			removeDefinedCustomXmlParts(wmlPackage, customXmlDataStoragePart);
+			
+			new EventFinished(startEvent).publish();
 		}
 	}
 
-	protected static void insertXMLData(WordprocessingMLPackage wmlPackage, 
-										String storageId, Document xmlDocument) throws Docx4JException {
-	CustomXmlDataStorage customXmlDataStorage = null;
-	CustomXmlDataStoragePart customXmlDataStoragePart = null;
-		customXmlDataStoragePart = (CustomXmlDataStoragePart)wmlPackage.getCustomXmlDataStorageParts().get(storageId.toLowerCase());
+	protected static void insertXMLData(CustomXmlDataStoragePart customXmlDataStoragePart, Document xmlDocument) throws Docx4JException {
+		
 		customXmlDataStoragePart.getData().setDocument(xmlDocument);
 	}
 
-	protected static String findXPathStorageItemIdInXPathsPart(WordprocessingMLPackage wmlPackage) {
-	String ret = null;
-	List<Xpath> xpathList = null;
-	Xpath xpath = null;
-		try {
-			if ((wmlPackage.getMainDocumentPart().getXPathsPart() != null) &&
-				(wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement() != null) &&
-				(wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath() != null)) {
-				xpathList = wmlPackage.getMainDocumentPart().getXPathsPart().getJaxbElement().getXpath();
-			}
-		}
-		catch (NullPointerException npe) {
-			//noop
-		}
-		if ((xpathList != null) && (xpathList.size() > 0)) {
-			for (int i=0; (ret == null) && (i<xpathList.size()); i++) {
-				xpath = xpathList.get(i);
-				if (xpath.getDataBinding() != null) {
-					ret = xpath.getDataBinding().getStoreItemID();
-				}
-			}
-		}
-		return ret;
-	}
 
 	protected static String findXPathStorageItemIdInContentControls(WordprocessingMLPackage wmlPackage) {
 	FindContentControlsVisitor visitor = null;
@@ -380,19 +481,18 @@ public class Docx4J {
 		}
 	}
 
-	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, String xpathStorageItemId) {
+	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, CustomXmlDataStoragePart customXmlDataStoragePart) {
 	List<PartName> partsToRemove = new ArrayList<PartName>();
 	RelationshipsPart relationshipsPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
 										    (relationshipsPart.getRelationships() != null) ?
 										    relationshipsPart.getRelationships().getRelationship() : null);
 	Part part = null;
-	CustomXmlDataStoragePart dataPart = null;
 		if (relationshipsList != null) {
 			for (Relationship relationship : relationshipsList) {
 				if (Namespaces.CUSTOM_XML_DATA_STORAGE.equals(relationship.getType())) {
 					part = relationshipsPart.getPart(relationship);
-					if (IsPartToRemove(part, xpathStorageItemId)) {
+					if (part==customXmlDataStoragePart) {
 						partsToRemove.add(part.getPartName());
 					}
 				}
@@ -405,44 +505,44 @@ public class Docx4J {
 		}
 	}
 
-	protected static boolean IsPartToRemove(Part part, String xpathStorageItemId) {
-	boolean ret = false;
-	RelationshipsPart relationshipsPart = part.getRelationshipsPart();
-	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
-										    (relationshipsPart.getRelationships() != null) ?
-										    relationshipsPart.getRelationships().getRelationship() : null);
-	
-	CustomXmlDataStoragePropertiesPart propertiesPart = null;
-	DatastoreItem datastoreItem = null;
-		if ((relationshipsList != null) && (!relationshipsList.isEmpty())) {
-			for (Relationship relationship : relationshipsList) {
-				if (Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES.equals(relationship.getType())) {
-					propertiesPart = (CustomXmlDataStoragePropertiesPart)relationshipsPart.getPart(relationship);
-					break;
-				}
-			}
-		}
-		if (propertiesPart != null)  {
-			datastoreItem = propertiesPart.getJaxbElement();
-		}
-		if (datastoreItem != null) {
-			if ((datastoreItem.getItemID() != null) && (datastoreItem.getItemID().length() > 0)) {
-				ret = datastoreItem.getItemID().equals(xpathStorageItemId);
-			}
-			if ((!ret) && 
-				(datastoreItem.getSchemaRefs() != null) && 
-				(datastoreItem.getSchemaRefs().getSchemaRef() != null) &&
-				(!datastoreItem.getSchemaRefs().getSchemaRef().isEmpty())) {
-				for (SchemaRef ref : datastoreItem.getSchemaRefs().getSchemaRef()) {
-					if (PART_TO_REMOVE_SCHEMA_TYPES.contains(ref.getUri())) {
-						ret = true;
-						break;
-					}
-				}
-			}
-		}
-		return ret;
-	}
+//	protected static boolean IsPartToRemove(Part part, String xpathStorageItemId) {
+//	boolean ret = false;
+//	RelationshipsPart relationshipsPart = part.getRelationshipsPart();
+//	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
+//										    (relationshipsPart.getRelationships() != null) ?
+//										    relationshipsPart.getRelationships().getRelationship() : null);
+//	
+//	CustomXmlDataStoragePropertiesPart propertiesPart = null;
+//	DatastoreItem datastoreItem = null;
+//		if ((relationshipsList != null) && (!relationshipsList.isEmpty())) {
+//			for (Relationship relationship : relationshipsList) {
+//				if (Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES.equals(relationship.getType())) {
+//					propertiesPart = (CustomXmlDataStoragePropertiesPart)relationshipsPart.getPart(relationship);
+//					break;
+//				}
+//			}
+//		}
+//		if (propertiesPart != null)  {
+//			datastoreItem = propertiesPart.getJaxbElement();
+//		}
+//		if (datastoreItem != null) {
+//			if ((datastoreItem.getItemID() != null) && (datastoreItem.getItemID().length() > 0)) {
+//				ret = datastoreItem.getItemID().equals(xpathStorageItemId);
+//			}
+//			if ((!ret) && 
+//				(datastoreItem.getSchemaRefs() != null) && 
+//				(datastoreItem.getSchemaRefs().getSchemaRef() != null) &&
+//				(!datastoreItem.getSchemaRefs().getSchemaRef().isEmpty())) {
+//				for (SchemaRef ref : datastoreItem.getSchemaRefs().getSchemaRef()) {
+//					if (PART_TO_REMOVE_SCHEMA_TYPES.contains(ref.getUri())) {
+//						ret = true;
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		return ret;
+//	}
 	
 	/**
 	 *  Duplicate the document
@@ -463,7 +563,8 @@ public class Docx4J {
 	 *  Convert the document via xsl-fo
 	 */	
 	public static void toFO(FOSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-	Exporter<FOSettings> exporter = getFOExporter(flags);
+		
+		Exporter<FOSettings> exporter = getFOExporter(flags);
 		exporter.export(settings, outputStream);
 	}
 	
@@ -471,22 +572,81 @@ public class Docx4J {
 	 *  Convenience method to convert the document to PDF
 	 */	
 	public static void toPDF(WordprocessingMLPackage wmlPackage, OutputStream outputStream) throws Docx4JException {
-	FOSettings settings = createFOSettings();
-		settings.setWmlPackage(wmlPackage);
-		settings.setApacheFopMime("application/pdf");
-		toFO(settings, outputStream, FLAG_NONE);
+				
+		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
+		startEvent.publish();
+		
+		if (pdfViaFO()) {
+			FOSettings settings = createFOSettings();
+			settings.setWmlPackage(wmlPackage);
+			settings.setApacheFopMime("application/pdf");
+			toFO(settings, outputStream, FLAG_NONE);
+		} else {
+			
+			// Configure this property to point to your own Converter instance.
+			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert");
+			
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			save(wmlPackage, baos);
+			
+			Converter converter = new ConverterHttp(URL); 
+			try {
+				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
+				baos.close();
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+				new EventFinished(startEvent).publish();
+				throw new Docx4JException("Problem converting to PDF; check URL " + URL + "\n" + e.getMessage(), e);
+			}
+			
+		}
+		
+		new EventFinished(startEvent).publish();
 	}
 	
-	protected static Exporter<FOSettings> getFOExporter(int flags) {
+	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
 		switch (flags) {
 			case FLAG_EXPORT_PREFER_NONXSL:
-				return FOExporterVisitor.getInstance();
+				return FOExporterVisitorGetInstance();
 			case FLAG_EXPORT_PREFER_XSL:
 			default:
-				return FOExporterXslt.getInstance();
+				return FOExporterXsltGetInstance();
 		}
 	}
+	
+	private static Exporter<FOSettings> FOExporterVisitorGetInstance() throws Docx4JException {
+		
+		// Use reflection to return FOExporterVisitor.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterVisitor");
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.info("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage());
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+	}
 
+	private static Exporter<FOSettings> FOExporterXsltGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return FOExporterXslt.getInstance();
+		// so docx4j can be built without docx4j-export-FO
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterXslt");			
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<FOSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			log.info("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage());
+			throw new Docx4JException(e.getMessage(), e);
+		}			
+		
+	}
+	
 	/**
 	 *  Create the configuration object for conversions to html
 	 */	
@@ -498,15 +658,25 @@ public class Docx4J {
 	 *  Convert the document to HTML
 	 */	
 	public static void toHTML(HTMLSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-	Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
+
+		StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.HTML_OUT );
+		startEvent.publish();
+		
+		Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
 		exporter.export(settings, outputStream);
+		
+		new EventFinished(startEvent).publish();
 	}
 	
 	/**
 	 *  Convert the document to HTML
 	 */	
 	public static void toHTML(WordprocessingMLPackage wmlPackage, String imageDirPath, String imageTargetUri, OutputStream outputStream) throws Docx4JException {
-	HTMLSettings settings = createHTMLSettings();
+
+		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.HTML_OUT );
+		startEvent.publish();
+		
+		HTMLSettings settings = createHTMLSettings();
 		settings.setWmlPackage(wmlPackage);
 		if (imageDirPath != null) {
 			settings.setImageDirPath(imageDirPath);
@@ -515,6 +685,8 @@ public class Docx4J {
 			settings.setImageTargetUri(imageTargetUri);
 		}
 		toHTML(settings, outputStream, FLAG_NONE);
+		
+		new EventFinished(startEvent).publish();
 	}
 	
 	protected static Exporter<HTMLSettings> getHTMLExporter(int flags) {

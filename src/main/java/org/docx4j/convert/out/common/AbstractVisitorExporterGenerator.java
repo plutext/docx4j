@@ -19,21 +19,22 @@
  */
 package org.docx4j.convert.out.common;
 
-import java.util.List;
-
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.writer.AbstractBookmarkStartWriter;
-import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.convert.out.common.writer.AbstractHyperlinkWriter;
+import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -42,6 +43,9 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * The …ExporterGenerator is the visitor, that gets used in those cases where a document is done 
  * as a NonXSLT.  (docx4j supports convert.out via both xslt and non-xslt based approaches)
@@ -49,7 +53,9 @@ import org.w3c.dom.Node;
  * @since 3.0
  */
 public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlConversionContext> extends TraversalUtil.CallbackImpl {
+	
 	private static Logger log = LoggerFactory.getLogger(AbstractVisitorExporterGenerator.class);
+	
 	protected static final String TAB_DUMMY = "\u00A0\u00A0\u00A0";
 	protected static final int NODE_BLOCK = 1;
 	protected static final int NODE_INLINE = 2;
@@ -67,11 +73,12 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected Element currentP = null; 
 	protected Element currentSpan = null;
 	
-	protected Element tr = null;		
-	protected Element tc = null;
+	protected LinkedList<Element> tr = new LinkedList<Element>();
+	protected LinkedList<Element> tc = new LinkedList<Element>();
 
 	//current paragraph style to inherit styles in rPr
 	protected PPr pPr = null;
+	protected RPr rPr = null;
 	
 	// E20 image
 	protected Object anchorOrInline;
@@ -88,6 +95,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if ((o instanceof org.docx4j.wml.Tbl) ||
 			(o instanceof org.docx4j.wml.P.Hyperlink) ||
 			(o instanceof org.docx4j.wml.CTSimpleField) ||
+			(o instanceof org.docx4j.vml.CTTextbox) ||
 			(o instanceof org.docx4j.wml.FldChar)) {
 			return false;
 		} else {
@@ -103,6 +111,7 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 				   (currentP != null ? currentP : parentNode)
 			   );
 	}
+
 	
 	protected void convertToNode(CC conversionContext, 
 							   Object unmarshalledNode, String modelId, 
@@ -110,12 +119,27 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 
 		// To use our existing model, first we need childResults.
 		// We get these using a new Generator object.
+		log.debug(modelId);
 		
 		DocumentFragment childResults = null;
 		if (unmarshalledNode instanceof ContentAccessor) {
 			childResults = document.createDocumentFragment();
 			AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
 			new TraversalUtil(((ContentAccessor)unmarshalledNode).getContent(), generator);
+			
+		} else if (unmarshalledNode instanceof org.docx4j.wml.Pict) {
+			// if it contains a textbox..
+			
+			// repeating this...
+			org.docx4j.vml.CTTextbox textBox = getTextBox((org.docx4j.wml.Pict)unmarshalledNode);
+			
+			if (textBox!=null) {
+				
+				childResults = document.createDocumentFragment();
+				AbstractVisitorExporterGenerator<CC> generator = getFactory().createInstance(conversionContext, document, childResults);
+				new TraversalUtil(textBox.getTxbxContent().getContent(), generator);
+			}
+			
 		}
 		
 		Node resultNode = 
@@ -126,9 +150,60 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 					 childResults, 
 					 document);
 		
+
+    	
+ 
+		
 		if (resultNode != null) {
+			log.debug("Appending " + XmlUtils.w3CDomNodeToString(resultNode));
 			parentNode.appendChild(resultNode);
 		}
+		
+	}
+	
+	
+	protected void rtlAwareAppendChildToCurrentP(Element child) {
+		parentNode.appendChild(child);
+	}
+	
+	
+	@Override
+	public void walkJAXBElements(Object o) {
+		
+		Node existingParentNode = parentNode;
+		
+		if (o instanceof org.docx4j.wml.Tr) {
+			
+			tr.push(document.createElementNS(Namespaces.NS_WORD12, "tr"));
+			//parentNode is in this case the DocumentFragment, that get's passed 
+			//to the TableModel/TableModelWriter
+			parentNode.appendChild(tr.peek());
+			
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			
+			tc.push(document.createElementNS(Namespaces.NS_WORD12, "tc"));
+			(tr.peek()).appendChild(tc.peek());
+			// now the html p content will go temporarily go in w:tc,
+			// which is what we need for our existing table model.
+			
+			parentNode = tc.peek();
+			
+		}		
+		
+		super.walkJAXBElements(o);
+		
+		if (o instanceof org.docx4j.wml.Tr) {
+			
+			tr.pop();
+			
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			
+			tc.pop();
+			
+			parentNode = existingParentNode; // restore
+		}		
+		
+		
 	}
 	
 	
@@ -138,9 +213,14 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		if (o instanceof P) {
 			
 			currentP = createNode(document, NODE_BLOCK);
+			
+			// "pre" is no good, since wrapping does not happen
+			// (so paragraph continues right over edge of page)
+			//currentP.setAttribute( "white-space", "pre");
+			
 			currentSpan = null;
-			if (tc!=null) {
-				tc.appendChild( currentP  );
+			if (tc.peek()!=null) {
+				tc.peek().appendChild( currentP  );
 			} else {
 				parentNode.appendChild( currentP  );					
 			}
@@ -149,36 +229,60 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			currentP = handlePPr(conversionContext, pPr, false, currentP);
 			
 		} else if (o instanceof org.docx4j.wml.R) {
+			
 			if (!conversionContext.isInComplexFieldDefinition()) {
 				// Convert run to span
 				Element spanEl = createNode(document, NODE_INLINE);
+				currentSpan = spanEl;
+				
+				rPr = ((R)o).getRPr();
+				if ( rPr!=null ) {
+					handleRPr(conversionContext, pPr, rPr, currentSpan);
+				}
+
 				if (currentP==null) {
 					// Hyperlink special case
 					parentNode.appendChild(spanEl);
 				} else {
-					currentP.appendChild( spanEl  );
+					rtlAwareAppendChildToCurrentP(spanEl);
 				}
-				currentSpan = spanEl;
+
 				
-				RPr rPr = ((R)o).getRPr();
-				if ( rPr!=null ) {
-					handleRPr(conversionContext, pPr, rPr, currentSpan);
-				}
+				// To merge nested span (which we could do if there is a single child span),
+				// TraversalUtil Callback would need an after walk children
 			}
 			
 		} else if (o instanceof org.docx4j.wml.FldChar) {
 			conversionContext.updateComplexFieldDefinition(((org.docx4j.wml.FldChar)o).getFldCharType());
 
 		} else if (o instanceof org.docx4j.wml.Text) {
+			
 			if (!conversionContext.isInComplexFieldDefinition()) {
-				getCurrentParent().appendChild(document.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+				
+				if (currentSpan==null) {
+					// eg after <br/>
+					log.error("null currentSpan! " + ((Text)o).getValue() );
+					Element spanEl = createNode(document, NODE_INLINE);
+					if (currentP==null) {
+						// Hyperlink special case
+						parentNode.appendChild(spanEl);
+					} else {
+						currentP.appendChild( spanEl  );
+					}
+					currentSpan = spanEl;
+				}
+
+				log.debug(((Text)o).getValue());
+				
+				DocumentFragment df = (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, ((Text)o));
+				XmlUtils.treeCopy(df, currentSpan);
+				// TODO would be more efficient without the treeCopy
+				// but fontSelector would need to be refactored a bit
+				
 			}
 
 		} else if (o instanceof org.docx4j.wml.R.Tab) {
-			if (!conversionContext.isInComplexFieldDefinition()) {
-				getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));
-			}
+			convertTabToNode(conversionContext, document);
 			
 		} else if (o instanceof org.docx4j.wml.CTSimpleField) {
 
@@ -210,17 +314,23 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			
 		} else if (o instanceof org.docx4j.wml.Tr) {
 			
-			tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
-			//parentNode is in this case the DocumentFragment, that get's passed 
-			//to the TableModel/TableModelWriter
-			parentNode.appendChild(tr);
+			// done in walkJAXBElements
+			
+//			tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
+//			//parentNode is in this case the DocumentFragment, that get's passed 
+//			//to the TableModel/TableModelWriter
+//			parentNode.appendChild(tr);
 			
 		} else if (o instanceof org.docx4j.wml.Tc) {
 			
-			tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
-			tr.appendChild(tc);
-			// now the html p content will go temporarily go in w:tc,
-			// which is what we need for our existing table model.
+			// done in walkJAXBElements
+
+//			tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
+//			tr.appendChild(tc);
+//			// now the html p content will go temporarily go in w:tc,
+//			// which is what we need for our existing table model.
+			
+//			System.out.println("#wrapped in w:tc OK");
 			
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
@@ -246,18 +356,27 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	          <v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:428.25pt;height:321pt">
 	            <v:imagedata r:id="rId4" o:title=""/>
 	          </v:shape> */
+			
+			org.docx4j.vml.CTTextbox textBox = getTextBox((org.docx4j.wml.Pict)o);
+			
+			if (textBox==null) {
+				// Assume it contains an image!
+				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
+				currentP.appendChild( document.importNode(foreignFragment, true) );
+				
+			} else {
+				
+				convertToNode(conversionContext, 
+				  o, AbstractPictWriter.WRITER_ID,
+				  document, getCurrentParent());
+				
+			}
+			
 
-			DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
 			
-			currentP.appendChild( document.importNode(foreignFragment, true) );
+		} else if (o instanceof Br) {
 			
-		} else if (o instanceof org.docx4j.wml.Br) {
-
-			convertToNode(conversionContext, 
-						  o, AbstractBrWriter.WRITER_ID,
-						  document, (currentP != null ? currentP : parentNode));
-			
-			currentSpan=null;
+			handleBr((Br)o);
 			
 		} else if (o instanceof org.docx4j.wml.R.Sym) {
 
@@ -272,10 +391,73 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		//CTMarkupRange is the w:bookmarkEnd
 			
 		} else {
-			getLog().warn("Need to handle " + o.getClass().getName() );				
+			log.warn("Need to handle " + o.getClass().getName() );
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(o));
+            }
 		}
 		
 		return null;
+	}
+	
+	abstract protected void handleBr(Br o);
+	
+	protected int getPos(List list, Object wanted) {
+		
+		int index = 0;
+		for(Object o : list) {
+			
+			if (o==wanted) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+	
+	protected void convertTabToNode(CC conversionContext, Document document) throws DOMException {
+		
+		if (!conversionContext.isInComplexFieldDefinition()) {
+			getCurrentParent().appendChild(document.createTextNode(TAB_DUMMY));
+		}
+	}
+	
+	
+	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
+
+		org.docx4j.vml.CTShape shape = null;
+		for (Object o2 : pict.getAnyAndAny() ) {
+			
+			o2 = XmlUtils.unwrap(o2);
+//			System.out.println(o.getClass().getName());
+			if (o2 instanceof org.docx4j.vml.CTShape) {
+				shape = (org.docx4j.vml.CTShape)o2;
+				break;
+			}
+		}
+		if (shape==null) {
+			log.warn("no shape in pict " );
+			return null;
+		} else {
+
+			org.docx4j.vml.CTTextbox textBox = null;
+			org.docx4j.vml.wordprocessingDrawing.CTWrap w10Wrap = null;  
+			for (Object o2 : shape.getPathOrFormulasOrHandles() ) {
+				
+				o2 = XmlUtils.unwrap(o2);
+				
+				if (o2 instanceof org.docx4j.vml.CTTextbox) {
+					textBox = (org.docx4j.vml.CTTextbox)o2;
+				}
+				if (o2 instanceof org.docx4j.vml.wordprocessingDrawing.CTWrap) {
+					w10Wrap = (org.docx4j.vml.wordprocessingDrawing.CTWrap)o2;
+				}
+			}
+			
+			return textBox;
+			
+		}
+		
 	}
 
     protected abstract Element handlePPr(CC conversionContext, PPr pPrDirect, boolean sdt, Element currentParent);
@@ -294,6 +476,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	protected abstract DocumentFragment createImage(int imgType, CC conversionContext, Object anchorOrInline);
 	
 	protected abstract Element createNode(Document doc, int nodeType);
+	
+	
 	
 	protected Logger getLog() {
 		return log;

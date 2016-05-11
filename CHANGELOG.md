@@ -1,9 +1,833 @@
 CHANGELOG
 =========
 
-Version 2.8.1
+Version 3.3.0
 =============
 
+Release date
+------------
+
+21 April 2016
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/crherman7
+
+https://github.com/increatum
+
+https://github.com/jerryorr
+
+https://github.com/MaciejDobrowolski
+
+https://github.com/pwarncke
+
+https://github.com/rasmusfaber
+
+https://github.com/tfcporciuncula
+
+Jason Harrop
+
+Notable Changes - PDF
+---------------------
+
+XSL FO based PDF output moved to new/separate project docx4j-export-fo; default PDF converter 
+changed from XSL FO + Apache FOP to Plutext's PDF Converter. The instance at
+converter-eval.plutext.com is used by default, but you can (and should!) alter it to your own
+instance, by setting docx4j property, eg:
+
+com.plutext.converter.URL=http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
+
+See further http://www.plutext.com/m/index.php/products-docx-to-pdf.html
+
+If you want to use the existing XSL FO + Apache FOP PDF Conversion, just add docx4j-export-fo (+ deps) to your classpath.  These jars are in the zip file, in dir optional/export-fo  docx4j will detect that they are present, and revert to the FO based conversion.
+
+Notable Changes - Other
+-----------------------
+
+Document protection (read only, track revisions etc) for docx/pptx/xlsx, with or without password. 
+NB: Digital signature support is in Enterprise Ed. 
+See further https://github.com/plutext/docx4j/blob/VERSION_3_3_0/src/main/java/org/docx4j/openpackaging/packages/ProtectionSettings.java and ProtectDocument.java
+
+docx table of contents (TOC) generation and update migrated from Enterpise Ed.  See org.docx4j.toc and the Toc* samples. The layout model in Plutext's PDF Converter (see above) will be used to calculate page numbers, unless docx4j-export-fo (+ deps) is on your path
+
+Workaround for JAXB behaviour change (for recent releases of JAXB, mcPreprocessor only worked the first 10 times);
+see/subscribe to https://github.com/gf-metro/jaxb/issues/22
+
+Xalan <= 2.7.2 can't handle astral characters: see/vote for https://issues.apache.org/jira/browse/XALANJ-2419
+So:
+(i)  workaround this when serializing XML
+(ii) optionally workaround this when we use Xalan for XSLT, controlled by docx4j.properties docx4j.xalan.XALANJ-2419.workaround=true|false
+[Comment: When will Xalan make a release which fixes this issue? This code will be removed if they do.]
+
+RunFontSelector: basic support for Unicode astral characters
+
+Performance improvement: property docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.* allows us to avoid unmarshalling via DOM
+
+Handle McIgnorableNamespaces within NamespacePrefixMapper classes
+
+XJC generated code for word/2010/wordprocessingDrawing
+
+Repackage portions of org.apache.poi (mainly poifs) as org.docx4j.org.apache.poi
+(and remove dependency on poi-scratchpad; remove Doc import since poi.hwpf dep is now absent)
+
+Repackage santuario c14n (org.apache.xml.security) as org.docx4j.org.apache.xml.security. 
+[Comment: Useful for c14n, but not essential to docx4j, so may yet be removed. Opinions welcome]
+
+Avoid adding virtual styles to docx representing DocDefaults; this is now internal to StyleTree
+
+
+
+Dependency Changes (relative to 3.2.x)
+------------------
+
+Removed: jaxb-xmldsig-core, poi-scratchpad, commons-lang
+
+Added: 
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
+
+Moved FOP/batik jars to separate project docx4j-export-fo
+
+Bumped most deps to most recent available (except MOXy, where bumped to most recent compiled for Java 6)
+
+
+
+Version 3.2.2  minor release
+=============
+
+Release date
+------------
+
+4 Sept 2015
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/sgrachov
+
+Jason Harrop
+
+
+Notable Changes in Version 3.2.2
+---------------------------------
+
+guard against XML Enternal Entity Injection attacks for some additional cases (the main cases were addressed in v3.2.0)
+
+tune down certain logging
+
+temp embedded font handling improvements (sgrachov, jharrop)
+
+PDF (FO via XSL): insert blank page to honour sectPr/w:type oddPage|evenPage set on the following section
+
+databinding/OpenDoPE: 
+
+- support w14 checkbox, w15:repeatingSection
+
+- property docx4j.model.datastorage.BindingHandler.Implementation (which defaults to BindingTraverserXSLT)
+ 
+- ODH minor performance optimization
+
+(X)HTML output: use ul|ol list items, if feature PP_HTML_COLLECT_LISTS is set and SdtToListSdtTagHandler is registered.
+
+xlsx4j
+------
+
+Variable replacement in xlsx4j
+
+pptx4j
+------
+
+Ensure VML namespace is declared on key parts
+
+
+
+Version 3.2.1  minor release
+=============
+
+Release date
+------------
+
+3 October 2014
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/baudinseb/docx4j
+
+Jason Harrop
+
+
+Notable Changes in Version 3.2.1
+---------------------------------
+
+MailMergerWithNext (baudinseb): supports NEXT, useful for mailing labels
+
+OpenDoPE: bookmark ID management
+
+pkg Load classes: getSourceRelationships().add(r) for additional source rel 
+
+Improvements to diffx (still not production ready though)
+
+PresentationML/FontDataPart
+
+Expose Base.partName, so MergeDocx v1.6.6 can use this docx4j
+
+
+
+
+
+Version 3.2.0 
+=============
+
+
+Release date
+------------
+
+26 August 2014
+
+
+Contributors to this release
+----------------------------
+
+BobFleischman
+apixandru
+Jason Harrop
+Sven Jacobi 
+
+
+Dependency changes
+------------------
+
+31mb1c1646 Add new dependency com.google.guava
+
+Minimum Java version is Java 6 (since guava and ambassador are compiled for that)
+
+
+Notable Changes in Version 3.2.0
+---------------------------------
+
+d150d9c7f6 *Security fix*  Configure DocumentBuilderFactory to disallow doctype declaration etc. (reported by Sven Jacobi)
+
+FO/PDF output: miscellaneous improvements, including:
+
+   header/footer height calculation
+   Support for table row w:cantsplit property   
+   ParagraphStylesInTableFix enhancements
+   support FOP config font substitutions
+   formatting of list item label   
+   generally use per class logging, since this makes it easier to see where the message is generated 
+   Add GlyphCheck; improve support for Arial Unicode MS 
+   For Wingding etc symbols, use hAnsi font ; https://github.com/plutext/docx4j/issues/118 
+   PDF events
+   PDF (non XLST): support nested tables
+   Workaround for missing space before fo:page-number-citation-last in FOP 1.1 output
+   FO support for ptab align right 
+   Create a suitable ConversionSectionWrapper, when continuous sectPr encountered, by using header/footer details from the previous sectPr
+   Where appropriate (ie different page size), insert a page break
+   Support css line-height 
+   In HTML|FO\PDF output, ensure tblPr is not null - Try to behave gracefully if broken style is encountered (ie missing @w:type or @w:styleId) 
+   w:br in FO output: Handling of vertical space 
+
+31m0c0e45d *API change*  getContents now throws Docx4JException, instead of returning null in the case of error. 
+
+
+New docx4j.properties
+---------------------
+
+	# PDF output; ability to specify font substitutions.  See src/samples/_resources
+	# Avoid using both this and fontMapper.getFontMappings() for the same fonts!
+	#docx4j.fonts.fop.util.FopConfigUtil.substitutions=fop-substitutions.xml
+	
+	# Defaults to org/docx4j/fonts/microsoft/MicrosoftFonts.xml
+	# which is contained in the docx4j jar
+	# If you need to override it in order to provide different file names for
+	# one or more fonts, start by extracting and editing a copy of the existing file
+	docx4j.fonts.microsoft.MicrosoftFonts=org/docx4j/fonts/microsoft/MicrosoftFonts.xml
+	
+	# In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000"
+	# Set this to true to use w:highlight instead 
+	#docx4j.model.properties.PropertyFactory.createPropertyFromCssName.background-color.useHighlightInRPr=false
+		
+	# Defaults to org/docx4j/jaxb/mc-preprocessor.xslt
+	docx4j.jaxb.JaxbValidationEventHandler=custom-preprocessor.xslt
+	
+	# The styles part content used by WordprocessingMLPackage createPackage
+	# and by getStyleDefinitionsPart(true) where the styles part is null
+	docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.DefaultStyles=org/docx4j/openpackaging/parts/WordprocessingML/styles.xml
+	
+	# Used to try to activate a style (PropertyResolver.activateStyle) which isn't defined in the styles part
+	docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart.KnownStyles=org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml
+	
+	docx4j.openpackaging.parts.WordprocessingML.FontTablePart.DefaultFonts=org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml
+	
+	docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.DefaultNumbering=org/docx4j/openpackaging/parts/WordprocessingML/numbering.xml
+	
+	# Embedded Fonts - extract to dir
+	# By default, docx4j will extract embedded fonts to dir 
+	# ~/.docx4all/temporary embedded fonts
+	# (creating it if necessary).
+	#docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir=c:\\temp
+	
+	# .. placeholder to use instead of "Click here to enter text" 
+	# Defaults to OpenDoPE/placeholder.xml, and if nothing is there,
+	# will fallback to org/docx4j/model/datastorage/placeholder.xml (which is in the docx4j jar)
+	#docx4j.model.datastorage.placeholder=OpenDoPE/placeholder.xml	
+	# What is new is that you can override that location (ie so you don't have to create an OpenDoPE folder)
+   
+Pptx4j
+------
+
+d1b60a96e7 pptx4j: dedicated parts for slide comments 
+
+b452e79852 Support for opening pptm/potx/potm files
+
+Other Changes (non-exhaustive)
+------------------------------
+
+8e640dafb7 dedicated parts for VbaProjectSignature
+
+9d714432db partName is now private; has getter/setter
+
+e66884b830 Create rels part name dynamically
+   
+31mff84cf0  DocumentModel: use SectPrFinder to find the sectPr (which means it will now find sectPr inside content controls) 
+
+31m0700196  preset Shape definitions
+
+31mfbef8b9 Map font names case-insensitive, since Word treats w:rFonts attribute values case-insensitive.
+
+31mfa767f6 RPr and ParaRPr inherit from RPrAbstract
+
+31m7c9dd58 signature line attributes: add namespace; fixes https://github.com/plutext/docx4j/issues/121 
+
+31m543713f Support for part representing userShapes added to a chart
+
+31m265ee8b fixed code that generates textId (BobFleischman)
+
+31m9a8b75c BinaryPart: Tidy up code and remove soft reference ByteBuffer. 
+
+Import XHTML
+
+    31m85b7a4d  In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000" Now you can configure it to use w:highlight instead
+
+    31m810ed9b LineSpacing: handle the CSS default 'normal' sensibly when importing 
+
+31mdbf7dee StyleUtil: changes to isEmpty and apply semantics for Style objects
+ 
+31m3845825 StyleUtil changes: - change to isEmpty semantics for Integer, BigInteger so that a value of 0 is not treated as empty (since otherwise eg spaceAfter 0 isn't applied) - pPr includes sectPr, so add PARTIAL implementation of areEqual and apply for sectPr
+
+31mea22fb6  make jc final. it's used in a lot of places but only assigned once. (apixandru)
+
+31m8edaddf For Oracle Java 8, use com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl and com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
+
+31mdf84571 Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx 
+
+31mf0fbd9f User can override org/docx4j/jaxb/mc-preprocessor.xslt with an xslt on their classpath named custom-preprocessor.xslt
+
+
+
+
+Version 3.1.0 
+=============
+
+
+Release date
+------------
+
+23 April 2014
+
+
+Dependency changes
+------------------
+
+mbassador 1.1.10 jar; see http://www.docx4java.org/forums/docx-java-f6/nightly-20140403-requires-mbassador-jar-t1852.html
+
+
+
+Notable Changes in Version 3.1.0
+---------------------------------
+
+Events infrastructure, allowing a listener to subscribe to track progress of time consuming tasks (eg PDF output).
+See for example https://github.com/plutext/docx4j/blob/master/src/samples/docx4j/org/docx4j/samples/EventMonitoringDemo.java
+
+FO/PDF output: suitable room for header/footer
+
+
+Other Changes (non-exhaustive)
+------------------------------
+
+Part remove - new method
+VbaDataPart - namespace qualify attributes  
+
+Fonts on Mac OSX - avoid NPE
+
+docx Binding fixes for case where OpenDoPE parts are not present
+
+docx fix for non-conformant Google Docs docx
+
+docx PDF (and XSL FO) output 
+- TOC dot leader tabs
+- soft return reduce vertical space 
+- computed style improvements for p in table
+- Arabic numbering
+- Arabic/Hebrew output: w:pPr/w:bidi and w:rPr/w:rtl handling
+- Support bidiVisual property, to layout columns in rtl order for eg Hebrew
+- Chinese improvements
+
+pptx
+- slides: use UTF-8, irrespective of default encoding
+
+xlsx
+- add bookViews/workbookView to workbook to ensure Excel 2010 doesn't crash when printing
+
+
+
+Version 3.0.1
+=============
+
+
+Release date
+------------
+
+8 Feb 2014
+
+Contributors to this release
+----------------------------
+
+David Becker
+Jason Harrop
+Anton Reshetnikov (batonez)
+Dirk Rewoo
+
+
+Notable Changes in Version 3.0.1
+---------------------------------
+
+OpenDoPE - Handle escaped Flat OPC ie bind rich text content (tag contains 'od:progid=Word.Document') 
+
+Other Changes (non-exhaustive)
+------------------------------
+
+PDF/FO output - basic implementation of textbox handling (dependent on support in FO renderer)
+
+61ea5a2 - FieldsPreprocessor ignore empty w:instrText elements
+5a21b10 - Fields: handle nested p, eg w:p//v:textbox//w:p
+e726d4d - MailMerger: handle quoted field name (containing spaces)
+0057b7b - text box handling in MailMerge (David Becker)
+
+56227b3 - OpenDoPE.  New  CustomXmlDataStoragePartSelector to identify the XML part being replaced
+c672b1f - Renumber bookmarks in repeats
+01203b6 - placeholder.xml - user can override with OpenDoPE/placeholder.xml
+06a8f02 - od:Handler=Picture processes a rich text control containing an image
+1525482 - OpenDoPE org.docx4j.model.datastorage.BindingTraverser.XHTML.Block.rStyle.Adopt option to automatcially apply linked paragraph style to bound escaped XHTML
+
+cf9a517 - VML shape interfaces
+87ac08f - use default font size of 10pt (same as Word)
+
+5c297e1 - List numbering emulator - fix for lower lettering (batonez)
+
+ba59b54 - xlsx4j getWorksheet(int index)
+ab59e6c - xlsx4j ExternalLinkPart
+
+7ee0ab5 - pptx4j getSlide(int index)
+86f5ebb - pptx4j SlidePart marshal mc:AlternateContent 
+
+1491394 - mc:AlternateContent JAXB model
+
+ba560ca - Support Google AppEngine (GAE)
+
+dd51255 - RunFontSelector bug fixes
+
+
+
+
+Version 3.0.0
+=============
+
+
+Release date
+------------
+
+26 Nov 2013
+
+Contributors to this release
+----------------------------
+
+ai
+azerolo
+bezda
+EthanTsui
+hpeng
+Jason Harrop
+jlesquembre
+jeffbeard
+fmmfonseca
+meletis
+pnml
+Tinne
+tj09
+tstirrat
+vollewijn
+zluspai
+
+
+Notable Changes in Version 3.0.0
+---------------------------------
+
+Logging: Use slf4j instead of log4j
+ Move XHTML Import stuff into a separate project, to get rid of dependency on LGPL library.
+Sample code has moved to src/samples
+Docx4j facade (contributed by Alberto)
+Extensive rearchitecting of PDF and HTML export (contributed by Alberto)
+PDF output enhancements, especially tables (contributed by Alberto)
+PDF and HTML output, without using XSLT (proof of concept)
+PDF and HTML output use rFont font selection for different unicode ranges
+Support for switching to/from MOXy as your JAXB implementation
+PartStore interface: save a docx/pptx unzipped 
+Use FOP 1.1 for PDF output, or optionally something more recent
+Generate org.docx4j.math from ECMA 376 2ed
+Update SML to ECMA 376 4ed transitional 
+MERGEFIELD and DOCPROPERTY field improvements, including formatting switches
+Support XPath operations on all docx, pptx and xlsx xml parts
+Support for portions of [MS-DOCX] (w14,w15 namespace support)
+Update pml to ECMA 376 2ed
+ 
+
+Other Changes (non-exhaustive)
+------------------------------
+
+1045e36 - OpenDoPE pictures: reuse template picture (if present), for size, positioning etc
+
+6724f06 - Make build compatible with Java 7 (alberto) 
+
+c018431 - Images: Make configurable whether GC is performed prior to temp file deletion
+
+d0e0bfe - Data binding: where XPath returned is empty, add placeholder content (workaround for some patch levels of Word 2010 x86 where multiline is true)
+
+0bf7610 - BinaryPart getBytes() method 
+
+1ca228f - a table without rows or a row without cells produces invalid fo (alberto)
+
+59b03a9 - OpenDoPE: Take Word styles into account in importing XHTML 
+e276493 - Support using a customised WriterRegistry 
+
+98e88d7 - Binding: if FLAG_BIND_INSERT_XML is not set, allow null XML data
+
+eddec90 - Convenience methods to add and remove slides 
+23c42e5 - User friendly get/setContents methods (more intuitive than get/setJaxbElement) 
+4f9ed48 - userData is Map<String, Object>
+0485568 - Support custom ID on <img element 
+2e1ec6c - HTML via XSLT: enable use of user defined ConversionHTMLStyleElementHandler (and script handler) 
+
+26ca4f1 - New method NumberingDefinitionsPart resolveLinkedAbstractNum which updates abstract list definitions which have w:numStyleLink 
+
+aa3ff88 - doc defaults style: - setup once only - make sure this is done before fontsInUse() 
+          - fix regression in PropertyResolver (documentDefaultPPr, documentDefaultRPr) 
+
+68ddc14 - improvements to finding sdt context (block, inline etc)
+
+f8d3303 - differencing: add some common required namespaces 
+
+afa87e3 - ThemeOverridePart
+
+090b367 - Bugfix: retain picture control 
+
+aa52ce2 - getBinder() create binder in case where user has manually set jaxbElement
+
+b56ccb6 - new method getDefaultTableStyle() 
+
+5e08f16 - fix for duplicate FORMTEXT results 
+
+5f0a4aa - Package for classes which find specific objects via traversal 
+
+f2bb6b4 - 2.8.1.8 remove <w:highlight w:val="lightGray"/>, if present
+
+641d032 - Ensure table integrity in face of sdt removal 
+
+4401138 - Convenient getGlossaryDocumentPart() 
+
+8d14ba3 - Ability to specify what CSS font-size 'medium' is in points 
+
+763aa09 - add extra processing option to remove SDTs bound to an empty/non-existing/void XML location which would otherwise prompt the user for data upon opening the file in Word. 
+
+df64bd5 - MERGEFIELD multiline output (tokenises on the newline character, the carriage-return character, and the form-feed character)
+696dbe3 - Ability to convert MERGEFIELD to FORMTEXT, so output can be edited when editing is restricted to fields (from 2.8.1.7)
+
+f70a80e - HTML output: Basic support for images in header Fixes Issue 10 
+
+63489de - Simple support for \* MERGEFORMAT 
+
+ee744d6 - RemovalHandler: For od:resultRepeatZero or od:resultConditionFalse, remove the content as well. 
+
+07730b9 - table cell shading from background color
+
+6fc31ea - Workaround for OpenXML SDK 2.0, which writes Target="/word/document.xml" 
+
+863f31a - w:tc integrity, nested table case
+99fe79b - Move minimiseContentOfSdtCell (previously eventuallyEmptyList) to OpenDoPEIntegrity, and handle case where there is no nested table. 
+
+7a69cd9 - Fix for xml:space being dropped in return from BindingTraverserXSLT 
+5509360 - A content control with SdtPr w:dataBinding and w:text which contains a w:hyperlink will prevent Word 2007 from opening the docx, 
+          so if there is a w:hyperlink, remove w:dataBinding and w:text (if present).
+
+6cd99a7 - Update RemovalHandler to handle BINDING_RESULT_CONDITION_FALSE and BINDING_RESULT_RPTD_ZERO 
+e1f1dca - OpenDoPEReverter - initial implementation 
+
+e3cc9e4 - Get rid of BINDING_ROLE_RPT_INSTANCE = "od:RptInst"  entirely, because it became redundant after introducing 
+          "od:RptPosCon" processing (conditional inclusion dependant on position in repeat), which requires each entry 
+          (ie including the original) to have the same tag (od:rptd).
+
+c3d8c66 - Improved diagnostics for case where XPath returns empty result set 
+5f7af4b - BindingHyperlinkResolver, which can be overridden if you want to customise hyperlink handling. 
+          You can override what is recognised as a URL, and how that is converted into a hyperlink. 
+11f8607 - Fix NPE in conjunction with almost empty documents (tinne)
+7b26726 - Added conversion support for some css properties (ai-github)
+
+6180c8f - throw InputIntegrityException if not found 
+
+6be807b - Workaround for Word 2010 not displaying all spaces where you have multiple FORMTEXT in a single run 
+
+7eb5b5e - Only canonicalise the fields we're able to update: namely MAILMERGE and DOCPROPERTY 
+
+c78d336 - Field canonicalisaton: better support for nested fields 
+
+ca573ae - field canonicalisation: missing separator case - bug fix 
+
+ea1d741 - There can be more than one style which isn't basedOn another, so don't make such a style the root of the hierarchy.  
+          Instead, a child of root. 
+
+9e806af - Use type of main part to create pkg
+
+793fdd7 - Fix for ClassCastException in eventuallyEmptyList, where SdtCell contains another SdtCell 
+
+6c9870f - Option to retain instrText in output of MERGEFIELD processing. 
+
+130ff05 - FieldsPreprocessor - minor refactor (extract method) 
+
+6f442cf - VBADataPart now has JAXB representation; VbaProjectBinaryPart now extends OleObjectBinaryPart. 
+          VBADataPart works for a docm; I haven't seen an xlsm with a VBADataPart, so will have to wait til one turns up to get this right. 
+
+e49e436 - XSDs from S-OFFMACRO2] 
+
+ec53dab - Use Hyperlink model/writer in HTML output. 
+
+0866667 - Ensure tables meet XSL FO requirements (table body present, and all header rows precede body rows). 
+79ad93f - Check for "continue" as a vmerge value in cells, otherwise rowspan might not be calculated properly. (TJ09)
+
+5eb0d35 - update to diffx-0.7.4 (BSI)
+
+d72e3e4 - use decimalSymbol specified in document settings part 
+
+a584bbd - Ensure there is just a single run between SEPARATE and END
+
+df9afd6 - Import Word 2003 XML. Proof of concept. 
+
+88e2134 - new Docx4jProperties: docx4j.javax.xml.parsers.DocumentBuilderFactory.donotset,
+           docx4j.javax.xml.parsers.SAXParserFactory.donotset 
+
+0c43b5b - EmbeddedPackagePart new method extractPackage() 
+
+193165b - CTM: Recognise OleObjectBinaryPart 
+          OleObjectBinaryPart: display OLE Directory to output stream 
+
+120183f - Cambria in headings is by virtue of theme major font; follow that logic.
+
+63c61bf - simplifying AlternativeFormatInputPart with better use of enum (zluspai) 
+
+a947e6e - Header|Footer part, Styles, Numbering now extends JaxbXmlPartXPathAware 
+ 
+8908a82 - VerticalAlignment css value "super" 
+
+ec6c723 - Bug fix: Change content type for mht to "message/rfc822" (Zoltan Luspai) 
+
+7c258e0 - Support XPath operations on all pptx JaxbPmlParts
+
+38340ac - new method List<JAXBAssociation> getJAXBAssociationsForXPath 
+          existing getJAXBNodesViaXPath now throws XPathBinderAssociationIsPartialException
+
+3b88e64 - xlsx getJAXBNodesViaXPath
+
+83f2b4f - Workaround for Powerpoint 2010 bug reading AlternateContent element.
+7127794 - bug fix: XSL FO doesn't like font color #auto 
+0d1feb4 - FieldUpdater: new class which can update field values (currently DOCPROPERTY) only independent of PDF output. 
+
+4071a24 - HTML output: honour indentation specified in numbering. 
+
+2bfe95a - PDF numbering first line indentation now works  
+
+96fb0d2 - Numbering first line indent: basic support 
+
+8993259 - BigInteger apply: still use source if its zero. We need to honour things like <w:ind w:firstLine="0" /> 
+
+3f34e12 - Numbering in PDF output: get hanging indents right. 
+
+93e87a1 - page-numbering: only specify initial-page-number on fo:page-sequence if start number is specified in sectPr.
+
+0de7c01 - Inherit default header or footer from previous section if this section doesn't have one, 
+          irrespective of whether this section has a first page header/footer. 
+1876991 - Fix for org.apache.fop.fo.pagination.PageProductionException: Subsequences exhausted in page-sequence-master 
+          which occurred where a sectPr contained a first page header or footer only. 
+
+49bdfdb - FOP configuration changed after FOP 1.1.  Our FOP configuration now supports FOP before or after 1.1. 
+          This means you can use FOP 1.1 to get around FOP's page-break-before bug. 
+
+3a2128e - Workaround for org.apache.fop.fo.ValidationException: "fo:flow" is missing child elements. 
+          Required content model: marker* (%block;)+ which occurs if a docx contains a single p containing a sectPr, 
+          or consecutive p each containing sectPr.
+
+aa16a2c - Implement java:org.docx4j.convert.out.Converter.getFootnote 
+4d5039d - Sketch of line spacing conversion 
+
+545f3f0 - field formatting unit tests. 
+1e5cf3f - Specify character style on each run 
+
+d279d80 - Set spacing in documentDefaultPPr
+           - in HTML via XSL output, use that; also get default p style ID properly. 
+          - propertyresolver: call createVirtualStylesForDocDefaults() instead of duplicating code 
+c2129ec - Follow spec rules for when formatting switches apply (outline). 
+b67a875 - numbering formatting switch 
+81d3952 - DOCPROPERTY processing in PDF output. 
+71f7f94 - JAXB model for coverpage properties 
+d12aaa1 - Fix getJAXBNodesViaXPath v3 NPE for v3 
+
+206399d - Fields - bug fix in canonicalisation of instrText (merge multiple); and add FieldDiagnostics sample. 
+
+d777360 - CT_TblLook from transitional 4ed; fixes https://github.com/plutext/docx4j/issues/53
+
+1b49869 - XHTML content controls - use cc rPr + rPr derived from CSS EXCEPT default font color and default 11pt. 
+
+6712f6f - Honour rPr provided in escaped XHTML's SdtContent, unless overridden in the CSS. 
+
+7c65db6 - Experimental VariableReplace method (avoid unnecessary unmarshal/marshal steps) 
+
+6eeb0ad - w3CDomNodeToString: emit XML! 
+
+4aa0860 - traverse w:object/w:control 
+
+16680f9 - Find Calibri etc on Mac OSX 
+
+be607ea - Bugfix: preserve PPr in MERGEFIELD processing
+
+003e5c5 - Correct semantics for parent/child 
+
+1c1190f - Fix for issue 46 (POI uses default .xml content type to identify pkg) 
+ded7bbd - NotesSlidePart support 
+5f354f3 - CxCy support for SldSz 
+
+054090e - Handle sectPr within content control 
+
+db062c6 - Handle continuous sections properly 
+
+db4a839 - Alberto Zerolo patch of 22 January, including support for evenAndOddHeaders flag. 
+
+68d88b4 - When there is no mc:Fallback, remove the mc:AlternateContent entirely (rather than hoping for the best with mc:Choice[1]).  
+          See http://www.docx4java.org/forums/topic1326.html 
+
+6a9b61a - Apply patch contributed at http://www.docx4java.org/forums/docx-java-f6/xhtml-docx-npe-during-loading-image-with-wrong-url-t1333.html 
+
+3f3bf5c - (X)HTML output - whether this is well formed XML or not is now configurable in docx4j.properties 
+
+8422e3c - Alberto Zerolo's header/footer contrib 
+
+3a48581 - Update SML to ECMA 376 4ed transitional (with support for xml:space in Shared Strings part) 
+
+53d785d - Support xml:space in shared strings table. This was missing from the XSD; 
+          but its absence causes files Excel can't open! 
+
+8cc41a2 - xpathDate - support StandardisedAnswersPart. 
+
+c31cdb2 - NonXSLT: support for hyperlinks
+
+9c04408 - Support for nested tables
+
+565403a - PDF output: ignore bookmark between table rows, so table processing works. 
+
+4e442a0 - Remove old LoadFromZipFile.
+
+1717906 - Lazy unmarshalling
+
+392821e - Separate the loading of a package, from its physical store 
+
+2088538 - Context: display manifest from JAXB jar mc-pre: ignore attributes 
+          ConvertOutPDF: workaround for FOP bug where first P has page break before.
+
+0a871e4 - bug in public static boolean isEmpty(BooleanDefaultTrue booleanDefaultTrue), pointed out by hpeng 
+
+0cb3c68 - XSLFOExporterNonXSLT is a Proof of concept of generating XSL FO without using Xalan/XSLT.  
+          This approach is faster and less memory intensive.
+
+305b3b8 - interface CustomXmlPart implemented by CustomXmlDataStoragePart and JaxbCustomXmlDataStoragePart.  
+          customXmlDataStorageParts collection is now Map<String, CustomXmlPart> 
+
+1948858 - Preserve mc:AlternateContent in a pptx slide's p:controls 
+
+5f52ecd - table handling improvements, contributed by Alberto Zerolo
+
+d480a83 - Notes regarding FOP r1356646 (after FOP 1.1), in which FopFactory.newInstance() was replaced with FopFactory.newInstance(URI) 
+
+72d061b - Fix for cases where getParent is broken, so it can be used in traverse
+
+daf2570 - Mechanism to allow a dev to associate arbitrary data with a package or part. 
+
+7e62425 - Call setPartShortcut, even if this part has been encountered already 
+          (since for pptx, more than 1 slide typically use the same layout part) 
+
+9e0590a - For break-before false, set value to auto in XSL FO output. 
+
+01d31ba - Support for converting MERGEFIELD to data bound content controls.
+2b1b408 - Convert a docx containing variables ${--} to bound content controls. 
+c7384bd - Convert variable replacement templates to OpenDoPE content control databound template. 
+
+5f587bd - Bug fix: mc-preprocessing for XLSX (ie other than Context.jc) 
+
+afd9610 - Helpful error message if your JAXBElement is null 
+
+d963e2a - OpenDoPE optional standardised answer file format. 
+14d7df9 - Support for switching to/from MOXy as your JAXB implementation
+
+9e5cf5f - Generate org.docx4j.math from ECMA 376 2ed, to address ST_OnOff issue. 
+          (see http://stackoverflow.com/questions/10811078/xmldirectmapping-no-conversion-value-provided ) 
+
+5a43e01 - bookmarkEnd, moveFromRangeEnd, moveToRangeEnd  all use CT_MarkupRange. wml.xsd contained a proposed change, 
+          so that only bookmarkEnd does, but corresponding org.docx4j.wml was never generated. So comment out this change  
+          until such time as we're ready to run XJC. 
+
+be02784 - data constraints
+6e79bf0 - FOP 1.1 
+f57d41e - Remove od:rptd 
+5c0c945 - Handle case where pPr.getNumPr().getNumId() is null 
+e393fc5 - Added sample program to edit an embedded chart in a PowerPoint presentation (jeffbeard)
+a5e7ca8 - Added XmlRootElement annotation that was causing an Exception when attempting to write an Excel spreadsheet
+          to a disk file. In this use case, the spreadsheet was embedded in a PowerPoint slide as the backing store for a chart. 
+5997616 - Update pml to ECMA 376 2ed. Want this for its revised CT_Control. Closing https://github.com/plutext/docx4j/issues/13 
+0ea48f4 - expose getStyleById method 
+9ae0190 - Improvements to numId/ilvl identification 
+389af95 - VML text box: avoid possible NPE 
+dff682d - header/footer documentation & test cases 
+e8eecf8 - Code refactored Handle top position with and without header
+9121390 - Header and footer keep the layout as applied after PDF conversion
+da8f9c5 - Merge pull request #33 from jlesquembre/upstream #[32m(12 months ago)#
+fa71a43 - First approach to improve margin transformation from docx to pdf 
+85455e6 - Preserve the formatting of the rest of the paragraph content. 
+1868a04 - Bug (in 2.8.1) fix: tr/tc finder, don't look in nested table.
+30ebd56 - refresh the document model, so it can know about headers/footers added programmatically #[32m(12 months ago)#
+c497c45 - skip external relationships in RelationshipsPart.getRel() (fmmfonseca)
+c16344f - TraversalUtil: traverse into hyperlink in Anchor and Inline
+417c377 - Prevent malformed uri exception when supplying a file path with no protocol. Fixes #26 (tstirrat)
+61af02f - support table row height in PDF output
+
+
+
+Version 2.8.1
+=============
 
 Release date
 ------------
@@ -75,7 +899,7 @@ afd9a70 - utf-8 in font names
 932843c - first-line indent support for pdf  
 ebaadc7 - Fixed NullPointerException when (invalid) numbering overrides are set to override a non-existent numbering definition. 
 83d6e8a - Handle paragraph space before and after in HtmlExporterNG2 output 
-eb2b366 - Save existing System.getProperty("javax.xml.transform.TransformerFactory") and restore.  [32m(3 months ago) [m
+eb2b366 - Save existing System.getProperty("javax.xml.transform.TransformerFactory") and restore.  
 57404de - Move choice of DocumentBuilderFactory from XmlPart, to XmlUtils. This and SAXParserFactory is now configurable via docx4j.properties. 
 b91e4f1 - SAXParserFactory can be read from docx4j.properties 
 1066a9e – XHTML import fixes in course of importing several pages from Wikipedia: - nested tables (insert empty p; hack to fix hierarchy) - hyperlink inAlreadyProcessed - lax table next cell null 

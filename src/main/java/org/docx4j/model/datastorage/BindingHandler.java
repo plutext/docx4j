@@ -19,16 +19,17 @@
  **/
 package org.docx4j.model.datastorage;
 
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
+import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
+import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -37,32 +38,16 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTDataBinding;
+import org.opendope.xpaths.Xpaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BindingHandler {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingHandler.class);		
 	
-//	static Templates xslt;			
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-	static {
-//		try {
-//			Source xsltSource = new StreamSource(
-//						org.docx4j.utils.ResourceUtils.getResource(
-//								"org/docx4j/model/datastorage/bind.xslt"));
-//			xslt = XmlUtils.getTransformerTemplate(xsltSource);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (TransformerConfigurationException e) {
-//			e.printStackTrace();
-//		}
-		
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
-
-
 	/**
 	 * Configure, how the handler handles links found in Custom XML.
 	 * 
@@ -115,6 +100,53 @@ public class BindingHandler {
 	
 	private static BindingHyperlinkResolver hyperlinkResolver;
 	
+	private AtomicInteger bookmarkId = null;
+
+	/**
+	 * Provide a way to set the starting bookmark ID number
+	 * for the purposes of Binding Traverse.
+	 * 
+	 * For efficiency, user code needs to pass this value through
+	 * from the previous stage (repeats/condition handing).
+	 * 
+	 * If it isn't, the value will be calculated (less efficient).
+	 *  
+	 * New bookmarks could be created from XHTML, or renumbered
+	 * in Flat OPC XML (TODO).
+	 * 
+	 * @param bookmarkId
+	 * @since 3.2.1
+	 */
+	public void setStartingIdForNewBookmarks(AtomicInteger bookmarkId) {
+		this.bookmarkId = bookmarkId;
+		
+	}
+		
+	protected AtomicInteger initBookmarkIdStart() {
+		
+		// The efficient case, where this value is set by user,
+		// from previous step
+		if (bookmarkId!=null) return bookmarkId;
+
+		// The inefficient case, where we calculate again
+		log.warn("Recalculating starting value for new bookmarks.  For efficiency, you should set this in your code.");
+		int highestId = 0;
+		
+		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
+		
+		for (CTBookmark bm : rt.getStarts()) {
+			
+			BigInteger id = bm.getId();
+			if (id!=null && id.intValue()>highestId) {
+				highestId = id.intValue();
+			}
+		}
+		return new AtomicInteger(highestId+1);
+	}	
+	
+	
+	
 	
 	/* ---------------------------------------------------------------------------
 	 * Apply bindings
@@ -130,9 +162,23 @@ public class BindingHandler {
 	 *    Word does this step itself).  This will be a new
 	 *    static method in this class.
 	 */
+	
+	private WordprocessingMLPackage wordMLPackage;
 		
+	private BindingHandler() {}
+	
+	public BindingHandler(WordprocessingMLPackage wordMLPackage) {
+		this.wordMLPackage = wordMLPackage;
+	}
 
+		@Deprecated
 		public static void applyBindings(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+			BindingHandler bh = new BindingHandler( wordMLPackage);
+			bh.applyBindings();
+		}
+
+		public  void applyBindings() throws Docx4JException {
 
 			// A component can apply in both the main document part,
 			// and in headers/footers. See further
@@ -154,33 +200,65 @@ public class BindingHandler {
 				}
 			}
 		}
-	
-		public static void applyBindings(JaxbXmlPart part) throws Docx4JException {
+		
+		public void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
-			org.docx4j.openpackaging.packages.OpcPackage pkg 
-				= part.getPackage();		
-				// Binding is a concept which applies more broadly
-				// than just Word documents.
+//			org.docx4j.openpackaging.packages.OpcPackage pkg 
+//				= part.getPackage();		
+//				// Binding is a concept which applies more broadly
+//				// than just Word documents.
 			
-			if (pkg instanceof WordprocessingMLPackage) {
-				getHyperlinkResolver().activateHyperlinkStyle((WordprocessingMLPackage)pkg);
-			}
-						
-			XPathsPart xPathsPart = null;
+//			if (pkg instanceof WordprocessingMLPackage) {
+				getHyperlinkResolver().activateHyperlinkStyle(wordMLPackage);
+//			}
+				
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
 			
-			if ( ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart() == null) {
-				log.error("OpenDoPE XPaths part missing");
-				//throw new Docx4JException("OpenDoPE XPaths part missing");
+			if ( wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
+				log.warn("OpenDoPE XPaths part missing"); // OK if no OpenDoPE stuff is used
+				xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>();
 			} else {
-				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
+				org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
+						.getJaxbElement();
 				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+				
+				xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(xPaths.getXpath().size());
+				
+				for (Xpaths.Xpath xp : xPaths.getXpath() ) {
+					
+					if (xpathsMap.put(xp.getId(), xp)!=null) {
+						log.error("Duplicates in XPaths part: " + xp.getId());
+					}
+					// TODO key should include storeItemID?
+				}
+				
+			}
+				
+//			} else {
+//				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
+//				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+//			}
+			
+			
+			BindingTraverserInterface traverser = null;
+			
+			if ( Docx4jProperties.getProperty("docx4j.model.datastorage.BindingHandler.Implementation", "BindingTraverserXSLT")
+					.equals("BindingTraverserNonXSLT") ) {
+				// Use the non-XSLT approach.  This is faster, but doesn't have feature parity.
+				log.info("Using BindingTraverserNonXSLT, which is faster, but missing some features");
+				traverser = new BindingTraverserNonXSLT();
+			} else {
+				// Slower, fully featured. The default.
+				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
+				traverser = new BindingTraverserXSLT();
 			}
 			
+			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
 			
-			BindingTraverserInterface traverser = new BindingTraverserXSLT();
+				part.setJaxbElement(
+						traverser.traverseToBind(part, wordMLPackage, xpathsMap) );
 			
-			part.setJaxbElement(
-					traverser.traverseToBind(part, pkg, xPathsPart) );
+			bookmarkId = traverser.getNextBookmarkId();
 					
 		}
 
@@ -237,7 +315,8 @@ public class BindingHandler {
 //					return null;
 				}
 				
-				String r = part.xpathGetString(xpath, prefixMappings);
+				//String r = part.xpathGetString(xpath, prefixMappings);
+				String r = part.cachedXPathGetString(xpath, prefixMappings); // EXPERIMENTAL
 				if (r==null) {
 					// never expect null, since an empty result set is converted to an empty string
 					log.error(xpath + " unexpectedly null!");

@@ -23,16 +23,15 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
-import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Ftr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public final class FooterPart extends JaxbXmlPartAltChunkHost<Ftr> implements ContentAccessor {

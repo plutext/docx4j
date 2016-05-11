@@ -84,23 +84,16 @@
 package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.Lvl;
-import org.docx4j.wml.NumFmt;
-import org.docx4j.wml.NumberFormat;
-import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.RPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Emulator {
 	
@@ -127,6 +120,39 @@ public class Emulator {
     }
     
 
+    /**
+     * @param wmlPackage
+     * @param pPr
+     * @return
+     * @since 3.0.1
+     */
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, PPr pPr) {
+    	
+		if (pPr==null) return null;
+			// Assumes default p style isn't numbered!
+			
+		String pStyleVal = null;
+		if (pPr.getPStyle()!=null) {
+			pStyleVal = pPr.getPStyle().getVal();
+		}
+		String numIdStr = null;
+		String levelIdStr = null;
+		
+		if (pPr.getNumPr()!=null) {
+			if (pPr.getNumPr().getNumId()!=null) {
+				BigInteger numId = pPr.getNumPr().getNumId().getVal();
+				if (numId!=null) numIdStr = numId.toString();
+			}
+			if (pPr.getNumPr().getIlvl()!=null) {
+				BigInteger levelId = pPr.getNumPr().getIlvl().getVal();
+				if (levelId!=null) levelIdStr = levelId.toString();
+			}
+		}
+			
+		return getNumber( wmlPackage,  pStyleVal, numIdStr,  levelIdStr);
+
+    }
+    
     /* Get the computed list number for the given list at this point in the
      * document.
      */
@@ -164,14 +190,9 @@ public class Emulator {
     		}
     		
     		log.debug("no explicit numId; looking in styles");
-			style = propertyResolver.getStyle(pStyleVal); 
+			PPr ppr = propertyResolver.getEffectivePPr(pStyleVal); 
 			
-	    	if (style == null) {
-	    		log.debug("Couldn't find style '" + pStyleVal + "'");
-	    		return null;
-	    	} 
-	    	
-	    	if (style.getPPr() == null) {
+	    	if (ppr == null) {
 		    		log.debug("Style '" + pStyleVal + "' has no pPr");
 //		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
 //		        	System.out.println(
@@ -182,7 +203,7 @@ public class Emulator {
 	    	} 
 
 	    	
-    		NumPr numPr = style.getPPr().getNumPr();
+    		NumPr numPr = ppr.getNumPr();
     		
     		if (numPr==null) {
 	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
@@ -192,28 +213,6 @@ public class Emulator {
 	        	// So there is no numbering set on the style either
 	        	// That's ok ..
 	        	return null;
-    		}
-    		
-    		
-    		if (numPr.getNumId()==null) {
-    			log.debug("NumPr element has no numId");
-    			if (pStyleVal==null) {
-    				return null;
-    			} else {
-    	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
-        			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
-    				PPr ppr = propertyResolver.getEffectivePPr(pStyleVal);
-    				
-    				numPr = ppr.getNumPr();
-        			if (numPr==null) {	
-            			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
-        				return null; // Is this the right thing to do? Check!
-        			} else {        				
-        				log.info("Got numId: " + numPr.getNumId() );
-        			}
-    				
-    			}
-    			
     		}
     		
     		if (numPr.getNumId()==null) {
@@ -253,8 +252,6 @@ public class Emulator {
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
 				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 						levelId)) {
-			// XmlAttribute counterAttr =
-			// mainDoc.CreateAttribute("numString");
 
 			numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
 					levelId);
@@ -275,10 +272,14 @@ public class Emulator {
 				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 			}
 			
-			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			triple.lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
+			
+			PPr ppr = triple.getLvl().getPPr();
 			if (ppr!=null) {
 				triple.ind = ppr.getInd();
 			}
+			
+			triple.rPr = triple.getLvl().getRPr();
 			
 		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 			
@@ -287,6 +288,8 @@ public class Emulator {
 				log.debug("Couldn't find list " + numId);
 			} else {
 				log.warn("Couldn't find list " + numId);
+//				Throwable t = new Throwable();
+//				t.printStackTrace();
 			}
 			
 		} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
@@ -299,7 +302,7 @@ public class Emulator {
 
     
     /**
-     * Used in HTML output.
+     * Used in HTML output (XsltHTMLFunctions) only.
      * 
      * @since 3.0.0
      */
@@ -426,7 +429,9 @@ public class Emulator {
 
 			// don't IncrementCounter here
 			
-			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			Lvl lvl = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl();
+			PPr ppr = lvl.getPPr();
+			
 			if (ppr==null) {
 				return null;
 			} else {
@@ -469,6 +474,8 @@ public class Emulator {
     
     
     public class ResultTriple {
+    	// If we had our time again, wouldn't include 'Triple' in the name of this class,
+    	// since its become a misnomer
     	
     	String numString;
 		public String getNumString() {
@@ -476,6 +483,7 @@ public class Emulator {
 		}
     	
     	String numFont;
+    	@Deprecated
 		public String getNumFont() {
 			return numFont;
 		}
@@ -491,8 +499,33 @@ public class Emulator {
 		}
 		
 		Ind ind = null;
+    	/**
+    	 * Use getLvl().getPPr().getInd() instead
+    	 * @return
+    	 */
+    	@Deprecated // consider whether to add getPpr and access via that.  
 		public Ind getIndent() {
 			return ind;
+		}
+		
+	    
+	    RPr rPr;
+	    /**
+	     * lvl rPr
+	     * 
+	     * @return
+	     */
+	    public RPr getRPr() {
+			return rPr;
+		}
+	    
+	    Lvl lvl;
+		/**
+		 * @return
+		 * @since 3.2.0
+		 */
+		public Lvl getLvl() {
+			return lvl;
 		}
     }
 

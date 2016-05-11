@@ -31,10 +31,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
@@ -65,6 +62,8 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 
 
@@ -116,7 +115,8 @@ public class FlatOpcXmlImporter  {
 			flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
 					new javax.xml.transform.stream.StreamSource(is)));
 		} catch ( javax.xml.bind.UnmarshalException e) {
-			if (e.getMessage().contains("http://schemas.microsoft.com/office/word/2003/wordml")) {
+			if (e.getMessage()!=null
+					&& e.getMessage().contains("http://schemas.microsoft.com/office/word/2003/wordml")) {
 				throw new IllegalArgumentException("Word 2003 XML is not supported. Use a docx or Flat OPC XML instead, or look at the Word2003XmlConverter proof of concept.");	
 				// So as not to change existing throws clause
 			}
@@ -231,9 +231,9 @@ public class FlatOpcXmlImporter  {
 				return null;
 			}
 			
-			rp = createRelationshipsPart(part);
-			rp.setSourceP(p);
-						
+			rp = p.getRelationshipsPart(true);
+			populateRelationshipsPart(rp,  part.getXmlData().getAny());
+									
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Docx4JException("Error getting document from XmlPackage:" + partName, e);
@@ -243,10 +243,8 @@ public class FlatOpcXmlImporter  {
 		return rp;
 	}
 
-	public static RelationshipsPart createRelationshipsPart(org.docx4j.xmlPackage.Part part) throws InvalidFormatException, JAXBException {
+	public static RelationshipsPart populateRelationshipsPart(RelationshipsPart rp, org.w3c.dom.Element el) throws InvalidFormatException, JAXBException {
 		
-		RelationshipsPart rp = new RelationshipsPart( new PartName(part.getName() ) );
-		org.w3c.dom.Element el = part.getXmlData().getAny();		
 		rp.setRelationships( (Relationships)rp.unmarshal(el) );
 		
 		return rp;		
@@ -481,10 +479,15 @@ public class FlatOpcXmlImporter  {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
+//
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );										
+										
+				} else if (part.getClass().getName().equals("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart") ) {
 
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );										
+//										((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
 					
 				} else if (part instanceof JaxbPmlPart) {
 
@@ -566,9 +569,7 @@ public class FlatOpcXmlImporter  {
 							CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
 
 							// Copy el into a new document
-							javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-							dbf.setNamespaceAware(true);
-							org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+							org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 							//XmlUtils.treeCopy(el, doc);
 							org.w3c.dom.Node copy = doc.importNode(el, true);
 							// Word doesn't like the xml namespace to be bound. At some point in a process 
@@ -590,9 +591,7 @@ public class FlatOpcXmlImporter  {
 						CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
 
 						// Copy el into a new document
-						javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-						dbf.setNamespaceAware(true);
-						org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+						org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 						//XmlUtils.treeCopy(el, doc);
 						org.w3c.dom.Node copy = doc.importNode(el, true);
 						try {
@@ -609,9 +608,7 @@ public class FlatOpcXmlImporter  {
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					
 					// Copy el into a new document
-					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(true);
-					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+					org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 					//XmlUtils.treeCopy(el, doc);
 					org.w3c.dom.Node copy = doc.importNode(el, true);
 					try {

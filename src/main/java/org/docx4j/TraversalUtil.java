@@ -25,12 +25,9 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
@@ -45,15 +42,14 @@ import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
-import org.docx4j.wml.FldChar;
-import org.docx4j.wml.P;
-import org.docx4j.wml.Pict;
-import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.Comments.Comment;
+import org.docx4j.wml.FldChar;
+import org.docx4j.wml.Pict;
 import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -104,6 +100,9 @@ public class TraversalUtil {
 		 * @return whether the children of this node should be visited
 		 */
 		boolean shouldTraverse(Object o);
+		
+		// TODO for next gen interface, add
+		// List<Object> applyAfterWalkChildren(Object o);
 
 	}	
 
@@ -123,6 +122,7 @@ public class TraversalUtil {
 					o = XmlUtils.unwrap(o);
 					
 					// workaround for broken getParent (since 3.0.0)
+					// In 3.3.1, this ought not be necessary for common cases in org.docx4j.wml package
 					if (o instanceof Child) {
 						if (parent instanceof SdtBlock) {
 							((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
@@ -151,7 +151,11 @@ public class TraversalUtil {
 										R rtr = (R)rtp.getContent().get(0);
 										System.out.println(rtr.getParent().getClass().getName() );
 								 */
-						// TODO: other corrections
+						} else if (parent instanceof List){
+							// Do nothing
+							if (log.isDebugEnabled()) {
+								log.debug("Unknown parent for " + o.getClass().getName());
+							}
 						} else {
 							((Child)o).setParent(parent);
 						}
@@ -197,12 +201,19 @@ public class TraversalUtil {
 
 	Callback cb;
 
+	/**
+	 * Traverse the object using your callback.  Invoking this constructor starts the 
+	 * traverse, by invoking the callback's walkJAXBElements method.
+	 * 
+	 * @param parent
+	 * @param cb
+	 */
 	public TraversalUtil(Object parent, Callback cb) {
 
 		this.cb = cb;
 		cb.walkJAXBElements(parent);
 	}
-
+	
 	static void visitChildrenImpl(Object o) {
 
 	}
@@ -221,7 +232,7 @@ public class TraversalUtil {
         // Its not graphicData.getAny() we're typically interested in
         if (graphicData.getPic() != null && graphicData.getPic().getBlipFill() != null
                 && graphicData.getPic().getBlipFill().getBlip() != null) {
-            log.info("found CTBlip");
+            log.debug("found CTBlip");
             List<Object> artificialList = new ArrayList<Object>();
             if (!tmpArtificialList.isEmpty())
                 artificialList.addAll(tmpArtificialList);
@@ -264,8 +275,14 @@ public class TraversalUtil {
 			return (List<Object>) o;
 		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
+			
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
-			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			if (((org.docx4j.wml.SdtElement) o).getSdtContent()!=null) {
+				return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			} else {
+				log.warn("SdtElement is missing content element");
+				return null;						
+			}		
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
             org.docx4j.dml.wordprocessingDrawing.Anchor anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -274,7 +291,7 @@ public class TraversalUtil {
                 handleCTNonVisualDrawingProps(drawingProps, artificialList);
             }
             if (anchor.getGraphic() != null) {
-                log.info("found a:graphic");
+                log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = anchor.getGraphic();
                 if (graphic.getGraphicData() != null) {
                     artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
@@ -282,6 +299,7 @@ public class TraversalUtil {
             }
             if (!artificialList.isEmpty())
                 return artificialList;
+            
         } else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
             org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -290,7 +308,7 @@ public class TraversalUtil {
                 handleCTNonVisualDrawingProps(drawingProps, artificialList);
             }
             if (inline.getGraphic() != null) {
-                log.info("found a:graphic");
+                log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = inline.getGraphic();
                 if (graphic.getGraphicData() != null) {
                     artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
@@ -308,7 +326,7 @@ public class TraversalUtil {
 			org.docx4j.dml.picture.Pic dmlPic = ((org.docx4j.dml.picture.Pic)o);
 			if (dmlPic.getBlipFill()!=null
 					&& dmlPic.getBlipFill().getBlip()!=null) {
-					log.info("found DML Blip");
+					log.debug("found DML Blip");
 					List<Object> artificialList = new ArrayList<Object>();
 					artificialList.add(dmlPic.getBlipFill().getBlip());
 					return artificialList;
@@ -320,7 +338,7 @@ public class TraversalUtil {
 			org.docx4j.dml.CTGvmlPicture dmlPic = ((org.docx4j.dml.CTGvmlPicture)o);
 			if (dmlPic.getBlipFill()!=null
 					&& dmlPic.getBlipFill().getBlip()!=null) {
-					log.info("found DML Blip");
+					log.debug("found DML Blip");
 					List<Object> artificialList = new ArrayList<Object>();
 					artificialList.add(dmlPic.getBlipFill().getBlip());
 					return artificialList;
@@ -365,8 +383,24 @@ public class TraversalUtil {
 				artificialList.add(ctObject.getControl() ); // CTControl
 			}
 			return artificialList;
+			
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+
+		} else if (o instanceof org.docx4j.dml.CTGvmlShape) {
+			
+			org.docx4j.dml.CTGvmlShape sp = (org.docx4j.dml.CTGvmlShape)o; 
+			if (sp!=null
+					&& sp.getTxSp()!=null
+					&& sp.getTxSp().getTxBody()!=null) {
+
+				List<Object> artificialList = new ArrayList<Object>();
+				artificialList.addAll(sp.getTxSp().getTxBody().getP());
+				
+				return artificialList;				
+			}
+			return null;
+			
 		} else if(o instanceof FldChar) {
 			FldChar fldChar = ((FldChar)o);
 			List<Object> artificialList = new ArrayList<Object>();
@@ -404,79 +438,6 @@ public class TraversalUtil {
 	}
 	
 
-	public static void main(String[] args) throws Exception {
-
-		String inputfilepath = System.getProperty("user.dir")
-				+ "/sample-docs/sample-docx.xml";
-
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
-				.load(new java.io.File(inputfilepath));
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document) documentPart
-				.getJaxbElement();
-		Body body = wmlDocumentEl.getBody();
-
-		new TraversalUtil(body,
-
-		new Callback() {
-
-			String indent = "";
-			
-			@Override
-			public List<Object> apply(Object o) {
-				
-				String text = "";
-				if (o instanceof org.docx4j.wml.Text)
-					text = ((org.docx4j.wml.Text)o).getValue();
-				
-				System.out.println(indent + o.getClass().getName() + "  \"" + text + "\"");
-				return null;
-			}
-
-			@Override
-			public boolean shouldTraverse(Object o) {
-				return true;
-			}
-
-			// Depth first
-			@Override
-			public void walkJAXBElements(Object parent) {
-
-				indent += "    ";
-				
-				List children = getChildren(parent);
-				if (children != null) {
-
-					for (Object o : children) {
-
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
-						// value; this is ok, provided the results of the Callback
-						// won't be marshalled
-						o = XmlUtils.unwrap(o);
-
-						this.apply(o);
-
-						if (this.shouldTraverse(o)) {
-							walkJAXBElements(o);
-						}
-
-					}
-				}
-				
-				indent = indent.substring(0, indent.length()-4);
-			}
-
-			@Override
-			public List<Object> getChildren(Object o) {
-				return TraversalUtil.getChildrenImpl(o);
-			}
-
-		}
-
-		);
-
-	}
 
 	public static void replaceChildren(Object o, List<Object> newChildren) {
 		
@@ -519,7 +480,7 @@ public class TraversalUtil {
 
 		 */
 
-		log.debug("Clearing " + o.getClass().getName() );
+		//log.debug("Clearing " + o.getClass().getName() );
 		
 		if (o instanceof org.docx4j.wml.ContentAccessor) {
 
@@ -538,7 +499,7 @@ public class TraversalUtil {
 
 		} else {
 			
-			log.warn("Don't know how to replaceChildren in " + o.getClass().getName() ); 
+			log.info("Don't know how to replaceChildren in " + o.getClass().getName() ); 
 
 			if (o instanceof org.w3c.dom.Node) {
 				log.warn(" IGNORED " + ((org.w3c.dom.Node) o).getNodeName());

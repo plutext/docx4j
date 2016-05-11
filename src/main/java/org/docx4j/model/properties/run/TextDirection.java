@@ -19,13 +19,12 @@
  */
 package org.docx4j.model.properties.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.RPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -34,10 +33,26 @@ import org.w3c.dom.css.CSSValue;
  */	
 public class TextDirection extends AbstractRunProperty {
 	
+	/*
+	 * 
+            <w:r>
+              <w:rPr>
+                <w:rtl/>
+              </w:rPr>
+              <w:t>TWOالبريد</w:t>
+            </w:r>	 
+     * 
+     * in the Word interface,  shows the word "TWO" to the *right*
+     * 
+	 * See src\test\resources\multilingual\arabic\arabic_in_tc.docx
+	 * 
+	 * This is now handled properly in PDF output
+	 */
+	
 	protected static Logger log = LoggerFactory.getLogger(TextDirection.class);		
 	
 	public final static String CSS_NAME = "direction"; 
-	public final static String FO_NAME  = "writing-mode";  // ?? writing-mode="rl-tb"
+	public final static String FO_NAME  = "direction";  // ?? writing-mode="rl-tb"
 	
 	public String getCssName() {
 		return CSS_NAME;
@@ -73,7 +88,24 @@ public class TextDirection extends AbstractRunProperty {
 	public void setXslFO(Element foElement) {
 
 		if (((BooleanDefaultTrue)this.getObject()).isVal() ) {
-			foElement.setAttribute(FO_NAME, "rl-tb" );
+			
+			foElement.setAttribute(FO_NAME, "rtl" ); 
+			
+			// Note: This is post-processed in:
+			// + xslt  case: XsltFOFunctions.createBlockForPPr
+			// + other case: FOExporterVisitorGenerator.rtlAwareAppendChildToCurrentP
+			
+			// so that the inline is wrapped in 
+	    	//    <bidi-override direction="rtl" unicode-bidi="embed">
+			
+			/* See further:
+				From: Glenn Adams <glenn@skynav.com>
+				Date: Fri, Mar 21, 2014 at 8:41 AM
+				Subject: Re: right align arabic in table-cell
+				To: FOP Users <fop-users@xmlgraphics.apache.org>
+			 */
+			
+			
 		} else {
 			//foElement.setAttribute(FO_NAME, "ltr" );
 		}

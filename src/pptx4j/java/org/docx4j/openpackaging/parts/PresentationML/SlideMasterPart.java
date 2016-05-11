@@ -20,29 +20,30 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTColorMapping;
-import org.pptx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.pml.CTPlaceholder;
 import org.pptx4j.pml.CommonSlideData;
-import org.pptx4j.pml.Shape;
-import org.pptx4j.pml.SlideLayoutIdList;
 import org.pptx4j.pml.ObjectFactory;
-import org.pptx4j.pml.Sld;
+import org.pptx4j.pml.Shape;
 import org.pptx4j.pml.SldMaster;
+import org.pptx4j.pml.SlideLayoutIdList;
 import org.pptx4j.pml.SlideLayoutIdList.SldLayoutId;
 
 
@@ -68,6 +69,27 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		setRelationshipType(Namespaces.PRESENTATIONML_SLIDE_MASTER);
 		
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.docx4j.openpackaging.parts.JaxbXmlPart#setMceIgnorable(org.docx4j.jaxb.McIgnorableNamespaceDeclarator)
+	 * 
+	 * @since 3.3.0
+	 */
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+		
+		/* Ensure we declare the namespace.  Otherwise Powerpoint 2010 treats the pptx as corrupt.
+		 * 2013 and Mac version might repair it, at leat..
+		 * 
+            <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+              <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">
+		 */
+		
+		
+		// Unlike MainDocumentPart, there is no this.getJaxbElement().getIgnorable()
+		
+		namespacePrefixMapper.setMcIgnorable("v");
+	}	
 	
 	private ResolvedLayout resolvedLayout;
 	public ResolvedLayout getResolvedLayout() {
@@ -149,5 +171,52 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 	    return indexedPlaceHolders;
 	}
 	
+	private static final String VML_DECL = "xmlns:v=\"urn:schemas-microsoft-com:vml\"";
+	
+    /**
+	 * Marshal the content tree rooted at <tt>jaxbElement</tt> into an output
+	 * stream
+	 * 
+	 * @param os
+	 *            XML will be added to this stream.
+	 * @param namespacePrefixMapper
+	 *            namespacePrefixMapper
+	 * 
+	 * @throws JAXBException
+	 *             If any unexpected problem occurs during the marshalling.
+	 */
+	@Override
+    public void marshal(java.io.OutputStream os, Object namespacePrefixMapper) throws JAXBException {
 
+		// Add xmlns:v="urn:schemas-microsoft-com:vml" eg in
+        // <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+        // <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">		
+		// How?  Could marshall to a DOM doc, but there is no way to force the xmlns to be included
+		// where it is not required.  Well, JAXB namespace prefix mapping stuff promises a way, but it is buggy.
+		// So do string manipulation
+    	
+		// @since 3.2.1
+		
+		String xmlString = XmlUtils.marshaltoString( getJaxbElement(), false, true, jc ); 
+			// include the XML declaration; it'll be UTF-8
+		int pos = xmlString.indexOf(":sldMaster "); //11
+		int closeTagPos = xmlString.indexOf(">", pos);
+		if (xmlString.substring(pos, closeTagPos).contains(VML_DECL)) {
+			// nothing to do; vml namespace is already declared
+		} else {
+			xmlString = xmlString.substring(0, pos + 11 ) +  VML_DECL + " " + xmlString.substring(pos + 11 );
+		}
+		
+		try {
+			IOUtils.write(xmlString, os, "UTF-8"); // be sure to write UTF-8 irrespective of default encoding
+			/* FIX confirmed by running a presentation containing eg mög
+			 * through RoundTripTest, 
+			 * with run configuration setting -Dfile.encoding=ISO-8859-1,
+			 * verified Powerpoint (2010) can open it.
+			 */
+		} catch (IOException e) {
+			throw new JAXBException(e.getMessage(), e);
+		}
+			
+	}	
 }

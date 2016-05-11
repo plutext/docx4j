@@ -9,7 +9,10 @@ public enum AltChunkType {
 				// Alternatively, you can serve your XHTML (any version) as application/xml, or even as text/xml
 				// but which is right for Word?
     Mht("mht", "message/rfc822"), 
-    Xml("xml", "application/xml"),	 // or text/xml?
+    
+    // Office 2003 Word XML format (schemas) and the Office 2007 flat OPC format.
+    Xml("xml", "application/xml"),	 // see http://blogs.msdn.com/b/ericwhite/archive/2010/03/11/formats-supported-for-altchunk.aspx
+    
     TextPlain("txt", "text/plain"),
     WordprocessingML("docx", ContentTypes.WORDPROCESSINGML_DOCUMENT),
     OfficeWordMacroEnabled("docm", ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED),

@@ -26,17 +26,19 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.FontRel;
 import org.docx4j.wml.Fonts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public final class FontTablePart extends JaxbXmlPart<Fonts> {
@@ -55,7 +57,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 	
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 
-		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+		setContentType(new org.docx4j.openpackaging.contenttype.ContentType(
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_FONTTABLE));
 
 		// Used when this Part is added to a rels 
@@ -76,7 +78,9 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     		java.io.InputStream is = null;
 			try {
 				// Works in Eclipse - not absence of leading '/'
-				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml");
+				is = ResourceUtils.getResourceViaProperty(
+						"docx4j.openpackaging.parts.WordprocessingML.FontTablePart.DefaultFonts",
+						"org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -84,10 +88,25 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	
     	return unmarshal( is );    	
     }
-    
-    public void processEmbeddings() {
+
+	public void processEmbeddings() {
+		processEmbeddings(null);
+	}
+		
+	private String filenamePrefix = null;
+
+    public void processEmbeddings(Mapper fontMapper) {
     	
     	Fonts fonts = (org.docx4j.wml.Fonts)this.getJaxbElement();
+    	
+    	if (fonts==null) {
+    		log.warn("No content in font table part");
+    		return;
+    	} else {
+			filenamePrefix = "" + System.currentTimeMillis(); 
+			log.info("Writing temp embedded fonts " + filenamePrefix);
+    	}
+    	
 		for (Fonts.Font font : fonts.getFont() ) {
 			String fontName =  font.getName();
     	
@@ -95,20 +114,26 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 			FontRel embedBold = font.getEmbedBold();
 			FontRel embedBoldItalic = font.getEmbedBoldItalic();
 			FontRel embedItalic = font.getEmbedItalic();
-			
-			getObfuscatedFontFromRelationship(fontName, embedRegular);
-			getObfuscatedFontFromRelationship(fontName, embedBold);
-			getObfuscatedFontFromRelationship(fontName, embedBoldItalic);
-			getObfuscatedFontFromRelationship(fontName, embedItalic);
-    	
+
+			PhysicalFont pfRegular = getObfuscatedFontFromRelationship(fontName, fontName, embedRegular);
+			PhysicalFont pfBold = getObfuscatedFontFromRelationship(fontName, fontName + "-bold", embedBold);
+			PhysicalFont pfItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-italic", embedItalic);
+			PhysicalFont pfBoldItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-bold-italic", embedBoldItalic);
+			if (fontMapper != null) { // && pfRegular != null) {
+				fontMapper.registerRegularForm(fontName, pfRegular);
+				fontMapper.registerBoldForm(fontName, pfBold);
+				fontMapper.registerItalicForm(fontName, pfItalic);
+				fontMapper.registerBoldItalicForm(fontName, pfBoldItalic);
+			}
+
 		}
     }
     
-    private void getObfuscatedFontFromRelationship(String fontName, FontRel fontRel) {
+    private PhysicalFont getObfuscatedFontFromRelationship(String fontNameAsInFontTablePart, String fontFileName, FontRel fontRel) {
     
     	if (fontRel == null) {
     		//log.debug("fontRel not found for '" + fontName + "'");
-    		return;
+    		return null;
     	}
     	
     	String id = fontRel.getId();    	
@@ -116,14 +141,29 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	    	 
     	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
     	if (obfuscatedFont != null) {
-    		obfuscatedFont.deObfuscate(fontName, fontKey);
+    		return obfuscatedFont.deObfuscate(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
     	} else {
     		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
+    	}
+			return null;
+    }
+    
+    
+    /**
+     *  Temporary embedded fonts should be deleted on exit, but for a long running app
+     *  that may not be adequate, in which case you'll want to invoke this method
+     *  when you have finished with a WordML pkg.  You can get this part from your MainDocumentPart,
+     *  using getFontTablePart()
+     */
+    public void deleteEmbeddedFontTempFiles() {
+    	if (filenamePrefix!=null) {
+    		log.debug("Deleting temp embedded fonts " + filenamePrefix);
+    		ObfuscatedFontPart.deleteEmbeddedFontTempFiles(filenamePrefix);
     	}
     }
 
 	public static void main(String[] args) throws Exception {
-		String filepath = System.getProperty("user.dir") + "/sample-docs/FontEmbedded.docx";		
+		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(filepath));
 		
 		wordMLPackage.getMainDocumentPart().getFontTablePart().processEmbeddings();

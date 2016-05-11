@@ -19,18 +19,12 @@
  */
 package org.docx4j.openpackaging.parts;
 
-import java.io.IOException;
-
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.CoreProperties;
 import org.docx4j.jaxb.Context;
@@ -38,8 +32,10 @@ import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.XPathFactoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 
 public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
@@ -63,12 +59,7 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 	
 	private static Logger log = LoggerFactory.getLogger(DocPropsCorePart.class);
 	
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-	static {
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
+	private static XPath xPath = XPathFactoryUtil.newXPath();
 	
 	 /** 
 	 * @throws InvalidFormatException
@@ -111,8 +102,14 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
      */
 	@Override
     public CoreProperties unmarshal( java.io.InputStream is ) throws JAXBException {
+		
+		// TODO: delete this method?
     	
 		try {
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(is);												
 			
 			setJAXBContext(org.docx4j.jaxb.Context.jcDocPropsCore);
 			Unmarshaller u = jc.createUnmarshaller();
@@ -122,7 +119,7 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 
 			log.info("unmarshalling " + this.getClass().getName());									
 						
-			jaxbElement = (CoreProperties) u.unmarshal( is );
+			jaxbElement = (CoreProperties) u.unmarshal( xsr );
 
 		} catch (Exception e ) {
 			e.printStackTrace();
@@ -141,9 +138,11 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 				getJaxbElement(), Context.jcDocPropsCore );
 		
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-			String result = xPath.evaluate(xpathString, doc );
+			String result;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				result = xPath.evaluate(xpathString, doc );
+			}
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {

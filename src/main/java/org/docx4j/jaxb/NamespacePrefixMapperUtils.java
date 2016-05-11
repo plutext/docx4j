@@ -1,5 +1,9 @@
 package org.docx4j.jaxb;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -33,19 +37,23 @@ public class NamespacePrefixMapperUtils {
 	private static Object prefixMapper;
 	private static Object prefixMapperRels;
 	
+	private static boolean haveTried = false;
 	
 	public static Object getPrefixMapper() throws JAXBException {
 		
 		if (prefixMapper!=null) return prefixMapper;
 		
+		if (haveTried) return null;
+		// will be true soon..
+		haveTried = true;
+		
 		if (testContext==null) {
-			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			NamespacePrefixMapperUtils tmp = new NamespacePrefixMapperUtils();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			
+			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+		}
+		
+		if (testContext==null) {
+			throw new JAXBException("Couldn't create context for org.docx4j.relationships.  Everything is broken!");
 		}
 		
 		Marshaller m=testContext.createMarshaller();
@@ -92,12 +100,7 @@ public class NamespacePrefixMapperUtils {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
 		if (testContext==null) {
-			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			NamespacePrefixMapperUtils tmp = new NamespacePrefixMapperUtils();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			
+			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 		}
 		
@@ -201,5 +204,34 @@ public class NamespacePrefixMapperUtils {
 		}
 		
 	}
+	
+    private static final String[] EMPTY_STRING = new String[0];
+	
+    public static String[] getPreDeclaredNamespaceUris(String mcIgnorable) {
+    	
+    	if (mcIgnorable==null) {    	
+    		return EMPTY_STRING;
+    	}
+
+    	List<String> entries = new ArrayList<String>();
+    	
+		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
+		while (st.hasMoreTokens()) {
+			String prefix = (String) st.nextToken();
+			
+			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
+			
+			if (uri==null) {
+				log.warn("No mapping for prefix '" + prefix + "'");
+			} else {
+		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
+				//entries.add(prefix);
+				entries.add(uri);
+			}
+		}
+		return  entries.toArray(new String[entries.size()]);
+    	
+    }
+	
 	
 }

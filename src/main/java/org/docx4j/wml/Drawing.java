@@ -21,10 +21,9 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,8 +32,10 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -70,7 +71,7 @@ public class Drawing
         @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class),
         @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class)
     })
-    protected List<Object> anchorOrInline;
+    protected List<Object> anchorOrInline  = new ArrayListWml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -99,7 +100,7 @@ public class Drawing
      */
     public List<Object> getAnchorOrInline() {
         if (anchorOrInline == null) {
-            anchorOrInline = new ArrayList<Object>();
+            anchorOrInline  = new ArrayListWml<Object>(this);
         }
         return this.anchorOrInline;
     }

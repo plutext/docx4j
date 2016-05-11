@@ -1,9 +1,18 @@
 package org.docx4j.model.fields;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.FldChar;
+import org.docx4j.wml.P;
+import org.docx4j.wml.ProofErr;
+import org.docx4j.wml.R;
+import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -12,22 +21,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
-import org.docx4j.wml.ContentAccessor;
-import org.docx4j.wml.FldChar;
-import org.docx4j.wml.P;
-import org.docx4j.wml.ProofErr;
-import org.docx4j.wml.R;
-import org.docx4j.wml.STFldCharType;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -55,8 +52,6 @@ public class FieldsPreprocessor {
     
 	
 	static Templates xslt;			
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
 	static {
 		try {
 			Source xsltSource = new StreamSource(
@@ -69,8 +64,6 @@ public class FieldsPreprocessor {
 			e.printStackTrace();
 		}
 		
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
 	}
 	
 	private FieldsPreprocessor(List<FieldRef> fieldRefs) {
@@ -87,7 +80,7 @@ public class FieldsPreprocessor {
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 				part.getJaxbElement() ); 	
 		
-		XPathsPart xPathsPart = null;
+//		XPathsPart xPathsPart = null;
 				
 		JAXBContext jc = Context.jc;
 		try {
@@ -107,6 +100,18 @@ public class FieldsPreprocessor {
 	}
 	
 	
+	/**
+	 * Convert the field(s) in the input P into a predictable
+	 * format, and add a FieldRef object to the list for each
+	 * top level field encountered.  
+	 * 
+	 * WARNING: this method should not be used where a field 
+	 * in the P extends into a subsequent P.
+	 * 
+	 * @param p
+	 * @param fieldRefs
+	 * @return the modified P
+	 */
 	public static P canonicalise(P p, List<FieldRef> fieldRefs) {
 		/*
 		 * Result is something like:
@@ -143,7 +148,9 @@ public class FieldsPreprocessor {
 //		fieldRPr = null;
 		
 		stack = new LinkedList<FieldRef>();
-		
+		if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(p));
+        }
 		handleContent(p.getContent(), newP);
 
 		// log.debug(XmlUtils.marshaltoString(newP, true));
@@ -178,6 +185,7 @@ public class FieldsPreprocessor {
 			//					&& ((JAXBElement)o).getName().equals(_PHyperlink_QNAME)) )	) {
 			//	
 			
+			
 			if ( o instanceof R ) {
 				
 				R existingRun = (R)o;
@@ -192,7 +200,7 @@ public class FieldsPreprocessor {
 			} else {
 				// its not something we're interested in
 				
-				log.debug(XmlUtils.unwrap(o).getClass().getName());
+				log.debug("Retaining" + XmlUtils.unwrap(o).getClass().getName());
 
 				attachmentPoint.getContent().add(o);
 
@@ -232,12 +240,24 @@ public class FieldsPreprocessor {
 		
 	}
 	
+	/**
+	 * Its preserved, if it is locked.
+	 * 
+	 * If it isn't locked, it is preserved unless its a MERGEFIELD or a DOCPROPERTY field.
+	 * 
+	 * @param fieldRef
+	 * @return
+	 */
 	private boolean preserveResult(FieldRef fieldRef) {
 		
 		if (fieldRef.isLock()) return true;
 		
-		if (fieldRef.getFldName().equals("MERGEFIELD")
-				|| fieldRef.getFldName().equals("DOCPROPERTY")) {
+		
+		String fldName = fieldRef.getFldName();
+		if (fldName==null) return true;
+		
+		if (fldName.equals("MERGEFIELD")
+				|| fldName.equals("DOCPROPERTY")) {
 			return false;
 		}
 		return true;
@@ -259,8 +279,10 @@ public class FieldsPreprocessor {
 		// note that the newR object persists between invocations of this method,
 		// so you have to be careful to actually add it to the docx 
 		// before re-creating it
-		
-		log.debug("\nInput run: \n " + XmlUtils.marshaltoString(existingRun, true, true));
+
+        if(log.isDebugEnabled()) {
+            log.debug("\nInput run: \n " + XmlUtils.marshaltoString(existingRun, true, true));
+        }
 		
 		for (Object o2 : existingRun.getContent() ) {
 			
@@ -319,7 +341,9 @@ public class FieldsPreprocessor {
 					newR.getContent().add(o2);
 					if (!newAttachPoint.getContent().contains(newR)) {
 						newAttachPoint.getContent().add(newR);
-						log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        if(log.isDebugEnabled()) {
+                            log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        }
 					}
 					
 					if ( fieldIsTopLevel() ) {
@@ -382,7 +406,9 @@ public class FieldsPreprocessor {
 							 */
 							if (!newAttachPoint.getContent().contains(newR)) {
 								newAttachPoint.getContent().add(newR);
-								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                }
 							}
 							newR = Context.getWmlObjectFactory().createR();						
 						}						
@@ -411,7 +437,9 @@ public class FieldsPreprocessor {
 													
 							if (!newAttachPoint.getContent().contains(newR)) {
 								newAttachPoint.getContent().add(newR);
-								log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                                }
 							}
 							
 						}					
@@ -424,7 +452,9 @@ public class FieldsPreprocessor {
 						}
 						if (!newAttachPoint.getContent().contains(newR)) { // test, since this is also done immediately before each loop ends
 							newAttachPoint.getContent().add(newR);
-							log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                            if(log.isDebugEnabled()) {
+                                log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                            }
 						}
 						
 						
@@ -456,12 +486,22 @@ public class FieldsPreprocessor {
 
 					if (!newAttachPoint.getContent().contains(newR)) {
 						newAttachPoint.getContent().add(newR);
-						log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        if(log.isDebugEnabled()) {
+                            log.debug("-- attaching -->" + XmlUtils.marshaltoString(newR, true, true));
+                        }
 					}
 				
 					newR = Context.getWmlObjectFactory().createR();						
 				
 			} else if ( !currentField.haveSeenSeparate() ) {
+				
+				// Handles problems with empty w:instrText elements within complex field "begin" section
+				Object o = XmlUtils.unwrap(o2);
+				if (o instanceof Text && ((Text) o).getValue().trim().isEmpty()) {
+					log.debug("Empty w:instrText found. Ignore it!");
+					continue;
+				}
+				
 				
 //				log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 				
@@ -512,7 +552,9 @@ public class FieldsPreprocessor {
 				
 				// we only want a single run between SEPARATOR and END,
 				// and we added that in the SEPARATE stuff above
-				log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
+                if(log.isDebugEnabled()) {
+                    log.debug("IGNORING " + XmlUtils.marshaltoString(o2, true, true));
+                }
 				
 			} 
 

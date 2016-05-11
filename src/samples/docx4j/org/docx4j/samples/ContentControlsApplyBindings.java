@@ -21,16 +21,13 @@
 package org.docx4j.samples;
 
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.CustomXmlDataStorage;
-import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
-import org.docx4j.model.datastorage.RemovalHandler;
-import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 
 
 /**
@@ -87,7 +84,9 @@ public class ContentControlsApplyBindings {
 		if (hyperlinkStyle!=null) {
 			BindingHandler.getHyperlinkResolver().setHyperlinkStyle(hyperlinkStyle);
 		}
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
 		// 1. the custom xml part 

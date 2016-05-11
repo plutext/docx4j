@@ -2,12 +2,14 @@ package org.docx4j.model.fields;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -120,7 +122,13 @@ public class FormattingSwitchHelper {
 	 * 
 	 */
 	
-	protected static final ThreadLocal<SimpleDateFormat> DATE_FORMATS = new ThreadLocal();
+	protected static final ThreadLocal<Map<String, SimpleDateFormat>> DATE_FORMATS = new ThreadLocal<Map<String, SimpleDateFormat>>(){
+	    protected Map<String, SimpleDateFormat> initialValue() {
+	        HashMap<String, SimpleDateFormat> hashMap = new HashMap<String, SimpleDateFormat>();
+	        hashMap.put(null, (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance());
+			return hashMap;
+	    }
+	};
 	
 	/** Conversion of page number formats to fo as defined 
 	 * <ul>
@@ -215,7 +223,11 @@ public class FormattingSwitchHelper {
 	}
 	
 	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value) throws Docx4JException {
+		return applyFormattingSwitch(wmlPackage, model, value, null);
+	}
 
+
+	public static String applyFormattingSwitch(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value, String lang) throws Docx4JException {
 		// date-and-time-formatting-switch: \@ 
 		Date date = null;
 		try {
@@ -242,7 +254,7 @@ public class FormattingSwitchHelper {
 					// For =, today's date is used!
 					date = new Date();
 				}
-				value = formatDate(model, dtFormat, date);
+				value = formatDate(model, dtFormat, date, lang);
 			}
 			
 		} catch (FieldResultIsNotADateOrTimeException e) {
@@ -276,7 +288,7 @@ public class FormattingSwitchHelper {
 						return "!Syntax Error";
 					}
 					
-					value = formatNumber(model, nFormat, number );
+					value = formatNumber(model, nFormat, number, lang);
 
 	
 						// SPECIFICATION: If no numeric-formatting-switch is present, 
@@ -399,7 +411,7 @@ public class FormattingSwitchHelper {
 		}
 	}
 	
-	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub) 
+	private static String formatNumber( FldSimpleModel model, String wordNumberPattern, double dub, String lang) 
 		throws FieldFormattingException {
 
 
@@ -616,7 +628,15 @@ public class FormattingSwitchHelper {
 		
 		DecimalFormat formatter = null;
 		try {
-			formatter = new DecimalFormat(javaFormatter);
+			if(lang != null){
+				
+				formatter = new DecimalFormat(javaFormatter, 
+						new DecimalFormatSymbols(localeforLanguageTag(lang)));
+				// lang is eg "fr-CA"  IETF BCP 47 tag
+				
+			} else {
+				formatter = new DecimalFormat(javaFormatter);
+			}
 		} catch (java.lang.IllegalArgumentException iae) {
 			// Malformed pattern
 			throw new FieldFormattingException(iae.getMessage() + " from " + wordNumberPattern);
@@ -628,6 +648,29 @@ public class FormattingSwitchHelper {
 		return formatter.format(dub);
 		
 	}
+	
+	/**
+	 * Substitute for Java 7's Locale.forLanguageTag
+	 * 
+	 * @param locale
+	 * @return
+	 */
+	private static Locale localeforLanguageTag(String locale) {
+		
+		// Adapted from http://stackoverflow.com/a/15238594/1031689
+		log.debug(locale + " to Locale");
+		
+		String parts[] = locale.split("-", -1);
+		if (parts.length == 1) {
+			return new Locale(parts[0]);
+		} else if (parts.length == 2
+//				|| (parts.length == 3 && parts[2].startsWith("#"))
+				) {
+			return new Locale(/* language */parts[0], /* country */parts[1]);
+		} else {
+			return new Locale(parts[0], parts[1], parts[2]);
+		}
+	}	
 	
 	private static void appendNumberItem(StringBuilder buffer, String dateItem) {
 		// identity for now		
@@ -840,10 +883,13 @@ public class FormattingSwitchHelper {
 	}
 
 	public static String formatDate(FldSimpleModel model, String format, Date date) {
-		
+		return formatDate(model, format, date, null);
+	}
+	
+	private static String formatDate(FldSimpleModel model, String format, Date date, String lang) {
 		DateFormat dateFormat = null;
 		if ((format != null) && (format.length() > 0)) {
-			SimpleDateFormat simpleDateFormat = getSimpleDateFormat();
+			SimpleDateFormat simpleDateFormat = getSimpleDateFormat(lang);
 			simpleDateFormat.applyPattern(convertDatePattern(format));
 			dateFormat = simpleDateFormat;
 		}
@@ -919,12 +965,22 @@ public class FormattingSwitchHelper {
 		return -1;
 	}
 	
-	private static SimpleDateFormat getSimpleDateFormat() {
-	SimpleDateFormat ret = DATE_FORMATS.get();
-		if (ret == null) {
-			ret = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance();
-			DATE_FORMATS.set(ret);
+	/**
+	 * @param language abbreviation like "fr-CA", 
+	 * @return SimpleDateFormat instance for specified language
+	 * if null will @return SimpleDateFormat.getDateTimeInstance()
+	 */
+	private static SimpleDateFormat getSimpleDateFormat(String lang) {
+		Map<String, SimpleDateFormat> dateFormatsMap = DATE_FORMATS.get();
+		SimpleDateFormat dateFormat = dateFormatsMap.get(lang);
+		if (dateFormat == null) {
+			// dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, Locale.forLanguageTag(lang));
+			// Be Java 6 compatible
+			dateFormat = (SimpleDateFormat)SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, 0, 					
+					localeforLanguageTag(lang));
+			dateFormatsMap.put(lang, dateFormat);
 		}
-		return ret;
+		return dateFormat;
 	}
+	
 }

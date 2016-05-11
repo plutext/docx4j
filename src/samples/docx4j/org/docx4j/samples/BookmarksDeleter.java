@@ -1,13 +1,7 @@
 package org.docx4j.samples;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
-import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -16,8 +10,8 @@ import org.docx4j.wml.Body;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.ContentAccessor;
-import org.docx4j.wml.Text;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class BookmarksDeleter {

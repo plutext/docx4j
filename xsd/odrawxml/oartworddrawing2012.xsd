@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" elementFormDefault="qualified" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:oxsd="http://oxsdSchemaUri" xmlns="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+  <xsd:complexType name="CT_WebVideoPr">
+    <xsd:attribute name="embeddedHtml" type="xsd:string" use="optional" default=""/>
+    <xsd:attribute name="h" type="xsd:unsignedInt" use="optional" default="0"/>
+    <xsd:attribute name="w" type="xsd:unsignedInt" use="optional" default="0"/>
+  </xsd:complexType>
+  <xsd:element name="webVideoPr" type="CT_WebVideoPr"/>
+</xsd:schema>

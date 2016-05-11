@@ -7977,6 +7977,8 @@ PRINCIPLES:
 	<xsd:complexType name="CT_SdtContentRun">
 		<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
+	
+	
 	<xsd:group name="EG_ContentBlockContent">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -8007,15 +8009,28 @@ PRINCIPLES:
 			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/> <!--  BUG?  run level stuff at block level? -->
 		</xsd:choice>
 	</xsd:group>
+	
 	<xsd:complexType name="CT_SdtContentBlock">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtContentBlock"/>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:group ref="EG_ContentBlockContent" minOccurs="0"
-			maxOccurs="unbounded"/>
+		<xsd:group ref="EG_ContentBlockContent" minOccurs="0" maxOccurs="unbounded"/>
+	<!--  2014 01 21:  TODO REVIEW this.
+	
+			Word allows an altChunk in a block level content control, so we should here.
+			
+			Why not use EG_BlockLevelElts which does allow altChunk?
+	
+			org.docx4j.wml.SdtContentBlock manually edited to permit it, but this xsd not changed, so classes not regenerated yet.
+			
+			(With that addition, the content model for SdtContentBlock is the same as Body's) 
+	
+	 -->
 	</xsd:complexType>
+	
+	
 	<xsd:element name="tr">
 		<xsd:annotation>
 			<xsd:documentation>Table Row</xsd:documentation>

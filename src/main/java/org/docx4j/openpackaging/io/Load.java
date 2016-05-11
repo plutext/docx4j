@@ -28,6 +28,8 @@ import java.util.Iterator;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 
 
+@Deprecated
 public class Load {
 
 	private static Logger log = LoggerFactory.getLogger(Load.class);
@@ -181,8 +184,13 @@ public class Load {
 					
 					// Is it a part we know?
 					try {
+				        XMLInputFactory xif = XMLInputFactory.newInstance();
+				        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				        XMLStreamReader xsr = xif.createXMLStreamReader(is);									
+						
 						Unmarshaller u = Context.jc.createUnmarshaller();
-						Object o = u.unmarshal( is );						
+						Object o = u.unmarshal( xsr );						
 						log.info(o.getClass().getName());
 						
 						PartName name = part.getPartName();
@@ -297,7 +305,7 @@ public class Load {
 			Part entry = (Part)iterator.next();
 			
 			if (entry instanceof CustomXmlPart) {
-				log.info("Found a CustomXmlPart, named " + entry.getPartName().getName() );
+				log.debug("Found a CustomXmlPart, named " + entry.getPartName().getName() );
 				String itemId = null;
 				if (entry.getRelationshipsPart()==null) { 
 					continue; 
@@ -339,7 +347,7 @@ public class Load {
 						itemId = customXmlProps.getItemId().toLowerCase();
 					}
 				}
-				log.info("Identified/registered ds:itemId " + itemId);
+				log.debug("Identified/registered ds:itemId " + itemId);
 				if (pkg.getCustomXmlDataStorageParts().get(itemId.toLowerCase())!=null) {
 					log.warn("Duplicate CustomXML itemId " + itemId + "; check your source docx!");
 				}

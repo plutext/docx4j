@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac"
+	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns="xl12AcSchemaUri"	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- From [MS-XLSX] — v20130726
+Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.spreadsheetml.ac201101"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+	
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:element name="list" type="x:ST_Xstring"/>
+</xsd:schema>

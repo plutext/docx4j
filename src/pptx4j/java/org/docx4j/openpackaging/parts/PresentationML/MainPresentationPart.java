@@ -24,7 +24,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -71,7 +71,51 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	
 	private final static String DEFAULT_NOTES_SIZE = "<p:notesSz xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" " +
 			"cx=\"6858000\" cy=\"9144000\"/>";
+	
 
+	private CommentAuthorsPart commentAuthorsPart;
+	
+	public boolean setPartShortcut(Part part) {
+		
+		if (part == null ){
+			return false;
+		} else {
+			return setPartShortcut(part, part.getRelationshipType() );
+		}
+		
+	}	
+		
+	public boolean setPartShortcut(Part part, String relationshipType) {
+		
+		// Since each part knows its relationshipsType,
+		// why is this passed in as an arg?
+		// Answer: where the relationshipType is ascertained
+		// from the rel itself, it is the most authoritative.
+		// Note that we normally use the info in [Content_Types]
+		// to create a part of the correct type.  This info
+		// will not necessary correspond to the info in the rel!
+		
+		if (relationshipType==null) {
+			log.warn("trying to set part shortcut against a null relationship type.");
+			return false;
+		}
+		
+		if (relationshipType.equals(Namespaces.PRESENTATIONML_COMMENT_AUTHORS)) {
+			commentAuthorsPart = (CommentAuthorsPart)part;
+			return true;			
+		} else {	
+			return false;
+		}
+	}
+
+	
+	/**
+	 * @since 3.2.0
+	 */
+	public CommentAuthorsPart getCommentAuthorsPart() {
+		return commentAuthorsPart;
+	}
+	
 	/**
 	 * @since 2.7
 	 */
@@ -428,26 +472,69 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		}
 	}
 	
+	/**
+	 * @param index
+	 * @throws Pptx4jException 
+	 * @since 3.0.1
+	 */
+	public SlidePart getSlide(int index) throws Pptx4jException {
+
+		ensureContent();
+		ensureSldIdLst();
+		
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		int zeroBasedCount = sldIds.size() -1; 
+
+		if (index< 0 || index>zeroBasedCount) {
+			throw new Pptx4jException("No slide at index " + index + ".  (There are " + sldIds.size() + " slides) ");			
+		}
+
+		try {
+			Presentation.SldIdLst.SldId entry = this.getJaxbElement().getSldIdLst().getSldId().get(index);
+			return (SlidePart)this.getRelationshipsPart().getPart(entry.getRid());
+		} catch (Exception e) {
+			throw new Pptx4jException("Slide " + index + " not found", e);
+		}
+		
+	}
 	
+	private void ensureContent() throws Pptx4jException {
+		try {
+			if (this.getContents()==null ) {
+				throw new Pptx4jException("MainPresentationPart has no content");
+			}
+			
+		} catch (Docx4JException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}		
+	}
+
+	private void ensureSldIdLst() throws Pptx4jException {
+		try {
+			if (this.getContents().getSldIdLst()==null) {
+				throw new Pptx4jException("SldIdLst missing from MainPresentationPart");
+			}
+			
+		} catch (Docx4JException e) {
+			throw new Pptx4jException(e.getMessage(), e);
+		}		
+	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * @param index
+	 * @throws Pptx4jException 
+	 * @since 3.2.0
+	 */
+	public int getSlideCount() throws Pptx4jException {
+
+		ensureContent();
+		ensureSldIdLst();
+		
+		List<SldId> sldIds = this.getJaxbElement().getSldIdLst().getSldId();
+		
+		return sldIds.size(); 
+
+	}
 	
 }

@@ -21,7 +21,6 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,17 +30,13 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.Docx4jProperties;
-import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -54,12 +49,16 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.ResourceUtils;
+import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
 import org.pptx4j.pml.SldLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -90,6 +89,11 @@ public class PresentationMLPackage  extends OpcPackage {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
+	
+	private ProtectPresentation presentationProtectionSettings = new ProtectPresentation(this);
+	public ProtectPresentation getProtectionSettings() {
+		return presentationProtectionSettings;
+	}	
 	
 	
 	/**
@@ -142,8 +146,7 @@ public class PresentationMLPackage  extends OpcPackage {
 		String slideSize= Docx4jProperties.getProperties().getProperty("pptx4j.PageSize", "A4");
 		log.info("Using paper size: " + slideSize);
 		
-		String landscapeString = Docx4jProperties.getProperties().getProperty("pptx4j.PageOrientationLandscape", "false");
-		boolean landscape= Boolean.parseBoolean(landscapeString);
+		boolean landscape= Docx4jProperties.getProperty("pptx4j.PageOrientationLandscape", true);
 		log.info("Landscape orientation: " + landscape);
 		
 		return createPackage(
@@ -197,7 +200,8 @@ public class PresentationMLPackage  extends OpcPackage {
 			
 			// Theme part
 			ThemePart themePart = new ThemePart(new PartName("/ppt/theme/theme1.xml"));
-			java.io.InputStream is = org.docx4j.utils.ResourceUtils.getResource(
+			java.io.InputStream is = ResourceUtils.getResourceViaProperty(
+					"pptx4j.openpackaging.packages.PresentationMLPackage.DefaultTheme",
 						"org/docx4j/openpackaging/parts/PresentationML/theme.xml");
 			themePart.unmarshal(is);
 			
@@ -211,15 +215,14 @@ public class PresentationMLPackage  extends OpcPackage {
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
 		
-		pmlPack.setPartStore(new ZipPartStore());
-
 		// Return the new package
 		return pmlPack;
 		
 	}
 	
 	/**
-	 * Create a slide and add it to the package
+	 * Create a slide and add it to the package.
+	 * Deprecated, so use MainPresentationPart's addSlide method instead.
 	 * 
 	 * @param pp
 	 * @param layoutPart
@@ -330,7 +333,11 @@ public class PresentationMLPackage  extends OpcPackage {
 				map.put(s.getStyleId(), s);
 				list.add(s.getStyleId());
 			}
-			styleTree = new StyleTree(list, map);
+			
+			// TEMP - manufacture wml DocDefaults docDefaults, Style normal!
+			
+			
+			styleTree = new StyleTree(list, map, TextStyles.generateDocDefaults(), null);
 				// TODO: We don't have defaultParagraphStyleId, defaultCharacterStyleId
 				// so use DocDefaults for now.
 		}

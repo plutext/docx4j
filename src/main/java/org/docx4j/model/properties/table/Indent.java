@@ -23,10 +23,8 @@ import java.math.BigInteger;
 
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
-import org.docx4j.wml.PPr;
 import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TblWidth;
-import org.docx4j.wml.PPrBase.Ind;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
@@ -99,6 +97,7 @@ public class Indent extends AbstractTableProperty {
 		if (left==null) {
 			log.warn("FIXME");
 		} else {
+			// assume dxa, which is twips
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 		
 	}

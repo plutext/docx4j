@@ -32,7 +32,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
  * 
  * @since 3.0
  */
-public abstract class AbstractConversionSettings implements ConversionFeatures {
+public abstract class AbstractConversionSettings { //implements ConversionFeatures {
 	
 	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
 	public static final String IMAGE_DIR_PATH = "imageDirPath";

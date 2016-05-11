@@ -3,17 +3,13 @@ package org.docx4j.mce;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
-import org.w3c.dom.Element;
 
 
 /**
@@ -26,14 +22,17 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="Choice" maxOccurs="unbounded">
+ *         &lt;element name="Choice" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;any processContents='skip' maxOccurs="unbounded"/>
+ *                   &lt;any maxOccurs="unbounded" minOccurs="0"/>
  *                 &lt;/sequence>
  *                 &lt;attribute name="Requires" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand"/>
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}ProcessContent"/>
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -43,13 +42,19 @@ import org.w3c.dom.Element;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;any processContents='skip' maxOccurs="unbounded"/>
+ *                   &lt;any maxOccurs="unbounded" minOccurs="0"/>
  *                 &lt;/sequence>
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand"/>
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}ProcessContent"/>
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
  *       &lt;/sequence>
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand"/>
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}ProcessContent"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -63,16 +68,18 @@ import org.w3c.dom.Element;
     "fallback"
 })
 @XmlRootElement(name = "AlternateContent")
-public class AlternateContent
-    implements Child
-{
+public class AlternateContent {
 
-    @XmlElement(name = "Choice", required = true)
+    @XmlElement(name = "Choice")
     protected List<AlternateContent.Choice> choice;
     @XmlElement(name = "Fallback")
     protected AlternateContent.Fallback fallback;
-    @XmlTransient
-    private Object parent;
+    @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String ignorable;
+    @XmlAttribute(name = "MustUnderstand", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String mustUnderstand;
+    @XmlAttribute(name = "ProcessContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String processContent;
 
     /**
      * Gets the value of the choice property.
@@ -128,29 +135,75 @@ public class AlternateContent
     }
 
     /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * Gets the value of the ignorable property.
      * 
      * @return
-     *     The parent object.
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
+    public String getIgnorable() {
+        return ignorable;
     }
 
     /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * Sets the value of the ignorable property.
      * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
+    public void setIgnorable(String value) {
+        this.ignorable = value;
+    }
+
+    /**
+     * Gets the value of the mustUnderstand property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getMustUnderstand() {
+        return mustUnderstand;
+    }
+
+    /**
+     * Sets the value of the mustUnderstand property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setMustUnderstand(String value) {
+        this.mustUnderstand = value;
+    }
+
+    /**
+     * Gets the value of the processContent property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getProcessContent() {
+        return processContent;
+    }
+
+    /**
+     * Sets the value of the processContent property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setProcessContent(String value) {
+        this.processContent = value;
     }
 
 
@@ -164,9 +217,12 @@ public class AlternateContent
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;any processContents='skip' maxOccurs="unbounded"/>
+     *         &lt;any maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
      *       &lt;attribute name="Requires" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand"/>
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}ProcessContent"/>
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -178,16 +234,18 @@ public class AlternateContent
     @XmlType(name = "", propOrder = {
         "any"
     })
-    public static class Choice
-        implements Child
-    {
+    public static class Choice {
 
-        @XmlAnyElement
-        protected List<Element> any;
+        @XmlAnyElement(lax = true)
+        protected List<Object> any;
         @XmlAttribute(name = "Requires", required = true)
         protected String requires;
-        @XmlTransient
-        private Object parent;
+        @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String ignorable;
+        @XmlAttribute(name = "MustUnderstand", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String mustUnderstand;
+        @XmlAttribute(name = "ProcessContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String processContent;
 
         /**
          * Gets the value of the any property.
@@ -207,13 +265,13 @@ public class AlternateContent
          * 
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link Element }
+         * {@link Object }
          * 
          * 
          */
-        public List<Element> getAny() {
+        public List<Object> getAny() {
             if (any == null) {
-                any = new ArrayList<Element>();
+                any = new ArrayList<Object>();
             }
             return this.any;
         }
@@ -243,29 +301,75 @@ public class AlternateContent
         }
 
         /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * Gets the value of the ignorable property.
          * 
          * @return
-         *     The parent object.
+         *     possible object is
+         *     {@link String }
+         *     
          */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
+        public String getIgnorable() {
+            return ignorable;
         }
 
         /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * Sets the value of the ignorable property.
          * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
          */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
+        public void setIgnorable(String value) {
+            this.ignorable = value;
+        }
+
+        /**
+         * Gets the value of the mustUnderstand property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getMustUnderstand() {
+            return mustUnderstand;
+        }
+
+        /**
+         * Sets the value of the mustUnderstand property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setMustUnderstand(String value) {
+            this.mustUnderstand = value;
+        }
+
+        /**
+         * Gets the value of the processContent property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getProcessContent() {
+            return processContent;
+        }
+
+        /**
+         * Sets the value of the processContent property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setProcessContent(String value) {
+            this.processContent = value;
         }
 
     }
@@ -281,8 +385,11 @@ public class AlternateContent
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;any processContents='skip' maxOccurs="unbounded"/>
+     *         &lt;any maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/>
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand"/>
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}ProcessContent"/>
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -294,14 +401,16 @@ public class AlternateContent
     @XmlType(name = "", propOrder = {
         "any"
     })
-    public static class Fallback
-        implements Child
-    {
+    public static class Fallback {
 
-        @XmlAnyElement
-        protected List<Element> any;
-        @XmlTransient
-        private Object parent;
+        @XmlAnyElement(lax = true)
+        protected List<Object> any;
+        @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String ignorable;
+        @XmlAttribute(name = "MustUnderstand", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String mustUnderstand;
+        @XmlAttribute(name = "ProcessContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+        protected String processContent;
 
         /**
          * Gets the value of the any property.
@@ -321,41 +430,87 @@ public class AlternateContent
          * 
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link Element }
+         * {@link Object }
          * 
          * 
          */
-        public List<Element> getAny() {
+        public List<Object> getAny() {
             if (any == null) {
-                any = new ArrayList<Element>();
+                any = new ArrayList<Object>();
             }
             return this.any;
         }
 
         /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * Gets the value of the ignorable property.
          * 
          * @return
-         *     The parent object.
+         *     possible object is
+         *     {@link String }
+         *     
          */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
+        public String getIgnorable() {
+            return ignorable;
         }
 
         /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * Sets the value of the ignorable property.
          * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
          */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
+        public void setIgnorable(String value) {
+            this.ignorable = value;
+        }
+
+        /**
+         * Gets the value of the mustUnderstand property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getMustUnderstand() {
+            return mustUnderstand;
+        }
+
+        /**
+         * Sets the value of the mustUnderstand property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setMustUnderstand(String value) {
+            this.mustUnderstand = value;
+        }
+
+        /**
+         * Gets the value of the processContent property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getProcessContent() {
+            return processContent;
+        }
+
+        /**
+         * Sets the value of the processContent property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setProcessContent(String value) {
+            this.processContent = value;
         }
 
     }

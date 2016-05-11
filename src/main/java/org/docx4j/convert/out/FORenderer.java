@@ -57,6 +57,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
  *  @since 3.0
  */
 public interface FORenderer {
+	
 	public static final String PLACEHOLDER_PREFIX = "${";
 	public static final String PLACEHOLDER_SUFFIX = "}";
 	
@@ -83,5 +84,6 @@ public interface FORenderer {
 	 * @throws Docx4JException 
 	 */
 	public void render(String foDocument, FOSettings settings, boolean twoPass, List<SectionPageInformation> pageNumberInformation, OutputStream outputStream) throws Docx4JException;
+
 
 }

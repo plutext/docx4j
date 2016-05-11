@@ -21,51 +21,15 @@
 package org.docx4j.openpackaging.parts;
 
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
-import org.docx4j.customXmlProperties.SchemaRefs;
-import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
-import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
-import org.docx4j.wml.Body;
-import org.docx4j.wml.CTDataBinding;
-import org.docx4j.wml.CTSdtContentCell;
-import org.docx4j.wml.P;
-import org.docx4j.wml.SdtPr;
-import org.docx4j.wml.Tag;
-import org.docx4j.wml.Tc;
-import org.opendope.conditions.Condition;
+import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -144,7 +108,7 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 			}
 		}
 		
-		this.partName = new PartName("/customXml/item" + partNum + ".xml");
+		this.setPartName(new PartName("/customXml/item" + partNum + ".xml"));
 		log.info("Using PartName /customXml/item" + partNum + ".xml");
 		init();
 	}
@@ -193,6 +157,20 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 			throws Docx4JException {
 		return getData().xpathGetString(xpath, prefixMappings);
 	}
+	
+	/**
+	 * @since 3.3.1
+	 */
+	@Override
+	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException {
+		return getData().cachedXPathGetString(xpath, prefixMappings);		
+	}
+	
+	@Override
+	public void discardCacheXPathObject() {
+		getData().discardCacheXPathObject();
+		
+	}	
 
 	@Override
 	public List<Node> xpathGetNodes(String xpathString, String prefixMappings)
@@ -200,5 +178,67 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 		return getData().xpathGetNodes(xpathString, prefixMappings);
 	}
 
+	@Override
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
+		return data.setNodeValueAtXPath(xpath, value, prefixMappings);
+		
+	}
+	
+	/**
+	 * Get the XML as a String.
+	 * 
+	 * @since 3.0.1
+	 */
+	public String getXML() throws Docx4JException {
+		return data.getXML();
+	}
+
+	/**
+	 * @since 3.0.2
+	 */
+	public String getItemId() {
+		
+		if (this.getRelationshipsPart()==null) { 
+			return null; 
+		} else {
+			// Look in its rels for rel of @Type customXmlProps (eg @Target="itemProps1.xml")
+			Relationship r = this.getRelationshipsPart().getRelationshipByType(
+					Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
+			if (r==null) {
+				log.warn(".. but that doesn't point to a  customXmlProps part");
+				return null;
+			}
+			CustomXmlDataStoragePropertiesPart customXmlProps = 
+				(CustomXmlDataStoragePropertiesPart)this.getRelationshipsPart().getPart(r);
+			if (customXmlProps==null) {
+				log.warn(".. but the target seems to be missing?");
+				return null;
+			} else {
+				return customXmlProps.getItemId().toLowerCase();
+			}
+		}
+	}	
+	
+    /**
+     * Remove this part from the pkg. Beware: it is up to you to make sure
+     * your content doesn't rely on this part being present!  A symptom of
+     * that would be that Office now reports your file to be corrupt or in 
+     * need of repair.   
+     * 
+     * @since 3.0.2
+     */
+	@Override	
+    public void remove() {
+		
+		String itemId = this.getItemId(); 
+		if (itemId!=null) {
+			log.debug("removing from CustomXmlDataStorageParts " + itemId);
+			this.getPackage().getCustomXmlDataStorageParts().remove(itemId);
+		}		
+		
+		super.remove();
+    	
+    }
+    
 	
 }

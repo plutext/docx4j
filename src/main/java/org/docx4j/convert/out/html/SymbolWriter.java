@@ -67,7 +67,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	DocumentFragment docfrag = doc.createDocumentFragment();
 	
 	String fontName = modelData.getFont();
-	PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
+	PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
 
 	if (pf==null) {
 		log.warn("No physical font present for:" + fontName);		
@@ -78,7 +78,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	    Element span = doc.createElement("span");
 	    docfrag.appendChild(span);
 		
-	    span.setAttribute("style", "font-family:" + pf.getName() );
+	    span.setAttribute("style", "font-family: '" + pf.getName() + "'" );
 	    span.appendChild( theChar );
 	}
     

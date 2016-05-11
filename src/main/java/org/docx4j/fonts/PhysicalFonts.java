@@ -2,10 +2,7 @@ package org.docx4j.fonts;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -19,6 +16,8 @@ import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
 import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 
 //import com.lowagie.text.pdf.BaseFont;
@@ -28,6 +27,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
  * 
  * They can be discovered automatically, or you can
  * just add specific fonts.
+ * 
+ * Do NOT add fonts embedded in a docx to physicalFontMap!
  * 
  * @author dev
  *
@@ -39,12 +40,42 @@ public class PhysicalFonts {
 	protected static FontCache fontCache;
 
 	
-	/** These are the physical fonts on the system which we have discovered. */ 
+	/** These are the physical fonts on the system which we have discovered. 
+	 * Do NOT add fonts embedded in a docx to physicalFontMap! */ 
 	private final static Map<String, PhysicalFont> physicalFontMap;
+	
+	@Deprecated // want to enforce case insensitive
 	public static Map<String, PhysicalFont> getPhysicalFonts() {
 		return physicalFontMap;
 	}
-
+	
+	/**
+	 * Get a PhysicalFont 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public static PhysicalFont get(String key) {
+		return physicalFontMap.get(key.toLowerCase());
+	}
+	/**
+	 * Put a PhysicalFont 
+	 * by case-insensitive name.  (Although Word always
+	 * uses Title Case for font names, it is actually
+	 * case insensitive; the spec is silent on this.)  
+	 * 
+	 * @param key
+	 * @param pf
+	 */
+	public static void put(String key, PhysicalFont pf) {
+		if (physicalFontMap.get(key.toLowerCase())!=null) {
+			log.warn("Overwriting existing physicalFontMap entry: " + key.toLowerCase());
+		}
+		physicalFontMap.put(key.toLowerCase(), pf);
+	}
 
 	private final static Map<String, PhysicalFont> physicalFontMapByFilenameLowercase;
 	
@@ -152,19 +183,20 @@ public class PhysicalFonts {
             	if (pattern.matcher(fontUrl.toString()).matches()){
             		addPhysicalFont( fontUrl);        		
             	} else {
-                	log.debug("Ignoring " + fontUrl.toString() );
+//                	log.debug("Ignoring " + fontUrl.toString() );
 
             	}
             }
         }
         
 
-        // Add fonts from our Temporary Embedded Fonts dir
-        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = getURL(iter.next());
-            addPhysicalFont( fontUrl);
-        }
+// docx4j 3.2.2: no, these are document specific, so don't belong in PhysicalFonts        
+//        // Add fonts from our Temporary Embedded Fonts dir
+//        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
+//        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+//            URL fontUrl = getURL(iter.next());
+//            addPhysicalFont( fontUrl);
+//        }
         
         fontCache.save();
         
@@ -186,20 +218,80 @@ public class PhysicalFonts {
 	private static boolean loggedWarningAlready = false;
 	
 	/**
-	 * Add a physical font's EmbedFontInfo object.
+	 * Add a physical font's EmbedFontInfo object.  Not to be used for embedded fonts.
 	 *
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
 	public static void addPhysicalFont(URL fontUrl) {
-		addPhysicalFont(null, fontUrl);
+		addPhysicalFonts(null, fontUrl);
 	}
 
 	/**
-	 * Add a physical font's EmbedFontInfo object.
+	 * Add a physical font's EmbedFontInfo object.  Not to be used for embedded fonts.
 	 * 
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static void addPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+	public static void addPhysicalFonts(String nameAsInFontTablePart, URL fontUrl) {
+
+		List<PhysicalFont> physicalFonts = getPhysicalFont( nameAsInFontTablePart,  fontUrl);
+		if (physicalFonts==null) return;
+		for (PhysicalFont pf : physicalFonts) {
+			
+	        if (pf!=null) {
+	        		        	
+	        	// Add it to the map
+	        	put(pf.getName(), pf);
+	    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
+
+				if (nameAsInFontTablePart != null 
+						&& get(nameAsInFontTablePart)==null) {
+					
+					put(nameAsInFontTablePart, pf);
+					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
+				}
+	    		
+	    		// We also need to add it to map by filename
+	    		String filename = pf.getEmbeddedFile();
+	    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
+	    				    		
+	    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
+	    		
+	    		if (osName.startsWith("Mac")) {
+	    			filename = filename.replace("%20", " "); 
+	    			/* there are a few like this on Windows as well, but they're exotic, 
+	    			 * eg  biondi%20light.ttf catriel ligurino *Tiger* tandelle
+	    			 */
+	    		}
+	    		physicalFontMapByFilenameLowercase.put(filename, pf);
+	    		log.debug("added to filename map: " + filename);
+	        	
+//	        	String familyName = triplet.getName();
+//	        	pf.setFamilyName(familyName);
+//	        	
+//	        	PhysicalFontFamily pff;
+//	        	if (physicalFontFamiliesMap.get(familyName)==null) {
+//	        		pff = new PhysicalFontFamily(familyName);
+//	        		physicalFontFamiliesMap.put(familyName, pff);
+//	        	} else {
+//	        		pff = physicalFontFamiliesMap.get(familyName);
+//	        	}
+//	        	pff.addFont(pf);
+	        	
+	        }			
+		}
+		
+	}
+	
+	/**
+	 * Get a physical font's EmbedFontInfo object.
+	 * 
+	 * @param fontUrl eg new java.net.URL("file:" + path)
+	 */
+	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+
+		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
+		
+		log.debug(nameAsInFontTablePart);
 
 		
 		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
@@ -212,11 +304,10 @@ public class PhysicalFonts {
 			// Quite a few fonts exist that we can't seem to get
 			// EmbedFontInfo for. To be investigated.
 			log.warn("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
-			return;
+			return null;
 		}
 		
 		StringBuffer debug = new StringBuffer();
-		
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
 			/* EmbedFontInfo has:
@@ -372,45 +463,15 @@ public class PhysicalFonts {
 		        } else {                    	
 		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 		        }
-		    	
 		        
 		        if (pf!=null) {
-		        	
-		        	// Add it to the map
-		        	physicalFontMap.put(pf.getName(), pf);
-		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());
-
-				if (nameAsInFontTablePart != null && !physicalFontMap.containsKey(nameAsInFontTablePart)) {
-					physicalFontMap.put(nameAsInFontTablePart, pf);
-					log.debug("Added " + nameAsInFontTablePart + " -> " + pf.getEmbeddedFile());
-				}
-		    		
-		    		// We also need to add it to map by filename
-		    		String filename = pf.getEmbeddedFile();
-		    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
-		    		
-		    		if (osName.startsWith("Mac")) {
-		    			filename = filename.replace("%20", " "); 
-		    		}
-		    		physicalFontMapByFilenameLowercase.put(filename, pf);
-		    		log.debug("added to filename map: " + filename);
-		        	
-//		        	String familyName = triplet.getName();
-//		        	pf.setFamilyName(familyName);
-//		        	
-//		        	PhysicalFontFamily pff;
-//		        	if (physicalFontFamiliesMap.get(familyName)==null) {
-//		        		pff = new PhysicalFontFamily(familyName);
-//		        		physicalFontFamiliesMap.put(familyName, pff);
-//		        	} else {
-//		        		pff = physicalFontFamiliesMap.get(familyName);
-//		        	}
-//		        	pff.addFont(pf);
-		        	
+					pfList.add(pf);
 		        }
+
 			}            	
 		
 		log.debug(debug.toString() );
+		return pfList;
 	}
 	
 	public static PhysicalFont getBoldForm( PhysicalFont pf) {
@@ -433,6 +494,10 @@ public class PhysicalFonts {
 
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getBold().getMac()==null) {
+					log.debug("No bold form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getBold().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getBold().getFilename().toLowerCase();
@@ -461,6 +526,10 @@ public class PhysicalFonts {
 			// since MicrosoftFonts.xml doesn't give the associate font name
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getBolditalic().getMac()==null) {
+					log.debug("No Bolditalic form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getBolditalic().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getBolditalic().getFilename().toLowerCase();
@@ -489,6 +558,10 @@ public class PhysicalFonts {
 			// since MicrosoftFonts.xml doesn't give the associate font name
 			String filename;
 		    if (osName.startsWith("Mac")) {
+		    	if (msFont.getItalic().getMac()==null) {
+					log.info("No italic form for mac for: " + pf.getName());
+		    		return null;		    	
+		    	}
 		    	filename = msFont.getItalic().getMac().toLowerCase();
 		    } else {
 		    	filename = msFont.getItalic().getFilename().toLowerCase();
@@ -498,6 +571,25 @@ public class PhysicalFonts {
 		}
 		
 	}
+	
+	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
+		
+		log.debug("looking for: " + fontName);
+
+		if (!(wmlPackage instanceof WordprocessingMLPackage)) {
+			log.error("Implement me for pptx4j");
+			return null;
+		}
+		PhysicalFont pf = ((WordprocessingMLPackage)wmlPackage).getFontMapper().get(fontName);
+		if (pf!=null) {
+			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
+			return pf.getName();
+		} else {
+			log.warn("Font '" + fontName + "' is not mapped to a physical font. " );			
+			return null;
+		}		
+	}	
+	
 
 	public static void main(String[] args) throws Exception {
 

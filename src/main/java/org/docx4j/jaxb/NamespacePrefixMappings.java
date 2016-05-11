@@ -26,11 +26,10 @@ import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.w3c.dom.Node;
 
 /**
  * NamespacePrefixMappings, required for JAXB, and XPath.
@@ -50,7 +49,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * @author jharrop
  *
  */
-public class NamespacePrefixMappings implements NamespaceContext {
+public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml.utils.PrefixResolver {
+
 
 	
     /**
@@ -124,12 +124,19 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "r";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/digital-signature")) {
+    		return "mdssi";
+    	}    	
+    	
     	// DrawingML 
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
     		return "wp";
     	}    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chart")) {
     		return "c";
+    	}    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")) {
+    		return "b";
     	}    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
     		return "a";
@@ -164,10 +171,36 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordml")) {
     		return "w14";
     	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas")) {
+    		return "wpc";
+    	}
 
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")) {
+    		return "wp14";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingGroup")) {
+    		return "wpg";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingInk")) {
+    		return "wpi";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingShape")) {
+    		return "wps";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2012/wordml")) {
     		return "w15";
     	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2015/wordml/symex")) {
+    		return "w16se";
+    	}
+    	
+    	
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
     		return "aml";
@@ -255,6 +288,14 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/markup-compatibility/2006")) {
     		return "mc";
     	}
+
+    	if (namespaceUri.equals("http://uri.etsi.org/01903/v1.3.2#")) {
+    		return "xd";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/digsig")) {
+    		return "dssi";
+    	}
     	
     	return suggestion;
     }
@@ -302,6 +343,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
 
 		if (prefix.equals("rel"))
 			return "http://schemas.openxmlformats.org/package/2006/relationships";
+		
+		if (prefix.equals("mdssi"))
+			return "http://schemas.openxmlformats.org/package/2006/digital-signature";
+		
 
 		// DrawingML
 		if (prefix.equals("wp"))
@@ -310,6 +355,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		if (prefix.equals("c"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/chart";
 
+		if (prefix.equals("b"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/bibliography";
+		
 		if (prefix.equals("a"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/main";
 
@@ -336,9 +384,27 @@ public class NamespacePrefixMappings implements NamespaceContext {
 
 		if (prefix.equals("w14"))
 			return "http://schemas.microsoft.com/office/word/2010/wordml";
+		
+		if (prefix.equals("wpc"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas";
+		
+		if (prefix.equals("wp14"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+		
+		if (prefix.equals("wpg"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup";
+		
+		if (prefix.equals("wpi"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingInk";
 
+		if (prefix.equals("wps"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
+		
 		if (prefix.equals("w15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordml";
+
+		if (prefix.equals("w16se"))
+			return "http://schemas.microsoft.com/office/word/2015/wordml/symex";
 		
 		if (prefix.equals("aml"))
 			return "http://schemas.microsoft.com/aml/2001/core";
@@ -392,7 +458,13 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			return Namespaces.XML_EVENTS;
 		else if (prefix.equals("xs"))
 			return Namespaces.XML_SCHEMA;
+		
+		if (prefix.equals("xd"))
+			return "http://uri.etsi.org/01903/v1.3.2#";
 
+		if (prefix.equals("dssi"))
+			return "http://schemas.microsoft.com/office/2006/digsig";
+		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
 		if (result==null) {
@@ -437,7 +509,7 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		// once!
 		
 		// first tokenise on space
-		StrTokenizer tokens = new StrTokenizer(prefixMappings);
+		StrTokenizer tokens = new org.apache.commons.lang3.text.StrTokenizer(prefixMappings);
 		while (tokens.hasNext() ) {
 			String token = tokens.nextToken();
 			//log.debug("Got: " + token);
@@ -449,6 +521,37 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			namespaces.put(prefix, uri);
 		}
 		
+	}
+
+
+/* Implement org.apache.xml.utils.PrefixResolver, for org.apache.xpath.CachedXPathAPI */
+	
+	@Override
+	public String getNamespaceForPrefix(String prefix) {
+		return getNamespaceURI( prefix);
+	}
+
+
+
+	@Override
+	public String getNamespaceForPrefix(String prefix, Node context) {
+		return getNamespaceURI( prefix);
+	}
+
+
+
+	@Override
+	public String getBaseIdentifier() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	@Override
+	public boolean handlesNullPrefixes() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
     

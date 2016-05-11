@@ -32,6 +32,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.relationships.Relationships;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +103,7 @@ public abstract class Part extends Base {
 			// except for a part which isn't yet connected to
 			// a package via a relationship.
 			if (this.sourceRelationships.size()==0) {
-				log.warn(this.partName.getName() + " has no source rel set");
+				log.warn(this.getPartName().getName() + " has no source rel set");
 				return null;
 			} else {
 				// It ought to be the same in each source rel
@@ -124,15 +125,18 @@ public abstract class Part extends Base {
 	 */
 	private RelationshipsPart owningRelationshipPart;
 	
-	// TODO, instead of Part.getOwningRelationshipPart(),
-	// it would be better to have getOwningRelationship(),
-	// and if required, to get OwningRelationshipPart from that
+	// instead of Part.getOwningRelationshipPart(),
+	// we now have getSourceRelationships()
+	// TODO can't get OwningRelationshipPart from that
+	// (set that on the Relationships object?)
 
 		
+	@Deprecated
 	public RelationshipsPart getOwningRelationshipPart() {
 		return owningRelationshipPart;
 	}
 
+	@Deprecated
 	public void setOwningRelationshipPart(
 			RelationshipsPart owningRelationshipPart) {
 		this.owningRelationshipPart = owningRelationshipPart;
@@ -174,8 +178,8 @@ public abstract class Part extends Base {
 	 */
 	public Part(PartName partName)
 			throws InvalidFormatException {
-		log.info( partName.getName() );
-		this.partName = partName;
+//		log.debug( partName.getName() );
+		this.setPartName(partName);
 	}
 	
 
@@ -201,6 +205,8 @@ public abstract class Part extends Base {
 	public OpcPackage getPackage() {
 		if (pack==null) {
 			log.error("Package field null for this Part " + this.getClass().getName() );
+		} else if (log.isDebugEnabled() ) {
+			log.debug(pack.name());
 		}
 		return pack;
 	}
@@ -209,7 +215,8 @@ public abstract class Part extends Base {
 	// think through whether, and if so 
 	// where and how it should be set
 	public void setPackage( OpcPackage pack) {
-		log.debug("setPackage called for " + this.getClass().getName() );
+		log.debug("setPackage to " + pack.name() + " called for " + this.getClass().getName() );
+		//(new Throwable()).printStackTrace();
 		this.pack = pack;
 	}
 
@@ -238,8 +245,9 @@ public abstract class Part extends Base {
 	 * take action to avoid name collisions.
 	 * 
 	 * @param newName
+	 * @since 3.2.0
 	 */
-	public void setPartName(PartName newName) {
+	public void rename(PartName newName) {
 		
 		log.info("Renaming part " + this.getPartName().getName() + " to " + newName.getName() );
 		
@@ -263,12 +271,47 @@ public abstract class Part extends Base {
 		}
 
 		// Set the new part name
-		this.partName = newName;
+		this.setPartName(newName);
 		
 		// Add this part back to the parts collection
 		this.getPackage().getParts().put(this);
 	}
 
     public abstract boolean isContentEqual(Part other) throws Docx4JException;
+    
+    /**
+     * Remove this part from the pkg. Beware: it is up to you to make sure
+     * your content doesn't rely on this part being present!  A symptom of
+     * that would be that Office now reports your file to be corrupt or in 
+     * need of repair.   
+     * 
+     * @since 3.0.2
+     */
+    public void remove() {
+    	
+    	for (Relationship r : getSourceRelationships()) {
+    		
+    		if (r.getParent()==null) {
+    			
+    			log.warn("source rel of " + this.getPartName().getName() + " has no parent rels element");
+    			
+    		} else if (
+    				((Relationships)r.getParent()).getRelationship().remove(r) 
+    			) {
+    			log.debug("Successfully removed rel " + r.getId() );
+    				// we don't know which rels part Relationships belongs to, but it doesn't matter 
+    		} else {
+    			log.warn("source rel of " + this.getPartName().getName() + " not present in parent rels element");
+    		}
+    	}
+    	
+    	if (this.getPackage()==null) {
+    		log.warn(this.getPartName().getName() + " not attached to any package");
+    	} else {
+    		this.getPackage().getParts().remove(getPartName());
+    			// Note, this doesn't remove any child parts from that collection
+    	}
+    	
+    }
 
 }

@@ -23,17 +23,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.SdtPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -91,14 +89,18 @@ public class SdtWriter {
 			throw new TransformerException("Missing or broken w:sdtPr", e1);
 		}
 		
+		log.debug("in sdt");
 		if (sdtPr.getTag()==null) {
+			log.debug(".. no w:tag");
 			
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
+				log.debug("'*' handler");
 				handler = handlers.get("*");			
 				result = handler.toNode(context.getWmlPackage(), null, null, childResults);
 			} else {
 				// Just return the contents!
+				log.debug("identity handler");
 				result = identity.toNode(context.getWmlPackage(), null, null, childResults);
 			}
 			return debug(result);
@@ -175,9 +177,7 @@ public class SdtWriter {
 
 			try {
 				// Create a DOM builder and parse the fragment
-				DocumentBuilderFactory factory = DocumentBuilderFactory
-						.newInstance();
-				Document document = factory.newDocumentBuilder().newDocument();
+				Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 				DocumentFragment docfrag = document.createDocumentFragment();
 				
 				return attachContents(docfrag, docfrag, childResults);
@@ -194,9 +194,7 @@ public class SdtWriter {
 			// Implemented just in case user explicitly invokes IdentityHandler..			
 			try {
 				// Create a DOM builder and parse the fragment
-				DocumentBuilderFactory factory = DocumentBuilderFactory
-						.newInstance();
-				Document document = factory.newDocumentBuilder().newDocument();
+				Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 				DocumentFragment docfrag = document.createDocumentFragment();
 				
 				return attachContents(docfrag, docfrag, resultSoFar);
@@ -230,13 +228,7 @@ public class SdtWriter {
 		
 		private DocumentFragment emptyFragment() throws TransformerException {
 			
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			Document document;
-			try {
-				document = factory.newDocumentBuilder().newDocument();
-			} catch (ParserConfigurationException e) {
-				throw new TransformerException(e);
-			}
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			return document.createDocumentFragment();
 			
 		}

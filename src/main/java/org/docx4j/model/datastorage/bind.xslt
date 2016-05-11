@@ -1,6 +1,9 @@
 ﻿
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" 
+    xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" 
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
     xmlns:o="urn:schemas-microsoft-com:office:office"
     xmlns:v="urn:schemas-microsoft-com:vml"
@@ -23,7 +26,10 @@
 <xsl:param name="customXmlDataStorageParts"/> <!-- select="'passed in'"-->	
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="sourcePart"/> <!-- select="'passed in'"-->	
-<xsl:param name="xPathsPart"/> <!-- select="'passed in'"-->	
+<xsl:param name="xPathsMap"/> <!-- select="'passed in'"-->	
+<xsl:param name="sequenceCounters"/>
+<xsl:param name="bookmarkIdCounter"/>
+<xsl:param name="bindingTraverserState"/>  <!--  TODO consolidate some/all above into $bindingTraverserState -->
 
   <xsl:template match="/ | @*|node()">
     <xsl:copy>
@@ -72,6 +78,76 @@
   </xsl:template>
  
  
+<!-- docx4j 3.0.  If the w:sdtContent contains an existing w:drawing/wp:inline/a:graphic ..
+     reuse it, so any formatting thus configured is used.
+     We'll just replace the rId.. -->
+  
+  <xsl:template match=" @*|node()" mode="picture3">
+	<xsl:param name="sdtPr" select="/.."/> 
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"  mode="picture3">
+	    	<xsl:with-param name="sdtPr" select="$sdtPr"/>
+	    </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+  
+  
+  <xsl:template match="a:blip" mode="picture3" priority="1">
+	<xsl:param name="sdtPr" select="/.."/> 
+	<a:blip r:embed="{java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								string($sdtPr/w:dataBinding/@w:storeItemID),
+								string($sdtPr/w:dataBinding/@w:xpath),
+								string($sdtPr/w:dataBinding/@w:prefixMappings) )}" />
+<!--  if it was @r:link, it is now embedded -->
+  </xsl:template>
+
+<!-- 
+  <xsl:template match="a:blip" mode="picture3">
+	<xsl:param name="sdtPr" select="/.."/> 
+	<a:blip>
+		<xsl:attribute name="r:embed" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xsl:value-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								string($sdtPr/w:dataBinding/@w:storeItemID),
+								string($sdtPr/w:dataBinding/@w:xpath),
+								string($sdtPr/w:dataBinding/@w:prefixMappings) )" /></xsl:attribute>
+	</a:blip>
+  </xsl:template>
+  -->
+
+<!-- docx4j 3.0.1.  Handle a rich text control which contains an image.
+     Since this doesn't have a w:databinding, we can't just use mode="picture3"
+     
+     If the w:sdtContent contains an existing w:drawing/wp:inline/a:graphic ..
+     reuse it, so any formatting thus configured is used.
+     We'll just replace the rId.. -->
+  <xsl:template match=" @*|node()" mode="picture3richtext">
+	<xsl:param name="tag" select="/.."/> 
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"  mode="picture3richtext">
+			    	<xsl:with-param name="tag" select="$tag"/>
+	    </xsl:apply-templates>
+    </xsl:copy>
+  </xsl:template>
+  
+  
+  <xsl:template match="a:blip" mode="picture3richtext" priority="1">
+	<xsl:param name="tag" select="/.."/> 
+	<a:blip r:embed="{java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
+								$wmlPackage,
+								$sourcePart,
+								$customXmlDataStorageParts,
+								$xPathsMap,
+								$tag )}" />
+								
+<!--  if it was @r:link, it is now embedded -->
+  </xsl:template>
+  
+  
   <xsl:template match="w:sdt">  
   
   	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
@@ -80,32 +156,103 @@
 	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
   	
   	<xsl:choose>
+  	
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'w15:resultRepeatZero')">
+			     <xsl:copy-of select="."/>  		
+		</xsl:when>  
 
-  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
-  			<!--  honour w:dataBinding -->
+		<!--  3.0.1 rich text cc containing w:drawing -->
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">
+  		
 			<xsl:copy>
 			     <xsl:copy-of select="w:sdtPr"/>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
 		     	</xsl:if>
+	
+			    <xsl:apply-templates select="w:sdtContent" mode="picture3richtext"> 
+			    	<xsl:with-param name="tag" select="$tag"/>
+			    </xsl:apply-templates>
+			     
+			</xsl:copy>
+				
+		</xsl:when>  		
 
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w14:checkbox">
+  			<!--  since 3.2.2, honour w:dataBinding -->
+  			
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
 			     
 			     <w:sdtContent>
+			     	
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										string(w:sdtPr/w:dataBinding/@w:storeItemID),
-										string(w:sdtPr/w:dataBinding/@w:xpath),
-										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										$parent,
-										$child,
-										string(w:sdtContent//wp:extent[1]/@cx), 
-										string(w:sdtContent//wp:extent[1]/@cy))" />
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14Checkbox(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												w:sdtPr,
+												$parent,
+												$child)" />
 			     </w:sdtContent>
-			</xsl:copy>
+			     
+			</xsl:copy>    			
+
+		</xsl:when>  		
+
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
+  			<!--  honour w:dataBinding -->
+  			
+  			<xsl:choose>
+  				<xsl:when test="w:sdtContent//a:blip"><!-- docx4j 3.0 -->
+  					
+					<xsl:copy>
+					     <xsl:copy-of select="w:sdtPr"/>
+					     
+					     <xsl:if test="w:stdEndPr">
+					     	<xsl:copy-of select="w:sdtEndPr"/>
+				     	</xsl:if>
+		
+					    <xsl:apply-templates select="w:sdtContent" mode="picture3"> 
+					    	<xsl:with-param name="sdtPr" select="w:sdtPr"/>
+					    </xsl:apply-templates>
+					     
+					</xsl:copy>
+  				
+  				</xsl:when>
+  				<xsl:otherwise>
+  					<!--  fallback to pre v3 approach -->
+					<xsl:copy>
+					     <xsl:copy-of select="w:sdtPr"/>
+					     
+					     <xsl:if test="w:stdEndPr">
+					     	<xsl:copy-of select="w:sdtEndPr"/>
+				     	</xsl:if>
+		
+					     
+					     <w:sdtContent>
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												string(w:sdtPr/w:dataBinding/@w:storeItemID),
+												string(w:sdtPr/w:dataBinding/@w:xpath),
+												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+												$parent,
+												$child,
+												string(w:sdtContent//wp:extent[1]/@cx), 
+												string(w:sdtContent//wp:extent[1]/@cy))" />
+					     </w:sdtContent>
+					</xsl:copy>
+  				
+  				</xsl:otherwise>
+  			</xsl:choose>
 		</xsl:when>
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
@@ -169,14 +316,17 @@
 				  		       -->
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tr">
 				  			<!--  no reason in principle why we couldn't convert
@@ -188,14 +338,17 @@
 				  			       -->
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tc">
 				  			<!--  no reason in principle why we couldn't convert
@@ -206,14 +359,17 @@
 				  			       -->
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:p">
 				  		
@@ -226,14 +382,17 @@
 			  				<!--  create runs -->
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level 
 				  		
@@ -245,14 +404,17 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										$parent,
 										$child,
 										w:sdtPr/w:rPr,
-										$tag )" />
+										$tag,
+										$sequenceCounters,
+										$bookmarkIdCounter )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
@@ -260,6 +422,41 @@
 			</xsl:copy>  		  			
   		</xsl:when>
   		
+  		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:progid=Word.Document' )">
+  			<!--  Convert escaped Flat OPC XML.
+  			
+  				  We're inserting into a rich text control,
+  				  which in turn means there can't be a w:sdtPr/w:dataBinding.  
+  				  
+  				  So the extension function must read xpath from the w:tag, which in turn means the Word Add-In 
+  				  editor must write that.
+  				    			
+  			 -->
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+			     	
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertFlatOPC(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsMap,
+										$parent,
+										$child,
+										w:sdtPr/w:rPr,
+										$tag )" />
+			     </w:sdtContent>
+			     
+			</xsl:copy>  		  			
+  		</xsl:when>
+				  		
+				  		  		
   		
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:RptPosCon')">
   		
@@ -301,7 +498,7 @@
 		
 			<xsl:variable name="expression"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.getRepeatPositionCondition(								
-										$xPathsPart,
+										$xPathsMap,
 										string(w:sdtPr/w:tag/@w:val))" />
 							
 		
@@ -352,10 +549,11 @@
 							  				
 											<xsl:copy-of
 											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+														$bindingTraverserState,
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
-														$xPathsPart,
+														$xPathsMap,
 														w:sdtPr,
 														$parent,
 														$child,
@@ -375,10 +573,11 @@
 						  				
 										<xsl:copy-of
 										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+													$bindingTraverserState,										
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
-													$xPathsPart,
+													$xPathsMap,
 													w:sdtPr,
 													$parent,
 													$child,
@@ -398,10 +597,11 @@
 					  				<!--  create runs -->
 									<xsl:copy-of
 									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+												$bindingTraverserState,										
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
-												$xPathsPart,
+												$xPathsMap,
 												w:sdtPr,
 												$parent,
 												$child,
@@ -417,10 +617,11 @@
 				  				<!--  create runs -->
 								<xsl:copy-of
 								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+											$bindingTraverserState,										
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
-											$xPathsPart,
+											$xPathsMap,
 											w:sdtPr,
 											$parent,
 											$child,
@@ -431,10 +632,11 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+										$bindingTraverserState,										
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										$xPathsPart,
+										$xPathsMap,
 										w:sdtPr,
 										$parent,
 										$child,
@@ -481,6 +683,7 @@
 							  				
 											<xsl:copy-of
 											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+														$bindingTraverserState,										
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
@@ -506,6 +709,7 @@
 						  				
 										<xsl:copy-of
 										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+													$bindingTraverserState,										
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
@@ -531,6 +735,7 @@
 					  				<!--  create runs -->
 									<xsl:copy-of
 									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+												$bindingTraverserState,										
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
@@ -552,6 +757,7 @@
 				  				<!--  create runs -->
 								<xsl:copy-of
 								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+											$bindingTraverserState,										
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
@@ -568,6 +774,7 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
+										$bindingTraverserState,										
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -652,6 +859,25 @@
   <!-- Remove these, so missing data does not result
        in Click here to enter text in Word -->
   <xsl:template match="w:placeholder"/>  
+
+  <!--  v3.3.0, allows us to keep track of cell width, 
+        so imported bare XHTML images can be scaled if necessary  -->
+  <xsl:template match="w:tc">  
+  
+  <xsl:variable name="tc" select="." />
+  
+  <xsl:variable name="dummy"
+	select="java:org.docx4j.model.datastorage.BindingTraverserState.enteredTc( $bindingTraverserState, $tc )" />  	
+
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+
+  <xsl:variable name="dummy2"
+	select="java:org.docx4j.model.datastorage.BindingTraverserState.exitedTc( $bindingTraverserState )" />  	
+      
+  </xsl:template>
+
 
    
 </xsl:stylesheet>

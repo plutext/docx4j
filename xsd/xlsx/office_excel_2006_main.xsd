@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://schemas.microsoft.com/office/excel/2006/main"
+	elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/excel/2006/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- From [MS-XLSX] — v20130726
+Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.excel.main2006"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+
+	<xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+		schemaLocation="xlbasictypes.xsd" />
+	<xsd:simpleType name="ST_Ref">
+		<xsd:restriction base="xsd:string" />
+	</xsd:simpleType>
+	<xsd:complexType name="CT_Ref">
+		<xsd:simpleContent>
+			<xsd:extension base="ST_Ref">
+				<xsd:attribute name="edited" type="xsd:boolean" use="optional" />
+				<xsd:attribute name="adjusted" type="xsd:boolean" use="optional" />
+				<xsd:attribute name="adjust" type="xsd:boolean" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_Sqref">
+		<xsd:list itemType="ST_Ref" />
+	</xsd:simpleType>
+	<xsd:complexType name="CT_Sqref">
+		<xsd:simpleContent>
+			<xsd:extension base="ST_Sqref">
+				<xsd:attribute name="edited" type="xsd:boolean" use="optional" />
+				<xsd:attribute name="split" type="xsd:boolean" use="optional" />
+				<xsd:attribute name="adjusted" type="xsd:boolean" use="optional" />
+				<xsd:attribute name="adjust" type="xsd:boolean" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="f" type="x:ST_Formula" />
+	<xsd:element name="ref" type="CT_Ref" />
+	<xsd:element name="sqref" type="CT_Sqref" />
+</xsd:schema>

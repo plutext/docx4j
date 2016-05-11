@@ -156,6 +156,7 @@ public class Xpaths {
     @XmlType(name = "", propOrder = {
         "dataBinding"
     })
+    @XmlRootElement(name="xpath", namespace="http://opendope.org/xpaths")
     public static class Xpath {
 
         @XmlElement(required = true)

@@ -19,16 +19,10 @@
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.JAXBElement;
-
-import org.docx4j.dml.CTTableStyleList;
 import org.docx4j.dml.spreadsheetdrawing.CTDrawing;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.xlsx4j.jaxb.Context;
-import org.xlsx4j.sml.CTStylesheet;
 
 public class Drawing extends JaxbDmlPart<CTDrawing> {
 	// This part uses a JAXB content model from dml,

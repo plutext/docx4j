@@ -21,15 +21,16 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.math.BigInteger;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -115,7 +116,8 @@ import javax.xml.bind.annotation.XmlType;
     "shd",
     "tblLayout",
     "tblCellMar",
-    "tblLook"
+    "tblLook",
+	"tblCaption"
 })
 public class CTTblPrBase implements Child
 {
@@ -135,6 +137,7 @@ public class CTTblPrBase implements Child
     protected CTTblLayoutType tblLayout;
     protected CTTblCellMar tblCellMar;
     protected CTTblLook tblLook;
+	protected CTString tblCaption;
     @XmlTransient
     private Object parent;
 
@@ -496,6 +499,30 @@ public class CTTblPrBase implements Child
      */
     public void setTblLook(CTTblLook value) {
         this.tblLook = value;
+    }
+	
+	/**
+	 * Gets the value of the tblCaption property.
+	 *
+	 * @return
+	 *     possible object is
+     *     {@link CTString }
+     *     
+     */
+	public CTString getTblCaption() {
+		return tblCaption;
+	}
+	
+	/**
+     * Sets the value of the tblCaption property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTString }
+     *     
+     */
+    public void setTblCaption(CTString value) {
+        this.tblCaption = value;
     }
 
     /**

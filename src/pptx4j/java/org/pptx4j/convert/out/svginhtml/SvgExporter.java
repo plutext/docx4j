@@ -5,16 +5,12 @@ import java.io.ByteArrayOutputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.html.HtmlCssHelper;
@@ -41,6 +37,8 @@ import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.TextStyles;
 import org.pptx4j.pml.CxnSp;
 import org.pptx4j.pml.GroupShape;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -209,8 +207,7 @@ public class SvgExporter {
         	
         	
             // Create a DOM builder and parse the fragment			
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			
 			//log.info("Document: " + document.getClass().getName() );
 
@@ -241,7 +238,7 @@ public class SvgExporter {
 						);
 				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
 				if (pPr!=null) {
-					HtmlCssHelper.createCss(context.getPmlPackage(), pPr, inlineStyle, false);				
+					HtmlCssHelper.createCss(context.getPmlPackage(), pPr, inlineStyle, false, false);				
 				}
 				// TODO RPR
 			}
@@ -368,9 +365,7 @@ public class SvgExporter {
 		try {
 
 			// Create a DOM builder and parse the fragment
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			d = factory.newDocumentBuilder().newDocument();
+			d = XmlUtils.getNewDocumentBuilder().newDocument();
 
 			span = d.createElement("span");
 			d.appendChild(span);
@@ -450,7 +445,7 @@ public class SvgExporter {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlCssHelper.createCss(context.getPmlPackage(), s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(context.getPmlPackage(), s.getPPr(), result, false, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -531,7 +526,7 @@ public class SvgExporter {
     	b.toPixels();
 
     	// Wrap in a div positioning it on the page
-    	Document document = createDocument();
+    	Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 		Element xhtmlDiv = document.createElement("div");
 		// Firefox needs the following; Chrome doesn't
 		xhtmlDiv.setAttribute("style", 
@@ -562,14 +557,7 @@ public class SvgExporter {
     }
 
     private static Document makeErr(String msg) {
-    	Document d=null;
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		 try {
-			d = factory.newDocumentBuilder().newDocument();
-		} catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+    	Document d=XmlUtils.getNewDocumentBuilder().newDocument();
 		Element span = d.createElement("span");
 		span.setAttribute("style", "color:red;");
 		d.appendChild(span);
@@ -621,15 +609,4 @@ public class SvgExporter {
 		}        	        			    	
     }
     
-    public static Document createDocument() {
-    	
-    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-		Document document=null;
-		try {
-			document = factory.newDocumentBuilder().newDocument();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
-		return document;
-    }
 }

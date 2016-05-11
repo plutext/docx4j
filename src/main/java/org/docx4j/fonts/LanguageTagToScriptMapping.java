@@ -1,6 +1,11 @@
 package org.docx4j.fonts;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LanguageTagToScriptMapping {
+
+	protected static Logger log = LoggerFactory.getLogger(LanguageTagToScriptMapping.class);	
 	
 	/* The purpose of this class is to map an attribute value
 	 * from w:themeFontLang in the settings part,  
@@ -54,6 +59,8 @@ public class LanguageTagToScriptMapping {
 		if (pos>-1) {
 			lang = lang.substring(0, pos);
 		}
+		
+		log.debug("lang: " + lang);
 		
 		//    <a:font script="Jpan" typeface="ＭＳ 明朝"/>
 		if (lang.equals("ja")) {

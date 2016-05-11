@@ -20,26 +20,20 @@
 
 package org.docx4j.convert.out.flatOpcXml;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.zip.ZipEntry;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
@@ -52,8 +46,10 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.XmlSerializerUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -138,7 +134,7 @@ public class FlatOpcXmlCreator implements Output {
 			}
 	    }
 
-	    log.info("...Done!" );		
+	    log.debug("...Done!" );		
 
 		 return pkgResult;
 	}
@@ -216,10 +212,7 @@ public class FlatOpcXmlCreator implements Output {
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 			try {
-				javax.xml.parsers.DocumentBuilderFactory dbf
-					= javax.xml.parsers.DocumentBuilderFactory.newInstance();
-				dbf.setNamespaceAware(true);
-				w3cDoc = dbf.newDocumentBuilder().newDocument();
+				w3cDoc = XmlUtils.getNewDocumentBuilder().newDocument();
 				
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
 						NamespacePrefixMapperUtils.getPrefixMapper() );
@@ -242,7 +235,7 @@ public class FlatOpcXmlCreator implements Output {
 					 * have been causing problems as well?? 
 					 */
 		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
-				log.info( "PUT SUCCESS: " + partName);		
+				log.debug( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("Problem saving part " + partName, e);
@@ -253,7 +246,7 @@ public class FlatOpcXmlCreator implements Output {
 			try {
 				dataResult.setAny(
 						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().getDocument().getDocumentElement());
-				log.info("PUT SUCCESS: " + partName);
+				log.debug("PUT SUCCESS: " + partName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("Problem saving part " + partName, e);
@@ -292,7 +285,7 @@ public class FlatOpcXmlCreator implements Output {
 
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.debug("For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
 		
@@ -300,13 +293,7 @@ public class FlatOpcXmlCreator implements Output {
 			if (r.getTargetMode() != null
 					&& r.getTargetMode().equals("External") ) {
 				
-				// ie its EXTERNAL
-				// As at 1 May 2008, we don't have a Part for these;
-				// there is just the relationship.
-
-				log.warn("Encountered external resource " + r.getTarget() 
-						   + " of type " + r.getType() );
-				
+				//log.debug("Encountered external resource " + r.getTarget() + " of type " + r.getType() );
 				// So
 				continue;				
 			}
@@ -332,14 +319,14 @@ public class FlatOpcXmlCreator implements Output {
 				// TODO - if this is already in our hashmap, skip
 				// to the next				
 				if (!false) {
-					log.info("Getting part /" + resolvedPartUri );
+					log.debug("Getting part /" + resolvedPartUri );
 					
 					Part part = packageIn.getParts().get(new PartName("/" + resolvedPartUri));
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
 					} else {
-						log.info(part.getClass().getName() );
+						log.debug(part.getClass().getName() );
 					}
 					
 					savePart(part);
@@ -374,27 +361,30 @@ public class FlatOpcXmlCreator implements Output {
 		}
 		
 		if (part instanceof BinaryPart ) {
-			log.info(".. saving binary stuff" );
+			log.debug(".. saving binary stuff" );
 			saveRawBinaryPart( part );
 			
 		} else {
-			log.info(".. saving " );					
+			log.debug(".. saving " );					
 			saveRawXmlPart( part );
 		}
 		handled.put(resolvedPartUri, resolvedPartUri);		
 		
 		// recurse via this parts relationships, if it has any
-		if (part.getRelationshipsPart()!= null ) {
+		if (part.getRelationshipsPart()!= null
+				&& part.getRelationshipsPart().getJaxbElement()!=null
+				&& part.getRelationshipsPart().getJaxbElement().getRelationship()!=null
+				&& part.getRelationshipsPart().getJaxbElement().getRelationship().size()>0) {
 			RelationshipsPart rrp = part.getRelationshipsPart();
-			log.info("Found relationships " + rrp.getPartName() );
+			log.debug("Found relationships " + rrp.getPartName() );
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
-			log.info("Cf constructed name " + relPart );
+			log.debug("Cf constructed name " + relPart );
 			
 			saveRawXmlPart( rrp);
 			//, "/" + relPart );  // '/' necessary for Xml Pkg format.
 			addPartsFromRelationships( rrp );
 		} else {
-			log.info("No relationships for " + resolvedPartUri );					
+			log.debug("No relationships for " + resolvedPartUri );					
 		}
 	}
 	
@@ -423,18 +413,13 @@ public class FlatOpcXmlCreator implements Output {
 
 			partResult.setCompression("store");
 	        
-            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-            byte[] bytes = null;
-            bytes = new byte[bb.limit()];
-            bb.get(bytes);	        
-
-			partResult.setBinaryData( bytes );
+			partResult.setBinaryData( ((BinaryPart)part).getBytes() );
 			
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
 
-		log.info( "PUT SUCCESS: " + resolvedPartUri);		
+		log.debug( "PUT SUCCESS: " + resolvedPartUri);		
 		return partResult;
 	}	
 	
@@ -501,26 +486,18 @@ public class FlatOpcXmlCreator implements Output {
 	// Implement the interface
 	public void output(javax.xml.transform.Result result) throws Docx4JException {
 		
-		// Do this via identity transform
-		
-		javax.xml.transform.TransformerFactory tfactory = XmlUtils.getTransformerFactory();
-	
-		try {
-			Transformer serializer = tfactory.newTransformer();
-			serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-			serializer.transform( new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)) , result );				
-		} catch (Exception e) {
-			throw new Docx4JException("Failed to create Flat OPC output", e);
-		} 
-		
+		XmlSerializerUtil.serialize(new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)), result, 
+				true, false);
+				// we haven't explicitly set METHOD=xml here, but I don't see why we shouldn't. 
 	}
 	
 	
 	
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+//		String inputfilepath = System.getProperty("user.dir") + "/ole_tests/OUT_wmv_f.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/ole_tests/wmv_CT.pptx";
+		OpcPackage wordMLPackage = OpcPackage.load(new java.io.File(inputfilepath));
 		
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
 		
@@ -529,10 +506,16 @@ public class FlatOpcXmlCreator implements Output {
 		boolean suppressDeclaration = true;
 		boolean prettyprint = true;
 		
-		System.out.println( 
+		
+		String data = 
 				org.docx4j.XmlUtils.
 					marshaltoString(result, suppressDeclaration, prettyprint, 
-							org.docx4j.jaxb.Context.jcXmlPackage) );
+							org.docx4j.jaxb.Context.jcXmlPackage);
+		
+		FileUtils.writeStringToFile(
+				new File(System.getProperty("user.dir") + "/ole_tests/wmv_CT.xml"), 
+				data);
+		
 		
 		// Note - We don't bother adding:
 		// 1. mso-application PI

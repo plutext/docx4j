@@ -23,13 +23,16 @@ package org.docx4j.model.structure;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.docx4j.TraversalUtil;
+import org.docx4j.finders.SectPrFinder;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -89,28 +92,24 @@ public class DocumentModel {
 			(wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement() != null)) {
 			evenAndOddHeaders = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().getEvenAndOddHeaders();
 		}
+		
 		sections = new ArrayList<SectionWrapper>();
-		for (Object o : doc.getBody().getContent() ) {
-			if (o instanceof org.docx4j.wml.P) {
-				if (((org.docx4j.wml.P)o).getPPr() != null ) {
-					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
-					if (ppr.getSectPr()!=null) {
-						SectionWrapper sw = new SectionWrapper(
-								ppr.getSectPr(), previousHF, rels, evenAndOddHeaders); 
-						sections.add(sw);
-						previousHF = sw.getHeaderFooterPolicy();
-						log.debug( "registered sectpr");						
-					}
-				}
-			}
+		
+    	// Find the sectPrs
+    	SectPrFinder sf = new SectPrFinder(wordMLPackage.getMainDocumentPart());
+		try {
+			new TraversalUtil(wordMLPackage.getMainDocumentPart().getContents(), sf);
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		}  
+		
+		for (SectPr sectPr : sf.getOrderedSectPrList() ) {
+			
+			SectionWrapper sw = new SectionWrapper(sectPr, previousHF, rels, evenAndOddHeaders); 
+			sections.add(sw);
+			previousHF = sw.getHeaderFooterPolicy();
+			log.debug( "registered sectpr");									
 		}
-		
-		
-		SectPr sectPr = doc.getBody().getSectPr();	
-		// There might not be a sectPr, but we still add a SectionWrapper to
-		// represent the body.
-		SectionWrapper sw = new SectionWrapper(sectPr, previousHF, rels, evenAndOddHeaders);
-		sections.add(sw);
 		
 	}
 
@@ -120,5 +119,18 @@ public class DocumentModel {
 	public List<SectionWrapper> getSections() {
 		return sections;
 	}
+	
+//	public static void main(String[] args) throws Exception {
+//		
+//		String inputpath = System.getProperty("user.dir") + "/sectPr.docx";
+//		WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(inputpath));
+//		
+//		List<Object> xpath = wordMLPackage.getMainDocumentPart().getJAXBNodesViaXPath("//w:sectPr", true);
+//		System.out.println("Count (XPath): " + xpath.size());
+//		
+//		DocumentModel dm = new DocumentModel(wordMLPackage);
+//		System.out.println("Count (DocModel): " + dm.getSections().size() );
+//	}
+	
 
 }

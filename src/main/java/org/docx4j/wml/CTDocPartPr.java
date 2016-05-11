@@ -21,10 +21,9 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,6 +32,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -92,7 +93,7 @@ public class CTDocPartPr implements Child
         @XmlElement(name = "description", type = CTDocPartPr.Description.class),
         @XmlElement(name = "guid", type = CTGuid.class)
     })
-    protected List<Object> nameOrStyleOrCategory;
+    protected List<Object> nameOrStyleOrCategory = new ArrayListWml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -126,7 +127,7 @@ public class CTDocPartPr implements Child
      */
     public List<Object> getNameOrStyleOrCategory() {
         if (nameOrStyleOrCategory == null) {
-            nameOrStyleOrCategory = new ArrayList<Object>();
+            nameOrStyleOrCategory  = new ArrayListWml<Object>(this);
         }
         return this.nameOrStyleOrCategory;
     }

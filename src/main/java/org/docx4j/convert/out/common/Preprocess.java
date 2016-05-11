@@ -25,15 +25,23 @@ import java.util.TreeSet;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.common.preprocess.BookmarkMover;
 import org.docx4j.convert.out.common.preprocess.Containerization;
-import org.docx4j.convert.out.common.preprocess.ConversionSectionWrapperFactory;
-import org.docx4j.convert.out.common.preprocess.DisablePageBreakOnFirstParagraph;
+import org.docx4j.convert.out.common.preprocess.CoverPageSectPrMover;
 import org.docx4j.convert.out.common.preprocess.FieldsCombiner;
+import org.docx4j.convert.out.common.preprocess.FopWorkaroundDisablePageBreakOnFirstParagraph;
+import org.docx4j.convert.out.common.preprocess.FopWorkaroundReplacePageBreakInEachList;
 import org.docx4j.convert.out.common.preprocess.PageBreak;
+import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
+import org.docx4j.convert.out.html.ListsToContentControls;
+import org.docx4j.events.EventFinished;
+import org.docx4j.events.StartEvent;
+import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class manages the preprocessing functionality for the conversion.<br>
  *  It contains two methods that get called from the conversions:
@@ -43,7 +51,10 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  *  </ul> 
  *   
  */
-public class Preprocess implements ConversionFeatures {
+public class Preprocess extends ConversionFeatures {
+	
+	private static Logger log = LoggerFactory.getLogger(Preprocess.class);		
+	
 	
 	/** This method applies those features in the preprocessing, that may be used with an
 	 *  OpcPackage.<br>
@@ -64,6 +75,9 @@ public class Preprocess implements ConversionFeatures {
 		relationshipTypes = createRelationshipTypes(features);
 		if (features.contains(PP_COMMON_DEEP_COPY)) {
 			ret = PartialDeepCopy.process(opcPackage, relationshipTypes);
+			if (ret instanceof WordprocessingMLPackage) {
+				log.debug("Results of PP_COMMON_DEEP_COPY: " + ((WordprocessingMLPackage)ret).getMainDocumentPart().getXML());
+			}
 		}
 		return ret;
 	}
@@ -75,10 +89,13 @@ public class Preprocess implements ConversionFeatures {
 	 * @return the affected parts
 	 */
 	protected static Set<String> createRelationshipTypes(Set<String> features) {
-	Set<String> relationshipTypes = new TreeSet<String>();
+		
+		Set<String> relationshipTypes = new TreeSet<String>();
+		
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS) || 
 			features.contains(PP_COMMON_CONTAINERIZATION) ||
 			features.contains(PP_COMMON_COMBINE_FIELDS)) {
+			
 			relationshipTypes.add(Namespaces.DOCUMENT);
 			relationshipTypes.add(Namespaces.HEADER);
 			relationshipTypes.add(Namespaces.FOOTER);
@@ -97,7 +114,7 @@ public class Preprocess implements ConversionFeatures {
 	/** This method applies those features in the preprocessing, that may be used with an
 	 *  WordprocessingMLPackage. As the WordprocessingMLPackage is a OpcPackage it will
 	 *  call process(OpcPackage).<br>
-	 *  Features processed: 
+	 *  Features processed include, for example: 
 	 *  <ul>
 	 *  <li>PP_COMMON_MOVE_BOOKMARKS</li>
 	 *  <li>PP_COMMON_MOVE_PAGEBREAK</li>
@@ -112,78 +129,72 @@ public class Preprocess implements ConversionFeatures {
 	 * @throws Docx4JException
 	 */
 	public static WordprocessingMLPackage process(WordprocessingMLPackage wmlPackage, Set<String> features) throws Docx4JException {
-	WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+
+//		log.debug(wmlPackage.getMainDocumentPart().getXML());		
+		
+		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
+		
+		StartEvent startEvent = new StartEvent( ret, WellKnownProcessSteps.CONVERT_PREPROCESS );
+		startEvent.publish();
+		
+
+//		log.debug(ret.getMainDocumentPart().getXML());
 	
 		if (features.contains(PP_COMMON_COMBINE_FIELDS)) {
+			log.debug("PP_COMMON_COMBINE_FIELDS");
 			FieldsCombiner.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_MOVE_BOOKMARKS)) {
+			log.debug("PP_COMMON_MOVE_BOOKMARKS");
 			BookmarkMover.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_MOVE_PAGEBREAK)) {
+			log.debug("PP_COMMON_MOVE_PAGEBREAK");
 			PageBreak.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+		if (features.contains(PP_PDF_COVERPAGE_MOVE_SECTPR)) {
+			log.debug("PP_COMMON_COVERPAGE_MOVE_SECTPR");
+			CoverPageSectPrMover.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
 		if (features.contains(PP_COMMON_CONTAINERIZATION)) {
+			log.debug("PP_COMMON_CONTAINERIZATION");
 			Containerization.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
-		if (features.contains(PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
-			DisablePageBreakOnFirstParagraph.process(ret);
+		if (features.contains(PP_HTML_COLLECT_LISTS)) {
+			log.debug("PP_HTML_COLLECT_LISTS");
+			ListsToContentControls.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
 		}
+		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH)) {
+			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_FIRST_PARAGRAPH");
+			FopWorkaroundDisablePageBreakOnFirstParagraph.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+		if (features.contains(PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM)) {
+			log.debug("PP_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM");
+			FopWorkaroundReplacePageBreakInEachList.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+		if (features.contains(PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX)) {
+			log.debug("PP_COMMON_TABLE_PARAGRAPH_STYLE_FIX");
+			ParagraphStylesInTableFix.process(ret);
+//			log.debug(ret.getMainDocumentPart().getXML());
+		}
+
+		
+		log.debug("Results of preprocessing: " + ret.getMainDocumentPart().getXML());
+		
+		new EventFinished(startEvent).publish();
+		
+		
 		return ret;
 	}
 
-	/** This method creates the Sections for the conversion. The type of the created sections 
-	 *  depend on the selected features.<br> 
-	 *  Features processed: 
-	 *  <ul>
-	 *  <li>PP_COMMON_PAGE_NUMBERING</li>
-	 *  <li>PP_COMMON_DUMMY_PAGE_NUMBERING</li>
-	 *  <li>PP_COMMON_CREATE_SECTIONS</li>
-	 *  <li>PP_COMMON_DUMMY_CREATE_SECTIONS</li>
-	 *  </ul> 
-	 * 
-	 * @param wmlPackage, the package that should be preprocessed
-	 * @param features, the selected features
-	 * @return the created sections
-	 * @throws Docx4JException
-	 */
-	public static ConversionSectionWrappers createWrappers(WordprocessingMLPackage wmlPackage, Set<String> features)  throws Docx4JException {
-	ConversionSectionWrappers ret = null;
-	boolean dummySections = false;
-	boolean dummyPageNumbering = false;
-		checkParams(wmlPackage, features);
-		dummySections = !features.contains(PP_COMMON_CREATE_SECTIONS);
-		dummyPageNumbering = !features.contains(PP_COMMON_PAGE_NUMBERING);
-		ret = ConversionSectionWrapperFactory.process(wmlPackage, dummySections, dummyPageNumbering);
-		return ret;
-	}
 	
-	/** Check the package and requested features and append defaults if necessary
-	 * 
-	 * @param opcPackage
-	 * @param features
-	 */
-	protected static void checkParams(OpcPackage opcPackage, Set<String> features) {
-		if (opcPackage == null) {
-			throw new IllegalArgumentException("The passed opcPackage is null.");
-		}
-		if (features == null) {
-			throw new IllegalArgumentException("The set of the features is null.");
-		}
-		//PP_COMMON_DEEP_COPY, isn' required, no check
-		//PP_COMMON_MOVE_BOOKMARKS, isn' required, no check
-		//PP_COMMON_CONTAINERIZATION, isn' required, no check
-		//PP_COMMON_COMBINE_FIELDS is required if PP_COMMON_PAGE_NUMBERING is selected
-		if (features.contains(PP_COMMON_PAGE_NUMBERING)) {
-			features.add(PP_COMMON_COMBINE_FIELDS);
-		}
-		//either PP_COMMON_PAGE_NUMBERING or PP_COMMON_DUMMY_PAGE_NUMBERING (Default) is required
-		if (!features.contains(PP_COMMON_PAGE_NUMBERING)) {
-			features.add(PP_COMMON_DUMMY_PAGE_NUMBERING);
-		}
-		//either PP_COMMON_CREATE_SECTIONS or PP_COMMON_DUMMY_CREATE_SECTIONS (Default) is required
-		if (!features.contains(PP_COMMON_CREATE_SECTIONS)) {
-			features.add(PP_COMMON_DUMMY_CREATE_SECTIONS);
-		}
-	}
+
 }

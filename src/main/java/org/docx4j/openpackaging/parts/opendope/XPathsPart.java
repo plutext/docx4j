@@ -2,13 +2,12 @@ package org.docx4j.openpackaging.parts.opendope;
 
 import javax.xml.bind.JAXBContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.xpaths.Xpaths.Xpath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths.Xpaths> {
 	
@@ -23,8 +22,9 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 		super(partName, jc);
 		init();
 	}
-
+	
 	/**
+	 * For performance reasons, avoid using this if you have a lot of xpaths
 	 * @param id
 	 * @return
 	 * @since 3.0.0
@@ -34,6 +34,12 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 		return getXPathById(this.getJaxbElement(), id);
 	}
 	
+	/**
+	 * For performance reasons, avoid using this if you have a lot of xpaths
+	 * @param xpaths
+	 * @param id
+	 * @return
+	 */
 	public static Xpath getXPathById(org.opendope.xpaths.Xpaths xpaths, String id) {
 		
 		for (Xpath x : xpaths.getXpath() ) {

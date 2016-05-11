@@ -25,14 +25,10 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -42,7 +38,8 @@ import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.AlteredParts.Alteration;
 import org.docx4j.openpackaging.parts.relationships.AlteredParts.Alterations;
-import org.docx4j.relationships.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Patcher {
 
@@ -109,17 +106,20 @@ public class Patcher {
 			
 			if (a.getPart().getContentType().equals(ContentTypes.RELATIONSHIPS_PART)) {
 				
-				RelationshipsPart newRP = FlatOpcXmlImporter.createRelationshipsPart(
-						a.getPart());
+				
+				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
 				if (a.getSourcePartName().equals("/")) {
-					otherPackage.setRelationships(newRP);
-					newRP.setSourceP(otherPackage);					
+					newRP = otherPackage.getRelationshipsPart(true);
+//					otherPackage.setRelationships(newRP);
+//					newRP.setSourceP(otherPackage);					
 				} else {
 					Part parentPart = otherPackage.getParts().get(a.getSourcePartName());
-					parentPart.setRelationships(newRP);
-					newRP.setSourceP(parentPart);					
+					newRP = parentPart.getRelationshipsPart(true);
+//					parentPart.setRelationships(newRP);
+//					newRP.setSourceP(parentPart);					
 				}
+				FlatOpcXmlImporter.populateRelationshipsPart(newRP,  a.getPart().getXmlData().getAny());
 				
 			} else {
 
@@ -167,17 +167,20 @@ public class Patcher {
 			
 			if (a.getPart().getContentType().equals(ContentTypes.RELATIONSHIPS_PART)) {
 				
-				RelationshipsPart newRP = FlatOpcXmlImporter.createRelationshipsPart(
-						a.getPart());
+				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
 				if (a.getSourcePartName().equals("/")) {
-					otherPackage.setRelationships(newRP);
-					newRP.setSourceP(otherPackage);
+					newRP = otherPackage.getRelationshipsPart(true);
+//					otherPackage.setRelationships(newRP);
+//					newRP.setSourceP(otherPackage);
 				} else {
 					Part parentPart = otherPackage.getParts().get(a.getSourcePartName());
-					parentPart.setRelationships(newRP);
-					newRP.setSourceP(parentPart);
+					newRP = parentPart.getRelationshipsPart(true);
+//					parentPart.setRelationships(newRP);
+//					newRP.setSourceP(parentPart);
 				}
+				FlatOpcXmlImporter.populateRelationshipsPart(newRP,  a.getPart().getXmlData().getAny());
+				
 				
 			} else {
 

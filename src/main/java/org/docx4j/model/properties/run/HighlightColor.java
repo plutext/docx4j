@@ -19,13 +19,12 @@
  */
 package org.docx4j.model.properties.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
 import org.docx4j.wml.Highlight;
 import org.docx4j.wml.RPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -43,15 +42,6 @@ public class HighlightColor extends AbstractRunProperty {
 		return CSS_NAME;
 	}
 	
-	/*
-	 * TODO: this class assumes that the
-	 * colors specified in org.docx4j.wml.Highlight
-	 * are valid CSS and XSL colors, and
-	 * vice versa.
-	 * 
-	 * Someone needs to add handling/mappings for when
-	 * this is not the case.
-	 */
 	
 	public HighlightColor(Highlight shading) {
 		this.setObject(shading);
@@ -71,7 +61,7 @@ public class HighlightColor extends AbstractRunProperty {
 		
 		if (shd.getVal()!=null &&
 		!shd.getVal().equals("none")) {
-			return composeCss(CSS_NAME, shd.getVal() );
+			return composeCss(CSS_NAME, shd.getHexVal() );
 		} else {
 			return CSS_NULL;
 		}
@@ -85,7 +75,7 @@ public class HighlightColor extends AbstractRunProperty {
 		
 		if (shd.getVal()!=null &&
 				!shd.getVal().equals("none")) {
-			foElement.setAttribute(FO_NAME, shd.getVal() );
+			foElement.setAttribute(FO_NAME, shd.getHexVal() );
 		} 
 		
 	}

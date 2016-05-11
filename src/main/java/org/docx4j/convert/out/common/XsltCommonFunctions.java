@@ -21,9 +21,11 @@
 package org.docx4j.convert.out.common;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -31,7 +33,13 @@ import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.ParaRPr;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -41,12 +49,97 @@ import org.w3c.dom.traversal.NodeIterator;
 /** 
  * This class contains common static functions, that get called from the PDF and HTML xsl-transformations. 
  * Methods, that are specific to a certain conversion, get implemented in their corresponding XsltxxxFunction classes.<br/>
- * The normal behaviour is to delegate this functions to the current context, that get's passed in.
- *  
+ * The normal behaviour is to delegate this functions to the current context, that gets passed in.
  */
 public class XsltCommonFunctions {
+	
+	private static Logger log = LoggerFactory.getLogger(XsltCommonFunctions.class);
+	
+	
 	private XsltCommonFunctions() {
 	}
+	
+    public static DocumentFragment fontSelector(AbstractWmlConversionContext conversionContext, 
+    		NodeIterator pPrNodeIt,
+    		NodeIterator rPrNodeIt,
+    		NodeIterator textNodeIt) {
+
+		PPr pPr = null;
+		RPr rPr = null;
+		Text text = null;
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
+    		Node n = pPrNodeIt.nextNode(); //It is never null
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				pPr =  (PPr)jaxb;
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+    	
+//    	if (rPrNodeIt!=null) 
+		{ 
+    		Node n = rPrNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				//rPr =  (RPr)jaxb;
+    				
+    				if (jaxb instanceof RPr) {
+    					//rPrDirect =  (RPr)jaxbR;
+    					rPr = (RPr)jaxb;
+    				} else if (jaxb instanceof ParaRPr) {
+//    					if (log.isDebugEnabled()) {
+//    						Throwable t = new Throwable();
+//    						log.debug("passed ParaRPr", t);
+//    					}
+    					rPr = conversionContext.getPropertyResolver().getEffectiveRPr(null, pPr); 
+//    	    			System.out.println("p rpr-->" + XmlUtils.marshaltoString(pPrDirect.getRPr()));
+    	        		
+    	        		StyleUtil.apply((ParaRPr)jaxb, rPr); 				
+    					
+    				}    				
+    				
+    				
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to RPr!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		
+		{ 
+    		Node n = textNodeIt.nextNode();
+    		if (n!=null) {
+    			try {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				text =  (Text)jaxb;
+    			} catch (ClassCastException e) {
+    				log.error("Couldn't cast  to Text!");
+    			} catch (JAXBException e) {
+    				log.error(e.getMessage(), e);
+				}        	        			
+    		}
+    	}
+		
+    	
+    	return (DocumentFragment) conversionContext.getRunFontSelector().fontSelector(pPr, rPr, text);
+
+    }
+	
 	
 	/** Conversion of Nodes via Models and Converters
 	 * 
@@ -77,8 +170,8 @@ public class XsltCommonFunctions {
 		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
 		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
 				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
-		if (context.getLog().isDebugEnabled()) {
-			context.getLog().debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		if (log.isDebugEnabled()) {
+			log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
 		}
 		return d;
 	}
@@ -272,8 +365,8 @@ public class XsltCommonFunctions {
 		STFldCharType fieldCharType = field.getFldCharType();
 		
 		if (fieldCharType==null) {
-			if (context.getLog().isDebugEnabled()) {
-				context.getLog().debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
+			if (log.isDebugEnabled()) {
+				log.debug("Ignoring unrecognised: " + XmlUtils.w3CDomNodeToString(node));
 			}
 			
 		} else {

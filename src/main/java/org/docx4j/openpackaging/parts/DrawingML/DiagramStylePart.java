@@ -25,17 +25,14 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.dml.diagram.CTColorTransform;
-import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTStyleDefinition;
 import org.docx4j.dml.diagram.CTStyleLabel;
 import org.docx4j.dml.diagram.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public final class DiagramStylePart extends JaxbDmlPart<CTStyleDefinition> {

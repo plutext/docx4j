@@ -69,6 +69,20 @@ public class AbstractTableWriterModelCell {
 	 * cells are represented as a real cell on the top and dummy cell(s)
 	 * below */
 	protected boolean dummy = false;
+	
+	/** In XSL FO, we need to write cells for before & after, 
+	 * but not dummy cells for horizontal merge */
+	protected boolean dummyBefore = false;
+	public boolean isDummyBefore() {
+		return dummyBefore;
+	}
+	protected boolean dummyAfter = false;
+	public boolean isDummyAfter() {
+		return dummyAfter;
+	}
+
+	
+	
 	protected Node content = null;
 	
 	TcPr tcPr;
@@ -94,10 +108,14 @@ public class AbstractTableWriterModelCell {
 		tcPr = tc.getTcPr();
 
 		if (content==null) {
-			logger.error("No content for row " + row + ", col " + col + "\n" 
-							+ XmlUtils.marshaltoString(tc, true, true));
+            if(logger.isErrorEnabled()) {
+                logger.error("No content for row " + row + ", col " + col + "\n"
+                        + XmlUtils.marshaltoString(tc, true, true));
+            }
 		} else {
-			logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+            if(logger.isDebugEnabled()) {
+                logger.debug("Cell content for row " + row + ", col " + col + "\n" + XmlUtils.w3CDomNodeToString(content));
+            }
 		}
 
 		/* xhtmlTc.appendChild(

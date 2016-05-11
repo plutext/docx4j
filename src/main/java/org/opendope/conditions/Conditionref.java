@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 
@@ -72,19 +71,22 @@ public class Conditionref implements Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-    	return particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+    	return particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
 	
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-    	particle.listXPaths(theList, conditions, xPaths);
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+
+    	particle.listXPaths(theList, conditionsMap, xpathsMap);
 		
 	}
 	
@@ -106,20 +108,23 @@ public class Conditionref implements Evaluable {
 	}
 	
 	
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-		return particle.toString(conditions, xPaths);
+		//Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+		return particle.toString(conditionsMap, xpathsMap);
 	}
     
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
-		Condition particle = ConditionsPart.getConditionById(conditions, id);
-		Condition newCondition = particle.repeat(xpathBase, index, conditions, xPaths);
+		// Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition particle = conditionsMap.get(id);
+
+		Condition newCondition = particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
 		
 		this.id = newCondition.getId();
 

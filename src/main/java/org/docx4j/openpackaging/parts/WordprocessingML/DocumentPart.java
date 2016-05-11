@@ -20,19 +20,12 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-//import java.io.InputStream;
-//import java.io.OutputStream;
-//import java.net.URI;
-//
-//import javax.xml.bind.JAXBContext;
-//import java.net.URI;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
-import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -44,12 +37,17 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
 
 public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
+	
+	protected static Logger log = LoggerFactory.getLogger(DocumentPart.class);
+	
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document
@@ -168,6 +166,27 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	public DocumentSettingsPart getDocumentSettingsPart() {
 		return documentSettingsPart;
 	}
+	
+	/**
+	 * @param createIfAbsent
+	 * @return
+	 * @throws InvalidFormatException 
+	 * @since 3.3.0
+	 */
+	public DocumentSettingsPart getDocumentSettingsPart(boolean createIfAbsent) throws InvalidFormatException {
+		if (documentSettingsPart==null) {
+			if (createIfAbsent) {
+				documentSettingsPart = new DocumentSettingsPart();
+				this.addTargetPart(documentSettingsPart);	
+			} else {
+				return null;
+			}
+		} 
+		return documentSettingsPart;		
+	}
+	
+
+	
 
 
 	public EndnotesPart getEndNotesPart() {
@@ -243,6 +262,23 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 
 
 	public StyleDefinitionsPart getStyleDefinitionsPart() {
+		return getStyleDefinitionsPart(false);
+	}
+	
+	public StyleDefinitionsPart getStyleDefinitionsPart(boolean create) {
+		if (styleDefinitionsPart==null
+				&& create) {
+			// HTML, PDF output won't work without this
+			log.info("No StyleDefinitionsPart detected. Adding default part.");
+			try {
+				styleDefinitionsPart = new StyleDefinitionsPart();
+				styleDefinitionsPart.unmarshalDefaultStyles();
+				this.addTargetPart(styleDefinitionsPart); 			
+				
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+		}
 		return styleDefinitionsPart;
 	}
 

@@ -204,19 +204,36 @@ public class AbstractTableWriterModel {
 	 * <var>tc</var> to it.
 	 */
 	public void addCell(Tc tc, Node content) {
+		System.out.println("Add tc row " + row + " col 1+" + col);
 		addCell(new AbstractTableWriterModelCell(this, row, ++col, tc, content));
+		
+		// add dummy cells
+		if (tc.getTcPr()!=null 
+				&& tc.getTcPr().getGridSpan()!=null 
+				&& tc.getTcPr().getGridSpan().getVal() !=null) {
+			
+			int gridSpan = tc.getTcPr().getGridSpan().getVal().intValue();
+			addDummyCell(gridSpan, false, false);
+		}
+		
 	}
 
-	private void addDummyCell() {
-		addDummyCell(0);
-	}
+//	private void addDummyCell() {
+//		addDummyCell(0);
+//	}
 
-	private void addDummyCell(int colSpan) {
+	private void addDummyCell(int colSpan, boolean isBefore, boolean isAfter) {
 		AbstractTableWriterModelCell cell = new AbstractTableWriterModelCell(this, row, ++col);
+		cell.dummyBefore=isBefore;
+		cell.dummyAfter=isAfter;
 		if (colSpan > 0) {
 			cell.colspan = colSpan;
 		}
-		addCell(cell);
+		if (colSpan>1) {
+			for (int i=1; i<colSpan; i++) {
+				addCell(cell);				
+			}
+		}
 	}
 
 	private void addCell(AbstractTableWriterModelCell cell) {
@@ -224,6 +241,7 @@ public class AbstractTableWriterModel {
 	}
 	
 	public AbstractTableWriterModelCell getCell(int row, int col) {
+		System.out.println("getting row " + row);
 		return cells.get(row).get(col);
 	}
 
@@ -309,6 +327,11 @@ public class AbstractTableWriterModel {
 				startRow(tr);
 				handleRow(cellContents, tr, r);
 				r++;
+				if (cells.get(row).getRowContents().isEmpty()) {
+					cells.remove(row);
+					row--;
+					r--;
+				}
 		}
 		
 		CTTblPrBase tblPr = effectiveTableStyle.getTblPr();
@@ -580,7 +603,7 @@ public class AbstractTableWriterModel {
 		
 		//add dummy cell for gridBefore
 		if (gridBefore > 0) {
-			addDummyCell(gridBefore);
+			addDummyCell(gridBefore, true, false);
 		}
 		
 		//List<Object> cells = tr.getEGContentCellContent();
@@ -600,7 +623,7 @@ public class AbstractTableWriterModel {
 
 		//add dummy cell for gridAfter
 		if (gridAfter > 0) {
-			addDummyCell(gridAfter);
+			addDummyCell(gridAfter, false, true);
 		}
 	}
 	
@@ -667,6 +690,10 @@ public class AbstractTableWriterModel {
 		for (int i=0; i<wtrNode.getChildNodes().getLength(); i++ ) {
 			
 			Node thisChild = wtrNode.getChildNodes().item(i);
+			
+			if (thisChild.getNodeType()!= 1){
+				continue;  
+			}
 			
 			log.debug("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
 			

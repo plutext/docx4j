@@ -1,0 +1,488 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"
+	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"
+	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- From [MS-XLSX] — v20130726
+Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.spreadsheetml.main201011"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+	
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlbasictypes.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main" schemaLocation="xlslicercache.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlworkbook.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/excel/2006/main" schemaLocation="xlmbasictypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlsheet.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlpivot.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main" schemaLocation="xlextconns.xsd"/>
+  <xsd:element name="slicerCaches" type="x14:CT_SlicerCaches"/>
+  <xsd:element name="tableSlicerCache" type="CT_TableSlicerCache"/>
+  <xsd:complexType name="CT_TableSlicerCache">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="tableId" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="column" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="sortOrder" type="x14:ST_TabularSlicerCacheSortOrder" use="optional" default="ascending"/>
+    <xsd:attribute name="customListSort" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="crossFilter" type="x14:ST_SlicerCacheCrossFilter" use="optional" default="showItemsWithDataAtTop"/>
+  </xsd:complexType>
+  <xsd:element name="slicerCacheHideItemsWithNoData" type="CT_SlicerCacheHideNoData"/>
+  <xsd:complexType name="CT_SlicerCacheHideNoData">
+    <xsd:sequence>
+      <xsd:element name="slicerCacheOlapLevelName" type="CT_SlicerCacheOlapLevelName" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="count" type="xsd:unsignedInt" use="optional" default="0"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SlicerCacheOlapLevelName">
+    <xsd:attribute name="uniqueName" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="count" type="xsd:unsignedInt" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="slicerCachePivotTables" type="x14:CT_SlicerCachePivotTables"/>
+  <xsd:element name="pivotCaches" type="x:CT_PivotCaches"/>
+  <xsd:element name="pivotTableReferences" type="CT_PivotTableReferences"/>
+  <xsd:complexType name="CT_PivotTableReferences">
+    <xsd:sequence>
+      <xsd:element name="pivotTableReference" type="CT_PivotTableReference" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotTableReference">
+    <xsd:attribute ref="r:id" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="queryTable" type="CT_QueryTable"/>
+  <xsd:complexType name="CT_QueryTable">
+    <xsd:attribute name="clipped" use="optional" default="false" type="xsd:boolean"/>
+    <xsd:attribute name="sourceDataName" type="xsd:string" use="optional"/>
+    <xsd:attribute name="drillThrough" use="optional" default="false" type="xsd:boolean"/>
+  </xsd:complexType>
+  <xsd:element name="webExtensions" type="CT_WebExtensions"/>
+  <xsd:complexType name="CT_WebExtensions">
+    <xsd:sequence>
+      <xsd:element name="webExtension" type="CT_WebExtension" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_WebExtension">
+    <xsd:sequence>
+      <xsd:element ref="xm:f" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="appRef" type="x:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="timelineCacheRefs" type="CT_TimelineCacheRefs"/>
+  <xsd:complexType name="CT_TimelineCacheRefs">
+    <xsd:sequence>
+      <xsd:element name="timelineCacheRef" type="CT_TimelineCacheRef" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineCacheRef">
+    <xsd:attribute ref="r:id" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="timelineRefs" type="CT_TimelineRefs"/>
+  <xsd:complexType name="CT_TimelineRefs">
+    <xsd:sequence>
+      <xsd:element name="timelineRef" type="CT_TimelineRef" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineRef">
+    <xsd:attribute ref="r:id" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="timelineCachePivotCaches" type="x:CT_PivotCaches"/>
+  <xsd:complexType name="CT_WorkbookPr">
+    <xsd:attribute name="chartTrackingRefBase" type="xsd:boolean" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="workbookPr" type="CT_WorkbookPr"/>
+  <xsd:element name="timelineStyles" type="CT_TimelineStyles"/>
+  <xsd:complexType name="CT_TimelineStyles">
+    <xsd:sequence>
+      <xsd:element name="timelineStyle" type="CT_TimelineStyle" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="defaultTimelineStyle" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineStyleElements">
+    <xsd:sequence>
+      <xsd:element name="timelineStyleElement" type="CT_TimelineStyleElement" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineStyle">
+    <xsd:sequence>
+      <xsd:element name="timelineStyleElements" type="CT_TimelineStyleElements" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineStyleElement">
+    <xsd:attribute name="type" type="ST_TimelineStyleType" use="required"/>
+    <xsd:attribute name="dxfId" type="x:ST_DxfId" use="optional"/>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TimelineStyleType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="selectionLabel"/>
+      <xsd:enumeration value="timeLevel"/>
+      <xsd:enumeration value="periodLabel1"/>
+      <xsd:enumeration value="periodLabel2"/>
+      <xsd:enumeration value="selectedTimeBlock"/>
+      <xsd:enumeration value="unselectedTimeBlock"/>
+      <xsd:enumeration value="selectedTimeBlockSpace"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="dxfs" type="x:CT_Dxfs"/>
+  <xsd:element name="connection" type="CT_Connection"/>
+  <xsd:complexType name="CT_ModelTextPr">
+    <xsd:attribute name="headers" type="xsd:boolean" default="false" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RangePr">
+    <xsd:attribute name="sourceName" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DbTable">
+    <xsd:attribute name="name" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DbTables">
+    <xsd:sequence>
+      <xsd:element name="dbTable" minOccurs="1" maxOccurs="unbounded" type="CT_DbTable"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DbCommand">
+    <xsd:attribute name="text" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_OledbPr">
+    <xsd:choice minOccurs="1" maxOccurs="1">
+      <xsd:element name="dbTables" type="CT_DbTables"/>
+      <xsd:element name="dbCommand" type="CT_DbCommand"/>
+    </xsd:choice>
+    <xsd:attribute name="connection" use="optional" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DataFeedPr">
+    <xsd:sequence>
+      <xsd:element name="dbTables" type="CT_DbTables" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="connection" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Connection">
+    <xsd:sequence>
+      <xsd:element name="textPr" minOccurs="0" maxOccurs="1" type="x:CT_TextPr"/>
+      <xsd:element name="modelTextPr" minOccurs="0" maxOccurs="1" type="CT_ModelTextPr"/>
+      <xsd:element name="rangePr" minOccurs="0" maxOccurs="1" type="CT_RangePr"/>
+      <xsd:element name="oledbPr" minOccurs="0" maxOccurs="1" type="CT_OledbPr"/>
+      <xsd:element name="dataFeedPr" minOccurs="0" maxOccurs="1" type="CT_DataFeedPr"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" use="required" type="x:ST_Xstring"/>
+    <xsd:attribute name="model" type="xsd:boolean" default="false" use="optional"/>
+    <xsd:attribute name="excludeFromRefreshAll" type="xsd:boolean" default="false" use="optional"/>
+    <xsd:attribute name="autoDelete" type="xsd:boolean" default="false" use="optional"/>
+    <xsd:attribute name="usedByAddin" type="xsd:boolean" default="false" use="optional"/>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_CalcMemNumberFormat">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="default"/>
+      <xsd:enumeration value="number"/>
+      <xsd:enumeration value="percent"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_CalculatedMemberExt">
+    <xsd:sequence>
+      <xsd:element ref="calculatedMember" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="calculatedMember" type="CT_CalculatedMember"/>
+  <xsd:complexType name="CT_CalculatedMember">
+    <xsd:attribute name="measureGroup" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="numberFormat" type="ST_CalcMemNumberFormat" use="optional" default="default"/>
+    <xsd:attribute name="measure" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="pivotTableUISettings" type="CT_PivotTableUISettings"/>
+  <xsd:complexType name="CT_PivotTableUISettings">
+    <xsd:sequence>
+      <xsd:element name="activeTabTopLevelEntity" type="CT_FieldListActiveTabTopLevelEntity" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="sourceDataName" type="xsd:string" use="optional"/>
+    <xsd:attribute name="relNeededHidden" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FieldListActiveTabTopLevelEntity">
+    <xsd:attribute name="name" use="required" type="xsd:string"/>
+    <xsd:attribute name="type" use="optional" default="0" type="xsd:unsignedInt"/>
+  </xsd:complexType>
+  <xsd:element name="pivotFilter" type="CT_PivotFilter"/>
+  <xsd:complexType name="CT_PivotFilter">
+    <xsd:attribute name="useWholeDay" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="cachedUniqueNames" type="CT_CachedUniqueNames"/>
+  <xsd:complexType name="CT_CachedUniqueNames">
+    <xsd:sequence>
+      <xsd:element name="cachedUniqueName" minOccurs="1" maxOccurs="unbounded" type="CT_CachedUniqueName"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CachedUniqueName">
+    <xsd:attribute name="index" use="required" type="xsd:unsignedInt"/>
+    <xsd:attribute name="name" use="required" type="x:ST_Xstring"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CacheHierarchy">
+    <xsd:attribute name="aggregatedColumn" use="required" type="xsd:int"/>
+  </xsd:complexType>
+  <xsd:element name="cacheHierarchy" type="CT_CacheHierarchy"/>
+  <xsd:element name="timelinePivotCacheDefinition" type="CT_TimelinePivotCacheDefinition"/>
+  <xsd:complexType name="CT_TimelinePivotCacheDefinition">
+    <xsd:attribute name="timelineData" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="pivotCacheIdVersion" type="CT_PivotCacheIdVersion"/>
+  <xsd:complexType name="CT_PivotCacheIdVersion">
+    <xsd:attribute name="cacheIdSupportedVersion" type="xsd:unsignedByte" use="required"/>
+    <xsd:attribute name="cacheIdCreatedVersion" type="xsd:unsignedByte" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ModelTable">
+    <xsd:attribute name="id" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="connection" type="x:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ModelTables">
+    <xsd:sequence>
+      <xsd:element name="modelTable" minOccurs="1" maxOccurs="unbounded" type="CT_ModelTable"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ModelRelationship">
+    <xsd:attribute name="fromTable" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="fromColumn" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="toTable" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="toColumn" type="x:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ModelRelationships">
+    <xsd:sequence>
+      <xsd:element name="modelRelationship" minOccurs="1" maxOccurs="unbounded" type="CT_ModelRelationship"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DataModel">
+    <xsd:sequence>
+      <xsd:element name="modelTables" minOccurs="0" maxOccurs="1" type="CT_ModelTables"/>
+      <xsd:element name="modelRelationships" minOccurs="0" maxOccurs="1" type="CT_ModelRelationships"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="minVersionLoad" type="xsd:unsignedByte" use="optional" default="5"/>
+  </xsd:complexType>
+  <xsd:element name="dataModel" type="CT_DataModel"/>
+  <xsd:element name="pivotTableData" type="CT_PivotTableData"/>
+  <xsd:complexType name="CT_PivotTableData">
+    <xsd:sequence>
+      <xsd:element name="pivotRow" type="CT_PivotRow" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="rowCount" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="columnCount" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="cacheId" type="xsd:unsignedInt" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotRow">
+    <xsd:sequence>
+      <xsd:element name="c" type="CT_PivotValueCell" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="r" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="count" type="xsd:unsignedInt" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotValueCell">
+    <xsd:sequence>
+      <xsd:element name="v" type="x:ST_Xstring" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="x" type="CT_PivotValueCellExtra" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="i" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="t" type="ST_SXVCellType" use="optional" default="n"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotValueCellExtra">
+    <xsd:attribute name="in" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="bc" type="x:ST_UnsignedIntHex" use="optional"/>
+    <xsd:attribute name="fc" type="x:ST_UnsignedIntHex" use="optional"/>
+    <xsd:attribute name="i" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="un" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="st" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="b" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SXVCellType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="b"/>
+      <xsd:enumeration value="n"/>
+      <xsd:enumeration value="e"/>
+      <xsd:enumeration value="str"/>
+      <xsd:enumeration value="d"/>
+      <xsd:enumeration value="bl"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PivotTableServerFormats">
+    <xsd:sequence>
+      <xsd:element name="serverFormat" type="x:CT_ServerFormat" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="count" use="required" type="xsd:unsignedInt"/>
+  </xsd:complexType>
+  <xsd:element name="pivotCacheDecoupled" type="CT_PivotCacheDecoupled"/>
+  <xsd:complexType name="CT_PivotCacheDecoupled">
+    <xsd:attribute name="decoupled" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="dataField" type="CT_DataField"/>
+  <xsd:complexType name="CT_DataField">
+    <xsd:attribute name="isCountDistinct" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="survey" type="CT_Survey"/>
+  <xsd:complexType name="CT_Survey">
+    <xsd:sequence>
+      <xsd:element name="surveyPr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="titlePr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="descriptionPr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="questions" type="CT_SurveyQuestions" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="guid" type="x:ST_Guid" use="required"/>
+    <xsd:attribute name="title" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="description" type="x:ST_Xstring" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SurveyQuestions">
+    <xsd:sequence>
+      <xsd:element name="questionsPr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="question" type="CT_SurveyQuestion" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SurveyQuestion">
+    <xsd:sequence>
+      <xsd:element name="questionPr" type="CT_SurveyElementPr" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="binding" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="text" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="type" type="ST_QuestionType" use="optional"/>
+    <xsd:attribute name="format" type="ST_QuestionFormat" use="optional"/>
+    <xsd:attribute name="helpText" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="required" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="defaultValue" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="decimalPlaces" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="rowSource" type="x:ST_Xstring" use="optional"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SurveyElementPr">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="cssClass" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="bottom" type="xsd:int" use="optional"/>
+    <xsd:attribute name="top" type="xsd:int" use="optional"/>
+    <xsd:attribute name="left" type="xsd:int" use="optional"/>
+    <xsd:attribute name="right" type="xsd:int" use="optional"/>
+    <xsd:attribute name="width" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="height" type="xsd:unsignedInt" use="optional"/>
+    <xsd:attribute name="position" type="ST_SurveyPosition" use="optional"/>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_QuestionType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="checkBox"/>
+      <xsd:enumeration value="choice"/>
+      <xsd:enumeration value="date"/>
+      <xsd:enumeration value="time"/>
+      <xsd:enumeration value="multipleLinesOfText"/>
+      <xsd:enumeration value="number"/>
+      <xsd:enumeration value="singleLineOfText"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_QuestionFormat">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="generalDate"/>
+      <xsd:enumeration value="longDate"/>
+      <xsd:enumeration value="shortDate"/>
+      <xsd:enumeration value="longTime"/>
+      <xsd:enumeration value="shortTime"/>
+      <xsd:enumeration value="generalNumber"/>
+      <xsd:enumeration value="standard"/>
+      <xsd:enumeration value="fixed"/>
+      <xsd:enumeration value="percent"/>
+      <xsd:enumeration value="currency"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_SurveyPosition">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="absolute"/>
+      <xsd:enumeration value="fixed"/>
+      <xsd:enumeration value="relative"/>
+      <xsd:enumeration value="static"/>
+      <xsd:enumeration value="inherit"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="timelines" type="CT_Timelines"/>
+  <xsd:complexType name="CT_Timelines">
+    <xsd:sequence>
+      <xsd:element name="timeline" type="CT_Timeline" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Timeline">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="cache" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="caption" type="x:ST_Xstring" use="optional"/>
+    <xsd:attribute name="showHeader" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="showSelectionLabel" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="showTimeLevel" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="showHorizontalScrollbar" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="level" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="selectionLevel" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="scrollPosition" type="xsd:dateTime" use="optional"/>
+    <xsd:attribute name="style" type="x:ST_Xstring" use="optional"/>
+  </xsd:complexType>
+  <xsd:element name="timelineCacheDefinition" type="CT_TimelineCacheDefinition"/>
+  <xsd:complexType name="CT_TimelineCacheDefinition">
+    <xsd:sequence>
+      <xsd:element name="pivotTables" type="CT_TimelineCachePivotTables" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="state" type="CT_TimelineState" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="timelinePivotFilter" minOccurs="0" maxOccurs="1" type="CT_TimelinePivotFilter"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+    <xsd:attribute name="sourceName" type="x:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineCachePivotTables">
+    <xsd:sequence>
+      <xsd:element name="pivotTable" type="CT_TimelineCachePivotTable" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineCachePivotTable">
+    <xsd:attribute name="tabId" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="name" type="x:ST_Xstring" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineRange">
+    <xsd:attribute name="startDate" type="xsd:dateTime" use="required"/>
+    <xsd:attribute name="endDate" type="xsd:dateTime" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelineState">
+    <xsd:sequence>
+      <xsd:element name="selection" type="CT_TimelineRange" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="bounds" type="CT_TimelineRange" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="extLst" type="x:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="singleRangeFilterState" type="xsd:boolean" use="optional" default="true"/>
+    <xsd:attribute name="minimalRefreshVersion" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="lastRefreshVersion" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="pivotCacheId" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="filterType" use="required" type="x:ST_PivotFilterType"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TimelinePivotFilter">
+    <xsd:sequence>
+      <xsd:element name="autoFilter" minOccurs="0" maxOccurs="1" type="x:CT_AutoFilter"/>
+    </xsd:sequence>
+    <xsd:attribute name="useWholeDay" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="fld" use="required" type="xsd:unsignedInt"/>
+    <xsd:attribute name="id" use="required" type="xsd:unsignedInt"/>
+    <xsd:attribute name="name" use="optional" type="x:ST_Xstring"/>
+    <xsd:attribute name="description" use="optional" type="x:ST_Xstring"/>
+  </xsd:complexType>
+</xsd:schema>

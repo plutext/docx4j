@@ -20,15 +20,55 @@
 
 package org.docx4j.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.docx4j.Docx4jProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResourceUtils {
 	
 	protected static Logger log = LoggerFactory.getLogger(ResourceUtils.class);	
-	
+
+    /**
+     * Get this resource from the location specified in docx4j.properties;
+     * if none is specified, fallback to the default specified
+     * 
+     * @param propName
+     * @param defaultPath
+     * @return
+     * @throws java.io.IOException
+     * @since 3.2.0
+     */
+    public static java.io.InputStream getResourceViaProperty(String propName, String defaultPath) throws java.io.IOException
+    {
+    	String resourcePath= Docx4jProperties.getProperty(propName, defaultPath);
+    	log.debug(propName + " resolved to " + resourcePath);
+    	InputStream resourceIS = null;
+    	try {
+    		resourceIS = getResource(resourcePath);
+    	} catch (IOException ioe) {
+    		log.warn(resourcePath + ": " + ioe.getMessage());
+    	}
+    	if (resourceIS==null) {
+    		log.warn("Property " + propName + " resolved to missing resource " + resourcePath + "; using " +  defaultPath);
+    		return getResource(defaultPath);
+    	} else {
+    		return resourceIS;
+    	}
+    }
+    
+    /**
+     * Use ClassLoader.getResource to get the named resource
+     * @param filename
+     * @return
+     * @throws java.io.IOException if resource not found
+     */
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {
+    	log.debug("Attempting to load: " + filename);
+    	
         // Try to load resource from jar.
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader == null) {  // IKVM (v.0.44.0.5) doesn't set context classloader 
@@ -39,10 +79,11 @@ public class ResourceUtils {
                 
         if (url == null) {
         	if (filename.contains("jaxb.properties")){
-        		log.info("Not using MOXy, since no resource: " + filename);        		
+        		log.debug("Not using MOXy, since no resource: " + filename);        		
         	} else {
         		log.warn("Couldn't get resource: " + filename);
         	}
+        	throw new IOException(filename + " not found via classloader.");
         }
         
         // Get the jar file

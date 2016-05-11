@@ -21,14 +21,6 @@
 package org.docx4j.model.datastorage.migration;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -39,6 +31,13 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -84,7 +83,9 @@ public class VariablePrepare {
 		// approach (which wouldn't involve marshal/unmarshall, and 
 		// so should be more efficient).
 
-		log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+        if(log.isInfoEnabled()) {
+            log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+        }
 		
 		// Now clean up some more
 		org.docx4j.wml.Document wmlDocumentEl = wmlPackage.getMainDocumentPart().getJaxbElement();
@@ -94,8 +95,10 @@ public class VariablePrepare {
 			= new SingleTraversalUtilVisitorCallback(
 					new TraversalUtilParagraphVisitor());
 		paragraphVisitor.walkJAXBElements(body);
-		
-		log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+
+        if(log.isInfoEnabled()) {
+            log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+        }
 	}
 	
     private final static QName _RT_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t");

@@ -21,6 +21,7 @@
 package org.docx4j.jaxb;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
@@ -33,6 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.utils.ResourceUtils;
 
 
 public class JaxbValidationEventHandler implements 
@@ -52,18 +54,12 @@ ValidationEventHandler{
 	public static Templates getMcPreprocessor() throws IOException, TransformerConfigurationException {
 		
 		if (mcPreprocessorXslt==null) {
-			try {
-				Source xsltSource  = new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/jaxb/mc-preprocessor.xslt"));
-				mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
-			} catch (IOException e) {
-				log.error("Problem setting up  mc-preprocessor.xslt", e);
-				throw(e);
-			} catch (TransformerConfigurationException e) {
-				log.error("Problem setting up  mc-preprocessor.xslt", e);
-				throw(e);
-			}
+			
+			Source xsltSource  = new StreamSource(
+					ResourceUtils.getResourceViaProperty("docx4j.jaxb.JaxbValidationEventHandler", 
+							"org/docx4j/jaxb/mc-preprocessor.xslt")
+					);
+			mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
 		}
 		
 		return mcPreprocessorXslt;
@@ -100,7 +96,30 @@ ValidationEventHandler{
 //                locator.getColumnNumber() + 
 //                " at line number " + locator.getLineNumber());
        } else if (ve.getSeverity()==ve.WARNING) {
-    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());    	   
+    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());  
+    	   
+    	   // Workaround for issue with recent non-MOXy JAXB (eg RI 2.2.11)
+    	   if (ve.getMessage().startsWith("Errors limit exceeded")) {
+
+    		   try {
+	     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
+	   				Field field = null;
+	   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
+						field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					} else {
+						field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+					}
+	   				
+	   		        field.setAccessible(true);
+	   		        field.set(null, 10);
+	   		        log.warn(".. reset successful");
+	   			} catch (Exception e) {
+	   				log.error(e.getMessage());
+	   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");
+	   			} 
+    		   
+    	   }
+    	   
        }
       // JAXB provider should attempt to continue its current operation. 
       // (Marshalling, Unmarshalling, Validating)

@@ -15,6 +15,24 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
 
+/**
+ * This is an example of adding the TOC field instruction to 
+ * a document.
+ * 
+ * It then relies on a user to open the document in Word to 
+ * generate the actual table of contents.  
+ * 
+ * Unfortunately, Word can't be made to update the TOC
+ * automatically and without user interaction. 
+ * 
+ * So its useful to be able to insert the table content via
+ * docx4j.
+ * 
+ * The challenge lies in getting page numbering correct, since
+ * for that you need a page layout model.  That bit is in Plutext's
+ * commercial enterprise edition of docx4j.
+ *
+ */
 public class TableOfContentsAdd {
 
 	public static void main(String[] args) throws Exception {

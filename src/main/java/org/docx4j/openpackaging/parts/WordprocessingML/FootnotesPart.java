@@ -21,15 +21,11 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import java.util.List;
-
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTFootnotes;
-import org.docx4j.wml.ContentAccessor;
 
 
 public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> {

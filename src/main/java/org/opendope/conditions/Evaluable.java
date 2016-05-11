@@ -4,15 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 
 public interface Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * List the XPaths used in this condition.
@@ -21,8 +20,8 @@ public interface Evaluable {
 	 * @param xPaths
 	 */
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * Build the XPath expression
@@ -30,8 +29,8 @@ public interface Evaluable {
 	 * @param xPaths
 	 * @return
 	 */
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * Create a condition for this instance of a repeat.
@@ -44,8 +43,8 @@ public interface Evaluable {
 	 */
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths);
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap);
 	
 	/**
 	 * Map the IDs used in this condition to new values; useful for merging ConditionParts.

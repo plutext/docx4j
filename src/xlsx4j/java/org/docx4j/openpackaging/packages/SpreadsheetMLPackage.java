@@ -42,6 +42,8 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.xlsx4j.jaxb.Context;
+import org.xlsx4j.sml.BookViews;
+import org.xlsx4j.sml.CTBookView;
 import org.xlsx4j.sml.Sheet;
 import org.xlsx4j.sml.Sheets;
 import org.xlsx4j.sml.Worksheet;
@@ -75,6 +77,12 @@ public class SpreadsheetMLPackage extends OpcPackage {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
+	
+	private ProtectWorkbook workbookProtectionSettings = new ProtectWorkbook(this);
+	public ProtectWorkbook getProtectionSettings() {
+		return workbookProtectionSettings;
+	}	
+	
 	
 	// Workbook part
 	WorkbookPart wb;
@@ -139,7 +147,19 @@ public class SpreadsheetMLPackage extends OpcPackage {
 			);
 			xlsPack.addTargetPart(xlsPack.wb);	
 			
-			xlsPack.wb.getJaxbElement().setSheets(
+			/* Without the following, Excel 2010 might crash if you try to print
+			 * (it seems to depend on the content of your sheet).
+			 * 
+			 * <bookViews>
+				    <workbookView />
+				  </bookViews>
+			 */
+			BookViews bookview = Context.getsmlObjectFactory().createBookViews();
+			CTBookView ctBookview = Context.getsmlObjectFactory().createCTBookView();
+			bookview.getWorkbookView().add(ctBookview);
+			xlsPack.wb.getContents().setBookViews(bookview);			
+			
+			xlsPack.wb.getContents().setSheets(
 					Context.getsmlObjectFactory().createSheets()					
 			);
 			
@@ -148,8 +168,6 @@ public class SpreadsheetMLPackage extends OpcPackage {
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
 		
-		xlsPack.setPartStore(new ZipPartStore());
-
 		// Return the new package
 		return xlsPack;
 		

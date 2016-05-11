@@ -19,7 +19,6 @@
  */
 package org.docx4j.model.images;
 
-import org.docx4j.model.images.AbstractWordXmlPicture;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;

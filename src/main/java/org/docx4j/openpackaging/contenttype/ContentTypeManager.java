@@ -50,20 +50,21 @@ package org.docx4j.openpackaging.contenttype;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -79,15 +80,12 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
-import org.docx4j.openpackaging.parts.VMLBinaryPart;
 import org.docx4j.openpackaging.parts.VMLPart;
-import org.docx4j.openpackaging.parts.DrawingML.Chart;
-import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
+import org.docx4j.openpackaging.parts.PresentationML.FontDataPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
@@ -111,10 +109,13 @@ import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectSignatureBin;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.glox4j.openpackaging.packages.GloxPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -278,11 +279,11 @@ public class ContentTypeManager  {
 		
 		// if there is no override, get use the file extension
 		String ext = partName.substring(partName.indexOf(".") + 1).toLowerCase();
-		log.info("Looking at extension '" + ext);
+		log.debug("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
 		if (defaultCT!=null ) {
 			String contentType = defaultCT.getContentType();
-			log.info("Found content type '" + contentType + "' for "
+			log.debug("Found content type '" + contentType + "' for "
 							+ partName);
 			p = newPartForContentType(contentType, partName, rel);
 			p.setContentType(new ContentType(contentType));
@@ -382,6 +383,8 @@ public class ContentTypeManager  {
 			return new VbaDataPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT)) {
 			return new VbaProjectBinaryPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT_SIGNATURE)) {
+			return new VbaProjectSignatureBin(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {
@@ -409,7 +412,11 @@ public class ContentTypeManager  {
 			} catch (Exception e) {
 				return new BinaryPart( new PartName(partName));				
 			}
-		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentation")
+				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+						) {
 			try {
 				return JaxbPmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
@@ -432,9 +439,34 @@ public class ContentTypeManager  {
 				return new BinaryPart( new PartName(partName));				
 			}
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME_OVERRIDE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));		
+			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));	
+			
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
-			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
+//			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
+			
+			// Use reflection, since the dig sig functionality is in Enterprise only
+			try {
+				Class<?> xmlSignaturePart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart");
+				Constructor<?> cons = xmlSignaturePart.getConstructor(PartName.class);
+				PartName pn = new PartName(partName);
+				return (Part) cons.newInstance(pn);
+			} catch (Exception e) {
+				return CreateDefaultXmlPartObject(partName );				
+			}			
+			
+		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_ORIGIN_PART)) {
+//			return new org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart(new PartName(partName));
+			
+			// Use reflection, since the dig sig functionality is in Enterprise only
+			try {
+				Class<?> originPart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart");
+				Constructor<?> cons = originPart.getConstructor(PartName.class);
+				PartName pn = new PartName(partName);
+				return (Part) cons.newInstance(pn);
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}			
+			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			
@@ -443,9 +475,21 @@ public class ContentTypeManager  {
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
 			// will catch the error and load it as a binary part instead.
-			log.warn("DefaultPart used for part '" + partName 
-					+ "' of content type '" + contentType + "'");
+			
+			if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLESWITHEFFECTS)) {
+				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");
+				
+			} else {
+				log.warn("DefaultPart used for part '" + partName 
+						+ "' of content type '" + contentType + "'");				
+			}
+			
 			return CreateDefaultXmlPartObject(partName );
+			
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_FONT_DATA)) {
+			
+			return new FontDataPart(new PartName(partName));
+			
 		} else {
 			
 			log.error("No subclass found for " + partName + "; defaulting to binary");
@@ -667,7 +711,11 @@ public class ContentTypeManager  {
 		CTTypes types;
 		
 		try {
-		    		    
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(contentTypes);			
+	        
 			Unmarshaller u = Context.jcContentTypes.createUnmarshaller();
 			
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
@@ -675,7 +723,7 @@ public class ContentTypeManager  {
 
 			log.debug("unmarshalling " + this.getClass().getName() );		
 			
-			Object res = XmlUtils.unwrap(u.unmarshal( contentTypes ));
+			Object res = XmlUtils.unwrap(u.unmarshal( xsr ));
 			//types = (CTTypes)((JAXBElement)res).getValue();				
 			types = (CTTypes)res;
 			//log.debug( types.getClass().getName() + " unmarshalled" );
@@ -757,7 +805,7 @@ public class ContentTypeManager  {
 			
 			marshaller.marshal(buildTypes(), node);
 			
-			log.info("content types marshalled \n\n" );									
+			log.debug("content types marshalled \n\n" );									
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();
@@ -774,7 +822,7 @@ public class ContentTypeManager  {
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper() );
 			
-			log.info("marshalling " + this.getClass().getName() + " ..." );									
+			log.debug("marshalling " + this.getClass().getName() + " ..." );									
 			marshaller.marshal(buildTypes(), os);
 
 		} catch (JAXBException e) {
@@ -804,6 +852,8 @@ public class ContentTypeManager  {
 			return p;
 		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED) 
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);

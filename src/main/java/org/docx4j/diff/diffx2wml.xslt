@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:dfx="http://www.topologi.org/2004/Diff-X"
-    xmlns:del="http://www.topologi.org/2004/Diff-X/Delete"
+  	xmlns:dfx="http://www.topologi.com/2005/Diff-X"
+    xmlns:del="http://www.topologi.com/2005/Diff-X/Delete"
+    xmlns:ins="http://www.topologi.com/2005/Diff-X"
     xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
  	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"    
@@ -19,21 +20,20 @@
   <!-- 
   *  Copyright 2007, Plutext Pty Ltd.
   *
-  *  This file is part of plutext-client-word2007.
+ *  This file is part of docx4j.
 
-  plutext-client-word2007 is free software: you can redistribute it and/or
-  modify it under the terms of version 3 of the GNU General Public License
-  as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-  plutext-client-word2007 is distributed in the hope that it will be
-  useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+    You may obtain a copy of the License at 
 
-  You should have received a copy of the GNU General Public License
-  along with plutext-client-word2007.  If not, see
-  <http://www.gnu.org/licenses/>.
+        http://www.apache.org/licenses/LICENSE-2.0 
 
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
   -->
 
   <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" 
@@ -184,8 +184,15 @@ java.lang.IllegalArgumentException:
 
   <xsl:template match="w:r">
 
-       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference"/> 
-      <!-- NB: this XSLT drops run content other than these. What else to keep? -->
+       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference|w:pPr"/> 
+      <!-- NB: 
+      		1.  note w:pPr (!), that's required because diffX might create
+      		
+				    <w:r dfx:insert="true">
+				      <w:pPr dfx:delete="true">
+				        <w:drawing dfx:insert="true">      		
+      		
+      		2. this XSLT drops run content other than these. What else to keep? -->
 
   </xsl:template>
 
@@ -880,6 +887,146 @@ java.lang.IllegalArgumentException:
     
     </xsl:template>
 
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- ++++++ TABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++ - deleted  ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<xsl:template match="w:tbl[@dfx:delete]">
+		<!-- Handled at tr level -->
+		<w:tbl>
+			<xsl:apply-templates mode="deleted-table"/>
+		</w:tbl>
+	</xsl:template>
+
+	<!--  drop @dfx:delete -->
+	<xsl:template match="@dfx:delete" priority="5" mode="deleted-table" />
+
+	<xsl:template match="@*|node()" mode="deleted-table">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" mode="deleted-table" />
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="@del:*" priority="5" mode="deleted-table">
+		<xsl:attribute name="{local-name(.)}" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+				<xsl:value-of select="." />
+			</xsl:attribute>
+	</xsl:template>
+		    
+	<!--  handle case of no w:trPr  -->	    
+	<xsl:template match="w:tr[@dfx:delete]" mode="deleted-table">
+	<w:tr>
+		<xsl:choose>
+			<xsl:when test="count(w:trPr)=0">
+				<w:trPr>
+					<xsl:variable name="id"
+						select="java:org.docx4j.diff.Differencer.getId()" />
+					<w:del w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!-- w:date is optional -->
+				</w:trPr>
+				<xsl:apply-templates mode="deleted-table"/>				
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates mode="deleted-table"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</w:tr>
+	</xsl:template>
+	
+	<!--  existing w:trPr  -->	    
+	<xsl:template match="w:trPr[@dfx:delete]" mode="deleted-table">
+
+			<xsl:variable name="id" 
+							select="java:org.docx4j.diff.Differencer.getId()" />
+	
+			<w:trPr>
+				<xsl:apply-templates mode="deleted-table"/>
+				
+			    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!--  w:date is optional -->
+		    </w:trPr>		
+
+	</xsl:template>
+	
+	<xsl:template match="w:tc[@dfx:delete]"  mode="deleted-table">
+		<w:tc>
+			<xsl:apply-templates /> <!--  normal mode, for w:p etc -->
+		</w:tc>
+	</xsl:template>
+	
+	<xsl:template match="w:tcPr[@dfx:delete]"> <!--  normal mode -->
+		<w:tcPr>
+			<xsl:apply-templates  mode="deleted-table" /> <!--  swap mode -->
+		</w:tcPr>
+	</xsl:template>
+	
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- ++++++ TABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++ - inserted  ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+	<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<xsl:template match="w:tbl[@dfx:insert]">
+		<!-- Handled at tr level -->
+		<w:tbl>
+			<xsl:apply-templates mode="inserted-table"/>
+		</w:tbl>
+	</xsl:template>
+
+	<!--  drop @dfx:delete -->
+	<xsl:template match="@dfx:insert" priority="5" mode="inserted-table" />
+
+	<xsl:template match="@*|node()" mode="inserted-table">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" mode="inserted-table" />
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="@ins:*" priority="5" mode="inserted-table" />
+		    
+	<!--  handle case of no w:trPr  -->	    
+	<xsl:template match="w:tr[@dfx:insert]" mode="inserted-table">
+	<w:tr>
+		<xsl:choose>
+			<xsl:when test="count(w:trPr)=0">
+				<w:trPr>
+					<xsl:variable name="id"
+						select="java:org.docx4j.diff.Differencer.getId()" />
+					<w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!-- w:date is optional -->
+				</w:trPr>
+				<xsl:apply-templates mode="inserted-table"/>				
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates mode="inserted-table"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</w:tr>
+	</xsl:template>
+	
+	<!--  existing w:trPr  -->	    
+	<xsl:template match="w:trPr[@dfx:insert]" mode="inserted-table">
+
+			<xsl:variable name="id" 
+							select="java:org.docx4j.diff.Differencer.getId()" />
+	
+			<w:trPr>
+				<xsl:apply-templates mode="inserted-table"/>
+				
+			    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}" />  <!--  w:date is optional -->
+		    </w:trPr>		
+
+	</xsl:template>
+	
+	<xsl:template match="w:tc[@dfx:insert]"  mode="inserted-table">
+		<w:tc>
+			<xsl:apply-templates /> <!--  normal mode, for w:p etc -->
+		</w:tc>
+	</xsl:template>
+	
+	<xsl:template match="w:tcPr[@dfx:insert]"> <!--  normal mode -->
+		<w:tcPr>
+			<xsl:apply-templates  mode="inserted-table" /> <!--  swap mode -->
+		</w:tcPr>
+	</xsl:template>
+	
 
 
 </xsl:stylesheet>

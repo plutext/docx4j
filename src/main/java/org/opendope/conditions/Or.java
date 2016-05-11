@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 
 
@@ -98,12 +97,12 @@ public class Or implements Evaluable {
     
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
     	
     	for (Evaluable particle : xpathrefOrAndOrOr) {
     		
-        	boolean result = particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+        	boolean result = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
         	if (result==true) {
         		return true;
         	}    		
@@ -112,11 +111,11 @@ public class Or implements Evaluable {
     }
     
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		particle.listXPaths(theList, conditions, xPaths);
+    		particle.listXPaths(theList, conditionsMap, xpathsMap);
     	}
 		
 	}
@@ -135,15 +134,15 @@ public class Or implements Evaluable {
 	}
 	
 
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
 		StringBuilder sb = new StringBuilder();
 		
 		int i = 0;
 		int total = xpathrefOrAndOrOr.size();
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		sb.append(particle.toString(conditions, xPaths));
+    		sb.append(particle.toString(conditionsMap, xpathsMap));
     		i++;
     		if (i<total) {
     			sb.append(" or ");
@@ -155,11 +154,11 @@ public class Or implements Evaluable {
 	
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
     	for (Evaluable particle : xpathrefOrAndOrOr) {
-    		particle.repeat(xpathBase, index, conditions, xPaths);
+    		particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
     	}
 		return null;
 	}	

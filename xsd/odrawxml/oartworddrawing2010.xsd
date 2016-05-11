@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:oxsd="http://oxsdSchemaUri" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+<!-- 	
+	<xsd:import schemaLocation="oarte2o.xsd"
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+	<xsd:import schemaLocation="oartdocprop.xsd"
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+		 -->
+		 
+	<!--  added, for a:ST_Percentage -->
+	<xsd:import schemaLocation="../dml/dml-baseTypes.xsd"
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+		
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>		
+		 
+	<xsd:simpleType name="ST_SizeRelFromH">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="margin" />
+			<xsd:enumeration value="page" />
+			<xsd:enumeration value="leftMargin" />
+			<xsd:enumeration value="rightMargin" />
+			<xsd:enumeration value="insideMargin" />
+			<xsd:enumeration value="outsideMargin" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_SizeRelFromV">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="margin" />
+			<xsd:enumeration value="page" />
+			<xsd:enumeration value="topMargin" />
+			<xsd:enumeration value="bottomMargin" />
+			<xsd:enumeration value="insideMargin" />
+			<xsd:enumeration value="outsideMargin" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SizeRelH">
+		<xsd:sequence>
+			<xsd:element name="pctWidth" type="a:ST_PositivePercentage"
+				minOccurs="1" maxOccurs="1" />
+		</xsd:sequence>
+		<xsd:attribute name="relativeFrom" type="ST_SizeRelFromH"
+			use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="CT_SizeRelV">
+		<xsd:sequence>
+			<xsd:element name="pctHeight" type="a:ST_PositivePercentage"
+				minOccurs="1" maxOccurs="1" />
+		</xsd:sequence>
+		<xsd:attribute name="relativeFrom" type="ST_SizeRelFromV"
+			use="required" />
+	</xsd:complexType>
+	<xsd:element name="pctPosHOffset" type="a:ST_Percentage" />
+	<xsd:element name="pctPosVOffset" type="a:ST_Percentage" />
+	<xsd:element name="sizeRelH" type="CT_SizeRelH" />
+	<xsd:element name="sizeRelV" type="CT_SizeRelV" />
+	<xsd:simpleType name="ST_EditId">
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="4" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attribute name="anchorId" type="ST_EditId" />
+	<xsd:attribute name="editId" type="ST_EditId" />
+</xsd:schema>

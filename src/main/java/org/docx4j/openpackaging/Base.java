@@ -142,6 +142,8 @@ public abstract class Base {
 	/**
 	 * The part name. (required by the specification [M1.1])
 	 * 
+	 * You should use the getter/setter, rather than accessing this field directly!
+	 * 
 	 * Note that in docx4J, part names should be resolved,
 	 * before being set, so that they are absolute
 	 * (ie start with '/').
@@ -149,8 +151,17 @@ public abstract class Base {
 	 * We will assume the Package has a part name of "/"
 	 * 
 	 */
+	@Deprecated
 	public PartName partName;
 
+	/**
+	 * @param partName
+	 * @since 3.2.0
+	 */
+	public void setPartName(PartName partName) {
+		this.partName = partName;
+	}
+	
 	/**
 	 * @return the uri
 	 */
@@ -288,7 +299,7 @@ public abstract class Base {
 		// Finally, set part shortcut if there is one to set
 		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());
 		if (shortcutSet) {
-			log.info("shortcut was set");			
+			log.debug("shortcut was set");			
 		}
 		
 		return rel;

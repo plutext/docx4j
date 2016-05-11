@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
+
 import org.docx4j.math.CTAcc;
 import org.docx4j.math.CTBar;
 import org.docx4j.math.CTBorderBox;
@@ -7920,6 +7921,11 @@ public class ObjectFactory {
         return new JAXBElement<CTAltChunk>(_CTFtnEdnAltChunk_QNAME, CTAltChunk.class, Body.class, value);
     }
 
+    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "altChunk", scope = SdtContentBlock.class)
+    public JAXBElement<CTAltChunk> createSdtContentBlockAltChunk(CTAltChunk value) {
+        return new JAXBElement<CTAltChunk>(_CTFtnEdnAltChunk_QNAME, CTAltChunk.class, SdtContentBlock.class, value);
+    }
+    
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}}
      * 

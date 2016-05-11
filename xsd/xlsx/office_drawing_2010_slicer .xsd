@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2010/slicer"
+	xmlns="http://schemas.microsoft.com/office/drawing/2010/slicer"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- From [MS-XLSX] — v20130726
+Excel (.xlsx) Extensions to the Office Open XML SpreadsheetML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.drawing.slicer2010"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+	<xsd:import
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="orel.xsd" />
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="oartdocprop.xsd" />
+	<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main"
+		schemaLocation="oart14docprop.xsd" />
+	<xsd:complexType name="CT_Slicer">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="a:CT_OfficeArtExtensionList"
+				minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required" />
+	</xsd:complexType>
+	<xsd:element name="slicer" type="CT_Slicer" />
+</xsd:schema>

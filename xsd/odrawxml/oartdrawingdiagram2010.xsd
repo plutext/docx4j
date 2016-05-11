@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:o="http://oxsdSchemaUri" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns="http://schemas.microsoft.com/office/drawing/2010/diagram" xmlns:oxsd="http://oxsdSchemaUri" targetNamespace="http://schemas.microsoft.com/office/drawing/2010/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartdocprop.xsd"/>
+  <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"/>
+  <xsd:complexType name="CT_Boolean">
+    <xsd:attribute name="val" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="recolorImg" type="CT_Boolean"/>
+</xsd:schema>

@@ -21,16 +21,15 @@ package org.docx4j.model.datastorage;
 
 import java.io.OutputStream;
 
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.XmlPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustomXmlDataStorageImpl extends XmlPart implements CustomXmlDataStorage {
 	

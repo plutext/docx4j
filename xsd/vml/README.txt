@@ -48,4 +48,8 @@ Had to add:
 Had to add vml__ROOT.xsd for xjc.
                 
 It also contains a schema for the unqualified xml element, since MS/ECMA does not provide one.                
- 
+
+-----
+
+July 2014, namespace for certain attributes in CT_SignatureLine in vml/vml-officedrawing are wrong!
+

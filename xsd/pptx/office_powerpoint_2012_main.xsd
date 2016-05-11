@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2012/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2012/main"
+	xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- [MS-PPTX] — v20130726
+PowerPoint (.pptx) Extensions to the Office Open XML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.powerpoint.main2012"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+	
+  <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+  <xsd:complexType name="CT_PresetTransition">
+    <xsd:attribute name="prst" type="xsd:string"/>
+    <xsd:attribute name="invX" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="invY" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="prstTrans" type="CT_PresetTransition"/>
+  <xsd:complexType name="CT_PresenceInfo">
+    <xsd:attribute name="userId" type="xsd:string" use="required"/>
+    <xsd:attribute name="providerId" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ParentCommentIdentifier">
+    <xsd:attribute name="authorId" type="xsd:unsignedInt"/>
+    <xsd:attribute name="idx" type="xsd:unsignedInt"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CommentThreading">
+    <xsd:sequence>
+      <xsd:element name="parentCm" type="CT_ParentCommentIdentifier" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="timeZoneBias" type="xsd:int"/>
+  </xsd:complexType>
+  <xsd:element name="presenceInfo" type="CT_PresenceInfo"/>
+  <xsd:element name="threadingInfo" type="CT_CommentThreading"/>
+  <xsd:complexType name="CT_ExtendedGuide">
+    <xsd:sequence>
+      <xsd:element name="clr" type="a:CT_Color" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="name" type="xsd:string" use="optional" default=""/>
+    <xsd:attribute name="orient" type="p:ST_Direction" use="optional" default="vert"/>
+    <xsd:attribute name="pos" type="a:ST_Coordinate32" use="optional" default="0"/>
+    <xsd:attribute name="userDrawn" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ExtendedGuideList">
+    <xsd:sequence>
+      <xsd:element name="guide" type="CT_ExtendedGuide" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="sldGuideLst" type="CT_ExtendedGuideList"/>
+  <xsd:element name="notesGuideLst" type="CT_ExtendedGuideList"/>
+  <xsd:complexType name="CT_ChartTrackingRefBased">
+    <xsd:attribute name="val" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="chartTrackingRefBased" type="CT_ChartTrackingRefBased"/>
+</xsd:schema>

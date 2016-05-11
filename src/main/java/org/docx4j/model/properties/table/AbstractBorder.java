@@ -20,14 +20,8 @@
 package org.docx4j.model.properties.table;
 
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.jaxb.Context;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
-import org.docx4j.wml.Color;
-import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
-import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TcPrInner;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;

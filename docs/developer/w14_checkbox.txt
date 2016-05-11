@@ -1,0 +1,13 @@
+        <w14:checkbox>
+          <w14:checked w14:val="0"/>
+          <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
+          <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+        </w14:checkbox>
+        
+you need lower case 'true' or 'false' ... not upper case.      
+
+1 seems to work
+
+random is treated as false
+
+yes|no?

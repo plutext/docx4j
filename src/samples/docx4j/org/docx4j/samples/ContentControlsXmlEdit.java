@@ -95,7 +95,8 @@ public class ContentControlsXmlEdit {
 		System.out.println(XmlUtils.w3CDomNodeToString(customXmlDataStorage.getDocument()));
 		
 		// Apply the bindings
-		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		BindingHandler bh = new BindingHandler(wordMLPackage);
+		bh.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
 		// 1. the custom xml part 

@@ -21,8 +21,6 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,6 +29,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

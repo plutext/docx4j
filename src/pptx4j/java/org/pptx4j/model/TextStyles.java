@@ -24,13 +24,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.BaseStyles.FontScheme;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
-import org.docx4j.dml.BaseStyles.FontScheme;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -39,6 +37,8 @@ import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.DocDefaults.RPrDefault;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.Jc;
 import org.docx4j.wml.JcEnumeration;
@@ -47,10 +47,12 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Style.Name;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
-import org.docx4j.wml.Style.Name;
 import org.pptx4j.pml.CTSlideMasterTextStyles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TextStyles {
 	
@@ -289,34 +291,60 @@ public class TextStyles {
 		return styles;
 	}
 	
-    protected static Style createVirtualStylesForDocDefaults(FontScheme fontScheme) {
+//    protected static Style createVirtualStylesForDocDefaults(FontScheme fontScheme) {
+//    	
+//		ObjectFactory factory = Context.getWmlObjectFactory();
+//		Style style = factory.createStyle();
+//    	
+//    	String ROOT_NAME = "DocDefaults";
+//    	
+//    	style.setStyleId(ROOT_NAME);
+//    	style.setType("paragraph");
+//		
+//		Name styleName = factory.createStyleName();
+//		styleName.setVal(ROOT_NAME);
+//		style.setName(styleName);
+//		
+////		<w:rPr>
+//		RPr rPr = factory.createRPr();
+//		style.setRPr(rPr);
+//
+////		<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+//		RFonts rFonts = factory.createRFonts();
+//		rFonts.setAscii( fontScheme.getMinorFont().getLatin().getTypeface() );
+//		rPr.setRFonts(rFonts);
+//	
+//		return style;
+//    	
+//    }	
+    
+    protected static DocDefaults generateDocDefaults(FontScheme fontScheme) {
     	
 		ObjectFactory factory = Context.getWmlObjectFactory();
-		Style style = factory.createStyle();
-    	
-    	String ROOT_NAME = "DocDefaults";
-    	
-    	style.setStyleId(ROOT_NAME);
-    	style.setType("paragraph");
+		DocDefaults docDefaults = factory.createDocDefaults();
+
+		RPrDefault rPrDefault = factory.createDocDefaultsRPrDefault();
 		
-		Name styleName = factory.createStyleName();
-		styleName.setVal(ROOT_NAME);
-		style.setName(styleName);
+		docDefaults.setRPrDefault(rPrDefault);
 		
 //		<w:rPr>
 		RPr rPr = factory.createRPr();
-		style.setRPr(rPr);
+		rPrDefault.setRPr(rPr);
 
 //		<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
 		RFonts rFonts = factory.createRFonts();
 		rFonts.setAscii( fontScheme.getMinorFont().getLatin().getTypeface() );
 		rPr.setRFonts(rFonts);
 	
-		return style;
+		return docDefaults;
     	
     }	
     
+    public static DocDefaults generateDocDefaults() {
+    	return docDefaults;
+    }
     
+    private static DocDefaults docDefaults;
     
 	public static List<Style> generateStyles(PresentationMLPackage presentationMLPackage) 
 		throws InvalidFormatException {
@@ -326,8 +354,7 @@ public class TextStyles {
 		FontScheme fontScheme = tp.getFontScheme();
 		List<Style> styles = new ArrayList<Style>();
 		
-		// root
-		styles.add(TextStyles.createVirtualStylesForDocDefaults(fontScheme));
+		TextStyles.generateDocDefaults(fontScheme);
 		
 		// presentation.xml
 		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(

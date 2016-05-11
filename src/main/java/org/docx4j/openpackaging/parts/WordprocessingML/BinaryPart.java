@@ -23,12 +23,9 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
-import java.util.zip.ZipFile;
-
-import javax.xml.bind.JAXBException;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -38,9 +35,20 @@ import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.utils.BufferUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
+/**
+ * A part containing binary (as opposed to XML) data.
+ * 
+ * The content of a binary parts is loaded lazily (ie only when required).
+ *
+ */
 public class BinaryPart extends Part {
+	
+	protected static Logger log = LoggerFactory.getLogger(BinaryPart.class);
+	
 	
 	public BinaryPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -92,78 +100,80 @@ public class BinaryPart extends Part {
 		this.bb = bb;
 	}
 	
-	
-	/**
-	 * Store buffer thru soft reference so it could be 
-	 * unloaded by the java vm if free memory is low.
-	 */
-	private Reference<ByteBuffer> bbRef = null;
-	
+		
 	/**
 	 * @since 3.0
 	 */
 	public boolean isLoaded() {
 		
-		if (this.bb != null) {
-			return true;
-		}
-		
-		return (this.bbRef != null);
+		return (this.bb != null);
 	}
 	
+	/**
+	 * Get the contents of this part.
+	 * 
+	 * NB: if you are moving this part from one pkg to another,
+	 * you'll probably want to invoke this first, since otherwise
+	 * the content may not be located (lazy loading).
+	 * 
+	 * @return
+	 */
 	public ByteBuffer getBuffer() {
-		ByteBuffer res = null;
 		
 		if (this.bb != null) {
 			// use buffer loaded during package load
 			// (if not using Load3)
-			res = this.bb;
+			bb.rewind(); // Don't forget this!
+			return bb;
 			
-		} else {
-
-			res = (this.bbRef != null) ? this.bbRef.get() : null;
-			if (this.getPackage()==null) {
-				log.warn("No package owns this part.");
-				return null;				
-			}
-			// no cached buffer, try to load part data now			
-			PartStore partStore = this.getPackage().getPartStore();
-			if (partStore==null) {
-				log.warn("No PartStore configured for this package");
-				return null;
-			} if (res == null) {
-				InputStream is=null;
-				try {
-					String name = this.partName.getName();
-					
-					try {
-						this.setContentLengthAsLoaded(
-								partStore.getPartSize( name.substring(1)));
-					} catch (UnsupportedOperationException uoe) {}
-					
-					is = partStore.loadPart( name.substring(1));
-					if (is==null) {
-						log.warn(name + " missing from part store");
-					} else {
-						res = BufferUtil.readInputStream(is);
-						// Store buffer thru soft reference so it could be
-						// unloaded by the java vm if free memory is low.
-						this.bbRef = new SoftReference<ByteBuffer>(res);
-					}
-				} catch (Docx4JException e) {
-					log.error(e.getMessage(), e);
-				} catch (IOException e) {
-					log.error(e.getMessage(), e);
-				} finally {
-					IOUtils.closeQuietly(is);
-				}
-			
-			}			
-			
+		} 		
+		
+		if (this.getPackage()==null) {
+			log.warn("No package owns this part, and/or you didn't set its contents.");
+			return null;				
 		}
 		
-		res.rewind(); // Don't forget this!
-		return res;
+		// no cached buffer, try to load part data now			
+		PartStore partStore = this.getPackage().getSourcePartStore();
+		if (partStore==null) {
+			log.warn("No PartStore configured for this package");
+			return null;
+		} 
+		
+		
+		InputStream is=null;
+		try {
+			String name = this.getPartName().getName();
+			
+			try {
+				this.setContentLengthAsLoaded(
+						partStore.getPartSize( name.substring(1)));
+			} catch (UnsupportedOperationException uoe) {}
+			
+			is = partStore.loadPart( name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+			} else {
+				
+//				if (log.isDebugEnabled()) {
+//					Throwable t = new Throwable();
+//					log.debug("Lazy loading of binary part " + name, t);
+//				}
+				
+				bb = BufferUtil.readInputStream(is);
+				bb.rewind();
+				return bb;
+			}
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+		} catch (IOException e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+		
+		return null;
+		
 	}
 	
 	/**
@@ -174,13 +184,28 @@ public class BinaryPart extends Part {
 	 * @throws IOException
 	 */
 	public void writeDataToOutputStream(OutputStream out) throws IOException {
-		ByteBuffer buf = this.getBuffer();
 		
-        buf.clear();
-        byte[] bytes = new byte[buf.capacity()];
-        buf.get(bytes, 0, bytes.length);
-        	        
-        out.write( bytes );	    
+		ByteBuffer buf = this.getBuffer();
+		buf.rewind();
+
+		// Fix for https://github.com/plutext/docx4j/issues/80
+		// from http://stackoverflow.com/questions/579600/how-to-put-the-content-of-a-bytebuffer-into-an-outputstream
+        WritableByteChannel channel = Channels.newChannel(out);
+        channel.write(buf);        
+		buf.rewind();
+        
+	}
+	
+	public byte[] getBytes() {
+		
+		ByteBuffer bb = this.getBuffer();
+		bb.rewind();
+
+		byte[] bytes = new byte[bb.limit()];
+		bb.get(bytes, 0, bytes.length);
+		bb.rewind();
+		
+		return bytes;
 	}
 	
     public boolean isContentEqual(Part other) throws Docx4JException {

@@ -24,8 +24,6 @@ package org.docx4j.samples;
 import java.util.HashMap;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.sdt.QueryString;
@@ -106,26 +104,31 @@ public class ContentControlsInfoStructure extends AbstractSample {
 		
 		@Override
 		public void apply(SdtElement element, Object parent, List<Object> siblings) {
+			
+			StringBuffer sb = new StringBuffer(); 
 
-			System.out.println();
+			sb.append("\n"+"\n");
 			
 			SdtPr sdtPr = element.getSdtPr();
 			if (sdtPr==null) {
-				System.out.println(callback.indent + element.getClass().getSimpleName() + "  [no sdtPr!]" + " (having parent " + parent.getClass().getSimpleName() + ")");
+				sb.append("\n"+callback.indent + element.getClass().getSimpleName() + "  [no sdtPr!]" + " (having parent " + parent.getClass().getSimpleName() + ")");
+				System.out.println(sb.toString());
 			} else {				
-				System.out.println(callback.indent + element.getClass().getSimpleName()  + " (having parent " + parent.getClass().getSimpleName() + ")");
+				sb.append("\n"+callback.indent + element.getClass().getSimpleName()  + " (having parent " + parent.getClass().getSimpleName() + ")");
 				
 				CTDataBinding binding = (CTDataBinding) XmlUtils.unwrap(sdtPr
 						.getDataBinding());
 				if (binding!=null) {
-					System.out.println(callback.indent + "  binding: " + binding.getXpath() );					
+					sb.append("\n"+callback.indent + "  binding: " + binding.getXpath() );					
 				}
 				
 				Tag tag = sdtPr.getTag();
-				if (tag == null)
+				if (tag == null) {
+					//System.out.println(sb.toString());					
 					return;
-
-				System.out.println(callback.indent + "  " + tag.getVal() );					
+				}
+				
+				sb.append("\n"+callback.indent + "  " + tag.getVal() );					
 				
 				HashMap<String, String> map = QueryString.parseQueryString(
 						tag.getVal(), true);
@@ -138,44 +141,47 @@ public class ContentControlsInfoStructure extends AbstractSample {
 					Condition c = ConditionsPart.getConditionById(conditions,
 							conditionId);
 					if (c == null) {
-						System.out.println(callback.indent + "  " + "Missing condition " + conditionId);
+						sb.append("\n"+callback.indent + "  " + "Missing condition " + conditionId);
 					}
 					
 					if (c.getParticle() instanceof org.opendope.conditions.Xpathref) {
 						org.opendope.conditions.Xpathref xpathRef = (Xpathref)c.getParticle();
 						if (xpathRef == null) {
-							System.out.println(callback.indent + "  " + "Condition " + c.getId() + " references a missing xpath!");
+							sb.append("\n"+callback.indent + "  " + "Condition " + c.getId() + " references a missing xpath!");
 						}
 						
 						org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xpathRef.getId());
 						if (xpath==null) {
-							System.out.println(callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
+							sb.append("\n"+callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
 						} else {
-							System.out.println(callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+							sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
 						}
 					} else {
-						System.out.println("Complex condition: " + XmlUtils.marshaltoString(c, true, true) );
+						//sb.append("\n"+"Complex condition: " + XmlUtils.marshaltoString(c, true, true) );
 					}
+					System.out.println(sb.toString());					
 					
 				} else if (repeatId!=null ) {
 					
 					org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, repeatId);
 					
 					if (xpath==null) {
-						System.out.println(callback.indent + "  " + "XPath specified in repeat '" + repeatId + "' is missing!");
+						sb.append("\n"+callback.indent + "  " + "XPath specified in repeat '" + repeatId + "' is missing!");
 					} else {
-						System.out.println(callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
 					}
+					System.out.println(sb.toString());					
 					
 				} else if (xp!=null) {
 					
 					org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xp);
 					
 					if (xpath==null) {
-						System.out.println(callback.indent + "  " + "XPath specified with id '" + xp + "' is missing!");
+						sb.append("\n"+callback.indent + "  " + "XPath specified with id '" + xp + "' is missing!");
 					} else {
-						System.out.println(callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
 					}
+					// System.out.println(sb.toString());					
 					
 				}
 				

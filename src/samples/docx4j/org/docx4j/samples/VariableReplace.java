@@ -28,7 +28,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Document;
 
 
 /**
@@ -67,7 +66,7 @@ public class VariableReplace {
 		org.docx4j.wml.ObjectFactory foo = Context.getWmlObjectFactory();
 
 		// Input docx has variables in it: ${colour}, ${icecream}
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample176.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample.docx";
 
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir")

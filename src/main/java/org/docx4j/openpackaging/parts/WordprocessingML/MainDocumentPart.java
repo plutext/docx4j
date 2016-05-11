@@ -22,22 +22,23 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.fonts.CJKToEnglish;
+import org.docx4j.fonts.RunFontSelector;
+import org.docx4j.fonts.RunFontSelector.RunFontActionType;
+import org.docx4j.fonts.RunFontSelector.RunFontCharacterVisitor;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -49,7 +50,6 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Comments;
@@ -62,10 +62,16 @@ import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.RStyle;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 
 /**
@@ -112,13 +118,21 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	}	
 	
 	@Override
-	protected void setMceIgnorable() {
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 
-		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
-		this.jaxbElement.setIgnorable(
-				helper.getMceIgnorable(this.getJaxbElement().getBody()));
-	}
+//		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
+//		this.jaxbElement.setIgnorable(
+//				helper.getMceIgnorable(this.getJaxbElement().getBody()));
 		
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+    protected String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+	
     
     
 
@@ -161,14 +175,14 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		if (refresh || styleTree==null) {
 			
-			log.info("Preparing StyleTree");
+			log.debug("Preparing StyleTree");
 
-		    try {
-				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
-			} catch (Docx4JException e) {
-				// Shouldn't happen, so catch here
-				log.error(e.getMessage(), e);
-			}
+//		    try {
+//				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
+//			} catch (Docx4JException e) {
+//				// Shouldn't happen, so catch here
+//				log.error(e.getMessage(), e);
+//			}
 	    	
 //			// Get these first, so we can be sure they are defined... 
 //			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
@@ -181,7 +195,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				allStyles.put(s.getStyleId(), s);	
 				//log.debug("live style: " + s.getStyleId() );
 			}
-			styleTree = new StyleTree(getStylesInUse(), allStyles);
+			styleTree = new StyleTree(getStylesInUse(), allStyles,
+					getStyleDefinitionsPart().getJaxbElement().getDocDefaults(), 
+					getStyleDefinitionsPart().getDefaultParagraphStyle());
 				
 		}
 		return styleTree;
@@ -198,7 +214,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      */
     public Set<String> fontsInUse() {
     	
-    	log.info("fontsInUse..");
+    	log.debug("fontsInUse..");
     	
     	getPropertyResolver();  // this inits our virtual DocDefaults style
     	
@@ -206,54 +222,82 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	
     	Set<String> fontsDiscovered = new java.util.HashSet<String>();
     	
-    	// Keep track of styles we encounter, so we can
-    	// inspect these for fonts
-    	Set<String> stylesInUse = new java.util.HashSet<String>();
-
-		org.docx4j.wml.Styles styles = null;
-		if (this.getStyleDefinitionsPart()!=null) {
-			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
-		}
-		// It is convenient to have a HashMap of styles
-		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
-		if (styles!=null) {
-		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
-		            Style s = iter.next();
-		            stylesDefined.put(s.getStyleId(), s);
-		     }
-		}
-    // We need to know what fonts and styles are used in the document
+//    	// Keep track of styles we encounter, so we can
+//    	// inspect these for fonts
+//    	Set<String> stylesInUse = new java.util.HashSet<String>();
+//
+//		org.docx4j.wml.Styles styles = null;
+//		if (this.getStyleDefinitionsPart()!=null) {
+//			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
+//		}
+//		// It is convenient to have a HashMap of styles
+//		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
+//		if (styles!=null) {
+//		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
+//		            Style s = iter.next();
+//		            stylesDefined.put(s.getStyleId(), s);
+//		     }
+//		}
+//    // We need to know what fonts and styles are used in the document
     	
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
+		List <Object> bodyChildren = body.getContent();
 		
-//		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
-		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
+		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, RunFontActionType.DISCOVERY); 
+		
+		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, null);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
-		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();		
-		new TraversalUtil(bodyChildren, finder);
-
-		// Add default font
-		fontsDiscovered.add(  ((WordprocessingMLPackage)pack).getDefaultFont() );
-		fontsDiscovered.add( 
-				((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia() );
+		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();	
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
-	// Add fonts used in the styles we discovered
-	    for(String styleName : stylesInUse) {
-	        log.debug("Inspecting style: " + styleName );
-            org.docx4j.wml.Style existingStyle = (org.docx4j.wml.Style)stylesDefined.get(styleName);
-            if (existingStyle!=null) {
-            	String fontName = getPropertyResolver().getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle);
-            	if (fontName!=null) {
-	            	log.debug(styleName + " uses font " + fontName);
-	            	fontsDiscovered.add(fontName);
-            	}
-            } else {
-            	log.error("Couldn't find used style " + styleName + "in styles part!");
-            }
-	    }
+		new TraversalUtil(bodyChildren, finder);
+//		finder.finish();
+		
+		fontsDiscovered.add(
+				runFontSelector.getDefaultFont() );
+		
+		// fonts in headers, footers?
+		RelationshipsPart rp = this.getRelationshipsPart();
+		if (rp!=null) {
+			for ( Relationship r : rp.getRelationships().getRelationship() ) {
+				Part part = rp.getPart(r);
+				if ( part instanceof FooterPart ) {
+					
+					Ftr ftr = ((FooterPart)part).getJaxbElement();
+					finder.walkJAXBElements(ftr);
+					
+				} else if (part instanceof HeaderPart) {
+					
+					Hdr hdr = ((HeaderPart)part).getJaxbElement();
+					finder.walkJAXBElements(hdr);
+				}
+			}
+		}
+		
+		// Styles in endnotes, footnotes?
+		if (this.getEndNotesPart()!=null) {
+			log.debug("Looking at endnotes");
+			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
+			finder.walkJAXBElements(endnotes);
+		}
+		if (this.getFootnotesPart()!=null) {
+			log.debug("Looking at footnotes");
+			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
+			finder.walkJAXBElements(footnotes);
+		}
+		
+		// Comments
+		if (this.getCommentsPart()!=null) {
+			log.debug("Looking at comments");			
+			Comments comments = this.getCommentsPart().getJaxbElement();
+			finder.walkJAXBElements(comments);
+		}
+		
+		// Add fonts used in the styles we discovered
+		// .. 2013 03 10: no longer necessary
 	    
 	    // Fonts can also be used in the numbering part
 	    // For now, treat any font mentioned in that part as in use.
@@ -273,10 +317,63 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
             		}
             	}
             }    		
-    	}	    
+    	}	
+    	
+    	if (log.isDebugEnabled()) {
+    		for (String fontName : fontsDiscovered) {
+    			log.debug(fontName);
+    		}
+    	}
 		    	
 		return fontsDiscovered;
     }
+    
+	private class FontDiscoveryCharacterVisitor implements RunFontCharacterVisitor {
+		
+		FontDiscoveryCharacterVisitor(Set<String> fontsDiscovered) {
+			this.fontsDiscovered = fontsDiscovered;
+		}
+			
+    	private Set<String> fontsDiscovered; // same set 
+
+    	// look here
+		public void fontAction(String fontname) {
+			
+			if (fontname==null) {
+				log.warn("Got null", new Throwable());
+				return;
+			}
+			
+			String englishFromCJK = CJKToEnglish.toEnglish( fontname);
+			if (englishFromCJK==null) {
+				fontsDiscovered.add(fontname); 
+			} else {
+				fontsDiscovered.add(englishFromCJK);
+				// No point adding the original CJK name
+			}
+			
+		}
+
+		
+		private boolean spanReusable = true;
+		public boolean isReusable() {
+			return spanReusable;
+		}
+		public void setMustCreateNewFlag(boolean val) {
+			spanReusable = !val;
+		}
+
+		public void setDocument(Document document) {}
+		public void addCharacterToCurrent(char c) {}
+		public void addCodePointToCurrent(int cp) {}
+		public void finishPrevious() {}
+		public void createNew() {}
+		public void setRunFontSelector(RunFontSelector runFontSelector) {}
+		public Object getResult() {return null;}
+		@Override
+		public void setFallbackFont(String fontname) {}
+				
+	}
     
 
 	/**
@@ -291,15 +388,17 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
+		List <Object> bodyChildren = body.getContent();
 		
 		Set<String> stylesInUse = new HashSet<String>();
-		FontAndStyleFinder finder = new FontAndStyleFinder(null, stylesInUse);
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
 		new TraversalUtil(bodyChildren, finder);
-
+		finder.finish();
+		
 		// Styles in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
 		if (rp!=null) {
@@ -350,84 +449,88 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	Set<String> fontsDiscovered;
     	Set<String> stylesInUse;
     	
-    	FontAndStyleFinder(Set<String> fontsDiscovered, Set<String> stylesInUse) {
+    	RunFontSelector runFontSelector;
+    	
+    	FontAndStyleFinder(RunFontSelector runFontSelector, 
+    			Set<String> fontsDiscovered, 
+    			Set<String> stylesInUse) {
+    		
+    		this.runFontSelector = runFontSelector;
     		this.fontsDiscovered = fontsDiscovered;
     		this.stylesInUse = stylesInUse;
     	}
+    	
+    	StyleDefinitionsPart styleDefinitionsPart;
     	
         Style defaultParagraphStyle;
         Style defaultCharacterStyle;
     	String defaultTableStyle = "TableNormal";
     	
-    	@Override
-		public List<Object> apply(Object o) {
-			
-			if (o instanceof org.docx4j.wml.P) {
-				
-				P p = (P)o;
-				if (stylesInUse !=null &&
-						(p.getPPr()==null
-						|| p.getPPr().getPStyle()==null)) {	
-					
-					// Add the default style
+    	private boolean defaultParagraphStyleUsed = false;
+    	private boolean defaultCharacterStyleUsed = false;
+    	
+    	private PPr pPr; 
+    	private RPr rPr;
+
+    	
+    	public void finish() {
+    		if (stylesInUse != null) {
+    			if ((defaultParagraphStyleUsed) && (defaultParagraphStyle != null)) {
 					stylesInUse.add(defaultParagraphStyle.getStyleId() );
 					if (defaultParagraphStyle.getRPr()!=null
 							&& defaultParagraphStyle.getRPr().getRStyle()!=null ) {
 						
 						stylesInUse.add(defaultParagraphStyle.getRPr().getRStyle().getVal() );
 					}
-					
-					
-				} else {
-				
-		    		org.docx4j.wml.PPr pPr =  p.getPPr();
-					if (stylesInUse !=null && pPr.getPStyle() != null) {
-						// Note this paragraph style
-	//					log.debug("put style "
-	//							+ pPr.getPStyle().getVal());
-						stylesInUse.add(pPr.getPStyle().getVal());
-					}
-					
-					if (pPr.getRPr()!=null) {
-						
-			    		org.docx4j.wml.ParaRPr rPr =  pPr.getRPr();
-			    		
-			        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-			        		// 	Note the font - just Ascii for now
-			        		//log.debug("put font " + rPr.getRFonts().getAscii());
-			        		fontsDiscovered.add(rPr.getRFonts().getAscii());
-			        	}
-			        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
+    			}
+    			if ((defaultCharacterStyleUsed) && (defaultCharacterStyle != null)) {
+    				stylesInUse.add(defaultCharacterStyle.getStyleId());
+    			}
+    		}
+    	}
+
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof org.docx4j.wml.P) {
+				pPr = ((P)o).getPPr();
+				if (stylesInUse != null) { //do the styles
+					boolean customPStyle = false;
+					if (pPr != null) {
+						if (pPr.getPStyle() != null) {
+							// Note this paragraph style
+							// log.debug("put style " + pPr.getPStyle().getVal());
+							customPStyle = true;
+							stylesInUse.add(pPr.getPStyle().getVal());
+						}
+						if ((pPr.getRPr() != null) && (pPr.getRPr().getRStyle() != null)) {
 			        		// 	Note this run style
-			        		//log.debug("put style " + rPr.getRStyle().getVal() );
-			        		stylesInUse.add(rPr.getRStyle().getVal());
-			        	}
+			        		//log.debug("put style " + pPr.getRPr().getRStyle().getVal() );
+							stylesInUse.add(pPr.getRPr().getRStyle().getVal());
+						}
 					}
+					defaultParagraphStyleUsed = defaultParagraphStyleUsed || (!customPStyle);
 				}
 		
 			} else if ( o instanceof org.docx4j.wml.R) {
+				rPr = ((R)o).getRPr();
+				if (stylesInUse != null) {
+					if (rPr != null) {
+						if (rPr.getRStyle() == null) {
+							defaultCharacterStyleUsed = true;
+						}
+						else {
+							stylesInUse.add(rPr.getRStyle().getVal());
+						}
+					}
+				}
 				
-				R r = (R)o;
-				if (stylesInUse !=null &&
-						(r.getRPr()==null
-						|| r.getRPr().getRStyle()==null)) {
-
-					// Add the default style
-					stylesInUse.add(defaultCharacterStyle.getStyleId() );
-					
-				} else {
-					
-		    		org.docx4j.wml.RPr rPr =  r.getRPr();
-		        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-		        		// 	Note the font - just Ascii for now
-		        		//log.debug("put font " + rPr.getRFonts().getAscii());
-		        		fontsDiscovered.add(rPr.getRFonts().getAscii());
-		        	}
-		        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
-		        		// 	Note this run style
-		        		//log.debug("put style " + rPr.getRStyle().getVal() );
-		        		stylesInUse.add(rPr.getRStyle().getVal());
-		        	}
+			} else if ( o instanceof org.docx4j.wml.Text) {
+								
+				if (runFontSelector != null) {
+					// discover the fonts which apply to this text
+					log.debug(((Text)o).getValue());
+					runFontSelector.fontSelector(pPr, rPr, ((Text)o) );
 				}
 				
 			} else if (o instanceof org.docx4j.wml.R.Sym ) { 
@@ -451,6 +554,29 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				// so we don't need to look for them,
 				// but since a tc can contain w:p or nested table,
 				// we still need to recurse
+				
+			} else if (o instanceof SdtElement ) {
+				
+				SdtPr sdtPr = ((SdtElement)o).getSdtPr();
+				if (sdtPr!=null) {
+					Object o2 = sdtPr.getByClass(RPr.class);
+					if (o2!=null) {
+						RPr rPr = (RPr)o2;
+						RStyle rStyle = rPr.getRStyle();
+						if (rStyle!=null) {
+							// Add it
+							if (stylesInUse !=null) { 
+								stylesInUse.add(rStyle.getVal());
+								// and linked p style (if any), useful for OpenDoPE XHTML
+								Style pStyle = styleDefinitionsPart.getLinkedStyle(rStyle.getVal());
+								if (pStyle!=null) {
+									stylesInUse.add(pStyle.getStyleId());
+								}
+							}
+						}
+					}
+				}
+				
 				
 			}
 			return null;
@@ -503,9 +629,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		org.docx4j.wml.P p = createParagraphOfText(text);
 						
-		StyleDefinitionsPart styleDefinitionsPart 
-			= this.getStyleDefinitionsPart();
-
 		if (getPropertyResolver().activateStyle(styleId)) {
 			// Style is available 
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();			
@@ -580,28 +703,33 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		// If this object contains paragraphs, make sure any style used
 		// is activated
     	Set<String> stylesInUse = new java.util.HashSet<String>();
-    	Set<String> fontsDiscovered = new java.util.HashSet<String>(); // method requires this
+//    	Set<String> fontsDiscovered = new java.util.HashSet<String>(); 
 		List list = new java.util.ArrayList<Object>();
 		list.add(o);
 		
-//		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
-		FontAndStyleFinder finder = new FontAndStyleFinder(fontsDiscovered, stylesInUse);
+//		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);
+//		RunFontSelector runFontSelector = new RunFontSelector((WordprocessingMLPackage) this.pack, visitor, OutputType.NA); 
+
+        if (styleDefinitionsPart==null) {        	
+        	log.info("Style definitions part was null!");
+        	return;
+        }
+		
+		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();		
 		
 		finder.walkJAXBElements(list);
+		finder.finish();
 		
 		for( String styleName : stylesInUse) {
 	        log.debug("Inspecting style: " + styleName );
 	        
-	        if (styleDefinitionsPart==null) {
-	        	
-	        	log.warn("Style definitions part was null!");
-	        	
-	        } else if (getPropertyResolver().activateStyle(styleName)) {
+	        if (getPropertyResolver().activateStyle(styleName)) {
 	        	// Cool
 	        } else {
-	        	log.warn(styleName + " couldn't be activated!");
+	        	log.info(styleName + " couldn't be activated!");
 	        }
 	        
 	    }

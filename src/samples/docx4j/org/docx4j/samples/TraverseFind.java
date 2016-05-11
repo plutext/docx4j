@@ -1,15 +1,10 @@
 package org.docx4j.samples;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
-import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.finders.ClassFinder;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.CTFFCheckBox;
 import org.docx4j.wml.FldChar;
 
 public class TraverseFind {

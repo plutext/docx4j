@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Source;
 
@@ -41,7 +44,9 @@ public interface XHTMLImporter {
 	
 	public void setRunFormatting(FormattingOption runFormatting);
 	public void setParagraphFormatting(FormattingOption paragraphFormatting);
-	public void setTableFormatting(FormattingOption tableFormatting);	
+	public void setTableFormatting(FormattingOption tableFormatting);
+	
+	
 
     /**
      * Convert the well formed XHTML contained in file to a list of WML objects.
@@ -132,4 +137,35 @@ public interface XHTMLImporter {
     public List<Object> convert(String content,  String baseUrl) throws Docx4JException;
     
     	
+	/**
+	 * Get the current numbers of SEQ fields, used in image captions.
+	 * Typically you'd use this if you are importing multiple
+	 * times into a single docx (as for example, OpenDoPE does).
+	 * 
+	 * @param sequenceCounters
+	 * @since 3.2.0
+	 */
+    public Map<String, Integer> getSequenceCounters();
+
+	/**
+	 * Set the last used numbers of SEQ fields, used in image captions.
+	 * Key is sequence name.  The default is "Figure", but you can also use
+	 * others (matching value of @sequence).
+	 * @param sequenceCounters
+	 * @since 3.2.0
+	 */
+	public void setSequenceCounters(Map<String, Integer> sequenceCounters); 
+	
+	public AtomicInteger getBookmarkIdLast();
+	
+	/**
+	 * Support injecting a starting bookmark value, so bookmark numbers
+	 * can be managed across invocations.
+	 * @param val
+	 * @since 3.3.0
+	 */
+	//public void setBookmarkIdNext(AtomicInteger val);
+	
+	public void setMaxWidth(int maxWidth);
+    
 }

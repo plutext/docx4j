@@ -52,7 +52,10 @@ public class Context {
 		log.info("java.version="+System.getProperty("java.version"));
 		
 		org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
-		if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+		if (Thread.currentThread().getContextClassLoader()==null) {
+			log.warn("ContextClassLoader is null for current thread");
+			// Happens with IKVM 
+		} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
 			org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
 		}
 		
@@ -84,21 +87,19 @@ public class Context {
 			}
 		} catch (JAXBException e) {
 			log.error("PANIC! No suitable JAXB implementation available");
+			log.error(e.getMessage(), e);
 			e.printStackTrace();
 		}
 		
 		try {	
 			
-			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
-			// so explicitly specify our class loader.
-			Context tmp = new Context();
-			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-			//log.info("\n\nClassloader: " + classLoader.toString() );			
-			
-			log.info("loading Context jcSML");			
+			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
+				
 			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader );
+				
+			
 			
 			if (jcSML.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
@@ -107,7 +108,7 @@ public class Context {
 			}
 			
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log.error("Cannot initialize context", ex);
 		}				
 	}
 	

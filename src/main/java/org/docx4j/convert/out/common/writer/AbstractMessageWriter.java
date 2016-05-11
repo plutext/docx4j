@@ -21,8 +21,6 @@ package org.docx4j.convert.out.common.writer;
 
 import java.io.StringReader;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractConversionContext;
 import org.w3c.dom.Document;
@@ -71,17 +69,13 @@ public abstract class AbstractMessageWriter {
 		
 		context.getLog().debug(documentFragment);
 
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-				.newInstance();
-		dbf.setNamespaceAware(true);
 		StringReader reader = new StringReader(documentFragment);
 		InputSource inputSource = new InputSource(reader);
 		Document doc = null;
 		try {
-			doc = dbf.newDocumentBuilder().parse(inputSource);
+			doc = XmlUtils.getNewDocumentBuilder().parse(inputSource);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			context.getLog().error(e.getMessage(),e);
 		}
 		reader.close();
 

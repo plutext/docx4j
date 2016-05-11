@@ -45,7 +45,7 @@ public class FOSettings extends AbstractConversionSettings {
 
 	public FOSettings() {
 		super();
-		addFeatures(DEFAULT_PDF_FEATURES);
+		addFeatures(ConversionFeatures.DEFAULT_PDF_FEATURES);
 	}
 
 	public String getApacheFopConfiguration() {
@@ -97,4 +97,19 @@ public class FOSettings extends AbstractConversionSettings {
 	public void setFoDumpFile(File foFile) {
 		settings.put(FO_DUMP_FILE, foFile);
 	}
+	
+	private boolean layoutMasterSetCalculationInProgress = false;
+
+	public boolean lsLayoutMasterSetCalculationInProgress() {
+		return layoutMasterSetCalculationInProgress;
+	}
+
+	/**
+	 * The flag layoutMasterSetCalculationInProgress is used by LayoutMasterSetBuilder, to record
+	 * whether for this conversion run, the correct extents have been calculated yet.
+	 * User code should not alter this flag.
+	 */
+	public void setLayoutMasterSetCalculationInProgress(boolean layoutMasterSetCalculationInProgress) {
+		this.layoutMasterSetCalculationInProgress = layoutMasterSetCalculationInProgress;
+	}	
 }	

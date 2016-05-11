@@ -19,18 +19,15 @@
  */
 package org.docx4j.model.properties;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.properties.paragraph.Bidi;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
 import org.docx4j.model.properties.paragraph.NumberingProperty;
+import org.docx4j.model.properties.paragraph.OutlineLevel;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderLeft;
 import org.docx4j.model.properties.paragraph.PBorderRight;
@@ -39,9 +36,9 @@ import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
 import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
+import org.docx4j.model.properties.paragraph.Tabs;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
-import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.HighlightColor;
@@ -62,16 +59,13 @@ import org.docx4j.model.properties.table.CellMarginRight;
 import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
+import org.docx4j.wml.Highlight;
+import org.docx4j.wml.JcEnumeration;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
-import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblBorders;
@@ -79,7 +73,13 @@ import org.docx4j.wml.TcMar;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.css.CSSValue;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PropertyFactory {
 	
@@ -96,8 +96,16 @@ public class PropertyFactory {
 		
 		List<Property> properties = new ArrayList<Property>();
 
-		if (tblPr.getTblInd()!=null ) 
-			properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
+		if (tblPr.getJc()!=null
+				&& 
+				(tblPr.getJc().getVal().equals(JcEnumeration.CENTER)
+						|| tblPr.getJc().getVal().equals(JcEnumeration.RIGHT)))
+		{ 
+			// ignore TblInd (since docx4j 3.0.1)
+		} else {
+			if (tblPr.getTblInd()!=null) 
+				properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
+		}
 		
 		if (tblPr.getTblBorders()!=null) {
 			TblBorders tblBorders = tblPr.getTblBorders();
@@ -267,8 +275,10 @@ public class PropertyFactory {
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)
 //			dest.setRStyle(rPr.getRStyle());
+		
 		if (rPr.getRtl() != null)
 			properties.add(new TextDirection(rPr.getRtl() ));
+		
 //		if (rPr.getShadow() != null)
 //			dest.setShadow(rPr.getShadow());
 		if (rPr.getShd() != null)
@@ -403,8 +413,8 @@ public class PropertyFactory {
 //			dest.setAutoSpaceDE(pPr.getAutoSpaceDE());
 //		if (pPr.getAutoSpaceDN() != null)
 //			dest.setAutoSpaceDN(pPr.getAutoSpaceDN());
-//		if (pPr.getBidi() != null)
-//			dest.setBidi(pPr.getBidi());
+		if (pPr.getBidi() != null)
+			properties.add(new Bidi(pPr.getBidi()));
 //		if (pPr.getCnfStyle() != null)
 //			dest.setCnfStyle(pPr.getCnfStyle());
 //		if (pPr.getContextualSpacing() != null)
@@ -433,12 +443,15 @@ public class PropertyFactory {
 		}
 		
 		if (pPr.getInd() != null) {
-			log.debug("Indent from ppr: " + XmlUtils.marshaltoString(pPr.getInd(),  true, true)) ; 
+            if(log.isDebugEnabled()) {
+                log.debug("Indent from ppr: " + XmlUtils.marshaltoString(pPr.getInd(), true, true));
+            }
 			properties.add(new Indent(pPr.getInd()));			
 		}
 		
-//		if (pPr.getOutlineLvl() != null)
-//			dest.setOutlineLvl(pPr.getOutlineLvl());
+		if (pPr.getOutlineLvl() != null)
+			properties.add(new OutlineLevel(pPr.getOutlineLvl()));
+		
 //		if (pPr.getOverflowPunct() != null)
 //			dest.setOverflowPunct(pPr.getOverflowPunct());
 		if (pPr.getPageBreakBefore() != null)
@@ -488,8 +501,8 @@ public class PropertyFactory {
 //			dest.setSuppressLineNumbers(pPr.getSuppressLineNumbers());
 //		if (pPr.getSuppressOverlap() != null)
 //			dest.setSuppressOverlap(pPr.getSuppressOverlap());
-//		if (pPr.getTabs() != null)
-//			dest.setTabs(pPr.getTabs());
+		if (pPr.getTabs() != null)
+			properties.add(new Tabs(pPr.getTabs()));
 		if (pPr.getTextAlignment() != null)
 			properties.add(new TextAlignmentVertical(pPr.getTextAlignment()));
 //		if (pPr.getTextboxTightWrap() != null)
@@ -504,15 +517,24 @@ public class PropertyFactory {
 //			dest.setWordWrap(pPr.getWordWrap());
 		return properties;		
 	}
+	
+	private static Boolean useHIghlightInRPr = null;
+	private static boolean shouldUseHighlightInRPr() {
+		
+		if (useHIghlightInRPr==null) {
+			useHIghlightInRPr = Docx4jProperties.getProperty("docx4j.model.properties.PropertyFactory.createPropertyFromCssName.background-color.useHighlightInRPr", 
+					false);
+		}
+		return useHIghlightInRPr;
+	}
+	
+	
 
 	public static Property createPropertyFromCssName(String name, CSSValue value) {
 		
 		try {
 			// Run properties
-			if (name.equals(Font.CSS_NAME )) {
-				// font-family
-				return new Font(value);
-			} else if (name.equals(Bold.CSS_NAME )) {
+			if (name.equals(Bold.CSS_NAME )) {
 				// font-weight
 				return new Bold(value);
 			} else if (name.equals(Italics.CSS_NAME )) {
@@ -538,15 +560,31 @@ public class PropertyFactory {
 				return new FontSize(value);
 			} else if (name.equals(RShading.CSS_NAME )) {
 			    // background color
-			    if(value.getCssText().toLowerCase().equals("transparent")){
+			    if(value==null 
+			    		|| value.getCssText()==null
+			    		|| value.getCssText().trim().length()==0
+			    		) {
+			    	log.warn("Ignoring CSS property " + name + " with null or empty value");
+			        return null;			    	
+			    } else if ( value.getCssText().toLowerCase().equals("transparent")){
 			        return null;
 			    }
-			    // if css value is presented as color, make shading;
-			    // else assume it is string value so highlight
-			    if(simpleRGBCheck(value.getCssText())){
-			        return new RShading(value);
+			    
+			    if (shouldUseHighlightInRPr()) {
+			    	// Highlight needs "red", not "#FF0000", but our code 
+			    	// is ok with this as long as the color is in the enumeration from the spec
+			    	HighlightColor highlightColor = new HighlightColor(value);
+			    	
+//			    	System.out.println(XmlUtils.marshaltoString((Highlight)highlightColor.getObject()));
+			    	
+			    	
+			    	if ( ((Highlight)highlightColor.getObject()).getVal()==null) {
+			    		return null; // Word 2010 x64 can't open the docx if it contains <w:highlight/>!
+			    	} else {
+			    		return highlightColor;
+			    	}
 			    } else {
-			        return new HighlightColor(value);
+			        return new RShading(value);
 			    }
 			} else if (name.equals(VerticalAlignment.CSS_NAME)) {
 			    //default value
@@ -575,7 +613,15 @@ public class PropertyFactory {
 			} else if (name.equals(SpaceAfter.CSS_NAME )) {
 				// space-after
 				return new SpaceAfter(value);
-			}		
+			} else if (name.equals(LineSpacing.CSS_NAME )) {
+				// line-height
+				return new LineSpacing(value);
+			}
+			
+			// Note:  paragraph border
+			// and padding -> pBorder/[side]/@space
+			// are handled in XHTML Importer's ParagraphBorderHelper
+			
 		} catch (java.lang.UnsupportedOperationException uoe) {
 			// TODO: consider whether it is right to catch this,
 			// or whether calling code should handle a docx4j exception wrapping this

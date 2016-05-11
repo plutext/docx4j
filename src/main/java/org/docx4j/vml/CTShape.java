@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.vml.officedrawing.CTCallout;
@@ -85,7 +86,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(namespace = "urn:schemas-microsoft-com:vml", name = "CT_Shape", propOrder = {
     "pathOrFormulasOrHandles"
 })
-public class CTShape implements Child
+@XmlRootElement(name = "shape")
+public class CTShape implements Child, VmlShapeElements, VmlAllCoreAttributes, VmlAllShapeAttributes
 {
 
     @XmlElementRefs({
@@ -281,12 +283,24 @@ public class CTShape implements Child
      * 
      * 
      */
+    @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
             pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
         }
         return this.pathOrFormulasOrHandles;
     }
+    
+    /* (non-Javadoc)
+     * @see org.docx4j.vml.VmlShapeElements#getEGShapeElements()
+     * @since 3.0.1
+     */
+    public List<JAXBElement<?>> getEGShapeElements() {
+        if (pathOrFormulasOrHandles == null) {
+            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+        }
+        return this.pathOrFormulasOrHandles;    	
+    }    
 
     /**
      * Encoded Package

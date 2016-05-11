@@ -23,16 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
@@ -42,6 +41,8 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /** These is an utility class with some common functions for the 
@@ -129,7 +130,7 @@ public class HtmlCssHelper {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -155,11 +156,11 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "p."+ s.getStyleId()  + " {display:block;" );
+    		result.append( "."+ s.getStyleId()  + " {display:block;" );  // not just p, also inherit on ul|ol
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(opcPackage, s.getPPr(), result, false, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -205,7 +206,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tblPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -218,7 +219,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -231,7 +232,7 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(trPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
@@ -244,11 +245,15 @@ public class HtmlCssHelper {
     	
     	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
     
-    public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders) {
+    public static void createCss(OpcPackage opcPackage, PPr pPr, StringBuilder result, boolean ignoreBorders, boolean isListItem) {
+    	
+    	if (isListItem) {
+    		result.append("display: list-item;");
+    	}
     	
 		if (pPr==null) {
 			return;
@@ -262,6 +267,13 @@ public class HtmlCssHelper {
 							|| (p instanceof PBorderBottom))) {
 				continue;
 			}
+
+	    	if (isListItem
+	    			&& p instanceof Indent) {
+	    		// Avoid indent settings which would overwrite the bullet 
+	    		// eg "position: relative; margin-left: 0.5in;text-indent: -0.25in;
+				continue;	    		
+	    	}
 			
 			if (p instanceof PShading) {
     	    	// To close the gap between divs, we need to avoid
@@ -272,20 +284,26 @@ public class HtmlCssHelper {
 				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
 			}
     		
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}    
     }
-    
     
     public static void createCss(OpcPackage opcPackage, RPr rPr, StringBuilder result) {
 
     	List<Property> properties = PropertyFactory.createProperties(opcPackage, rPr);
     	
     	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
+    		appendNonNull(result, p);
     	}
     }
 
+    private static void appendNonNull(StringBuilder result, Property p) {
+		String prop = p.getCssProperty();
+		if (prop!=null) {
+			result.append(prop);
+		}
+    }
+    
 	public static void applyAttributes(List<Property> properties, Element node) {
 	Map<String, Property> tempAttributeMap = null;
 	StringBuilder buffer = null;

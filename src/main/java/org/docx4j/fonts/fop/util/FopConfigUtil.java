@@ -20,17 +20,21 @@
 
 package org.docx4j.fonts.fop.util;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.ResourceUtils;
 
 /**
  * The sole role of this class is to create an avalon configuration
@@ -44,6 +48,26 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 public class FopConfigUtil {
 	
 	protected static Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
+	
+	private static final String substitutions;
+	
+	static {
+		
+		String substitutionsPath = Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.substitutions");
+		String substitutionsTmp;
+		if (substitutionsPath==null) {
+			substitutionsTmp="";
+		} else {
+			try {
+				substitutionsTmp=IOUtils.toString(ResourceUtils.getResource(substitutionsPath));
+			} catch (IOException e) {
+				log.error("Problems with class path resource " + substitutionsPath);
+				log.error(e.getMessage(), e);
+				substitutionsTmp="";
+			}
+		}
+		substitutions = substitutionsTmp;
+	}
 
 	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 //  public static Configuration createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {
@@ -54,6 +78,11 @@ public class FopConfigUtil {
 		StringBuilder buffer = new StringBuilder(10240);
 
 		buffer.append("<fop version=\"1.0\"><strict-configuration>true</strict-configuration>");
+		if (substitutions.length()>0) {
+			buffer.append("<fonts>");
+			buffer.append(substitutions);
+			buffer.append("</fonts>");			
+		}
 		buffer.append("<renderers><renderer mime=\"application/pdf\">");
 		buffer.append("<fonts>");
 		declareFonts(fontMapper, fontsInUse, buffer);
@@ -83,28 +112,30 @@ public class FopConfigUtil {
 	 * @return
 	 */
 	protected static void declareFonts(Mapper fontMapper, Set<String> fontsInUse, StringBuilder result) {
+
 		
 		for (String fontName : fontsInUse) {		    
 		    
-		    PhysicalFont pf = fontMapper.getFontMappings().get(fontName);
+		    PhysicalFont pf = fontMapper.get(fontName);
+		    String subFontAtt = "";
 		    
 		    if (pf==null) {
-		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
-		    	continue;
+		    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
+		    	// We may still have eg Cambria-bold embedded
+		    } else {
+		    
+			    if (pf.getEmbedFontInfo().getSubFontName()!=null)
+			    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+			    
+			    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
+			    	// now add the first font triplet
+				    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+				    addFontTriplet(result, fontTriplet);
+			    result.append("</font>" );
 		    }
 		    
-		    String subFontAtt = "";
-		    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-		    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
-		    
-		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	// now add the first font triplet
-			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    addFontTriplet(result, fontTriplet);
-		    result.append("</font>" );
-		    
 		    // bold, italic etc
-		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
+		    PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no bold form");
 		    } else {
@@ -112,7 +143,7 @@ public class FopConfigUtil {
 		    	addFontTriplet(result, pf.getName(), "normal", "bold");
 			    result.append("</font>" );
 		    }
-		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
+		    pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no bold italic form");
 		    } else {
@@ -120,7 +151,7 @@ public class FopConfigUtil {
 		    	addFontTriplet(result, pf.getName(), "italic", "bold");
 			    result.append("</font>" );
 		    }
-		    pfVariation = PhysicalFonts.getItalicForm(pf);
+		    pfVariation = fontMapper.getItalicForm(fontName, pf);
 		    if (pfVariation==null) {
 		    	log.debug(fontName + " no italic form");
 		    } else {

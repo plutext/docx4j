@@ -21,10 +21,9 @@
 
 package org.docx4j.wml; 
 
-import org.jvnet.jaxb2_commons.ppp.Child;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -35,8 +34,10 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import org.docx4j.math.CTOMath;
 import org.docx4j.math.CTOMathPara;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +114,7 @@ public class P implements Child, ContentAccessor
         @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
-    protected List<Object> content;
+    protected List<Object> content = new ArrayListWml<Object>(this);
     @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidRPr;
     @XmlAttribute(name = "rsidR", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -210,8 +211,8 @@ public class P implements Child, ContentAccessor
      */
     public List<Object> getContent() {
         if (content == null) {
-            content = new ArrayList<Object>();
-        }
+            content = new ArrayListWml<Object>(this); // set the parent
+        } 
         return this.content;
     }
 
@@ -342,6 +343,15 @@ public class P implements Child, ContentAccessor
     /**
      * Gets the value of the paraId property.
      * 
+     * From [MS-DOCX], "an identifier for a paragraph that is unique within the document part 
+     * (as specified by [ISO/IEC29500-1:2011] section 11.3), with the exception that it need 
+     * not be unique across the choices or fallback of an Alternate Content block 
+     * (as specified by [ISO/IEC29500-1:2011] section 17.17.3). 
+     * 
+     * Values MUST be greater than 0 and less than 0x80000000. 
+     * 
+     * Any element having this attribute MUST also have the textId attribute"
+     * 
      * @return
      *     possible object is
      *     {@link String }
@@ -366,6 +376,16 @@ public class P implements Child, ContentAccessor
     /**
      * Gets the value of the textId property.
      * 
+     * From [MS-DOCX], "a version identifier for a paragraph. 
+     * 
+     * Values MUST be greater than 0 and less than 0x80000000. 
+     * 
+     * Any element having this attribute MUST also have the paraId attribute.
+     * 
+     * If two documents have the same docId, then if two paragraphs within the same respective 
+     * document part (as specified by [ISO/IEC29500-1:2011] section 11.3) that have the same 
+     * paraId and textId SHOULD contain identical text, although formatting could differ."
+     *  
      * @return
      *     possible object is
      *     {@link String }
@@ -482,7 +502,7 @@ public class P implements Child, ContentAccessor
             @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
             @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
         })
-        protected List<Object> content;
+        protected List<Object> content  = new ArrayListWml<Object>(this);
         @XmlAttribute(name = "tgtFrame", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String tgtFrame;
         @XmlAttribute(name = "tooltip", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -553,7 +573,7 @@ public class P implements Child, ContentAccessor
          */
         public List<Object> getContent() {
             if (content == null) {
-                content = new ArrayList<Object>();
+                content = new ArrayListWml<Object>(this);
             }
             return this.content;
         }

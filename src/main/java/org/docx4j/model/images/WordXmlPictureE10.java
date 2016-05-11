@@ -21,11 +21,7 @@ package org.docx4j.model.images;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
@@ -34,6 +30,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.vml.CTImageData;
 import org.docx4j.vml.CTShape;
 import org.docx4j.wml.Pict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -138,7 +136,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	private void findImageData() {
 		
     	if (shape.getPathOrFormulasOrHandles()==null) {
-    		log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
+            if(log.isDebugEnabled()) {
+                log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
+            }
     	} else {
     		for (Object o : shape.getPathOrFormulasOrHandles() ) {
     			
@@ -251,15 +251,8 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		
     		log.error("WordXmlPictureE10 object was null!");
     		
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            Document d;
-			try {
-				d = factory.newDocumentBuilder().newDocument();
-	    		return d.createDocumentFragment();
-			} catch (ParserConfigurationException e) {
-				log.error(e.getMessage(), e);
-				return null;
-			}  
+            Document d = XmlUtils.getNewDocumentBuilder().newDocument();
+	    	return d.createDocumentFragment();
 			
     	} else {
     	
@@ -295,15 +288,8 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		
     		log.error("WordXmlPictureE10 object was null!");
     		
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            Document d;
-			try {
-				d = factory.newDocumentBuilder().newDocument();
-	    		return d.createDocumentFragment();
-			} catch (ParserConfigurationException e) {
-				log.error(e.getMessage(), e);
-				return null;
-			}  
+            Document d= XmlUtils.getNewDocumentBuilder().newDocument();
+	    	return d.createDocumentFragment();
 			
     	} else {
     	

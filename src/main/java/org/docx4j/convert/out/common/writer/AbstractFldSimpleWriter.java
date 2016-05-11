@@ -107,10 +107,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			
 			// First, get the value
 			DocPropertyResolver dpr = new DocPropertyResolver(context.getWmlPackage());
-			List<String> params = model.getFldParameters();
-			
-			//String key = params.get(0);
-			String key = model.getFldParameterString();
+			String key = model.getFldArgument();
 			
 			try {
 				String value = dpr.getValue(key).toString();

@@ -1,0 +1,87 @@
+docx4j and IKVM
+===============
+
+docx4j 3.0
+21 October 2013
+
+
+docx4j works nicely under IKVM.  Cisco have been using this in their WebEx Social product
+for some years.
+
+These notes are based on IKVM version 7.3.4830.0
+
+Running IKVMC
+-------------
+
+build.xml contains a target dist.NET
+
+Note the keyfile param; this sets a strong name, which you need to put the DLL in the GAC.
+
+(The IKVM DLLs should already be strong named)
+
+That any task doesn't include docx4j.properties in the DLL.  If you need that, you'll need to add it.
+
+Using docx4j DLLs in .NET
+-------------------------
+
+There are some classloading differences between Java and .NET
+
+If you get
+org.apache.xalan.processor.TransformerFactoryImpl not being found,
+which we've seen in an ASP.NET environment,
+either of the following do solve this:
+
+        java.lang.Class clazz = typeof(org.apache.xalan.processor.TransformerFactoryImpl);
+        java.lang.Thread.currentThread().setContextClassLoader(clazz.getClassLoader());
+
+or:
+
+        ikvm.runtime.Startup.addBootClassPathAssembly(
+            System.Reflection.Assembly.GetAssembly(
+                typeof(org.apache.xalan.processor.TransformerFactoryImpl)));
+
+The latter is probably preferable, because it is a global setting you only need to do once
+(at the start of your application). In comparison, Thread.setContextClassLoader() is a 
+per thread thing, so it depends on random ASP.NET threading behavior, and, for a given  
+thread, whether any of the Java classes set it.
+
+On a separate note, Plutext also has some wrapper classes which make it easy to use 
+docx4j in combination with the Open XML SDK.
+
+
+docx4j source code
+------------------
+
+There are some places in the docx4j source code which are IKVM sensitive.
+
+1. JAXBContext.newInstance 
+
+Without the classloader arg, JAXBContext.newInstance uses the context class loader of the current thread. 
+
+Setting the context class loader to what we want in ASP.NET, doesn't seem to stay set:
+
+    java.lang.Thread.currentThread().setContextClassLoader 
+
+So JAXBContext.newInstance must use the classloader arg, as it is used in Context class
+and documented there.
+
+2. JAXP properties
+
+For ("java.vendor").startsWith("Jeroen"), XmlUtils contains:
+
+			System.setProperty("javax.xml.parsers.SAXParserFactory", 
+					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
+					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+
+These implementations are in IKVM.OpenJDK.XML.Parse
+
+3. Resources
+
+org.docx4j.utils.ResourceUtils uses ClassLoader Thread.currentThread().getContextClassLoader()
+
+Unless changed, in IKVM that should point to your main assembly (and assemblies referenced from it)
+
+That may not find your arbitrary resources.
+
+Instead, you may wish to get resources using ClassLoader YourClass.class.getClassLoader();

@@ -36,9 +36,13 @@ import org.docx4j.wml.ContentAccessor;
 public interface AltChunkInterface {
 	
 	
+	
+	
 	/**
-	 * Add HTML, in a way that leaves it up to downstream application (eg Word)
-	 * to convert the content to docx content. Unless you really want the HTML 
+	 * Add content from byte array of type AltChunkType, in a way that leaves it up to downstream application (eg Word)
+	 * to convert the content to docx content. 
+	 * 
+	 * Note re XHTML content: Unless you really want  it
 	 * converted by Word, users are advised to use docx4j's XHTMLImporter instead.
 	 * @param bytes
 	 * @return
@@ -46,8 +50,10 @@ public interface AltChunkInterface {
 	 */
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes ) throws Docx4JException;
 	/**
-	 * Add HTML, in a way that leaves it up to downstream application (eg Word)
-	 * to convert the content to docx content. Unless you really want the HTML 
+	 * Add content from InputStream of type AltChunkType, in a way that leaves it up to downstream application (eg Word)
+	 * to convert the content to docx content. 
+	 * 
+	 * Note re XHTML content: Unless you really want  it
 	 * converted by Word, users are advised to use docx4j's XHTMLImporter instead.
 	 * @param is
 	 * @return
@@ -56,8 +62,10 @@ public interface AltChunkInterface {
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is) throws Docx4JException;
 
 	/**
-	 * Add HTML, in a way that leaves it up to downstream application (eg Word)
-	 * to convert the content to docx content. Unless you really want the HTML 
+	 * Add content from byte array of type AltChunkType, in a way that leaves it up to downstream application (eg Word)
+	 * to convert the content to docx content. 
+	 * 
+	 * Note re XHTML content: Unless you really want  it
 	 * converted by Word, users are advised to use docx4j's XHTMLImporter instead.
 	 * @param bytes
 	 * @param attachmentPoint
@@ -66,8 +74,10 @@ public interface AltChunkInterface {
 	 */
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes, ContentAccessor attachmentPoint) throws Docx4JException;
 	/**
-	 * Add HTML, in a way that leaves it up to downstream application (eg Word)
-	 * to convert the content to docx content. Unless you really want the HTML 
+	 * Add content from InputStream of type AltChunkType, in a way that leaves it up to downstream application (eg Word)
+	 * to convert the content to docx content. 
+	 * 
+	 * Note re XHTML content: Unless you really want  it
 	 * converted by Word, users are advised to use docx4j's XHTMLImporter instead.
 	 * @param is
 	 * @param attachmentPoint
@@ -75,6 +85,9 @@ public interface AltChunkInterface {
 	 * @throws Docx4JException
 	 */
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is, ContentAccessor attachmentPoint) throws Docx4JException;
+	
+	// TODO: API should provide a method with index into content list, rather than assuming add at end
+	
 	
 	/**
 	 * Convert the AltChunks to ordinary 

@@ -19,7 +19,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 
 
@@ -80,17 +79,17 @@ public class Not implements Evaluable {
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 
-		return !particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+		return !particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
 	
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-    	particle.listXPaths(theList, conditions, xPaths);
+    	particle.listXPaths(theList, conditionsMap, xpathsMap);
 		
 	}
 	
@@ -106,10 +105,10 @@ public class Not implements Evaluable {
 	}
 	
 
-	public String toString(Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths) {
+	public String toString(Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		return "not(" + particle.toString(conditions, xPaths) + ")";
+		return "not(" + particle.toString(conditionsMap, xpathsMap) + ")";
 	}
     
     /**
@@ -130,10 +129,10 @@ public class Not implements Evaluable {
 
 	public Condition repeat(String xpathBase,
 			int index,
-			Conditions conditions,
-			org.opendope.xpaths.Xpaths xPaths)	{
+			Map<String, Condition> conditionsMap,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap)	{
 
-    	particle.repeat(xpathBase, index, conditions, xPaths);
+    	particle.repeat(xpathBase, index, conditionsMap, xpathsMap);
 		return null;
 	}	
     

@@ -23,8 +23,6 @@ import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -37,9 +35,8 @@ import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.TcFinder;
@@ -55,63 +52,109 @@ import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPar
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
-import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.w15.CTSdtRepeatedSection;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTLock;
-import org.docx4j.wml.CTSdtCell;
-import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.Id;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
-import org.docx4j.wml.TcPr;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
+import org.opendope.xpaths.Xpaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {
 
 	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandler.class);
+	
+	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null; 
+	private Map<String, Condition> conditionsMap = null; 
 
 	public OpenDoPEHandler(WordprocessingMLPackage wordMLPackage)
 			throws Docx4JException {
 
 		this.wordMLPackage = wordMLPackage;
+		
+		
 
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
-			throw new Docx4JException("OpenDoPE XPaths part missing");
+			log.info("OpenDoPE XPaths part missing (ok if you are just processing w15 repeatingSection)");
+//			xPaths = new org.opendope.xpaths.Xpaths();
+			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>();
 		} else {
-			xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
+			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart()
 					.getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+            }
+			
+			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(2*xPaths.getXpath().size());
+			
+			for (Xpaths.Xpath xp : xPaths.getXpath() ) {
+				
+				if (xpathsMap.put(xp.getId(), xp)!=null) {
+					log.error("Duplicates in XPaths part: " + xp.getId());
+				}
+				// TODO key should include storeItemID?
+			}
+			
 		}
 		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
-			conditions = wordMLPackage.getMainDocumentPart()
+			org.opendope.conditions.Conditions conditions = wordMLPackage.getMainDocumentPart()
 					.getConditionsPart().getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(conditions, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(conditions, true, true));
+            }
+			
+			conditionsMap = new HashMap<String, Condition>(2*conditions.getCondition().size());
+			
+			for (Condition c : conditions.getCondition()) {
+				if (conditionsMap.put(c.getId(), c)!=null) {
+					log.error("Duplicates in Conditions part: " + c.getId());
+				}
+			}
 		}
 		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
 			components = wordMLPackage.getMainDocumentPart()
 					.getComponentsPart().getJaxbElement();
-			log.debug(XmlUtils.marshaltoString(components, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(components, true, true));
+            }
 		}
 
 		shallowTraversor = new ShallowTraversor();
 		shallowTraversor.wordMLPackage = wordMLPackage;
+		
+		bookmarkRenumber = new BookmarkRenumber(wordMLPackage);
 	}
 
 	private WordprocessingMLPackage wordMLPackage;
 	private ShallowTraversor shallowTraversor;
+	
+	private BookmarkRenumber bookmarkRenumber;
+	
+	/**
+	 * Provide a way to for user to fetch the starting bookmark ID number
+	 * for use in the next stage (ie Binding Traverse).
+	 * 
+	 * If it isn't fetched/set, the value will have to be recalculated (less efficient).
+	 *  
+	 * @since 3.2.1
+	 */	
+	public AtomicInteger getNextBookmarkId() {
+		return bookmarkRenumber.getBookmarkId();
+	}
 
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 
@@ -120,6 +163,7 @@ public class OpenDoPEHandler {
 
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_RESULT_RPTD_ZERO = "od:resultRepeatZero";
+	public final static String BINDING_RESULT_RPTD_ZERO_W15 = "w15:resultRepeatZero";
 	public final static String BINDING_RESULT_RPTD = "od:rptd";
 	
 	// Repeat position condition (eg second last entry)
@@ -132,14 +176,14 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
 
 	public final static String BINDING_CONTENTTYPE = "od:ContentType";
+	public final static String BINDING_HANDLER = "od:Handler";
+	public final static String BINDING_PROGID = "od:progid"; // eg =Word.Document
 	/*
 	 * --------------------------------------------------------------------------
 	 * - Pre-processing of content controls which have a tag containing
 	 * "bindingrole"
 	 */
 
-	private org.opendope.conditions.Conditions conditions;
-	private org.opendope.xpaths.Xpaths xPaths;
 	private org.opendope.components.Components components;
 
 // TODO consider whether to reinstate.  User would need to choose between 	
@@ -241,6 +285,20 @@ public class OpenDoPEHandler {
 
 		} while (justGotAComponent);
 		// ie repeat the whole process if you got a component
+		
+		// Write our maps back to their parts
+		// XPaths
+		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) { 
+			// OpenDoPE XPaths part missing is ok if you are just processing w15 repeatingSection)");
+		} else {
+			wordMLPackage.getMainDocumentPart().getXPathsPart().getContents().getXpath().clear();
+			wordMLPackage.getMainDocumentPart().getXPathsPart().getContents().getXpath().addAll(xpathsMap.values());
+		}
+		// Conditions
+		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
+			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().clear();
+			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().addAll(conditionsMap.values());
+		}
 
 		return wordMLPackage;
 	}
@@ -600,9 +658,12 @@ public class OpenDoPEHandler {
 					|| o instanceof org.docx4j.wml.CTSdtRow
 					|| o instanceof org.docx4j.wml.CTSdtCell) {
 
-				if (getSdtPr(o).getDataBinding() == null) {
+				SdtPr sdtPr = getSdtPr(o);
+				if (sdtPr.getDataBinding() == null)  {
 					// a real binding attribute trumps any tag
 					return processBindingRoleIfAny(wordMLPackage, o);
+				} else if (getW15RepeatingSection(sdtPr)!=null) {
+					return  processW15Repeat( o, wordMLPackage.getCustomXmlDataStorageParts());					
 				}
 
 			} else {
@@ -670,6 +731,11 @@ public class OpenDoPEHandler {
 		}
 
 	}
+	
+	private CTSdtRepeatedSection getW15RepeatingSection(SdtPr sdtPr) {
+		
+		return (CTSdtRepeatedSection)sdtPr.getByClass(CTSdtRepeatedSection.class);
+	}
 
 	/**
 	 * This applies to any sdt which might be a conditional|repeat
@@ -684,7 +750,12 @@ public class OpenDoPEHandler {
 	 */
 	private List<Object> processBindingRoleIfAny(
 			WordprocessingMLPackage wordMLPackage, Object sdt) {
-		log.debug("Processing " + getSdtPr(sdt).getId().getVal());
+		
+		Id id = getSdtPr(sdt).getId();
+		if (id!=null) {
+			log.debug("Processing " + id.getVal());
+		}
+		
 		Tag tag = getSdtPr(sdt).getTag();
 
 		if (tag == null) {
@@ -700,44 +771,49 @@ public class OpenDoPEHandler {
 		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
 		String xp = map.get(BINDING_ROLE_XPATH);
+		
 		if (conditionId == null && repeatId == null && xp == null) {
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
 		}
 
-		Map<String, CustomXmlPart> customXmlDataStorageParts = wordMLPackage
-				.getCustomXmlDataStorageParts();
+		Map<String, CustomXmlPart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();
 
 		if (conditionId != null) {
 
 			log.info("Processing Conditional: " + tag.getVal());
 
 			// At present, this only handles simple conditions
-			Condition c = ConditionsPart.getConditionById(conditions,
-					conditionId);
+			//Condition c = ConditionsPart.getConditionById(conditions, conditionId);
+			Condition c = conditionsMap.get(conditionId);
 			if (c == null) {
 				log.error("Missing condition " + conditionId);
 			}
 
-			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditions, xPaths) ) {
+			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap) ) {
 				log.debug("so keeping");
 
 				List<Object> newContent = new ArrayList<Object>();
 				newContent.add(sdt);
 				return newContent;
 
-			} else {
+			} else if (reverterSupported){
 				return conditionFalse(sdt);
+			} else {
+				return new ArrayList<Object>(); // effectively, delete
+				// Potentially slightly faster processing, since 
+				// the conditionFalse sdt doesn't need to be created.
+				// The document is only slightly smaller, since conditionFalse sdt doesn't have a lot of content.
+				// OpenDoPEIntegrity is responsible for handling the case where
+				// this creates an empty table cell
 			}
 
 		} else if (repeatId != null) {
 
-			log.info("Processing Repeat: " + tag.getVal());
+			log.info("Processing OpenDoPE Repeat: " + tag.getVal());
 
-			return processRepeat(sdt,
-					customXmlDataStorageParts, wordMLPackage
-							.getMainDocumentPart().getXPathsPart());
+			return processOpenDopeRepeat(sdt, customXmlDataStorageParts);
 
 		} else if (xp != null) {
 
@@ -758,10 +834,15 @@ public class OpenDoPEHandler {
 			newContent.add(sdt);
 			return newContent;
 		}
+		
+
+		
 		// shouldn't happen
 		return null;
 	}
 	
+	boolean reverterSupported = Docx4jProperties.getProperty("docx4j.model.datastorage.OpenDoPEReverter.Supported", true);
+		
 	/**
 	 * Insert an empty placeholder SDT, to facilitate round-tripping
 	 * (ie ability to convert instance docx back to original template),
@@ -849,7 +930,7 @@ public class OpenDoPEHandler {
 //				contentChildCount++;
 //		return contentChildCount;
 //	}
-
+//
 //	private List<Object> obtainChildren(Object element) {
 //		Object unwrapped = XmlUtils.unwrap(element);
 //		if (unwrapped instanceof ContentAccessor) {
@@ -863,10 +944,8 @@ public class OpenDoPEHandler {
 //	}
 	 
 
-
-	private List<Object> processRepeat(Object sdt,
-			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			XPathsPart xPathsPart) {
+	private List<Object> processOpenDopeRepeat(Object sdt,
+			Map<String, CustomXmlPart> customXmlDataStorageParts) {
 
 		Tag tag = getSdtPr(sdt).getTag();
 
@@ -879,13 +958,98 @@ public class OpenDoPEHandler {
 		if (StringUtils.isEmpty(repeatId))
 			return new ArrayList<Object>();
 
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
-				xPaths, repeatId);
+//		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
+//				xPaths, repeatId);		
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(repeatId);
 
 		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 		String xpath = xpathObj.getDataBinding().getXpath();
 		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
 
+		try {
+			return processRepeat(sdt, customXmlDataStorageParts, storeItemId,
+					xpath, prefixMappings, false);
+		} catch (W15RepeatZeroException w15) {
+			// won't happen in this case
+			return null;
+		}
+	}
+
+	/**
+	 * @param repeatingSectionSdt
+	 * @param customXmlDataStorageParts
+	 * @return
+	 * 
+	 * @since 3.2.2.
+	 */
+	private List<Object> processW15Repeat(Object repeatingSectionSdt,
+			Map<String, CustomXmlPart> customXmlDataStorageParts) {
+
+		CTDataBinding w15Databinding = getSdtPr(repeatingSectionSdt).getDataBinding();
+
+		String storeItemId = w15Databinding.getStoreItemID();
+		String xpath = w15Databinding.getXpath();
+		String prefixMappings = w15Databinding.getPrefixMappings();
+		
+		// for a w15 repeat, we clone the child repeatingSectionItem sdt
+		// TODO: review
+		ContentAccessor ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
+		
+		// replace its content
+		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));
+		
+		try {
+			List<Object> repeatingSectionItems = processRepeat(repeatingItem, customXmlDataStorageParts, storeItemId, xpath, prefixMappings, true);
+			//that'll throw an exception for repeat zero
+			
+			ca.getContent().clear();
+			ca.getContent().addAll(repeatingSectionItems);
+
+		} catch (W15RepeatZeroException w15) {
+			log.warn(w15.getMessage());
+			// mimic w15 zero case (which is to leave the document surface unaltered!)
+			// achieved by falling through to the below
+			
+			// If the binding step were to try binding the contents,
+			// it'd insert empty placeholders (at least for anything repeated).
+			// TODO: see what Word does with any content which is bound to outside the repeat. 
+			// So we'll signal to the binding step that it should not process the contents
+			// of the repeat.
+			
+			SdtPr sdtPr = getSdtPr(repeatingSectionSdt);
+			Tag tag = new Tag();
+			tag.setVal(BINDING_RESULT_RPTD_ZERO_W15 + "=true");
+			sdtPr.setTag(tag);
+		}
+		
+		// retain/return the repeatingSection sdt
+		List<Object> newContent = new ArrayList<Object>();
+		newContent.add(repeatingSectionSdt);	
+		return newContent;
+	}
+	
+	public long cloneTime = 0;
+	public long fixBTime = 0;
+	
+	/**
+	 * Process a repeat, whether its an OpenDoPE repeat, or a w15:RepeatingSection
+	 * @param sdt
+	 * @param customXmlDataStorageParts
+	 * @param storeItemId
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 */
+	private List<Object> processRepeat(Object sdt,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			String storeItemId,
+			String xpath,
+			String prefixMappings,
+			boolean isW15RepeatingSection) throws W15RepeatZeroException {
+
+
+		long startTime = System.currentTimeMillis();
+		
 		// Get the bound XML
 		String xpathBase;
 		// if (xpath.endsWith("/*")) {
@@ -907,7 +1071,7 @@ public class OpenDoPEHandler {
 		// if (xpathBase.endsWith("]"))
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
-		log.info("/n/n Repeat: using xpath: " + xpathBase);
+		log.info("/n/n Repeat: using xpath: " + xpathBase + " and " + prefixMappings);
 		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
 				storeItemId, xpathBase, prefixMappings);
 		// storeItemId, xpathBase+"/*", prefixMappings);
@@ -917,15 +1081,28 @@ public class OpenDoPEHandler {
 		log.debug("yields REPEATS: " + numRepeats);
 
 		if (numRepeats == 0) {
-			//return new ArrayList<Object>(); // effectively, delete
 			
-			// Change tag to od:resultRepeatZero=id
-			return repeatZero(sdt);
+			if (isW15RepeatingSection) {
+				throw new W15RepeatZeroException("Zero repeats found for " + xpathBase + "; leaving existing content (as Word does)!");
+			} else if (reverterSupported){
+				// Change tag to od:resultRepeatZero=id
+				return repeatZero(sdt);
+			} else {
+				return new ArrayList<Object>(); // effectively, delete
+				// The document is only slightly smaller, since the repeatZero sdt doesn't have a lot of content.
+				
+				// OpenDoPEIntegrity is responsible for handling the case where
+				// this creates an empty table cell
+			}
 		}
 
 		// duplicate content here ...
 		List<Object> repeated = cloneRepeatSdt(sdt, xpathBase, numRepeats);
 
+		cloneTime += (System.currentTimeMillis()-startTime);
+		
+		startTime = System.currentTimeMillis();
+		
 		// deep traverse to fix binding
 		DeepTraversor dt = new DeepTraversor();
 		dt.xpathBase = xpathBase;
@@ -937,6 +1114,29 @@ public class OpenDoPEHandler {
 			new TraversalUtil(repeated.get(i), dt);
 		}
 		log.info(".. deep traversals done ");
+		
+		fixBTime += (System.currentTimeMillis()-startTime);
+		
+		// make bookmarks (if any) unique
+		for (int i = 0; i < repeated.size(); i++) {
+			try {
+				
+				// Use the sdt id for uniqueness
+				Id id = ((SdtElement)repeated.get(i)).getSdtPr().getId();
+				if (id==null) {
+					((SdtElement)repeated.get(i)).getSdtPr().setId();
+					id = ((SdtElement)repeated.get(i)).getSdtPr().getId();
+				}
+				long global= id.getVal().longValue();
+				
+				bookmarkRenumber.fixRange(
+						((SdtElement)repeated.get(i)).getSdtContent().getContent(), 
+						"CTBookmark", "CTMarkupRange", null, global, i);
+			} catch (Exception e) {
+				// Shouldn't happen .. TODO remove reflection?
+				log.error(e.getMessage(),e);
+			}
+		}
 
 		return repeated;
 	}
@@ -1019,7 +1219,9 @@ public class OpenDoPEHandler {
 
 		SdtPr sdtPr = getSdtPr(sdt);
 
-		log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
+        if(log.isDebugEnabled()) {
+            log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
+        }
 
 		// CTDataBinding binding =
 		// (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
@@ -1051,6 +1253,12 @@ public class OpenDoPEHandler {
 	}
 
 	private void emptyRepeatTagValue(final Tag tag) {
+		
+		if (tag==null) {
+			// TODO: this is ok for a w15 repeat
+			log.warn("No tag");
+			return;
+		}
 
 		final String tagVal = tag.getVal();
 		final Pattern stripRepeatArgPattern = Pattern
@@ -1139,8 +1347,8 @@ public class OpenDoPEHandler {
 		sdtPr.setId();
 
 		// log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
-		CTDataBinding binding = (CTDataBinding) XmlUtils.unwrap(sdtPr
-				.getDataBinding());
+		
+		CTDataBinding binding = sdtPr.getDataBinding(); // could be a w15 binding
 
 		String thisXPath = null;
 
@@ -1151,11 +1359,16 @@ public class OpenDoPEHandler {
 
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
+		HashMap<String, String> map = null;
+		
 		Tag tag = sdtPr.getTag();
-		if (tag == null)
-			return;
-		HashMap<String, String> map = QueryString.parseQueryString(
-				tag.getVal(), true);
+		if (tag == null) {
+			
+			map = new HashMap<String, String>();
+//			return;
+		} else {
+			map = QueryString.parseQueryString(tag.getVal(), true);
+		}
 
 		if (binding == null) {
 
@@ -1183,15 +1396,20 @@ public class OpenDoPEHandler {
 
 			} else if (repeatId != null) {
 
-				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
+//				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
+				xpathObj = xpathsMap.get(repeatId);
+				
 				thisXPath = xpathObj.getDataBinding().getXpath();
 
-			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+			} else if (map.containsKey(BINDING_CONTENTTYPE)
+					|| map.containsKey(BINDING_HANDLER)
+					|| map.containsKey(BINDING_PROGID)) {
 
-				xpathObj = XPathsPart.getXPathById(xPaths,
-						map.get(BINDING_ROLE_XPATH) );
+//				xpathObj = XPathsPart.getXPathById(xPaths, map.get(BINDING_ROLE_XPATH) );
+				xpathObj = xpathsMap.get(map.get(BINDING_ROLE_XPATH));
+
 				thisXPath = xpathObj.getDataBinding().getXpath();
-
+				
 			} else {
 
 				log.warn("couldn't find binding or bindingrole!");
@@ -1209,10 +1427,19 @@ public class OpenDoPEHandler {
 
 			// Set this stuff up now
 			bindingId = map.get(BINDING_ROLE_XPATH);
-			xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+			try {
+				//xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+				xpathObj = xpathsMap.get(bindingId);
+			} catch (InputIntegrityException iie) {
+				log.warn(iie.getMessage());
+			}
 
 			// Sanity test
-			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
+			if (xpathObj==null) {
+				// a normal binding might not have a 
+				log.warn("No XPaths part object for " + binding.getXpath());
+				
+			} else if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
 				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. "
 						+ xpathObj.getDataBinding().getXpath());
 			}
@@ -1246,7 +1473,9 @@ public class OpenDoPEHandler {
 				map.put(BINDING_ROLE_REPEAT, newXPathObj.getId());
 				tag.setVal(QueryString.create(map));
 
-			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+			} else if (map.containsKey(BINDING_CONTENTTYPE)
+					|| map.containsKey(BINDING_HANDLER)
+					|| map.containsKey(BINDING_PROGID)) {
 
 				// Also need to create new xpath id, and add that
 				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
@@ -1262,12 +1491,20 @@ public class OpenDoPEHandler {
 			binding.setXpath(newPath);
 
 			// Also need to create new xpath id, and add that
-			org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
-					newPath, xpathObj, index);
-
-			// set sdt to use it
-			map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
-			tag.setVal(QueryString.create(map));
+			if (xpathObj==null) {
+				// not required for w15 repeats, and why should it be required for a plain bind?
+				log.debug("Not setting tag");
+				
+			} else {
+				// Usual case (for OpenDoPE, anyway)
+				
+				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
+						newPath, xpathObj, index);
+	
+				// set sdt to use it
+				map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
+				tag.setVal(QueryString.create(map));
+			}
 		}
 
 	}
@@ -1285,7 +1522,9 @@ public class OpenDoPEHandler {
 
 		if (conditionId != null) {
 
-			c = ConditionsPart.getConditionById(conditions, conditionId);
+			//c = ConditionsPart.getConditionById(conditions, conditionId);
+			c = conditionsMap.get(conditionId);
+			
 			if (c == null) {
 				log.error("Missing condition " + conditionId);
 				throw new InputIntegrityException("Required condition '" + conditionId + "' is missing");
@@ -1293,10 +1532,13 @@ public class OpenDoPEHandler {
 
 			// TODO: this code assumes the condition contains
 			// a simple xpath
-			log.debug("Using condition"
-					+ XmlUtils.marshaltoString(c, true, true));
+            if(log.isDebugEnabled()) {
+                log.debug("Using condition"
+                        + XmlUtils.marshaltoString(c, true, true));
+            }
 
-			Condition newCondition = c.repeat(xpathBase, index, conditions, xPaths);
+			Condition newCondition = c.repeat(xpathBase, index, conditionsMap, xpathsMap);
+
 
 			// set sdt to use it
 			map.put(BINDING_ROLE_CONDITIONAL, newCondition.getId() );
@@ -1308,12 +1550,27 @@ public class OpenDoPEHandler {
 	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(
 			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 
-		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
-				.deepCopy(xpathObj);
-		String newXPathId = newXPathObj.getId() + "_" + index;
+//		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils
+//				.deepCopy(xpathObj);
+		
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
+		
+		String newXPathId = xpathObj.getId() + "_" + index;
 		newXPathObj.setId(newXPathId);
-		newXPathObj.getDataBinding().setXpath(newPath);
-		xPaths.getXpath().add(newXPathObj);
+		
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
+		newXPathObj.setDataBinding(dataBinding);
+		
+		dataBinding.setXpath(newPath);
+		dataBinding.setStoreItemID(
+				xpathObj.getDataBinding().getStoreItemID());
+		dataBinding.setPrefixMappings(
+				xpathObj.getDataBinding().getPrefixMappings());
+		
+		//xPaths.getXpath().add(newXPathObj);
+		if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
+			log.error("New xpath entry overwrites existing xpath " + newXPathId);
+		}
 		return newXPathObj;
 	}
 

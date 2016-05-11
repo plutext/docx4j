@@ -28,8 +28,7 @@ import org.docx4j.dml.FontCollection.Font;
 import org.docx4j.dml.TextFont;
 import org.docx4j.dml.Theme;
 import org.docx4j.fonts.LanguageTagToScriptMapping;
-import org.docx4j.fonts.UnicodeRange;
-import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTLanguage;
@@ -85,7 +84,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     private Map<String,String> scriptToTypefaceMajor = null;
     private Map<String,String> scriptToTypefaceMinor = null;
     
-    private Map<String,String> getScriptToTypefaceMajor() {
+    private Map<String,String> getScriptToTypefaceMajor() throws Docx4JException {
     	
     	// init
     	if (scriptToTypefaceMajor==null) {
@@ -101,7 +100,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     	return scriptToTypefaceMajor;
     	
     }
-    private Map<String,String> getScriptToTypefaceMinor() {
+    private Map<String,String> getScriptToTypefaceMinor() throws Docx4JException {
     	
     	// init
     	if (scriptToTypefaceMinor==null) {
@@ -120,7 +119,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 
     private FontCollection majorFontCollection = null;
     private boolean majorFontCollectionInitialised = false;
-    private FontCollection getMajorFontCollection() {
+    private FontCollection getMajorFontCollection() throws Docx4JException {
     	
     	if (majorFontCollectionInitialised) return majorFontCollection;
     	
@@ -135,7 +134,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     
     private FontCollection minorFontCollection = null;
     private boolean minorFontCollectionInitialised = false;
-    private FontCollection getMinorFontCollection() {
+    private FontCollection getMinorFontCollection() throws Docx4JException {
     	
     	if (minorFontCollectionInitialised) return minorFontCollection;
     	
@@ -170,7 +169,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     private TextFont minorEastAsian = null;
     private TextFont minorComplexScript = null;
     
-    public TextFont getMajorLatin() {
+    public TextFont getMajorLatin() throws Docx4JException {
     	if (majorLatin==null
     			&& getMajorFontCollection()!=null) {
     		majorLatin = getMajorFontCollection().getLatin();
@@ -178,11 +177,11 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return majorLatin;
 	}
 
-    private TextFont getMajorHighAnsi() {
+    private TextFont getMajorHighAnsi() throws Docx4JException {
     	return getMajorLatin();
     }    
     
-    private TextFont getMajorEastAsian() {
+    private TextFont getMajorEastAsian() throws Docx4JException {
     	if (majorEastAsian==null
     			&& getMajorFontCollection()!=null) {
     		majorEastAsian = getMajorFontCollection().getEa();
@@ -190,7 +189,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return majorEastAsian;
 	}
 
-    private TextFont getMajorComplexScript() {
+    private TextFont getMajorComplexScript() throws Docx4JException {
     	if (majorComplexScript==null
     			&& getMajorFontCollection()!=null) {
     		majorComplexScript = getMajorFontCollection().getCs();
@@ -198,7 +197,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return majorComplexScript;
 	}
 
-    private TextFont getMinorLatin() {
+    private TextFont getMinorLatin() throws Docx4JException {
     	if (minorLatin==null
     			&& getMinorFontCollection()!=null) {
     		minorLatin = getMinorFontCollection().getLatin();
@@ -206,11 +205,11 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return minorLatin;
 	}
 
-    private TextFont getMinorHighAnsi() {
+    private TextFont getMinorHighAnsi() throws Docx4JException {
     	return getMinorLatin();
     }    
 	
-    private TextFont getMinorEastAsian() {
+    private TextFont getMinorEastAsian() throws Docx4JException {
     	if (minorEastAsian==null
     			&& getMinorFontCollection()!=null) {
     		minorEastAsian = getMinorFontCollection().getEa();
@@ -218,7 +217,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return minorEastAsian;
 	}
 
-    private TextFont getMinorComplexScript() {
+    private TextFont getMinorComplexScript() throws Docx4JException {
     	if (minorComplexScript==null
     			&& getMinorFontCollection()!=null) {
     		minorComplexScript = getMinorFontCollection().getCs();
@@ -226,7 +225,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return minorComplexScript;
 	}
 
-	private TextFont getTextFontFromTheme(STTheme type) {
+	private TextFont getTextFontFromTheme(STTheme type) throws Docx4JException {
 
 		if (type.equals(STTheme.MAJOR_EAST_ASIA)) {
 			return getMajorEastAsian();
@@ -251,8 +250,10 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		return getMinorLatin();
 	}
     
+	
+	private boolean reportedEmptyMINOR_EAST_ASIA = false;
        
-	public String getFontFromTheme(STTheme type) {
+	public String getFontFromTheme(STTheme type) throws Docx4JException {
 
 		TextFont textFont = getTextFontFromTheme(type);
 		if (textFont==null) {
@@ -266,6 +267,24 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     			log.warn("Missing typeface in font for " + type.toString() );
     			return null;
     		} else {
+    			if (typeface.trim().length()==0) {
+    				
+    				if (type.toString().equals(STTheme.MINOR_EAST_ASIA) ) {
+    					
+    					if (!reportedEmptyMINOR_EAST_ASIA) {
+    	        			log.info("Empty typeface in font for " + type.toString() ); 
+    	        			reportedEmptyMINOR_EAST_ASIA = true; // suppress extra warnings
+    					}
+    					
+    				} else {
+            			log.info("Empty typeface in font for " + type.toString() );     					
+    				}
+    				
+        			// eg <a:ea typeface=""/>
+        	        // or <a:cs typeface=""/>
+        			return null;
+    			}
+    			log.debug("'" + typeface + "'");
     			return typeface;
     		}
 		}
@@ -273,22 +292,32 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 	}
 	
 	
-    public String getFont(STTheme type, CTLanguage themeFontLang) {
+    public String getFont(STTheme type, CTLanguage themeFontLang) throws Docx4JException {
+    	
 
     	if (themeFontLang==null) {
     		// then the default fonts for each region as specified by the latin, ea, and cs elements should be used
-    		
+        	log.debug("themeFontLang==null" );    		
     		return getFontFromTheme(type);
     		
     	} else {
     	
-    		String lang = this.getLang(themeFontLang, type);
+        	log.debug(themeFontLang.toString() );
+        	log.debug(type.toString() );
+
+        	String lang = this.getLang(themeFontLang, type);
     		if (lang==null) {
+        		log.debug("lang==null");
         		return getFontFromTheme(type);
     		}
+    		log.debug("--> " + lang);
+    		
+//    		Throwable t = new Throwable();
+//    		t.printStackTrace();
     		
     		// need to convert
     		String script = LanguageTagToScriptMapping.getScriptForLanguageTag(lang);
+    		log.debug("--> script: " + script);
     		
     		if (script==null) {
         		return getFontFromTheme(type);
@@ -297,9 +326,9 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 	    		// now, lookup @typeface in the map
 	    		String typeface = null;
 	    		if (isMajor(type)) {
-	    			typeface = scriptToTypefaceMajor.get(script);
+	    			typeface = getScriptToTypefaceMajor().get(script);
 	    		} else {
-	    			typeface = scriptToTypefaceMinor.get(script);	    			
+	    			typeface = getScriptToTypefaceMinor().get(script);	    			
 	    		}
 	    		
 	    		if (typeface==null) {
@@ -314,7 +343,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     private boolean isMajor(STTheme type) {
     	
     	if (type == STTheme.MAJOR_ASCII 
-    			|| type == STTheme.MAJOR_BIDI 
+    			|| type == STTheme.MAJOR_BIDI  
     			|| type == STTheme.MAJOR_EAST_ASIA 
     			|| type == STTheme.MAJOR_H_ANSI) {
     		return true;

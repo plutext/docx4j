@@ -18,8 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.docx4j.XmlUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -155,12 +155,12 @@ public final class DOMRecorder implements XMLRecorder {
    */
   public EventSequence process(InputSource is) throws LoadingException {
     this.isFragment = false; // input source is not a fragment
-    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-    dbFactory.setNamespaceAware(this.config.isNamespaceAware());
-    dbFactory.setExpandEntityReferences(true);
-    dbFactory.setValidating(false);
+//    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+//    dbFactory.setNamespaceAware(this.config.isNamespaceAware());
+//    dbFactory.setExpandEntityReferences(true);
+//    dbFactory.setValidating(false);
     try {
-      DocumentBuilder builder = dbFactory.newDocumentBuilder();
+      DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
       Document document = builder.parse(is);
       return this.process(document);
     } catch (Exception ex) {

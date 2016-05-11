@@ -20,36 +20,17 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import java.io.InputStream;
-import java.util.List;
 import java.util.Random;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Templates;
-import javax.xml.transform.dom.DOMResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.JAXBAssociation;
-import org.docx4j.jaxb.JaxbValidationEventHandler;
-import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.XPathEnabled;
 import org.pptx4j.jaxb.Context;
-import org.w3c.dom.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -106,7 +87,10 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 	throws InvalidFormatException, PartUnrecognisedException {
 		
 		if (contentType.equals(ContentTypes.PRESENTATIONML_MAIN)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) ) {
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+				) {
 			return new MainPresentationPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE)) {
 			return new SlidePart(new PartName(partName));
@@ -114,6 +98,8 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 			return new SlideMasterPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE_LAYOUT)) {
 			return new SlideLayoutPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENTS)) {
+			return new CommentsPart(new PartName(partName));			
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_TABLE_STYLES)) {
 			return new TableStylesPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_PRES_PROPS)) {
@@ -128,6 +114,8 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 			return new NotesMasterPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_SLIDE)) {
 			return new NotesSlidePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENT_AUTHORS)) {
+			return new CommentAuthorsPart(new PartName(partName));			
 		} else {
 			throw new PartUnrecognisedException("No subclass found for " 
 					+ partName + " (content type '" + contentType + "')");					

@@ -31,12 +31,14 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -60,34 +62,64 @@ public class PartialDeepCopy {
 	
 	
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
-	OpcPackage ret = null;
-	RelationshipsPart relPart = null;
+		
+		OpcPackage ret = null;
+		RelationshipsPart relPart = null;
 		if (opcPackage != null) {
 			if ((relationshipTypes != null) && (relationshipTypes.isEmpty())) {
 				ret = opcPackage;
 			}
 			else {
 				ret = createPackage(opcPackage);
+				
+				if (ret==null) {
+					log.error("createPackage returned null!");
+				}
+				
+				
 				deepCopyRelationships(ret, opcPackage, ret, relationshipTypes);
+				
+				// Copy the font mappings
+				if (opcPackage instanceof WordprocessingMLPackage) {
+					
+//					// First need shortcut to MDP
+//					// .. get its name
+//					PartName mdpName = ((WordprocessingMLPackage)opcPackage).getMainDocumentPart().getPartName();
+//					// .. get the part
+//					Part mdp = ((WordprocessingMLPackage)ret).getParts().get(mdpName);
+//					// .. set the shortcut
+//					ret.setPartShortcut(mdp, mdp.getRelationshipType());					
+					
+					try {
+						((WordprocessingMLPackage)ret).setFontMapper(
+								((WordprocessingMLPackage)opcPackage).getFontMapper(), false); //don't repopulate, since we want to preserve existing mappings
+					} catch (Exception e) {
+						// shouldn't happen
+						log.error(e.getMessage(),e);
+						throw new Docx4JException("Error setting font mapper on copy", e);
+					}
+				}
+				
 			}
 		}
 		return ret;
 	}
 
 	protected static OpcPackage createPackage(OpcPackage opcPackage) throws Docx4JException {
-	OpcPackage ret = null;
+		
+		OpcPackage ret = null;
 		try {
 			ret = opcPackage.getClass().newInstance();
 		} catch (InstantiationException e) {
-			throw new Docx4JException("InstantiationException dupplicating package", e);
+			throw new Docx4JException("InstantiationException duplicating package", e);
 		} catch (IllegalAccessException e) {
-			throw new Docx4JException("IllegalAccessException dupplicating package", e);
+			throw new Docx4JException("IllegalAccessException duplicating package", e);
 		}
 		
 //		contentType
 		ret.setContentType(new ContentType(opcPackage.getContentType()));
 //		partName
-		ret.partName = opcPackage.partName;
+		ret.setPartName(opcPackage.getPartName());
 //		relationships
 		//is done in an another method
 //		userData
@@ -102,6 +134,8 @@ public class PartialDeepCopy {
 		ret.setPartShortcut(opcPackage.getDocPropsCustomPart(), Namespaces.PROPERTIES_CUSTOM);
 //		docPropsExtendedPart
 		ret.setPartShortcut(opcPackage.getDocPropsExtendedPart(), Namespaces.PROPERTIES_EXTENDED);
+		
+		
 //		externalResources
 		ret.getExternalResources().putAll(opcPackage.getExternalResources());
 //		handled
@@ -109,7 +143,8 @@ public class PartialDeepCopy {
 //		parts
 		//is done in an another method
 //		partStore
-		ret.setPartStore(opcPackage.getPartStore());
+		ret.setSourcePartStore(opcPackage.getSourcePartStore());
+				
 		return ret;
 	}
 
@@ -202,7 +237,7 @@ public class PartialDeepCopy {
 
 	protected static void deepCopyContent(Part source, Part destination) throws Docx4JException {
 		if (source instanceof BinaryPart) {
-			byte[] byteData = new byte[((BinaryPart)source).getBuffer().capacity()];
+			byte[] byteData = new byte[((BinaryPart)source).getBuffer().limit()]; // = remaining() when current pos = 0
 			((BinaryPart)source).getBuffer().get(byteData);
 			((BinaryPart)destination).setBinaryData(ByteBuffer.wrap(byteData));
 		}
@@ -210,6 +245,14 @@ public class PartialDeepCopy {
 			((JaxbXmlPart)destination).setJaxbElement(XmlUtils.deepCopy(((JaxbXmlPart)source).getJaxbElement(), 
 							((JaxbXmlPart)source).getJAXBContext()));
 			((JaxbXmlPart)destination).setJAXBContext(((JaxbXmlPart)source).getJAXBContext());
+			
+			if (log.isDebugEnabled()
+					&& (source instanceof MainDocumentPart)) {
+				log.debug("source: " + ((JaxbXmlPart)source).getXML());
+				log.debug("destination: " + ((JaxbXmlPart)destination).getXML());
+			}
+			
+			
 		}
 		else if (source instanceof CustomXmlDataStoragePart) {
 			CustomXmlDataStorage dataStorage = ((CustomXmlDataStoragePart)source).getData().factory();

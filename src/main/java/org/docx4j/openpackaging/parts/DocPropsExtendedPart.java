@@ -23,8 +23,9 @@ package org.docx4j.openpackaging.parts;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
 
 
@@ -64,12 +66,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 	
 	private static Logger log = LoggerFactory.getLogger(DocPropsExtendedPart.class);
 	
-	private static XPathFactory xPathFactory;
-	private static XPath xPath;
-	static {
-		xPathFactory = XPathFactory.newInstance();
-		xPath = xPathFactory.newXPath();		
-	}
+	private static XPath xPath = XPathFactoryUtil.newXPath();
 	
 	 /** 
 	 * @throws InvalidFormatException
@@ -113,8 +110,15 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
      */
 	@Override
     public Properties unmarshal( java.io.InputStream is ) throws JAXBException {
+		
+		// TODO: delete this method?		
     	
 		try {
+			
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        XMLStreamReader xsr = xif.createXMLStreamReader(is);												
 			
 //			if (jc==null) {
 //				setJAXBContext(Context.jc);				
@@ -127,7 +131,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			log.info("unmarshalling " + this.getClass().getName() );									
-			jaxbElement = (Properties) u.unmarshal( is );
+			jaxbElement = (Properties) u.unmarshal( xsr );
 
 		} catch (Exception e ) {
 			e.printStackTrace();
@@ -146,9 +150,11 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 				getJaxbElement(), Context.jcDocPropsExtended );
 		
 		try {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-			String result = xPath.evaluate(xpathString, doc );
+			String result;
+			synchronized(xPath) {
+				getNamespaceContext().registerPrefixMappings(prefixMappings);
+				result = xPath.evaluate(xpathString, doc );
+			}
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {
@@ -163,6 +169,28 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		}
 		return nsContext;
 	}
+	
+	/**
+	 * @param val
+	 * @since 3.3.0
+	 */
+	public void setDocSecurity(int val) {
+		
+		// See http://webapp.docx4java.org/OnlineDemo/ecma376/SharedML/DocSecurity.html
+		// It is set by Word 2013 restrict editing read only, or comments, to 8.
+		
+		// May also be set by Excel to something other than 0
+		// for for certain protect sheet, protect workbook values,
+		// but not for the default values, so nothing is implemented in xlsx4j yet
+
+
+		if (this.getJaxbElement()==null) {
+			this.setJaxbElement(new Properties());
+		}
+		this.getJaxbElement().setDocSecurity(val);
+		
+	}
+	
 	
 }
 

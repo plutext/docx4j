@@ -22,12 +22,14 @@ package org.docx4j.convert.out.html;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate;
 import org.docx4j.convert.out.common.AbstractVisitorExporterDelegate.AbstractVisitorExporterGeneratorFactory;
 import org.docx4j.convert.out.common.AbstractVisitorExporterGenerator;
+import org.docx4j.convert.out.common.writer.AbstractBrWriter;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Document;
@@ -102,7 +104,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = true;
 			StringBuilder inlineStyle =  new StringBuilder();
-			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders);				
+			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders, false);				
 			if (!inlineStyle.toString().equals("") ) {
 				currentParent.setAttribute("style", inlineStyle.toString() );
 			}
@@ -171,4 +173,15 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			
 	}
 
+	@Override
+	protected void handleBr(Br o) {
+		
+		// Just the usual case (unlike XSL FO, no attempt is made here to manage vertical space) 
+		convertToNode(conversionContext, 
+				  o, AbstractBrWriter.WRITER_ID,
+				  document, (currentP != null ? currentP : parentNode));
+		
+		currentSpan=null;		
+			
+	}    
 }

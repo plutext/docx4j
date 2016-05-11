@@ -19,12 +19,6 @@
  */
 package org.docx4j.model.styles;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.sharedtypes.STOnOff;
@@ -34,6 +28,7 @@ import org.docx4j.wml.CTCnf;
 import org.docx4j.wml.CTEm;
 import org.docx4j.wml.CTFramePr;
 import org.docx4j.wml.CTHeight;
+import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTShortHexNumber;
 import org.docx4j.wml.CTSignedHpsMeasure;
@@ -78,6 +73,7 @@ import org.docx4j.wml.STDropCap;
 import org.docx4j.wml.STEm;
 import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STHeightRule;
+import org.docx4j.wml.STHint;
 import org.docx4j.wml.STShd;
 import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.STTblOverlap;
@@ -91,6 +87,7 @@ import org.docx4j.wml.STVerticalJc;
 import org.docx4j.wml.STWrap;
 import org.docx4j.wml.STXAlign;
 import org.docx4j.wml.STYAlign;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Style.BasedOn;
 import org.docx4j.wml.Tabs;
@@ -106,6 +103,13 @@ import org.docx4j.wml.TextDirection;
 import org.docx4j.wml.TrPr;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.math.BigInteger;
+import java.util.List;
 
 /*
  *  @author Alberto Zerolo
@@ -113,6 +117,9 @@ import org.docx4j.wml.UnderlineEnumeration;
  *  
 */
 public class StyleUtil {
+	
+	protected static Logger log = LoggerFactory.getLogger(StyleUtil.class);	
+	
 	
 	public static final String CHARACTER_STYLE = "character";
 	public static final String PARAGRAPH_STYLE = "paragraph";
@@ -156,8 +163,49 @@ public class StyleUtil {
 		return (pPr1 == pPr2) ||
 			((pPr1 != null) && (pPr2 != null) &&
 			  areEqual((PPrBase)pPr1, (PPrBase)pPr2) &&
-			  areEqual(pPr1.getRPr(), pPr2.getRPr())
+			  areEqual(pPr1.getRPr(), pPr2.getRPr()) &&
+			  areEqual(pPr1.getSectPr(), pPr2.getSectPr())			  
 			);
+	}
+	
+	/**
+	 * @param sectPr1
+	 * @param sectPr2
+	 * @return
+	 * @since 3.2
+	 */
+	public static boolean areEqual(SectPr sectPr1, SectPr sectPr2) {
+
+		log.warn("TODO: implementation is incomplete; contributions welcome");						
+		
+		return (sectPr1 == sectPr2) ||
+				((sectPr1 != null) && (sectPr2 != null) &&	
+						areEqual(sectPr1.getFormProt() , sectPr2.getFormProt()) &&
+						areEqual(sectPr1.getVAlign() , sectPr2.getVAlign()) &&
+						areEqual(sectPr1.getNoEndnote(), sectPr2.getNoEndnote()) &&
+						areEqual(sectPr1.getTitlePg() , sectPr2.getTitlePg()) &&
+						areEqual(sectPr1.getTextDirection(), sectPr2.getTextDirection()) &&
+						areEqual(sectPr1.getBidi(), sectPr2.getBidi()) &&
+						areEqual(sectPr1.getRtlGutter(), sectPr2.getRtlGutter()) 
+						
+// TODO						
+//						areEqual(sectPr1.getDocGrid() , sectPr2.getDocGrid()) &&
+//						areEqual(sectPr1.getEGHdrFtrReferences(), sectPr2.getEGHdrFtrReferences()) &&
+//						areEqual(sectPr1.getFootnotePr(), sectPr2.getFootnotePr()) &&
+//						areEqual(sectPr1.getEndnotePr(), sectPr2.getEndnotePr()) &&
+//						areEqual(sectPr1.getType() , sectPr2.getType()) &&
+//						areEqual(sectPr1.getPgSz() , sectPr2.getPgSz()) &&
+//						areEqual(sectPr1.getPgMar(), sectPr2.getPgMar()) &&
+//						areEqual(sectPr1.getPaperSrc(), sectPr2.getPaperSrc()) &&
+//						areEqual(sectPr1.getPgBorders() , sectPr2.getPgBorders()) &&
+//						areEqual(sectPr1.getLnNumType(), sectPr2.getLnNumType()) &&
+//						areEqual(sectPr1.getPgNumType(), sectPr2.getPgNumType()) &&
+//						areEqual(sectPr1.getCols() , sectPr2.getCols()) &&
+//						areEqual(sectPr1.getPrinterSettings(), sectPr2.getPrinterSettings()) &&
+//						areEqual(sectPr1.getFootnoteColumns(), sectPr2.getFootnoteColumns()) 
+					  
+					);
+												
 	}
 
 	public static boolean areEqual(PPrBase pPrBase1, PPrBase pPrBase2) {
@@ -1034,8 +1082,10 @@ public class StyleUtil {
 		if (style == null) 
 			return true;
 
-		if (isEmpty(style.getStyleId()))
-			return true;
+		if (isEmpty(style.getStyleId())) {
+			log.warn("style currently has no id");
+		}
+		
 		if (CHARACTER_STYLE.equals(style.getType())) {
 			return isEmpty(style.getRPr());
 		}
@@ -1045,18 +1095,34 @@ public class StyleUtil {
 				   isEmpty(style.getRPr());
 		}
 		else if (TABLE_STYLE.equals(style.getType())) {
-			return isEmpty(style.getTblPr()) &&
+			return isEmpty(style.getPPr()) &&
+				   isEmpty(style.getRPr()) &&
+				   isEmpty(style.getTblPr()) &&
 				   isEmpty(style.getTcPr()) &&
 				   isEmpty(style.getTblStylePr());
 			
 		}
-		throw new IllegalArgumentException("Invalid style type: " + style.getType());
+		//throw new IllegalArgumentException("Invalid style type: " + style.getType());
+		else {
+
+			log.warn("style type is currently unknown or null");
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(style));
+            }
+			
+			return isEmpty(style.getPPr()) &&
+					   isEmpty(style.getRPr()) &&
+					   isEmpty(style.getTblPr()) &&
+					   isEmpty(style.getTcPr()) &&
+					   isEmpty(style.getTblStylePr());
+		}
 	}
 
 	public static boolean isEmpty(PPr pPr) {
 		return (pPr == null) ||
 			(isEmpty((PPrBase)pPr) &&
-			 isEmpty(pPr.getRPr())
+			 isEmpty(pPr.getRPr()) &&
+			 isEmpty(pPr.getSectPr() )
 			);
 	}
 
@@ -1097,6 +1163,13 @@ public class StyleUtil {
 			);
 	}
 
+	/**
+	 * isEmpty returns true if rPr is null, or each of its
+	 * properties is in turn, empty 
+	 * 
+	 * @param rPr
+	 * @return
+	 */
 	public static boolean isEmpty(RPr rPr) {
 		return ((rPr == null) ||
 				(isEmpty(rPr.getRStyle()) &&
@@ -1383,7 +1456,15 @@ public class StyleUtil {
 	       isEmpty(pStyle.getVal());
 	}
 
+	/**
+	 * isEmpty (non sensitive to presence of possible hint ie
+	 * would still return true)
+	 * 
+	 * @param rFonts
+	 * @return
+	 */
 	public static boolean isEmpty(RFonts rFonts) {
+				
 		return (rFonts == null) ||
 				(isEmpty(rFonts.getAscii())
 						&& isEmpty(rFonts.getAsciiTheme())
@@ -1392,7 +1473,12 @@ public class StyleUtil {
 						&& isEmpty(rFonts.getEastAsia())
 						&& isEmpty(rFonts.getEastAsiaTheme())
 						&& isEmpty(rFonts.getHAnsi())
-						&& isEmpty(rFonts.getHAnsiTheme()));
+						&& isEmpty(rFonts.getHAnsiTheme())
+						);
+	}
+
+	public static boolean isEmpty(STHint stHint) {
+		return (stHint == null) ;
 	}
 
 	public static boolean isEmpty(STTheme stTheme) {
@@ -1582,11 +1668,13 @@ public class StyleUtil {
 	}
 
 	protected static boolean isEmpty(BigInteger val) {
-		return (val == null) || (val.equals(BigInteger.ZERO));
+		return (val == null); // want to apply 0 value!
+		//|| (val.equals(BigInteger.ZERO));
 	}
 
 	protected static boolean isEmpty(Integer val) {
-		return (val == null) || (val.intValue() == 0);
+		return (val == null); // want to apply 0 value!
+		//|| (val.intValue() == 0);
 	}
 
 	protected static boolean isEmpty(String val) {
@@ -1597,7 +1685,14 @@ public class StyleUtil {
 		return (val == null) || (val.equals(STThemeColor.NONE));
 	}
 	
-	
+	protected static boolean isEmpty(SectPr val) {
+		
+		if (val==null) return true;
+		
+		log.debug("TODO: isEmpty(SectPr) implementation is quite basic");
+		
+		return false;
+	}
 	
 /////////////////////////////////////////////
 //apply-Methods
@@ -1605,24 +1700,129 @@ public class StyleUtil {
 // see similar ImmutablePropertyResolver
 //	
 /////////////////////////////////////////////
+
 	
-	public static void apply(Style source, Style destination) {
-		if (CHARACTER_STYLE.equals(source.getType())) {
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-		}
-		else if (PARAGRAPH_STYLE.equals(source.getType()) || 
-				 NUMBERING_STYLE.equals(source.getType())) {
-			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
-		}
-		else if (TABLE_STYLE.equals(source.getType())) {
-			destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
-			destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
-			apply(source.getTblStylePr(), destination.getTblStylePr());
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static Style apply(PPr source, Style destination) {
+
+		if (!isEmpty(source)) {
 			
-			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
-			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createStyle();
+				// what style type, though?
+			} 
+		
+			if (CHARACTER_STYLE.equals(destination.getType())) {
+				
+				log.warn("Can't apply PPr to a character style!");
+				
+			}
+			else  {
+				
+				destination.setPPr(apply(source, destination.getPPr()));
+			}
 		}
+		return destination;
+	}
+
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static Style apply(RPr source, Style destination) {
+
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createStyle();
+				// what style type, though?
+			} 
+			destination.setRPr(apply(source, destination.getRPr()));
+		}
+		return destination;
+	}
+	
+	
+	/**
+	 * Note that this method does not climb the hierarchy
+	 * to take any account of what these styles are basedOn
+	 * (other than to set the basedOn value)
+	 * 
+	 * @param source
+	 * @param destination
+	 */
+	public static Style apply(Style source, Style destination) {
+
+		if (isEmpty(source)) {
+			
+			log.debug("empty source style");
+			
+		} else {
+			
+			if (destination == null) {
+				log.debug("new destination style");
+				destination = Context.getWmlObjectFactory().createStyle();
+				if (source.getType()!=null) {
+					destination.setType(source.getType());
+				}
+			} else {
+				if (areEqual(source.getType(), destination.getType())) {
+					// good, as expected
+				} else if (destination.getType()==null) {
+					log.warn("Setting destination style type from source type " + source.getType());
+					destination.setType(source.getType());
+				} else {
+					throw new RuntimeException("Source style type " + source.getType()
+							+ " does not match destination type " + destination.getType());
+					// Maybe there are some scenarios where you want to apply
+					// say the rpr component of a p style to a run level style
+					// but wait until need is proven.
+					// You could still do that, by using apply(RPr, RPr).
+					// Better to do type like checking here, and force explicit intention
+				}
+			}
+		
+			if (CHARACTER_STYLE.equals(source.getType())) {
+				
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else if (PARAGRAPH_STYLE.equals(source.getType()) || 
+					 NUMBERING_STYLE.equals(source.getType())) {
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else if (TABLE_STYLE.equals(source.getType())) {
+				
+				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+				
+				apply(source.getTblStylePr(), destination.getTblStylePr());
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+			else {
+
+				log.warn("source style type is currently unknown or null");
+				
+				destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+				destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+				
+				apply(source.getTblStylePr(), destination.getTblStylePr());
+				
+				destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+				destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			}
+		}
+		return destination;
 	}
 
 	public static PPr apply(PPr source, PPr destination) {
@@ -1631,11 +1831,13 @@ public class StyleUtil {
 				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			destination.setSectPr(apply(source.getSectPr(), destination.getSectPr()));
 		}
 		return destination;
 	}
 
 	public static void apply(PPrBase source, PPrBase destination) {
+		
 	//PPrBase as a Base class isn't instantiated
 		if (!isEmpty((PPrBase)source)) {
 			destination.setPStyle(apply(source.getPStyle(), destination.getPStyle()));	
@@ -1658,9 +1860,12 @@ public class StyleUtil {
 			destination.setAutoSpaceDN(apply(source.getAutoSpaceDN(), destination.getAutoSpaceDN()));	
 			destination.setBidi(apply(source.getBidi(), destination.getBidi()));	
 			destination.setAdjustRightInd(apply(source.getAdjustRightInd(), destination.getAdjustRightInd()));	
-			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));	
+			destination.setSnapToGrid(apply(source.getSnapToGrid(), destination.getSnapToGrid()));
+			
 			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));	
-			destination.setInd(apply(source.getInd(), destination.getInd()));	
+			
+			destination.setInd(apply(source.getInd(), destination.getInd()));
+			
 			destination.setContextualSpacing(apply(source.getContextualSpacing(), destination.getContextualSpacing()));	
 			destination.setMirrorIndents(apply(source.getMirrorIndents(), destination.getMirrorIndents()));	
 			destination.setSuppressOverlap(apply(source.getSuppressOverlap(), destination.getSuppressOverlap()));	
@@ -1672,15 +1877,68 @@ public class StyleUtil {
 			destination.setCnfStyle(apply(source.getCnfStyle(), destination.getCnfStyle()));	
 		}
 	}
+	
+	/**
+	 * @param source
+	 * @param destination
+	 * @return
+	 * @since 3.2
+	 */
+	public static SectPr apply(SectPr source, SectPr destination) {
+		
+		if (!isEmpty(source)) {
+			
+			if (destination == null) {
+				destination = Context.getWmlObjectFactory().createSectPr();
+			}
+			
+			destination.setFormProt(apply(source.getFormProt() , destination.getFormProt()));
+			destination.setVAlign(apply(source.getVAlign() , destination.getVAlign()) );
+			destination.setNoEndnote(apply(source.getNoEndnote(), destination.getNoEndnote()) );
+			destination.setTitlePg(apply(source.getTitlePg() , destination.getTitlePg()) );
+			destination.setTextDirection(apply(source.getTextDirection(), destination.getTextDirection()) );
+			destination.setBidi(apply(source.getBidi(), destination.getBidi()) );
+			destination.setRtlGutter(apply(source.getRtlGutter(), destination.getRtlGutter() ));
+					
+			log.warn("TODO: implementation is incomplete");
+					
+// TODO						
+//						destination.setDocGrid(apply(source.getDocGrid() , destination.getDocGrid()) );
+//						destination.setEGHdrFtrReferences(apply(source.getEGHdrFtrReferences(), destination.getEGHdrFtrReferences()) );
+//						destination.setFootnotePr(apply(source.getFootnotePr(), destination.getFootnotePr()) );
+//						destination.setEndnotePr(apply(source.getEndnotePr(), destination.getEndnotePr()) );
+//						destination.setType(apply(source.getType() , destination.getType()) );
+//						destination.setPgSz(apply(source.getPgSz() , destination.getPgSz()) );
+//						destination.setPgMar(apply(source.getPgMar(), destination.getPgMar()) );
+//						destination.setPaperSrc(apply(source.getPaperSrc(), destination.getPaperSrc()) );
+//						destination.setPgBorders(apply(source.getPgBorders() , destination.getPgBorders()) );
+//						destination.setLnNumType(apply(source.getLnNumType(), destination.getLnNumType()) );
+//						destination.setPgNumType(apply(source.getPgNumType(), destination.getPgNumType()) );
+//						destination.setCols(apply(source.getCols() , destination.getCols()) );
+//						destination.setPrinterSettings(apply(source.getPrinterSettings(), destination.getPrinterSettings()) );
+//						destination.setFootnoteColumns(apply(source.getFootnoteColumns(), destination.getFootnoteColumns()) 
+					  
+		}
+		return destination;												
+	}	
 
 	public static RPr apply(RPr source, RPr destination) {
+		
+		boolean hint = false;
+		if (source!=null
+				&& source.getRFonts()!=null
+				&& !isEmpty(source.getRFonts().getHint())) {
+			hint = true; 
+			log.debug("source rPr contains rFonts with hint");
+		}
 
-		if (!isEmpty(source)) {
+		if (isEmpty(source) && !hint ) {
+			log.debug("no source rPr to apply");			
+		} else {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createRPr();
 			
-			// getLang TODO
-			
+			destination.setLang(apply(source.getLang(), destination.getLang()));
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -1718,6 +1976,12 @@ public class StyleUtil {
 		}
 		return destination;
 	}
+	
+	public static CTLanguage apply(CTLanguage source, CTLanguage destination) {
+		// TODO refine this?
+		return ((source == null) ? destination : source);
+	}
+	
 
 	public static RPr apply(ParaRPr source, RPr destination) {
 		if (!isEmpty(source)) {
@@ -1854,6 +2118,8 @@ public class StyleUtil {
 			if (destination == null) 
 				destination = Context.getWmlObjectFactory().createTblPr();
 			
+			destination.setBidiVisual(apply(source.getBidiVisual(), destination.getBidiVisual()));
+			
 			destination.setTblStyle(apply(source.getTblStyle(), destination.getTblStyle()));
 			destination.setTblpPr(apply(source.getTblpPr(), destination.getTblpPr()));
 			destination.setTblOverlap(apply(source.getTblOverlap(), destination.getTblOverlap()));
@@ -1897,8 +2163,8 @@ public class StyleUtil {
 	public static void apply(List<CTTblStylePr> source, List<CTTblStylePr> destination) {
 		CTTblStylePr destinationTblStylePr = null;
 		if (!isEmpty(source)) {
-			//not sure about this, but if the source defines a content model it should
-			//replace the one of the source as a whole, and not parts of it.
+			// not sure about this, but if the source defines a content model it should
+			// replace the destination as a whole, and not parts of it.
 			destination.clear();
 			for (int i=0; i<source.size(); i++) {
 				destinationTblStylePr = apply(source.get(i), null);
@@ -2150,20 +2416,62 @@ public class StyleUtil {
 	}
 
 	public static RFonts apply(RFonts source, RFonts destination) {
-		if (!isEmpty(source)) {
-			if (destination == null)
-				destination = Context.getWmlObjectFactory().createRFonts();
+		
+		if (destination == null)
+			destination = Context.getWmlObjectFactory().createRFonts();
+		
+		if (isEmpty(source) ) {
 			
-			//i think, the values should be treated together
-			destination.setAscii(source.getAscii());
-			destination.setCs(source.getCs());
-			destination.setEastAsia(source.getEastAsia());
-			destination.setHAnsi(source.getHAnsi());
+			if (source!=null && source.getHint()!=null) {
+				destination.setHint(source.getHint());
+			} else {
+				//return null; // causes RunFontSelectorChinese2Test to fail
+				// if we don't return null, it creates empty rFonts element
+				// see comment at line 401 of RunFontSelector
+			}
+			
+		} else {
+			
+			if (source.getAscii() != null) {
+				destination.setAscii(source.getAscii());
+				destination.setAsciiTheme(null); 
+				// theme trumps non theme, but here destination is "lower" than source
+				// see http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/rFonts.html 
+			}
+			if (source.getCs() != null) {
+				destination.setCs(source.getCs());
+				destination.setCstheme(null);
+			}
+			if (source.getEastAsia() != null) {
+				destination.setEastAsia(source.getEastAsia());
+				destination.setEastAsiaTheme(null);				
+			}
+			if (source.getHAnsi() != null) {
+				destination.setHAnsi(source.getHAnsi());
+				destination.setHAnsiTheme(null);				
+			}
+			
 
-			destination.setAsciiTheme(source.getAsciiTheme());
-			destination.setCstheme(source.getCstheme());
-			destination.setEastAsiaTheme(source.getEastAsiaTheme());
-			destination.setHAnsiTheme(source.getHAnsiTheme());
+			if (source.getAsciiTheme() != null) {
+				destination.setAsciiTheme(source.getAsciiTheme());
+				destination.setAscii(null);  // do this, since theme trumps non theme
+			}
+			if (source.getCstheme() != null) {
+				destination.setCstheme(source.getCstheme());
+				destination.setCs(null);				
+			}
+			if (source.getEastAsiaTheme() != null) {
+				destination.setEastAsiaTheme(source.getEastAsiaTheme());
+				destination.setEastAsia(null);				
+			}
+			if (source.getHAnsiTheme() != null) {
+				destination.setHAnsiTheme(source.getHAnsiTheme());
+				destination.setHAnsi(null);				
+			}
+
+			if (source.getHint() != null) {
+				destination.setHint(source.getHint());
+			}
 		}
 		return destination;
 	}

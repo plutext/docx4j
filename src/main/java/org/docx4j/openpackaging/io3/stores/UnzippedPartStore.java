@@ -29,17 +29,16 @@ import java.io.OutputStream;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
@@ -54,7 +53,7 @@ import org.w3c.dom.Document;
  */
 public class UnzippedPartStore implements PartStore {
 
-	private static Logger log = LoggerFactory.getLogger(Load3.class);
+	private static Logger log = LoggerFactory.getLogger(UnzippedPartStore.class);
 
 
 	private File dir;
@@ -287,25 +286,20 @@ public class UnzippedPartStore implements PartStore {
 	        if (((BinaryPart)part).isLoaded() ) {
 
 	        	fos = new FileOutputStream(file);
-	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	            byte[] bytes = null;
-	            bytes = new byte[bb.limit()];
-	            bb.get(bytes);
-
-		        fos.write( bytes );
+		        fos.write( ((BinaryPart)part).getBytes() );
 			    fos.close();
 
 	        } else {
 
-	        	if (!file.exists()
-	        			&& this.sourcePartStore==null) {
+	        	if (file.exists() ) {
+
+		        	// No need to save .. 
+	        		// either source = target,
+	        		// or incrementally saved to target already
+	        	
+	        	} else if (this.sourcePartStore==null) {
 
 	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
-
-	        	} else if (file.exists()
-	        			&& this.sourcePartStore==this) {
-
-		        	// No need to save
 
 	        	} else {
 

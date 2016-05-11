@@ -1,6 +1,7 @@
 package org.merlin.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * An incremental data source that writes data to an OutputStream.

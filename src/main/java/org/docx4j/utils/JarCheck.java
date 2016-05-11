@@ -20,6 +20,9 @@
  */
 package org.docx4j.utils;
 
+import static java.lang.System.err;
+import static java.lang.System.out;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,12 +30,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static java.lang.System.err;
-import static java.lang.System.out;
-/*
-TODO: check class minor version as well.
-     */
 
 /**
  * Ensures javac -target versions of the class files in a jar are as expected.
@@ -107,6 +104,7 @@ public final class JarCheck
         convertHumanToMachine.put( "1.5", 49 );
         convertHumanToMachine.put( "1.6", 50 );
         convertHumanToMachine.put( "1.7", 51 );
+        convertHumanToMachine.put( "1.8", 52 );
         }
 
     static
@@ -119,6 +117,7 @@ public final class JarCheck
         convertMachineToHuman.put( 49, "1.5" );
         convertMachineToHuman.put( 50, "1.6" );
         convertMachineToHuman.put( 51, "1.7" );
+        convertMachineToHuman.put( 52, "1.8" );
         }
 
     /**
@@ -212,8 +211,20 @@ public final class JarCheck
 //                                     + elementName );
                         // leave success set as previously
                         }
-                    else
+                    else if (  major > high ) {
+                    	
+                      err.println( ">> Wrong Version " );
+                      err.println( convertMachineToHuman.get( major )
+                                   + " ("
+                                   + major
+                                   + ") "
+                                   + elementName );
+                      success = false;
+                    	                      
+                    } else
                         {
+                    	// Suppress low version error
+                    	
 //                        err.println( ">> Wrong Version " );
 //                        err.println( convertMachineToHuman.get( major )
 //                                     + " ("
@@ -268,7 +279,7 @@ public final class JarCheck
 //          int high = convertHumanToMachine.get( args[ 2 ] );
           
         int low  = convertHumanToMachine.get( "1.3" );
-        int high = convertHumanToMachine.get( "1.5" );
+        int high = convertHumanToMachine.get( "1.6" );
             
             String dirPath = System.getProperty("user.dir") + "/dist/";
             

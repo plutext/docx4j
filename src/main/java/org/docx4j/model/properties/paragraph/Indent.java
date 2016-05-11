@@ -19,20 +19,19 @@
  */
 package org.docx4j.model.properties.paragraph;
 
-import java.math.BigInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.properties.Property;
 import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
+
+import java.math.BigInteger;
 
 public class Indent extends AbstractParagraphProperty {
 	
@@ -183,7 +182,9 @@ public class Indent extends AbstractParagraphProperty {
 
 		
 		if (left==null && firstline == null && hanging==null){
-			log.debug("What to do with " + XmlUtils.marshaltoString(this.getObject(), true, true));
+            if(log.isDebugEnabled()) {
+                log.debug("What to do with " + XmlUtils.marshaltoString(this.getObject(), true, true));
+            }
 			prop =  CSS_NULL;
 		} 
 		return prop;

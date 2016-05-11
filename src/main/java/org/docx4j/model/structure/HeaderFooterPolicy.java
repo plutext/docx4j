@@ -24,15 +24,12 @@ limitations under the License.
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.wml.BooleanDefaultFalse;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.FooterReference;
@@ -40,6 +37,8 @@ import org.docx4j.wml.HdrFtrRef;
 import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HeaderFooterPolicy {
 
@@ -100,14 +99,48 @@ public class HeaderFooterPolicy {
 		{
 		// Grab what headers and footers have been defined		
 		if (sectPr == null) {
-			log.debug("No headers/footers in this sectPr");
+			log.error("Passed null sectPr?!");
 			return;
 		}
+
+		List<CTRel> hdrFtrRefs = null;
+		BooleanDefaultTrue titlePage = null;
 		
-		if (previousHF==null) previousHF= new HeaderFooterPolicy();
-		
-		List<CTRel> hdrFtrRefs = sectPr.getEGHdrFtrReferences();
-		BooleanDefaultTrue titlePage = sectPr.getTitlePg();
+		if (sectPr.getType()!=null 
+				&& "continuous".equals(sectPr.getType().getVal())) {
+			// If this is a continuous section, use the headers/footers from the previous section!
+			log.debug("this is a continuous section");
+
+			if (previousHF!=null) {
+				
+				// for a continuous sectPr, ignore the stuff in this sectPr, 
+				// by taking our settings from previousHF
+
+				firstHeaderActive=previousHF.firstHeaderActive;
+				firstHeader=previousHF.firstHeader;  
+				firstFooterActive=previousHF.firstFooterActive;
+				firstFooter=previousHF.firstFooter;
+				
+				evenHeader=previousHF.evenHeader;
+				evenFooter=previousHF.evenFooter;
+				
+				defaultHeader=previousHF.defaultHeader;
+				defaultFooter=previousHF.defaultFooter;				
+				
+				return;
+			}
+		}
+
+		// The usual non-continuous case
+		// (or first sectPr in docx is continuous - maybe the docx starts with columns?)
+
+		if (previousHF==null) {
+			log.debug("previousHF==null");
+			previousHF= new HeaderFooterPolicy();
+			
+		} 		
+		hdrFtrRefs = sectPr.getEGHdrFtrReferences();
+		titlePage = sectPr.getTitlePg();
 		
 		// Headers. 
 		// Init from previousHF
@@ -170,6 +203,16 @@ public class HeaderFooterPolicy {
 				}
 				if (evenFooter == null) {
 					evenFooter = getDummyFooter();
+				}
+				
+				// Experimental: 2014 08 01; required for FOPAreaTreeHelper;
+				// (without this, where no header is defined in the docx,
+				//  xsl-region-before-default is not created)
+				if (defaultHeader == null) {
+					defaultHeader = getDummyHeader();
+				}
+				if (defaultFooter == null) {
+					defaultFooter = getDummyFooter();
 				}
 			}
 			else {

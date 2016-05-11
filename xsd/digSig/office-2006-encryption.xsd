@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+   ====================================================================
+-->
+<xs:schema xmlns="http://schemas.microsoft.com/office/2006/encryption"
+	xmlns:p="http://schemas.microsoft.com/office/2006/keyEncryptor/password"
+	xmlns:c="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.microsoft.com/office/2006/encryption"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xs:import
+		namespace="http://schemas.microsoft.com/office/2006/keyEncryptor/password"
+		schemaLocation="office-2006-keyEncryptor-password.xsd" />
+	<xs:import
+		namespace="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"
+		schemaLocation="office-2006-keyEncryptor-certificate.xsd" />
+	
+	<!-- 
+	
+     \Java\jaxb-ri-2.2.6\bin\xjc   office-2006-encryption.xsd -d tmp  -no-header -target 2.0
+	
+	 -->
+	
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings/>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.x2006.encryption"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+	
+	<xs:simpleType name="ST_SaltSize">
+		<xs:annotation>
+			<xs:documentation>An unsigned integer that specifies the number of bytes used by a salt. It MUST be at least 1 and no greater than 65,536.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedInt">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="65536"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_BlockSize">
+		<xs:annotation>
+			<xs:documentation>An unsigned integer that specifies the number of bytes used to encrypt one block of data. It MUST be at least 2, no greater than 4096, and a multiple of 2.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedInt">
+			<xs:minInclusive value="2"/>
+			<xs:maxInclusive value="4096"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_KeyBits">
+		<xs:annotation>
+			<xs:documentation>An unsigned integer that specifies the number of bits used by an encryption algorithm. It MUST be at least 8 and a multiple of 8.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedInt">
+			<xs:minInclusive value="8"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_HashSize">
+		<xs:annotation>
+			<xs:documentation>An unsigned integer that specifies the number of bytes used by a hash value. It MUST be at least 1, no greater than 65,536, and the same number of bytes as the hash algorithm emits.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedInt">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="65536"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_SpinCount">
+		<xs:annotation>
+			<xs:documentation>An unsigned integer that specifies the number of times to iterate on a hash of a password. It MUST NOT be greater than 10,000,000.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedInt">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="10000000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_CipherAlgorithm">
+		<xs:annotation>
+			<xs:appinfo>modified for poi - list is restricted to given list in [ms-offcrypto]</xs:appinfo>
+			<xs:documentation>A string that specifies the cipher algorithm. Values that are not defined MAY be used, and a compliant implementation is not required to support all defined values. Any algorithm that can be resolved by name by the underlying operating system can be used for hashing or encryption. Only block algorithms are supported for encryption. AES-128 is the default encryption algorithm, and SHA-1 is the default hashing algorithm if no other algorithms have been configured.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="AES">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the AES algorithm.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="RC2">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [RFC2268] (http://tools.ietf.org/html/rfc2268). The use of RC2 is not recommended. If RC2 is used with a key length of less than 128 bits, documents could interoperate incorrectly across different versions of Windows.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="RC4">
+				<xs:annotation>
+					<xs:documentation>MUST NOT be used.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="DES">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the DES algorithm. The use of DES is not recommended. If DES is used, the key length specified in the KeyBits element is required to be set to 64 for 56-bit encryption, and the key decrypted from encryptedKeyValue of KeyEncryptor is required to include the DES parity bits.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="DESX">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [DRAFT-DESX] (http://tools.ietf.org/html/draft-ietf-ipsec-ciph-desx-00). The use of DESX is not recommended. If DESX is used, documents could interoperate incorrectly across different versions of Windows.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="3DES">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [RFC1851] (http://tools.ietf.org/html/rfc1851). If 3DES or 3DES_112 is used, the key length specified in the KeyBits element is required to be set to 192 for 168-bit encryption and 128 for 112-bit encryption, and the key decrypted from encryptedKeyValue of KeyEncryptor is required to include the DES parity bits.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="3DES_112">
+				<xs:annotation>
+					<xs:documentation>see 3DES</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_CipherChaining">
+		<xs:annotation>
+			<xs:documentation>A string that specifies the chaining mode used by CipherAlgorithm. For more details about chaining modes, see [BCMO800-38A] (http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf).</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="ChainingModeCBC">
+				<xs:annotation>
+					<xs:documentation>block chaining (CBC)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ChainingModeCFB">
+				<xs:annotation>
+					<xs:documentation>Cipher feedback chaining (CFB), with an 8-bit window</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ST_HashAlgorithm">
+		<xs:annotation>
+			<xs:appinfo>modified for poi - list is restricted to given list in [ms-offcrypto]</xs:appinfo>
+			<xs:documentation>A string specifying a hashing algorithm. Values that are not defined MAY be used, and a compliant implementation is not required to support all defined values.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="SHA1">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [RFC4634] (http://tools.ietf.org/html/rfc4634).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SHA256">
+				<xs:annotation>
+					<xs:documentation>see SHA1</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SHA384">
+				<xs:annotation>
+					<xs:documentation>see SHA1</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="SHA512">
+				<xs:annotation>
+					<xs:documentation>see SHA1</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="MD5">
+				<xs:annotation>
+					<xs:documentation>MUST conform to MD5.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="MD4">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [RFC1320] (http://tools.ietf.org/html/rfc1320).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="MD2">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the algorithm as specified in [RFC1319] (http://tools.ietf.org/html/rfc1319).</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="RIPEMD-128">
+				<xs:annotation>
+					<xs:documentation>MUST conform to the hash functions specified in [ISO/IEC 10118]. (https://en.wikipedia.org/wiki/RIPEMD)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="RIPEMD-160">
+				<xs:annotation>
+					<xs:documentation>see RIPEMD-128 (https://en.wikipedia.org/wiki/RIPEMD)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="WHIRLPOOL">
+				<xs:annotation>
+					<xs:documentation>see RIPEMD-128 (https://en.wikipedia.org/wiki/ISO/IEC_10118-3)</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="CT_KeyData">
+		<xs:annotation>
+			<xs:documentation>A complex type that specifies the encryption used within this element. The saltValue attribute is a base64-encoded binary value that is randomly generated. The number of bytes required to decode the saltValue attribute MUST be equal to the value of the saltSize attribute.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="saltSize" type="ST_SaltSize" use="required"/>
+		<xs:attribute name="blockSize" type="ST_BlockSize" use="required"/>
+		<xs:attribute name="keyBits" type="ST_KeyBits" use="required"/>
+		<xs:attribute name="hashSize" type="ST_HashSize" use="required"/>
+		<xs:attribute name="cipherAlgorithm" type="ST_CipherAlgorithm" use="required"/>
+		<xs:attribute name="cipherChaining" type="ST_CipherChaining" use="required"/>
+		<xs:attribute name="hashAlgorithm" type="ST_HashAlgorithm" use="required"/>
+		<xs:attribute name="saltValue" type="xs:base64Binary" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="CT_DataIntegrity">
+		<xs:annotation>
+			<xs:documentation>A complex type that specifies data used to verify whether the encrypted data passes an integrity check. It MUST be generated using the method specified in section 2.3.4.14 (http://msdn.microsoft.com/en-us/library/dd924068(v=office.12).aspx).</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="encryptedHmacKey" type="xs:base64Binary" use="required">
+			<xs:annotation>
+				<xs:documentation>A base64-encoded value that specifies an encrypted key used in calculating the encryptedHmacValue.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="encryptedHmacValue" type="xs:base64Binary" use="required">
+			<xs:annotation>
+				<xs:documentation>A base64-encoded value that specifies an HMAC derived from encryptedHmacKey and the encrypted data.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="CT_KeyEncryptor">
+		<xs:annotation>
+			<xs:appinfo>modified for POI</xs:appinfo>
+			<xs:documentation>A complex type that specifies the parameters used to encrypt an intermediate key, which is used to perform the final encryption of the document. To ensure extensibility, arbitrary elements can be defined to encrypt the intermediate key. The intermediate key MUST be the same for all KeyEncryptor elements.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element ref="p:encryptedKey"/>
+			<xs:element ref="c:encryptedKey"/>
+		</xs:choice>
+		<xs:attribute name="uri">
+			<xs:annotation>
+				<xs:appinfo>modified for POI</xs:appinfo>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:token">
+					<xs:enumeration value="http://schemas.microsoft.com/office/2006/keyEncryptor/password"/>
+					<xs:enumeration value="http://schemas.microsoft.com/office/2006/keyEncryptor/certificate"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="CT_KeyEncryptors">
+		<xs:annotation>
+			<xs:documentation>A sequence of KeyEncryptor elements. Exactly one KeyEncryptors element MUST be present, and the KeyEncryptors element MUST contain at least one KeyEncryptor.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="keyEncryptor" type="CT_KeyEncryptor" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CT_Encryption">
+		<xs:sequence>
+			<xs:element name="keyData" type="CT_KeyData"/>
+			<xs:element name="dataIntegrity" type="CT_DataIntegrity">
+				<xs:annotation>
+					<xs:appinfo>modified for POI</xs:appinfo>
+					<xs:documentation>All ECMA-376 documents [ECMA-376] encrypted by Microsoft Office using agile encryption will have a DataIntegrity element present. The schema allows for a DataIntegrity element to not be present because the encryption schema can be used by applications that do not create ECMA-376 documents [ECMA-376].</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="keyEncryptors" type="CT_KeyEncryptors">
+				<xs:annotation>
+					<xs:documentation>The KeyEncryptor element, which MUST be used when encrypting password-protected agile encryption documents, is either a PasswordKeyEncryptor or a CertificateKeyEncryptor. Exactly one PasswordKeyEncryptor MUST be present. Zero or more CertificateKeyEncryptor elements are contained within the KeyEncryptors element.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="encryption" type="CT_Encryption"/>
+</xs:schema>

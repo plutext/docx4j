@@ -29,42 +29,38 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import javax.xml.stream.*;
-import javax.xml.stream.events.*;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.wml.P;
-import org.docx4j.wml.R;
-
-import org.eclipse.compare.StringComparator;
-import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
+import org.eclipse.compare.StringComparator;
+import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -109,8 +105,8 @@ public class Differencer {
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
 	
 	// The rels used in the resulting diff
-	private List<Relationship> composedRels = new ArrayList<Relationship>();
-	public List<Relationship> getComposedRels() {
+	private Map<Relationship, Part> composedRels = new HashMap<Relationship,Part>();
+	public Map<Relationship, Part> getComposedRels() {
 		return composedRels;
 	}
 	
@@ -216,6 +212,8 @@ public class Differencer {
 	}
 
 	/**
+	 * This is a Xalan extension function, invoked from diffx2wml.xslt
+	 * 
 	 * Any rel which is present in the results of the comparison must point to
 	 * a valid target of the correct type, or the resulting document will
 	 * be broken.  
@@ -246,19 +244,24 @@ public class Differencer {
 		}
 		
 		
-		log.error("Looking for rel " + relId);
+		log.debug("Looking for rel " + relId);
 		Relationship r = docPartRels.getRelationshipByID(relId);
 		if (r==null) {
 			log.error("Couldn't find rel " + relId);
 			return;
 		}
 		
+		Part p = docPartRels.getPart(r);
+		
 		Relationship r2 = (Relationship)XmlUtils.deepCopy(r, Context.jcRelationships);
 		
 		r2.setId(newRelId);
-		log.error(".. added rel " + newRelId + " -- " + r2.getTarget() );
+		log.debug(".. added rel " + newRelId + " -- " + r2.getTarget() );
 		
-		pd.composedRels.add(r2);
+		
+		
+		
+		pd.composedRels.put(r2, p);
 	}
 
 	/**
@@ -331,6 +334,9 @@ public class Differencer {
 		try {
 			
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+			
 			/*
 			 * With JDK 1.5, you need to supply a stax jar, or you
 			 * will get:
@@ -369,14 +375,40 @@ public class Differencer {
 			
 			
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
-			Reader reader;
-			if (log.isDebugEnabled() ) {
-				String res = diffxResult.toString();
-				log.debug("Diff result:" + res);
-				reader = new StringReader(res);
+			String res = diffxResult.toString();
+			
+			/* 2014 09 09
+			 * 
+			 * For unknown reasons, diffx may write:
+			 * 
+			 *    <a14:useLocalDpi dfx:insert="true" val="0" ins:val="true"/>
+			 *    
+			 * ie without the namespace being declared.
+			 * 
+			 * Maybe something to do with the namespace being declared deep in the input?
+			 * 
+			 *    <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+			 *    
+			 * This is a crude workaround.   
+			 */
+			int nsIndex = res.indexOf("xmlns:");
+			int closeTag = res.indexOf(">", nsIndex);
+			String topLevelDecs = res.substring(0, closeTag);
+			
+			System.out.println(topLevelDecs);
+			if (topLevelDecs.contains("xmlns:a14")) {
+				// OK
 			} else {
-				reader = new StringReader(diffxResult.toString());				
+				res = topLevelDecs + " xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\""
+						+ res.substring(closeTag);
+				
 			}
+			
+			
+			if (log.isDebugEnabled() ) {
+				log.debug("Diff result:" + res);
+			} 
+			Reader reader = new StringReader(res);
 			
 			String simplified = null;
 				try {
@@ -620,6 +652,9 @@ public class Differencer {
 			try {
 				
 				XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+				inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+				inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+				
 				//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
 				Reader reader = new StringReader(naive);
 				String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
@@ -1145,11 +1180,9 @@ public class Differencer {
 	 * @return The corresponding node.
 	 */
 	private static Node toNode(Reader xml, boolean isNSAware) {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(isNSAware);
+		// always namespace aware in docx4j
 		try {
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.parse(new InputSource(xml));
+			Document document = XmlUtils.getNewDocumentBuilder().parse(new InputSource(xml));
 			return document;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1341,6 +1374,9 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
 		try {
 			
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+			
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
 			String simplified = combineAdjacent(
 					inputFactory.createXMLStreamReader(new FileInputStream(new File("tmp_adj.xml"))) );

@@ -38,6 +38,8 @@ import javax.xml.transform.TransformerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.XmlSerializerUtil;
 
 /**
  * Abstract base class for the PFM and TTF Reader command-line applications.
@@ -77,42 +79,43 @@ public abstract class AbstractFontReader {
     }
 
 
-    /**
-     * Writes the generated DOM Document to a file.
-     *
-     * @param   doc The DOM Document to save.
-     * @param   target The target filename for the XML file.
-     * @throws TransformerException if an error occurs during serialization
-     */
-    public void writeFontXML(org.w3c.dom.Document doc, String target) throws TransformerException {
-        writeFontXML(doc, new File(target));
-    }
-
-    /**
-     * Writes the generated DOM Document to a file.
-     *
-     * @param   doc The DOM Document to save.
-     * @param   target The target file for the XML file.
-     * @throws TransformerException if an error occurs during serialization
-     */
-    public void writeFontXML(org.w3c.dom.Document doc, File target) throws TransformerException {
-        log.info("Writing xml font file " + target + "...");
-
-        try {
-            OutputStream out = new java.io.FileOutputStream(target);
-            out = new java.io.BufferedOutputStream(out);
-            try {
-                TransformerFactory factory = XmlUtils.getTransformerFactory();
-                Transformer transformer = factory.newTransformer();
-                transformer.transform(
-                        new javax.xml.transform.dom.DOMSource(doc),
-                        new javax.xml.transform.stream.StreamResult(out));
-            } finally {
-                out.close();
-            }
-        } catch (IOException ioe) {
-            throw new TransformerException("Error writing the output file", ioe);
-        }
-    }
+//    /**
+//     * Writes the generated DOM Document to a file.
+//     *
+//     * @param   doc The DOM Document to save.
+//     * @param   target The target filename for the XML file.
+//     * @throws TransformerException if an error occurs during serialization
+//     */
+//    public void writeFontXML(org.w3c.dom.Document doc, String target) throws TransformerException {
+//        writeFontXML(doc, new File(target));
+//    }
+//
+//    /**
+//     * Writes the generated DOM Document to a file.
+//     *
+//     * @param   doc The DOM Document to save.
+//     * @param   target The target file for the XML file.
+//     * @throws TransformerException if an error occurs during serialization
+//     */
+//    public void writeFontXML(org.w3c.dom.Document doc, File target) throws TransformerException {
+//        log.info("Writing xml font file " + target + "...");
+//
+//        try {
+//            OutputStream out = new java.io.FileOutputStream(target);
+//            out = new java.io.BufferedOutputStream(out);
+//            try {
+//            	XmlSerializerUtil.serialize(
+//            			new javax.xml.transform.dom.DOMSource(doc),
+//                        new javax.xml.transform.stream.StreamResult(out), false, false);
+//            	
+//            } catch (Docx4JException e) {
+//            	throw new TransformerException("Error writing the output file", e);
+//			} finally {
+//                out.close();
+//            }
+//        } catch (IOException ioe) {
+//            throw new TransformerException("Error writing the output file", ioe);
+//        }
+//    }
 
 }

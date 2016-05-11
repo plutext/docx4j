@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+   
+  <!-- [MS-PPTX] — v20130726
+PowerPoint (.pptx) Extensions to the Office Open XML File Format
+Copyright © 2013 Microsoft Corporation.
+Release: July 30, 2013 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.powerpoint.main2010"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+	
+  <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="dml-mainExt.xsd"/>
+  
+<!--   
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="dml-mainExt.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd"/>
+   -->
+   
+  <xsd:simpleType name="ST_UniversalTimeOffset">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TransitionPattern">
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="diamond"/>
+      <xsd:enumeration value="hexagon"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TransitionCenterDirectionType">
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="center"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TransitionShredPattern">
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="strip"/>
+      <xsd:enumeration value="rectangle"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TransitionCornerAndCenterDirectionType">
+    <xsd:union memberTypes="p:ST_TransitionCornerDirectionType ST_TransitionCenterDirectionType"/>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TransitionLeftRightDirectionType">
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l"/>
+      <xsd:enumeration value="r"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LeftRightDirectionTransition">
+    <xsd:attribute name="dir" type="ST_TransitionLeftRightDirectionType"/>
+  </xsd:complexType>
+  <xsd:element name="vortex" type="p:CT_SideDirectionTransition"/>
+  <xsd:element name="switch" type="CT_LeftRightDirectionTransition"/>
+  <xsd:element name="flip" type="CT_LeftRightDirectionTransition"/>
+  <xsd:complexType name="CT_RippleTransition">
+    <xsd:attribute name="dir" type="ST_TransitionCornerAndCenterDirectionType" use="optional" default="center"/>
+  </xsd:complexType>
+  <xsd:element name="ripple" type="CT_RippleTransition"/>
+  <xsd:element name="honeycomb" type="p:CT_Empty"/>
+  <xsd:complexType name="CT_PrismTransition">
+    <xsd:attribute name="dir" type="p:ST_TransitionSideDirectionType" use="optional" default="l"/>
+    <xsd:attribute name="isContent" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="isInverted" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="prism" type="CT_PrismTransition"/>
+  <xsd:element name="doors" type="p:CT_OrientationTransition"/>
+  <xsd:element name="window" type="p:CT_OrientationTransition"/>
+  <xsd:element name="ferris" type="CT_LeftRightDirectionTransition"/>
+  <xsd:element name="gallery" type="CT_LeftRightDirectionTransition"/>
+  <xsd:element name="conveyor" type="CT_LeftRightDirectionTransition"/>
+  <xsd:element name="pan" type="p:CT_SideDirectionTransition"/>
+  <xsd:complexType name="CT_GlitterTransition">
+    <xsd:attribute name="dir" type="p:ST_TransitionSideDirectionType" use="optional" default="l"/>
+    <xsd:attribute name="pattern" type="ST_TransitionPattern" use="optional" default="diamond"/>
+  </xsd:complexType>
+  <xsd:element name="glitter" type="CT_GlitterTransition"/>
+  <xsd:complexType name="CT_FlyThroughTransition">
+    <xsd:attribute name="dir" type="p:ST_TransitionInOutDirectionType" use="optional" default="in"/>
+    <xsd:attribute name="hasBounce" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:element name="warp" type="p:CT_InOutTransition"/>
+  <xsd:element name="flythrough" type="CT_FlyThroughTransition"/>
+  <xsd:element name="flash" type="p:CT_Empty"/>
+  <xsd:complexType name="CT_ShredTransition">
+    <xsd:attribute name="pattern" type="ST_TransitionShredPattern" use="optional" default="strip"/>
+    <xsd:attribute name="dir" type="p:ST_TransitionInOutDirectionType" use="optional" default="in"/>
+  </xsd:complexType>
+  <xsd:element name="shred" type="CT_ShredTransition"/>
+  <xsd:complexType name="CT_RevealTransition">
+    <xsd:attribute name="thruBlk" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="dir" type="ST_TransitionLeftRightDirectionType" use="optional" default="l"/>
+  </xsd:complexType>
+  <xsd:element name="reveal" type="CT_RevealTransition"/>
+  <xsd:complexType name="CT_MediaBookmarkTarget">
+    <xsd:attribute name="spid" type="a:ST_DrawingElementId" use="required"/>
+    <xsd:attribute name="bmkName" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="wheelReverse" type="p:CT_WheelTransition"/>
+  <xsd:attribute name="dur" type="ST_UniversalTimeOffset"/>
+  <xsd:element name="bmkTgt" type="CT_MediaBookmarkTarget"/>
+  <xsd:attribute name="presetBounceEnd" type="s:ST_PositiveFixedPercentage"/>
+  <xsd:attribute name="bounceEnd" type="s:ST_PositiveFixedPercentage"/>
+  <xsd:complexType name="CT_ContentPartNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="cNvContentPartPr" type="a14:CT_NonVisualInkContentPartProperties" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="nvPr" type="p:CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="nvContentPartPr" type="CT_ContentPartNonVisual"/>
+  <xsd:attribute name="bwMode" type="a:ST_BlackWhiteMode"/>
+  <xsd:element name="xfrm" type="a:CT_Transform2D"/>
+  <xsd:element name="extLst" type="p:CT_ExtensionListModify"/>
+  <xsd:complexType name="CT_MediaTrim">
+    <xsd:attribute name="st" type="ST_UniversalTimeOffset" use="optional" default="0"/>
+    <xsd:attribute name="end" type="ST_UniversalTimeOffset" use="optional" default="0"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MediaFade">
+    <xsd:attribute name="in" type="ST_UniversalTimeOffset" use="optional" default="0"/>
+    <xsd:attribute name="out" type="ST_UniversalTimeOffset" use="optional" default="0"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MediaBookmark">
+    <xsd:attribute name="name" type="xsd:string"/>
+    <xsd:attribute name="time" type="ST_UniversalTimeOffset"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MediaBookmarkList">
+    <xsd:sequence>
+      <xsd:element name="bmk" type="CT_MediaBookmark" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Media">
+    <xsd:sequence>
+      <xsd:element name="trim" type="CT_MediaTrim" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="fade" type="CT_MediaFade" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="bmkLst" type="CT_MediaBookmarkList" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attributeGroup ref="a:AG_Blob"/>
+  </xsd:complexType>
+  <xsd:element name="media" type="CT_Media"/>
+  <xsd:complexType name="CT_SectionSlideIdListEntry">
+    <xsd:attribute name="id" type="p:ST_SlideId" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SectionSlideIdList">
+    <xsd:sequence>
+      <xsd:element name="sldId" type="CT_SectionSlideIdListEntry" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Section">
+    <xsd:sequence>
+      <xsd:element name="sldIdLst" type="CT_SectionSlideIdList" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string"/>
+    <xsd:attribute name="id" type="s:ST_Guid"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SectionList">
+    <xsd:sequence>
+      <xsd:element name="section" type="CT_Section" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="sectionLst" type="CT_SectionList"/>
+  <xsd:complexType name="CT_BrowseMode">
+    <xsd:attribute name="showStatus" type="xsd:boolean" use="optional" default="true"/>
+  </xsd:complexType>
+  <xsd:element name="browseMode" type="CT_BrowseMode"/>
+  <xsd:element name="laserClr" type="a:CT_Color"/>
+  <xsd:complexType name="CT_DefaultImageDpi">
+    <xsd:attribute name="val" type="xsd:unsignedInt" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="defaultImageDpi" type="CT_DefaultImageDpi"/>
+  <xsd:complexType name="CT_DiscardImageEditData">
+    <xsd:attribute name="val" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="discardImageEditData" type="CT_DiscardImageEditData"/>
+  <xsd:complexType name="CT_ShowMediaControls">
+    <xsd:attribute name="val" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="showMediaCtrls" type="CT_ShowMediaControls"/>
+  <xsd:complexType name="CT_LaserTracePoint">
+    <xsd:attribute name="t" type="ST_UniversalTimeOffset" use="required"/>
+    <xsd:attribute name="x" type="a:ST_Coordinate" use="required"/>
+    <xsd:attribute name="y" type="a:ST_Coordinate" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LaserTrace">
+    <xsd:sequence>
+      <xsd:element name="tracePt" type="CT_LaserTracePoint" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LaserTraceList">
+    <xsd:sequence>
+      <xsd:element name="tracePtLst" type="CT_LaserTrace" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="laserTraceLst" type="CT_LaserTraceList"/>
+  <xsd:complexType name="CT_RandomId">
+    <xsd:attribute name="val" type="xsd:unsignedInt" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="creationId" type="CT_RandomId"/>
+  <xsd:element name="modId" type="CT_RandomId"/>
+  <xsd:complexType name="CT_TriggerEventRecord">
+    <xsd:attribute name="type" type="p:ST_TLTriggerEvent" use="required"/>
+    <xsd:attribute name="time" type="ST_UniversalTimeOffset" use="required"/>
+    <xsd:attribute name="objId" type="a:ST_DrawingElementId" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NullEventRecord">
+    <xsd:attribute name="time" type="ST_UniversalTimeOffset" use="required"/>
+    <xsd:attribute name="objId" type="a:ST_DrawingElementId" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MediaPlaybackEventRecord">
+    <xsd:attribute name="time" type="ST_UniversalTimeOffset" use="required"/>
+    <xsd:attribute name="objId" type="a:ST_DrawingElementId" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MediaSeekEventRecord">
+    <xsd:attribute name="time" type="ST_UniversalTimeOffset" use="required"/>
+    <xsd:attribute name="objId" type="a:ST_DrawingElementId" use="required"/>
+    <xsd:attribute name="seek" type="ST_UniversalTimeOffset" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ShowEventRecordList">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="triggerEvt" type="CT_TriggerEventRecord"/>
+        <xsd:element name="playEvt" type="CT_MediaPlaybackEventRecord"/>
+        <xsd:element name="stopEvt" type="CT_MediaPlaybackEventRecord"/>
+        <xsd:element name="pauseEvt" type="CT_MediaPlaybackEventRecord"/>
+        <xsd:element name="resumeEvt" type="CT_MediaPlaybackEventRecord"/>
+        <xsd:element name="seekEvt" type="CT_MediaSeekEventRecord"/>
+        <xsd:element name="nullEvt" type="CT_NullEventRecord"/>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="showEvtLst" type="CT_ShowEventRecordList"/>
+</xsd:schema>

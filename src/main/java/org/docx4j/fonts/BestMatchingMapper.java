@@ -28,7 +28,7 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
@@ -129,8 +129,10 @@ public class BestMatchingMapper extends Mapper {
 	 * 1. On Microsoft platform, to embed in PDF output
 	 * 2. docx4all - all platforms - to populate font dropdown list */	
 	private final static void setupMicrosoftFontFilenames() throws Exception {
-				
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
+
+		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();				
+		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft", classLoader);
+		
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
@@ -182,7 +184,9 @@ public class BestMatchingMapper extends Mapper {
 	 *  */	
 	private final static void setupExplicitSubstitutionsMap() throws Exception {
 				
-		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions");		
+		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();						
+		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions", classLoader);
+		
 		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
 		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
@@ -245,10 +249,8 @@ public class BestMatchingMapper extends Mapper {
 	        	        
 	        // Since docx4all invokes this method when opening
 	        // each new document, the mapping may have been done
-	        // last time.  We don't need to do it again, unless
-	        // new physical fonts have been added (eg via
-	        // an embedding)
-	        if (fontMappings.get(documentFontName) != null ) {
+	        // last time.  We don't need to do it again
+	        if (get(documentFontName) != null ) {
 	        	log.info(documentFontName + " already mapped.");
         		if ( lastSeenNumberOfPhysicalFonts == 
         				PhysicalFonts.getPhysicalFonts().size() ) {
@@ -262,6 +264,29 @@ public class BestMatchingMapper extends Mapper {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
+	        
+	        // Embedded fonts - bypass panose for these
+	        if (regularForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				regularForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded regular form " );
+    			continue;
+	        } else if (boldForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				boldForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded bold form " );
+    			continue;
+	        } else if (italicForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				italicForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded italic form " );
+    			continue;
+	        } else if (boldItalicForms.get(documentFontName)!=null) {
+        		put(documentFontName,         				 
+        				boldItalicForms.get(documentFontName) );	
+    			log.debug(".. mapped to embedded bold italic form " );
+    			continue;
+	        }	        
 	
 //	        boolean normalFormFound = false;
 	        			
@@ -326,9 +351,9 @@ public class BestMatchingMapper extends Mapper {
 					
 					if (fontMatched!=null) {
 					
-					fontMappings.put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
-					log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
-							+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
+						put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
+						log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
+								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
 					} else {
 						
 						log.debug("font with key " + panoseKey + " doesn't exist!");
@@ -481,7 +506,7 @@ public class BestMatchingMapper extends Mapper {
 			}
 			
 			if (fontMatched!=null) {
-				fontMappings.put(documentFontName, fontMatched);
+				put(documentFontName, fontMatched);
 				log.warn("Mapped " +  documentFontName  + " -->  " + fontMatched.getName() 
 						+ "( "+ fontMatched.getEmbeddedFile() );
 			} else {
