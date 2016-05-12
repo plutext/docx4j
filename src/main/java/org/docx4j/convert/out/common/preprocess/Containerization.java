@@ -178,11 +178,14 @@ public class Containerization {
 		P paragraph = null;
 		
 		for (Object o : bodyElts) {
+			Object unwrapped;
 			if (o instanceof JAXBElement) {
-				o = ((JAXBElement)o).getValue();
+				unwrapped = ((JAXBElement)o).getValue();
+			} else {
+				unwrapped = o;
 			}
-			if (o instanceof P) {
-				paragraph = (P)o;
+			if (unwrapped instanceof P) {
+				paragraph = (P)unwrapped;
 				paragraphElts = groupRuns(paragraph.getContent());
 				paragraph.getContent().clear();
 				if (paragraphElts != null) {
@@ -227,8 +230,8 @@ public class Containerization {
 					}
 				}
 			}
-			else if (o instanceof Tbl) {
-				groupTable((Tbl)o);
+			else if (unwrapped instanceof Tbl) {
+				groupTable((Tbl)unwrapped);
 			}
 			if (sdtShading!=null) {
 				sdtShading.getSdtContent().getContent().add(o);

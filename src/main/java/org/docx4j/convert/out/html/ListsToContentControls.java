@@ -221,8 +221,11 @@ public class ListsToContentControls {
 		
 		for (Object o : bodyElts) {
 			
+			Object unwrapped;
 			if (o instanceof JAXBElement) {
-				o = ((JAXBElement)o).getValue();
+				unwrapped = ((JAXBElement)o).getValue();
+			} else {
+				unwrapped=o;
 			}
 
 			/*
@@ -231,16 +234,16 @@ public class ListsToContentControls {
 			 * we'll finish the lists.
 			 */
 					
-			if (o instanceof P) {
+			if (unwrapped instanceof P) {
 				
-				paragraph = (P)o;				
+				paragraph = (P)unwrapped;				
 				PPr ppr = propertyResolver.getEffectivePPr(paragraph.getPPr());
 				
 				NumPr numPr = ppr.getNumPr();
 				
 				if (numPr==null) {
 					closeAllLists();
-					resultElts.add(o);
+					resultElts.add(unwrapped);
 					continue;
 				}
 				
@@ -311,7 +314,7 @@ public class ListsToContentControls {
 				} else if (numId==null) {
 					log.error("TODO: encountered null numId!");
 					closeAllLists();
-					resultElts.add(o);
+					resultElts.add(unwrapped);
 					continue;	
 				} else // (numId.equals(listSpec.numId)) 
 				{
@@ -351,12 +354,12 @@ public class ListsToContentControls {
 				} 
 				
 				
-			} else if (o instanceof Tbl) {
+			} else if (unwrapped instanceof Tbl) {
 				closeAllLists();
-				resultElts.add(o);
+				resultElts.add(unwrapped);
 				
 			} else {
-				log.warn("TODO: handle " + o.getClass().getName());
+				log.warn("TODO: handle " + unwrapped.getClass().getName());
 				closeAllLists();
 				resultElts.add(o);
 			}
