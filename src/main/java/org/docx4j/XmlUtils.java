@@ -527,12 +527,12 @@ public class XmlUtils {
 	       strB.append(wmlTemplateString.substring(offset, startKey));
 	       int keyEnd = wmlTemplateString.indexOf('}', startKey);
 	       String key = wmlTemplateString.substring(startKey + 2, keyEnd);
-	       String val = mappings.get(key).toString();
+	       Object val = mappings.get(key);
 	       if (val==null) {
 	    	   log.warn("Invalid key '" + key + "' or key not mapped to a value");
 	    	   strB.append(key );
 	       } else {
-	    	   strB.append(val  );
+	    	   strB.append(val.toString()  );
 	       }
 	       return replace(wmlTemplateString, keyEnd + 1, strB, mappings);
 	    }
