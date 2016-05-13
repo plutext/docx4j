@@ -53,7 +53,7 @@ public class ScrambleText extends CallbackImpl {
 	public ScrambleText(WordprocessingMLPackage pkg) {
 		this.pkg = pkg;
 		vis = new RunFontCharVisitorMinimal();
-		rfs = new RunFontSelector(pkg, vis, RunFontActionType.DISCOVERY);
+		rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.DISCOVERY);
 //		langStats = new HashMap<String, Integer>();
 	}
 	
