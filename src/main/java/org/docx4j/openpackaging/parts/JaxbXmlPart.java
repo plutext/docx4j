@@ -20,6 +20,7 @@
 package org.docx4j.openpackaging.parts;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -313,7 +315,18 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
-			marshaller.marshal(jaxbElement, node);
+	    	
+	    	// Commented out, since I'm not sure it is ever useful to do this?
+//			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
+//	    	
+//				org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
+//				node.appendChild(
+//						node.getOwnerDocument().importNode(doc.getDocumentElement(), true));
+//				
+//			} else {
+
+				marshaller.marshal(jaxbElement, node);
+//			}
 			
 			// Now unset it
 			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
@@ -374,20 +387,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //			}
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    	
-	    	if (false)  
-	    	{
-	    		/* The below code removes superflouous namespaces.
-	    		 * 
-	    		 * We don't need it for signing, provided at signature verification,
-	    		 * the part is verified as saved (ie none of the namespaces are first removed.
-	    		 * 
-	    		 * But it does make things neater, at the cost of some extra processing.
-	    		 * 
-	    		 * So currently, I'm undecided as to whether to keep it or remove it.
-	    		 * 
-	    		 * If kept, it could be configurable in docx4j props, and/or it could be
-	    		 * configurable for signing.
-	    		 */
+			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 	    		
 	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
 	    		
@@ -406,7 +406,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		marshaller.marshal(jaxbElement, os);
 	    	}
 	    	
-			// Now unset it
+			// Now unset it - prob not nec
 			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
 	    	
 
