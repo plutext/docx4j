@@ -823,9 +823,11 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
 			
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
+			marshaller.marshal(o, doc);
+
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc);  
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
@@ -833,9 +835,7 @@ public class XmlUtils {
 				
 			} else {
 
-				org.w3c.dom.Document resultDoc = XmlUtils.getNewDocumentBuilder().newDocument();
-				marshaller.marshal(o, resultDoc);
-				return resultDoc;
+				return doc;
 			}
 		} catch (Exception e) {
 		    throw new RuntimeException(e);
@@ -855,10 +855,15 @@ public class XmlUtils {
 					NamespacePrefixMapperUtils.getPrefixMapper());			
 			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
 
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
+			// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
+			marshaller.marshal( 
+					new JAXBElement(new QName(uri,local), declaredType, o ),
+					doc);
 
+			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc, uri, local, declaredType);  
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
@@ -866,12 +871,7 @@ public class XmlUtils {
 				
 			} else {
 
-				org.w3c.dom.Document resultDoc = XmlUtils.getNewDocumentBuilder().newDocument();
-				// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
-				marshaller.marshal( 
-						new JAXBElement(new QName(uri,local), declaredType, o ),
-						resultDoc);
-				return resultDoc;
+				return doc;
 			}
 
 		} catch (Exception e) {
