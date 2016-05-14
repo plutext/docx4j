@@ -511,10 +511,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			Unmarshaller u = jc.createUnmarshaller();
 			
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
-			if (is.markSupported()) {
-				// Only fail hard if we know we can restart
-				eventHandler.setContinue(false);
-			}
+//			if (is.markSupported()) {
+//				// Only fail hard if we know we can restart
+//				eventHandler.setContinue(false);
+//			}
 			u.setEventHandler(eventHandler);
 			
 			try {
