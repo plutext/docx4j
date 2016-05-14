@@ -19,6 +19,7 @@
  */
 package org.docx4j.openpackaging.parts;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -26,16 +27,21 @@ import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
+import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -373,16 +379,48 @@ implements XPathEnabled<E> {
 				
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
+					
+					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
+						log.debug("MOXy: checking whether binder workaround is necessary");
+						// Workaround for MOXy issue http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
+						String contents = IOUtils.toString(is, "UTF-8");  
+						IOUtils.closeQuietly(is);
+						is = new ByteArrayInputStream(contents.getBytes("UTF-8"));	
+						
+						if (contents.contains("AlternateContent")) {
+							// looks like we need to do the workaround
+							log.debug("MOXy: yes, performing workaround");
+							// Get object with mc content resolved
+							// could do super.unmarshal(is);
+							// but better
+							try {
+								Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+								DOMResult result = new DOMResult();
+								XmlUtils.transform(new StreamSource(is), 
+										mcPreprocessorXslt, null, result);
+								doc = (org.w3c.dom.Document) result.getNode();
+							} catch (Exception e) {
+								throw new JAXBException("Preprocessing exception", e);
+							}
+							
+						} else {
+							// continue with a new is
+							log.debug("MOXy: no, looks ok");
+						}
+					}
 				
 					// InputStream to Document
-					doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
+					if (doc==null) // we didn't do the MOXy workaround above 
+					{						
+						doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
+					}
 	
 					// 
 					binder = jc.createBinder();
 					
 					log.debug("info: " + binder.getClass().getName());
 					
-					eventHandler.setContinue(false);
+//					eventHandler.setContinue(false);
 					binder.setEventHandler(eventHandler);
 					
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
@@ -398,10 +436,10 @@ implements XPathEnabled<E> {
 				    
 					Unmarshaller u = jc.createUnmarshaller();
 					
-					if (is.markSupported()) {
-						// Only fail hard if we know we can restart
-						eventHandler.setContinue(false);
-					}
+//					if (is.markSupported()) {
+//						// Only fail hard if we know we can restart
+//						eventHandler.setContinue(false);
+//					}
 					u.setEventHandler(eventHandler);
 					
 					unwrapUsually(u.unmarshal( xsr ));						
@@ -556,8 +594,24 @@ implements XPathEnabled<E> {
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
-			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
+			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				
 
+			if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
+				log.debug("MOXy: pre-emptively transforming");
+				// Workaround for MOXy issue http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
+				// Always transform; rather than converting to String, testing that etc
+				try {
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+					DOMResult result = new DOMResult();
+					XmlUtils.transform(new DOMSource(el), 
+							mcPreprocessorXslt, null, result);
+					org.w3c.dom.Document doc = (org.w3c.dom.Document) result.getNode();
+					el = doc.getDocumentElement();
+				} catch (Exception e) {
+					throw new JAXBException("Preprocessing exception", e);
+				}
+			}
+			
 			binder = jc.createBinder();
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
