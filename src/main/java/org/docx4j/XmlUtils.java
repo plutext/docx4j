@@ -39,6 +39,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.bind.util.JAXBSource;
@@ -58,6 +59,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -65,6 +67,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
+import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -433,11 +436,60 @@ public class XmlUtils {
 		}			
 		
 		Object o = null;
-		Unmarshaller u = jc.createUnmarshaller();						
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		o = u.unmarshal( xsr );
-		return o;
-	}
+		Unmarshaller u = jc.createUnmarshaller();
+		
+		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+//		if (is.markSupported()) {
+//			// Only fail hard if we know we can restart
+//			eventHandler.setContinue(false);
+//		}
+		u.setEventHandler(eventHandler);
+		try {
+			o = u.unmarshal( xsr );
+			return o;
+		} catch (UnmarshalException ue) {
+			
+			if (ue.getLinkedException()!=null 
+					&& ue.getLinkedException().getMessage().contains("entity")) {
+				
+				/*
+					Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
+					Message: The entity "xxe" was referenced, but not declared.
+						at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+					 */
+				log.error(ue.getMessage(), ue);
+				throw ue;
+			}
+			
+			if (is.markSupported() ) {
+				// When reading from zip, we use a ByteArrayInputStream,
+				// which does support this.
+			
+				log.info("encountered unexpected content; pre-processing");
+				eventHandler.setContinue(true);
+									
+				try {
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+					is.reset();
+					JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+					XmlUtils.transform(new StreamSource(is), 
+							mcPreprocessorXslt, null, result);
+					return //XmlUtils.unwrap(
+							result.getResult() ;	
+				} catch (Exception e) {
+					throw new JAXBException("Preprocessing exception", e);
+				}
+										
+			} else {
+				log.error(ue.getMessage(), ue);
+				log.error(".. and mark not supported");
+				throw ue;
+			}
+		}
+
+	}			
+	
 	
 	
 	/** Unmarshal a String as an object in the package org.docx4j.jaxb.document.
