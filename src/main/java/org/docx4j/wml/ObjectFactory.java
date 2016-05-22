@@ -10584,4 +10584,9 @@ public class ObjectFactory {
         return new JAXBElement<CTAltChunk>(_HdrAltChunk_QNAME, CTAltChunk.class, Tc.class, value);
     }
 
+    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "altChunk", scope = SdtContentBlock.class)
+    public JAXBElement<CTAltChunk> createSdtContentBlockAltChunk(CTAltChunk value) {
+        return new JAXBElement<CTAltChunk>(_HdrAltChunk_QNAME, CTAltChunk.class, SdtContentBlock.class, value);
+    }
+    
 }
