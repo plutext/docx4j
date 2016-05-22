@@ -139,7 +139,9 @@ public class RunIns
         @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)        
     })
     protected List<Object> customXmlOrSmartTagOrSdt  = new ArrayListWml<Object>(this);
 
@@ -210,6 +212,8 @@ public class RunIns
      * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
      * 
      * 
      */

@@ -112,7 +112,9 @@ public class P implements Child, ContentAccessor
         @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)        
     })
     protected List<Object> content = new ArrayListWml<Object>(this);
     @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -206,6 +208,8 @@ public class P implements Child, ContentAccessor
      * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
      * {@link JAXBElement }{@code <}{@link P.Hyperlink }{@code >}
      * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
      * 
      * 
      */
@@ -500,7 +504,9 @@ public class P implements Child, ContentAccessor
             @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
             @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
             @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-            @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+            @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)            
         })
         protected List<Object> content  = new ArrayListWml<Object>(this);
         @XmlAttribute(name = "tgtFrame", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -568,6 +574,8 @@ public class P implements Child, ContentAccessor
          * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
          * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
          * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
+	     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+	     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
          * 
          * @since 2.7
          */
@@ -760,6 +768,370 @@ public class P implements Child, ContentAccessor
         }
 
     }
+    
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_PContent" maxOccurs="unbounded" minOccurs="0"/&gt;
+     *       &lt;attribute name="val" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Direction" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
+     * </pre>
+     * 
+     * @since 3.3.1
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "content"
+    })
+    public static class Bdo implements Child
+    {
+
+        @XmlElementRefs({
+            @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "smartTag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "subDoc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunIns.class),
+            @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeStart.class),
+            @XmlElementRef(name = "oMathPara", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeEnd.class),
+            @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunDel.class),
+            @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
+            @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class)
+        })
+        protected List<Object> content;
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected STDirection val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the content property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the content property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getContent().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link JAXBElement }{@code <}{@link CTMoveToRangeEnd }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link P.Bdo }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSmartTagRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTCustomXmlRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+         * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+         * {@link RunIns }
+         * {@link CommentRangeStart }
+         * {@link JAXBElement }{@code <}{@link CTOMathPara }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link CommentRangeEnd }
+         * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+         * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveFromRangeEnd }{@code >}
+         * {@link JAXBElement }{@code <}{@link P.Hyperlink }{@code >}
+         * {@link RunDel }
+         * {@link JAXBElement }{@code <}{@link P.Dir }{@code >}
+         * {@link R }
+         * {@link ProofErr }
+         * 
+         * 
+         */
+        public List<Object> getContent() {
+            if (content == null) {
+                content = new ArrayList<Object>();
+            }
+            return this.content;
+        }
+
+        /**
+         * Gets the value of the val property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link STDirection }
+         *     
+         */
+        public STDirection getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link STDirection }
+         *     
+         */
+        public void setVal(STDirection value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_PContent" maxOccurs="unbounded" minOccurs="0"/&gt;
+     *       &lt;attribute name="val" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Direction" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
+     * </pre>
+     * 
+     * @since 3.3.1
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "content"
+    })
+    public static class Dir implements Child
+    {
+
+        @XmlElementRefs({
+            @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunIns.class),
+            @XmlElementRef(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeStart.class),
+            @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "oMathPara", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+            @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeEnd.class),
+            @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "smartTag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "subDoc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunDel.class),
+            @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
+            @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class),
+            @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        })
+        protected List<Object> content;
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected STDirection val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the content property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the content property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getContent().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link JAXBElement }{@code <}{@link CTCustomXmlRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+         * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link RunIns }
+         * {@link JAXBElement }{@code <}{@link P.Hyperlink }{@code >}
+         * {@link CommentRangeStart }
+         * {@link JAXBElement }{@code <}{@link P.Dir }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTOMathPara }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveToRangeEnd }{@code >}
+         * {@link CommentRangeEnd }
+         * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+         * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSmartTagRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveFromRangeEnd }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link P.Bdo }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link RunDel }
+         * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+         * {@link R }
+         * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+         * {@link ProofErr }
+         * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+         * 
+         * 
+         */
+        public List<Object> getContent() {
+            if (content == null) {
+                content = new ArrayList<Object>();
+            }
+            return this.content;
+        }
+
+        /**
+         * Gets the value of the val property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link STDirection }
+         *     
+         */
+        public STDirection getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link STDirection }
+         *     
+         */
+        public void setVal(STDirection value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
+    
 
     // Not generated
     /** Get the text content of all runs in the P.  WARNING: this only gets ./w:r/w:t.

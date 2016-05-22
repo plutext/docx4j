@@ -104,7 +104,9 @@ public class CTSmartTagRun
         @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "smartTag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)        
     })
     protected List<Object> content  = new ArrayListWml<Object>(this);
     @XmlAttribute(name = "uri", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -188,6 +190,8 @@ public class CTSmartTagRun
      * {@link JAXBElement }{@code <}{@link CTSmartTagRun }{@code >}
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
      * 
      * @since 2.7
      */

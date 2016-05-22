@@ -67,6 +67,10 @@ USAGE INSTRUCTIONS
 	
   
   Windows:
+  
+ 	 20160521 for 3.3.1. Did not generate createSdtContentBlockAltChunk; related to comment for "SdtContentBlock" below? 
+     \Java\jaxb-ri-2.2.11\bin\xjc -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
+     
     
      \Java\jaxb-ri-20110601\bin\xjc  -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
      [TODO FIXME that parent-pointer-plugin-1.2.jar generates a Child class in the package, which is not what we want for backwards compat]
@@ -7970,10 +7974,34 @@ PRINCIPLES:
 						Tag</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			
+			<!-- from ECMA 3376 4ed transitional -->
+			<xsd:element name="dir">
+				<xsd:complexType>
+					<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:attribute name="val" type="ST_Direction" use="optional" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="bdo">
+				<xsd:complexType>
+					<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded" />
+					<xsd:attribute name="val" type="ST_Direction" use="optional" />
+				</xsd:complexType>
+			</xsd:element>	
+			<!-- end addition from ECMA 3376 4ed transitional -->
+			
 			<xsd:element ref="r"/>
 			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:choice>
 	</xsd:group>
+
+  <xsd:simpleType name="ST_Direction">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ltr"/>
+      <xsd:enumeration value="rtl"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+	
 	<xsd:complexType name="CT_SdtContentRun">
 		<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
