@@ -1,7 +1,9 @@
 package org.docx4j.jaxb;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBContext;
@@ -232,6 +234,32 @@ public class NamespacePrefixMapperUtils {
 		return  entries.toArray(new String[entries.size()]);
     	
     }
-	
-	
+
+    public static Map<String, String> getPreDeclaredNamespaceMap(String mcIgnorable) {
+    
+    	Map<String, String> entries = new HashMap<String, String>();
+
+    	if (mcIgnorable==null) {    	
+    		return entries;
+    	}
+
+		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
+		while (st.hasMoreTokens()) {
+			String prefix = (String) st.nextToken();
+			
+			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
+			
+			if (uri==null) {
+				log.warn("No mapping for prefix '" + prefix + "'");
+			} else {
+		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
+				//entries.add(prefix);
+				entries.put(prefix, uri);
+			}
+		}
+		return  entries;
+    	
+    }
+    
+    
 }

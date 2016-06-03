@@ -43,7 +43,7 @@ public final class Constants {
 
     /** Field exceptionMessagesResourceBundleDir */
     public static final String exceptionMessagesResourceBundleDir =
-        "org/apache/xml/security/resource";
+        "org/docx4j/org/apache/xml/security/resource";
 
     /** Field exceptionMessagesResourceBundleBase is the location of the <CODE>ResourceBundle</CODE> */
     public static final String exceptionMessagesResourceBundleBase =

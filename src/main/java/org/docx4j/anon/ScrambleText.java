@@ -53,7 +53,7 @@ public class ScrambleText extends CallbackImpl {
 	public ScrambleText(WordprocessingMLPackage pkg) {
 		this.pkg = pkg;
 		vis = new RunFontCharVisitorMinimal();
-		rfs = new RunFontSelector(pkg, vis, RunFontActionType.DISCOVERY);
+		rfs = new RunFontSelector(pkg, new /* dummy */ RunFontCharVisitorMinimal(), RunFontActionType.DISCOVERY);
 //		langStats = new HashMap<String, Integer>();
 	}
 	
@@ -148,6 +148,7 @@ public class ScrambleText extends CallbackImpl {
 				
 				beginIndex += tLen;					
 				
+				return null;
 				
 			} else if (instr.contains("FORMCHECKBOX")
 					|| instr.contains("FORMTEXT")
@@ -159,7 +160,7 @@ public class ScrambleText extends CallbackImpl {
 			} else {
 				System.out.println("TO don't scramble: " + instr);
 			}
-			// TODO others
+			// TODO others eg REF (bookmark .. maintain integrity?)
 			
 		}
 
@@ -202,11 +203,12 @@ public class ScrambleText extends CallbackImpl {
 			log.debug(t.getValue());
 			int tLen = t.getValue().length();
 			
+			
 			if (true) {
 				t.setValue(
 						unicodeRangeToFont(
 								t.getValue(), 
-								latinText.substring(beginIndex, beginIndex+tLen)));
+								latinSubstring(tLen)));
 						
 			} 
 //			else /* debug */ {
@@ -228,7 +230,7 @@ public class ScrambleText extends CallbackImpl {
 			int tLen = t.getValue().length();
 			t.setValue(
 					unicodeRangeToFont(t.getValue(), 
-					latinText.substring(beginIndex, beginIndex+tLen)));
+							latinSubstring(tLen)));
 			beginIndex += tLen;
 			
 		} // org.docx4j.wml.RunIns is handled OK
@@ -240,7 +242,7 @@ public class ScrambleText extends CallbackImpl {
 			int tLen = t.getT().length();
 			t.setT(
 					unicodeRangeToFont(t.getT(), 
-					latinText.substring(beginIndex, beginIndex+tLen)));
+							latinSubstring(tLen)));
 			beginIndex += tLen;			
 
 		} else if ( o instanceof org.docx4j.vml.CTTextPath) {
@@ -261,6 +263,21 @@ public class ScrambleText extends CallbackImpl {
 		}
 		
 		return null;
+	}
+	
+	private String latinSubstring(int tLen) {
+
+		// Sanity check
+		if ((beginIndex+tLen) > latinText.length() ) {
+
+			System.out.println("Not enough characters!");
+			//System.out.println(t.getValue());
+			
+			// Not much point trying to fix latinText itself?
+			return generateReplacement(tLen);
+		} 
+		
+		return latinText.substring(beginIndex, beginIndex+tLen);
 	}
 	
 	
