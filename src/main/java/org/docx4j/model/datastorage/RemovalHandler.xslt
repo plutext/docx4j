@@ -86,6 +86,18 @@
           		</w:tc>
           	</xsl:if>
         
+            <!-- If there is drawing only -->
+			<xsl:if test="./descendant::w:drawing">
+				<w:p>
+					<w:pPr />
+					<w:r>
+						<w:drawing>
+							<xsl:copy-of select="./descendant::wp:inline[1]" />
+						</w:drawing>
+					</w:r>
+				</w:p>
+			</xsl:if>
+			
       </xsl:when>
 
       <xsl:when

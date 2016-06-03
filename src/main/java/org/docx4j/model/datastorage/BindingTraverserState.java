@@ -6,6 +6,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ public class BindingTraverserState {
 	
 	
 	Tc tc;
+	Tbl tbl;
 	
 	public static void enteredTc(BindingTraverserState btState, NodeIterator nodeIterator) {
 		
@@ -46,6 +48,25 @@ public class BindingTraverserState {
 		btState.tc = null;
 	}
 	
+    public static void enteredTbl(BindingTraverserState btState, NodeIterator nodeIterator) {
+        Node n = nodeIterator.nextNode(); //It is never null
+        if (n != null) {
+            try {
+                Unmarshaller u = Context.jc.createUnmarshaller();
+                u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+                Object jaxb = u.unmarshal(n);
+                btState.tbl =  (Tbl)jaxb;
+            } catch (ClassCastException e) {
+                log.error("Couldn't cast to Tbl!");
+            } catch (JAXBException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    public static void exitedTbl(BindingTraverserState btState) {
+        btState.tbl = null;
+    }
 	
 	/**
 	 *  Our cache of XPath values, available 
