@@ -1,29 +1,18 @@
-/*
- *  Copyright 2007-2008, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.docx4j.dml.wordprocessingDrawing;
 
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.*;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing.CTSizeRelH;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing.CTSizeRelV;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
 import org.docx4j.dml.CTPoint2D;
@@ -38,34 +27,38 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Anchor">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="simplePos" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D"/>
- *         &lt;element name="positionH" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_PosH"/>
- *         &lt;element name="positionV" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_PosV"/>
- *         &lt;element name="extent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/>
- *         &lt;element name="effectExtent" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_EffectExtent" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}EG_WrapType"/>
- *         &lt;element name="docPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
- *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties" minOccurs="0"/>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/>
- *       &lt;/sequence>
- *       &lt;attribute name="distT" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distB" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distL" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distR" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="simplePos" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="relativeHeight" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *       &lt;attribute name="behindDoc" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="locked" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="layoutInCell" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="hidden" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="allowOverlap" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Anchor"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="simplePos" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D"/&gt;
+ *         &lt;element name="positionH" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_PosH"/&gt;
+ *         &lt;element name="positionV" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_PosV"/&gt;
+ *         &lt;element name="extent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/&gt;
+ *         &lt;element name="effectExtent" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_EffectExtent" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}EG_WrapType"/&gt;
+ *         &lt;element name="docPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/&gt;
+ *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/&gt;
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}sizeRelH" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}sizeRelV" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="distT" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distB" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distL" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distR" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="simplePos" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="relativeHeight" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
+ *       &lt;attribute name="behindDoc" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="locked" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="layoutInCell" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="hidden" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="allowOverlap" use="required" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute ref="{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}anchorId"/&gt;
+ *       &lt;attribute ref="{http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing}editId"/&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -84,9 +77,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "wrapTopAndBottom",
     "docPr",
     "cNvGraphicFramePr",
-    "graphic"
+    "graphic",
+    "sizeRelH",
+    "sizeRelV"
 })
-public class Anchor implements Child {
+public class Anchor implements Child
+{
 
     @XmlElement(required = true)
     protected CTPoint2D simplePos;
@@ -107,31 +103,42 @@ public class Anchor implements Child {
     protected CTNonVisualGraphicFrameProperties cNvGraphicFramePr;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", required = true)
     protected Graphic graphic;
-    @XmlAttribute
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    protected CTSizeRelH sizeRelH;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    protected CTSizeRelV sizeRelV;
+    @XmlAttribute(name = "distT")
     protected Long distT;
-    @XmlAttribute
+    @XmlAttribute(name = "distB")
     protected Long distB;
-    @XmlAttribute
+    @XmlAttribute(name = "distL")
     protected Long distL;
-    @XmlAttribute
+    @XmlAttribute(name = "distR")
     protected Long distR;
     @XmlAttribute(name = "simplePos")
     protected Boolean simplePosAttr;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "relativeHeight", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long relativeHeight;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "behindDoc", required = true)
     protected boolean behindDoc;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "locked", required = true)
     protected boolean locked;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "layoutInCell", required = true)
     protected boolean layoutInCell;
-    @XmlAttribute
+    @XmlAttribute(name = "hidden")
     protected Boolean hidden;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "allowOverlap", required = true)
     protected boolean allowOverlap;
+    @XmlAttribute(name = "anchorId", namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+    protected byte[] anchorId;
+    @XmlAttribute(name = "editId", namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")
+    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+    protected byte[] editId;
     @XmlTransient
     private Object parent;
+
     /**
      * Gets the value of the simplePos property.
      * 
@@ -445,6 +452,54 @@ public class Anchor implements Child {
     }
 
     /**
+     * Gets the value of the sizeRelH property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTSizeRelH }
+     *     
+     */
+    public CTSizeRelH getSizeRelH() {
+        return sizeRelH;
+    }
+
+    /**
+     * Sets the value of the sizeRelH property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTSizeRelH }
+     *     
+     */
+    public void setSizeRelH(CTSizeRelH value) {
+        this.sizeRelH = value;
+    }
+
+    /**
+     * Gets the value of the sizeRelV property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTSizeRelV }
+     *     
+     */
+    public CTSizeRelV getSizeRelV() {
+        return sizeRelV;
+    }
+
+    /**
+     * Sets the value of the sizeRelV property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTSizeRelV }
+     *     
+     */
+    public void setSizeRelV(CTSizeRelV value) {
+        this.sizeRelV = value;
+    }
+
+    /**
      * Gets the value of the distT property.
      * 
      * @return
@@ -668,9 +723,57 @@ public class Anchor implements Child {
         this.allowOverlap = value;
     }
 
-   /**
+    /**
+     * Gets the value of the anchorId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public byte[] getAnchorId() {
+        return anchorId;
+    }
+
+    /**
+     * Sets the value of the anchorId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAnchorId(byte[] value) {
+        this.anchorId = value;
+    }
+
+    /**
+     * Gets the value of the editId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public byte[] getEditId() {
+        return editId;
+    }
+
+    /**
+     * Sets the value of the editId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setEditId(byte[] value) {
+        this.editId = value;
+    }
+
+    /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
-     *
+     * 
      * @return
      *     The parent object.
      */
@@ -684,7 +787,7 @@ public class Anchor implements Child {
 
     /**
      * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     *
+     * 
      * @param parent
      *     The parent object in the object tree.
      * @param unmarshaller
@@ -693,4 +796,5 @@ public class Anchor implements Child {
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
     }
+
 }
