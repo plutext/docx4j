@@ -507,7 +507,12 @@ public class XmlUtils {
 	   }
 	
 	
-	 private static StringBuilder replace(String wmlTemplateString, int offset, StringBuilder strB, 
+	public static Object unmarshallFromTemplate(String wmlTemplateString, java.util.Map<String, ?> mappings, JAXBContext jc, String startVar, String endVar) throws JAXBException {
+		String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings, startVar, endVar).toString();
+		return unmarshalString(wmlString, jc);
+	}
+
+	 private static StringBuilder replace(String wmlTemplateString, int offset, StringBuilder strB,
 			 java.util.Map<String, ?> mappings) {
 		 
 	    int startKey = wmlTemplateString.indexOf("${", offset);
@@ -527,6 +532,27 @@ public class XmlUtils {
 	       return replace(wmlTemplateString, keyEnd + 1, strB, mappings);
 	    }
 	 }
+
+	private static StringBuilder replace(String wmlTemplateString, int offset, StringBuilder strB,
+										 java.util.Map<String, ?> mappings, String startVar, String endVar) {
+
+		int startKey = wmlTemplateString.indexOf(startVar, offset);
+		if (startKey == -1)
+			return strB.append(wmlTemplateString.substring(offset));
+		else {
+			strB.append(wmlTemplateString.substring(offset, startKey));
+			int keyEnd = wmlTemplateString.indexOf(endVar, startKey);
+			String key = wmlTemplateString.substring(startKey + startVar.length(), keyEnd);
+			String val = mappings.get(key).toString();
+			if (val==null) {
+				log.warn("Invalid key '" + key + "' or key not mapped to a value");
+				strB.append(key);
+			} else {
+				strB.append(val);
+			}
+			return replace(wmlTemplateString, keyEnd + 1, strB, mappings, startVar, endVar);
+		}
+	}
 
 	/**
 	 * Marshal this object to a String, pretty printed, and without an XML declaration.

@@ -264,7 +264,44 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 							XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings, jc));
 		
 	}
-	
+
+	public void variableReplace(java.util.HashMap<String, String> mappings, String startVar, String endVar) throws JAXBException, Docx4JException {
+
+		// Get the contents as a string
+		String wmlTemplateString = null;
+		if (jaxbElement==null) {
+
+			PartStore partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart(
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Lazily unmarshalling " + name);
+//				wmlTemplateString = convertStreamToString(is);
+
+				// This seems to be about 5% faster than the Scanner approach
+				try {
+					wmlTemplateString = IOUtils.toString(is, "UTF-8");
+				} catch (IOException e) {
+					throw new Docx4JException(e.getMessage(), e);
+				}
+			}
+
+		} else {
+
+			wmlTemplateString = XmlUtils.marshaltoString(jaxbElement, true, false, jc);
+
+		}
+
+		// Do the replacement
+		jaxbElement = (E)XmlUtils.unwrap(
+				XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings, jc, startVar, endVar));
+
+	}
+
 //	private static String convertStreamToString(java.io.InputStream is) {
 //	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 //	    return s.hasNext() ? s.next() : "";
