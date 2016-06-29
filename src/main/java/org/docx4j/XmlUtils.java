@@ -528,6 +528,22 @@ public class XmlUtils {
 	    }
 	 }
 
+	public static java.util.Set<String> find(String wmlTemplateString, int offset, StringBuilder strB,
+											 java.util.Set<String> results, String startVar, String endVar) {
+
+		int startKey = wmlTemplateString.indexOf(startVar, offset);
+		if (startKey == -1)
+			return results;
+		else {
+			strB.append(wmlTemplateString.substring(offset, startKey));
+			int keyEnd = wmlTemplateString.indexOf(endVar, startKey);
+			String key = wmlTemplateString.substring(startKey + startVar.length(), keyEnd);
+			results.add(key);
+
+			return find(wmlTemplateString, keyEnd + 1, strB, results, startVar, endVar);
+		}
+	}
+
 	/**
 	 * Marshal this object to a String, pretty printed, and without an XML declaration.
 	 * Useful for debugging.
