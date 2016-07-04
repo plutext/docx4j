@@ -91,6 +91,7 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
@@ -106,6 +107,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.PeoplePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
@@ -359,6 +361,8 @@ public class ContentTypeManager  {
 			return CreateThemePartObject(partName );
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS)) {
 			return CreateCommentsPartObject(partName );
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS_EXTENDED)) {
+			return new CommentsExtendedPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_ENDNOTES)) {
 			return CreateEndnotesPartObject(partName );
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_FONTTABLE)) {
@@ -401,6 +405,8 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_PEOPLE)) {
+			return new PeoplePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
 			return new VMLPart(new PartName(partName));
 //			return new VMLBinaryPart(new PartName(partName));				

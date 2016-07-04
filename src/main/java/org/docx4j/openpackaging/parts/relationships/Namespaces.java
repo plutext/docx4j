@@ -121,6 +121,12 @@ public class Namespaces {
 
 	public final static String COMMENTS = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+
+	public final static String COMMENTS_EXTENDED = 
+			"http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
+	
+	public final static String OFFICE_2011_PEOPLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/people";
 	
 	public final static String AF = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
