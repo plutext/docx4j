@@ -169,10 +169,6 @@ public class TableModelCell {
 		return dummy;
 	}
 
-//	public Node getContent() {
-//		return content;
-//	}
-
 	public int getColumn() {
 		return col;
 	}

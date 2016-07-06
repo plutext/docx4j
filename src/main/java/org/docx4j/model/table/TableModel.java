@@ -295,7 +295,7 @@ public class TableModel {
 		//ensureFoTableBody(trFinder.trList); // this is currently applied to HTML etc as well
 		
 		int r = 0;
-		for (Tr tr : trFinder.trList) {
+		for (Tr tr : trFinder.getTrList()) {
 				startRow(tr);
 				handleRow(tr, r);
 				r++;
@@ -317,16 +317,16 @@ public class TableModel {
 	}
 
 	
-	static class TrFinder extends CallbackImpl {
+	public static class TrFinder extends CallbackImpl {
 		
-		List<Tr> trList = new ArrayList<Tr>();  
+		private List<Tr> trList = new ArrayList<Tr>();  
 				
 		@Override
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof Tr ) {
 				
-				trList.add((Tr)o);
+				getTrList().add((Tr)o);
 			}			
 			return null; 
 		}
@@ -336,6 +336,14 @@ public class TableModel {
 			
 			// Yes, unless its a nested Tbl
 			return !(o instanceof Tbl); 
+		}
+
+		public List<Tr> getTrList() {
+			return trList;
+		}
+
+		public void setTrList(List<Tr> trList) {
+			this.trList = trList;
 		}
 	}
 	
@@ -585,53 +593,6 @@ public class TableModel {
     	}
     	return ret;
 	}
-
-//	/**
-//	 * The tc could be inside something else, so find it recursively.
-//	 * @param wtrNode
-//	 * @param wanted
-//	 * @param current
-//	 * @return
-//	 */
-//	private Node getTc(Node wtrNode, int wanted, IntRef current) {
-//				
-//		for (int i=0; i<wtrNode.getChildNodes().getLength(); i++ ) {
-//			
-//			Node thisChild = wtrNode.getChildNodes().item(i);
-//			
-//			if (thisChild.getNodeType()!= 1){
-//				continue;  
-//			}
-//			
-//			log.debug("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
-//			
-//			if (thisChild.getLocalName().equals("tc") ) {
-//				if (current.i==wanted) return thisChild;
-//				current.increment();
-//			} else {
-//				// could be inside
-//				Node n = getTc(thisChild, wanted, current);
-//				if (n!=null) return n;
-//			}
-//		}
-//		log.error("Couldn't find tc in: " + XmlUtils.w3CDomNodeToString(wtrNode));
-//		
-//		return null;
-//	}
-//	
-//	static class IntRef {
-//		
-//		IntRef(int i) {
-//			this.i = i;
-//		}
-//		
-//		int i;
-//		
-//		void increment() {
-//			i++;
-//		}
-//		
-//	}
 
 	public String debugStr() {
 		StringBuffer buf = new StringBuffer();

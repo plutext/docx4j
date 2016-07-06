@@ -61,45 +61,9 @@ public class AbstractTableWriterModelCell extends TableModelCell {
 	
 	private final static Logger logger = LoggerFactory.getLogger(AbstractTableWriterModelCell.class);
 	
-//	private AbstractTableWriterModel table;
-//	private int row;
-//	private int col;
-//	protected int rowspan = 0;
-//	protected int colspan = 0;
-//	/** If this is a real cell or only a placeholder.  Vertically merged
-//	 * cells are represented as a real cell on the top and dummy cell(s)
-//	 * below */
-//	protected boolean dummy = false;
-//	
-//	/** In XSL FO, we need to write cells for before & after, 
-//	 * but not dummy cells for horizontal merge */
-//	protected boolean dummyBefore = false;
-//	public boolean isDummyBefore() {
-//		return dummyBefore;
-//	}
-//	protected boolean dummyAfter = false;
-//	public boolean isDummyAfter() {
-//		return dummyAfter;
-//	}
-//
-//	
 	
 	protected Node content = null;
 	
-//	TcPr tcPr;
-//	public TcPr getTcPr() {
-//		return tcPr;
-//	}
-
-//	/**
-//	 * Create a dummy cell without content
-//	 */
-//	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col) {
-//		this.table = table;
-//		this.row = row;
-//		this.col = col;
-//		this.dummy = true;
-//	}
 
 	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col, Tc tc, Node content) {
 		super(table, row, col, tc);
@@ -123,66 +87,9 @@ public class AbstractTableWriterModelCell extends TableModelCell {
 		 */
 	}
 
-//	/**
-//	 * How many columns are merged into this cell
-//	 * @return 0 if none merged; 1 if two cells are merged so there is one
-//	 * extra; etc.  A dummy cell has the same extraCols value as its upper
-//	 * neighbor.
-//	 */
-//	public int getExtraCols() {
-//		if (colspan < 2)
-//			return 0;
-//		else
-//			return colspan - 1;
-//	}
-//
-//	public int getExtraRows() {
-//		if (rowspan > 1)
-//			return rowspan - 1;
-//		else
-//			return 0;
-//	}
-//
-//	public boolean isDummy() {
-//		return dummy;
-//	}
 
 	public Node getContent() {
 		return content;
 	}
 
-//	public int getColumn() {
-//		return col;
-//	}
-//
-//	/**
-//	 * If this is a real cell, increment rowspan; if this is a dummy,
-//	 * propagate the call to the cell upwards
-//	 */
-//	protected void incrementRowSpan() {
-//		if (dummy)
-//			table.getCell(row - 1, col).incrementRowSpan();
-//		else
-//			rowspan++;
-//	}
-//
-//	public String debugStr() {
-//		String s = null;
-//		if (dummy)
-//			s = "d";
-//		else
-//			s = "r";
-//		s += "(" + row + "," + col + ")";
-//		s += colspan;
-//		s += rowspan;
-//		return s + " ";
-//	}
-//
-//	/*
-//	 * @since 3.0.0
-//	 */
-//	public boolean isVMerged() {
-//		return (tcPr != null) && 
-//			   (tcPr.getVMerge() != null);
-//	}
 }
