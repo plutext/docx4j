@@ -47,6 +47,8 @@ import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.model.properties.table.tc.TextAlignmentVertical;
 import org.docx4j.model.properties.table.tr.TrCantSplit;
 import org.docx4j.model.properties.table.tr.TrHeight;
+import org.docx4j.model.table.TableModelCell;
+import org.docx4j.model.table.TableModelRow;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
@@ -188,7 +190,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	        log.debug("Table asXML:\n" + table.debugStr());
 	    }
 	    
-	    if (!table.getCells().isEmpty()) {
+	    if (!table.getRows().isEmpty()) {
 	    	ret = toNode(context, table, transformState, doc);
 	    }
 	    return ret;
@@ -205,7 +207,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
     int cellPropertiesRowSize = -1;
     boolean inHeader = (table.getHeaderMaxRow() > -1);
 
-	AbstractTableWriterModelRow rowModel = null;
+	TableModelRow rowModel = null;
 	Element rowContainer = null;
 	Element row = null;
 	Element cellNode = null;
@@ -229,8 +231,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	
 	applyTableRowContainerCustomAttributes(context, table, transformState, rowContainer, inHeader);
 	
-    for (int rowIndex = 0; rowIndex < table.getCells().size(); rowIndex++) {
-			rowModel = table.getCells().get(rowIndex);
+    for (int rowIndex = 0; rowIndex < table.getRows().size(); rowIndex++) {
+			rowModel = table.getRows().get(rowIndex);
 			
 			if ((inHeader) && (rowIndex > table.getHeaderMaxRow())) {
 				rowContainer = createNode(doc, tableRoot, NODE_TABLE_BODY);
@@ -251,7 +253,7 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 			cellPropertiesRowSize = cellProperties.size();
 				
 			
-			for (AbstractTableWriterModelCell cell : rowModel.getRowContents()) {
+			for (TableModelCell cell : rowModel.getRowContents()) {
 				// process cell
 				
 				if (cell.isDummy()) {
@@ -259,11 +261,11 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 
 						//Dummy-Cells resulting from vertical merged cells shouldn't be included
 						
-					} else if (cell.dummyBefore || cell.dummyAfter) {
+					} else if (cell.isDummyBefore() || cell.isDummyAfter()) {
 						
 						cellNode = createNode(doc, row, (inHeader ? NODE_TABLE_HEADER_CELL : NODE_TABLE_BODY_CELL));
 						row.appendChild(cellNode);
-						applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, true);
+						applyTableCellCustomAttributes(context, table, transformState, (AbstractTableWriterModelCell) cell, cellNode, inHeader, true);
 					}
 				}
 				else {
@@ -273,17 +275,17 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 					//Apply cell style
 					createCellProperties(cellProperties, cell.getTcPr());
 					processAttributes(context, cellProperties, cellNode);
-					applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, false);
+					applyTableCellCustomAttributes(context, table, transformState, (AbstractTableWriterModelCell) cell, cellNode, inHeader, false);
 					//remove properties defined on cell level
 					resetProperties(cellProperties, cellPropertiesRowSize);
 					
 					// insert content into cell
 					// skipping w:tc node itself, insert only its children
-					if (cell.getContent() == null) {
+					if ( ((AbstractTableWriterModelCell)cell).getContent() == null) {
 						log.warn("model cell had no contents!");
 					} else {
 						log.debug("copying cell contents..");
-						XmlUtils.treeCopy(cell.getContent().getChildNodes(),
+						XmlUtils.treeCopy( ((AbstractTableWriterModelCell)cell).getContent().getChildNodes(),
 								cellNode);
 					}
 				}
