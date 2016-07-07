@@ -47,6 +47,29 @@ public class TableModelRow {
 	public TableModelCell get(int i) {
 		return rowContents.get(i);
 	}
+
+//	public TableModelCell getReal(int i) {
+//
+//		int realCellCount=-1;
+//		for (TableModelCell cell :  rowContents) {
+//			
+//			if (!cell.isDummy() ) {
+//				realCellCount++;
+//			}
+//			
+//			if (realCellCount==i) return cell;
+//		}
+//		return null;
+//	}
+
+	public TableModelCell getReal(int i) {
+
+		for (TableModelCell cell :  rowContents) {
+						
+			if (cell.getColumn()==i) return cell;
+		}
+		return null;
+	}
 	
 	public int size() {
 		return rowContents.size();

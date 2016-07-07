@@ -20,9 +20,12 @@
 
 package org.docx4j.model.table;
 
+import javax.xml.bind.JAXBContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
 //import org.w3c.dom.Node;
@@ -62,6 +65,11 @@ public class TableModelCell {
 	
 	private TableModel table;
 	private int row;
+	/**
+	 * this col number is not intuitive;
+	 * it increments for each real cell, and again so that it is the same for 
+	 * all following placeholder cells! 
+	 */
 	private int col;
 	protected int rowspan = 0;
 	
@@ -109,30 +117,37 @@ public class TableModelCell {
 	}
 
 	public TableModelCell(TableModel table, int row, int col, Tc tc) {
+		
 		this(table, row, col);
 		dummy = false;
 		
 		tcPr = tc.getTcPr();
 
-        if(logger.isDebugEnabled()) {
-            logger.debug("Cell content for row " + row + ", col " + col + "\n" 
-            		+ XmlUtils.marshaltoString(tc));
-        }
+	      if(tcPr !=null && logger.isDebugEnabled()) {
+	    	  
+		      logger.debug("Cell props for row " + row + ", col " + col + "\n" 
+		      		+ XmlUtils.marshaltoString(tcPr, true, true, Context.jc, 
+		      				"http://schemas.openxmlformats.org/wordprocessingml/2006/main", "tcPr", 
+		      				org.docx4j.wml.TcPr.class));
+		  }
+		
 
 		// rowspan
 		try {
 			String vm = tc.getTcPr().getVMerge().getVal();
-			if (vm == null || vm.equals("continue"))
-				dummy = true;
+			if (vm == null || vm.equals("continue")) {
+				dummy = true;				
+			}
 			// dummy cells propagate this call upwards until a real cell is found
 			incrementRowSpan();
 		} catch (NullPointerException ne) {
 			// no vMerge
 		}
+		
 		if (dummy) {
 			// set its colspan to the same value as its upper neighbor,
 			// so dummy cells will be created to the right if colspan>1
-			colspan = table.getCell(row - 1, col).colspan;
+			colspan = table.getRealCell(row - 1, col).colspan;
 		} else {
 			// real cell
 			// colspan
@@ -178,10 +193,22 @@ public class TableModelCell {
 	 * propagate the call to the cell upwards
 	 */
 	protected void incrementRowSpan() {
-		if (dummy)
-			table.getCell(row - 1, col).incrementRowSpan();
-		else
+		if (dummy) {
+			logger.debug("dummy=true for row " + row + ", col " + col + " so propogate to r-1");
+			if (row>0) {
+				table.getRealCell(row - 1, col).incrementRowSpan();
+			} else {
+				logger.debug(".. but already at row 0; using rowspan=" + rowspan);
+			}
+		} else {
+			logger.debug("incremented rowspan for row " + row + ", col " + col );
 			rowspan++;
+			
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("\n\n"+ this.table.debugStr());
+//			}
+			
+		}
 	}
 
 	public String debugStr() {

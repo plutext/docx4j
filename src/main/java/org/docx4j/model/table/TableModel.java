@@ -29,6 +29,7 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.XmlUtils;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTrPrBase;
@@ -44,25 +45,36 @@ import org.slf4j.LoggerFactory;
 
 /**
  * There are different ways to represent a table with possibly merged
- * cells. <ul>
+ * cells. 
+ * 
+ * <ul>
  * <li>In html, both vertically and horizontally merged cells are
  * represented by one cell only that has a colspan and rowspan
  * attribute.  No dummy cells are used.
+ * 
  * <li>In docx, horizontally merged cells are represented by one cell
  * with a gridSpan attribute; while vertically merged cells are
  * represented as a top cell containing the actual content and a series
  * of dummy cells having a vMerge tag with "continue" attribute.
- * <li>This table is a regular matrix, dummy cells are added for both
- * merge directions.
+ * 
+ * <li>In the model used in this class, we use a regular matrix; 
+ * dummy cells are added for both merge directions.
+ * 
  * </ul>
- * The algorithm is as follows,<ul>
+ * 
+ * The algorithm is as follows:
+ * 
+ * <ul>
  * <li>When a cell is added, its colspan is set.  Even a dummy cell can have
  * a colspan, the same value as its upper has.
+ * 
  * <li>When a new cell has a colspan greater than 1, the required extra
  * dummy cells are also added
+ * 
  * <li>When a docx dummy cell is encountered (one with a vMerge
  * continue attribute), the rowspan is incremented in its upper
  * neighbors until a real cell is found.
+ * 
  * </ul>
  * 
  * This model captures:
@@ -193,14 +205,14 @@ public class TableModel {
 	}
 
 	/**
-	 * Add a new cell to this table and copy processed content of
-	 * <var>tc</var> to it.
+	 * Add a new cell to this table 
 	 */
 	public void addCell(Tc tc) {
-		System.out.println("Add tc row " + row + " col 1+" + col);
-		addRow(new TableModelCell(this, row, ++col, tc));
+		++col;
+		log.debug("Add tc row " + row + " col " + col);
+		addCell(new TableModelCell(this, row, col, tc));
 		
-		// add dummy cells
+		// add dummy horizontal cells
 		if (tc.getTcPr()!=null 
 				&& tc.getTcPr().getGridSpan()!=null 
 				&& tc.getTcPr().getGridSpan().getVal() !=null) {
@@ -209,6 +221,8 @@ public class TableModel {
 			addDummyCell(gridSpan, false, false);
 		}
 		
+		log.debug("\n\n"+ this.debugStr());
+		
 	}
 
 //	private void addDummyCell() {
@@ -216,6 +230,8 @@ public class TableModel {
 //	}
 
 	protected void addDummyCell(int colSpan, boolean isBefore, boolean isAfter) {
+		
+		log.debug("gridSpan, so addDummyCell " + colSpan + " " + isBefore + " " + isAfter);
 		TableModelCell cell = new TableModelCell(this, row, ++col);
 		cell.dummyBefore=isBefore;
 		cell.dummyAfter=isAfter;
@@ -224,20 +240,28 @@ public class TableModel {
 		}
 		if (colSpan>1) {
 			for (int i=1; i<colSpan; i++) {
-				addRow(cell);				
+				addCell(cell);				
 			}
 		}
+		
+		
 	}
 
-	protected void addRow(TableModelCell cell) {
+	protected void addCell(TableModelCell cell) {
+		log.debug("add cell, col " + col);
 		rows.get(row).add(cell);
 	}
 	
-	public TableModelCell getCell(int row, int col) {
-		System.out.println("getting row " + row);
-		return rows.get(row).get(col);
-	}
+//	public TableModelCell getCell(int row, int col) {
+//		log.debug("getting row " + row + "  col " + col);
+//		return rows.get(row).get(col);
+//	}
 
+	public TableModelCell getRealCell(int row, int col) {
+		log.debug("getting real row " + row + "  col " + col);
+		return rows.get(row).getReal(col);
+	}
+	
 	/**
 	 * @return "colX" where X is a 1-based index
 	 */
@@ -257,7 +281,7 @@ public class TableModel {
     	return headerMaxRow;
     }
     
-	public void build(Tbl tbl) throws TransformerException {
+	public void build(Tbl tbl) {
 
 		if (tbl.getTblPr()!=null
 				&& tbl.getTblPr().getTblStyle()!=null) {
@@ -277,29 +301,22 @@ public class TableModel {
 		TrFinder trFinder = new TrFinder();
 		new TraversalUtil(tbl, trFinder);
 		
-		/**
-		 * "fo:table" content model is: (marker*,table-column*,table-header?,table-footer?,table-body+)
-		 * ie table-header (if any) must precede table-body
-		 * 
-		 * The first requirement is that there is a table-body. Since the docx format doesn't
-		 * have any equivalent to table-footer, we can always treat the last row as table-body.
-		 * 
-		 * The second requirement is that there is no table-header after table-body.
-		 * We could either treat each t-h after a t-b as t-b,
-		 * or we could treat all t-b before t-h as t-h.  
-		 * 
-		 * If the docx has normal rows before the a t-h row, the user should split the table into 
-		 * two.  Since they can do that, we'll treat all rows before last t-h row as t-h rows
-		 * 
-		 */		
-		//ensureFoTableBody(trFinder.trList); // this is currently applied to HTML etc as well
 		
 		int r = 0;
 		for (Tr tr : trFinder.getTrList()) {
+			
 				startRow(tr);
 				handleRow(tr, r);
 				r++;
+				
+				if (log.isDebugEnabled()) {
+					log.debug("\n\n"+ this.debugStr());
+				}
+				
 				if (rows.get(row).getRowContents().isEmpty()) {
+					
+					log.debug("removing empty row");
+					
 					rows.remove(row);
 					row--;
 					r--;
@@ -528,9 +545,9 @@ public class TableModel {
 		
 		//List<Object> cells = tr.getEGContentCellContent();
 		int c = 0;
-		log.debug("Processing c " + c);
 		for (Tc tc : tcFinder.tcList) {
-
+			log.debug("Processing  r " + r + ", docx cell " + c);
+			
 			addCell(tc); // the cell content
 			// addCell(tc, cellContents.item(i));
 			// i++;
@@ -543,6 +560,7 @@ public class TableModel {
 		}
 	}
 	
+	
 	protected boolean isHeaderRow(Tr tr) {
 		
 		List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
@@ -552,18 +570,20 @@ public class TableModel {
 	}
 	
 	protected int getGridAfter(Tr tr) {
-	List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
-	JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "gridAfter");
-	CTTrPrBase.GridAfter gridAfter = (element != null ? (CTTrPrBase.GridAfter)element.getValue() : null);
-	BigInteger val = (gridAfter != null ? gridAfter.getVal() : null);
+		
+		List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
+		JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "gridAfter");
+		CTTrPrBase.GridAfter gridAfter = (element != null ? (CTTrPrBase.GridAfter)element.getValue() : null);
+		BigInteger val = (gridAfter != null ? gridAfter.getVal() : null);
 		return (val != null ? val.intValue() : 0);
 	}
 	
 	protected int getGridBefore(Tr tr) {
-	List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
-	JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "gridBefore");
-	CTTrPrBase.GridBefore gridBefore = (element != null ? (CTTrPrBase.GridBefore)element.getValue() : null);
-	BigInteger val = (gridBefore != null ? gridBefore.getVal() : null);
+		
+		List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = (tr.getTrPr() != null ? tr.getTrPr().getCnfStyleOrDivIdOrGridBefore() : null);
+		JAXBElement element = getElement(cnfStyleOrDivIdOrGridBefore, "gridBefore");
+		CTTrPrBase.GridBefore gridBefore = (element != null ? (CTTrPrBase.GridBefore)element.getValue() : null);
+		BigInteger val = (gridBefore != null ? gridBefore.getVal() : null);
 		return (val != null ? val.intValue() : 0);
 	}
 	
@@ -581,13 +601,20 @@ public class TableModel {
 	}
 	
 	protected int calcTableWidth() {
-	int ret = -1;
-	List<TblGridCol> gridCols = (getTblGrid() != null ? getTblGrid().getGridCol() : null);
+		
+		int ret = -1;
+		List<TblGridCol> gridCols = (getTblGrid() != null ? getTblGrid().getGridCol() : null);
 		//The calculation is done the way it was done in the TableWriter. This isn't necesarily correct,
 	    //as cell-widths may override column widths.
     	if ((gridCols != null) && (!gridCols.isEmpty())) {
     		ret = 0;
-	    	for(int i=0; i<gridCols.size(); i++) {   
+	    	for(int i=0; i<gridCols.size(); i++) {  
+	    		
+	    		if (gridCols.get(i).getW()==null) {
+	    			log.warn("Missing width " + XmlUtils.marshaltoString(getTblGrid()));
+	    			continue;
+	    		}
+	    		
 	    		ret += gridCols.get(i).getW().intValue();
 	    	}
     	}
