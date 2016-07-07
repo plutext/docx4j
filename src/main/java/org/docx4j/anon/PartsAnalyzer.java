@@ -121,6 +121,7 @@ public class PartsAnalyzer {
 				unsafeParts.add(p);
 				
 			} else if (p instanceof org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart
+						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart
 						|| p instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart
@@ -151,6 +152,7 @@ public class PartsAnalyzer {
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.MetafilePart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart
+						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.PeoplePart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectSignatureBin) {
