@@ -193,13 +193,18 @@ public abstract class XmlPart extends Part {
 			 * Quick n dirty heuristic:
 			 */
 			if (xpath.contains("=")
-					|| xpath.startsWith("boolean")) {
+					|| xpath.trim().startsWith("boolean")) {
 				XObject xo = cachedXPathAPI.eval(doc, xpath);
 				if (xo.bool(cachedXPathAPI.getXPathContext())) {
 					return "true";
 				} else {
 					return "false";					
 				}
+			} else if (xpath.trim().startsWith("count(")) {
+				
+				XObject xo = cachedXPathAPI.eval(doc, xpath);
+				double d = xo.num(cachedXPathAPI.getXPathContext());
+				return "" + Math.round(d); // convert eg 2.0		
 			}
 			
 			try {
@@ -217,7 +222,13 @@ public abstract class XmlPart extends Part {
 						return "true";
 					} else {
 						return "false";					
-					}					
+					}
+				} else if (e.getMessage().contains("Can not convert #NUMBER")) {
+
+					log.debug("Fallback handling XPath of form: " + xpath);
+					XObject xo = cachedXPathAPI.eval(doc, xpath);
+					double d = xo.num(cachedXPathAPI.getXPathContext());
+					return "" + d;
 				} else {
 					log.warn("Handle XPath of form: " + xpath);
 					throw e;
