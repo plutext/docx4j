@@ -49,6 +49,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -161,7 +162,7 @@ public class XmlUtils {
 		if (sp!=null) {
 			
 			System.setProperty("javax.xml.parsers.SAXParserFactory",sp);
-			log.info("Using " + sp + " (from docx4j.properties)");
+			log.info("setProperty " + sp + " (from docx4j.properties)");
 		
 		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.SAXParserFactory.donotset", false)) {
 			
@@ -189,7 +190,7 @@ public class XmlUtils {
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 
-			log.info("Using com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
 		} else {
 			
@@ -201,6 +202,10 @@ public class XmlUtils {
 			log.warn("default SAXParserFactory property : " + System.getProperty("javax.xml.parsers.SAXParserFactory" )
 					+ "\n Please consider using Xerces.");
 		}
+		
+		log.info("actual: " + SAXParserFactory.newInstance().getClass().getName() );
+		
+		
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
 		// since we want to avoid Crimson being used for the life of the application.
 
@@ -208,7 +213,7 @@ public class XmlUtils {
 		String dbf = Docx4jProperties.getProperty("javax.xml.parsers.DocumentBuilderFactory");
 		if (dbf!=null) {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",dbf);
-			log.info("Using " + dbf + " (from docx4j.properties)");
+			log.info("setProperty " + dbf + " (from docx4j.properties)");
 			
 		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.DocumentBuilderFactory.donotset", false)) {
 			
@@ -236,7 +241,7 @@ public class XmlUtils {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 
-			log.info("Using com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			
 		} else {
 
@@ -252,6 +257,7 @@ public class XmlUtils {
 		}
 		
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		log.info("actual: " + documentBuilderFactory.getClass().getName());
 		documentBuilderFactory.setNamespaceAware(true);
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory).
 		// Maybe we could, if docx4j always used this documentBuilderFactory.
@@ -665,12 +671,10 @@ public class XmlUtils {
 		return null;
 	}
 	
-	/** The below code removes superflouous namespaces.
+	/** Removes superflouous namespaces.
 	 * 
 	 * It makes things neater, at the cost of some extra processing.
 	 *  
-	 * If kept, it could be configurable in docx4j props
-	 * 
 	 * @throws InvalidCanonicalizerException 
 	 * @throws CanonicalizationException 
 	 */
@@ -743,7 +747,7 @@ public class XmlUtils {
 			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc); // TODO rest of 
+				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc); 
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				return new String(bytes, "UTF-8"); 
