@@ -232,14 +232,13 @@ public class TableModel {
 	protected void addDummyCell(int colSpan, boolean isBefore, boolean isAfter) {
 		
 		log.debug("gridSpan, so addDummyCell " + colSpan + " " + isBefore + " " + isAfter);
-		TableModelCell cell = new TableModelCell(this, row, ++col);
-		cell.dummyBefore=isBefore;
-		cell.dummyAfter=isAfter;
-		if (colSpan > 0) {
-			cell.setColspan(colSpan);
-		}
+		TableModelCell cell; 
 		if (colSpan>1) {
 			for (int i=1; i<colSpan; i++) {
+				cell = new TableModelCell(this, row, ++col);
+				cell.dummyBefore=isBefore;
+				cell.dummyAfter=isAfter;
+				cell.setColspan(colSpan);
 				addCell(cell);				
 			}
 		}
@@ -252,14 +251,9 @@ public class TableModel {
 		rows.get(row).add(cell);
 	}
 	
-//	public TableModelCell getCell(int row, int col) {
-//		log.debug("getting row " + row + "  col " + col);
-//		return rows.get(row).get(col);
-//	}
-
-	public TableModelCell getRealCell(int row, int col) {
-		log.debug("getting real row " + row + "  col " + col);
-		return rows.get(row).getReal(col);
+	public TableModelCell getCell(int row, int col) {
+		log.debug("getting row " + row + "  col " + col);
+		return rows.get(row).get(col);
 	}
 	
 	/**
@@ -281,7 +275,11 @@ public class TableModel {
     	return headerMaxRow;
     }
     
+    protected Tbl tbl; // for debug purposes only
+    
 	public void build(Tbl tbl) {
+		
+		this.tbl = tbl;
 
 		if (tbl.getTblPr()!=null
 				&& tbl.getTblPr().getTblStyle()!=null) {

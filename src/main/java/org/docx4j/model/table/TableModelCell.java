@@ -147,7 +147,16 @@ public class TableModelCell {
 		if (dummy) {
 			// set its colspan to the same value as its upper neighbor,
 			// so dummy cells will be created to the right if colspan>1
-			colspan = table.getRealCell(row - 1, col).colspan;
+			try {
+				colspan = table.getCell(row - 1, col).colspan;
+			} catch (NullPointerException ne) {
+				logger.warn("Problem at row " + row + " -1, col " + col);
+				logger.warn("model so far: \n" + this.table.debugStr() );
+				logger.warn("and this cell: " + this.debugStr() );
+				logger.warn(ne.getMessage(), ne);
+				logger.warn("Problems with table " + XmlUtils.marshaltoString(table.tbl));
+			}
+				
 		} else {
 			// real cell
 			// colspan
@@ -196,7 +205,7 @@ public class TableModelCell {
 		if (dummy) {
 			logger.debug("dummy=true for row " + row + ", col " + col + " so propogate to r-1");
 			if (row>0) {
-				table.getRealCell(row - 1, col).incrementRowSpan();
+				table.getCell(row - 1, col).incrementRowSpan();
 			} else {
 				logger.debug(".. but already at row 0; using rowspan=" + rowspan);
 			}
