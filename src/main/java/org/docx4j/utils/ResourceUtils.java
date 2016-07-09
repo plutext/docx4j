@@ -69,11 +69,8 @@ public class ResourceUtils {
     {
     	log.debug("Attempting to load: " + filename);
     	
-        // Try to load resource from jar.
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (loader == null) {  // IKVM (v.0.44.0.5) doesn't set context classloader 
-            loader = ResourceUtils.class.getClassLoader();
-        }
+        // Try to load resource from jar.  
+        ClassLoader loader = ResourceUtils.class.getClassLoader();
         
         java.net.URL url = loader.getResource(filename);
                 
