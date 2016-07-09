@@ -20,12 +20,17 @@ import org.docx4j.fonts.RunFontSelector.RunFontActionType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.vml.CTTextPath;
+import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.CTFFData;
+import org.docx4j.wml.CTFFName;
 import org.docx4j.wml.CTLanguage;
 import org.docx4j.wml.DelText;
+import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
@@ -79,6 +84,9 @@ public class ScrambleText extends CallbackImpl {
 	boolean hasHiragana = false;
 	boolean hasKatakana = false;
 	boolean hasCJK = false;
+	
+	int field_begin_counter = 0;
+	int bookmark_start_counter = 0;
 
 	@Override
 	public void walkJAXBElements(Object parent) {
@@ -165,7 +173,66 @@ public class ScrambleText extends CallbackImpl {
 		}
 
 
-		o = XmlUtils.unwrap(o);		
+		o = XmlUtils.unwrap(o);	
+		
+		if (o instanceof org.docx4j.wml.FldChar) {
+			FldChar fldChar = (FldChar)o;
+			if (fldChar.getFldCharType().equals(STFldCharType.BEGIN) ) {
+				field_begin_counter++;
+				if (fldChar.getFfData()!=null) {
+					CTFFData ffData = fldChar.getFfData();
+					for (JAXBElement<?> el :  ffData.getNameOrEnabledOrCalcOnExit() ) {
+						Object jObj = el.getValue();
+						if (jObj instanceof CTFFName) {
+							
+							String name = ((CTFFName)jObj).getVal();
+							//System.out.println("BEGIN " + name);
+
+//							int tLen = name.length();							
+//							// We didn't count these characters initially, so make more text
+//							latinText += generateReplacement(tLen);
+//							
+//							((CTFFName)jObj).setVal(unicodeRangeToFont(
+//									name, 
+//									latinText.substring(tLen)));
+//							
+//							beginIndex += tLen;
+//							// Hmmm, do we need to worry about duplicate random field names?
+//							// Word 2010 is happy with spaces in the name
+							
+							((CTFFName)jObj).setVal("fieldname" + field_begin_counter);
+							
+						}
+					}
+				}
+			}
+			return null;
+		}
+		
+		if (o instanceof CTBookmark) {
+			CTBookmark bookmarkStart = (CTBookmark)o;
+			bookmark_start_counter++;
+			if (bookmarkStart.getName()!=null) {
+				bookmarkStart.setName("bm" + bookmark_start_counter);
+				
+//				String name = bookmarkStart.getName().trim();
+//				int tLen = name.length();							
+//				
+//				if (tLen>0) {
+//					
+//					// We didn't count these characters initially, so make more text
+//					latinText += generateReplacement(tLen);
+//					
+//					bookmarkStart.setName(unicodeRangeToFont(
+//							name, 
+//							latinText.substring(tLen)));
+//					
+//					beginIndex += tLen;
+//					//Word will convert spaces to underscore, and remove duplicates
+//				}
+			}
+		}
+		
 		
 //		System.out.println(o.getClass().getName());
 		

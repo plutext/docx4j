@@ -578,7 +578,7 @@
    
 <xsl:template match="w:bookmarkEnd" />
 
-  <xsl:template match="w:ins">
+  <xsl:template match="w:ins|w:moveTo">
   	<span class="ins">
   		<xsl:apply-templates/>
   	</span>
@@ -593,6 +593,14 @@
   		<xsl:apply-templates/>
   	</span>
   </xsl:template>  	
+  
+  <xsl:template match="w:moveFrom">
+  	<span class="del">
+  		<xsl:apply-templates select=".//w:r"/>
+  	</span>
+  </xsl:template>  	
+  
+  <xsl:template match="w:moveFromRangeStart|w:moveFromRangeEnd|w:moveToRangeStart|w:moveToRangeEnd" />
   
   <xsl:template match="w:footnoteReference">  
     <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.common.XsltCommonFunctions.getNextFootnoteNumber($conversionContext)"/></xsl:variable>

@@ -64,6 +64,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DeclHandler;
 import org.xml.sax.ext.LexicalHandler;
 
+
 /**
  * This class implements an identity transformer for
  * {@link javax.xml.transform.sax.SAXTransformerFactory#newTransformerHandler()}
@@ -76,6 +77,9 @@ import org.xml.sax.ext.LexicalHandler;
 public class TransformerIdentityImpl extends Transformer
         implements TransformerHandler, DeclHandler
 {
+	
+	protected static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TransformerIdentityImpl.class);
+	
 
   /**
    * Constructor TransformerIdentityImpl creates an identity transform.
@@ -257,6 +261,8 @@ public class TransformerIdentityImpl extends Transformer
       {
         Serializer serializer =
           SerializerFactory.getSerializer(m_outputFormat.getProperties());
+        
+        log.debug(serializer.getClass().getName());
 
         m_serializer = serializer;
 

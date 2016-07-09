@@ -101,7 +101,10 @@ public class CTCustomXmlRun implements CTCustomXmlElement, ContentAccessor // Wh
         @XmlElementRef(name = "smartTag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "subDoc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        
     })
     protected List<Object> content  = new ArrayListWml<Object>(this);
     @XmlAttribute(name = "uri", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -188,7 +191,8 @@ public class CTCustomXmlRun implements CTCustomXmlElement, ContentAccessor // Wh
      * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMoveFromRangeEnd }{@code >}
      * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
-     * 
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
      * 
      */
     public List<Object> getContent() {

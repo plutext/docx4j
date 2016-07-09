@@ -105,7 +105,9 @@ public class CTSimpleField
         @XmlElementRef(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bdo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dir", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)        
     })
     protected List<Object> content  = new ArrayListWml<Object>(this);
     @XmlAttribute(name = "instr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
@@ -191,6 +193,8 @@ public class CTSimpleField
      * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
      * {@link JAXBElement }{@code <}{@link SdtRun }{@code >}
      * {@link JAXBElement }{@code <}{@link CTCustomXmlRun }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Bdo }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.P.Dir }{@code >}
      * 
      * @since 2.7
      */
