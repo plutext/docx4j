@@ -1,5 +1,6 @@
 package org.docx4j.model.datastorage;
 
+import java.util.LinkedList;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
@@ -22,8 +23,8 @@ public class BindingTraverserState {
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserState.class);
 	
 	
-	Tc tc;
-	Tbl tbl;
+	LinkedList<Tc> tcStack = new LinkedList<Tc>();
+	LinkedList<Tbl> tblStack = new LinkedList<Tbl>();
 	
 	public static void enteredTc(BindingTraverserState btState, NodeIterator nodeIterator) {
 		
@@ -33,7 +34,7 @@ public class BindingTraverserState {
     			Unmarshaller u = Context.jc.createUnmarshaller();			
     			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
     			Object jaxb = u.unmarshal(n);
-    			btState.tc =  (Tc)jaxb;
+    			btState.tcStack.push( (Tc)jaxb );
 			} catch (ClassCastException e) {
 				log.error("Couldn't cast  to RPr!");
 			} catch (JAXBException e) {
@@ -45,7 +46,7 @@ public class BindingTraverserState {
 
 	public static void exitedTc(BindingTraverserState btState) {
 		
-		btState.tc = null;
+		btState.tcStack.pop();
 	}
 	
     public static void enteredTbl(BindingTraverserState btState, NodeIterator nodeIterator) {
@@ -55,7 +56,7 @@ public class BindingTraverserState {
                 Unmarshaller u = Context.jc.createUnmarshaller();
                 u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
                 Object jaxb = u.unmarshal(n);
-                btState.tbl =  (Tbl)jaxb;
+                btState.tblStack.push( (Tbl)jaxb);
             } catch (ClassCastException e) {
                 log.error("Couldn't cast to Tbl!");
             } catch (JAXBException e) {
@@ -65,7 +66,7 @@ public class BindingTraverserState {
     }
 
     public static void exitedTbl(BindingTraverserState btState) {
-        btState.tbl = null;
+        btState.tblStack.pop();
     }
 	
 	/**

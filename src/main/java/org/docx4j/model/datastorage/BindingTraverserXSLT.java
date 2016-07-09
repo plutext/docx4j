@@ -420,9 +420,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 		// If we are in a table cell, ensure oversized images are scaled
 		xHTMLImporter.setMaxWidth(-1, null); // re-init
-		if (bindingTraverserState.tc != null) {
+		if (bindingTraverserState.tcStack.peek() != null) {
 		    log.debug("inserting in a tc" );
-		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(bindingTraverserState.tbl, bindingTraverserState.tc, xHTMLImporter);
+		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(
+		    		bindingTraverserState.tblStack.peek(), 
+		    		bindingTraverserState.tcStack.peek(), xHTMLImporter);
 		} 
 		
 		QueryString qs = new QueryString();
