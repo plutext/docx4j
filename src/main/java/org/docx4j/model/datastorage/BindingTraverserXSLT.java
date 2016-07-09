@@ -419,27 +419,10 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 		
 		// If we are in a table cell, ensure oversized images are scaled
-		xHTMLImporter.setMaxWidth(-1); // re-init
-		if (bindingTraverserState.tc!=null) {
-			log.debug("inserting in a tc" );
-			
-			if( bindingTraverserState.tc.getTcPr()!=null  
-					&& bindingTraverserState.tc.getTcPr().getTcW()!=null  
-			) {
-		
-				TblWidth tcW = bindingTraverserState.tc.getTcPr().getTcW();
-				
-				if (tcW.getW()!=null && tcW.getType().equals(TblWidth.TYPE_DXA)) {
-					xHTMLImporter.setMaxWidth(tcW.getW().intValue());
-					
-					log.debug("inserting in a tc, with maxwidth: " + tcW.getW().intValue());
-				} else {
-					log.debug("w:tcPr/w:tcW present, but width not in dxa units ");
-				}
-			} else {
-				log.debug("w:tcPr/w:tcW not present");				
-			}
-			
+		xHTMLImporter.setMaxWidth(-1, null); // re-init
+		if (bindingTraverserState.tc != null) {
+		    log.debug("inserting in a tc" );
+		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(bindingTraverserState.tbl, bindingTraverserState.tc, xHTMLImporter);
 		} 
 		
 		QueryString qs = new QueryString();
