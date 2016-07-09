@@ -758,7 +758,7 @@ public class TocGenerator {
 
     private static String XML_TOCHeading_BasedOn_Heading1 = "<w:style w:styleId=\"TOCHeading\" w:type=\"paragraph\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
             + "<w:name w:val=\"TOC Heading\"/>"
-            + "<w:basedOn w:val=\"Heading1\"/>" // we'll overwite with the style id 
+            + "<w:basedOn w:val=\"Heading1\"/>" // we'll overwrite with the style id 
             + "<w:next w:val=\"Normal\"/>"
             + "<w:uiPriority w:val=\"39\"/>"
             + "<w:semiHidden/>"
