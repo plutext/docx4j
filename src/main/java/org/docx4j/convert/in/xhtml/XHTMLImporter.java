@@ -166,6 +166,14 @@ public interface XHTMLImporter {
 	 */
 	//public void setBookmarkIdNext(AtomicInteger val);
 	
-	public void setMaxWidth(int maxWidth);
+	 /**
+     * Set the maximum width available (in twips); useful for scaling bare images
+     * if they are to go in a table cell.  
+     * <br>Also set table style if images are really to go in a table cell 
+     * (needed to remove table style margins from final width).
+     * @param maxWidth
+     * @param tableStyle - can be null
+     */
+	public void setMaxWidth(int maxWidth, String tableStyle);
     
 }

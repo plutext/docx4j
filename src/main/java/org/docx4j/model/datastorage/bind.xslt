@@ -878,6 +878,20 @@
       
   </xsl:template>
 
+	<xsl:template match="w:tbl">
 
+		<xsl:variable name="tbl" select="." />
+
+		<xsl:variable name="dummy"
+			select="java:org.docx4j.model.datastorage.BindingTraverserState.enteredTbl( $bindingTraverserState, $tbl )" />
+
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:copy>
+
+		<xsl:variable name="dummy2"
+			select="java:org.docx4j.model.datastorage.BindingTraverserState.exitedTbl( $bindingTraverserState )" />
+
+	</xsl:template>
    
 </xsl:stylesheet>
