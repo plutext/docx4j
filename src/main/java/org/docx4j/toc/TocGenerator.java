@@ -46,6 +46,7 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.services.client.ConversionException;
 import org.docx4j.services.client.Converter;
 import org.docx4j.services.client.ConverterHttp;
 import org.docx4j.services.client.Format;
@@ -579,9 +580,26 @@ public class TocGenerator {
 			
 		try {
 			converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
+		} catch (ConversionException e) {
+			
+			if (e.getResponse()!=null) {
+
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n HTTP response: " 
+						+ e.getResponse().getStatusLine().getStatusCode()
+						+ " " + e.getResponse().getStatusLine().getReasonPhrase() ,e);
+				
+			} else if (e.getMessage()==null){			
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n",e);
+			} else {
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n" + e.getMessage(),e);				
+			}
+			
 		} catch (Exception e) {
 			throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + e.getMessage(),e);
+						+ documentServicesEndpoint + "\n" + e.getMessage(),e);
 		}
 		
 		/* OLD Converter 1.0-x
