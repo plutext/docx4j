@@ -55,7 +55,7 @@ public class Toc {
     
     private static String DEFAULT_TOC_HEADING = "Contents";
     
-    /**
+	/**
      * Use the provided text for the ToC heading.
      * (Except in ToC update case where the existing heading P is to be re-used)
      * 
@@ -63,6 +63,9 @@ public class Toc {
      */
     public static void setTocHeadingText(String tocHeadingText) {
 		DEFAULT_TOC_HEADING = tocHeadingText;
+	}
+    protected static String getTocHeadingText() {
+		return DEFAULT_TOC_HEADING;
 	}
 
 	private static final String PRESERVE = "preserve";

@@ -1,7 +1,10 @@
 package org.docx4j.toc;
 
+import java.io.File;
+
 import junit.framework.Assert;
 
+import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -100,6 +103,60 @@ public class TocGenerateTest {
         // Title p + instruction p +  2 entries + end p
         Assert.assertEquals(5, sdt.getSdtContent().getContent().size());
 	}
+
+//	@Test
+//	public void testToCHeadingNull() throws TocException, Exception {
+//		
+//		Toc.setTocHeadingText(null); // Word is ok with this
+//		
+//		WordprocessingMLPackage wordMLPackage = createPkg();
+//		
+//        TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+//        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", true);
+//        
+//        SdtBlock sdt = getTocSDT(wordMLPackage);
+//        
+////        System.out.println(sdt.getSdtContent().getContent().size());        
+//        System.out.println(wordMLPackage.getMainDocumentPart().getXML());
+//        
+//        Docx4J.save(wordMLPackage, new File("testToCHeadingNull.docx"));
+//	}
+//
+//	@Test
+//	public void testToCHeadingEmpty() throws TocException, Exception {
+//		
+//		Toc.setTocHeadingText(""); // Word is ok with this
+//		
+//		WordprocessingMLPackage wordMLPackage = createPkg();
+//		
+//        TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+//        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", true);
+//        
+//        SdtBlock sdt = getTocSDT(wordMLPackage);
+//        
+////        System.out.println(sdt.getSdtContent().getContent().size());        
+//        System.out.println(wordMLPackage.getMainDocumentPart().getXML());
+//        
+//        Docx4J.save(wordMLPackage, new File("testToCHeadingEmpty.docx"));
+//	}
+//
+//	@Test
+//	public void testToCHeadingSet() throws TocException, Exception {
+//		
+//		Toc.setTocHeadingText("Alpha");
+//		
+//		WordprocessingMLPackage wordMLPackage = createPkg();
+//		
+//        TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+//        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", true);
+//        
+//        SdtBlock sdt = getTocSDT(wordMLPackage);
+//        
+////        System.out.println(sdt.getSdtContent().getContent().size());        
+//        System.out.println(wordMLPackage.getMainDocumentPart().getXML());
+//        
+//        Docx4J.save(wordMLPackage, new File("testToCHeadingSet.docx"));
+//	}
 	
 	private SdtBlock getTocSDT(WordprocessingMLPackage wordMLPackage) {
 

@@ -129,6 +129,8 @@ public class TocGenerator {
     /**
      * Generate Table of Contents using default TOC instruction, adding it at the beginning of the document
      * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body of document
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
@@ -141,6 +143,8 @@ public class TocGenerator {
      * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document
      * 
      * It is an error if a ToC content control is already present; delete it or use updateToc.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
      * 
      * @param body
      * @param index
@@ -155,6 +159,8 @@ public class TocGenerator {
     /**
      * Generate Table of Contents using default TOC instruction, adding it at the beginning of the document
      * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body of document
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
@@ -168,6 +174,8 @@ public class TocGenerator {
      * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document
      * 
      * It is an error if a ToC content control is already present; delete it or use updateToc.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
      * 
      * @param body
      * @param index
@@ -203,6 +211,9 @@ public class TocGenerator {
     /**
      * Generate Table of Contents in the given sdt with generated heading, and given TOC instruction.
      * See http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/TOC.html for TOC instruction.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body
      * @param sdt - assumed already attached to the document
      * @param instruction
@@ -221,47 +232,50 @@ public class TocGenerator {
             sdt.setSdtContent(sdtContent);
         }
         
-        /* Is there already a style with *name* (not @styleId): 
-         * 
-         *   <w:style w:type="paragraph" w:styleId="CabealhodoSumrio">
-    			<w:name w:val="TOC Heading"/>
-    	 *
-    	 * If not, fall back to default, or failing that, create it from the XML given here. 
-    	 * 
-    	 * NB: avoid basedOn since that points to Style ID, which is language dependent
-    	 * (ie Heading 1 in English is something different in French, German etc) 
-         */
-        String TOC_HEADING_STYLE = tocStyles.getStyleIdForName(TocStyles.TOC_HEADING);
-        if (TOC_HEADING_STYLE==null) {
-        	log.warn("No definition found for TOC Heading style");
+        if (Toc.getTocHeadingText()!=null) {
         
-        	String HEADING1_STYLE= tocStyles.getStyleIdForName(TocStyles.HEADING_1);
-        
-	        try {
-		        if (TOC_HEADING_STYLE==null) {
-		        	// We need to create it. 
-		        	if (HEADING1_STYLE==null) {
-		        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Nothing);
-		        		style.getBasedOn().setVal(HEADING1_STYLE);
-		        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-		        		
-		        	} else {
-		        		// There is a heading 1 style, so use a simple style based on that
-		        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Heading1);
-		        		style.getBasedOn().setVal(HEADING1_STYLE);
-		        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-		        	}
-		        	
-		        	// either way,
-		        	TOC_HEADING_STYLE = "TOCHeading";
-		        }
-			} catch (Exception e) {
-				throw new TocException(e.getMessage(), e);
-			}
+	        /* Is there already a style with *name* (not @styleId): 
+	         * 
+	         *   <w:style w:type="paragraph" w:styleId="CabealhodoSumrio">
+	    			<w:name w:val="TOC Heading"/>
+	    	 *
+	    	 * If not, fall back to default, or failing that, create it from the XML given here. 
+	    	 * 
+	    	 * NB: avoid basedOn since that points to Style ID, which is language dependent
+	    	 * (ie Heading 1 in English is something different in French, German etc) 
+	         */
+	        String TOC_HEADING_STYLE = tocStyles.getStyleIdForName(TocStyles.TOC_HEADING);
+	        if (TOC_HEADING_STYLE==null) {
+	        	log.warn("No definition found for TOC Heading style");
+	        
+	        	String HEADING1_STYLE= tocStyles.getStyleIdForName(TocStyles.HEADING_1);
+	        
+		        try {
+			        if (TOC_HEADING_STYLE==null) {
+			        	// We need to create it. 
+			        	if (HEADING1_STYLE==null) {
+			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Nothing);
+			        		style.getBasedOn().setVal(HEADING1_STYLE);
+			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
+			        		
+			        	} else {
+			        		// There is a heading 1 style, so use a simple style based on that
+			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Heading1);
+			        		style.getBasedOn().setVal(HEADING1_STYLE);
+			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
+			        	}
+			        	
+			        	// either way,
+			        	TOC_HEADING_STYLE = "TOCHeading";
+			        }
+				} catch (Exception e) {
+					throw new TocException(e.getMessage(), e);
+				}
+	        }
+	        
+	        // 1. Add Toc Heading (eg "Contents" in TOCHeading style)
+	        sdtContent.getContent().add(Toc.generateTocHeading(TOC_HEADING_STYLE));        
         }
-        
-        // 1. Add Toc Heading (eg "Contents" in TOCHeading style)
-        sdtContent.getContent().add(Toc.generateTocHeading(TOC_HEADING_STYLE));
         
         populateToc(  
         		 sdtContent, 
