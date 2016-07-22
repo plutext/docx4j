@@ -234,7 +234,38 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.2</version>
 			</plugin> 
-         			
+			
+		<!--  mvn package 
+			<plugin> 
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+									<!-- 
+									<exclude>classworlds:classworlds</exclude>
+									<exclude>jmock:*</exclude>
+									<exclude>*:xml-apis</exclude>
+									<exclude>org.apache.maven:lib:tests</exclude>
+									<exclude>log4j:log4j:jar:</exclude>
+									 -->
+								</excludes>								
+							</artifactSet>
+			              <shadedArtifactAttached>true</shadedArtifactAttached>
+			              <shadedClassifierName>shaded</shadedClassifierName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>			
+         -->
 		</plugins>
     	<pluginManagement>
 			<plugins>
