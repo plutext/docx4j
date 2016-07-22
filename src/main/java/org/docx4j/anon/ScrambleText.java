@@ -231,6 +231,7 @@ public class ScrambleText extends CallbackImpl {
 //					//Word will convert spaces to underscore, and remove duplicates
 //				}
 			}
+			return null;
 		}
 		
 		

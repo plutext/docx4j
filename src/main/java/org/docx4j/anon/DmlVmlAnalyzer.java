@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -112,7 +113,7 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 				this.apply(o2);
 
 				if (this.shouldTraverse(o)) {
-					walkJAXBElements(o);
+					walkJAXBElements(o2);
 				}
 
 			}
@@ -121,23 +122,23 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 	
 
 	@Override
-	public List<Object> apply(Object o) {
+	public List<Object> apply(Object o2) {
 		
 //		System.out.println(o.getClass().getName());
 		
-		if (o instanceof JAXBElement) {
+		if (o2 instanceof JAXBElement) {
 			
 			// record field instruction
-			if (((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
+			if (((JAXBElement)o2).getName().getLocalPart().equals("instrText")) {
 				
-				Text instr = (Text)XmlUtils.unwrap(o);				
+				Text instr = (Text)XmlUtils.unwrap(o2);				
 				fieldsPresent.add(instr.getValue());
 				
 				System.out.println(instr.getValue());
 			}
 		}
 
-		o = XmlUtils.unwrap(o);
+		Object o = XmlUtils.unwrap(o2);
 		
 		if (o instanceof org.docx4j.vml.CTImageData) {
 			// remove its title
@@ -170,12 +171,14 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 	}
 
 	
-	public List<Object> getChildren(Object o) {
+	public List<Object> getChildren(Object o2) {
 					
-		if (o==null) {
+		if (o2==null) {
 			log.warn("null passed to getChildrenImpl");
 			return null;
 		}
+		
+		Object o = XmlUtils.unwrap(o2);
 
 		log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
@@ -500,11 +503,19 @@ public class DmlVmlAnalyzer extends CallbackImpl {
         } else {
         	
         	// Unsafe; Charts and other stuff is in here
-        	addUnsafe(graphicData);
+        	addUnsafe(graphicData, "http://schemas.openxmlformats.org/drawingml/2006/main", "graphicData", org.docx4j.dml.GraphicData.class);
         	
             return graphicData.getAny();
         }
     }
+
+	private void addUnsafe(Object o, 
+			String uri, String local, Class declaredType)  {
+
+		// For now, we'll use marshalled content
+		unsafeObjects.add(XmlUtils.marshaltoString(o, true, true, Context.jc, 
+				uri, local, declaredType));
+	}
 	
 	private void addUnsafe(Object o) {
 		
