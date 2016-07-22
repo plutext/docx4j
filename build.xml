@@ -7,8 +7,8 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.3.0"/>
-	<property name="importxhtml-version" value="3.3.0"/>
+	<property name="version" value="3.3.1"/>
+	<property name="importxhtml-version" value="3.3.1"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
 
@@ -56,6 +56,9 @@
 		|  \- antlr:antlr:jar:2.7.7
 		
 		+- com.google.guava:guava:jar:19.0
+		
+		+- com.thedeanda:lorem:jar:2.0
+		
 		
 		\- junit:junit:jar:4.12:test
 		   \- org.hamcrest:hamcrest-core:jar:1.3:test
@@ -140,6 +143,8 @@
         <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/> 
 
         <pathelement location="${m2Repository}/com/google/guava/guava/19.0/guava-19.0.jar"/>
+
+        <pathelement location="${m2Repository}/com/thedeanda/lorem/2.0/lorem-2.0.jar"/>
 
 <!--     	
         <pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
@@ -386,7 +391,7 @@
         </condition>
     </target>
 
-    <target name="dist.NET" depends="checkForIKVM, dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
+    <target name="dist.NET" depends="checkForIKVM" if="IKVMAvailable" description="Build docx4j .NET DLL files">
         <echo>Building docx4j.DLL</echo>
         
 <!--         
@@ -438,7 +443,10 @@
 	        <path refid="Maven Dependencies.libraryclasspath"/>
 	        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
 	        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
-	    	<path refid="FOP-stuff.classpath"/>      
+	        
+	        <!-- Omit for 3.3.x 
+	    	<path refid="FOP-stuff.classpath"/>
+	    	 -->      
 	    	<!--   	        
 	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
 			 -->
@@ -448,10 +456,11 @@
                  
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
-            <!--   For nuget, we don't snk; for Enterprise usage in GAC, we may
+            <!--   v3.3+ always snk.
+            	   Prior to that, for nuget, we didn't snk; for Enterprise usage in GAC, we may
              -->
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:${version}.0" /> 
+            <arg value="-version:${version}" /> <!--  must be of the form a.b.c.d -->
             <arg value="-reference:dll/slf4j-api-1.7.5-snk.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />

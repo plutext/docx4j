@@ -1,6 +1,60 @@
 CHANGELOG
 =========
 
+
+Version 3.3.1  minor release
+=============
+
+Release date
+------------
+
+xx August 2016
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/ai-github
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.1
+---------------------------------
+
+Contents lists are now of type ArrayListWml, in which parent is automatically set correctly
+
+org.docx4j.anon: new package which converts a docx to lorem ipsum latin, and removes
+other sensitive info, so the docx can safely be shared eg for tech support.  
+For this to work, you'll need to add a new dependency: http://search.maven.org/#artifactdetails%7Ccom.thedeanda%7Clorem%7C2.0%7Cjar
+ 
+OpenDoPE: Two separate performance optimizations which substantially speed up large XML binding jobs.  By traversing the XML data, manually calculate and cache XPaths (tested with 500,000 entries).  Our strategy is to try the cache first (if enabled), then if there is a cache miss, use org.apache.xpath.CachedXPathAPI (the second optimization - CachedXPathAPI  is quicker than default javax.xml.xpath.XPath implementations)
+
+Dedicated parts for w15 CommentsExtended and People
+
+Support anchor attributes wp14:anchorId and wp14:editId; children wp14:sizeRelH, wp14:sizeRelV
+
+Support w:bdo and w:dir from ECMA 376 4ed
+
+workaround for MOXy issue triggering pre-processing from binder: http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
+
+JAXB event handler: make shouldContinue false by default, mc Content pre-processing works in MOXy (for unmarshalling anyway, as distinct from binder)
+
+unmarshall input stream: do mc pre-processing if necessary
+
+New property docx4j.jaxb.marshal.canonicalize:
+Whether to canonicalize during marshalling (defaults to false);
+this is for aesthetic purposes: the Sun/Oracle JAXB reference implementation
+writes a lot of unnecessary namespaces (each one in the JAXB context?).
+
+
+Dependency Changes
+------------------
+
+Added com.thedeanda:lorem:jar:2.0; only required if you want to use org.docx4j.anon (see above)
+ 
+
+
 Version 3.3.0
 =============
 

@@ -32,90 +32,7 @@
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
     </scm>
 	<inceptionYear>2007</inceptionYear>
-	<developers>
-		<developer>
-			<id>jharrop</id>
-			<name>Jason Harrop</name>
-			<email>jason@plutext.org</email>
-			<organization>Plutext</organization>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+10</timezone>
-		</developer>
-	</developers>
-	<contributors>
-		<contributor>
-			<name>Adam Schmideg</name>
-		</contributor>
-		<contributor>
-			<name>Albert Aymerich</name>
-		</contributor>
-		<contributor>
-			<name>alberto</name>
-		</contributor>
-		<contributor>
-			<name>amdonov</name>
-		</contributor>
-		<contributor>
-			<name>Antoine</name>
-		</contributor>
-		<contributor>
-			<name>Arnaud Kleinpeter</name>
-		</contributor>
-		<contributor>
-			<name>azeloro</name>
-		</contributor>
-		<contributor>
-			<name>Dave Brown</name>
-		</contributor>
-		<contributor>
-			<name>Holger Schlegel</name>
-		</contributor>
-		<contributor>
-			<name>Jeromy Evans</name>
-		</contributor>
-		<contributor>
-			<name>Jojada Tirtowidjojo</name>
-		</contributor>
-		<contributor>
-			<name>Leigh</name>
-		</contributor>
-		<contributor>
-			<name>Manimala Kumar</name>
-		</contributor>
-		<contributor>
-			<name>Marcel</name>
-		</contributor>
-		<contributor>
-			<name>Patrick Linskey</name>
-		</contributor>
-		<contributor>
-			<name>Pierre</name>
-		</contributor>
-		<contributor>
-			<name>ppa_waw</name>
-		</contributor>
-		<contributor>
-			<name>Richard</name>
-		</contributor>
-		<contributor>
-			<name>Serge Grachov</name>
-		</contributor>
-		<contributor>
-			<name>Tinne</name>
-		</contributor>
-		<contributor>
-			<name>y.rolland</name>
-		</contributor>
-		<contributor>
-			<name>denys.zhosan</name>
-		</contributor>
-		<contributor>
-			<name>Anton Reshetnikov</name>
-		</contributor>
-	</contributors>
-	
+
 	  <properties>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -456,8 +373,7 @@
 		
 		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
 		so stick with 2.5.2 (since all our other deps still support Java 6)
-
-		<dependency>
+ 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
 			<version>3.3.0</version>
@@ -472,8 +388,7 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-		
-				 -->
+		-->
 
  
   <!--  Uncomment this if you are using Java 5.
