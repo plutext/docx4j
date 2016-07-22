@@ -267,8 +267,21 @@ public class XmlUtils {
 			log.error(e.getMessage(), e); 
 		}
 		
-		documentBuilderFactory.setXIncludeAware(false);
-		documentBuilderFactory.setExpandEntityReferences(false);
+		try {
+			documentBuilderFactory.setXIncludeAware(false);
+		} catch (Exception e) { 
+			// org.apache.xerces.jaxp.DocumentBuilderFactoryImpl v2.6.2 
+			// (which docx4j doesn't use by default) 
+			// throws java.lang.UnsupportedOperationException
+			// Apparently can be fixed by upgrading to 2.9.1
+			log.error(e.getMessage(), e); 
+		}
+		
+		try {
+			documentBuilderFactory.setExpandEntityReferences(false);
+		} catch (Exception e) { 
+			log.error(e.getMessage(), e); 
+		}
 		
 		try {
 			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
