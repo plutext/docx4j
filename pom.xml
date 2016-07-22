@@ -235,7 +235,7 @@
 				<version>2.2</version>
 			</plugin> 
 			
-		<!--  mvn package 
+		<!--  mvn package -->
 			<plugin> 
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -265,7 +265,6 @@
 					</execution>
 				</executions>
 			</plugin>			
-         -->
 		</plugins>
     	<pluginManagement>
 			<plugins>
