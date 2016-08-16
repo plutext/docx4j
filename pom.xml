@@ -235,7 +235,7 @@
 				<version>2.2</version>
 			</plugin> 
 			
-		<!--  mvn package -->
+		<!--  mvn package
 			<plugin> 
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -250,13 +250,6 @@
 							<artifactSet>
 								<excludes>
 									<exclude>junit:junit</exclude>
-									<!-- 
-									<exclude>classworlds:classworlds</exclude>
-									<exclude>jmock:*</exclude>
-									<exclude>*:xml-apis</exclude>
-									<exclude>org.apache.maven:lib:tests</exclude>
-									<exclude>log4j:log4j:jar:</exclude>
-									 -->
 								</excludes>								
 							</artifactSet>
 			              <shadedArtifactAttached>true</shadedArtifactAttached>
@@ -264,7 +257,8 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>	
+			 -->		
 		</plugins>
     	<pluginManagement>
 			<plugins>
