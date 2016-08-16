@@ -8,7 +8,7 @@ Version 3.3.1  minor release
 Release date
 ------------
 
-xx August 2016
+16 August 2016
 
 
 Contributors to this release
