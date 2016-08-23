@@ -40,7 +40,7 @@ public class RunFontSelectorJapaneseTest {
 	@Test
 	public  void testFont() throws Exception {
 		
-		boolean save = true;
+		boolean save = false;
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
