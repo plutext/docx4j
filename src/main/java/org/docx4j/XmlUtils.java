@@ -965,13 +965,31 @@ public class XmlUtils {
 		if (value==null) {
 			throw new IllegalArgumentException("Can't clone a null argument");
 		}
+
+        JAXBElement<T> elem; 
 		
 		try {
-            @SuppressWarnings("unchecked")
-            Class<T> clazz = (Class<T>) value.getClass();
-            JAXBElement<T> contentObject = new JAXBElement<T>(new QName(clazz.getSimpleName()), clazz, value);
-            JAXBSource source = new JAXBSource(jc, contentObject);
-            JAXBElement<T> elem = jc.createUnmarshaller().unmarshal(source, clazz);
+			
+			if (value instanceof JAXBElement<?>) {
+	
+				Object wrapped = ((JAXBElement)value).getValue();
+				
+	            @SuppressWarnings("unchecked")
+	            Class clazz = wrapped.getClass();
+	            JAXBElement contentObject = new JAXBElement(new QName(clazz.getSimpleName()), clazz, wrapped);
+	            JAXBSource source = new JAXBSource(jc, contentObject);
+	            elem = jc.createUnmarshaller().unmarshal(source, clazz);				
+				
+			} else {
+				
+				// Usual case
+			
+	            @SuppressWarnings("unchecked")
+	            Class<T> clazz = (Class<T>) value.getClass();
+	            JAXBElement<T> contentObject = new JAXBElement<T>(new QName(clazz.getSimpleName()), clazz, value);
+	            JAXBSource source = new JAXBSource(jc, contentObject);
+	            elem = jc.createUnmarshaller().unmarshal(source, clazz);
+			}
 			
 			/*
 			 * Losing content here?
