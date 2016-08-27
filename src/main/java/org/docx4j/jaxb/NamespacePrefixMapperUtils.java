@@ -270,6 +270,8 @@ public class NamespacePrefixMapperUtils {
 	 */
 	public static void declareNamespaces(String mcIgnorable, Document doc) {
 		
+		if (mcIgnorable==null) return;
+		
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {
 			String prefix = (String) st.nextToken();
