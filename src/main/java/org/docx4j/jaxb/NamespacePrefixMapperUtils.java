@@ -12,6 +12,7 @@ import javax.xml.bind.Marshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 public class NamespacePrefixMapperUtils {
 	
@@ -260,6 +261,31 @@ public class NamespacePrefixMapperUtils {
 		return  entries;
     	
     }
+    
+	/**
+	 * Word requires all mcIgnorable prefixes to be declared at the document level.
+	 * 
+	 * @param mcIgnorable
+	 * @param doc
+	 */
+	public static void declareNamespaces(String mcIgnorable, Document doc) {
+		
+		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
+		while (st.hasMoreTokens()) {
+			String prefix = (String) st.nextToken();
+			
+			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
+			
+			if (uri==null) {
+				log.warn("No mapping for prefix '" + prefix + "'");
+			} else {
+	    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
+	    				"xmlns:" + prefix, uri);
+				
+			}
+		}
+		
+	}
     
     
 }

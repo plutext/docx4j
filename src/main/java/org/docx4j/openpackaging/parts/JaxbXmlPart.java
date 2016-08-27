@@ -315,6 +315,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
+	    		// this method needs to be suitably overridden in a subclass,
+	    		// to .setMcIgnorable
 	    	
 	    	// Commented out, since I'm not sure it is ever useful to do this?
 //			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
@@ -388,18 +390,53 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    	
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
+				
+				// We currently canonicalize twice:
+				// 1. trim namespaces
+				// 2. add mcIgnorable
 	    		
-	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
+	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
 	    		
-	    		// Example of what to do for a namespace not known to JAXB
-	    		//doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
-	    		//		"xmlns:wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing");
+	    		// Now, we need to add back in the mcIgnorable ones
+	    		NamespacePrefixMapperUtils.declareNamespaces(this.getMceIgnorable(), doc);
+	    		/* that generalises the following:
+	    		if (this.getMceIgnorable().contains("w15")) {
+		    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
+		    				"xmlns:w15", "http://schemas.microsoft.com/office/word/2012/wordml");
+	    			
+	    		}
+	    		*/
 	    		
-	    		log.debug("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
+	    		log.warn("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
 	    		
 	    		Init.init();
-	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
+	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE); 
+	    		/* EXCLUSIVE works, with 
+	    		
+						byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+						
+				   EXCLUSIVE does not work, if you use	    	
+				   
+				   		c.canonicalizeSubtree(doc, null) or 
+				   		c.canonicalizeSubtree(doc, null)
+				   		
+				   since org.docx4j.org.apache.xml.security.c14n.Canonicalizer then pushes w15 etc down the tree
+				   
+				   INCLUSIVE works c.canonicalizeSubtree(doc)
+				   
+				   In effect, the choice between EXCLUSIVE and INCLUSIVE comes down to
+				   the handling of attributes in the XML namespace, such as xml:lang and xml:space.
+				   
+				   TODO revisit which is preferable.
+				*/
+	    		
+	    		
+	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces " + this.getMceIgnorable());
+	    		
 	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+	    		//byte[] bytes = c.canonicalizeSubtree(doc); // for INCLUSIVE
+	    		
+	    		
 	    		IOUtils.write(bytes, os);
 	    		
 	    	} else {
@@ -453,7 +490,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	in the resulting XML document.
 
     	The problem is that if "v2" is included in the value of @mc:Ignorable, and there is no declaration 
-    	of that prefix, then Microsoft Word 2010 will report the document to be corrupt. (Powerpoint 2010
+    	of that prefix, then Microsoft Word 2010 and 2013 will report the document to be corrupt. (Powerpoint 2010
     	is the same)
 
     	So the challenge is, when marshalling, how to populate the mc:Ignorable attribute, and guarantee 
