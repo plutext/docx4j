@@ -1057,6 +1057,7 @@ public class Numbering implements Child
         "abstractNumId",
         "lvlOverride"
     })
+    @XmlRootElement(name = "num")
     public static class Num implements Child
     {
 
