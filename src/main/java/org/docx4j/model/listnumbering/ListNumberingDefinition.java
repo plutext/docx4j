@@ -433,6 +433,18 @@ public class ListNumberingDefinition {
     /// <owner alias="ROrleth" />
     public boolean LevelExists(String level)
     {
+    	if (this.levels==null) {
+    		log.info("No levels present in abstractNumId");
+    		if (getAbstractListDefinition()==null) {
+    			log.info("[missing]");
+    		} else {
+    			log.info(XmlUtils.marshaltoString(getAbstractListDefinition()));
+    		}
+    		log.debug("referenced from ");
+    		log.debug(XmlUtils.marshaltoString(numNode));
+    		
+    		return false;
+    	}
         return this.levels.containsKey(level);
     }
 
