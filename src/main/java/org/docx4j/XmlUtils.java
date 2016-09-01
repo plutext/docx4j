@@ -702,6 +702,7 @@ public class XmlUtils {
     		Init.init();
     		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
     		return  c.canonicalizeSubtree(doc, ignorables);
+
 	}
 	
 	
@@ -899,6 +900,19 @@ public class XmlUtils {
 
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
+				//log.debug(new String(bytes, "UTF-8"));
+				/*MOXy issue where it looks like trimNamespaces drops w namespace!
+				 * 
+					DEBUG org.docx4j.XmlUtils .trimNamespaces line 700 - Input to Canonicalizer: <w:abstractNumId xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="0"/>
+					DEBUG org.docx4j.XmlUtils .marshaltoW3CDomDocument line 903 - <w:abstractNumId w:val="0"></w:abstractNumId>
+					[Fatal Error] :1:28: The prefix "w" for element "w:abstractNumId" is not bound.	
+					
+					where in fact the real problem is a missng @XmlRootElement annotation on the parent node
+					
+						<w:num xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:numId="1"><w:abstractNumId w:val="0"></w:abstractNumId></w:num>					
+					
+					which Sun/Oracle reports.  Once fixed, MOXy is happy as well.
+				*/
 				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				return builder.parse(new ByteArrayInputStream(bytes));
 				
