@@ -43,6 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.w3c.dom.traversal.NodeIterator;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -156,8 +157,9 @@ public abstract class XmlPart extends Part {
 		if (cachedXPathAPI==null) {
 			cachedXPathAPI = new CachedXPathAPI();
 
-			cachedXPathAPI.getXPathContext().setNamespaceContext(
-					getNamespaceContext());
+			// Ignored by CachedXPathAPI in Xalan 2.7.2! 
+			//cachedXPathAPI.getXPathContext().setNamespaceContext(
+			//		getNamespaceContext());
 		}
 		
 		// Init namespace prefix mappings
@@ -165,13 +167,16 @@ public abstract class XmlPart extends Part {
 				&& prefixMappings!=null ) {
 			cachedPrefixMappings = prefixMappings;
 			getNamespaceContext().registerPrefixMappings(prefixMappings);
+						
 		}
 		
 		// Register any new prefixes; simple-minded
 		if (prefixMappings!=null 
 				&& !prefixMappings.equals(cachedPrefixMappings)) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);			
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			
 		}
+		
 		
 		try {
 
@@ -194,7 +199,7 @@ public abstract class XmlPart extends Part {
 			 */
 			if (xpath.contains("=")
 					|| xpath.trim().startsWith("boolean")) {
-				XObject xo = cachedXPathAPI.eval(doc, xpath);
+				XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 				if (xo.bool(cachedXPathAPI.getXPathContext())) {
 					return "true";
 				} else {
@@ -202,22 +207,28 @@ public abstract class XmlPart extends Part {
 				}
 			} else if (xpath.trim().startsWith("count(")) {
 				
-				XObject xo = cachedXPathAPI.eval(doc, xpath);
+				XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 				double d = xo.num(cachedXPathAPI.getXPathContext());
 				return "" + Math.round(d); // convert eg 2.0		
 			}
 			
 			try {
 			
-				Node result = cachedXPathAPI.selectSingleNode(doc, xpath);
+				Node result = selectSingleNode(doc, xpath);
 	//			return result.getNodeValue();
+				
+				if (result==null) {
+					log.debug(xpath + " returned null; returning empty string");
+					return "";
+				}				
+				
 				return result.getTextContent();
 				
 			} catch (org.apache.xpath.XPathException e) {
 				
 				if (e.getMessage().contains("Can not convert #BOOLEAN")) {
 					log.debug("Fallback handling XPath of form: " + xpath);
-					XObject xo = cachedXPathAPI.eval(doc, xpath);
+					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					if (xo.bool(cachedXPathAPI.getXPathContext())) {
 						return "true";
 					} else {
@@ -226,7 +237,7 @@ public abstract class XmlPart extends Part {
 				} else if (e.getMessage().contains("Can not convert #NUMBER")) {
 
 					log.debug("Fallback handling XPath of form: " + xpath);
-					XObject xo = cachedXPathAPI.eval(doc, xpath);
+					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					double d = xo.num(cachedXPathAPI.getXPathContext());
 					return "" + d;
 				} else {
@@ -308,6 +319,57 @@ public abstract class XmlPart extends Part {
 		} 
 		
 	}
+	
+	// --- ASL v2 code copied/adapted from CachedXPathAPI
+	
+	  /**
+	   * Use an XPath string to select a single node.
+	   * XPath namespace prefixes are resolved from the namespaceNode.
+	   *
+	   * @param contextNode The node to start searching from.
+	   * @param str A valid XPath string.
+	   * @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+	   * @return The first node found that matches the XPath, or null.
+	   *
+	   * @throws TransformerException
+	   */
+	  private  Node selectSingleNode(
+	          Node contextNode, String str)
+	            throws TransformerException
+	  {
+
+	    // Have the XObject return its result as a NodeSetDTM.
+	    NodeIterator nl = selectNodeIterator(contextNode, str);
+
+	    // Return the first node, or null
+	    return nl.nextNode();
+	  }
+
+
+	  /**
+	   *  Use an XPath string to select a nodelist.
+	   *  XPath namespace prefixes are resolved from the namespaceNode.
+	   *
+	   *  @param contextNode The node to start searching from.
+	   *  @param str A valid XPath string.
+	   *  @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+	   *  @return A NodeIterator, should never be null.
+	   *
+	   * @throws TransformerException
+	   */
+	  private  NodeIterator selectNodeIterator(
+	          Node contextNode, String str)
+	            throws TransformerException
+	  {
+
+	    // Execute the XPath, and have it return the result
+	    XObject list = cachedXPathAPI.eval(contextNode, str, getNamespaceContext());
+
+	    // Have the XObject return its result as a NodeSetDTM.                
+	    return list.nodeset();
+	  }
+	  
+	  //-------------------------------
 	
     public boolean isContentEqual(Part other) throws Docx4JException {
 
