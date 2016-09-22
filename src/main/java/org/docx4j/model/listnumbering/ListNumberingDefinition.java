@@ -207,7 +207,9 @@ public class ListNumberingDefinition {
 							// is encountered in the document
 							StartOverride startOverride = overrideNode.getStartOverride();
 							if (startOverride != null
-									&& startOverride.getVal() != null) {
+									&& startOverride.getVal() != null
+									&& this.levels.size() > 0
+									&& this.levels.get(overrideLevelId) != null) {
 								
 								this.levels.get(overrideLevelId).setStartValue(
 										startOverride.getVal().subtract(BigInteger.ONE));
