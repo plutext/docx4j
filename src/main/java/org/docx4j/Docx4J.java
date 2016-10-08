@@ -50,6 +50,7 @@ import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
+import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -420,6 +421,10 @@ public class Docx4J {
 			// and does that whether or not we have an XPaths part
 			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
 			openDoPEHandler.preprocess();
+
+			// since 3.3.2
+			OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
+			odi.process(wmlPackage);
 			
 			BindingHandler bh = new BindingHandler(wmlPackage);
 			bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
