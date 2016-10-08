@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -67,7 +68,9 @@ import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
+import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.opendope.conditions.Condition;
 import org.opendope.xpaths.Xpaths;
 import org.slf4j.Logger;
@@ -897,23 +900,64 @@ public class OpenDoPEHandler {
         // .. OpenDoPEIntegrity fixes this where it is not OK, but
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
-		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
-		if (tcFinder.tcList.size()>0) {
-			Tc tc = tcFinder.tcList.get(0);
+        
+        
+        TableObjectFinder tableObjectFinder = new TableObjectFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+        
+		if (/* not in table */ tableObjectFinder.result==null) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+			
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tc) {
+			Tc tc = (Tc)tableObjectFinder.result;
 			tc.getContent().clear();
 			P p = Context.getWmlObjectFactory().createP();
 			tc.getContent().add(p);			
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();
 	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-		} else {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+		} else /* should not happen */ {
+			
 		}
 		
 		return newContent;		
 	}
 
+	/**
+	 * Determine the first tr, tc, tbl we encounter nested in here
+	 * 
+	 * @author jharrop
+	 *
+	 */
+	private static class  TableObjectFinder extends CallbackImpl {
+		
 
+		public Object result;
+				
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof Tbl
+					|| o instanceof Tr
+					|| o instanceof Tc ) {
+				result = o;
+			}			
+			return null; 
+		}
+		
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			return (result==null);
+		}
+	}
+	
+	
 //	private Object obtainParent(Object sdt) {
 //		if (!(sdt instanceof Child))
 //			throw new IllegalArgumentException("Object of class "
