@@ -158,6 +158,8 @@ public class NamespacePrefixMapperUtils {
 	 */
 	public static void setProperty(Marshaller marshaller, Object namespacePrefixMapper) throws JAXBException {
 		
+		log.debug("attempting to setProperty on marshaller " + marshaller.getClass().getName() );
+		
 		try {
 			if ( namespacePrefixMapper.getClass().getName().equals(
 						"org.docx4j.jaxb.NamespacePrefixMapper")
@@ -182,6 +184,7 @@ public class NamespacePrefixMapperUtils {
 			
 		} catch (javax.xml.bind.PropertyException e) {
 			
+			log.error("Couldn't setProperty on marshaller " + marshaller.getClass().getName() );
 			log.error(e.getMessage(), e);
 			throw e;
 			

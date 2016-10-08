@@ -294,6 +294,8 @@ public class BindingHandler {
 				WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings) {
 			
+			log.debug(xpath + " with " + prefixMappings);
+			
 			try {
 				
 				if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {

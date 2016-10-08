@@ -914,7 +914,7 @@ public class OpenDoPEHandler {
 		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
 			
-		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tc) {
+		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
 			Tc tc = (Tc)tableObjectFinder.result;
 			tc.getContent().clear();
 			P p = Context.getWmlObjectFactory().createP();
