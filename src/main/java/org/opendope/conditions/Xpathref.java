@@ -155,7 +155,7 @@ public class Xpathref implements Evaluable {
 				// so enhance ..
 				// NB this code is currently specific to oda:answers XML
 			} else {
-				System.out.println("retaining: " + thisXPath);
+				log.debug("retaining: " + thisXPath);
 				return null; // ?
 			}
 		} 
