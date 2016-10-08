@@ -921,8 +921,9 @@ public class OpenDoPEHandler {
 			tc.getContent().add(p);			
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();
 	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
+	        
 		} else /* should not happen */ {
-			
+			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());			
 		}
 		
 		return newContent;		
@@ -1239,19 +1240,30 @@ public class OpenDoPEHandler {
         // .. OpenDoPEIntegrity fixes this where it is not OK, but
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
-		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
-		if (tcFinder.tcList.size()>0) {
-			Tc tc = tcFinder.tcList.get(0);
+        TableObjectFinder tableObjectFinder = new TableObjectFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+        
+		if (/* not in table */ tableObjectFinder.result==null) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+			
+		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
+			Tc tc = (Tc)tableObjectFinder.result;
 			tc.getContent().clear();
 			P p = Context.getWmlObjectFactory().createP();
-			tc.getContent().add(p);
+			tc.getContent().add(p);			
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();
 	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-		} else {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+	        
+		} else /* should not happen */ {
+			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());
 		}
-        
+
 		
 		return newContent;
 	}
