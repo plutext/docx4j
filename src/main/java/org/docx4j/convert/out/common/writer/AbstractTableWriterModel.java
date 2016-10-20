@@ -105,7 +105,7 @@ public class AbstractTableWriterModel extends TableModel {
 	 * <var>tc</var> to it.
 	 */
 	public void addCell(Tc tc, Node content) {
-		System.out.println("Add tc row " + row + " col 1+" + col);
+		log.debug("Add tc row " + row + " col 1+" + col);
 		addRow(new AbstractTableWriterModelCell(this, row, ++col, tc, content));
 		
 		// add dummy cells
