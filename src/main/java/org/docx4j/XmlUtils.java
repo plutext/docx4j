@@ -1435,7 +1435,14 @@ public class XmlUtils {
     		xpath.setNamespaceContext(nsContext);
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
             
-            log.info("evaluate returned " + nl.getLength() );
+            if (log.isDebugEnabled()) {
+            	log.debug("evaluate returned " + nl.getLength() );
+            }
+            
+            if (nl.getLength()==0) {
+            	log.info("no results for xpath " + xpathExpression );
+            }
+            
             for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
             }
