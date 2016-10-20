@@ -1,6 +1,10 @@
 package org.docx4j.model.datastorage.xpathtracker;
 
 import javax.xml.namespace.QName;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -10,12 +14,21 @@ import java.util.HashMap;
  * @author Kohsuke Kawaguchi
  */
 public final class Histgram {
+	
+	private static Logger log = LoggerFactory.getLogger(Histgram.class);	
+	
     private final Map<QName,Integer> occurrence = new HashMap<QName, Integer>();
 
     private String current;
     private int currentValue;
 
     public void update(String uri, String localName, String qName) {
+    	
+    	if (localName.contains(":") /* QName constructor allows that */) {
+    		log.error("Unexpected localName " + localName);
+    		throw new java.lang.IllegalArgumentException("Unexpected localName " + localName);
+    	}    	
+    	
         QName qn = new QName(uri,localName);
         Integer v = occurrence.get(qn);
         if(v==null) {

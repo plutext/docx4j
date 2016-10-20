@@ -63,66 +63,13 @@ public class DomToXPathMap {
                 }
                 break;
             case Node.ELEMENT_NODE:
-            	
+            	            	
                 histgrams.peek().update(
                 		sourceNode.getNamespaceURI(),
-                		sourceNode.getLocalName(),
+                		sourceNode.getNodeName() /* not getLocalName, which returns null if the element was created using createElement() */,
                 		/* qname */ sourceNode.getNodeName() );
                 histgrams.push(new Histgram());
             	
-//        		// .. its attributes
-//            	NamedNodeMap atts = sourceNode.getAttributes();
-//            	for (int i = 0 ; i < atts.getLength() ; i++ ) {
-//            		
-//            		Attr attr = (Attr)atts.item(i);
-//
-////            		log.debug("attr.getNodeName(): " + attr.getNodeName());
-////            		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
-////            		log.debug("attr.getLocalName(): " + attr.getLocalName());
-////            		log.debug("attr.getPrefix(): " + attr.getPrefix());
-//            		
-//            		if ( attr.getNodeName().startsWith("xmlns:")) {
-//            			/* A document created from a dom4j document using dom4j 1.6.1's io.domWriter
-//                			does this ?!
-//                			attr.getNodeName(): xmlns:w 
-//                			attr.getNamespaceURI(): null
-//                			attr.getLocalName(): null
-//                			attr.getPrefix(): null
-//                			
-//                			unless i'm doing something wrong, this is another reason to
-//                			remove use of dom4j from docx4j
-//            			*/ 
-//                		; 
-//                		// this is a namespace declaration. not our problem
-//            		} else if (attr.getNamespaceURI()==null) {
-//                		//log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
-//            			((org.w3c.dom.Element)newChild).setAttribute(
-//                				attr.getName(), attr.getValue() );
-//            		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
-//                		; // this is a namespace declaration. not our problem
-//            		} else if ( attr.getNodeName()!=null ) {
-//            				// && attr.getNodeName().equals("xml:space")) {
-//            				// restrict this fix to xml:space only, if necessary
-//
-//            			// Necessary when invoked from BindingTraverserXSLT,
-//            			// com.sun.org.apache.xerces.internal.dom.AttrNSImpl
-//            			// otherwise it was becoming w:space="preserve"!
-//            			
-//						/* eg xml:space
-//						 * 
-//							attr.getNodeName(): xml:space
-//							attr.getNamespaceURI(): http://www.w3.org/XML/1998/namespace
-//							attr.getLocalName(): space
-//							attr.getPrefix(): xml
-//						 */
-//            			
-//                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-//                				attr.getNodeName(), attr.getValue() );	                			
-//            		} else  {
-//                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-//                				attr.getLocalName(), attr.getValue() );	                			
-//            		}
-//            	}
 
                 // recurse on each child
                 NodeList children = sourceNode.getChildNodes();
