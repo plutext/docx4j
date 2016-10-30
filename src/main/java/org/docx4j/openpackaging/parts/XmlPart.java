@@ -195,21 +195,73 @@ public abstract class XmlPart extends Part {
 				at org.apache.xpath.CachedXPathAPI.selectSingleNode(CachedXPathAPI.java:144)
 				at org.apache.xpath.CachedXPathAPI.selectSingleNode(CachedXPathAPI.java:124)
 
-			 * Quick n dirty heuristic:
+			 * Quick n dirty heuristic to try to avoid falling through to the catch block.
+			 * 
 			 */
+ 
 			if (xpath.contains("=")
-					|| xpath.trim().startsWith("boolean")) {
-				XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
-				if (xo.bool(cachedXPathAPI.getXPathContext())) {
-					return "true";
+				|| xpath.trim().startsWith("boolean")) {
+					
+				if (xpath.contains("count(")
+						) {
+					
+					// eg: count(*[@foo='1']) is not boolean!
+					log.debug("complex path detected: " + xpath);
+					// fall through to catch handling
+						
 				} else {
-					return "false";					
-				}
-			} else if (xpath.trim().startsWith("count(")) {
 				
-				XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
-				double d = xo.num(cachedXPathAPI.getXPathContext());
-				return "" + Math.round(d); // convert eg 2.0		
+					try {
+						XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
+						if (xo.bool(cachedXPathAPI.getXPathContext())) {
+							return "true";
+						} else {
+							return "false";					
+						}
+					} catch (org.apache.xpath.XPathException e) {
+						log.debug(e.getMessage());
+						// handle below
+					}
+				}
+					
+			} else if (xpath.trim().startsWith("count(")) {
+
+				/*
+				 * Consider:
+				 * 
+				 *     count(path1) > 0 or count(path2 > 0)  which is boolean
+				 * 
+				 * versus
+				 * 
+				 *     count(path1 or path2) which is number
+				 * 
+				 * Let's not try to tell which we want here.
+				 */
+				if (xpath.contains("=")
+						|| xpath.contains(">")
+						|| xpath.contains("<")
+						) {
+					
+					log.debug("complex path detected: " + xpath);
+					// fall through to catch handling
+						
+				} else {
+					// Reasonably confident this is a number
+					try {
+						XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
+						double d = xo.num(cachedXPathAPI.getXPathContext());
+						if (xpath.trim().startsWith("count(")
+								&& /* it looks like it should be an integer */ d == Math.rint(d)) {
+							return "" + Math.round(d); // convert eg 2.0
+							
+						} else {
+							return "" + d;
+						}
+					} catch (org.apache.xpath.XPathException e) {
+						log.debug(e.getMessage());
+						// handle below
+					}
+				}
 			}
 			
 			try {
@@ -239,7 +291,13 @@ public abstract class XmlPart extends Part {
 					log.debug("Fallback handling XPath of form: " + xpath);
 					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					double d = xo.num(cachedXPathAPI.getXPathContext());
-					return "" + d;
+					if (xpath.trim().startsWith("count(")
+							&& /* it looks like it should be an integer */ d == Math.rint(d)) {
+						return "" + Math.round(d); // convert eg 2.0
+						
+					} else {
+						return "" + d;
+					}
 				} else {
 					log.warn("Handle XPath of form: " + xpath);
 					throw e;
