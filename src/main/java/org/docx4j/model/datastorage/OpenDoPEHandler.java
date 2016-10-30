@@ -802,8 +802,10 @@ public class OpenDoPEHandler {
 				return newContent;
 
 			} else if (reverterSupported){
+				log.debug("false");
 				return conditionFalse(sdt);
 			} else {
+				log.debug("false");
 				return new ArrayList<Object>(); // effectively, delete
 				// Potentially slightly faster processing, since 
 				// the conditionFalse sdt doesn't need to be created.
