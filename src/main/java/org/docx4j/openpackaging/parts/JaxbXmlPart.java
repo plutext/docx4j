@@ -32,6 +32,9 @@ import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -58,6 +61,9 @@ import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -276,6 +282,80 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //	    return s.hasNext() ? s.next() : "";
 //	}
 	
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your SAXHandler. 
+	 * This is offered as an alternative to the similar methods which use StAX.  If you are
+	 * unsure which to use, you should probably use the StAX approach.
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param saxHandler
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws Docx4JException
+	 * @throws IOException
+	 * @throws JAXBException
+	 */
+	public void pipe(SAXHandler saxHandler) throws ParserConfigurationException, SAXException, Docx4JException, IOException, JAXBException {
+		
+	    SAXParserFactory spf = SAXParserFactory.newInstance();
+	    spf.setNamespaceAware(true);
+	    SAXParser saxParser = spf.newSAXParser();		
+		
+	    XMLReader xmlReader = saxParser.getXMLReader();
+	    xmlReader.setContentHandler(saxHandler);
+	    
+	    PartStore partStore = null;
+	    
+		if (jaxbElement==null) {
+
+			partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Fetching from part store " + name);
+					
+			    xmlReader.parse(new InputSource(is));	
+			}
+			
+		} else {
+			
+			// TODO inefficient? But for now..
+		    xmlReader.parse(new InputSource(
+		    		XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc)));            
+		}
+		
+        //log.debug((new String(baos.toByteArray())).substring(0, 4000) );
+		
+		if (jaxbElement==null
+				&& partStore instanceof ZipPartStore ) {
+			
+			log.debug("Just update the entry in the ZipPartStore");
+			
+			// Just update the entry in the ZipPartStore
+			ByteArray byteArray = ((ZipPartStore)partStore).getByteArray(this.getPartName().getName().substring(1));
+			byteArray.setBytes(saxHandler.getOutputStream().toByteArray());
+			
+		} else {
+			
+			if (jaxbElement==null
+					&& log.isInfoEnabled()) {				
+				log.info(partStore.getClass().getName() + ": can't update in place, so unmarshalling.");
+			} else {			
+				log.debug("unmarshalling");
+			}
+			jaxbElement = this.unmarshal( new ByteArrayInputStream(saxHandler.getOutputStream().toByteArray()) );  // so much for avoiding JAXB!
+			
+		}
+	}
+	
 	/**
 	 * Replace the contents of this part with the output of passing it through your StAXHandler. 
 	 * 
@@ -330,7 +410,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				log.warn(name + " missing from part store");
 				throw new Docx4JException(name + " missing from part store");
 			} else {
-				log.info("Lazily unmarshalling " + name);
+				log.info("Fetching from part store " + name);
 					
 		        if (filter==null) {
 		        	xmlr = xmlif.createXMLStreamReader(is);
