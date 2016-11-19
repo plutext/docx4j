@@ -32,10 +32,12 @@ import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilder;
+import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -49,6 +51,8 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.slf4j.Logger;
@@ -270,7 +274,132 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //	private static String convertStreamToString(java.io.InputStream is) {
 //	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 //	    return s.hasNext() ? s.next() : "";
-//	}	
+//	}
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your StAXHandler. 
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param handler
+	 * @throws XMLStreamException
+	 * @throws Docx4JException
+	 * @throws JAXBException
+	 */
+	public void pipe(StAXHandlerInterface handler) throws XMLStreamException, Docx4JException, JAXBException {
+		
+		pipe( handler, null);
+	}
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your StAXHandler. 
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param handler
+	 * @param filter
+	 * @throws XMLStreamException
+	 * @throws Docx4JException
+	 * @throws JAXBException
+	 */
+	public void pipe(StAXHandlerInterface handler, StreamFilter filter) throws XMLStreamException, Docx4JException, JAXBException {
+		
+	       XMLInputFactory xmlif = null;
+	        xmlif = XMLInputFactory.newInstance();
+	        xmlif.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES,Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,Boolean.FALSE);
+	        xmlif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.REPORTER,"");
+	    
+	    // First, set up stream reader
+	    XMLStreamReader xmlr = null;
+	    PartStore partStore = null;
+
+		if (jaxbElement==null) {
+
+			partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Lazily unmarshalling " + name);
+					
+		        if (filter==null) {
+		        	xmlr = xmlif.createXMLStreamReader(is);
+		        } else {
+		        	xmlr = xmlif.createFilteredReader(xmlif.createXMLStreamReader(is), filter);            
+		        }
+					
+			}
+			
+		} else {
+			
+			// TODO marshal to XmlStreamWriter or event, then read from that.
+			// But for now..
+	        if (filter==null) {
+	        	xmlr = xmlif.createXMLStreamReader(XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc));
+	        } else {
+	        	xmlr = xmlif.createFilteredReader(
+	        			xmlif.createXMLStreamReader(
+	        					XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc)), filter);            
+	        }			
+		}
+		
+        XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();            
+        XMLStreamWriter xmlWriter = null; // outputFactory.createXMLStreamWriter(outputFile);    
+        ByteArrayOutputStream baos = null;
+        
+		if (jaxbElement==null) {
+			baos = new ByteArrayOutputStream(); 
+			xmlWriter = outputFactory.createXMLStreamWriter(baos);
+			
+		} else {
+			
+			// TODO make a XmlStreamWriter we can read from
+			// But for now
+			baos = new ByteArrayOutputStream(); 
+			xmlWriter = outputFactory.createXMLStreamWriter(baos);
+		}
+		
+		handler.handle(xmlr, xmlWriter);
+        
+        xmlr.close();
+        xmlWriter.flush();
+        xmlWriter.close();  
+        
+        //log.debug((new String(baos.toByteArray())).substring(0, 4000) );
+		
+		if (jaxbElement==null
+				&& partStore instanceof ZipPartStore ) {
+			
+			log.debug("Just update the entry in the ZipPartStore");
+			
+			// Just update the entry in the ZipPartStore
+			ByteArray byteArray = ((ZipPartStore)partStore).getByteArray(this.getPartName().getName().substring(1));
+			byteArray.setBytes(baos.toByteArray());
+			
+		} else {
+			
+			if (jaxbElement==null
+					&& log.isInfoEnabled()) {				
+				log.info(partStore.getClass().getName() + ": can't update in place, so unmarshalling.");
+			} else {			
+				log.debug("unmarshalling");
+			}
+			jaxbElement = this.unmarshal( new ByteArrayInputStream(baos.toByteArray()) );  // so much for avoiding JAXB!
+			
+		}
+	}
+	
+	
 	
     /**
      * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.

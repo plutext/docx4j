@@ -192,7 +192,21 @@ public class ZipPartStore implements PartStore {
         }
 		return bytes.getLength();
 	}
-	
+
+	/**
+	 * This method is to facilitate updating the part without
+	 * JAXB unmarshalling then marshalling.  Not intended for direct
+	 * use by user code.
+	 * 
+	 * @param partName
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.3.2
+	 */
+	public ByteArray getByteArray(String partName) throws Docx4JException {
+
+		return partByteArrays.get(partName);
+	}
 	
 	///// Save methods
 
@@ -446,6 +460,18 @@ public class ZipPartStore implements PartStore {
 		private byte[] bytes;
 		public byte[] getBytes() {
 			return bytes;
+		}
+		
+		
+		/**
+		 * Replace the contents. Not intended for direct
+		 * use by user code.
+		 * 
+		 * @param bytes
+		 * @since 3.3.2
+		 */  
+		public void setBytes(byte[] bytes) {
+			this.bytes = bytes;
 		}
 
 		private String mimetype;
