@@ -30,6 +30,18 @@ public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
 	}
 	
 	
+	/**
+	 * This is designed to cater for the common case of replacing character content.
+	 * Everything else is passed through unchanged.
+	 * 
+	 * If you wanted to find say a w:tbl then handle it with JAXB, you'll need to
+	 * override this method and handle START_ELEMENT and END_ELEMENT differently
+	 * (keeping track of where you are, so they match).
+	 * 
+	 * @param xmlr
+	 * @param writer
+	 * @throws XMLStreamException
+	 */
 	public void write(XMLStreamReader xmlr, XMLStreamWriter writer)
 			throws XMLStreamException {
 		
@@ -67,7 +79,7 @@ public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
 				
 			case XMLEvent.CHARACTERS:
 				
-				handleCharacters( xmlr, writer);			
+				handleCharacters( xmlr, writer);	// TODO: include identity implementation		
 				break;
 				
 			case XMLEvent.PROCESSING_INSTRUCTION:

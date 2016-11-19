@@ -2,6 +2,19 @@ CHANGELOG
 =========
 
 
+Notable Changes in Version 3.3.2 (forthcoming)
+---------------------------------
+
+JAXBXmlPart pipe methods, which enable you to process using StAX or SAX
+(avoiding JAXB overhead)
+
+Fix for issue 212: broken in 3.3.0-3.3.1 JAXBElement deepCopy 
+
+Fix for OpenDoPE complex conditions (broken by 3.3.1)
+
+
+
+
 Version 3.3.1  minor release
 =============
 
