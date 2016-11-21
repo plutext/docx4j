@@ -2,17 +2,31 @@ CHANGELOG
 =========
 
 
-Notable Changes in Version 3.3.2 (forthcoming)
+
+Version 3.3.2  minor release (forthcoming)
+=============
+
+Release date
+------------
+
+?? December 2016
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.2 
 ---------------------------------
 
 JAXBXmlPart pipe methods, which enable you to process using StAX or SAX
-(avoiding JAXB overhead)
+(avoiding JAXB overhead);  see VariableReplaceStAX for an example
 
-Fix for issue 212: broken in 3.3.0-3.3.1 JAXBElement deepCopy 
-
-Fix for OpenDoPE complex conditions (broken by 3.3.1)
-
-
+Various bugfixes, including:
+- fix for OpenDoPE complex conditions (broken by 3.3.1)
+- fix for IllegalArgumentException: local part cannot be "null" when creating a QName
 
 
 Version 3.3.1  minor release
