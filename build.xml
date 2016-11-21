@@ -16,8 +16,10 @@
 	
 	<property name="m2Repository" value="../../../.m2/repository"/>	
 	
-    <!--.NET properties -->
+    <!--.NET properties 
     <property name="ikvm.dir" value="/Java/ikvm/ikvm-7.3.4830.0"/>
+    -->
+    <property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
     <property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 	
 	<!-- 
@@ -181,28 +183,32 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.0/docx4j-export-fo-3.3.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.1/docx4j-export-fo-3.3.1.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.1/fop-2.1.jar"/>
          
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.7/batik-svg-dom-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.7/batik-anim-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.7/batik-css-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.7/batik-dom-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.7/batik-parser-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.7/batik-util-1.7.jar"/>
-
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.7/batik-bridge-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.7/batik-script-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-js/1.7/batik-js-1.7.jar"/> 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.7/batik-xml-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.7/batik-awt-util-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.7/batik-gvt-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.7/batik-transcoder-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.7/batik-svggen-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.7/batik-extension-1.7.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.7/batik-ext-1.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.8/batik-svg-dom-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.8/batik-dom-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.8/batik-parser-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.8/batik-util-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.8/batik-bridge-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.8/batik-anim-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.8/batik-script-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.8/batik-xml-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.8/batik-awt-util-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.8/batik-gvt-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.8/batik-transcoder-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.8/batik-svggen-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.8/batik-extension-1.8.jar"/>
+        
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.8/batik-ext-1.8.jar"/>
         
 	</path>    
 
@@ -406,7 +412,7 @@
 			         8,885,248 docx4j-fop.dll
 			        16,741,888 docx4j.dll   
 			        
-			   but seems more trouble than it is worth      
+			   and its natural to do that in docx4j 3.30 onwards (since export-fo is a separate project)   
 
 		        <pathconvert refid="FOP-stuff.classpath" property="fop-jars" pathsep=" "/>        
 				<exec executable="${ikvmc}">
@@ -460,8 +466,13 @@
             	   Prior to that, for nuget, we didn't snk; for Enterprise usage in GAC, we may
              -->
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:${version}" /> <!--  must be of the form a.b.c.d -->
-            <arg value="-reference:dll/slf4j-api-1.7.5-snk.dll" />            
+            <arg value="-version:${version}.6" /> <!--  must be of the form a.b.c.d -->
+            <!--
+            	.1 is last IKVM 7.3.4830.0
+                .5 uses IKVM 8.1.5717.0, fixes canonicalisation problem
+            
+            -->
+            <arg value="-reference:dll/slf4j-api.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
             -->            
