@@ -123,10 +123,6 @@
 	<logger name="org.docx4j.model">
 		<level value="warn"/> 
 	</logger>	
-
-	<logger name="org.docx4j.model.datastorage">
-		<level value="warn"/> 
-	</logger>	
 		
 	<logger name="org.docx4j.model.fields">
 		<level value="warn"/> 
@@ -177,6 +173,24 @@
 	</logger>	
     
     <logger name="org.docx4j.wml">
+  		<level value="warn"/> 
+	</logger>
+
+    <!--  OpenDoPE functionality loggers -->
+
+	<logger name="org.docx4j.model.datastorage">
+		<level value="warn"/> 
+	</logger>	
+		
+    <logger name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.docx4j.openpackaging.parts.XmlPart">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.opendope">
   		<level value="warn"/> 
 	</logger>
 	
