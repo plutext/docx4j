@@ -1625,9 +1625,10 @@ public class OpenDoPEHandler {
 		dataBinding.setPrefixMappings(
 				xpathObj.getDataBinding().getPrefixMappings());
 		
-		//xPaths.getXpath().add(newXPathObj);
-		if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
-			log.error("New xpath entry overwrites existing xpath " + newXPathId);
+		if (log.isDebugEnabled() ) {
+			if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
+				log.debug("New xpath entry overwrites existing xpath " + newXPathId);
+			}
 		}
 		return newXPathObj;
 	}
