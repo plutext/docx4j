@@ -168,8 +168,11 @@
   		<level value="warn"/> 
 	</logger>
 	
+    <logger name="org.docx4j.services.client">
+  		<level value="debug"/> 
+	</logger>	
     <logger name="org.docx4j.toc">
-  		<level value="warn"/> 
+  		<level value="debug"/> 
 	</logger>	
     
     <logger name="org.docx4j.wml">
