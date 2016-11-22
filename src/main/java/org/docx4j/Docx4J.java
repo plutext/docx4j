@@ -399,7 +399,9 @@ public class Docx4J {
 		
 		customXmlDataStoragePart 
 			= CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(wmlPackage);
-		if (customXmlDataStoragePart==null) {
+		if (customXmlDataStoragePart==null
+				&& flags != FLAG_BIND_REMOVE_SDT /* OK if that's all we're doing */) {
+			
 			throw new Docx4JException("Couldn't find CustomXmlDataStoragePart! exiting..");
 		}
 	
