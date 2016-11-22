@@ -35,6 +35,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -43,6 +45,9 @@ import org.apache.http.impl.client.HttpClients;
  * @since 3.3.0
  */
 public class ConverterHttp implements Converter {
+	
+	private static Logger log = LoggerFactory.getLogger(ConverterHttp.class);	
+	
 		
 	private String URL = null;  
 	
@@ -51,6 +56,8 @@ public class ConverterHttp implements Converter {
 	}
 	
 	public ConverterHttp(String endpointURL) {
+		
+		log.debug("starting, with endpointURL: " + endpointURL);
 		
 		if (endpointURL!=null) {
 			this.URL = endpointURL;
@@ -91,7 +98,7 @@ public class ConverterHttp implements Converter {
             httppost.setEntity(reqEntity);
 
             execute(httpclient, httppost, os);
-        	System.out.println("..done");
+        	log.debug("..done");
         } finally {
             httpclient.close();
         }

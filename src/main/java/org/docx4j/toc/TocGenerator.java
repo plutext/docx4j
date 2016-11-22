@@ -410,7 +410,7 @@ public class TocGenerator {
 	        sdtContent.getContent().add(toc.getLastParagraph());
 	        
 	        // Add page numbers
-	        if(!skipPageNumbering && sp.pageNumbers() ){
+	        if(!skipPageNumbering && sp.pageNumbers() ) {
 	            Map<String, Integer> pageNumbersMap = getPageNumbersMap();
 	            Integer pageNumber;
 	            for(TocEntry entry: tocEntries){
@@ -563,6 +563,8 @@ public class TocGenerator {
 
     private Map<String, Integer> getPageNumbersMapViaService() throws TocException {
     	
+    	log.debug("getPageNumbersMapViaService() starting..");
+    	
     	// We always have to save the pkg, since we always update the entire table
     	// (which might alter the document length)
     	
@@ -594,6 +596,7 @@ public class TocGenerator {
 			
 		try {
 			converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
+			log.debug("page numbers successfully received from service");
 		} catch (ConversionException e) {
 			
 			if (e.getResponse()!=null) {
@@ -665,7 +668,7 @@ public class TocGenerator {
 			map.put(entry.getKey(), new Integer(entry.getValue().asInt()));
 		}		
 		
-//		System.out.println("map size " + map.size());
+		log.debug("page number map size " + map.size());
 //		System.out.println(map);
 			
 		return map;
@@ -679,6 +682,8 @@ public class TocGenerator {
      * @throws TocException
      */
     private Map<String, Integer> getPageNumbersMapViaFOP() throws TocException {
+    	
+    	log.debug("getPageNumbersMapViaFOP() starting..");
     	
         long start = System.currentTimeMillis();
     	
