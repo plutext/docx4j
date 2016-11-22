@@ -73,6 +73,7 @@ import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
 import org.opendope.conditions.Condition;
 import org.opendope.xpaths.Xpaths;
+import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -1625,11 +1626,19 @@ public class OpenDoPEHandler {
 		dataBinding.setPrefixMappings(
 				xpathObj.getDataBinding().getPrefixMappings());
 		
-		if (log.isDebugEnabled() ) {
-			if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
-				log.debug("New xpath entry overwrites existing xpath " + newXPathId);
+		Xpath oldKey = xpathsMap.put(newXPathId, newXPathObj);
+		if (oldKey!=null) {
+			if (oldKey.getDataBinding().getXpath().equals(newPath)) {
+				// OK
+				log.debug("New xpath entry overwrites existing identical xpath " + newXPathId);
+			} else {
+				// bad
+				log.warn("New xpath entry overwrites existing different xpath " + newXPathId);					
+				log.warn("Old: " + oldKey.getDataBinding().getXpath());					
+				log.warn("New: " + newPath);					
 			}
 		}
+		
 		return newXPathObj;
 	}
 
