@@ -71,28 +71,9 @@ public class SwitchProcessor {
     private boolean styleFound = false;
     
     private boolean pageNumbers = true;
-    
-    private Calendar now = Calendar.getInstance();
-    private Calendar later = Calendar.getInstance();
-    
-    private final static String TRIAL_BLURB = "<!-- Plutext TOC helper trial/evaluation expired -->"; 
-    private final static P TRIAL_P = Context.getWmlObjectFactory().createP();
-    static {
-    	
-      R r = Context.getWmlObjectFactory().createR();
-      TRIAL_P.getContent().add(r);
-            
-      Text text = Context.getWmlObjectFactory().createText(); 
-      JAXBElement<Text> textWrapped = Context.getWmlObjectFactory().createRT(text);  
-      
-      text.setValue(TRIAL_BLURB);
-      r.getContent().add(textWrapped);    	
-    }
-    
+        
     public SwitchProcessor(PageDimensions pageDimensions) {
     
-        later.set(2015, 11, 3); // 0 is January, so 11 is Dec
-    	
     	this.pageDimensions = pageDimensions;
     }
     
