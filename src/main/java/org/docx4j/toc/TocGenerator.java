@@ -54,13 +54,16 @@ import org.docx4j.toc.switches.SwitchProcessor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTSdtDocPart;
+import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,18 +174,39 @@ public class TocGenerator {
 
     
     /**
-     * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document
+     * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document,
+     * using dot leader for page numbering (if any).
      * 
      * It is an error if a ToC content control is already present; delete it or use updateToc.
      * 
      * To alter the ToC heading, use Toc.setTocHeadingText
      * 
-     * @param body
      * @param index
      * @param instruction
+     * @param skipPageNumbering
      * @return SdtBlock control
      */
     public SdtBlock generateToc(int index, String instruction, boolean skipPageNumbering) throws TocException {
+    	
+        return generateToc(  index,  instruction, TocHelper.DEFAULT_TAB_LEADER, skipPageNumbering);
+    }
+
+    /**
+     * Generate Table of Contents using provided TOC instruction, and specified leader (eg dots) before
+     * page number, adding at the given index in the body of document
+     * 
+     * It is an error if a ToC content control is already present; delete it or use updateToc.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
+     * @param index
+     * @param instruction
+     * @param leader
+     * @param skipPageNumbering
+     * @return SdtBlock control
+     * @since 3.3.2
+     */
+    public SdtBlock generateToc(int index, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -204,9 +228,8 @@ public class TocGenerator {
         
         sdt = createSdt();
         body.getContent().add(index, sdt);
-        return generateToc(  sdt,  instruction, skipPageNumbering);
+        return generateToc(  sdt,  instruction, leader, skipPageNumbering);
     }
-
     
     /**
      * Generate Table of Contents in the given sdt with generated heading, and given TOC instruction.
@@ -220,7 +243,7 @@ public class TocGenerator {
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
      */
-    protected SdtBlock generateToc(SdtBlock sdt, String instruction, boolean skipPageNumbering) throws TocException {
+    protected SdtBlock generateToc(SdtBlock sdt, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -279,7 +302,7 @@ public class TocGenerator {
         
         populateToc(  
         		 sdtContent, 
-        		 instruction,  skipPageNumbering);
+        		 instruction,  leader, skipPageNumbering);
         
         return sdt;
         
@@ -296,7 +319,7 @@ public class TocGenerator {
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
      */
-    protected  SdtBlock generateToc(SdtBlock sdt, List<P> tocHeadingP, String instruction, boolean skipPageNumbering) throws TocException {
+    protected  SdtBlock generateToc(SdtBlock sdt, List<P> tocHeadingP, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -318,7 +341,7 @@ public class TocGenerator {
         
         populateToc( 
         		 sdtContent, 
-        		 instruction,  skipPageNumbering);
+        		 instruction, leader, skipPageNumbering);
         
         return sdt;
 
@@ -348,7 +371,8 @@ public class TocGenerator {
      */
     private  void populateToc(
     		SdtContentBlock sdtContent, 
-    		String instruction, boolean skipPageNumbering) throws TocException {
+    		String instruction, STTabTlc leader,
+    		boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -384,7 +408,7 @@ public class TocGenerator {
         // Work out paragraph numbering
         Map<P, ResultTriple> pNumbersMap = numberParagraphs( pList);
         
-        SwitchProcessor sp = new SwitchProcessor(pageDimensions);
+        SwitchProcessor sp = new SwitchProcessor(pageDimensions, leader);
         sp.setStartingIdForNewBookmarks(bookmarkId);
         tocEntries.addAll(
         		sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
@@ -471,14 +495,31 @@ public class TocGenerator {
     	return (new TocGenerator(wordMLPackage)).updateToc( skipPageNumbering);
     }
     
+    
+
     /**
-     * Update existing TOC in the document with TOC generated by generateToc() method.
+     * Update existing TOC in the document with TOC generated by generateToc() method. Attempt to identify/re-use existing dot leader.
      * @param body
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @param reuseExistingToCHeadingP  
      * @return SdtBlock control, or null if no TOC was found
      */
     public  SdtBlock updateToc( boolean skipPageNumbering, boolean reuseExistingToCHeadingP) throws TocException{
+    	
+    	return updateToc(  skipPageNumbering,  reuseExistingToCHeadingP,  null);
+
+    }
+    
+    /**
+     * Update existing TOC in the document with TOC generated by generateToc() method, using specified tab leader.
+     * @param body
+     * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
+     * @param reuseExistingToCHeadingP  
+     * @param leader
+     * @return SdtBlock control, or null if no TOC was found
+     * @since 3.3.2
+     */
+    public  SdtBlock updateToc( boolean skipPageNumbering, boolean reuseExistingToCHeadingP, STTabTlc leader) throws TocException{
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -498,6 +539,10 @@ public class TocGenerator {
         if(instruction.isEmpty()){
             throw new TocException("TOC instruction text missing");
         }
+        
+        if (leader==null) {
+        	leader = getExistingTabLeader(sdt.getSdtContent().getContent());
+        }
 
         //remove old TOC
         sdt.getSdtContent().getContent().clear();
@@ -505,18 +550,76 @@ public class TocGenerator {
         if (finder.tocHeadingP==null 
         		|| finder.tocHeadingP.size()==0 ) {
         	log.warn("No ToC header paragraph found; generating..");
-            generateToc( sdt, instruction, skipPageNumbering);
+            generateToc( sdt, instruction, leader, skipPageNumbering);
             
         } else if ( !reuseExistingToCHeadingP ) {
             	log.debug("Generating ToC header paragraph ..");
-                generateToc( sdt, instruction, skipPageNumbering);
+                generateToc( sdt, instruction, leader, skipPageNumbering);
                 
         } else {
         	log.debug("Reusing existing ToC header paragraph");
-            generateToc( sdt, finder.tocHeadingP, instruction, skipPageNumbering);        	
+            generateToc( sdt, finder.tocHeadingP, instruction, leader, skipPageNumbering);        	
         }
 
         return sdt;
+    }
+    
+    private STTabTlc getExistingTabLeader(List<Object> contents) {
+    	
+    	STTabTlc leader = null;
+    	
+    	/*  The simple-minded approach we take here is that we try to
+    	 *  look in the second paragraph:
+    	 *  
+	      <w:sdtContent>
+	      
+	        <w:p>
+	          <w:pPr>
+	            <w:pStyle w:val="TOCHeading"/>
+	          </w:pPr>
+	          <w:r>
+	            <w:t>Contents</w:t>
+	          </w:r>
+	        </w:p>
+	        
+	        <w:p>
+	          <w:pPr>
+	            <w:pStyle w:val="TOC1"/>
+	            <w:tabs>
+	              <w:tab w:val="right" w:leader="dot" w:pos="9629"/>
+	            </w:tabs>
+                	 */
+    	
+    	if (contents.size()>1) {
+    		Object o = contents.get(1);
+    		if (o instanceof P) {
+    			P sampleP = (P)o;
+    			if (sampleP.getPPr()!=null
+    					&& sampleP.getPPr()!=null
+    					&& sampleP.getPPr().getTabs()!=null) {
+    				
+    				Tabs sampleTabs = sampleP.getPPr().getTabs();
+    				if (sampleTabs.getTab().size()>0) {
+    					CTTabStop tab = sampleTabs.getTab().get(0);
+    					leader = tab.getLeader();
+    					if (leader==null) {
+    						leader = STTabTlc.NONE;
+        		        	log.debug("Reusing existing leader (in this case, STTabTlc.NONE)");
+    					} else {
+        		        	log.debug("Reusing existing leader");    						
+    					}
+    				}
+    				
+    			}
+    		}
+    	}
+    	
+    	// if can't work it out, log that then return dots
+    	if (leader == null) {
+    		log.info("Couldn't figure out leader from existing ToC; defaulting to dots");
+    		leader = TocHelper.DEFAULT_TAB_LEADER;
+    	}
+    	return leader;
     }
 
     /**

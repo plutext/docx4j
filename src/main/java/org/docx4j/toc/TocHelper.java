@@ -25,6 +25,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.docx4j.wml.ContentAccessor;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.SdtElement;
 
 
@@ -35,6 +36,9 @@ public class TocHelper {
 
     public static final String TOC_INSTRUCTION_MASK = " TOC ";
     public static final String DEFAULT_TOC_INSTRUCTION = " TOC \\o \"1-3\" \\h \\z \\u ";
+    
+    public static final STTabTlc DEFAULT_TAB_LEADER = STTabTlc.DOT;
+    
 //    public static final String TOC_HEADING_STYLE = "TOCHeading";
     public static final String HEADING_STYLE = "Heading";
     public static final String TOC_STYLE_MASK = "TOC%s";

@@ -49,6 +49,7 @@ import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.PPrBase.PStyle;
@@ -67,16 +68,23 @@ public class SwitchProcessor {
     private static final int MILLION = 1000000;
     
     private TocEntry entry = null;
+    private STTabTlc leader;
+    
     private boolean proceed = true;
     private boolean styleFound = false;
     
     private boolean pageNumbers = true;
         
-    public SwitchProcessor(PageDimensions pageDimensions) {
+//    public SwitchProcessor(PageDimensions pageDimensions) {
+//    
+//    	this.pageDimensions = pageDimensions;
+//    }
     
+    public SwitchProcessor(PageDimensions pageDimensions, STTabTlc leader) {
+        
     	this.pageDimensions = pageDimensions;
+    	this.leader = leader;
     }
-    
     
     public List<TocEntry> processSwitches(WordprocessingMLPackage wordMLPackage, List<P> pList, 
     		List<SwitchInterface> switchesList,
@@ -313,7 +321,7 @@ public class SwitchProcessor {
 
     public TocEntry getEntry(){
         if(entry == null){
-            entry = new TocEntry(propertyResolver, pageDimensions);
+            entry = new TocEntry(propertyResolver, pageDimensions, leader);
         }
         return entry;
     }
