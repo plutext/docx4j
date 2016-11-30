@@ -129,15 +129,21 @@ public class VariableReplaceStAX {
 		    else {
 		       strB.append(wmlTemplateString.substring(offset, startKey));
 		       int keyEnd = wmlTemplateString.indexOf('}', startKey);
-		       String key = wmlTemplateString.substring(startKey + 2, keyEnd);
-		       Object val = mappings.get(key);
-		       if (val==null) {
-		    	   System.out.println("Invalid key '" + key + "' or key not mapped to a value");
-		    	   strB.append(key );
+		       if (keyEnd>0) {
+			       String key = wmlTemplateString.substring(startKey + 2, keyEnd);
+			       Object val = mappings.get(key);
+			       if (val==null) {
+			    	   System.out.println("Invalid key '" + key + "' or key not mapped to a value");
+			    	   strB.append(key );
+			       } else {
+			    	   strB.append(val.toString()  );
+			       }
+			       return replace(wmlTemplateString, keyEnd + 1, strB, mappings);
 		       } else {
-		    	   strB.append(val.toString()  );
+		    	   System.out.println("Invalid key: could not find '}' ");
+			       strB.append("$");
+			       return replace(wmlTemplateString, offset + 1, strB, mappings);		    	   
 		       }
-		       return replace(wmlTemplateString, keyEnd + 1, strB, mappings);
 		    }
 		 }		
 	}
