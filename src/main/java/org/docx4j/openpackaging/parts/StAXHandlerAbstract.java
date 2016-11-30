@@ -5,7 +5,10 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 
+import org.docx4j.openpackaging.exceptions.LocationAwareXMLStreamException;
+
 public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
+	
 	
 	/**
 	 * Implement this method; for an example, see VariableReplaceStAX sample
@@ -18,11 +21,17 @@ public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
 	
 	@Override
 	public void handle(XMLStreamReader xmlr,
-			XMLStreamWriter xmlWriter) throws XMLStreamException {
+			XMLStreamWriter xmlWriter) throws LocationAwareXMLStreamException, XMLStreamException {
 		
         while (xmlr.hasNext())          
-        {               
-            write(xmlr, xmlWriter);             
+        {   
+        	try {
+        		write(xmlr, xmlWriter);
+        	} catch (XMLStreamException xse) {
+//        		System.out.println("line: " + xmlr.getLocation().getLineNumber());
+//        		System.out.println("col: " + xmlr.getLocation().getColumnNumber());
+        		throw new LocationAwareXMLStreamException(xse.getMessage(), xse, xmlr.getLocation());
+        	}
             xmlr.next();
         }
 		
@@ -63,10 +72,19 @@ public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
 	            }
 	            int attributeCount = xmlr.getAttributeCount();
 	            for (int i = 0; i < attributeCount; i++) {
-	            	writer.writeAttribute(xmlr.getAttributePrefix(i),
-	            			xmlr.getAttributeNamespace(i),
-	            			xmlr.getAttributeLocalName(i),
-	            			xmlr.getAttributeValue(i));
+	            	
+					if (xmlr.getAttributeNamespace(i)==null) {
+
+		            	writer.writeAttribute(
+		            			xmlr.getAttributeLocalName(i),
+		            			xmlr.getAttributeValue(i));
+						
+					} else {
+		            	writer.writeAttribute(xmlr.getAttributePrefix(i),
+		            			xmlr.getAttributeNamespace(i),
+		            			xmlr.getAttributeLocalName(i),
+		            			xmlr.getAttributeValue(i));
+					}
 	            }
 	
 	            break;

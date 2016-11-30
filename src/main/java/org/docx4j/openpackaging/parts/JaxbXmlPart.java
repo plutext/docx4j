@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -53,6 +54,7 @@ import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.LocationAwareXMLStreamException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
@@ -449,7 +451,78 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			xmlWriter = outputFactory.createXMLStreamWriter(baos);
 		}
 		
-		handler.handle(xmlr, xmlWriter);
+		try {
+			handler.handle(xmlr, xmlWriter);
+		} catch (LocationAwareXMLStreamException e) {
+			
+			log.error(e.getMessage() + " at line " + e.getLocation().getLineNumber() + ", col " +   e.getLocation().getColumnNumber());
+			e.getCause().printStackTrace();
+			
+			// now print that out
+			InputStream is = null;
+			if (jaxbElement==null) {
+				
+
+				partStore = this.getPackage().getSourcePartStore();
+				String name = this.getPartName().getName();
+				is = partStore.loadPart( 
+						name.substring(1));			
+
+				if (is==null) {
+					log.warn(name + " missing from part store");
+					throw new Docx4JException(name + " missing from part store");
+				}
+				
+			} else {
+				
+				is = XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc);            
+			}
+			if (is!=null) {
+
+				try {
+					List<String> lines = IOUtils.readLines(is);
+					String line = lines.get(
+							e.getLocation().getLineNumber()-1);
+					
+					int PRIOR_CHARS = 100;
+					
+					int start = 0;
+					if (e.getLocation().getColumnNumber()>PRIOR_CHARS) {
+						start = e.getLocation().getColumnNumber() - PRIOR_CHARS;
+					}
+					int end = e.getLocation().getColumnNumber() + PRIOR_CHARS;
+					if (end > line.length()-1 ) {
+						end = line.length()-1;
+					}
+					
+					log.error("error is at pos " + PRIOR_CHARS + " in " + line.substring(start, end));
+					
+//					if (e.getMessage().contains("NamespaceURI")) {
+//						// lets print them
+//						if (lines.get(0).endsWith("?>")) {
+//							// assume at start of line 1
+//							line = lines.get(1);
+//						} else {
+//							// assume at start of line 0
+//							line = lines.get(0);
+//						}
+//						end = line.indexOf(">");
+//						if (end<0) end = 2000;
+//						if (end > line.length()-1 ) {
+//							end = line.length()-1;
+//						}
+//						log.error("Namespace decs: " + line.substring(0, end));
+//					}
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+			// now rethrow
+			throw (XMLStreamException)e.getCause();
+			
+		}
         
         xmlr.close();
         xmlWriter.flush();
