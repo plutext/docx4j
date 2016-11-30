@@ -441,14 +441,17 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
         
 		if (jaxbElement==null) {
 			baos = new ByteArrayOutputStream(); 
-			xmlWriter = outputFactory.createXMLStreamWriter(baos);
+			xmlWriter = outputFactory.createXMLStreamWriter(baos, "UTF-8");
+				// Avoid  Underlying stream encoding 'Cp1252' and input paramter for writeStartDocument() method 'UTF-8' do not match.
+				// (Which StAX implementation is that?)
+				// See further http://stackoverflow.com/questions/2943605/stax-setting-the-version-and-encoding-using-xmlstreamwriter
 			
 		} else {
 			
 			// TODO make a XmlStreamWriter we can read from
 			// But for now
 			baos = new ByteArrayOutputStream(); 
-			xmlWriter = outputFactory.createXMLStreamWriter(baos);
+			xmlWriter = outputFactory.createXMLStreamWriter(baos, "UTF-8");
 		}
 		
 		try {

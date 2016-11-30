@@ -114,7 +114,8 @@ public abstract class StAXHandlerAbstract implements StAXHandlerInterface {
 				writer.writeEntityRef(xmlr.getLocalName());
 				break;
 			case XMLEvent.START_DOCUMENT:
-				String encoding = xmlr.getCharacterEncodingScheme();
+				String encoding = "UTF-8"; //xmlr.getCharacterEncodingScheme();
+						
 				String version = xmlr.getVersion();
 				if (encoding != null && version != null)
 					writer.writeStartDocument(encoding, version);
