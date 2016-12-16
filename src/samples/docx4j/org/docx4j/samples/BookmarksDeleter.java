@@ -1,6 +1,7 @@
 package org.docx4j.samples;
 import java.util.List;
 
+import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
@@ -36,9 +37,11 @@ public class BookmarksDeleter {
 		fixRange(body.getContent(), "CTBookmark", "CTMarkupRange");
 		
 		// After
-		System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
+//		System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
 		
 		// or save the docx...
+		Docx4J.save(wordMLPackage, new java.io.File(System.getProperty("user.dir")
+						+ "/OUT_BookmarksDeleter.docx"));
 	}
 
 	private static void fixRange(List<Object> paragraphs, String startElement,
