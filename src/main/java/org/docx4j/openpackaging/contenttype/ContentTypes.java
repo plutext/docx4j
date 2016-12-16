@@ -116,6 +116,13 @@ public class ContentTypes {
 		"application/vnd.ms-office.activeX+xml";
 	
 	
+	/**
+	 * @since 3.3.2
+	 */
+	public final static String WEB_EXTENSION_TASKPANES = "application/vnd.ms-office.webextensiontaskpanes+xml";	
+	public final static String WEB_EXTENSION_WEBEXTENSION = "application/vnd.ms-office.webextension+xml";
+	
+	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";

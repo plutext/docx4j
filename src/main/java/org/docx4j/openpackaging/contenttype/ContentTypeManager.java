@@ -114,6 +114,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectSignatureBin;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.webextensions.TaskpanesPart;
+import org.docx4j.openpackaging.parts.webextensions.WebExtensionPart;
 import org.docx4j.relationships.Relationship;
 import org.glox4j.openpackaging.packages.GloxPackage;
 import org.slf4j.Logger;
@@ -472,6 +474,12 @@ public class ContentTypeManager  {
 			} catch (Exception e) {
 				return new BinaryPart( new PartName(partName));				
 			}			
+			
+		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_TASKPANES)) {
+			return new TaskpanesPart(new PartName(partName));
+
+		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_WEBEXTENSION)) {
+			return new WebExtensionPart(new PartName(partName));
 			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {

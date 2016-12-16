@@ -1,0 +1,61 @@
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	xmlns="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <!-- http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11 Schema
+       from 
+       [MS-OWEXML] - v20160914
+		Office Web Extensibility Extensions to Office Open XML Structure Specification
+		Copyright © 2016 Microsoft Corporation
+		Release: September 14, 2016 
+		
+		Copyrights. This documentation is covered by Microsoft copyrights. Regardless of any other terms
+		 that are contained in the terms of use for the Microsoft website that hosts this documentation, 
+		 you can make copies of it in order to develop implementations of the technologies that are described 
+		 in this documentation and can distribute portions of it in your implementations that use these 
+		 technologies or in your documentation as necessary to properly document the implementation. 
+		 You can also distribute in your implementation, with or without modification, any schemas, 
+		 IDLs, or code samples that are included in the documentation. This permission also applies to any 
+		 documents that are referenced in the Open Specifications documentation.		
+		 
+  -->
+  <xsd:import namespace="http://schemas.microsoft.com/office/webextensions/webextension/2010/11" schemaLocation="osfwebextension.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"  schemaLocation="../dml/dml-baseTypes.xsd"/> <!--  schemaLocation="odrawxml/oartbasetypes.xsd"  -->
+
+  <!--  \Java\jaxb-ri-2.2.11\bin\xjc -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer taskpanes_2010_11.xsd -d tmp  -no-header -target 2.0 -->
+  
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+
+
+  <xsd:complexType name="CT_OsfTaskpane">
+    <xsd:sequence>
+      <xsd:element name="webextensionref" minOccurs="1" maxOccurs="1" type="we:CT_WebExtensionPartRef"/>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="dockstate" type="xsd:string" use="required"/>
+    <xsd:attribute name="visibility" type="xsd:boolean" use="required"/>
+    <xsd:attribute name="width" type="xsd:double" use="required"/>
+    <xsd:attribute name="row" type="xsd:unsignedInt" use="required"/>
+    <xsd:attribute name="locked" type="xsd:boolean" use="optional" default="false"/>
+  </xsd:complexType>
+  <xsd:complexType name="CT_OsfTaskpanes">
+    <xsd:sequence>
+      <xsd:element name="taskpane" minOccurs="0" maxOccurs="unbounded" type="CT_OsfTaskpane"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="taskpanes" type="CT_OsfTaskpanes"/>
+</xsd:schema>

@@ -154,7 +154,9 @@ public class Context {
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing", classLoader );
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader );
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
