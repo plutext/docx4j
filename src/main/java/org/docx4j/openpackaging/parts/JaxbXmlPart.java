@@ -36,9 +36,11 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.Location;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -392,11 +394,25 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		
 	       XMLInputFactory xmlif = null;
 	        xmlif = XMLInputFactory.newInstance();
-	        xmlif.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES,Boolean.TRUE);
-	        xmlif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,Boolean.FALSE);
-	        xmlif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
 	        xmlif.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
-	        xmlif.setProperty(XMLInputFactory.REPORTER,"");
+	        xmlif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+	        
+	        // Nonfatal errors and warnings
+	        xmlif.setXMLReporter(
+	        		(new XMLReporter() {
+
+	            @Override
+	            public void report(String message, String errorType, Object relatedInformation, Location location) throws XMLStreamException {
+	    			log.warn("Error:" + errorType + ", " + message + " at line " + location.getLineNumber() + ", col " +   location.getColumnNumber());
+	            }
+	        })
+	        );
+	        
+	        // xmlif.setProperty(XMLInputFactory.RESOLVER
+	        // xmlif.setProperty(XMLInputFactory.ALLOCATOR
 	    
 	    // First, set up stream reader
 	    XMLStreamReader xmlr = null;
@@ -455,8 +471,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 		
 		try {
+			log.debug("StAX implementation details:");
+			log.debug(xmlr.getClass().getName());
+			log.debug(xmlWriter.getClass().getName());
 			handler.handle(xmlr, xmlWriter);
-		} catch (LocationAwareXMLStreamException e) {
+			
+		} catch (/* fatal error */ LocationAwareXMLStreamException e) {
 			
 			log.error(e.getMessage() + " at line " + e.getLocation().getLineNumber() + ", col " +   e.getLocation().getColumnNumber());
 			e.getCause().printStackTrace();
@@ -554,7 +574,6 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			
 		}
 	}
-	
 	
 	
     /**
