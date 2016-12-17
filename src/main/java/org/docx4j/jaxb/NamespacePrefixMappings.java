@@ -199,9 +199,15 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2015/wordml/symex")) {
     		return "w16se";
     	}
-    	
-    	
-    	
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11")) {
+    		return "wetp";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/webextensions/webextension/2010/11")) {
+    		return "we";
+    	}
+    	    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
     		return "aml";
     	}
@@ -405,6 +411,12 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 
 		if (prefix.equals("w16se"))
 			return "http://schemas.microsoft.com/office/word/2015/wordml/symex";
+		
+		if (prefix.equals("wetp"))
+    		return "http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11";
+    			
+		if (prefix.equals("we"))
+    		return "http://schemas.microsoft.com/office/webextensions/webextension/2010/11";
 		
 		if (prefix.equals("aml"))
 			return "http://schemas.microsoft.com/aml/2001/core";
