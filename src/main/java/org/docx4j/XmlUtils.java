@@ -534,11 +534,49 @@ public class XmlUtils {
 	
 
 	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
-		log.debug("Unmarshalling '" + str + "'");			
+		log.debug("Unmarshalling '" + str + "'");	
+		// Uncomment the following if you are being screwed by a byte order marker
+		str = str.trim().replaceFirst("^([\\W]+)<","<");
 		Unmarshaller u = jc.createUnmarshaller();						
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		return u.unmarshal( new javax.xml.transform.stream.StreamSource(
-				new java.io.StringReader(str)) );
+		
+		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+		u.setEventHandler(eventHandler);
+		
+		try {
+			
+			return u.unmarshal( new javax.xml.transform.stream.StreamSource(
+					new java.io.StringReader(str)) );
+			
+		} catch (UnmarshalException ue) {
+			
+			if (ue.getLinkedException()!=null 
+					&& ue.getLinkedException().getMessage().contains("entity")) {
+				
+				/*
+					Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
+					Message: The entity "xxe" was referenced, but not declared.
+						at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+					 */
+				log.error(ue.getMessage(), ue);
+				throw ue;
+			}
+			
+			log.info("encountered unexpected content; pre-processing");
+			eventHandler.setContinue(true);
+								
+			try {
+				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+				JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+				XmlUtils.transform(
+						new StreamSource(new java.io.StringReader(str)), 
+						mcPreprocessorXslt, null, result);
+				return result.getResult();	
+			} catch (Exception e) {
+				throw new JAXBException("Preprocessing exception", e);
+			}
+										
+		}		
 	}
 
 	public static Object unmarshal(Node n) throws JAXBException {
