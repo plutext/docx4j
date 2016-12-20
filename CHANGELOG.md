@@ -3,13 +3,13 @@ CHANGELOG
 
 
 
-Version 3.3.2  minor release (forthcoming)
+Version 3.3.2  minor release
 =============
 
 Release date
 ------------
 
-?? December 2016
+20 December 2016
 
 
 Contributors to this release
@@ -23,6 +23,8 @@ Notable Changes in Version 3.3.2
 
 JAXBXmlPart pipe methods, which enable you to process using StAX or SAX
 (avoiding JAXB overhead);  see VariableReplaceStAX for an example
+
+JAXB content model for web extensions
 
 Various bugfixes, including:
 - fix for OpenDoPE complex conditions (broken by 3.3.1)
