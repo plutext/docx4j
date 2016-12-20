@@ -50,7 +50,7 @@ public class TocStyles {
 		
 		try {
 			InputStream is = getResourceViaProperty("org.docx4j.toc.TocStyles.xml",
-					"com/plutext/docx/toc/TocStyles.xml");
+					"org/docx4j/toc/TocStyles.xml");
 			Styles defaultStyles = (Styles)XmlUtils.unmarshal(is);
 			for (Style s : defaultStyles.getStyle()) {
 				defaultToCStyles.put(s.getName().getVal(), s);
