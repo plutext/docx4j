@@ -1528,10 +1528,13 @@ public class XmlUtils {
     	  public void fatalError(TransformerException exception)
     	   throws TransformerException {
     	    
-       	    log.error(exception.getMessage(), exception);
+    		if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.LogBeforeThrow", true)) {
+    			log.error(exception.getMessage(), exception);
+    		}
 
     	    // This is an error which the processor cannot recover from; 
     	    // e.g. a malformed stylesheet or input document
+    		// (or a cancelled request) 
     	    // so I must throw this exception here.
     	    throw exception;
     	    
