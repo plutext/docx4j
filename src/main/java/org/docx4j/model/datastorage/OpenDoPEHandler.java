@@ -1630,7 +1630,9 @@ public class OpenDoPEHandler {
 		if (oldKey!=null) {
 			if (oldKey.getDataBinding().getXpath().equals(newPath)) {
 				// OK
-				log.debug("New xpath entry overwrites existing identical xpath " + newXPathId);
+				if (log.isDebugEnabled()) {
+					log.debug("New xpath entry overwrites existing identical xpath " + newXPathId);
+				}
 			} else {
 				// bad
 				log.warn("New xpath entry overwrites existing different xpath " + newXPathId);					
