@@ -77,6 +77,8 @@ public final class HeaderPart extends JaxbXmlPartAltChunkHost<Hdr> implements Co
 	@Override
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 		
+		// NB it is up to you to jaxbElement.setIgnorable; see further McIgnorableNamespaceDeclarator
+		
 		namespacePrefixMapper.setMcIgnorable(
 				this.getJaxbElement().getIgnorable() );
 	}

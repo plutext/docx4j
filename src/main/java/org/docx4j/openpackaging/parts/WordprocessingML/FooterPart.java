@@ -76,6 +76,8 @@ public final class FooterPart extends JaxbXmlPartAltChunkHost<Ftr> implements Co
 	@Override
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 		
+		// NB it is up to you to jaxbElement.setIgnorable; see further McIgnorableNamespaceDeclarator
+		
 		namespacePrefixMapper.setMcIgnorable(
 				this.getJaxbElement().getIgnorable() );
 	}
