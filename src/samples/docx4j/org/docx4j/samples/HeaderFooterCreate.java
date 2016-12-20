@@ -23,6 +23,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.util.List;
 
+import org.docx4j.Docx4J;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
@@ -72,8 +73,10 @@ public class HeaderFooterCreate {
 		createHeaderReference(wordMLPackage, relationship);
 
 		// Display the result as Flat OPC XML
-		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
-		worker.marshal(System.out);				
+//		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
+//		worker.marshal(System.out);
+		
+		Docx4J.save(wordMLPackage, new File("OUT_HeaderFooterCreate.docx") );
 	}
 	
 	public static Relationship createHeaderPart(
