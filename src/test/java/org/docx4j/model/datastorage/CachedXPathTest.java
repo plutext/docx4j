@@ -136,6 +136,13 @@ public class CachedXPathTest {
 		Assert.assertEquals("true", result);
 	}
 
+	@Test
+	public void booleanStringLengthGreaterThan() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("string-length(//fileNumber[1])>0", null);
+		System.out.println(result);
+		Assert.assertEquals("true", result);
+	}
 	
 	
 	@Test
