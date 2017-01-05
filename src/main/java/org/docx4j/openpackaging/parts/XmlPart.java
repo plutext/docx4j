@@ -23,13 +23,13 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 
-import org.apache.xml.utils.PrefixResolver;
 import org.apache.xpath.CachedXPathAPI;
 import org.apache.xpath.objects.XObject;
 import org.docx4j.XmlUtils;
@@ -277,18 +277,29 @@ public abstract class XmlPart extends Part {
 				return result.getTextContent();
 				
 			} catch (org.apache.xpath.XPathException e) {
+								
+				/*
+				    error(XPATHErrorResources.ER_CANT_CONVERT_TO_NODELIST,
+				          new Object[]{ getTypeString() });  //"Can not convert "+getTypeString()+" to a NodeList!");
+				          
+				    which uses eg org.apache.xpath.res XPATHErrorResources_de
+				    
+				  { ER_CANT_CONVERT_TO_NODELIST,
+				      "{0} kann nicht in NodeList konvertiert werden!"},
+				 */
 				
-				if (e.getMessage().contains("Can not convert #BOOLEAN")) {
-					log.debug("Fallback handling XPath of form: " + xpath);
+				if (e.getMessage().contains("#BOOLEAN") ) {
+										
+					log.debug("Fallback handling XPath of form: " + xpath + " in case of " + e.getMessage() );
 					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					if (xo.bool(cachedXPathAPI.getXPathContext())) {
 						return "true";
 					} else {
 						return "false";					
 					}
-				} else if (e.getMessage().contains("Can not convert #NUMBER")) {
+				} else if (e.getMessage().contains("#NUMBER") ) { 
 
-					log.debug("Fallback handling XPath of form: " + xpath);
+					log.debug("Fallback handling XPath of form: " + xpath  + " in case of " + e.getMessage() );
 					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					double d = xo.num(cachedXPathAPI.getXPathContext());
 					if (xpath.trim().startsWith("count(")
@@ -299,7 +310,8 @@ public abstract class XmlPart extends Part {
 						return "" + d;
 					}
 				} else {
-					log.warn("Handle XPath of form: " + xpath);
+					log.error(e.getMessage());
+					log.error("Handle XPath of form: " + xpath);
 					throw e;
 				}
 				
@@ -307,6 +319,9 @@ public abstract class XmlPart extends Part {
 			
 			
 		} catch (TransformerException e) {
+			log.error(System.getProperty("java.vendor"));
+			log.error(System.getProperty("java.version"));
+			log.error(Locale.getDefault().toString());				
 			throw new Docx4JException("Exception executing " + xpath, e);
 		}
 	}	

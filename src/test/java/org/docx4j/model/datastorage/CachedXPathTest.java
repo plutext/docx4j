@@ -3,6 +3,7 @@ package org.docx4j.model.datastorage;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
+import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -138,6 +139,17 @@ public class CachedXPathTest {
 
 	@Test
 	public void booleanStringLengthGreaterThan() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("string-length(//fileNumber[1])>0", null);
+		System.out.println(result);
+		Assert.assertEquals("true", result);
+	}
+
+	@Test
+	public void localeDeBooleanStringLengthGreaterThan() throws Exception {
+		
+		Locale deLocale = new Locale("de", "DE");
+		Locale.setDefault(deLocale);
 		
 		String result = xmlPart.cachedXPathGetString("string-length(//fileNumber[1])>0", null);
 		System.out.println(result);
