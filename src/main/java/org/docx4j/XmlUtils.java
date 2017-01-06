@@ -264,7 +264,9 @@ public class XmlUtils {
 		try {
 			documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		
 		try {
@@ -274,24 +276,32 @@ public class XmlUtils {
 			// (which docx4j doesn't use by default) 
 			// throws java.lang.UnsupportedOperationException
 			// Apparently can be fixed by upgrading to 2.9.1
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		
 		try {
 			documentBuilderFactory.setExpandEntityReferences(false);
 		} catch (Exception e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		
 		try {
 			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		try {
 			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 //		try {
 //			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
