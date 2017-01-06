@@ -73,6 +73,12 @@ public class ResourceUtils {
         ClassLoader loader = ResourceUtils.class.getClassLoader();
         
         java.net.URL url = loader.getResource(filename);
+        
+		if (url == null
+				&& System.getProperty("java.vendor").contains("Android")) {
+			url = loader.getResource("assets/" + filename);
+			if (url!=null) System.out.println("found " + filename + " in assets");
+		}
                 
         if (url == null) {
         	if (filename.contains("jaxb.properties")){
