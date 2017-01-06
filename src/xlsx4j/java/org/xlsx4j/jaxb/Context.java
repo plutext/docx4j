@@ -29,6 +29,7 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.ProviderProperties;
 import org.docx4j.utils.ResourceUtils;
 
 public class Context {
@@ -97,7 +98,7 @@ public class Context {
 				
 			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
-					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader );
+					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader, ProviderProperties.getProviderProperties() );
 				
 			
 			

@@ -77,7 +77,8 @@ public class Context {
 	public static JAXBImplementation getJaxbImplementation() {
 		return jaxbImplementation;
 	}
-
+	
+	
 	static {
 		JAXBContext tempContext = null;
 
@@ -156,7 +157,8 @@ public class Context {
 					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
-					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader );
+					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,
+					ProviderProperties.getProviderProperties() );
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
@@ -165,15 +167,15 @@ public class Context {
 			}
 			
 			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
-			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
-			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader );
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader );
-			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
-			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
-			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
+			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader, ProviderProperties.getProviderProperties() );
+			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader, ProviderProperties.getProviderProperties() );
+			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader, ProviderProperties.getProviderProperties() );
+			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader, ProviderProperties.getProviderProperties() );
+			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader, ProviderProperties.getProviderProperties() );
 			
-			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
+			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader, ProviderProperties.getProviderProperties() );
 			
 			try {
 				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
@@ -181,12 +183,12 @@ public class Context {
 						 "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
-						,classLoader );
+						,classLoader, ProviderProperties.getProviderProperties() );
 			} catch (javax.xml.bind.JAXBException e) {
 				log.error(e.getMessage());
 			}
 
-			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader );
+			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader, ProviderProperties.getProviderProperties() );
 			
 			log.debug(".. other contexts loaded ..");
 										
