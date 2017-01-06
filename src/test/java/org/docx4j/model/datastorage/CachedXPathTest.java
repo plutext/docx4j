@@ -45,6 +45,13 @@ public class CachedXPathTest {
 		Assert.assertEquals("1", result);
 	}
 
+	@Test
+	public void simpleString() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("//fileNumber", null);
+		System.out.println(result);
+		Assert.assertEquals("xxxx", result);
+	}
 	
 	
 	@Test

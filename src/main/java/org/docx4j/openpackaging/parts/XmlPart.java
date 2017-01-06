@@ -179,6 +179,8 @@ public abstract class XmlPart extends Part {
 		
 		
 		try {
+			
+			XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 
 			/* Note: we also execute booleans here!
 			 * 
@@ -212,7 +214,6 @@ public abstract class XmlPart extends Part {
 				} else {
 				
 					try {
-						XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 						if (xo.bool(cachedXPathAPI.getXPathContext())) {
 							return "true";
 						} else {
@@ -248,7 +249,6 @@ public abstract class XmlPart extends Part {
 				} else {
 					// Reasonably confident this is a number
 					try {
-						XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 						double d = xo.num(cachedXPathAPI.getXPathContext());
 						if (xpath.trim().startsWith("count(")
 								&& /* it looks like it should be an integer */ d == Math.rint(d)) {
@@ -266,9 +266,20 @@ public abstract class XmlPart extends Part {
 			
 			try {
 			
-				Node result = selectSingleNode(doc, xpath);
-	//			return result.getNodeValue();
-				
+				// get the first node or null, from NodeSetDTM
+				Node result;
+				if (log.isDebugEnabled() /* verify just a single result */) {
+					NodeIterator ni = xo.nodeset();
+					result = ni.nextNode();
+					Node nextNode = ni.nextNode();
+					if (nextNode!=null) {
+						log.debug( xpath + " returned multiple results. Did you intend that?");
+						//log.debug(nextNode.getTextContent());
+					}
+				} else {
+					result = xo.nodeset().nextNode();
+				}
+			    
 				if (result==null) {
 					log.debug(xpath + " returned null; returning empty string");
 					return "";
@@ -291,7 +302,6 @@ public abstract class XmlPart extends Part {
 				if (e.getMessage().contains("#BOOLEAN") ) {
 										
 					log.debug("Fallback handling XPath of form: " + xpath + " in case of " + e.getMessage() );
-					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					if (xo.bool(cachedXPathAPI.getXPathContext())) {
 						return "true";
 					} else {
@@ -300,7 +310,6 @@ public abstract class XmlPart extends Part {
 				} else if (e.getMessage().contains("#NUMBER") ) { 
 
 					log.debug("Fallback handling XPath of form: " + xpath  + " in case of " + e.getMessage() );
-					XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 					double d = xo.num(cachedXPathAPI.getXPathContext());
 					if (xpath.trim().startsWith("count(")
 							&& /* it looks like it should be an integer */ d == Math.rint(d)) {
@@ -393,56 +402,6 @@ public abstract class XmlPart extends Part {
 		
 	}
 	
-	// --- ASL v2 code copied/adapted from CachedXPathAPI
-	
-	  /**
-	   * Use an XPath string to select a single node.
-	   * XPath namespace prefixes are resolved from the namespaceNode.
-	   *
-	   * @param contextNode The node to start searching from.
-	   * @param str A valid XPath string.
-	   * @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
-	   * @return The first node found that matches the XPath, or null.
-	   *
-	   * @throws TransformerException
-	   */
-	  private  Node selectSingleNode(
-	          Node contextNode, String str)
-	            throws TransformerException
-	  {
-
-	    // Have the XObject return its result as a NodeSetDTM.
-	    NodeIterator nl = selectNodeIterator(contextNode, str);
-
-	    // Return the first node, or null
-	    return nl.nextNode();
-	  }
-
-
-	  /**
-	   *  Use an XPath string to select a nodelist.
-	   *  XPath namespace prefixes are resolved from the namespaceNode.
-	   *
-	   *  @param contextNode The node to start searching from.
-	   *  @param str A valid XPath string.
-	   *  @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
-	   *  @return A NodeIterator, should never be null.
-	   *
-	   * @throws TransformerException
-	   */
-	  private  NodeIterator selectNodeIterator(
-	          Node contextNode, String str)
-	            throws TransformerException
-	  {
-
-	    // Execute the XPath, and have it return the result
-	    XObject list = cachedXPathAPI.eval(contextNode, str, getNamespaceContext());
-
-	    // Have the XObject return its result as a NodeSetDTM.                
-	    return list.nodeset();
-	  }
-	  
-	  //-------------------------------
 	
     public boolean isContentEqual(Part other) throws Docx4JException {
 
