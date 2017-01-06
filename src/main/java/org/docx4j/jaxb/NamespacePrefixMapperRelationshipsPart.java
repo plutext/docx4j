@@ -20,7 +20,7 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements McIgnorableNamespaceDeclarator {
+public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
 //	private String mcIgnorable;
 	public void setMcIgnorable(String mcIgnorable) {
