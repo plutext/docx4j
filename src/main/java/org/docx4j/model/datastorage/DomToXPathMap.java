@@ -37,6 +37,17 @@ public class DomToXPathMap {
         return pathMap;
     }
 
+    private String getLocalName(Node sourceNode) {
+    	
+    	if (sourceNode.getLocalName()==null) {
+    		// eg element was created using createElement() 
+    		return sourceNode.getNodeName();
+    	
+    	} else {
+    		return sourceNode.getLocalName();
+    	}
+    	
+    }
 	
 	public void walkTree( Node sourceNode ) {
 			    	
@@ -63,12 +74,26 @@ public class DomToXPathMap {
                 }
                 break;
             case Node.ELEMENT_NODE:
-            	            	
-                histgrams.peek().update(
-                		sourceNode.getNamespaceURI(),
-                		sourceNode.getNodeName() /* not getLocalName, which returns null if the element was created using createElement() */,
-                		/* qname */ sourceNode.getNodeName() );
-                histgrams.push(new Histgram());
+            	
+            	try {
+	                histgrams.peek().update(
+	                		sourceNode.getNamespaceURI(),
+	                		getLocalName(sourceNode),
+	                		/* qname */ sourceNode.getNodeName() );
+	                histgrams.push(new Histgram());
+	                
+            	} catch (java.lang.IllegalArgumentException iae) {
+            	
+            		log.error(sourceNode.getClass().getName());
+            		log.error("sourceNode.getNodeName(): " + sourceNode.getNodeName());
+            		log.error("sourceNode.getNamespaceURI(): " + sourceNode.getNamespaceURI());
+            		log.error("sourceNode.getLocalName(): " + sourceNode.getLocalName());
+            		log.error("sourceNode.getPrefix(): " + sourceNode.getPrefix());
+            		log.error("java.vendor="+System.getProperty("java.vendor"));
+            		log.error("java.version="+System.getProperty("java.version"));
+            		
+            		throw iae;            		
+            	}
             	
 
                 // recurse on each child
