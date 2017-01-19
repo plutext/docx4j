@@ -250,8 +250,8 @@ public class AbstractTableWriterModel extends TableModel {
 			Tr tr = rows.get(i);
 			if (!isHeaderRow(tr)) {
 				// make it so...
-				TrPr trpr = null;
-				if (tr.getTrPr() == null) {
+				TrPr trpr = tr.getTrPr();
+				if (trpr == null) {
 					trpr = Context.getWmlObjectFactory().createTrPr(); 
 				    tr.setTrPr(trpr); 
 				}
