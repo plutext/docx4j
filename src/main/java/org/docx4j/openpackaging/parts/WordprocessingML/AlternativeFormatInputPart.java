@@ -26,17 +26,30 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AlternativeFormatInputPart extends BinaryPart {
+	
+	protected static Logger log = LoggerFactory.getLogger(AlternativeFormatInputPart.class);
+	
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
 		super(partName);		
 
 		String extension = partName.getExtension().toLowerCase();
-		for(AltChunkType type: AltChunkType.values()) {
-			if (extension.equals(type.getExtension())) {
-				setAltChunkType(type);
+		if (extension.equals("htm")) {
+			setAltChunkType(AltChunkType.Html);
+		} else {
+			for(AltChunkType type: AltChunkType.values()) {
+				if (extension.equals(type.getExtension())) {
+					setAltChunkType(type);
+				} 
 			}
+		}
+		
+		if (altChunkType==null) {
+			log.warn("Unrecognized type: " + extension);
 		}
 		
 		init();
@@ -62,6 +75,7 @@ public final class AlternativeFormatInputPart extends BinaryPart {
 	AltChunkType altChunkType;
 	
 	public void setAltChunkType(AltChunkType altChunkType) {
+		
 		this.altChunkType = altChunkType;
 
 		// ContentType will vary - see spec 11.3.1 
