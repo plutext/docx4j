@@ -10,6 +10,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.exceptions.Xlsx4jException;
 import org.xlsx4j.sml.Sheet;
 import org.xlsx4j.sml.Workbook;
+import org.xlsx4j.sml.WorkbookPr;
 
 public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	
@@ -109,6 +110,12 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 			throw new Xlsx4jException("Sheet " + index + " not found", e);
 		}
 		
+	}
+	
+	public boolean isDate1904() {
+		
+		WorkbookPr workbookPr = this.jaxbElement.getWorkbookPr();
+		return workbookPr != null && workbookPr.isDate1904();			
 	}
 
 }
