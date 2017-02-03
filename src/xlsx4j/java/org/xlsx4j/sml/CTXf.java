@@ -29,6 +29,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
+ * <p>A single xf (format) element describes all of the formatting for a cell.
+ * 
  * <p>Java class for CT_Xf complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.

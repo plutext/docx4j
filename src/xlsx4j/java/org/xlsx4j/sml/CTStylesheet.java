@@ -186,7 +186,7 @@ public class CTStylesheet implements Child
     }
 
     /**
-     * Gets the value of the cellStyleXfs property.
+     * Gets the value of the cellStyleXfs (Formatting Records) property.
      * 
      * @return
      *     possible object is
@@ -210,7 +210,10 @@ public class CTStylesheet implements Child
     }
 
     /**
-     * Gets the value of the cellXfs property.
+     * Gets the value of the cellXfs (Cell Formats) property. This element contains the master formatting records 
+     * (xf) which define the formatting applied to cells in this workbook. These records are the 
+     * starting point for determining the formatting for a cell. Cells in the Sheet Part reference 
+     * the xf records by zero-based index.
      * 
      * @return
      *     possible object is
@@ -222,7 +225,7 @@ public class CTStylesheet implements Child
     }
 
     /**
-     * Sets the value of the cellXfs property.
+     * Sets the value of the cellXfs (Cell Formats) property.
      * 
      * @param value
      *     allowed object is
@@ -234,7 +237,7 @@ public class CTStylesheet implements Child
     }
 
     /**
-     * Gets the value of the cellStyles property.
+     * Gets the value of the cellStyles property; the list of named cell style in this workbook.
      * 
      * @return
      *     possible object is
@@ -258,7 +261,7 @@ public class CTStylesheet implements Child
     }
 
     /**
-     * Gets the value of the dxfs property.
+     * Gets the value of the dxfs (differential Formats) property.
      * 
      * @return
      *     possible object is

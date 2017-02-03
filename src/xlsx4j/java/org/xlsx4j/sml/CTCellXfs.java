@@ -33,7 +33,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_CellXfs complex type.
+ * <p>Java class for CT_CellXfs complex type. 
+ * 
+ * <p>cellXfs (Cell Formats) property contains the master formatting records 
+     * (xf) which define the formatting applied to cells in this workbook. These records are the 
+     * starting point for determining the formatting for a cell. Cells in the Sheet Part reference 
+     * the xf records by zero-based index.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 

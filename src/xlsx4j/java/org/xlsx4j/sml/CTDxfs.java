@@ -34,6 +34,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 /**
  * <p>Java class for CT_Dxfs complex type.
  * 
+ * <p>This element contains the master differential formatting records (dxf's) which define 
+ * formatting for all non-cell formatting in this workbook. Whereas xf records fully specify 
+ * a particular aspect of formatting (e.g., cell borders) by referencing those formatting 
+ * definitions elsewhere in the Styles part, dxf records specify incremental (or differential) 
+ * aspects of formatting directly inline within the dxf element. The dxf formatting is to be 
+ * applied on top of or in addition to any formatting already present on the object using the 
+ * dxf record.
+ * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
