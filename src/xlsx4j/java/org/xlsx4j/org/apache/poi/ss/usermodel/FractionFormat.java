@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,17 +21,17 @@
  * limitations under the License.
  */
 
-package org.apache.poi.ss.usermodel;
+package org.xlsx4j.org.apache.poi.ss.usermodel;
+
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.ss.format.SimpleFraction;
-import org.apache.poi.ss.formula.eval.NotImplementedException;
-import org.apache.poi.util.POILogFactory;
-import org.apache.poi.util.POILogger;
+import org.apache.commons.lang3.NotImplementedException;
+import org.xlsx4j.org.apache.poi.ss.format.SimpleFraction;
+//import org.apache.poi.ss.formula.eval.NotImplementedException;
 
 /**
  * <p>Format class that handles Excel style fractions, such as "# #/#" and "#/###"</p>
@@ -41,8 +47,7 @@ import org.apache.poi.util.POILogger;
 
 @SuppressWarnings("serial")
 public class FractionFormat extends Format {
-    private static final POILogger LOGGER = POILogFactory.getLogger(FractionFormat.class); 
-    private static final Pattern DENOM_FORMAT_PATTERN = Pattern.compile("(?:(#+)|(\\d+))");
+    private final static Pattern DENOM_FORMAT_PATTERN = Pattern.compile("(?:(#+)|(\\d+))");
 
     //this was chosen to match the earlier limitation of max denom power
     //it can be expanded to get closer to Excel's calculations
@@ -138,7 +143,7 @@ public class FractionFormat extends Format {
                 fract = SimpleFraction.buildFractionMaxDenominator(decPart, maxDenom);
             }
         } catch (RuntimeException e){
-            LOGGER.log(POILogger.WARN, "Can't format fraction", e);
+            e.printStackTrace();
             return Double.toString(doubleValue);
         }
 

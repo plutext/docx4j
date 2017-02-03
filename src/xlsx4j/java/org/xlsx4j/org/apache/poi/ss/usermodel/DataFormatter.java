@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +24,8 @@
    Alfresco Software has modified source of this file
    The details of changes as svn diff can be found in svn at location root/projects/3rd-party/src 
 ==================================================================== */
-package org.apache.poi.ss.usermodel;
+
+package org.xlsx4j.org.apache.poi.ss.usermodel;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,13 +49,23 @@ import java.util.Observer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.ss.format.CellFormat;
-import org.apache.poi.ss.format.CellFormatResult;
-import org.apache.poi.ss.util.DateFormatConverter;
-import org.apache.poi.ss.util.NumberToTextConverter;
-import org.apache.poi.util.LocaleUtil;
-import org.apache.poi.util.POILogFactory;
-import org.apache.poi.util.POILogger;
+import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.parts.SpreadsheetML.Styles;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
+import org.docx4j.org.apache.poi.util.LocaleUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xlsx4j.jaxb.Context;
+import org.xlsx4j.model.CellUtils;
+import org.xlsx4j.org.apache.poi.ss.util.NumberToTextConverter;
+import org.xlsx4j.sml.CTCellFormula;
+import org.xlsx4j.sml.CTCellStyle;
+import org.xlsx4j.sml.CTRElt;
+import org.xlsx4j.sml.CTRst;
+import org.xlsx4j.sml.CTXf;
+import org.xlsx4j.sml.Cell;
+import org.xlsx4j.sml.STCellFormulaType;
+import org.xlsx4j.sml.STCellType;
 
 
 /**
@@ -201,6 +219,28 @@ public class DataFormatter implements Observer {
     private final Map<String,Format> formats = new HashMap<String,Format>();
 
     private final boolean emulateCSV;
+    
+    private Styles stylesPart = null;
+
+    public void setStylesPart(Styles stylesPart) {
+		this.stylesPart = stylesPart;
+		cellUtils = new CellUtils(stylesPart);
+	}
+    
+    private CellUtils cellUtils = null;
+    
+    /* TODO FIXME!  CellUtils methods should be static, or reimplement as adapter or something */
+    
+    private WorkbookPart workbookPart;
+
+	private WorkbookPart getWorkbookPart() {
+		return workbookPart;
+	}
+
+	public void setWorkbookPart(WorkbookPart workbookPart) {
+		this.workbookPart = workbookPart;
+	}
+    
 
     /** stores the locale valid it the last formatting call */
     private Locale locale;
@@ -224,7 +264,7 @@ public class DataFormatter implements Observer {
     private final LocaleChangeObservable localeChangedObservable = new LocaleChangeObservable();
     
     /** For logging any problems we find */
-    private static POILogger logger = POILogFactory.getLogger(DataFormatter.class);
+	protected static Logger logger = LoggerFactory.getLogger(DataFormatter.class);
     
     /**
      * Creates a formatter using the {@link Locale#getDefault() default locale}.
@@ -289,21 +329,25 @@ public class DataFormatter implements Observer {
      * @return A Format for the format String
      */
     private Format getFormat(Cell cell) {
-        if ( cell.getCellStyle() == null) {
+    	
+    	CTCellStyle cellStyle = cellUtils.getCellStyle(cell); 
+    	
+        if ( cellStyle == null) {
             return null;
         }
 
-        int formatIndex = cell.getCellStyle().getDataFormat();
-        String formatStr = cell.getCellStyle().getDataFormatString();
+        String formatStr = cellUtils.getNumberFormatString(cell);
         if(formatStr == null || formatStr.trim().length() == 0) {
             return null;
         }
-        return getFormat(cell.getNumericCellValue(), formatIndex, formatStr);
-    }
-
-    private Format getFormat(double cellValue, int formatIndex, String formatStrIn) {
-        localeChangedObservable.checkForLocaleChange();
         
+        long formatIndex = cellUtils.getNumberFormatIndex(cell);
+        
+        return getFormat(cellUtils.getNumericCellValue(cell), formatIndex, formatStr);
+    }
+    
+	 
+    private Format getFormat(double cellValue, long formatIndex, String formatStrIn) {
 //      // Might be better to separate out the n p and z formats, falling back to p when n and z are not set.
 //      // That however would require other code to be re factored.
 //      String[] formatBits = formatStrIn.split(";");
@@ -318,24 +362,25 @@ public class DataFormatter implements Observer {
         //  handle these ourselves in a special way.
         // For now, if we detect 3+ parts, we call out to CellFormat to handle it
         // TODO Going forward, we should really merge the logic between the two classes
-        if (formatStr.contains(";") &&
-                formatStr.indexOf(';') != formatStr.lastIndexOf(';')) {
-            try {
-                // Ask CellFormat to get a formatter for it
-                CellFormat cfmt = CellFormat.getInstance(formatStr);
-                // CellFormat requires callers to identify date vs not, so do so
-                Object cellValueO = Double.valueOf(cellValue);
-                if (DateUtil.isADateFormat(formatIndex, formatStr) && 
-                        // don't try to handle Date value 0, let a 3 or 4-part format take care of it 
-                        ((Double)cellValueO).doubleValue() != 0.0) {
-                    cellValueO = DateUtil.getJavaDate(cellValue);
-                }
-                // Wrap and return (non-cachable - CellFormat does that)
-                return new CellFormatResultWrapper( cfmt.apply(cellValueO) );
-            } catch (Exception e) {
-                logger.log(POILogger.WARN, "Formatting failed for format " + formatStr + ", falling back", e);
-            }
-        }
+        
+//        if (formatStr.contains(";") &&
+//                formatStr.indexOf(';') != formatStr.lastIndexOf(';')) {
+//            try {
+//                // Ask CellFormat to get a formatter for it
+//                CellFormat cfmt = CellFormat.getInstance(formatStr);
+//                // CellFormat requires callers to identify date vs not, so do so
+//                Object cellValueO = Double.valueOf(cellValue);
+//                if (DateUtil.isADateFormat((int) formatIndex, formatStr) && 
+//                        // don't try to handle Date value 0, let a 3 or 4-part format take care of it 
+//                        ((Double)cellValueO).doubleValue() != 0.0) {
+//                    cellValueO = DateUtil.getJavaDate(cellValue);
+//                }
+//                // Wrap and return (non-cachable - CellFormat does that)
+//                return new CellFormatResultWrapper( cfmt.apply(cellValueO) );
+//            } catch (Exception e) {
+//                logger.warn("Formatting failed for format " + formatStr + ", falling back", e);
+//            }
+//        }
         
        // Excel's # with value 0 will output empty where Java will output 0. This hack removes the # from the format.
        if (emulateCSV && cellValue == 0.0 && formatStr.contains("#") && !formatStr.contains("0")) {
@@ -368,14 +413,14 @@ public class DataFormatter implements Observer {
      */
     public Format createFormat(Cell cell) {
 
-        int formatIndex = cell.getCellStyle().getDataFormat();
-        String formatStr = cell.getCellStyle().getDataFormatString();
-        return createFormat(cell.getNumericCellValue(), formatIndex, formatStr);
+    	//CTCellStyle cellStyle = cellUtils.getCellStyle(cell);
+    	
+        long formatIndex = cellUtils.getNumberFormatIndex(cell);
+        String formatStr = cellUtils.getNumberFormatString(cell);
+        return createFormat(cellUtils.getNumericCellValue(cell), formatIndex, formatStr);
     }
 
-    private Format createFormat(double cellValue, int formatIndex, String sFormat) {
-        localeChangedObservable.checkForLocaleChange();
-        
+    private Format createFormat(double cellValue, long formatIndex, String sFormat) {
         String formatStr = sFormat;
         
         // Remove colour formatting if present
@@ -418,7 +463,7 @@ public class DataFormatter implements Observer {
            return generalNumberFormat;
         }
 
-        if(DateUtil.isADateFormat(formatIndex,formatStr) &&
+        if(DateUtil.isADateFormat((int) formatIndex,formatStr) &&
                 DateUtil.isValidExcelDate(cellValue)) {
             return createDateFormat(formatStr, cellValue);
         }
@@ -717,7 +762,7 @@ public class DataFormatter implements Observer {
      * @return a default format
      */
     public Format getDefaultFormat(Cell cell) {
-        return getDefaultFormat(cell.getNumericCellValue());
+        return getDefaultFormat(CellUtils.getNumericCellValue(cell));
     }
     private Format getDefaultFormat(double cellValue) {
         localeChangedObservable.checkForLocaleChange();
@@ -752,10 +797,12 @@ public class DataFormatter implements Observer {
         if(dateFormat instanceof ExcelStyleDateFormatter) {
            // Hint about the raw excel value
            ((ExcelStyleDateFormatter)dateFormat).setDateToBeFormatted(
-                 cell.getNumericCellValue()
+                 cellUtils.getNumericCellValue(cell)
            );
         }
-        Date d = cell.getDateCellValue();
+        boolean date1904 = this.workbookPart.isDate1904();
+        Date d = cellUtils.getDateCellValue(cell, date1904);
+        //Date d = cell.getDateCellValue();
         return performDateFormatting(d, dateFormat);
     }
 
@@ -771,7 +818,7 @@ public class DataFormatter implements Observer {
     private String getFormattedNumberString(Cell cell) {
 
         Format numberFormat = getFormat(cell);
-        double d = cell.getNumericCellValue();
+        double d = cellUtils.getNumericCellValue(cell);
         if (numberFormat == null) {
             return String.valueOf(d);
         }
@@ -852,62 +899,97 @@ public class DataFormatter implements Observer {
      * @return the formatted cell value as a String
      */
     public String formatCellValue(Cell cell) {
-        return formatCellValue(cell, null);
-    }
-
-    /**
-     * <p>
-     * Returns the formatted value of a cell as a <tt>String</tt> regardless
-     * of the cell type. If the Excel format pattern cannot be parsed then the
-     * cell value will be formatted using a default format.
-     * </p>
-     * <p>When passed a null or blank cell, this method will return an empty
-     * String (""). Formula cells will be evaluated using the given
-     * {@link FormulaEvaluator} if the evaluator is non-null. If the
-     * evaluator is null, then the formula String will be returned. The caller
-     * is responsible for setting the currentRow on the evaluator
-     *</p>
-     *
-     * @param cell The cell (can be null)
-     * @param evaluator The FormulaEvaluator (can be null)
-     * @return a string value of the cell
-     */
-    public String formatCellValue(Cell cell, FormulaEvaluator evaluator) {
-        localeChangedObservable.checkForLocaleChange();
         
         if (cell == null) {
             return "";
         }
 
-        CellType cellType = cell.getCellTypeEnum();
-        if (cellType == CellType.FORMULA) {
-            if (evaluator == null) {
-                return cell.getCellFormula();
-            }
-            cellType = evaluator.evaluateFormulaCellEnum(cell);
+        int cellType = cellUtils.getCellType(cell);
+        if (cellType == CellUtils.CELL_TYPE_FORMULA) {
+                return getCellFormula(cell);
         }
         switch (cellType) {
-            case NUMERIC :
+            case CellUtils.CELL_TYPE_NUMERIC :
 
-                if (DateUtil.isCellDateFormatted(cell)) {
+                if (DateUtil.isCellDateFormatted(cell, cellUtils)) {
                     return getFormattedDateString(cell);
                 }
                 return getFormattedNumberString(cell);
 
-            case STRING :
-                return cell.getRichStringCellValue().getString();
-
-            case BOOLEAN :
-                return cell.getBooleanCellValue() ? "TRUE" : "FALSE";
-            case BLANK :
+            case CellUtils.CELL_TYPE_STRING :
+                //return cell.getRichStringCellValue().getString();
+            	//throw new RuntimeException("TODO: RichStringCellValue");
+            	return getCellStringValue(cell);
+            	
+            case CellUtils.CELL_TYPE_BOOLEAN :
+                return String.valueOf(cellUtils.getBooleanCellValue(cell));
+            case CellUtils.CELL_TYPE_BLANK :
                 return "";
-            case ERROR:
-                return FormulaError.forInt(cell.getErrorCellValue()).getString();
-            default:
-                throw new RuntimeException("Unexpected celltype (" + cellType + ")");
+            case CellUtils.CELL_TYPE_ERROR:
+            	//return FormulaError.forInt(cell.getErrorCellValue()).getString();
+            	throw new RuntimeException("TODO: FormulaError");
         }
+        throw new RuntimeException("Unexpected celltype (" + cellType + ")");
+    }
+    
+    private String getCellStringValue(Cell c) {
+    	
+    	List<CTRst> stringItems = workbookPart.getSharedStrings().getJaxbElement().getSi();
+    	
+    	int index; 
+    	try {
+    		index = Integer.parseInt(c.getV());
+    	} catch (NumberFormatException nfe) {
+    		throw new RuntimeException(c.getV() + " can't be converted to an index into the shared strings table");
+    	}
+    	
+    	CTRst rst = stringItems.get(index);
+    	
+    	if (rst.getR().size()>0 
+    			&& rst.getT()!=null) {
+    		logger.error(XmlUtils.marshaltoString(rst, Context.jcSML));
+    		throw new RuntimeException("Shared string contained 2 types of data");
+    	}
+    	
+    	if (rst.getT()!=null) {
+    		return rst.getT().getValue();
+    	}
+    	
+    	// build value
+    	StringBuilder sb = new StringBuilder();
+    	for (CTRElt rElt : rst.getR()) {
+    		
+    		sb.append(rElt.getT().getValue() ); // TODO worry about whitespace
+    	}
+    	
+    	return sb.toString();    	
     }
 
+    /**
+     * Return a formula for the cell, for example, <code>SUM(C4:E4)</code>
+     *
+     * @return a formula for the cell
+     * @throws IllegalStateException if the cell type returned by {@link #getCellType()} is not CELL_TYPE_FORMULA
+     */
+    
+    public String getCellFormula(Cell _cell) {
+        int cellType = cellUtils.getCellType(_cell);
+        if(cellType != CellUtils.CELL_TYPE_FORMULA) throw cellUtils.typeMismatch(CellUtils.CELL_TYPE_FORMULA, cellType, false);
+
+        CTCellFormula f = _cell.getF();
+//        if (isPartOfArrayFormulaGroup() && f == null) {
+//            Cell cell = getSheet().getFirstCellInArrayFormula(this);
+//            return cell.getCellFormula();
+//        }
+        if (f==null) {
+        	throw new RuntimeException("TODO: handle isPartOfArrayFormulaGroup()");
+        }
+        if (f.getT() == STCellFormulaType.SHARED) {
+            //return convertSharedFormula((int)f.getSi());
+        	throw new RuntimeException("TODO: convertSharedFormula");
+        }
+        return f.getValue(); 
+    }
 
     /**
      * <p>
@@ -1174,27 +1256,6 @@ public class DataFormatter implements Observer {
         @Override
         public Object parseObject(String source, ParsePosition pos) {
             return df.parseObject(source, pos);
-        }
-    }
-    /**
-     * Workaround until we merge {@link DataFormatter} with {@link CellFormat}.
-     * Constant, non-cachable wrapper around a {@link CellFormatResult} 
-     */
-    @SuppressWarnings("serial")
-    private final class CellFormatResultWrapper extends Format {
-        private final CellFormatResult result;
-        private CellFormatResultWrapper(CellFormatResult result) {
-            this.result = result;
-        }
-        public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            if (emulateCSV) {
-                return toAppendTo.append(result.text);
-            } else {
-                return toAppendTo.append(result.text.trim());
-            }
-        }
-        public Object parseObject(String source, ParsePosition pos) {
-            return null; // Not supported
         }
     }
 }

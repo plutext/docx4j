@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -16,19 +22,27 @@
 ==================================================================== */
 
 
-package org.apache.poi.ss.usermodel;
+package org.xlsx4j.org.apache.poi.ss.usermodel;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import org.apache.poi.util.LocaleUtil;
+import org.docx4j.org.apache.poi.util.LocaleUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xlsx4j.model.CellUtils;
+import org.xlsx4j.sml.CTCellStyle;
+import org.xlsx4j.sml.Cell;
 
 /**
  * Contains methods for dealing with Excel dates.
  */
 public class DateUtil {
+	
+	protected static Logger log = LoggerFactory.getLogger(DateUtil.class);
+	
     protected DateUtil() {
         // no instances of this class
     }
@@ -489,17 +503,20 @@ public class DateUtil {
      *  @see #isADateFormat(int, String)
      *  @see #isInternalDateFormat(int)
      */
-    public static boolean isCellDateFormatted(Cell cell) {
+    public static boolean isCellDateFormatted(Cell cell, CellUtils cellUtils) {
         if (cell == null) return false;
         boolean bDate = false;
 
-        double d = cell.getNumericCellValue();
+        double d = cellUtils.getNumericCellValue(cell);
         if ( DateUtil.isValidExcelDate(d) ) {
-            CellStyle style = cell.getCellStyle();
-            if(style==null) return false;
-            int i = style.getDataFormat();
-            String f = style.getDataFormatString();
-            bDate = isADateFormat(i, f);
+            CTCellStyle style = cellUtils.getCellStyle(cell);
+            if(style==null) {
+           	 log.debug("no style, so not a date");
+           	 return false;
+            }
+            long i = cellUtils.getNumberFormatIndex(cell);
+            String f = cellUtils.getNumberFormatString(cell);
+            bDate = isADateFormat((int)i, f);
         }
         return bDate;
     }
@@ -511,15 +528,14 @@ public class DateUtil {
      *  @see #isADateFormat(int,String)
      *  @see #isInternalDateFormat(int)
      */
-    public static boolean isCellInternalDateFormatted(Cell cell) {
+    public static boolean isCellInternalDateFormatted(Cell cell, CellUtils cellUtils) {
         if (cell == null) return false;
         boolean bDate = false;
 
-        double d = cell.getNumericCellValue();
+        double d = cellUtils.getNumericCellValue(cell);
         if ( DateUtil.isValidExcelDate(d) ) {
-            CellStyle style = cell.getCellStyle();
-            int i = style.getDataFormat();
-            bDate = isInternalDateFormat(i);
+            long i = cellUtils.getNumberFormatIndex(cell);
+            bDate = isInternalDateFormat((int)i);
         }
         return bDate;
     }

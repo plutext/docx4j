@@ -1,3 +1,9 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
+ 
 /* ====================================================================
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -14,7 +20,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-package org.apache.poi.ss.usermodel;
+package org.xlsx4j.org.apache.poi.ss.usermodel;
 
 /**
  * Utility to identify built-in formats.  The following is a list of the formats as
