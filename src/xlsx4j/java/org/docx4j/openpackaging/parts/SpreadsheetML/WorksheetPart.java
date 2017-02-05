@@ -3,6 +3,7 @@ package org.docx4j.openpackaging.parts.SpreadsheetML;
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.sml.Worksheet;
@@ -50,6 +51,18 @@ public class WorksheetPart extends JaxbSmlPart<Worksheet> {
 		Worksheet w = super.unmarshal(el);
 		w.setParent(this); // presume JAXB gets in wrong here too
 		return w;
+		
+	}
+	
+	/**
+	 * Get the WorkbookPart.
+	 * 
+	 * @return
+	 * @since 3.3.3
+	 */
+	public WorkbookPart getWorkbookPart() {
+		
+		return ((SpreadsheetMLPackage)this.getPackage()).getWorkbookPart();
 		
 	}
 }
