@@ -21,6 +21,7 @@ package org.xlsx4j.sml;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -28,6 +29,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -1121,6 +1124,15 @@ public class Worksheet implements Child
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+    
+    /**
+     * Get the WorksheetPart
+     * @return
+     * @since 3.3.3
+     */
+    public WorksheetPart getWorksheetPart() {
+    	return (WorksheetPart)getParent();
     }
 
     /**

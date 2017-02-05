@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -352,7 +354,16 @@ public class Cell implements Child
     public void setPh(Boolean value) {
         this.ph = value;
     }
-
+    
+    /**
+     * Get the WorksheetPart
+     * @return
+     * @since 3.3.3
+     */
+    public WorksheetPart getWorksheetPart() {
+    	return ((Row)getParent()).getWorksheetPart();
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

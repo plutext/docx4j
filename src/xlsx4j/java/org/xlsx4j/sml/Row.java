@@ -21,6 +21,7 @@ package org.xlsx4j.sml;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,6 +30,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -73,7 +76,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class Row implements Child
 {
 
-    protected List<Cell> c;
+    protected List<Cell> c = new ArrayListSml<Cell>(this);
     protected CTExtensionList extLst;
     @XmlAttribute(name = "r")
     @XmlSchemaType(name = "unsignedInt")
@@ -129,7 +132,7 @@ public class Row implements Child
      */
     public List<Cell> getC() {
         if (c == null) {
-            c = new ArrayList<Cell>();
+            c = new ArrayListSml<Cell>(this);
         }
         return this.c;
     }
@@ -487,6 +490,15 @@ public class Row implements Child
         this.ph = value;
     }
 
+    /**
+     * Get the WorksheetPart
+     * @return
+     * @since 3.3.3
+     */
+    public WorksheetPart getWorksheetPart() {
+    	return ((SheetData)getParent()).getWorksheetPart();
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
