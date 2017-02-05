@@ -39,15 +39,10 @@ public class CellUtils {
 
 	protected static Logger log = LoggerFactory.getLogger(CellUtils.class);
 	
-    private Styles stylesPart = null;
-	
-    public CellUtils(Styles stylesPart) {
-    	
-    	this.stylesPart = stylesPart;
+	protected CellUtils() {
+		// no instances of this class
     }
 
-    public CellUtils() {}
-    
     /**
      * Numeric Cell type (0)
      * @see #setCellType(int)
@@ -217,12 +212,15 @@ public class CellUtils {
 	  *
 	  * @return the cell's style.</code>
 	  */
-	 public CTCellStyle getCellStyle(Cell _cell) {
-		 CTXf xf = this.stylesPart.getXfByIndex(_cell.getS());
+	 public static CTCellStyle getCellStyle(Cell _cell) {
+		 
+		 Styles stylesPart = _cell.getWorksheetPart().getWorkbookPart().getStylesPart();
+		 
+		 CTXf xf = stylesPart.getXfByIndex(_cell.getS());
 		 if (xf == null) {
 			 throw new RuntimeException("xf unexpectedly null");
 		 }
-	     return this.stylesPart.getStyleByIndex(xf.getXfId());
+	     return stylesPart.getStyleByIndex(xf.getXfId());
 	 }
     
 //	 /**
@@ -247,8 +245,11 @@ public class CellUtils {
 	  *
 	  * @return the index of the number format
 	  */
-	 public long getNumberFormatIndex(Cell _cell) {
-		 CTXf xf = this.stylesPart.getXfByIndex(_cell.getS());
+	 public static long getNumberFormatIndex(Cell _cell) {
+		 
+		 Styles stylesPart = _cell.getWorksheetPart().getWorkbookPart().getStylesPart();
+		 
+		 CTXf xf = stylesPart.getXfByIndex(_cell.getS());
 		 if (xf == null) {
 			 throw new RuntimeException("xf unexpectedly null");
 		 }
@@ -265,7 +266,7 @@ public class CellUtils {
 	  *
 	  * @return the number format string
 	  */
-	 public String getNumberFormatString(Cell _cell) {
+	 public static String getNumberFormatString(Cell _cell) {
 	     long idx = getNumberFormatIndex(_cell);
 	     return getFormat((int)idx);
 	 }
@@ -275,7 +276,7 @@ public class CellUtils {
 	     * @param index of a format
 	     * @return string represented at index of format or null if there is not a  format at that index
 	     */
-	    private  String getFormat(int index) {
+	    private  static String getFormat(int index) {
 	        //String fmt = stylesSource.getNumberFormatAt(index);
 	    	String fmt = null;
 	        if(fmt == null) {
@@ -297,7 +298,10 @@ public class CellUtils {
 	     * @see DataFormatter for formatting  this date into a string similar to how excel does.
 	     */
 	    
-	    public Date getDateCellValue(Cell _cell, boolean date1904) {
+	    public static Date getDateCellValue(Cell _cell) {
+	    	
+	        boolean date1904 = _cell.getWorksheetPart().getWorkbookPart().isDate1904();
+	    	
 	        int cellType = getCellType(_cell);
 	        if (cellType == CELL_TYPE_BLANK) {
 	            return null;
@@ -318,7 +322,7 @@ public class CellUtils {
 	     *   is not CELL_TYPE_BOOLEAN, CELL_TYPE_BLANK or CELL_TYPE_FORMULA
 	     */
 	    
-	    public boolean getBooleanCellValue(Cell _cell) {
+	    public static boolean getBooleanCellValue(Cell _cell) {
 	        int cellType = getCellType(_cell);
 	        switch(cellType) {
 	            case CELL_TYPE_BLANK:

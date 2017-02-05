@@ -219,28 +219,6 @@ public class DataFormatter implements Observer {
     private final Map<String,Format> formats = new HashMap<String,Format>();
 
     private final boolean emulateCSV;
-    
-    private Styles stylesPart = null;
-
-    public void setStylesPart(Styles stylesPart) {
-		this.stylesPart = stylesPart;
-		cellUtils = new CellUtils(stylesPart);
-	}
-    
-    private CellUtils cellUtils = null;
-    
-    /* TODO FIXME!  CellUtils methods should be static, or reimplement as adapter or something */
-    
-    private WorkbookPart workbookPart;
-
-	private WorkbookPart getWorkbookPart() {
-		return workbookPart;
-	}
-
-	public void setWorkbookPart(WorkbookPart workbookPart) {
-		this.workbookPart = workbookPart;
-	}
-    
 
     /** stores the locale valid it the last formatting call */
     private Locale locale;
@@ -330,20 +308,20 @@ public class DataFormatter implements Observer {
      */
     private Format getFormat(Cell cell) {
     	
-    	CTCellStyle cellStyle = cellUtils.getCellStyle(cell); 
+    	CTCellStyle cellStyle = CellUtils.getCellStyle(cell); 
     	
         if ( cellStyle == null) {
             return null;
         }
 
-        String formatStr = cellUtils.getNumberFormatString(cell);
+        String formatStr = CellUtils.getNumberFormatString(cell);
         if(formatStr == null || formatStr.trim().length() == 0) {
             return null;
         }
         
-        long formatIndex = cellUtils.getNumberFormatIndex(cell);
+        long formatIndex = CellUtils.getNumberFormatIndex(cell);
         
-        return getFormat(cellUtils.getNumericCellValue(cell), formatIndex, formatStr);
+        return getFormat(CellUtils.getNumericCellValue(cell), formatIndex, formatStr);
     }
     
 	 
@@ -363,8 +341,8 @@ public class DataFormatter implements Observer {
         // For now, if we detect 3+ parts, we call out to CellFormat to handle it
         // TODO Going forward, we should really merge the logic between the two classes
         
-//        if (formatStr.contains(";") &&
-//                formatStr.indexOf(';') != formatStr.lastIndexOf(';')) {
+        if (formatStr.contains(";") &&
+                formatStr.indexOf(';') != formatStr.lastIndexOf(';')) {
 //            try {
 //                // Ask CellFormat to get a formatter for it
 //                CellFormat cfmt = CellFormat.getInstance(formatStr);
@@ -378,9 +356,9 @@ public class DataFormatter implements Observer {
 //                // Wrap and return (non-cachable - CellFormat does that)
 //                return new CellFormatResultWrapper( cfmt.apply(cellValueO) );
 //            } catch (Exception e) {
-//                logger.warn("Formatting failed for format " + formatStr + ", falling back", e);
+                logger.warn("Formatting not ported for format " + formatStr + ", falling back");
 //            }
-//        }
+        }
         
        // Excel's # with value 0 will output empty where Java will output 0. This hack removes the # from the format.
        if (emulateCSV && cellValue == 0.0 && formatStr.contains("#") && !formatStr.contains("0")) {
@@ -415,9 +393,9 @@ public class DataFormatter implements Observer {
 
     	//CTCellStyle cellStyle = cellUtils.getCellStyle(cell);
     	
-        long formatIndex = cellUtils.getNumberFormatIndex(cell);
-        String formatStr = cellUtils.getNumberFormatString(cell);
-        return createFormat(cellUtils.getNumericCellValue(cell), formatIndex, formatStr);
+        long formatIndex = CellUtils.getNumberFormatIndex(cell);
+        String formatStr = CellUtils.getNumberFormatString(cell);
+        return createFormat(CellUtils.getNumericCellValue(cell), formatIndex, formatStr);
     }
 
     private Format createFormat(double cellValue, long formatIndex, String sFormat) {
@@ -797,11 +775,10 @@ public class DataFormatter implements Observer {
         if(dateFormat instanceof ExcelStyleDateFormatter) {
            // Hint about the raw excel value
            ((ExcelStyleDateFormatter)dateFormat).setDateToBeFormatted(
-                 cellUtils.getNumericCellValue(cell)
+                 CellUtils.getNumericCellValue(cell)
            );
         }
-        boolean date1904 = this.workbookPart.isDate1904();
-        Date d = cellUtils.getDateCellValue(cell, date1904);
+        Date d = CellUtils.getDateCellValue(cell);
         //Date d = cell.getDateCellValue();
         return performDateFormatting(d, dateFormat);
     }
@@ -818,7 +795,7 @@ public class DataFormatter implements Observer {
     private String getFormattedNumberString(Cell cell) {
 
         Format numberFormat = getFormat(cell);
-        double d = cellUtils.getNumericCellValue(cell);
+        double d = CellUtils.getNumericCellValue(cell);
         if (numberFormat == null) {
             return String.valueOf(d);
         }
@@ -904,14 +881,14 @@ public class DataFormatter implements Observer {
             return "";
         }
 
-        int cellType = cellUtils.getCellType(cell);
+        int cellType = CellUtils.getCellType(cell);
         if (cellType == CellUtils.CELL_TYPE_FORMULA) {
                 return getCellFormula(cell);
         }
         switch (cellType) {
             case CellUtils.CELL_TYPE_NUMERIC :
 
-                if (DateUtil.isCellDateFormatted(cell, cellUtils)) {
+                if (DateUtil.isCellDateFormatted(cell)) {
                     return getFormattedDateString(cell);
                 }
                 return getFormattedNumberString(cell);
@@ -922,7 +899,7 @@ public class DataFormatter implements Observer {
             	return getCellStringValue(cell);
             	
             case CellUtils.CELL_TYPE_BOOLEAN :
-                return String.valueOf(cellUtils.getBooleanCellValue(cell));
+                return String.valueOf(CellUtils.getBooleanCellValue(cell));
             case CellUtils.CELL_TYPE_BLANK :
                 return "";
             case CellUtils.CELL_TYPE_ERROR:
@@ -934,7 +911,7 @@ public class DataFormatter implements Observer {
     
     private String getCellStringValue(Cell c) {
     	
-    	List<CTRst> stringItems = workbookPart.getSharedStrings().getJaxbElement().getSi();
+    	List<CTRst> stringItems = c.getWorksheetPart().getWorkbookPart().getSharedStrings().getJaxbElement().getSi();
     	
     	int index; 
     	try {
@@ -973,8 +950,8 @@ public class DataFormatter implements Observer {
      */
     
     public String getCellFormula(Cell _cell) {
-        int cellType = cellUtils.getCellType(_cell);
-        if(cellType != CellUtils.CELL_TYPE_FORMULA) throw cellUtils.typeMismatch(CellUtils.CELL_TYPE_FORMULA, cellType, false);
+        int cellType = CellUtils.getCellType(_cell);
+        if(cellType != CellUtils.CELL_TYPE_FORMULA) throw CellUtils.typeMismatch(CellUtils.CELL_TYPE_FORMULA, cellType, false);
 
         CTCellFormula f = _cell.getF();
 //        if (isPartOfArrayFormulaGroup() && f == null) {

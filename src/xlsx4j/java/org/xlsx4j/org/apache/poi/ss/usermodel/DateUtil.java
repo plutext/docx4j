@@ -503,19 +503,19 @@ public class DateUtil {
      *  @see #isADateFormat(int, String)
      *  @see #isInternalDateFormat(int)
      */
-    public static boolean isCellDateFormatted(Cell cell, CellUtils cellUtils) {
+    public static boolean isCellDateFormatted(Cell cell) {
         if (cell == null) return false;
         boolean bDate = false;
 
-        double d = cellUtils.getNumericCellValue(cell);
+        double d = CellUtils.getNumericCellValue(cell);
         if ( DateUtil.isValidExcelDate(d) ) {
-            CTCellStyle style = cellUtils.getCellStyle(cell);
+            CTCellStyle style = CellUtils.getCellStyle(cell);
             if(style==null) {
            	 log.debug("no style, so not a date");
            	 return false;
             }
-            long i = cellUtils.getNumberFormatIndex(cell);
-            String f = cellUtils.getNumberFormatString(cell);
+            long i = CellUtils.getNumberFormatIndex(cell);
+            String f = CellUtils.getNumberFormatString(cell);
             bDate = isADateFormat((int)i, f);
         }
         return bDate;
@@ -528,13 +528,13 @@ public class DateUtil {
      *  @see #isADateFormat(int,String)
      *  @see #isInternalDateFormat(int)
      */
-    public static boolean isCellInternalDateFormatted(Cell cell, CellUtils cellUtils) {
+    public static boolean isCellInternalDateFormatted(Cell cell) {
         if (cell == null) return false;
         boolean bDate = false;
 
-        double d = cellUtils.getNumericCellValue(cell);
+        double d = CellUtils.getNumericCellValue(cell);
         if ( DateUtil.isValidExcelDate(d) ) {
-            long i = cellUtils.getNumberFormatIndex(cell);
+            long i = CellUtils.getNumberFormatIndex(cell);
             bDate = isInternalDateFormat((int)i);
         }
         return bDate;

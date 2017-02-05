@@ -61,9 +61,6 @@ public class CellContentExtractor {
 		sharedStrings = workbookPart.getSharedStrings();
 		
 		DataFormatter formatter = new DataFormatter();
-		formatter.setStylesPart(workbookPart.getStylesPart());
-		formatter.setWorkbookPart(workbookPart);
-
 
 		// Now lets print the cell content
 		displayContent(sheet, formatter);
@@ -72,17 +69,15 @@ public class CellContentExtractor {
 	
 	
 	private static void displayContent(WorksheetPart sheet, DataFormatter formatter) {
-
-		System.out.println(sheet.getPartName().getName() );
-		
-		
 		
 		Worksheet ws = sheet.getJaxbElement();
 		SheetData data = ws.getSheetData();
+		
 		for (Row r : data.getRow() ) {
-			System.out.println("row " + r.getR() );				
+			System.out.println("row " + r.getR() );			
+			
 			for (Cell c : r.getC() ) {
-				
+
 //	            CellReference cellRef = new CellReference(row.getRowNum(), cell.getColumnIndex());
 //	            System.out.print(cellRef.formatAsString());
 //	            System.out.print(" - ");
