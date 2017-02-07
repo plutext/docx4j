@@ -46,6 +46,8 @@ public class TocAdd  {
 
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+    	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
+    	// and point to that in docx4j.properties
         
         //tocGenerator.generateToc( 0,    "TOC \\h \\z \\t \"comh1,1,comh2,2,comh3,3,comh4,4\" ", true);
         

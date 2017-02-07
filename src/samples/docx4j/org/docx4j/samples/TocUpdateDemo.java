@@ -41,8 +41,9 @@ public class TocUpdateDemo  {
         
 
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+        	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
+        	// and point to that in docx4j.properties
         
-//        tocGenerator.setDocumentServicesEndpoint("http://192.168.2.16:9015/v1/00000000-0000-0000-0000-000000000000/convert");
         
 //        	Toc.setTocHeadingText("Sumário");
         tocGenerator.updateToc( false); // true --> skip page numbering; its currently much faster
