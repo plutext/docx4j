@@ -79,7 +79,16 @@ public class ResourceUtils {
 			url = loader.getResource("assets/" + filename);
 			if (url!=null) System.out.println("found " + filename + " in assets");
 		}
-                
+
+        if (url == null) {
+        	// this is convenient when trying to load a resource from an arbitrary path,
+        	// since in IKVM you can setContextClassLoader to a URLClassLoader,
+        	// which in turn can be configured at run time to search some dir.
+        	log.debug("Trying Thread.currentThread().getContextClassLoader()");
+        	loader = Thread.currentThread().getContextClassLoader();
+        	url = loader.getResource(filename);
+        }
+        
         if (url == null) {
         	if (filename.contains("jaxb.properties")){
         		log.debug("Not using MOXy, since no resource: " + filename);        		
