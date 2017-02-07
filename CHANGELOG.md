@@ -2,6 +2,39 @@ CHANGELOG
 =========
 
 
+Version 3.3.3  minor release
+=============
+
+Release date
+------------
+
+7 February 2017
+
+Contributors to this release
+----------------------------
+
+Ashton Batty
+
+Jason Harrop
+
+Notable Changes in Version 3.3.2 
+---------------------------------
+
+Minor modifications to support use on Android; see https://github.com/plutext/AndroidDocxToHtml
+
+Several bugfixes, including:
+- Handle non-English speaking locales in XmlPart.cachedXPathGetString (used in OpenDoPE content control data binding)
+- Regression in xpathtracker histgram namespace handling (issue #230)
+ 
+
+xlsx4j
+------
+
+Convenience method for cell to access its WorksheetPart; WorksheetPart to get WorkbookPart.
+
+Cell content extraction - formatted (using modified Apache POI code)
+
+
 
 Version 3.3.2  minor release
 =============
