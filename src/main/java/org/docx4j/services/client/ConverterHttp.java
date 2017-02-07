@@ -111,6 +111,10 @@ public class ConverterHttp implements Converter {
         	//httppost = new HttpPost(URL+"/?bookmarks");  
 //        	System.out.println(URL+"?format=application/json");
         	return new HttpPost(URL+"?format=application/json");
+
+        } else if (Format.DOCX.equals(toFormat)) {
+
+        	return new HttpPost(URL+"?application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         	
         } else {
         	return new HttpPost(URL);
@@ -253,7 +257,8 @@ public class ConverterHttp implements Converter {
 			throw new ConversionException("Conversion from format " + fromFormat + " not supported");
 		}
 		
-		if (Format.PDF.equals(toFormat) || Format.TOC.equals(toFormat)) {
+		if (Format.PDF.equals(toFormat) || Format.TOC.equals(toFormat)
+				|| Format.DOCX.equals(toFormat)) {
 			// OK
 		} else {
 			throw new ConversionException("Conversion to format " + toFormat + " not supported");			
