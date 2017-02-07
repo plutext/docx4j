@@ -57,7 +57,7 @@ public class GlyphCheck {
 		PhysicalFont pf = PhysicalFonts.get(fontName);
 		if (pf==null) {
 			if (!warnedAlready.contains(fontName)) {
-				log.error("Couldn't get font " + fontName);
+				log.warn("Couldn't get font " + fontName);
 				warnedAlready.add(fontName);
 			}
 			return false;
