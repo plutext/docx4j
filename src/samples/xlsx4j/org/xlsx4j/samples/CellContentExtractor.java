@@ -21,11 +21,7 @@
 package org.xlsx4j.samples;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
-import org.docx4j.openpackaging.parts.SpreadsheetML.SharedStrings;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.slf4j.Logger;
@@ -37,18 +33,21 @@ import org.xlsx4j.sml.SheetData;
 import org.xlsx4j.sml.Worksheet;
 
 
+/**
+ * Extract contents of cells, formatted as they
+ * appear in Excel.
+ * 
+ * @author jharrop
+ * @since 3.3.3
+ */
 public class CellContentExtractor {
 	
 	private static Logger log = LoggerFactory.getLogger(CellContentExtractor.class);						
 
-	private static List<WorksheetPart> worksheets = new ArrayList<WorksheetPart>();
-	
-	private static SharedStrings sharedStrings = null;
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		
 
 		String inputfilepath = System.getProperty("user.dir") + "/content.xlsx";
 			
@@ -58,13 +57,10 @@ public class CellContentExtractor {
 		WorkbookPart workbookPart = xlsxPkg.getWorkbookPart();
 		WorksheetPart sheet = workbookPart.getWorksheet(0);
 		
-		sharedStrings = workbookPart.getSharedStrings();
-		
 		DataFormatter formatter = new DataFormatter();
 
 		// Now lets print the cell content
 		displayContent(sheet, formatter);
-		
 	}
 	
 	
