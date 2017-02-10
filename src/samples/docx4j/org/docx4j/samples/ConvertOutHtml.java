@@ -53,9 +53,11 @@ public class ConvertOutHtml extends AbstractSample {
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
 
 		save = true;
+		nestLists = true;
 	}
 
 	static boolean save;
+	static boolean nestLists;
 
     public static void main(String[] args)
             throws Exception {
@@ -98,9 +100,18 @@ public class ConvertOutHtml extends AbstractSample {
 	        
 	        See further http://www.css-101.org/articles/base-styles-sheet-for-webkit-based-browsers/    	
     	*/
-    	String userCSS = "html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, img,  ol, ul, li, table, caption, tbody, tfoot, thead, tr, th, td " +
+    	String userCSS = null;
+    	if (nestLists) {
+    		// use browser defaults for ol, ul, li
+    		userCSS = "html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, img,  table, caption, tbody, tfoot, thead, tr, th, td " +
     			"{ margin: 0; padding: 0; border: 0;}" +
     			"body {line-height: 1;} ";
+    	} else {
+    		userCSS = "html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, img,  ol, ul, li, table, caption, tbody, tfoot, thead, tr, th, td " +
+        			"{ margin: 0; padding: 0; border: 0;}" +
+        			"body {line-height: 1;} ";
+    		
+    	}
     	htmlSettings.setUserCSS(userCSS);
     	
     	
@@ -118,10 +129,12 @@ public class ConvertOutHtml extends AbstractSample {
 //		SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
     	
     	
-    	// list numbering:  comment out 1 or other of the following, depending on whether
-    	// you want list numbering hardcoded, or done using <li>.
-    	SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler()); 
-//    	htmlSettings.getFeatures().remove(ConversionFeatures.PP_HTML_COLLECT_LISTS);
+    	// list numbering:  depending on whether you want list numbering hardcoded, or done using <li>.
+    	if (nestLists) {
+    		SdtWriter.registerTagHandler("HTML_ELEMENT", new SdtToListSdtTagHandler());
+    	} else {
+    		htmlSettings.getFeatures().remove(ConversionFeatures.PP_HTML_COLLECT_LISTS);
+    	}
 		
 		// output to an OutputStream.		
 		OutputStream os; 
