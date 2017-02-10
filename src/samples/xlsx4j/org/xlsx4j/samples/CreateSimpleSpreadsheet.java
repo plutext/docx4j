@@ -37,12 +37,16 @@ public class CreateSimpleSpreadsheet {
 				
 		// Now add
 		Row row = Context.getsmlObjectFactory().createRow();
+		//row.setR((long) 1);  // optional
+		
 		Cell cell = Context.getsmlObjectFactory().createCell();
 		cell.setV("1234");
+		cell.setR("A1");  // Apple Numbers needs this, or cell content won't show 
 		row.getC().add(cell);
 		
-		
-		row.getC().add(createCell("hello world!"));
+		Cell cell2 = createCell("hello world!");
+		cell2.setR("B2");
+		row.getC().add(cell2);
 		
 		sheetData.getRow().add(row);
 	}
