@@ -112,6 +112,12 @@ public class ListsToContentControls {
 		
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
 		lc.process();
+		
+//		try {
+//			wmlPackage.save(new File("cc.docx"));
+//		} catch (Docx4JException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void process() {
@@ -282,12 +288,14 @@ public class ListsToContentControls {
 				} else {
 					ilvl = numPr.getIlvl().getVal();
 				}
+				log.debug("ilvl: " + ilvl.intValue());
 				
 				ListSpec listSpec = listStack.peek();
 				if (listSpec==null
 						|| (numId!=null
 								&& !numId.equals(listSpec.numId))) {
 					// new or different list
+					log.debug("NEW LIST");
 					
 					// if its a different list, pop all levels
 					if (listSpec!=null) {
@@ -296,6 +304,9 @@ public class ListsToContentControls {
 					
 					// add appropriate levels
 					for (int i=0; i<=ilvl.intValue(); i++) {
+						
+						log.debug("adding level " + i);
+						
 						listSpec = new ListSpec(numId, BigInteger.valueOf(i));
 						listSpec.sdtList = new SdtBlock();
 						setTag(listSpec.sdtList, numId, ilvl);			
@@ -319,13 +330,18 @@ public class ListsToContentControls {
 				} else // (numId.equals(listSpec.numId)) 
 				{
 					// same list
+					log.debug("listSpec.ilvl.intValue():" + listSpec.ilvl.intValue());
 					
 					if (ilvl.equals(listSpec.ilvl)) {
 						// just add to it
+						log.debug("same level");
 					} else if (ilvl.compareTo(listSpec.ilvl)>0) {
 
 						// deeper, so add levels
-						for (int i=listSpec.ilvl.intValue(); i<ilvl.intValue(); i++) {
+						for (int i=listSpec.ilvl.intValue()+1; i<=ilvl.intValue(); i++) {
+							
+							log.debug("adding level " + i);
+							
 							listSpec = new ListSpec(numId, BigInteger.valueOf(i));
 							listSpec.sdtList = new SdtBlock();
 							setTag(listSpec.sdtList, numId, ilvl);			
@@ -341,9 +357,10 @@ public class ListsToContentControls {
 						}
 						
 					} else {
-						log.debug("popping");
+						log.debug("must be pop...");
 						// shallower, so pop levels
 						for (int i=listSpec.ilvl.intValue(); i>ilvl.intValue(); i--) {
+							log.debug("popping");
 							listStack.pop();
 							listSpec = listStack.peek();
 							log.debug("popped!");
