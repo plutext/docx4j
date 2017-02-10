@@ -1,6 +1,5 @@
 package org.docx4j.convert.out.html;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,27 +8,19 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
-import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.finders.SdtFinder;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
-import org.docx4j.model.listnumbering.Emulator;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTShd;
-import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtElement;
@@ -37,13 +28,8 @@ import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
-import org.docx4j.wml.PPrBase.NumPr;
-import org.docx4j.wml.PPrBase.PBdr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 
 /**
  * Create list items in OL or UL (as appropriate).
@@ -115,11 +101,11 @@ public class ListsToContentControls {
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
 		lc.process();
 		
-		try {
-			wmlPackage.save(new File("cc.docx"));
-		} catch (Docx4JException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			wmlPackage.save(new File("cc.docx"));
+//		} catch (Docx4JException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void process() {
