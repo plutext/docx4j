@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.html;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -113,11 +115,11 @@ public class ListsToContentControls {
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
 		lc.process();
 		
-//		try {
-//			wmlPackage.save(new File("cc.docx"));
-//		} catch (Docx4JException e) {
-//			e.printStackTrace();
-//		}
+		try {
+			wmlPackage.save(new File("cc.docx"));
+		} catch (Docx4JException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void process() {
