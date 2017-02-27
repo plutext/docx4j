@@ -25,7 +25,7 @@ public class CachedXPathTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
-		String xml = "<Template><fileNumber>xxxx</fileNumber><Sender class='1'/><Receiver/></Template>";
+		String xml = "<Template><fileNumber>xxxx</fileNumber><Sender class='1'><id>3</id></Sender><Receiver/></Template>";
 		
 		CustomXmlDataStorage dataStorage = new CustomXmlDataStorageImpl();
 		dataStorage.setDocument(
@@ -53,6 +53,13 @@ public class CachedXPathTest {
 		Assert.assertEquals("xxxx", result);
 	}
 	
+	@Test  // https://github.com/plutext/docx4j/issues/234
+	public void complexString() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("concat('foo', //fileNumber)", null);
+		System.out.println(result);
+		Assert.assertEquals("fooxxxx", result);
+	}
 	
 	@Test
 	public void complexBoolean() throws Exception {
@@ -95,6 +102,18 @@ public class CachedXPathTest {
 		Assert.assertEquals("true", result);
 	}
 
+	@Test
+	public void booleanPlusString() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("boolean(//foo) + string(//fileNumber[1]) ", null);
+		System.out.println(result);
+		
+		boolean resultOK = (result.equals("false") || result.equals("NaN"));
+			// depending on docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic
+			// ie whether the heuristic is used.
+		
+		Assert.assertEquals(true, resultOK);
+	}
 	
 	@Test
 	public void testConvertNumber() throws Exception {
@@ -126,6 +145,22 @@ public class CachedXPathTest {
 		String result = xmlPart.cachedXPathGetString("string(//fileNumber[1])= 'xxxx'", null);
 		System.out.println(result);
 		Assert.assertEquals("true", result);
+	}
+	
+	@Test // https://github.com/plutext/docx4j/issues/235
+	public void booleanEqualsInPredicate() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("//Sender[@class='1']/id", null);
+		System.out.println(result);
+		Assert.assertEquals("3", result);
+	}
+	
+	@Test // https://github.com/plutext/docx4j/issues/235
+	public void booleanEqualsInPredicate2() throws Exception {
+		
+		String result = xmlPart.cachedXPathGetString("substring('abcdefg', 6 - number(//Sender[@class='1']/id))", null);
+		System.out.println(result);
+		Assert.assertEquals("cdefg", result);
 	}
 
 	@Test

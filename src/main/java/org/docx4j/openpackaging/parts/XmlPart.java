@@ -24,6 +24,8 @@ package org.docx4j.openpackaging.parts;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerException;
@@ -32,6 +34,7 @@ import javax.xml.xpath.XPathConstants;
 
 import org.apache.xpath.CachedXPathAPI;
 import org.apache.xpath.objects.XObject;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -78,7 +81,7 @@ public abstract class XmlPart extends Part {
 	protected Document doc;
 	
 	private static XPath xPath = XPathFactoryUtil.newXPath();
-	
+//	private static Pattern p = Pattern.compile("\\[.*\\]");
 	
 	private NamespacePrefixMappings nsContext;
 	private NamespacePrefixMappings getNamespaceContext() {
@@ -182,37 +185,55 @@ public abstract class XmlPart extends Part {
 			
 			XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());
 
-			/* Note: we also execute booleans here!
-			 * 
-			 * For example, from org.opendope.conditions.Xpathref.evaluate(Xpathref.java:87)
-			 * 
-			 * We need to handle this explicitly, since otherwise
-			 * 
-			 * string(/rating__type[1])='Critical' results in org.apache.xpath.XPathException: 
-			 * Can not convert #BOOLEAN to a NodeList!
-			 * 
-				at org.apache.xpath.objects.XObject.error(XObject.java:709)
-				at org.apache.xpath.objects.XObject.nodeset(XObject.java:439)
-				at org.apache.xpath.CachedXPathAPI.selectNodeIterator(CachedXPathAPI.java:186)
-				at org.apache.xpath.CachedXPathAPI.selectSingleNode(CachedXPathAPI.java:144)
-				at org.apache.xpath.CachedXPathAPI.selectSingleNode(CachedXPathAPI.java:124)
-
-			 * Quick n dirty heuristic to try to avoid falling through to the catch block.
-			 * 
-			 */
- 
-			if (xpath.contains("=")
-				|| xpath.trim().startsWith("boolean")) {
-					
-				if (xpath.contains("count(")
-						) {
-					
-					// eg: count(*[@foo='1']) is not boolean!
-					log.debug("complex path detected: " + xpath);
-					// fall through to catch handling
-						
-				} else {
+			if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", true) ) {
 				
+				/* Note: we also execute booleans here!
+				 * 
+				 * For example, from org.opendope.conditions.Xpathref.evaluate(Xpathref.java:87)
+				 *
+				 * Quick n dirty heuristic to avoid falling through to the catch block
+				 * in a couple of common cases.  
+				 */
+				
+				String trimmedXPath = xpath.trim();
+	 
+//				// Detect =, <, > inside [  ] 
+//				// eg count(*[@foo='1'])
+//				boolean complexCase = false;
+//				Matcher m = p.matcher(xpath);		
+//				while (m.find() && !complexCase) {
+//					if (m.group().contains("=")
+//							|| m.group().contains("<")
+//							|| m.group().contains(">")
+//							) {
+//						log.debug("Complex case " + m.group());
+//						complexCase = true;
+//					}
+//				}
+				
+	//			if (complexCase) {
+	//
+	//				// fall through to catch handling
+				
+					// this is commented out because although the above regex works 
+					// fine, the extra complexity and time is probably not warranted
+	//				
+	//			} else 
+					if (trimmedXPath.startsWith("boolean")
+						|| trimmedXPath.startsWith("not")) {
+					
+					/* Conservative in what we handle as boolean here, since 
+					 * per https://www.w3.org/TR/xpath/#section-Boolean-Functions
+					 * numbers, node-sets and strings all convert to boolean,
+					 * which often isn't what you want.
+					 * 
+					 * NB: This would still match something like:
+					 * 
+					 *    boolean(//foo) + string(//fileNumber[1])
+					 *    
+					 * which is NaN, which evaluates to false.
+					 */
+										
 					try {
 						if (xo.bool(cachedXPathAPI.getXPathContext())) {
 							return "true";
@@ -223,49 +244,50 @@ public abstract class XmlPart extends Part {
 						log.debug(e.getMessage());
 						// handle below
 					}
-				}
-					
-			} else if (xpath.trim().startsWith("count(")) {
-
-				/*
-				 * Consider:
-				 * 
-				 *     count(path1) > 0 or count(path2 > 0)  which is boolean
-				 * 
-				 * versus
-				 * 
-				 *     count(path1 or path2) which is number
-				 * 
-				 * Let's not try to tell which we want here.
-				 */
-				if (xpath.contains("=")
-						|| xpath.contains(">")
-						|| xpath.contains("<")
-						) {
-					
-					log.debug("complex path detected: " + xpath);
-					// fall through to catch handling
 						
-				} else {
-					// Reasonably confident this is a number
-					try {
-						double d = xo.num(cachedXPathAPI.getXPathContext());
-						if (xpath.trim().startsWith("count(")
-								&& /* it looks like it should be an integer */ d == Math.rint(d)) {
-							return "" + Math.round(d); // convert eg 2.0
+				} else if (trimmedXPath.startsWith("count(")) {
+	
+					/*
+					 * Consider:
+					 * 
+					 *     count(path1) > 0 or count(path2 > 0)  which is boolean
+					 * 
+					 * versus
+					 * 
+					 *     count(path1 or path2) which is number
+					 * 
+					 * Let's not try to tell which we want here.
+					 */
+					if (xpath.contains("=")
+							|| xpath.contains(">")
+							|| xpath.contains("<")
+							) {
+						
+						log.debug("complex path detected: " + xpath);
+						// fall through to catch handling
 							
-						} else {
-							return "" + d;
+					} else {
+						// Reasonably confident this is a number
+						try {
+							double d = xo.num(cachedXPathAPI.getXPathContext());
+							if (xpath.trim().startsWith("count(")
+									&& /* it looks like it should be an integer */ d == Math.rint(d)) {
+								return "" + Math.round(d); // convert eg 2.0
+								
+							} else {
+								return "" + d;
+							}
+						} catch (org.apache.xpath.XPathException e) {
+							log.debug(e.getMessage());
+							// handle below
 						}
-					} catch (org.apache.xpath.XPathException e) {
-						log.debug(e.getMessage());
-						// handle below
 					}
 				}
+				
 			}
 			
 			try {
-			
+				// This is our usual case...
 				// get the first node or null, from NodeSetDTM
 				Node result;
 				if (log.isDebugEnabled() /* verify just a single result */) {
@@ -289,7 +311,9 @@ public abstract class XmlPart extends Part {
 				
 			} catch (org.apache.xpath.XPathException e) {
 								
-				/*
+				/* Here we handle the cases where the result is not a nodelist
+				 * 
+				 * 
 				    error(XPATHErrorResources.ER_CANT_CONVERT_TO_NODELIST,
 				          new Object[]{ getTypeString() });  //"Can not convert "+getTypeString()+" to a NodeList!");
 				          
@@ -318,6 +342,10 @@ public abstract class XmlPart extends Part {
 					} else {
 						return "" + d;
 					}
+				} else if (e.getMessage().contains("#STRING") ) { 
+
+					log.debug("Fallback handling XPath of form: " + xpath  + " in case of " + e.getMessage() );
+					return xo.xstr(cachedXPathAPI.getXPathContext()).toString();
 				} else {
 					log.error(e.getMessage());
 					log.error("Handle XPath of form: " + xpath);
