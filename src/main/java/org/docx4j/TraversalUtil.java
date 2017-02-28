@@ -114,57 +114,42 @@ public class TraversalUtil {
 			List children = getChildren(parent);
 			if (children != null) {
 
+				Object o2;
 				for (Object o : children) {
-					
-					// if its wrapped in javax.xml.bind.JAXBElement, get its
-					// value; this is ok, provided the results of the Callback
-					// won't be marshalled
-					o = XmlUtils.unwrap(o);
-					
-					// workaround for broken getParent (since 3.0.0)
-					// In 3.3.1, this ought not be necessary for common cases in org.docx4j.wml package
-					if (o instanceof Child) {
-						if (parent instanceof SdtBlock) {
-							((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
-								/*
-								 * getParent on eg a P in a SdtBlock should return SdtContentBlock, as
-								 * illustrated by the following code:
-								 * 
-										SdtBlock sdtBloc = Context.getWmlObjectFactory().createSdtBlock();
-										SdtContentBlock sdtContentBloc = Context.getWmlObjectFactory().createSdtContentBlock();
-										sdtBloc.setSdtContent(sdtContentBloc);
-										P p = Context.getWmlObjectFactory().createP();
-										sdtContentBloc.getContent().add(p);
-										String result = XmlUtils.marshaltoString(sdtBloc, true);
-										System.out.println(result);
-										SdtBlock rtp = (SdtBlock)XmlUtils.unmarshalString(result, Context.jc, SdtBlock.class);
-										P rtr = (P)rtp.getSdtContent().getContent().get(0);
-										System.out.println(rtr.getParent().getClass().getName() );
-								 * 
-								 * Similarly, P is the parent of R; the p.getContent() list is not the parent
-								 * 
-										P p = Context.getWmlObjectFactory().createP();
-										R r = Context.getWmlObjectFactory().createR();
-										p.getContent().add(r);
-										String result = XmlUtils.marshaltoString(p, true);
-										P rtp = (P)XmlUtils.unmarshalString(result);
-										R rtr = (R)rtp.getContent().get(0);
-										System.out.println(rtr.getParent().getClass().getName() );
-								 */
-						} else if (parent instanceof List){
-							// Do nothing
-							if (log.isDebugEnabled()) {
-								log.debug("Unknown parent for " + o.getClass().getName());
+										
+					if (o instanceof javax.xml.bind.JAXBElement) {
+						// get its value; this is ok, 
+						// provided the results of the Callback
+						// won't be marshalled
+						o2 = ((JAXBElement)o).getValue();
+						
+						if (o2 instanceof Child) {
+							
+							if (parent instanceof List){
+								// It shouldn't be (as ArrayListWml usually handles), but do nothing 
+								if (log.isDebugEnabled()) {
+									if ( ((Child)o2).getParent()==null) {
+										log.debug("Unknown parent for " + o2.getClass().getName());										
+									} else  {
+										log.debug("Parent of " + o2.getClass().getName()
+												+ " is currently " + ((Child)o2).getParent().getClass().getName());
+									}
+								}
+							} else {
+								// workaround for broken getParent in cases where ArrayListWml doesn't help
+								// (ie we're not in a content list)
+								((Child)o2).setParent(parent);
 							}
-						} else {
-							((Child)o).setParent(parent);
 						}
-					}
+						
+					} else /* not wrapped in JAXBElement, so getParent should be OK */ {
+						o2 = o;
+					}										
 					
-					this.apply(o);
+					this.apply(o2);
 
-					if (this.shouldTraverse(o)) {
-						walkJAXBElements(o);
+					if (this.shouldTraverse(o2)) {
+						walkJAXBElements(o2);
 					}
 
 				}

@@ -90,6 +90,7 @@ public class SdtRun implements SdtElement, Child
      */
     public void setSdtPr(SdtPr value) {
         this.sdtPr = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**
@@ -142,6 +143,7 @@ public class SdtRun implements SdtElement, Child
      */
     public void setSdtContent(CTSdtContentRun value) {
         this.sdtContent = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**

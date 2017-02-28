@@ -97,6 +97,7 @@ public class SdtBlock implements SdtElement, Child
      */
     public void setSdtPr(SdtPr value) {
         this.sdtPr = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases
     }
 
     /**
@@ -145,6 +146,7 @@ public class SdtBlock implements SdtElement, Child
      */
     public void setSdtContent(SdtContentBlock value) {
         this.sdtContent = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases
     }
 
     /**
