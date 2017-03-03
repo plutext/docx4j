@@ -562,6 +562,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
                 //If image haven't been load (using function createImagePartFromFilePath), we load it
                 if (isLoad == false) {
+    				log.debug("isLoad == false");		
 
                     // So first, we create tmpFile	
                     File tmpImageFile = File.createTempFile("img", ".img");
@@ -578,7 +579,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
                     //We don't forget to change locFile because the new image file is the converted image file!!
                     imageFile = tmpImageFile;
                     
-                } //Else image has been load in an array (using function cretaImagePart)
+                } //Else image has been load in an array (using function createImagePart)
                 else {
 					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
 					fos = new FileOutputStream(imageFile); 
@@ -591,7 +592,16 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
 				// We need to refresh image info 
 				getImageManager().getCache().clearCache();
-                info = getImageInfo(new URL("file://" + imageFile.getAbsolutePath()));
+				try {
+					// not file:// for xmlgraphics-commons-2.1, at least on Windows
+					// eg file://C:/Users/jharrop/AppData/Local/Temp/img5440591995488867319.img
+					// Is that a bug?  As of March 2017, not at https://issues.apache.org/jira/issues/?jql=project%20%3D%20XGC 
+					info = getImageInfo(new URL("file:/" + imageFile.getAbsolutePath())); 
+				} catch (java.io.FileNotFoundException fnfe) {
+					// fallback to trying old behaviour
+					log.info("trying file://");
+					info = getImageInfo(new URL("file://" + imageFile.getAbsolutePath())); 					
+				}
 				
 				// Debug ...
 				displayImageInfo(info);
@@ -1320,57 +1330,58 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 */
     public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException {
 		
-	/*
-	 * See http://www.eichberger.de/2006/05/imagemagick-in-servlets.html
-	 * 
-	 * "Calling 'convert - png:-' as an external command and feeding it the 
-	 * source image as standard input and reading the converted image 
-	 * (in this case png) as standard output"
-	 * 
-	 */
-		
-	 log.info("Start ImageMagick...");
-	 Process p = Runtime.getRuntime().exec("imconvert -density " + density + " -units PixelsPerInch - png:-");  
-	 
-	 // GraphicsMagick is a little quicker than ImageMagick,
-	 // but v1.3.3 (of Dec 2008) still has the now fixed in GM bug
-	 // whereby the right most ~10% of the resulting image is chopped off
-	 //Process p = Runtime.getRuntime().exec("gm convert -density " + density + " -units PixelsPerInch - png:-");  
-	 
-	 /* On Windows, if this results in "Invalid Parameter",
-	  * then either ImageMagick is not installed,
-	  * or exec is finding the wrong convert
-	  * program.  See http://studio.imagemagick.org/pipermail/magick-users/2005-October/016464.html
-	  * and http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=8324&start=0
-	  * 
-	  * Rather than use full path, rename convert to imconvert (which Alfresco and others do)
-	  * 
-	  */
-	 
-	 //initialize Gobblers
-	 StreamGobbler inGobbler = new StreamGobbler(p.getInputStream(), os);
-	 StreamGobbler errGobbler = new StreamGobbler(p.getErrorStream(), System.err);
-	 //start them
-	 inGobbler.start();
-	 errGobbler.start();
-	 
-	 // p.getOutputStream() is the _output stream_ of the subprocess, so
-	 // this copies is into the standard input stream of the process 
-	 try {
-		 copy2(is, new BufferedOutputStream(p.getOutputStream()));
-		 p.getOutputStream().close();
-		 log.debug("Image copied...");
-	 } catch (IOException ioe) {
+		/*
+		 * See http://www.eichberger.de/2006/05/imagemagick-in-servlets.html
+		 * 
+		 * "Calling 'convert - png:-' as an external command and feeding it the 
+		 * source image as standard input and reading the converted image 
+		 * (in this case png) as standard output"
+		 * 
+		 */
+			
+		 String executableName = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert");		 
+		 log.info("Start ImageMagick..." + executableName);
+		 Process p = Runtime.getRuntime().exec(executableName + " -density " + density + " -units PixelsPerInch - png:-");  
 		 
-		 ioe.printStackTrace();
-		 // debug
-		 copy2(p.getErrorStream(), System.err);
-	 }
-	 
-        if (p.waitFor() != 0) {
-	  log.error("Error");
-	 }
-	 log.debug("End Process...");
+		 // GraphicsMagick is a little quicker than ImageMagick,
+		 // but v1.3.3 (of Dec 2008) still has the now fixed in GM bug
+		 // whereby the right most ~10% of the resulting image is chopped off
+		 //Process p = Runtime.getRuntime().exec("gm convert -density " + density + " -units PixelsPerInch - png:-");  
+		 
+		 /* On Windows, if this results in "Invalid Parameter",
+		  * then either ImageMagick is not installed,
+		  * or exec is finding the wrong convert
+		  * program.  See http://studio.imagemagick.org/pipermail/magick-users/2005-October/016464.html
+		  * and http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=8324&start=0
+		  * 
+		  * Rather than use full path, rename convert to imconvert (which Alfresco and others do)
+		  * 
+		  */
+		 
+		 //initialize Gobblers
+		 StreamGobbler inGobbler = new StreamGobbler(p.getInputStream(), os);
+		 StreamGobbler errGobbler = new StreamGobbler(p.getErrorStream(), System.err);
+		 //start them
+		 inGobbler.start();
+		 errGobbler.start();
+		 
+		 // p.getOutputStream() is the _output stream_ of the subprocess, so
+		 // this copies is into the standard input stream of the process 
+		 try {
+			 copy2(is, new BufferedOutputStream(p.getOutputStream()));
+			 p.getOutputStream().close();
+			 log.debug("Image copied...");
+		 } catch (IOException ioe) {
+			 
+			 ioe.printStackTrace();
+			 // debug
+			 copy2(p.getErrorStream(), System.err);
+		 }
+		 
+		if (p.waitFor() != 0) {
+			log.error("Error");
+		}
+		log.debug("End Process...");
 	}
 
 	public static void copy2(InputStream is, OutputStream os) throws IOException {
