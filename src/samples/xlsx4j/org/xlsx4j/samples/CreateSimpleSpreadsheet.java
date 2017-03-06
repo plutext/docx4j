@@ -1,6 +1,7 @@
 package org.xlsx4j.samples;
 
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import java.io.File;
+
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
@@ -23,10 +24,9 @@ public class CreateSimpleSpreadsheet {
 		WorksheetPart sheet = pkg.createWorksheetPart(new PartName("/xl/worksheets/sheet1.xml"), "Sheet1", 1);
 		
 		addContent(sheet);
-		
-		SaveToZipFile saver = new SaveToZipFile(pkg);
-		saver.save(outputfilepath);
 				
+		pkg.save(new File(outputfilepath));
+						
 		System.out.println("\n\n done .. " + outputfilepath);	
 	}
 	
@@ -45,8 +45,8 @@ public class CreateSimpleSpreadsheet {
 		row.getC().add(cell);
 		
 		Cell cell2 = createCell("hello world!");
-		cell2.setR("B2");
 		row.getC().add(cell2);
+		cell2.setR("B1"); // be careful the numeral matches the row correctly, or Excel will complain
 		
 		sheetData.getRow().add(row);
 	}
