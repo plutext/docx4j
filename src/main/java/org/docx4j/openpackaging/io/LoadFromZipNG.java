@@ -35,6 +35,7 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -151,7 +152,7 @@ public class LoadFromZipNG extends Load {
 			throw new Docx4JException("Couldn't get ZipFile", ioe);
 		}
 				
-		HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();
+		Map<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();
 		Enumeration entries = zf.entries();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
@@ -200,7 +201,7 @@ public class LoadFromZipNG extends Load {
 		return process(partByteArrays);
 	}
 	
-	private OpcPackage process(HashMap<String, ByteArray> partByteArrays) throws Docx4JException {
+	private OpcPackage process(Map<String, ByteArray> partByteArrays) throws Docx4JException {
 		
 		long startTime = System.currentTimeMillis();				
 
@@ -258,7 +259,7 @@ public class LoadFromZipNG extends Load {
 		 return p;
 	}
 	
-	private void populatePackageRels(HashMap<String, ByteArray> partByteArrays, RelationshipsPart rp) 
+	private void populatePackageRels(Map<String, ByteArray> partByteArrays, RelationshipsPart rp)
 			throws Docx4JException {
 		
 		InputStream is = null;
@@ -279,7 +280,7 @@ public class LoadFromZipNG extends Load {
 	}
 	
 	//private RelationshipsPart getRelationshipsPartFromZip(Base p, ZipFile zf, String partName) 
-	private RelationshipsPart getRelationshipsPartFromZip(Base p, HashMap<String, ByteArray> partByteArrays, String partName) 
+	private RelationshipsPart getRelationshipsPartFromZip(Base p, Map<String, ByteArray> partByteArrays, String partName)
 			throws Docx4JException {
 		
 		RelationshipsPart rp = null;
@@ -312,7 +313,7 @@ public class LoadFromZipNG extends Load {
 	// TODO - why don't any of the part names in this document start with "/"?
 	}
 
-	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
+	private static InputStream getInputStreamFromZippedPart(Map<String, ByteArray> partByteArrays,
 			String partName) throws IOException {
 		
         ByteArray bytes = partByteArrays.get(partName);
@@ -328,7 +329,7 @@ public class LoadFromZipNG extends Load {
 	(iii) cross the PartName off unusedZipEntries
 	*/
 	//private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp)
-	private void addPartsFromRelationships(HashMap<String, ByteArray> partByteArrays, 
+	private void addPartsFromRelationships(Map<String, ByteArray> partByteArrays,
 			Base source, RelationshipsPart rp, ContentTypeManager ctm)
 		throws Docx4JException {
 		
@@ -382,7 +383,7 @@ public class LoadFromZipNG extends Load {
 	 * @throws InvalidFormatException
 	 */
 	//private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
-	private void getPart(HashMap<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp, 
+	private void getPart(Map<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp,
 			Relationship r, ContentTypeManager ctm)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
@@ -492,7 +493,7 @@ public class LoadFromZipNG extends Load {
 	 * @throws InvalidFormatException
 	 */
 	//public RelationshipsPart getRelationshipsPart(ZipFile zf, Part part)
-	public RelationshipsPart getRelationshipsPart(HashMap<String, ByteArray> partByteArrays, 
+	public RelationshipsPart getRelationshipsPart(Map<String, ByteArray> partByteArrays,
 			Part part)
 	throws Docx4JException, InvalidFormatException {
 		
@@ -529,7 +530,7 @@ public class LoadFromZipNG extends Load {
 	 * @return
 	 * @throws Docx4JException including if result is null
 	 */
-	public static Part getRawPart(HashMap<String, ByteArray> partByteArrays,
+	public static Part getRawPart(Map<String, ByteArray> partByteArrays,
 			ContentTypeManager ctm, String resolvedPartUri, Relationship rel)	
 			throws Docx4JException {
 		
@@ -733,7 +734,7 @@ public class LoadFromZipNG extends Load {
 	}
 	
 	//public static Part getBinaryPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
-	public static Part getBinaryPart(HashMap<String, ByteArray> partByteArrays, 
+	public static Part getBinaryPart(Map<String, ByteArray> partByteArrays,
 			ContentTypeManager ctm, String resolvedPartUri)	
 			throws Docx4JException {
 

@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.parts.DrawingML;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 
@@ -220,7 +221,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 	}
 
-	private static String mapGet(HashMap<String, String> map, String key) {
+	private static String mapGet(Map<String, String> map, String key) {
 		
 		if (key==null) {
 			System.out.println("Key not found!");
