@@ -20,34 +20,25 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.List;
-
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.fonts.fop.fonts.CustomFont;
-import org.docx4j.fonts.fop.fonts.EncodingMode;
-import org.docx4j.fonts.fop.fonts.FontLoader;
-import org.docx4j.fonts.fop.fonts.FontResolver;
-import org.docx4j.fonts.fop.fonts.FontSetup;
+import org.docx4j.fonts.fop.fonts.*;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.List;
 
 public class ObfuscatedFontPart extends BinaryPart {
 
 	private static Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);		
 	
 	java.io.File f; // the temp embedded font file
-	
-	
-    /** docx4j's user directory name */
-    private static final String DOCX4J_USER_DIR = ".docx4all"; 
-    	// docx4all already creates a dir; no point creating a second 
 
     /** font cache file path */
     private static final String TEMPORARY_FONT_DIR = "temporary embedded fonts";
@@ -59,18 +50,13 @@ public class ObfuscatedFontPart extends BinaryPart {
     	String tmpFontDirPath = Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir");
     	
     	if (tmpFontDirPath==null) {
-    		
-	        File userHome = getUserHome();
-	        if (userHome == null) {
-	        	log.warn("No home dir found; consider setting property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
-	        } else {
-	        	
-	            File docx4jUserDir = new File(userHome, DOCX4J_USER_DIR);
-	            docx4jUserDir.mkdir();
-	            tmpFontDir = new File(docx4jUserDir, TEMPORARY_FONT_DIR);
-	            tmpFontDir.mkdir();
-	        }    	
-    		
+	        String defaultTmpPath = System.getProperty("java.io.tmpdir");
+
+	        log.warn("Temporary font dir not configured; consider setting property 'docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.tmpFontDir'");
+	        log.info("Using {} as tmpFontDir", defaultTmpPath);
+
+			tmpFontDir = new File(new File(defaultTmpPath), TEMPORARY_FONT_DIR);
+			tmpFontDir.mkdir();
     	} else {
 
             tmpFontDir = new File(tmpFontDirPath);
