@@ -99,6 +99,11 @@ public class ListsToContentControls {
 		//TODO: Convert to visitor behaviour here like TraversalUtil.visit with onlyBody = false
 		
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
+		
+		if (lc.ndp==null) {
+			log.info("No NumberingDefinitionsPart, skipping");
+			return;
+		}
 		lc.process();
 		
 //		try {
