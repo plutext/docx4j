@@ -66,4 +66,19 @@ public class GlyphCheck {
 		return hasChar(pf, c);
 	}
 	
+//	public static void main(String[] args) throws Exception {
+//
+//		PhysicalFonts.discoverPhysicalFonts();
+//		
+//		PhysicalFont physicalFont = PhysicalFonts.get("Times New Roman");
+//		
+//		if (physicalFont==null) {
+//			System.out.println("missing TNR!");
+//		} else {
+//			System.out.println(
+//					GlyphCheck.hasChar(physicalFont, 'ě'));
+//		}
+//		
+//	}
+	
 }
