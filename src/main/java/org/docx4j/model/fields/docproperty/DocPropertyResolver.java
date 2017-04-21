@@ -3,6 +3,7 @@ package org.docx4j.model.fields.docproperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.docProps.custom.Properties;
 import org.docx4j.model.fields.FieldFormattingException;
 import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -77,6 +78,12 @@ public class DocPropertyResolver {
 				return (String)value;
 			} else if (value instanceof Integer) {
 				return ((Integer)value).toString();
+			} else if (value instanceof Properties.Property) {
+                Properties.Property prop = (Properties.Property)value;
+                if (prop.getLpstr() != null) {
+                    return prop.getLpstr();
+                }
+                return prop.getLpwstr();
 			} else {
 				throw new FieldFormattingException("TODO: convert " + value.getClass().getName() + " to string");
 			}
