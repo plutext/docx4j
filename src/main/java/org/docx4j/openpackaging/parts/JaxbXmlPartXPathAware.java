@@ -19,7 +19,6 @@
  */
 package org.docx4j.openpackaging.parts;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -27,27 +26,18 @@ import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
-import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
-import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -111,7 +101,7 @@ implements XPathEnabled<E> {
 					log.warn(name + " missing from part store");
 				} else {
 					log.debug("Lazily unmarshalling " + name);
-					unmarshal( is, true ); // we need the DOM doc
+					unmarshal( is );
 				}
 			} catch (JAXBException e) {
 				log.error(e.getMessage(), e);
@@ -249,9 +239,8 @@ implements XPathEnabled<E> {
 			String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException, XPathBinderAssociationIsPartialException {
 
-		
-		Binder<Node> binder = getBinder(); // do this first!
-		return XmlUtils.getJAXBAssociationsForXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
+		E el = getJaxbElement();
+		return XmlUtils.getJAXBAssociationsForXPath(getBinder(), el, xpathExpr, refreshXmlFirst);
 		
 	}	
 	
@@ -308,23 +297,6 @@ implements XPathEnabled<E> {
 		}
 				
 	}
-
-	private void unwrapUsually(Object tmp) throws JAXBException {
-	
-		// ..  we do need to leave it wrapped, 
-		// if there is no @XmlRootElement annotation 
-		if (tmp instanceof javax.xml.bind.JAXBElement) {
-			QName qname = ((javax.xml.bind.JAXBElement)tmp).getName();
-			if (qname.equals( org.docx4j.dml.chart.ObjectFactory._UserShapes_QNAME)) {
-				jaxbElement=(E)tmp;	
-				return;
-			}
-		}
-		
-		jaxbElement =  (E) XmlUtils.unwrap(tmp);
-		// Unwrap, so we have eg CTEndnotes, not JAXBElement
-				
-	}
 	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
@@ -342,148 +314,38 @@ implements XPathEnabled<E> {
      */
 	@Override
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
-
-		return unmarshal(is, false);
-	}
-	
-	/**
-	 * Unmarshalling via DOM document can be 4x slower than unmarshalling
-	 * the inputstream using XMLStreamReader, so we avoid doing that where possible.
-	 * 
-	 * @param is
-	 * @param forceBinder
-	 * @return
-	 * @throws JAXBException
-	 */
-	private E unmarshal( java.io.InputStream is, boolean forceBinder ) throws JAXBException {
-		
-//		long start = System.currentTimeMillis();
-		
 		try {
-			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
-			org.w3c.dom.Document doc = null;
 			
-			try {
-				
-				boolean wantBinder = forceBinder;
-				
-				if (!forceBinder) {
-					if (this instanceof MainDocumentPart) {
-						wantBinder = Docx4jProperties.getProperty(
-								"docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.MainDocumentPart", false);
-					} else {
-						wantBinder = Docx4jProperties.getProperty(
-								"docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.OtherParts", false);					
-					}
-				}
-				
-				if (wantBinder) {
-					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
-					
-					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
-						log.debug("MOXy: checking whether binder workaround is necessary");
-						// Workaround for MOXy issue http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
-						String contents = IOUtils.toString(is, "UTF-8");  
-						IOUtils.closeQuietly(is);
-						is = new ByteArrayInputStream(contents.getBytes("UTF-8"));	
-						
-						if (contents.contains("AlternateContent")) {
-							// looks like we need to do the workaround
-							log.debug("MOXy: yes, performing workaround");
-							// Get object with mc content resolved
-							// could do super.unmarshal(is);
-							// but better
-							try {
-								Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-								DOMResult result = new DOMResult();
-								XmlUtils.transform(new StreamSource(is), 
-										mcPreprocessorXslt, null, result);
-								doc = (org.w3c.dom.Document) result.getNode();
-							} catch (Exception e) {
-								throw new JAXBException("Preprocessing exception", e);
-							}
-							
-						} else {
-							// continue with a new is
-							log.debug("MOXy: no, looks ok");
-						}
-					}
-				
-					// InputStream to Document
-					if (doc==null) // we didn't do the MOXy workaround above 
-					{						
-						doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
-					}
-	
-					// 
-					binder = jc.createBinder();
-					
-					log.debug("info: " + binder.getClass().getName());
-					
-//					eventHandler.setContinue(false);
-					binder.setEventHandler(eventHandler);
-					
-					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
-					
-				} else {
-					log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
-					
-					// Guard against XXE
-			        XMLInputFactory xif = XMLInputFactory.newInstance();
-			        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-			        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-			        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
-				    
-					Unmarshaller u = jc.createUnmarshaller();
-					
-//					if (is.markSupported()) {
-//						// Only fail hard if we know we can restart
-//						eventHandler.setContinue(false);
-//					}
-					u.setEventHandler(eventHandler);
-					
-					unwrapUsually(u.unmarshal( xsr ));						
-					
-				}
-			} catch (org.xml.sax.SAXParseException e) {
-				
-				/*
-					org.xml.sax.SAXParseException; lineNumber: 2; columnNumber: 10; DOCTYPE is disallowed when the feature "http://apache.org/xml/features/disallow-doctype-decl" set to true.
-						at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(Unknown Source)
-						at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(Unknown Source)
-						at javax.xml.parsers.DocumentBuilder.parse(Unknown Source)
-					 */
-				log.error(e.getMessage(), e);
-				throw e;
-					
-			} catch (Exception ue) {
+			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
+			// InputStream to Document
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is);
 
-				if (ue instanceof UnmarshalException) {
-					// Usually..
-					
-					if (((UnmarshalException)ue).getLinkedException()!=null 
-							&& ((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
-						
-						/*
-							Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
-							Message: The entity "xxe" was referenced, but not declared.
-								at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
-								at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
-							 */
-						log.error(ue.getMessage(), ue);
-						throw ue;
-					}
-					
-				} else {
-					// eg java.lang.NumberFormatException
-					log.warn( ue.getMessage(), ue);
-				}
+			// 
+			binder = jc.createBinder();
+			
+			log.debug("info: " + binder.getClass().getName());
+			
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			binder.setEventHandler(eventHandler);
+			
+//			try {
+//				unwrapUsually(binder,  doc);  // unlikely to need this in the code below
+//
+//			} catch (Exception ue) {
+//
+//				if (ue instanceof UnmarshalException) {
+//					// Usually..
+//				} else {
+//					// eg java.lang.NumberFormatException
+//					log.warn( ue.getMessage(), ue);
+//				}
 				
 				if (is.markSupported() ) {
-					is.reset();
-					// when reading from zip, we use a ByteArrayInputStream, which does support mark.
-					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
+					// When reading from zip, we use a ByteArrayInputStream,
+					// which does support this.
 									
+					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
 					/* Always try our preprocessor, since if what is first encountered is
 					 * eg:
 					 * 
@@ -496,10 +358,12 @@ implements XPathEnabled<E> {
 					 * but there could well be mc:AlternateContent somewhere 
 					 * further down in the document.
 					 */
+	
+					// mimic docx4j 2.7.0 and earlier behaviour; this will 
+					// drop w14:glow etc; the preprocessor doesn't need to 
+					// do that				
+					eventHandler.setContinue(true);
 					
-					// If we get here, we always use DOM source and binder
-					doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
-						
 					// There is no JAXBResult(binder),
 					// so use a 
 					DOMResult result = new DOMResult();
@@ -508,13 +372,7 @@ implements XPathEnabled<E> {
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 					
 					doc = (org.w3c.dom.Document)result.getNode();
-					
-					try {
-						// mimic docx4j 2.7.0 and earlier behaviour; this will 
-						// drop w14:glow etc; the preprocessor doesn't need to 
-						// do that				
-						eventHandler.setContinue(true);
-						binder = jc.createBinder();
+					try {				
 						jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 					} catch (ClassCastException cce) {
 						/* 
@@ -547,26 +405,22 @@ implements XPathEnabled<E> {
 	
 						log.warn("Binder not available for this docx");
 						Unmarshaller u = jc.createUnmarshaller();
-						unwrapUsually(u.unmarshal( doc ));		
+						jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
 						
 					}
 				} else {
 					log.warn("problem in " + this.getPartName() ); 					
-					log.warn(ue.getMessage(), ue);
+					//log.warn(ue.getMessage(), ue);
 					log.warn(".. and mark not supported");
-					throw ue;
+					throw new UnmarshalException("problem in " +this.getPartName() +" and mark not supported");
 				}
-			}
-			
-//			long finish = System.currentTimeMillis();
-//			long diff = finish - start;
-//			System.out.println("Time taken " + diff + " for " + this.getPartName().getName() );
+//			}
 			
 			return jaxbElement;
 			
 		} catch (Exception e ) {
-			
-			// The XmlUtils.getNewDocumentBuilder().parse(is) case
+//			e.printStackTrace();
+//			return null;
 			
 			/* java.lang.NullPointerException
 				at com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDProcessor.startDTD(Unknown Source)
@@ -594,24 +448,8 @@ implements XPathEnabled<E> {
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
-			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				
+			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 
-			if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
-				log.debug("MOXy: pre-emptively transforming");
-				// Workaround for MOXy issue http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
-				// Always transform; rather than converting to String, testing that etc
-				try {
-					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-					DOMResult result = new DOMResult();
-					XmlUtils.transform(new DOMSource(el), 
-							mcPreprocessorXslt, null, result);
-					org.w3c.dom.Document doc = (org.w3c.dom.Document) result.getNode();
-					el = doc.getDocumentElement();
-				} catch (Exception e) {
-					throw new JAXBException("Preprocessing exception", e);
-				}
-			}
-			
 			binder = jc.createBinder();
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
