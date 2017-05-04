@@ -116,6 +116,15 @@
 		  	<xsl:attribute name="w:line"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template> 
   
+  <xsl:template match="w:spacing/@w:after" >
+           <xsl:attribute name="w:after"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template>  
+  
+  <xsl:template match="w:ind/@w:hanging" >  <!--  20170504 w:hanging="141.99999999999994" -->
+           <xsl:attribute name="w:hanging"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template>  
+  
+  
   <!-- Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx, for example:
   
     <w:sectPr w:rsidRPr="" w:rsidDel="" w:rsidR="" w:rsidSect="">
