@@ -140,6 +140,12 @@ public class Xpathref implements Evaluable {
 		//org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, id);	
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(id);
 		String thisXPath = xpathObj.getDataBinding().getXpath();
+		
+		int xpathBaseIdx = thisXPath.indexOf(xpathBase);
+		if (xpathBaseIdx<0) {
+			// nothing to do
+			return null;
+		}
 
 		if (thisXPath.trim().startsWith("count") ) {
 			
@@ -148,29 +154,23 @@ public class Xpathref implements Evaluable {
 			// or xpath="count(/oda:answers/oda:repeat[@qref='r1_OE']/oda:row)=999"
 			
 			// We want to enhance EXCEPT for the deepest repeat.
-			int pos = thisXPath.indexOf(xpathBase) + xpathBase.length();
+			int pos = xpathBaseIdx + xpathBase.length();
+			String tail = thisXPath.substring(pos);
+			log.debug("the tail: " +  tail);
 			
-			if (thisXPath.substring(pos).contains("oda:repeat")) {
-				// There are deeper repeats in thisXPath than xpathBase,
-				// so enhance ..
-				// NB this code is currently specific to oda:answers XML
+			if (tail.contains("oda:repeat") /* oda:answers XML case */ ) {
+				// There are deeper repeats in thisXPath than xpathBase, so enhance
 				log.debug("deeper repeats in count");
 			} else {
 				
-				if (thisXPath.substring(pos).contains("/")) {
-					// There are deeper bits to thisXPath than xpathBase,
-					// so enhance normally..
+				if (tail.contains("/")) {
+					// There are deeper bits to thisXPath than xpathBase, so enhance normally..
 					log.debug("deeper bits in count");
-//					log.debug("** " + thisXPath.substring(pos));
+				} else if (tail.startsWith("[")) {
+					log.debug("index needs enhancement"); // if you want to count the elements in a repeat, you won't have [1]; having that means something different.					
 				} else {
-					log.debug("retaining: " + thisXPath);
-					//newPath = thisXPath;
+					log.debug("retaining: " + thisXPath); // we want to count elements in the repeat, so don't add an index!
 					return null;
-					
-//					log.debug(" truncating " + xpathBase );
-//					int lastSlash = xpathBase.lastIndexOf("/");
-//					xpathBase = xpathBase.substring(0, lastSlash);
-//					log.debug(" .. to " + xpathBase);					
 				}
 				
 			}
