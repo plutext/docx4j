@@ -168,9 +168,11 @@ public class Xpathref implements Evaluable {
 					log.debug("deeper bits in count");
 				} else if (tail.startsWith("[")) {
 					log.debug("index needs enhancement"); // if you want to count the elements in a repeat, you won't have [1]; having that means something different.					
-				} else {
-					log.debug("retaining: " + thisXPath); // we want to count elements in the repeat, so don't add an index!
+				} else if (tail.startsWith(")")) {
+					log.debug("retaining (repeat count): " + thisXPath); // we want to count elements in the repeat, so don't add an index!
 					return null;
+				} else {
+					log.info("fallback, enhance: " + thisXPath); // for example?
 				}
 				
 			}
