@@ -154,16 +154,38 @@ public class Xpathref implements Evaluable {
 				// There are deeper repeats in thisXPath than xpathBase,
 				// so enhance ..
 				// NB this code is currently specific to oda:answers XML
+				log.debug("deeper repeats in count");
 			} else {
-				log.debug("retaining: " + thisXPath);
-				return null; // ?
+				
+				if (thisXPath.substring(pos).contains("/")) {
+					// There are deeper bits to thisXPath than xpathBase,
+					// so enhance normally..
+					log.debug("deeper bits in count");
+//					log.debug("** " + thisXPath.substring(pos));
+				} else {
+					log.debug("retaining: " + thisXPath);
+					//newPath = thisXPath;
+					return null;
+					
+//					log.debug(" truncating " + xpathBase );
+//					int lastSlash = xpathBase.lastIndexOf("/");
+//					xpathBase = xpathBase.substring(0, lastSlash);
+//					log.debug(" .. to " + xpathBase);					
+				}
+				
 			}
+			
 		} 
 		
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
-
-		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
-			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
+		
+		
+		if (log.isDebugEnabled() ) {
+			if (thisXPath.equals(newPath)) {
+				log.debug("xpath base " + xpathBase + " enhanced NO CHANGE to " + newPath);
+			} else {
+				log.debug("xpath " + thisXPath + " enhanced to " + newPath + " using xpath base " + xpathBase);
+			}
 		}
 
 		// Clone the xpath
