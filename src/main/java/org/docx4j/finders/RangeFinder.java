@@ -79,37 +79,4 @@ public class RangeFinder extends CallbackImpl {
 		return null;
 	}
 	
-	@Override // to setParent
-	public void walkJAXBElements(Object parent) {
-		
-//		System.out.println("parent is " + parent.getClass().getName() );
-		
-		List children = getChildren(parent);
-		if (children != null) {
-
-			for (Object o : children) {
-				
-				if (o instanceof javax.xml.bind.JAXBElement
-						&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
-					// preserve this, but set its parent
-					Text t = (Text)XmlUtils.unwrap(o);
-					t.setParent(parent);
-				} else {    					
-					o = XmlUtils.unwrap(o);
-				}
-				
-				// workaround for broken getParent (since 3.0.0)
-				if (o instanceof Child) {
-					((Child)o).setParent(parent);
-				}
-				
-				this.apply(o);
-
-				if (this.shouldTraverse(o)) {
-					walkJAXBElements(o);
-				}
-
-			}
-		}
-	}        	
 }

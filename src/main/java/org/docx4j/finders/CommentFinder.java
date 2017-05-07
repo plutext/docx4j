@@ -11,8 +11,13 @@ import org.docx4j.wml.CommentRangeEnd;
 import org.docx4j.wml.CommentRangeStart;
 import org.docx4j.wml.R.CommentReference;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public  class CommentFinder extends CallbackImpl {
+	
+	protected static Logger log = LoggerFactory.getLogger(CommentFinder.class);	
+	
 
     List<Child> commentElements = new ArrayList<Child>();
 
@@ -31,48 +36,16 @@ public  class CommentFinder extends CallbackImpl {
                 		|| ((JAXBElement)o).getName().getLocalPart().equals("commentRangeStart")
                 		|| ((JAXBElement)o).getName().getLocalPart().equals("commentRangeEnd")	                            		
                 		)) {
-        		System.out.println(((JAXBElement)o).getName().getLocalPart());
+//        		log.debug(((JAXBElement)o).getName().getLocalPart());
                 commentElements.add( (Child)XmlUtils.unwrap(o) );
-            } else 
-        if (o instanceof CommentReference || 
+            } 
+        else if (o instanceof CommentReference || 
             o instanceof CommentRangeStart || 
             o instanceof CommentRangeEnd) {
-    		System.out.println(o.getClass().getName());
+//        	log.debug(o.getClass().getName());
             commentElements.add((Child)o);
         }
         return null;
     }
 
-        @Override // to setParent
-        public void walkJAXBElements(Object parent) {
-
-            List children = getChildren(parent);
-            if (children != null) {
-
-                for (Object o : children) {
-
-                    if (o instanceof javax.xml.bind.JAXBElement
-                            && (((JAXBElement)o).getName().getLocalPart().equals("commentReference")
-                            		|| ((JAXBElement)o).getName().getLocalPart().equals("commentRangeStart")
-                            		|| ((JAXBElement)o).getName().getLocalPart().equals("commentRangeEnd")	                            		
-                            		)) {
-                    	
-                    	((Child)((JAXBElement)o).getValue()).setParent(XmlUtils.unwrap(parent));
-                    } else {                        
-                        o = XmlUtils.unwrap(o);
-	                    if (o instanceof Child) {
-	                        ((Child)o).setParent(XmlUtils.unwrap(parent));
-	                    }
-                    }
-
-
-                    this.apply(o);
-
-                    if (this.shouldTraverse(o)) {
-                        walkJAXBElements(o);
-                    }
-
-                }
-            }
-        }           
-    }	
+}	

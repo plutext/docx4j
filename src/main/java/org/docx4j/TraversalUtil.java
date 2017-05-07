@@ -136,9 +136,36 @@ public class TraversalUtil {
 									}
 								}
 							} else {
-								// workaround for broken getParent in cases where ArrayListWml doesn't help
-								// (ie we're not in a content list)
-								((Child)o2).setParent(parent);
+								
+								if (parent==((Child)o2).getParent()) {
+									// all good
+									
+								} else {
+									
+									// workaround for broken getParent in cases where ArrayListWml doesn't help
+									// (ie we're not in a content list)
+									if ( ((Child)o2).getParent()==null) {
+										
+										if (log.isInfoEnabled()) {
+											log.info("Unknown parent for " + o2.getClass().getName());
+										}
+										((Child)o2).setParent(parent);
+										
+									} else  {
+										// If this happens, we need to understand why
+										if (log.isInfoEnabled()) {
+											log.info("Parent of " + o2.getClass().getName()
+													+ " is currently " + ((Child)o2).getParent().getClass().getName());
+										}
+										((Child)o2).setParent(parent);									
+									}
+									if (log.isDebugEnabled()) {
+										log.debug("setting to  " + parent.getClass().getName() );
+									}
+									
+								}
+								
+								
 							}
 						}
 						
@@ -244,6 +271,13 @@ public class TraversalUtil {
 	}
 	
 	
+	/**
+	 * Get the children of some docx content object
+	 * (as opposed to pptx, xlsx content).
+	 * 
+	 * @param o
+	 * @return
+	 */
 	public static List<Object> getChildrenImpl(Object o) {
 		
 		if (o==null) {
