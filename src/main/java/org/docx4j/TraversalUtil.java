@@ -180,20 +180,25 @@ public class TraversalUtil {
 						o2 = o;
 						if (log.isDebugEnabled()) {
 							
-							if (((Child) o2).getParent() == null) {
+							if (o2 instanceof Child) {
+								if (((Child) o2).getParent() == null) {
 
-								log.debug("Unknown parent for "
-										+ o2.getClass().getName());
-								
-							} else if (parent != ((Child) o2).getParent()) {
-								
-								// This can happen because getChildren() skips layers,
-								// so the 'parent' passed in here might actually be the grandparent
-								log.info("Parent of "
-										+ o2.getClass().getName()
-										+ " is currently "
-										+ ((Child) o2).getParent().getClass()
-												.getName());
+									log.debug("Unknown parent for "
+											+ o2.getClass().getName());
+									
+								} else if (parent != ((Child) o2).getParent()) {
+									
+									// This can happen because getChildren() skips layers,
+									// so the 'parent' passed in here might actually be the grandparent
+									log.info("Parent of "
+											+ o2.getClass().getName()
+											+ " is currently "
+											+ ((Child) o2).getParent().getClass()
+													.getName());
+								}
+							} else {
+								log.info(o2.getClass().getName() + " not an instanceof Child!");
+								// eg org.docx4j.wml.STFldCharType								
 							}
 							
 						}
