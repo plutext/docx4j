@@ -14,6 +14,7 @@ import javax.xml.bind.JAXBException;
 
 import junit.framework.Assert;
 
+import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.finders.ClassFinder;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -30,6 +31,10 @@ import org.docx4j.wml.Text;
 import org.junit.Test;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
+/**
+ * See also org.docx4j.wml.ParentTest
+ *
+ */
 public class ParentFixTest {
 
 	@Test
@@ -44,19 +49,14 @@ public class ParentFixTest {
 		
 		Body body = doc.getBody();
 		
-		// Won't be set
-		if (body.getParent()!=null) {
-			Assert.assertEquals(doc, body.getParent());
-		}
+		// Set explicitly in Document
+		Assert.assertEquals(doc, body.getParent());
 		
-		// Use TraversalUtil which "fixes" parent?
-		mdp.getStylesInUse();
+        // Now, check that traversing doesn't change anything
+        (new TestCallback()).walkJAXBElements(doc);
 		
-		// Might be set?
-		if (body.getParent()!=null) {
-			// If it is
-			Assert.assertEquals(doc, body.getParent());
-		}
+		// No change
+		Assert.assertEquals(doc, body.getParent());
 		
 	}
 
@@ -87,14 +87,11 @@ public class ParentFixTest {
 		// Expect it to be set
 		Assert.assertEquals(doc, body.getParent());
 		
-		// Use TraversalUtil which "fixes" parent?
-		mdp.getStylesInUse();
+        // Now, check that traversing doesn't change anything
+        (new TestCallback()).walkJAXBElements(doc);
 		
-		// Might be set?
-		if (body.getParent()!=null) {
-			// If it is
-			Assert.assertEquals(doc, body.getParent());
-		}
+		// No change
+		Assert.assertEquals(doc, body.getParent());
 		
 	}
 
@@ -111,18 +108,12 @@ public class ParentFixTest {
 		Body body = doc.getBody();
 		P p = (P)body.getContent().get(0);
 		
-		// Won't be set
-		if (p.getParent()!=null) {
-			Assert.assertEquals(body, p.getParent());
-		}
+		Assert.assertEquals(body, p.getParent());
 		
-		// Use TraversalUtil which "fixes" parent?
-		mdp.getStylesInUse();
+        // Now, check that traversing doesn't change anything
+        (new TestCallback()).walkJAXBElements(doc);
 		
-		// Might be set?
-		if (p.getParent()!=null) {
-			Assert.assertEquals(body, p.getParent());
-		}
+		Assert.assertEquals(body, p.getParent());
 		
 	}
 
@@ -150,18 +141,12 @@ public class ParentFixTest {
 		Body body = doc.getBody();
 		P p = (P)body.getContent().get(0);
 		
-		// Won't be set
-		if (p.getParent()!=null) {
-			Assert.assertEquals(body, p.getParent());
-		}
+		Assert.assertEquals(body, p.getParent());
 		
-		// Use TraversalUtil which "fixes" parent?
-		mdp.getStylesInUse();
+        // Now, check that traversing doesn't change anything
+        (new TestCallback()).walkJAXBElements(doc);
 		
-		// Might be set?
-		if (p.getParent()!=null) {
-			Assert.assertEquals(body, p.getParent());
-		}
+		Assert.assertEquals(body, p.getParent());
 		
 		
 	}
@@ -170,7 +155,7 @@ public class ParentFixTest {
 	 * Prior to 3.3.1, unmarshalling a String does set parent properly, except in the known case of JAXBElement,
 	 * which a traverse fixes
 	 * 
-	 * With 3.3.1, PList gets this right first time
+	 * With 3.3.1, ArrayListWml gets this right first time
 	 * 
 	 * @throws JAXBException
 	 */
@@ -238,7 +223,7 @@ public class ParentFixTest {
 	 * Prior to 3.3.1, Objects added manually don't have their parent set automatically.
 	 * But traversal fixes this. 
 	 * 
-	 * With 3.3.1, PList gets this right first time
+	 * With 3.3.1, ArrayListWml gets this right first time
 	 * 
 	 */
 	@Test
@@ -304,7 +289,42 @@ public class ParentFixTest {
 			System.out.println(o2.getClass().getName() + " has parent " + o2.getParent().getClass());			
 			Assert.assertEquals(o2.getParent().getClass(),  P.class);
 		}		
+
+		// Traverse: shouldn't change anything 
+		List foo = new ArrayList();
+		foo.add(p);
+		ClassFinder finder = new ClassFinder(FldChar.class); // whatever
+		new TraversalUtil(foo, finder);
+		
+		// Test bookmark
+		o2 = (Child)XmlUtils.unwrap(p.getContent().get(1));	
+		if (o2.getParent()==null) {
+			System.out.println("null parent");
+			Assert.fail("null parent");
+		} else {
+			System.out.println(o2.getClass().getName() + " has parent " + o2.getParent().getClass());			
+			Assert.assertEquals(o2.getParent().getClass(),  P.class);
+		}		
+
+		// Test run
+		o2 = (Child)XmlUtils.unwrap(p.getContent().get(0));	// run
+		if (o2.getParent()==null) {
+			System.out.println("null parent");
+			Assert.fail("null parent");
+		} else {
+			System.out.println(o2.getClass().getName() + " has parent " + o2.getParent().getClass());			
+			Assert.assertEquals(o2.getParent().getClass(),  P.class);
+		}		
 		
 	}
-	
+
+	class TestCallback extends CallbackImpl {
+
+		@Override
+		public List<Object> apply(Object o) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	}	
 }

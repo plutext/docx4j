@@ -84,42 +84,7 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 		
 		return true;
 	}	
-	
-	@Override
-	public void walkJAXBElements(Object parent) {
 		
-		List children = getChildren(parent);
-		if (children != null) {
-
-			for (Object o2 : children) {
-				
-				Object o = XmlUtils.unwrap(o2);
-				
-				// Need this, for proper SDT processing
-				if (o instanceof Child) {
-					if (parent instanceof SdtBlock) {
-						((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
-					} else if (parent instanceof List){
-						// Do nothing
-						if (log.isDebugEnabled()) {
-							log.debug("Unknown parent for " + o.getClass().getName());
-						}
-					} else {
-						((Child)o).setParent(parent);
-					}
-				}
-				
-				// Process the wrapped object								
-				this.apply(o2);
-
-				if (this.shouldTraverse(o)) {
-					walkJAXBElements(o2);
-				}
-
-			}
-		}
-	}
-	
 
 	@Override
 	public List<Object> apply(Object o2) {

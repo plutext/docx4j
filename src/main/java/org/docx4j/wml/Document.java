@@ -126,6 +126,7 @@ public class Document
      */
     public void setBody(Body value) {
         this.body = value;
+        value.setParent(this);
     }
 
     /**
