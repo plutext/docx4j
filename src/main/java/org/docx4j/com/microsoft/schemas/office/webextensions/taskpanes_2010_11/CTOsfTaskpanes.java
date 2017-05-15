@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -36,6 +37,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_OsfTaskpanes", propOrder = {
     "taskpane"
 })
+@XmlRootElement(name = "CT_OsfTaskpanes")
 public class CTOsfTaskpanes implements Child
 {
 
