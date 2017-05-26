@@ -244,7 +244,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * 
 	 * @since 3.0.0
 	 */
-	public void variableReplace(java.util.HashMap<String, String> mappings) throws JAXBException, Docx4JException {
+	public void variableReplace(java.util.Map<String, String> mappings) throws JAXBException, Docx4JException {
 		
 		// Get the contents as a string
 		String wmlTemplateString = null;
