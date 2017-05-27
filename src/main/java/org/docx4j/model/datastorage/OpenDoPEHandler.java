@@ -38,9 +38,8 @@ import javax.xml.bind.JAXBElement;
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
-import org.docx4j.finders.TcFinder;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -64,6 +63,7 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Id;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.SdtContent;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
@@ -732,6 +732,7 @@ public class OpenDoPEHandler {
 
 				}
 			}
+			
 		}
 
 	}
@@ -1041,7 +1042,7 @@ public class OpenDoPEHandler {
 		
 		// for a w15 repeat, we clone the child repeatingSectionItem sdt
 		// TODO: review
-		ContentAccessor ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
+		SdtContent ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
 		
 		// replace its content
 		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));

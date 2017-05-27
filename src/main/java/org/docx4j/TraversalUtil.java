@@ -41,12 +41,10 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.CTObject;
 import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
-import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -333,21 +331,24 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
 			
-//		} else if (o instanceof org.docx4j.wml.SdtElement) {
-//			if (((org.docx4j.wml.SdtElement) o).getSdtContent()!=null) {
-//				return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
-//			} else {
-//				log.warn("SdtElement is missing content element");
-//				return null;						
-//			}		
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
-			// 3.3.4: don't just return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent()
-			// since then we're passing the grandparent as the parent,
-			// and we don't want to use that in any parent fix...
-            List<Object> artificialList = new ArrayList<Object>();
-            artificialList.add(
-            		((org.docx4j.wml.SdtElement) o).getSdtContent());
-            return artificialList;
+			if (((org.docx4j.wml.SdtElement) o).getSdtContent()!=null) {
+				return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+			} else {
+				log.warn("SdtElement is missing content element");
+				return null;						
+			}
+
+// For 3.3.4, I'd prefer to do the following, but it breaks OpenDoPE repeat handling!!
+			
+//		} else if (o instanceof org.docx4j.wml.SdtElement) {
+//			// 3.3.4: don't just return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent()
+//			// since then we're passing the grandparent as the parent,
+//			// and we don't want to use that in any parent fix...
+//            List<Object> artificialList = new ArrayList<Object>();
+//            artificialList.add(
+//            		((org.docx4j.wml.SdtElement) o).getSdtContent());
+//            return artificialList;
 			
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
             org.docx4j.dml.wordprocessingDrawing.Anchor anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor) o;

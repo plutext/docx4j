@@ -70,6 +70,12 @@ public class ArrayListWml<E> extends ArrayList<E> {
 				}
 			}
 			
+			if (parent instanceof SdtContent) {
+				if (e instanceof SdtContent) {
+					throw new RuntimeException("You can't nest a bare SdtContent directly inside SdtContent");
+				}
+			}
+			
 		}
 		
 		if (e instanceof JAXBElement /* workaround */) {

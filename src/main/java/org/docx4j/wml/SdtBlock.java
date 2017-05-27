@@ -132,7 +132,7 @@ public class SdtBlock implements SdtElement, Child
      *     {@link SdtContentBlock }
      *     
      */
-    public ContentAccessor getSdtContent() {
+    public SdtContent getSdtContent() {
         return sdtContent;
     }
 
@@ -144,9 +144,9 @@ public class SdtBlock implements SdtElement, Child
      *     {@link SdtContentBlock }
      *     
      */
-    public void setSdtContent(SdtContentBlock value) {
-        this.sdtContent = value;
-        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases
+    public void setSdtContent(SdtContent value) {
+        this.sdtContent = (SdtContentBlock)value;
+        ((SdtContentBlock)value).setParent(this); // unmarshalling does this automatically; this helps user in other cases
     }
 
     /**
