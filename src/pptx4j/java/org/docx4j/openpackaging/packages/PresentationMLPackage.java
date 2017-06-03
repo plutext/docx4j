@@ -57,7 +57,6 @@ import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
-import org.pptx4j.pml.Presentation;
 import org.pptx4j.pml.SldLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
