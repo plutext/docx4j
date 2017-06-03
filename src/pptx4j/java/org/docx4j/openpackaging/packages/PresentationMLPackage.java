@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
+import org.pptx4j.pml.Presentation;
 import org.pptx4j.pml.SldLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +108,16 @@ public class PresentationMLPackage  extends OpcPackage {
 	public static PresentationMLPackage load(java.io.File pptxFile) throws Docx4JException {
 		
 		return (PresentationMLPackage)OpcPackage.load(pptxFile);
+	}
+
+	/**
+	 * Creates a <code>PresentationMLPackage</code> from an <code>InputStream</code>.
+	 * @param pptxInputStream	an <code>InputStream</code> of a .pptx file
+	 * @return					a <code>PresentationMLPackage</code> representing the .pptx file
+	 * @throws Docx4JException	if an exception is encountered in processing
+	 */
+	public static PresentationMLPackage load(InputStream pptxInputStream) throws Docx4JException {
+		return (PresentationMLPackage)OpcPackage.load(pptxInputStream);
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
