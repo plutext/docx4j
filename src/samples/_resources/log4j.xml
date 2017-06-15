@@ -61,6 +61,10 @@
   		<level value="warn"/> 
 	</logger>	
 
+    <logger name="org.docx4j.TraversalUtil">
+  		<level value="warn"/> 
+	</logger>	
+
     <logger name="org.docx4j.XmlUtils">
   		<level value="warn"/> 
 	</logger>	
@@ -70,6 +74,10 @@
 	</logger>	
     
     <logger name="org.docx4j.convert.in">
+  		<level value="warn"/> 
+	</logger>	
+	
+    <logger name="org.docx4j.convert.in.xhtml">
   		<level value="warn"/> 
 	</logger>	
 
@@ -100,6 +108,10 @@
   		<level value="debug"/> 
 	</logger>	
 
+    <logger name="org.docx4j.convert.out.html.ListsToContentControls">
+  		<level value="warn"/> 
+	</logger>	
+
     <logger name="org.docx4j.diff">
   		<level value="warn"/> 
 	</logger>
@@ -109,7 +121,7 @@
 	</logger>
 
     <logger name="org.docx4j.fonts.PhysicalFonts">
-  		<level value="debug"/> 
+  		<level value="info"/> 
 	</logger>    
 	
     <logger name="org.docx4j.fonts.RunFontSelector">
@@ -125,6 +137,10 @@
 	</logger>	
 		
 	<logger name="org.docx4j.model.fields">
+		<level value="warn"/> 
+	</logger>	
+
+	<logger name="org.docx4j.model.listnumbering">
 		<level value="warn"/> 
 	</logger>	
 	
@@ -167,6 +183,10 @@
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
+		
+    <logger name="org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage">
+  		<level value="info"/> 
+	</logger>
 	
     <logger name="org.docx4j.services.client">
   		<level value="debug"/> 
@@ -193,7 +213,16 @@
   		<level value="warn"/> 
 	</logger>
 
+    <logger name="org.opendope.conditions.Xpathref">
+  		<level value="warn"/> 
+	</logger>
+
     <logger name="org.opendope">
+  		<level value="warn"/> 
+	</logger>
+	
+	
+    <logger name="org.docx4j.org.xhtmlrenderer">
   		<level value="warn"/> 
 	</logger>
 	
