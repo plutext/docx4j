@@ -115,12 +115,26 @@ ValidationEventHandler{
 		   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
 							field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
 						} else {
-							field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+							try {
+								field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+							} catch (Exception e) {
+				   				log.error("Trying to reset error counter, but not using JAXB RI:- ");		   					
+				   				log.error(e.getMessage());
+				   			}
 						}
 		   				
-		   		        field.setAccessible(true);
-		   		        field.set(null, 10);
-		   		        log.warn(".. reset successful");
+		   				if (field==null) {
+		   					// Maybe its IBM's implementation eg Websphere 8.5.5.11 with JRE 1.8.0 IBM J9 2.8 z/OS s390x-64 where an IBM Unmarshaller is being used
+		   					// (controlled by com.ibm.xml.xlxp.jaxb.opti.level)
+		   					field = Class.forName("com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+		   				}
+		   				if (field==null) {
+			   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");		   					
+		   				} else {
+			   		        field.setAccessible(true);
+			   		        field.set(null, 10);
+			   		        log.warn(".. reset successful");		   					
+		   				}
 		   			} catch (Exception e) {
 		   				log.error(e.getMessage());
 		   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");
