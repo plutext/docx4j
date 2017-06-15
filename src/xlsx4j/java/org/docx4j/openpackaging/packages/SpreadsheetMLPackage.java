@@ -48,6 +48,7 @@ import org.xlsx4j.sml.Sheet;
 import org.xlsx4j.sml.Sheets;
 import org.xlsx4j.sml.Worksheet;
 
+import java.io.InputStream;
 
 
 /**
@@ -101,6 +102,16 @@ public class SpreadsheetMLPackage extends OpcPackage {
 	public static SpreadsheetMLPackage load(java.io.File xlsxFile) throws Docx4JException {
 		
 		return (SpreadsheetMLPackage)OpcPackage.load(xlsxFile);
+	}
+
+	/**
+	 * Creates a <code>SpreadsheetMLPackage</code> from an <code>InputStream</code>.
+	 * @param xlsxInputStream	an <code>InputStream</code> of an .xlsx file
+	 * @return					a <code>PresentationMLPackage</code> representing the .xlsx file
+	 * @throws Docx4JException	if an exception is encountered in processing
+	 */
+	public static SpreadsheetMLPackage load(InputStream xlsxInputStream) throws Docx4JException {
+		return (SpreadsheetMLPackage)OpcPackage.load(xlsxInputStream);
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
