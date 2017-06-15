@@ -69,7 +69,7 @@ public class TextDirection implements Child
      * (see org.docx4j.wml.TcPr.setTextDirection() )
      */
     public enum TextOrientation {
-            lEFT_TO_RIGHT_tOP_TO_BOTTOM("lrTb"),
+            LEFT_TO_RIGHT_tOP_TO_BOTTOM("lrTb"),
             TOP_TO_BOTTOM_RIGHT_TO_LEFT("tbRl"),
             BOTTOM_TO_TOP_LEFT_TO_RIGHT("btLr"),
             LEFT_TO_RIGHT_TOP_TO_BOTTOM_ROTATED("lrTbV"),
