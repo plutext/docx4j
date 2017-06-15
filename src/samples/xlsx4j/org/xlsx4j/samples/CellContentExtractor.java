@@ -21,6 +21,7 @@
 package org.xlsx4j.samples;
 
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
@@ -64,9 +65,9 @@ public class CellContentExtractor {
 	}
 	
 	
-	private static void displayContent(WorksheetPart sheet, DataFormatter formatter) {
-		
-		Worksheet ws = sheet.getJaxbElement();
+	private static void displayContent(WorksheetPart sheet, DataFormatter formatter) throws Docx4JException {
+
+		Worksheet ws = sheet.getContents();
 		SheetData data = ws.getSheetData();
 		
 		for (Row r : data.getRow() ) {
