@@ -34,6 +34,14 @@ public class RunFontSelectorArabicTest {
 	@Test
 	public  void testFont() throws Exception {
 		
+		if (System.getProperty("os.name")!=null
+				&& System.getProperty("os.name").toLowerCase().startsWith("Windows")) {
+			// OK, assume fonts present
+		} else {
+			log.info("Skipping RunFontSelector test, since required fonts likely missing (non-Windows OS)");
+			return;
+		}
+		
 		boolean save = false;
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -88,7 +96,7 @@ public class RunFontSelectorArabicTest {
 			Element foInline = (Element)df.getFirstChild();
 //			System.out.println(foInline.getAttribute("font-family"));
 			
-			assertEquals(foInline.getAttribute("font-family"), expectedFont[i]);
+			assertEquals(expectedFont[i], foInline.getAttribute("font-family") );
 		}
 		
 	}	

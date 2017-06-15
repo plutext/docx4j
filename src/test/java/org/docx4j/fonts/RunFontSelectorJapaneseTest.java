@@ -40,6 +40,14 @@ public class RunFontSelectorJapaneseTest {
 	@Test
 	public  void testFont() throws Exception {
 		
+		if (System.getProperty("os.name")!=null
+				&& System.getProperty("os.name").toLowerCase().startsWith("Windows")) {
+			// OK, assume fonts present
+		} else {
+			log.info("Skipping RunFontSelector test, since required fonts likely missing (non-Windows OS)");
+			return;
+		}		
+		
 		boolean save = false;
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
