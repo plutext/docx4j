@@ -2,6 +2,53 @@ CHANGELOG
 =========
 
 
+Version 3.3.4  minor release
+=============
+
+Release date
+------------
+
+15 June 2017
+
+Contributors to this release
+----------------------------
+
+Danilo Zagatto
+
+Greg Kinman
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.4 
+---------------------------------
+
+BinaryPartAbstractImage: ImageMagick executable name fetched from Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert")
+and workaround for file URL issue on Windows
+
+Parent handling: convenience for user SdtPr set parent (same for SdtContent); 
+
+mc-preprocessor.xslt: more Google Docs fixes
+
+samples/BookmarksDuplicateCheck: Check also the ends; option to remediate (ie remove broken ones)
+
+OpenDoPE fixes/enhancements:
+#234  convert #STRING to NodeList
+#235  complex XPaths
+count-type conditions in repeats: perform enhancement in non-oda case
+
+other bugfixes:
+#175 HTML output: conversion to nested <ul> or <ol>
+#164 Reset error counter, this time for IBM's JAXB (in Websphere inc 8.5.5.11)
+
+xlsx4j
+------
+
+fix to support Apple iCloud Numbers (set reference attribute on cell)
+
+loading .pptx and .xlsx files from InputStream
+
+
 Version 3.3.3  minor release
 =============
 
@@ -17,7 +64,7 @@ Ashton Batty
 
 Jason Harrop
 
-Notable Changes in Version 3.3.2 
+Notable Changes in Version 3.3.3 
 ---------------------------------
 
 Minor modifications to support use on Android; see https://github.com/plutext/AndroidDocxToHtml
