@@ -10,7 +10,7 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.3.4-SNAPSHOT-brein-patches</version>
+	<version>3.3.4-SNAPSHOT-brein-patches3</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	
@@ -508,13 +508,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.7.3</version>
+			<version>2.7.8</version>
 		</dependency>
 		
 		<dependency>
 		  <groupId>com.fasterxml.jackson.core</groupId>
 		  <artifactId>jackson-databind</artifactId>
-			<version>2.7.3</version>
+			<version>2.7.8</version>
 		</dependency>		
 		
 
