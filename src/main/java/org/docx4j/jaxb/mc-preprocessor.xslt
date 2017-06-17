@@ -98,7 +98,7 @@
 
   	  <xsl:choose>
   	  	<!--  limit fix to certain cases -->
-  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz'">
+  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz' or local-name(..)='gridCol'">
 		  	<xsl:attribute name="w:w"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   		</xsl:when>
   		<xsl:otherwise>
