@@ -17,7 +17,7 @@
                 </jaxb:globalBindings>
             </xsd:appinfo>
             <jaxb:schemaBindings>
-                <jaxb:package name="org.docx4j.w16cid"/>
+                <jaxb:package name="org.docx4j.w15symex"/>
             </jaxb:schemaBindings>
         </xsd:appinfo>
     </xsd:annotation>
