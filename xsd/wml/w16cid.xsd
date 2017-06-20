@@ -3,8 +3,25 @@
  xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
  elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" 
  xmlns="http://schemas.microsoft.com/office/word/2016/wordml/cid" 
- targetNamespace="http://schemas.microsoft.com/office/word/2016/wordml/cid">
-   <xsd:import id="w12" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="word12.xsd"/>  
+ targetNamespace="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+ 
+   <xsd:import id="w12" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+    schemaLocation="wml.xsd"/>  
+    
+        <xsd:annotation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.w16cid"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+    
    <xsd:complexType name="CT_CommentsIds">
      <xsd:sequence>
        <xsd:element name="commentId" type="CT_CommentId" minOccurs="0" maxOccurs="unbounded"/>
