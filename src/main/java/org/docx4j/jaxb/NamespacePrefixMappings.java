@@ -51,8 +51,9 @@ import org.w3c.dom.Node;
  */
 public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml.utils.PrefixResolver {
 
+/* TODO: check what we have here against https://github.com/OfficeDev/Open-XML-SDK/blob/vNext/DocumentFormat.OpenXml/src/Framework/NamespaceIdMap.cs
+ */
 
-	
     /**
      * Returns a preferred prefix for the given namespace URI.
      * 
@@ -196,6 +197,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
     		return "w15";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2016/wordml/cid")) {
+    		return "w16cid";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2015/wordml/symex")) {
     		return "w16se";
     	}
@@ -214,6 +219,13 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 
     	if (namespaceUri.equals("urn:schemas-microsoft-com:office:word")) {
     		return "w10";
+    	}
+    	
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:excel")) {
+    		return "xvml";
+    	}
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:powerpoint")) {
+    		return "pvml";
     	}
 
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/math")) {
@@ -302,6 +314,23 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/digsig")) {
     		return "dssi";
     	}
+    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/schemaLibrary/2006/main")) {
+    		return "sl";
+    	}
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/coverPageProps" )) {
+    		return "cppr";
+    	}
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chartDrawing")) {
+    		return "cdr";
+    	}
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/compatibility" )) {
+    		return "comp";
+    	}
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas")) {
+    		return "lc";
+    	}
+    	
     	
     	return suggestion;
     }
@@ -408,6 +437,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 		
 		if (prefix.equals("w15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordml";
+				
+		if (prefix.equals("w16cid"))
+				return "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 
 		if (prefix.equals("w16se"))
 			return "http://schemas.microsoft.com/office/word/2015/wordml/symex";
@@ -423,7 +455,12 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 
 		if (prefix.equals("w10"))
 			return "urn:schemas-microsoft-com:office:word";
-
+		
+		if (prefix.equals("xvml"))
+			return "urn:schemas-microsoft-com:office:excel";	
+		if (prefix.equals("pvml"))
+			return "urn:schemas-microsoft-com:office:powerpoint" ;	
+		
 		if (prefix.equals("m"))
 			return "http://schemas.openxmlformats.org/officeDocument/2006/math";
 
@@ -476,6 +513,18 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 
 		if (prefix.equals("dssi"))
 			return "http://schemas.microsoft.com/office/2006/digsig";
+		
+		if (prefix.equals("sl"))
+			return "http://schemas.openxmlformats.org/schemaLibrary/2006/main";	
+		if (prefix.equals("cppr"))
+			return "http://schemas.microsoft.com/office/2006/coverPageProps" ;	
+		if (prefix.equals("cdr"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing";	
+		if (prefix.equals("comp"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/compatibility";	
+		if (prefix.equals("lc"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas";	
+		
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
