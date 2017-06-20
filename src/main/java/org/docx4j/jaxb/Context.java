@@ -156,6 +156,7 @@ public class Context {
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
+					"org.docx4j.w15symex:org.docx4j.w16cid:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,
 					ProviderProperties.getProviderProperties() );
