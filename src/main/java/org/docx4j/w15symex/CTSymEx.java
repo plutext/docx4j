@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.docx4j.wml.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -26,7 +26,7 @@ import org.docx4j.wml.Child;
  * &lt;/complexType&gt;
  * </pre>
  * 
- * 
+ * @since 3.3.5
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_SymEx")
