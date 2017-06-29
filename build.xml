@@ -67,7 +67,7 @@
 
 		Optional:
 		 
-		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.2
+		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.5
 		
 		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.5.2
 		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.5.2
@@ -89,7 +89,7 @@
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
     	
-    	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.2/docx4j-MOXy-JAXBContext-3.3.2.jar"/>
+    	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.5/docx4j-MOXy-JAXBContext-3.3.5.jar"/>
     	
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar"/>
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar"/>
@@ -365,7 +365,7 @@
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.2/docx4j-MOXy-JAXBContext-3.3.2.jar" todir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.5/docx4j-MOXy-JAXBContext-3.3.5.jar" todir="${release.dir}/optional/MOXy"/>
 		        
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
