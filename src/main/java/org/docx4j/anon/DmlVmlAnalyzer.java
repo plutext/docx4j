@@ -482,11 +482,11 @@ public class DmlVmlAnalyzer extends CallbackImpl {
 				uri, local, declaredType));
 	}
 	
-	private void addUnsafe(Object o) {
-		
-		// For now, we'll use marshalled content
-		unsafeObjects.add(XmlUtils.marshaltoString(o));
-	}
+//	private void addUnsafe(Object o) {
+//		
+//		// For now, we'll use marshalled content
+//		unsafeObjects.add(XmlUtils.marshaltoString(o));
+//	}
 	
 	 
 	/**
