@@ -111,10 +111,19 @@ ValidationEventHandler{
 	
 	    		   try {
 		     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
+		     		    	// As at 2017 06 29 that repo has disappeared!
+		     		    	// See instead https://github.com/javaee/jaxb-v2/
+		     		    
 		   				Field field = null;
 		   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
 							field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-						} else {
+		   				} else if (Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP) {
+		   					// Its IBM's implementation eg Websphere 7+ where an IBM Unmarshaller is being used
+		   					// (controlled by com.ibm.xml.xlxp.jaxb.opti.level)
+			     		    log.warn("with IBM unmarshaller");
+		   					field = Class.forName("com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+
+		   				} else {
 							try {
 								field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
 							} catch (Exception e) {
@@ -123,11 +132,6 @@ ValidationEventHandler{
 				   			}
 						}
 		   				
-		   				if (field==null) {
-		   					// Maybe its IBM's implementation eg Websphere 8.5.5.11 with JRE 1.8.0 IBM J9 2.8 z/OS s390x-64 where an IBM Unmarshaller is being used
-		   					// (controlled by com.ibm.xml.xlxp.jaxb.opti.level)
-		   					field = Class.forName("com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-		   				}
 		   				if (field==null) {
 			   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");		   					
 		   				} else {

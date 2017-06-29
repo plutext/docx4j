@@ -9,6 +9,6 @@ package org.docx4j.jaxb;
  */
 public enum JAXBImplementation {
 	
-	REFERENCE, ORACLE_JRE, ECLIPSELINK_MOXy, UNKNOWN;
+	REFERENCE, ORACLE_JRE, ECLIPSELINK_MOXy, IBM_WEBSPHERE_XLXP, UNKNOWN;
 
 }

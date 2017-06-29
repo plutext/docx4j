@@ -57,7 +57,37 @@ public class AlternateContentPreprocessorTest {
 		
 		assertTrue("expected oval but got " + count, count==1 );				
 	}
-	
+
+	/**
+	 * Test we can recover from "Errors limit exceeded"
+	 * with recent (non-MOXy) JAXB implementations (eg RI 2.2.11)
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testAlternateContentErrorLimit() throws Exception {
+		
+		int ERROR_LIMIT = 100;
+		
+		String inputfilepath = System.getProperty("user.dir") 
+			+ "/sample-docs/word/2010/2010-mcAlternateContent.docx";	    	
+		
+		for (int i=0; i< (ERROR_LIMIT+5); i++) {
+
+			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));				
+			org.w3c.dom.Document xmlNode = XmlUtils.marshaltoW3CDomDocument(
+					wordMLPackage.getMainDocumentPart().getCommentsPart().getJaxbElement());				
+			
+			Binder<Node> binder = Context.jc.createBinder();
+			Object jaxbElement =  (Comments) binder.unmarshal(xmlNode);
+							
+			List<Object> list = XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, 
+					"//w:pict/v:oval", false );		
+			int count = list.size();
+			
+			assertTrue("expected oval but got " + count, count==1 );
+		}
+	}	
 	
 	/**
 	 * This tests that an oval wrapped in AlternateContent 

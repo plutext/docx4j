@@ -108,7 +108,7 @@ public class Context {
 			log.info("MOXy JAXB implementation intended..");
 			jaxbImplementation = JAXBImplementation.ECLIPSELINK_MOXy;
 		} catch (Exception e3) {
-			log.info("No MOXy JAXB config found; assume not intended..");
+			log.debug("No MOXy JAXB config found; assume not intended..");
 			log.debug(e3.getMessage());
 		}
 		if (jaxbPropsIS==null) {
@@ -117,15 +117,12 @@ public class Context {
 				Object namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
 				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 					// Java 6
-					log.info("Using Java 6/7 JAXB implementation");
 					jaxbImplementation = JAXBImplementation.ORACLE_JRE;
-
 				} else {
-					log.info("Using JAXB Reference Implementation");
 					jaxbImplementation = JAXBImplementation.REFERENCE;
-
 				}
-				
+				// NB, it could still be IBM, we'll check for this below,
+				// 
 			} catch (JAXBException e) {
 				log.error("PANIC! No suitable JAXB implementation available");
 				log.error(e.getMessage(), e);
@@ -163,8 +160,39 @@ public class Context {
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
+				
+			} else if (tempContext.getClass().getName().startsWith("com.ibm.xml.xlxp2.jaxb")) {
+				/*
+				 * Per Michael Glavassevich at https://stackoverflow.com/a/35443723/1031689
+				 * 
+				 * WebSphere Application Server v7+ contains an optimized JAXB implementation that will often
+				 * be used instead of the JAXB implementation that's built into the Java SDK. 
+				 * 
+				 * system property com.ibm.xml.xlxp.jaxb.opti.level=0 setting will cause the 
+				 * JAXB reference implemenation to be used for unmarshalling and marshalling 
+				 * instead of the WebSphere JAXB implementation.
+				 * 
+				 * see further https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/xrun_jvm.htm
+				 *  
+				 * com.ibm.xml.xlxp2.jaxb.JAXBContextImpl is in jar plugins\com.ibm.ws.prereq.xlxp.jar
+				 * 
+				 * This can be simulated outside websphere by using IBM Java, eg IBM J9 VM (build 2.8, JRE 1.8.0 Linux amd64-64
+				 * with lib/endorsed contents:
+				 * 
+				 * 		com.ibm.jaxb.tools.jar
+				 * 		com.ibm.ws.prereq.xlxp.jar
+				 *   
+				 */
+				log.info("Using IBM JAXB implementation; see system property com.ibm.xml.xlxp.jaxb.opti.level in WebSphere v7+ ");
+				jaxbImplementation = JAXBImplementation.IBM_WEBSPHERE_XLXP;
 			} else {
-				log.info("Not using MOXy; using " + tempContext.getClass().getName());				
+				log.info("Not using MOXy; using " + tempContext.getClass().getName());
+				if (jaxbImplementation==JAXBImplementation.ORACLE_JRE) {
+					log.info("Using Java 6+ JAXB implementation");
+	
+				} else if (jaxbImplementation == JAXBImplementation.REFERENCE){
+					log.info("Using JAXB Reference Implementation");
+				}
 			}
 			
 			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
