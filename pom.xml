@@ -235,7 +235,7 @@
 				<version>2.2</version>
 			</plugin> 
 			
-		<!--  mvn package
+		<!--  mvn package 
 			<plugin> 
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -254,11 +254,21 @@
 							</artifactSet>
 			              <shadedArtifactAttached>true</shadedArtifactAttached>
 			              <shadedClassifierName>shaded</shadedClassifierName>
+                          <relocations>
+                            <relocation>
+                              <pattern>org.apache.http</pattern>
+                              <shadedPattern>org.docx4j.apache.http</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.apache.commons.logging</pattern>
+                              <shadedPattern>org.docx4j.slf4j.apache.commons.logging</shadedPattern>
+                            </relocation>
+                          </relocations>                          
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>	
-			 -->		
+			 	-->
 		</plugins>
     	<pluginManagement>
 			<plugins>
@@ -436,7 +446,8 @@
 		    <version>1.7.21</version>
 		</dependency>		
 
-		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.  -->
+		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.
+                 UNLESS creating shaded jar for Android.  --> 
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
@@ -465,7 +476,7 @@
 					</exclusion>
 				</exclusions>
 		</dependency>
-		
+
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -503,7 +514,13 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.2</version>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>        
+            </exclusions>
+        </dependency>
 						
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 3.3.5  minor release
+=============
+
+Release date
+------------
+
+30 June 2017
+
+
+Notable Changes in Version 3.3.5 
+---------------------------------
+
+Support w16cid (commentsIds); see https://msdn.microsoft.com/en-us/library/mt791826(v=office.12).aspx
+(without this, document created in Word 2016 with recent updates, then saved by docx4j, couldn't be re-opened in Word) 
+
+Support w15symex (long hex replacement for symbol char); see https://msdn.microsoft.com/en-us/library/mt459331(v=office.12).aspx
+
+IBM Unmarshaller (usually used in WebSphere v7+) workaround for "errors limit exceeded" (same as Oracle JAXB)
+
+
+
 Version 3.3.4  minor release
 =============
 
@@ -26,7 +47,7 @@ Notable Changes in Version 3.3.4
 BinaryPartAbstractImage: ImageMagick executable name fetched from Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert")
 and workaround for file URL issue on Windows
 
-Parent handling: convenience for user SdtPr set parent (same for SdtContent); 
+Parent handling: convenience for user SdtPr set parent (same for SdtContent, now an interface); 
 
 mc-preprocessor.xslt: more Google Docs fixes
 
