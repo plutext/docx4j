@@ -67,7 +67,7 @@ public class AlternateContentPreprocessorTest {
 	@Test
 	public void testAlternateContentErrorLimit() throws Exception {
 		
-		int ERROR_LIMIT = 100;
+		int ERROR_LIMIT = 10;
 		
 		String inputfilepath = System.getProperty("user.dir") 
 			+ "/sample-docs/word/2010/2010-mcAlternateContent.docx";	    	
