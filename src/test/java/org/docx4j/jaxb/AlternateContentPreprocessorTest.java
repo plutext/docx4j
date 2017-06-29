@@ -1,4 +1,4 @@
-package org.docx4j.openpackaging.parts.WordprocessingML;
+package org.docx4j.jaxb;
 
 import static org.junit.Assert.assertTrue;
 
@@ -16,6 +16,7 @@ import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.wml.Comments;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.Hdr;
@@ -39,7 +40,6 @@ public class AlternateContentPreprocessorTest {
 		
 		String inputfilepath = System.getProperty("user.dir") 
 			+ "/sample-docs/word/2010/2010-mcAlternateContent.docx";	    	
-		
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));				
 
