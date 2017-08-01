@@ -2,6 +2,7 @@
 package org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11;
 
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -54,6 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "snapshot",
     "extLst"
 })
+@XmlRootElement(name = "CT_OsfWebExtension")
 public class CTOsfWebExtension implements Child
 {
 
