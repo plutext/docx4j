@@ -510,21 +510,41 @@
 			</xsl:variable>		
 			
  			<xsl:variable name="dummy"
-				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('result ', $result))" />
- 				
-										
-			<xsl:choose>
-				<xsl:when test="contains($result, 'true')">
-				    <xsl:copy>
-				      <xsl:apply-templates select="@*|node()"/>
-				    </xsl:copy>  		
-				</xsl:when>
-				<xsl:otherwise>
-					<!--  omit -->
-				</xsl:otherwise>			
-			</xsl:choose>				
-  		
-  		</xsl:when>
+        				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('result ', $result))" />
+        
+        
+            <xsl:choose>
+                <xsl:when test="contains($result, 'true')">
+        
+                    <xsl:variable name="content">
+                        <w:sdtContent>
+                            <xsl:apply-templates select="w:sdtContent/*"/>
+                        </w:sdtContent>
+                    </xsl:variable>
+        
+                    <xsl:copy>
+                    
+                        <!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
+                        <xsl:apply-templates select="w:sdtPr">
+                            <xsl:with-param
+                                name="content"
+                                select="xalan:nodeset($content)"/>
+                        </xsl:apply-templates>
+        
+                        <xsl:if test="w:stdEndPr">
+                            <xsl:copy-of select="w:sdtEndPr"/>
+                        </xsl:if>
+        
+                        <xsl:copy-of select="$content"/>
+                    </xsl:copy>
+        
+                </xsl:when>
+                <xsl:otherwise>
+        					<!--  omit -->
+                </xsl:otherwise>
+            </xsl:choose>				
+          		
+          		</xsl:when>
   		
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:xpath')">
   			<!--  honour extended bind (Word databinding only works when a element is returned);
