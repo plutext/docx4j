@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -44,6 +45,7 @@ import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -280,6 +282,55 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 							XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings, jc));
 		
 	}
+	
+    /**
+     * Use an XSLT to alter the contents of this part.
+     * If you want to replace the content, next call setContents
+     * 
+     * @param xslt
+     * @param transformParameters
+     * @throws Exception
+	 * @since 3.3.6
+     */    
+    public E transform(Templates xslt,
+			  Map<String, Object> transformParameters) throws Docx4JException {
+
+		JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+    	
+		if (jaxbElement==null) {
+
+			PartStore partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} 
+			
+			XmlUtils.transform(new StreamSource(is), xslt, transformParameters, result);
+
+		} else {
+			org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();			
+			try {
+				this.marshal(doc);
+			} catch (JAXBException e) {
+				// shouldn't happen
+				throw new Docx4JException("Marshalling exception preparing content for transform", e);
+			}
+			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+			
+		}
+
+		try {
+			return (E) XmlUtils.unwrap(result.getResult() );
+		} catch (JAXBException e) {
+			throw new Docx4JException("Problem with transform result", e);
+		}	
+
+
+	}
+	
 	
 //	private static String convertStreamToString(java.io.InputStream is) {
 //	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
