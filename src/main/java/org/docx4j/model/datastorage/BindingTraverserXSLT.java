@@ -97,7 +97,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 	}
 			
+	private DomToXPathMap domToXPathMap = null;
 	
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
+	}
+
 	/**
 	 * @param part
 	 * @param pkg
@@ -136,37 +141,43 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			// (which is quicker than default javax.xml.xpath.XPath implementations)
 			if (ENABLE_XPATH_CACHE) {
 				
-//				Xpath xp = xpathsMap.values().iterator().next();
-//				CustomXmlPart cxp  = pkg.getCustomXmlDataStorageParts().get(xp.getDataBinding().getStoreItemID().toLowerCase());
-//				System.out.println("mycxp: " + cxp.getClass().getName());
-//				org.docx4j.openpackaging.parts.CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
-				
-				// We're only caching the first one we encounter
-				// (even though, in principle, there could be multiple)
-				CustomXmlDataStoragePart cdsp = 
-						CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
-								(WordprocessingMLPackage)pkg);
-				
-				if (cdsp==null) {
-					log.warn("No CustomXmlDataStoragePart found; can't cache.");
-					/* TODO: would fail on StandardisedAnswersPart
-					 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
-					 */
-				} else {
+				if (domToXPathMap==null /* should be passed from ODH */) {
+
+					// INIT
+					//				Xpath xp = xpathsMap.values().iterator().next();
+	//				CustomXmlPart cxp  = pkg.getCustomXmlDataStorageParts().get(xp.getDataBinding().getStoreItemID().toLowerCase());
+	//				System.out.println("mycxp: " + cxp.getClass().getName());
+	//				org.docx4j.openpackaging.parts.CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
 					
-					long start = System.currentTimeMillis();
-				
-					Document data = cdsp.getData().getDocument();
+					// We're only caching the first one we encounter
+					// (even though, in principle, there could be multiple)
+					CustomXmlDataStoragePart cdsp = 
+							CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
+									(WordprocessingMLPackage)pkg);
 					
-					DomToXPathMap mapper = new DomToXPathMap(data);
-					Map<String, String> pathMap = mapper.map();
-					long end = System.currentTimeMillis();
-					long time = end - start;
-		
-					log.debug("Mapped " + pathMap.size() + " in " + time + "ms");
+					if (cdsp==null) {
+						log.warn("No CustomXmlDataStoragePart found; can't cache.");
+						/* TODO: would fail on StandardisedAnswersPart
+						 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
+						 */
+					} else {
+						
+						long start = System.currentTimeMillis();
 					
-					bindingTraverserState.setPathMap(pathMap);
+						Document data = cdsp.getData().getDocument();
+						
+						domToXPathMap = new DomToXPathMap(data);
+						domToXPathMap.map();
+						long end = System.currentTimeMillis();
+						long time = end - start;
+			
+						log.debug("Mapped in " + time + "ms");
+						
+					}
 				}
+				Map<String, String> pathMap = domToXPathMap.getPathMap();
+				bindingTraverserState.setPathMap(pathMap);
+				
 			}
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);

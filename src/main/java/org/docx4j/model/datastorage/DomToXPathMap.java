@@ -21,20 +21,37 @@ public class DomToXPathMap {
     
     private Map<String, String> pathMap = null; 
     
-    public DomToXPathMap(Document document) {
+    
+    public Map<String, String> getPathMap() {
+		return pathMap;
+	}
+
+	/**
+     * count the number of child nodes; useful for repeat processing.
+     * 
+     * The value is only recorded if all children are the same.
+     * 
+     * @since 3.3.6
+     */
+    private Map<String, Integer> countMap = null; 
+    
+    public Map<String, Integer> getCountMap() {
+		return countMap;
+	}
+
+	public DomToXPathMap(Document document) {
     	this.document = document;
     }
     
-    public Map<String, String> map() {
+    public void map() {
 
         histgrams.clear();
         histgrams.push(new Histgram());
         
         pathMap = new HashMap<String, String>(); 
+        countMap = new HashMap<String, Integer>(); 
         
         walkTree(document);
-        
-        return pathMap;
     }
 
     private String getLocalName(Node sourceNode) {
@@ -95,20 +112,43 @@ public class DomToXPathMap {
             		throw iae;            		
             	}
             	
+            	String nxpath = getXPath();
 
                 // recurse on each child
                 NodeList children = sourceNode.getChildNodes();
+                int childrenLength = children.getLength();
+
                 
                 if (children == null 
-                		|| children.getLength()==0) {
+                		|| childrenLength==0) {
                 	
                 	// Record the fact this is an empty leaf node
-                	String xpath = getXPath();
-                	pathMap.put(xpath, "");                	
-                	
+                	pathMap.put(nxpath, "");                	
+                	countMap.put(nxpath, 0);
                 } else {
-                    for (int i=0; i<children.getLength(); i++) {
+                	String childName = null;
+                	boolean singleChild = true; // until proven otherwise
+                	int actualCount=0;
+                    for (int i=0; i<childrenLength; i++) {
+                    	
+                    	// counting children for repeats
+                    	if (singleChild && /* ignore text nodes */
+                    			children.item(i).getNodeType()==Node.ELEMENT_NODE) {
+                    		if (childName==null /* init*/) {
+                    			childName = getLocalName((Node)children.item(i));
+                    		}
+                    		if (getLocalName((Node)children.item(i)).equals(childName)) {
+                    			actualCount++;
+                    		} else {
+                    			singleChild = false; // count not useful
+                    		}
+                    		
+                    	}
+                    	
                     	walkTree( (Node)children.item(i));
+                    }
+                    if (singleChild) {
+                    	countMap.put(nxpath, actualCount);                    	
                     }
                 }
                 

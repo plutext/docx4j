@@ -46,6 +46,7 @@ import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -76,11 +77,14 @@ import org.opendope.xpaths.Xpaths;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {
 
 	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandler.class);
+	
+	public static boolean ENABLE_XPATH_CACHE = true;
 	
 	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null; 
 	private Map<String, Condition> conditionsMap = null; 
@@ -137,10 +141,47 @@ public class OpenDoPEHandler {
             }
 		}
 
+		// Precalculate repeat counts, for approx 30% gain
+		// @ since 3.3.6
+		if (ENABLE_XPATH_CACHE) {
+						
+			// We're only caching the first one we encounter
+			// (even though, in principle, there could be multiple, and ODH is set up for that)
+			CustomXmlDataStoragePart cdsp = 
+					CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
+							(WordprocessingMLPackage)wordMLPackage);
+		
+			if (cdsp==null) {
+				log.warn("No CustomXmlDataStoragePart found; can't cache.");
+				/* TODO: would fail on StandardisedAnswersPart
+				 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
+				 */
+			} else {
+				
+				long start = System.currentTimeMillis();
+			
+				Document data = cdsp.getData().getDocument();
+				
+				domToXPathMap = new DomToXPathMap(data);
+				domToXPathMap.map();
+//				countMap = domToXPathMap.getCountMap();
+				long end = System.currentTimeMillis();
+				long time = end - start;
+	
+				log.debug("Mapped " + domToXPathMap.getCountMap().size() + " in " + time + "ms");
+			}
+		}
+				
+		
 		shallowTraversor = new ShallowTraversor();
 		shallowTraversor.wordMLPackage = wordMLPackage;
 		
 		bookmarkRenumber = new BookmarkRenumber(wordMLPackage);
+	}
+
+	private DomToXPathMap domToXPathMap = null;
+	public DomToXPathMap getDomToXPathMap() {
+		return domToXPathMap;
 	}
 
 	private WordprocessingMLPackage wordMLPackage;
@@ -1121,14 +1162,26 @@ public class OpenDoPEHandler {
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
 		log.info("/n/n Repeat: using xpath: " + xpathBase + " and " + prefixMappings);
-		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
-				storeItemId, xpathBase, prefixMappings);
-		// storeItemId, xpathBase+"/*", prefixMappings);
+		
+		String tmpPath = xpathBase.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+		tmpPath = tmpPath.substring(0,tmpPath.lastIndexOf("/")); // parent
+//		System.out.println(tmpPath + ":" + this.countMap.get(tmpPath));
+		
+		Integer numRepeats = this.domToXPathMap.getCountMap().get(tmpPath);
+		if (numRepeats==null) {
+			// fallback to old way
+			log.info("countMap null for " + tmpPath);
+			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
+			storeItemId, xpathBase, prefixMappings);
+			numRepeats = repeatedSiblings.size();
+		}
+		
 
 		// Count siblings
-		int numRepeats = repeatedSiblings.size();
-		log.debug("yields REPEATS: " + numRepeats);
-
+		if (log.isDebugEnabled() ) {
+			log.debug("yields REPEATS: "  + xpathBase + ":" + numRepeats);
+		}
+		
 		if (numRepeats == 0) {
 			
 			if (isW15RepeatingSection) {
@@ -1272,6 +1325,9 @@ public class OpenDoPEHandler {
 		return newContent;
 	}
 	
+	private int DEBUG_REPEAT_CAP = -1; // should be -1, except when developing!
+	private int totalRepeated = 0;
+	
 	private List<Object> cloneRepeatSdt(Object sdt, String xpathBase,
 			int numRepeats) {
 
@@ -1291,6 +1347,11 @@ public class OpenDoPEHandler {
 		}
 
 		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
+		
+		if (DEBUG_REPEAT_CAP>0 && DEBUG_REPEAT_CAP<numRepeats) {
+			log.warn("Capping repeats at " + DEBUG_REPEAT_CAP + "(down from " + numRepeats);
+			numRepeats = DEBUG_REPEAT_CAP;
+		}
 
 		for (int i = 0; i < numRepeats; i++) {
 
@@ -1307,6 +1368,11 @@ public class OpenDoPEHandler {
 			
 			// Clone
 			newContent.add(XmlUtils.deepCopy(sdt));
+			totalRepeated++;
+		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Repeated in total so far: " + totalRepeated);
 		}
 
 		return newContent;

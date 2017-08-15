@@ -100,6 +100,11 @@ public class BindingHandler {
 	
 	private static BindingHyperlinkResolver hyperlinkResolver;
 	
+	private DomToXPathMap domToXPathMap = null;
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
+	}
+
 	private AtomicInteger bookmarkId = null;
 
 	/**
@@ -251,6 +256,7 @@ public class BindingHandler {
 				// Slower, fully featured. The default.
 				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
 				traverser = new BindingTraverserXSLT();
+				((BindingTraverserXSLT)traverser).setDomToXPathMap(this.domToXPathMap);
 			}
 			
 			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
