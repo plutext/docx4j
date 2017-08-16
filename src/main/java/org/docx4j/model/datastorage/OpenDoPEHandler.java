@@ -344,6 +344,9 @@ public class OpenDoPEHandler {
 			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().clear();
 			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().addAll(conditionsMap.values());
 		}
+		
+		System.out.println(this.conditionTiming.toString());
+		System.out.println("conditions in total: " + this.conditionTimingTotal/1000);  // in seconds
 
 		return wordMLPackage;
 	}
@@ -783,6 +786,9 @@ public class OpenDoPEHandler {
 		return (CTSdtRepeatedSection)sdtPr.getByClass(CTSdtRepeatedSection.class);
 	}
 
+	private StringBuffer conditionTiming = new StringBuffer();
+	
+	private long conditionTimingTotal = 0;
 	/**
 	 * This applies to any sdt which might be a conditional|repeat
 	 *
@@ -837,7 +843,19 @@ public class OpenDoPEHandler {
 				log.error("Missing condition " + conditionId);
 			}
 
-			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap) ) {
+			long startTime = System.currentTimeMillis();
+			c.setDomToXPathMap(domToXPathMap);
+			boolean cResult = c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap);
+			
+			long duration = System.currentTimeMillis() - startTime;
+			conditionTimingTotal += duration;
+			// on a big XML, these might take around 250ms
+			
+			if (duration>750) {
+				conditionTiming.append(c.toString(conditionsMap, xpathsMap) + "," + duration + "\n");				
+			}
+			
+			if ( cResult ) {
 				log.debug("so keeping");
 
 				List<Object> newContent = new ArrayList<Object>();
@@ -1167,7 +1185,8 @@ public class OpenDoPEHandler {
 		tmpPath = tmpPath.substring(0,tmpPath.lastIndexOf("/")); // parent
 //		System.out.println(tmpPath + ":" + this.countMap.get(tmpPath));
 		
-		Integer numRepeats = this.domToXPathMap.getCountMap().get(tmpPath);
+		Integer numRepeats = null;
+		if (domToXPathMap!=null) numRepeats = this.domToXPathMap.getCountMap().get(tmpPath); // @since 3.3.6
 		if (numRepeats==null) {
 			// fallback to old way
 			log.info("countMap null for " + tmpPath);

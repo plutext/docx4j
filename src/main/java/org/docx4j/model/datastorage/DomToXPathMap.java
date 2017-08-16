@@ -27,13 +27,21 @@ public class DomToXPathMap {
 	}
 
 	/**
-     * count the number of child nodes; useful for repeat processing.
+     * count the number of child nodes; used for pre-calculation
+     * of (1) repeat xpaths, and (2) certain simple conditions.
      * 
-     * The value is only recorded if all children are the same.
+     * By default, an entry counts the number of children which
+     * are the same element as the first element child, since this
+     * is what we need for repeats.
+     * 
+     * If there are elements with different names, the count
+     * is put in the map with PREFIX_ALL_NODES prefix.
      * 
      * @since 3.3.6
      */
     private Map<String, Integer> countMap = null; 
+    
+    public static final String PREFIX_ALL_NODES = "_all_";
     
     public Map<String, Integer> getCountMap() {
 		return countMap;
@@ -129,18 +137,22 @@ public class DomToXPathMap {
                 	String childName = null;
                 	boolean singleChild = true; // until proven otherwise
                 	int actualCount=0;
+                	int countOtherElements=0;
+                	int countTextNodes = 0;
                     for (int i=0; i<childrenLength; i++) {
                     	
-                    	// counting children for repeats
-                    	if (singleChild && /* ignore text nodes */
-                    			children.item(i).getNodeType()==Node.ELEMENT_NODE) {
+                    	// counting children for repeats and condition pre-calc
+                    	if (children.item(i).getNodeType()==Node.TEXT_NODE) {
+                    		countTextNodes++;
+                    	} else if ( children.item(i).getNodeType()==Node.ELEMENT_NODE) {
                     		if (childName==null /* init*/) {
                     			childName = getLocalName((Node)children.item(i));
                     		}
                     		if (getLocalName((Node)children.item(i)).equals(childName)) {
                     			actualCount++;
                     		} else {
-                    			singleChild = false; // count not useful
+                    			singleChild = false; // count not useful for REPEAT purpose, but still useful for condition eval
+                    			countOtherElements++;
                     		}
                     		
                     	}
@@ -149,6 +161,17 @@ public class DomToXPathMap {
                     }
                     if (singleChild) {
                     	countMap.put(nxpath, actualCount);                    	
+                    } else {
+                    	// store count for condition count( pre calculation;
+                    	// it is convenient to store it in the same map
+                    	countMap.put(PREFIX_ALL_NODES + nxpath, actualCount + countOtherElements + countTextNodes);  
+                    	/* NB XPath spec says 
+                    	 * 
+                    	 *   The count function returns the number of nodes in the argument node-set.
+                    	 *   
+                    	 * which I suspect includes text nodes.  
+                    	 */
+                    	
                     }
                 }
                 
