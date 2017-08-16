@@ -345,8 +345,8 @@ public class OpenDoPEHandler {
 			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().addAll(conditionsMap.values());
 		}
 		
-		System.out.println(this.conditionTiming.toString());
-		System.out.println("conditions in total: " + this.conditionTimingTotal/1000);  // in seconds
+		log.debug(this.conditionTiming.toString());
+		log.debug("conditions in total: " + this.conditionTimingTotal/1000);  // in seconds
 
 		return wordMLPackage;
 	}
@@ -851,7 +851,8 @@ public class OpenDoPEHandler {
 			conditionTimingTotal += duration;
 			// on a big XML, these might take around 250ms
 			
-			if (duration>750) {
+			if (log.isDebugEnabled() 
+					&& duration>750) {
 				conditionTiming.append(c.toString(conditionsMap, xpathsMap) + "," + duration + "\n");				
 			}
 			
