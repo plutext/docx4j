@@ -1187,11 +1187,20 @@ public class OpenDoPEHandler {
 		
 		Integer numRepeats = null;
 		if (domToXPathMap!=null) numRepeats = this.domToXPathMap.getCountMap().get(tmpPath); // @since 3.3.6
-		if (numRepeats==null) {
+		
+		if (numRepeats==null 
+				|| log.isDebugEnabled() ) {
+			
 			// fallback to old way
 			log.info("countMap null for " + tmpPath);
-			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
-			storeItemId, xpathBase, prefixMappings);
+			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts, storeItemId, xpathBase, prefixMappings);
+			
+			if (numRepeats!=null
+					&& numRepeats!=repeatedSiblings.size() ) {
+				String message = "For " + xpathBase + ", " + numRepeats + "!=" + repeatedSiblings.size();
+				log.error(message);
+				throw new RuntimeException(message);
+			}
 			numRepeats = repeatedSiblings.size();
 		}
 		

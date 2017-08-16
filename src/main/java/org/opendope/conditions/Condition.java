@@ -166,10 +166,13 @@ public class Condition implements Evaluable {
 						if (result==tmpCheck) {
 //							System.out.println("Manual string calc worked");
 						} else {
-							System.out.println("PANIC! Manual string calc doesn't match XPath eval!");
-							System.out.println(xpath);
-							System.out.println("string(" + path + ")='"+val +"'");
-							System.out.println(val);
+							String message ="PANIC! Manual string calc doesn't match XPath eval!\n"
+							+ xpath
+							+ "\nstring(" + path + ")='"+val +"'\n";
+
+							log.error(message);
+							throw new RuntimeException(message);
+							
 						}
 					}
 					return result;
@@ -194,10 +197,12 @@ public class Condition implements Evaluable {
 						val = domToXPathMap.getCountMap().get(DomToXPathMap.PREFIX_ALL_NODES + path);
 					}
 					if (val==null /* still */) { 
-						if ( log.isDebugEnabled()) {
+						if (  log.isDebugEnabled()) {
 							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
 							if (tmpCheck) {
-								System.out.println("FIXME.  Expected map entry facilitating manual eval of  " + path);
+								String message ="FIXME.  Expected map entry facilitating manual eval of  " + path;
+								log.error(message);
+								throw new RuntimeException(message);
 							} else {
 								System.out.println("Manual count calc worked for null case");							
 							}
@@ -209,16 +214,20 @@ public class Condition implements Evaluable {
 					} else {
 						boolean result = (val>0);
 					
-						if (log.isDebugEnabled()) {
+						if ( log.isDebugEnabled()) {
 							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
 						
 							if (result==tmpCheck) {
 								System.out.println("Manual count calc worked");
 							} else {
-								System.out.println("PANIC! Manual count calc doesn't match XPath eval!");
-								System.out.println(xpath);
-								System.out.println("count(" + path + ")>0");
-								System.out.println(val);
+								
+								String message ="PANIC! Manual count calc doesn't match XPath eval!\n"
+										+ xpath
+										+ "\ncount(" + path + ")>0\n" + val;
+
+								log.error(message);
+								throw new RuntimeException(message);
+								
 							}
 						}
 						return result;
