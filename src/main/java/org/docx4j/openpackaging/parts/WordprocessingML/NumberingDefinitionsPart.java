@@ -435,6 +435,16 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	return num;
 		
 	}
+
+	public void addAbstractListNumberingDefinitionLevel(Numbering.AbstractNum abstractNum, Lvl lvl) {
+		
+		abstractNum.getLvl().add( lvl ); 
+		
+		// update the corresponding structure
+		AbstractListNumberingDefinition absNumDef = abstractListDefinitions.get(abstractNum.getAbstractNumId().toString());
+		absNumDef.readLevel(lvl);
+
+	}
 	
     public Numbering unmarshalDefaultNumbering() throws JAXBException {
     	    	    	 
