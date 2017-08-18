@@ -198,7 +198,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     }
     
     /**
-     * For the given list numId, restart the numbering on the specified
+     * For the given *concrete* list numId, restart the numbering on the specified
      * level at value val.  This is done by creating a new list (ie &lt;w:num&gt;)
      * which uses the existing w:abstractNum.
      * @param numId
@@ -215,11 +215,30 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	if (em == null ) { 
     		getEmulator();
     	}
+    	
     	ListNumberingDefinition existingLnd = instanceListDefinitions.get( Long.toString(numId) );
     	if (existingLnd==null) {
-    		throw new InvalidOperationException("List " + numId + " does not exist");
+    		throw new InvalidOperationException("Concrete/instance list " + numId + " does not exist");
     	}
-    	BigInteger abstractNumIdVal = existingLnd.getNumNode().getAbstractNumId().getVal();
+    	
+    	return restart(existingLnd.getNumNode(), ilvl, val);
+    }
+    
+
+    private long restart(Num num, long ilvl, long val) 
+    	throws InvalidOperationException {
+
+    	if (num==null) {
+    		throw new InvalidOperationException("Abstract List does not exist!");
+    	}
+    	
+    	// (Ensure maps are initialised)
+    	if (em == null ) { 
+    		getEmulator();
+    	}
+    	
+    	// Get the abstract list    	
+    	BigInteger abstractNumIdVal = num.getAbstractNumId().getVal();
     	
     	// Generate the new <w:num
     	long newNumId = instanceListDefinitions.size() + 1;
@@ -228,6 +247,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		
 		Num newNum = factory.createNumberingNum();
 		newNum.setNumId( BigInteger.valueOf(newNumId) );
+		
 		AbstractNumId abstractNumId = factory.createNumberingNumAbstractNumId();
 		abstractNumId.setVal(abstractNumIdVal);
 		newNum.setAbstractNumId(abstractNumId);
@@ -250,6 +270,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	return newNumId;
     	
     }
+    
 	
 	
 	private Emulator em;
