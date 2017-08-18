@@ -255,16 +255,36 @@
   			</xsl:choose>
 		</xsl:when>
 
-  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
-  			<!--  honour w:dataBinding -->
+		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
+		<!--  honour w:dataBinding -->
 			<xsl:copy>
-			     <xsl:copy-of select="w:sdtPr"/>
-			     
-			     <xsl:if test="w:stdEndPr">
-			     	<xsl:copy-of select="w:sdtEndPr"/>
-		     	</xsl:if>
-			     
-			     <w:sdtContent>
+				<xsl:copy-of select="w:sdtPr"/>
+
+				<xsl:if test="w:stdEndPr">
+					<xsl:copy-of select="w:sdtEndPr"/>
+				</xsl:if>
+
+				<w:sdtContent>
+					<xsl:choose>
+						<xsl:when test="w:sdtContent/w:tc">
+							<w:tc>
+								<xsl:if test="w:sdtContent/w:tc/w:tcPr">
+									<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+								</xsl:if>
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
+											$wmlPackage,
+											$sourcePart,
+											$customXmlDataStorageParts,
+											string(w:sdtPr/w:dataBinding/@w:storeItemID),
+											string(w:sdtPr/w:dataBinding/@w:xpath),
+											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+											$parent,
+											$child,
+											w:sdtPr/w:date)" />
+							</w:tc>
+						</xsl:when>
+						<xsl:otherwise>
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
 										$wmlPackage,
@@ -276,7 +296,9 @@
 										$parent,
 										$child,
 										w:sdtPr/w:date)" />
-			     </w:sdtContent>
+						</xsl:otherwise>
+					</xsl:choose>
+				</w:sdtContent>
 			</xsl:copy>
 		</xsl:when>
   	
