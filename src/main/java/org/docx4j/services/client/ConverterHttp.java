@@ -214,7 +214,9 @@ public class ConverterHttp implements Converter {
 			//System.out.println(""+response.getStatusLine());
 		    HttpEntity resEntity = response.getEntity();
 		    resEntity.writeTo(os);
-			if (response.getStatusLine().getStatusCode()!=200) {
+			if (response.getStatusLine().getStatusCode()==403) {
+				throw new ConversionException("403 license expired?", response);				
+			} else if (response.getStatusLine().getStatusCode()!=200) {
 				throw new ConversionException(response);
 			}
 		} catch (java.net.UnknownHostException uhe) {
