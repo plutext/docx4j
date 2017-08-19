@@ -22,7 +22,6 @@ package org.docx4j;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -623,10 +622,17 @@ public class Docx4J {
 			try {
 				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
 				baos.close();
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
+			} catch (ConversionException e) {
+				if (e.getResponse()!=null && e.getResponse().getStatusLine().getStatusCode()==403) {
+					throw new Docx4JException("Problem converting to PDF; license expired?", e);					
+				}
+				log.error(e.getResponse().getStatusLine().getStatusCode() + " " + e.getResponse().getStatusLine().getReasonPhrase());
+				// the content is in the outputstream, we can't inspect that here.
 				new EventFinished(startEvent).publish();
-				throw new Docx4JException("Problem converting to PDF; check URL " + URL + "\n" + e.getMessage(), e);
+				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
+			} catch (Exception e) {
+				new EventFinished(startEvent).publish();
+				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
 			}
 			
 		}

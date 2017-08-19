@@ -20,16 +20,22 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
 import java.io.OutputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.model.fields.FieldUpdater;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.services.client.ConversionException;
 
 /**
  * Demo of PDF output.
@@ -45,7 +51,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *      com.plutext.converter.URL=http://your.host:80/v1/00000000-0000-0000-0000-000000000000/convert
  * 
  * If you don't want to use Plutext's PDF Converter, you can still use XSL FO and Apache FOP;
- * just put docx4j-export-fo and its depedencies on your classpath and use Docx4J.toFO
+ * just put docx4j-export-fo and its dependencies on your classpath and use Docx4J.toFO
  * as per the example below.
  * 
  * @author jharrop
@@ -60,6 +66,11 @@ public class ConvertOutPDF extends AbstractSample {
 		
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
+    	// URL of converter instance
+//		Docx4jProperties.setProperty("com.plutext.converter.URL", 
+//				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");    	
+    	
+    	// XSL-FO only
     	saveFO = true;
 	}
 	
@@ -123,8 +134,22 @@ public class ConvertOutPDF extends AbstractSample {
 			// Since 3.3.0, Plutext's PDF Converter is used by default
 
 			System.out.println("Using Plutext's PDF Converter; add docx4j-export-fo if you don't want that");
-
-			Docx4J.toPDF(wordMLPackage, os);
+			
+			try {
+				Docx4J.toPDF(wordMLPackage, os);
+			} catch (Docx4JException e) {
+				e.printStackTrace();
+				// What did we write?
+				IOUtils.closeQuietly(os);
+				System.out.println(
+						FileUtils.readFileToString(new File(outputfilepath)));
+				if (e.getCause()!=null
+						&& e.getCause() instanceof ConversionException) {
+					
+					ConversionException ce = (ConversionException)e.getCause();
+					ce.printStackTrace();
+				}
+			}
 			System.out.println("Saved: " + outputfilepath);
 
 			return;
