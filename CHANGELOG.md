@@ -2,6 +2,24 @@ CHANGELOG
 =========
 
 
+Version 3.3.6  minor release
+=============
+
+Release date
+------------
+
+xx August 2017
+
+
+Notable Changes in Version 3.3.6 
+---------------------------------
+
+@XmlRootElement on webextension and taskpanes
+
+OpenDoPE performance enhancements:  pre-calculate repeat counts and simple conditions for substantial time saving in ODH step
+
+
+
 Version 3.3.5  minor release
 =============
 
