@@ -220,16 +220,32 @@ public class ConverterHttp implements Converter {
 				throw new ConversionException(response);
 			}
 		} catch (java.net.UnknownHostException uhe) {
-    		System.err.println("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n");
+    		log.error("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n");
 			throw new ConversionException(uhe.getMessage(), uhe);		    
+
+		} catch (java.net.SocketException se) {
 			
+			log.error(se.getMessage());
+			
+			if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS") > -1) {
+				// In some circumstances, the converter will return an error before waiting for
+				// the request to complete.
+				// On Windows, you get "java.net.SocketException: Connection reset",
+				// whereas on Linux, the response is read.
+				log.error("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
+				// Try to ensure user sees this, even if they don't have logging configured!
+				System.err.println("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
+			}
+			// TODO: What happens on Android?  OSX?
+			throw new ConversionException(se.getMessage(), se);		    
+
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			throw new ConversionException(ioe.getMessage(), ioe);		    
 		} finally {
 		    try {
 		    	if (response==null) {
-		    		System.err.println("\nLooks like your endpoint URL '" + URL + "' is wrong\n");
+		    		log.error("\nLooks like your endpoint URL '" + URL + "' is wrong\n");
 		    	} else {
 		    		response.close();
 		    	}

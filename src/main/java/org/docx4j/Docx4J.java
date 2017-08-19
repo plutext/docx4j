@@ -623,12 +623,15 @@ public class Docx4J {
 				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
 				baos.close();
 			} catch (ConversionException e) {
-				if (e.getResponse()!=null && e.getResponse().getStatusLine().getStatusCode()==403) {
-					throw new Docx4JException("Problem converting to PDF; license expired?", e);					
-				}
-				log.error(e.getResponse().getStatusLine().getStatusCode() + " " + e.getResponse().getStatusLine().getReasonPhrase());
-				// the content is in the outputstream, we can't inspect that here.
 				new EventFinished(startEvent).publish();
+				if (e.getResponse()!=null) {
+					if (e.getResponse().getStatusLine().getStatusCode()==403) {
+						throw new Docx4JException("Problem converting to PDF; license expired?", e);
+					} else {
+						log.error(e.getResponse().getStatusLine().getStatusCode() + " " + e.getResponse().getStatusLine().getReasonPhrase());
+					}
+				}
+				// the content is in the outputstream, we can't inspect that here.
 				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
 			} catch (Exception e) {
 				new EventFinished(startEvent).publish();
