@@ -231,12 +231,15 @@ public class ConverterHttp implements Converter {
 				// In some circumstances, the converter will return an error before waiting for
 				// the request to complete.
 				// On Windows, you get "java.net.SocketException: Connection reset",
-				// whereas on Linux, the response is read.
+				// whereas on Linux and OSX, the SocketException still occurs, but the response is read
+				// (though possibly only sometimes/partially, since the socket exception occurs
+				// in BasicHttpEntity.writeTo)
 				log.error("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
 				// Try to ensure user sees this, even if they don't have logging configured!
 				System.err.println("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
 			}
-			// TODO: What happens on Android?  OSX?
+			
+			// TODO: What happens on Android? 
 			throw new ConversionException(se.getMessage(), se);		    
 
 		} catch (IOException ioe) {
