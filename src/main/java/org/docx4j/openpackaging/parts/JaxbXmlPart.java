@@ -45,6 +45,7 @@ import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
@@ -284,18 +285,25 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	}
 	
     /**
-     * Use an XSLT to alter the contents of this part.
-     * If you want to replace the content, next call setContents
+     * Use an XSLT to alter the contents of this part.  You can transform to whatever
+     * you like (ie it doesn't have to be WordML content), which is why the API design
+     * is that you provide the Result object. 
+     *  
+     * If you do want to replace the content in this part, convert your result to
+     * and element or input stream, then invoke unmarshal on it, then setContents. 
+     * (Unmarshal takes care of any unexpected content, sidestepping the issue of 
+     *  whether to do that before the transform (where reading the part directly),
+     *  or after).
      * 
      * @param xslt
      * @param transformParameters
      * @throws Exception
 	 * @since 3.3.6
      */    
-    public E transform(Templates xslt,
-			  Map<String, Object> transformParameters) throws Docx4JException {
+    public void transform(Templates xslt,
+			  Map<String, Object> transformParameters, Result result) throws Docx4JException {
 
-		JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+		//JAXBResult result = XmlUtils.prepareJAXBResult(jc);
     	
 		if (jaxbElement==null) {
 
@@ -322,11 +330,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			
 		}
 
-		try {
-			return (E) XmlUtils.unwrap(result.getResult() );
-		} catch (JAXBException e) {
-			throw new Docx4JException("Problem with transform result", e);
-		}	
+//		try {
+//			return (E) XmlUtils.unwrap(result.getResult() );
+//		} catch (JAXBException e) {
+//			throw new Docx4JException("Problem with transform result", e);
+//		}	
 
 
 	}

@@ -25,6 +25,7 @@ import java.io.File;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.Docx4J;
@@ -33,13 +34,14 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.Document;
+import org.w3c.dom.Element;
 
 
 /**
  * Accept changes (r:ins, r:del) in the Main Document Part, via XSLT
  * 
  * @author jharrop
- *
+ * @since 3.3.6
  */
 public class TrackChangesAccept extends AbstractSample {
 	
@@ -67,9 +69,15 @@ public class TrackChangesAccept extends AbstractSample {
 		
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
-		Document contentAccepted = mdp.transform(xslt, null);
+		DOMResult contentAccepted = new DOMResult(); 
 		
-		mdp.setContents(contentAccepted);
+		// perform the transformation
+		mdp.transform(xslt, null, contentAccepted);
+		
+		// replace the contents in the WordprocessingMLPackage
+		org.w3c.dom.Document domDoc = (org.w3c.dom.Document)contentAccepted.getNode();
+		mdp.setContents(
+				mdp.unmarshal(domDoc.getDocumentElement()));
 		
 		System.out.println(mdp.getXML());
 				
