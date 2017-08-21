@@ -33,6 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 import org.docx4j.XmlUtils;
 import org.docx4j.utils.ResourceUtils;
 
@@ -99,9 +100,38 @@ ValidationEventHandler{
 //	          }
 	          
 	          //output line and column number
-	//          System.out.println("Column is " + 
-	//                locator.getColumnNumber() + 
-	//                " at line number " + locator.getLineNumber());
+	          if (locator.getColumnNumber()>-1) {
+		          log.warn("Column is " + 
+		                locator.getColumnNumber() + 
+		                " at line number " + locator.getLineNumber());
+	          }
+	          
+	          // We get good results from XmlUtils.unmarshal(node)  :-)
+	          if (locator.getNode()!=null) {
+	        	  Node node = locator.getNode();
+	        	  log.warn("troublesome node: " + XmlUtils.w3CDomNodeToString(node));
+	        	  if (node.getParentNode()!=null) {
+		        	  log.warn("in parent node: " + XmlUtils.w3CDomNodeToString(node.getParentNode()));
+		        	  Node parent = node.getParentNode();
+		        	  String path = "";
+		        	  while (parent!=null) {
+		        		  path = getLocalName(parent) + "/" + path;
+		        		  parent = parent.getParentNode();
+		        	  }
+		        	  log.warn(path + getLocalName(node));
+	        	  }
+	          }
+
+	          if (locator.getOffset()>-1) {
+		          log.warn("At offset " + 
+			                locator.getOffset());
+	        	  
+	          }
+	          
+	          if (locator.getObject()!=null ) {
+	        	  log.warn(locator.getObject().getClass().getName());
+	          }
+	          
 	     } else if (ve.getSeverity()==ve.WARNING) {
 	    	 
 	    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());  
@@ -153,6 +183,18 @@ ValidationEventHandler{
 	     return shouldContinue;
              
      }
+    
+    private String getLocalName(Node sourceNode) {
+    	
+    	if (sourceNode.getLocalName()==null) {
+    		// eg element was created using createElement() 
+    		return sourceNode.getNodeName();
+    	
+    	} else {
+    		return sourceNode.getLocalName();
+    	}
+    	
+    }    
     
     public String printSeverity(ValidationEvent ve) {
     	
