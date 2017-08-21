@@ -179,7 +179,11 @@ ValidationEventHandler{
 	     }
 	      // JAXB provider should attempt to continue its current operation. 
 	      // (Marshalling, Unmarshalling, Validating)
-	     log.info("continuing (with possible element/attribute loss)");
+	    if (shouldContinue) {
+	    	log.info("continuing (with possible element/attribute loss)");
+	    } else {
+	    	log.info("shouldContinue is set to false");
+	    }
 	     return shouldContinue;
              
      }
