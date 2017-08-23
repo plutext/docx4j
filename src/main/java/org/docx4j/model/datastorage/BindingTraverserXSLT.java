@@ -178,7 +178,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 						
 					}
 				}
-				Map<String, String> pathMap = domToXPathMap.getPathMap();
+				
+				Map<String, String> pathMap = null; 
+				if (domToXPathMap!=null) {
+					pathMap = domToXPathMap.getPathMap();
+				}
 				bindingTraverserState.setPathMap(pathMap);
 				
 			}
