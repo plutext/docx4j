@@ -49,6 +49,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -161,7 +162,7 @@ public class XmlUtils {
 		if (sp!=null) {
 			
 			System.setProperty("javax.xml.parsers.SAXParserFactory",sp);
-			log.info("Using " + sp + " (from docx4j.properties)");
+			log.info("setProperty " + sp + " (from docx4j.properties)");
 		
 		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.SAXParserFactory.donotset", false)) {
 			
@@ -189,7 +190,7 @@ public class XmlUtils {
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 
-			log.info("Using com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
 		} else {
 			
@@ -201,6 +202,10 @@ public class XmlUtils {
 			log.warn("default SAXParserFactory property : " + System.getProperty("javax.xml.parsers.SAXParserFactory" )
 					+ "\n Please consider using Xerces.");
 		}
+		
+		log.info("actual: " + SAXParserFactory.newInstance().getClass().getName() );
+		
+		
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
 		// since we want to avoid Crimson being used for the life of the application.
 
@@ -208,7 +213,7 @@ public class XmlUtils {
 		String dbf = Docx4jProperties.getProperty("javax.xml.parsers.DocumentBuilderFactory");
 		if (dbf!=null) {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",dbf);
-			log.info("Using " + dbf + " (from docx4j.properties)");
+			log.info("setProperty " + dbf + " (from docx4j.properties)");
 			
 		} else if (Docx4jProperties.getProperty("docx4j.javax.xml.parsers.DocumentBuilderFactory.donotset", false)) {
 			
@@ -236,7 +241,7 @@ public class XmlUtils {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 
-			log.info("Using com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			
 		} else {
 
@@ -252,27 +257,51 @@ public class XmlUtils {
 		}
 		
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		log.info("actual: " + documentBuilderFactory.getClass().getName());
 		documentBuilderFactory.setNamespaceAware(true);
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory).
 		// Maybe we could, if docx4j always used this documentBuilderFactory.
 		try {
 			documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		
-		documentBuilderFactory.setXIncludeAware(false);
-		documentBuilderFactory.setExpandEntityReferences(false);
+		try {
+			documentBuilderFactory.setXIncludeAware(false);
+		} catch (Exception e) { 
+			// org.apache.xerces.jaxp.DocumentBuilderFactoryImpl v2.6.2 
+			// (which docx4j doesn't use by default) 
+			// throws java.lang.UnsupportedOperationException
+			// Apparently can be fixed by upgrading to 2.9.1
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
+		}
+		
+		try {
+			documentBuilderFactory.setExpandEntityReferences(false);
+		} catch (Exception e) { 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
+		}
 		
 		try {
 			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 		try {
 			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 		} catch (ParserConfigurationException e) { 
-			log.error(e.getMessage(), e); 
+			log.warn(e.getMessage());
+			StackTraceElement[] elements = e.getStackTrace();
+			if (elements.length>0) log.warn(elements[0].toString());				
 		}
 //		try {
 //			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -515,11 +544,49 @@ public class XmlUtils {
 	
 
 	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
-		log.debug("Unmarshalling '" + str + "'");			
+		log.debug("Unmarshalling '" + str + "'");	
+		// Uncomment the following if you are being screwed by a byte order marker
+		str = str.trim().replaceFirst("^([\\W]+)<","<");
 		Unmarshaller u = jc.createUnmarshaller();						
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		return u.unmarshal( new javax.xml.transform.stream.StreamSource(
-				new java.io.StringReader(str)) );
+		
+		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+		u.setEventHandler(eventHandler);
+		
+		try {
+			
+			return u.unmarshal( new javax.xml.transform.stream.StreamSource(
+					new java.io.StringReader(str)) );
+			
+		} catch (UnmarshalException ue) {
+			
+			if (ue.getLinkedException()!=null 
+					&& ue.getLinkedException().getMessage().contains("entity")) {
+				
+				/*
+					Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
+					Message: The entity "xxe" was referenced, but not declared.
+						at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+					 */
+				log.error(ue.getMessage(), ue);
+				throw ue;
+			}
+			
+			log.info("encountered unexpected content; pre-processing");
+			eventHandler.setContinue(true);
+								
+			try {
+				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+				JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+				XmlUtils.transform(
+						new StreamSource(new java.io.StringReader(str)), 
+						mcPreprocessorXslt, null, result);
+				return result.getResult();	
+			} catch (Exception e) {
+				throw new JAXBException("Preprocessing exception", e);
+			}
+										
+		}		
 	}
 
 	public static Object unmarshal(Node n) throws JAXBException {
@@ -665,12 +732,10 @@ public class XmlUtils {
 		return null;
 	}
 	
-	/** The below code removes superflouous namespaces.
+	/** Removes superflouous namespaces.
 	 * 
 	 * It makes things neater, at the cost of some extra processing.
 	 *  
-	 * If kept, it could be configurable in docx4j props
-	 * 
 	 * @throws InvalidCanonicalizerException 
 	 * @throws CanonicalizationException 
 	 */
@@ -685,6 +750,7 @@ public class XmlUtils {
     		Init.init();
     		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
     		return  c.canonicalizeSubtree(doc, ignorables);
+
 	}
 	
 	
@@ -743,7 +809,7 @@ public class XmlUtils {
 			
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
-				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc); // TODO rest of 
+				org.w3c.dom.Document doc = marshaltoW3CDomDocument( o,  jc); 
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
 				return new String(bytes, "UTF-8"); 
@@ -882,6 +948,19 @@ public class XmlUtils {
 
 				byte[] bytes = trimNamespaces(doc, ignorables);
 				
+				//log.debug(new String(bytes, "UTF-8"));
+				/*MOXy issue where it looks like trimNamespaces drops w namespace!
+				 * 
+					DEBUG org.docx4j.XmlUtils .trimNamespaces line 700 - Input to Canonicalizer: <w:abstractNumId xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="0"/>
+					DEBUG org.docx4j.XmlUtils .marshaltoW3CDomDocument line 903 - <w:abstractNumId w:val="0"></w:abstractNumId>
+					[Fatal Error] :1:28: The prefix "w" for element "w:abstractNumId" is not bound.	
+					
+					where in fact the real problem is a missng @XmlRootElement annotation on the parent node
+					
+						<w:num xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:numId="1"><w:abstractNumId w:val="0"></w:abstractNumId></w:num>					
+					
+					which Sun/Oracle reports.  Once fixed, MOXy is happy as well.
+				*/
 				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
 				return builder.parse(new ByteArrayInputStream(bytes));
 				
@@ -948,13 +1027,31 @@ public class XmlUtils {
 		if (value==null) {
 			throw new IllegalArgumentException("Can't clone a null argument");
 		}
+
+        JAXBElement<T> elem; 
 		
 		try {
-            @SuppressWarnings("unchecked")
-            Class<T> clazz = (Class<T>) value.getClass();
-            JAXBElement<T> contentObject = new JAXBElement<T>(new QName(clazz.getSimpleName()), clazz, value);
-            JAXBSource source = new JAXBSource(jc, contentObject);
-            JAXBElement<T> elem = jc.createUnmarshaller().unmarshal(source, clazz);
+			
+			if (value instanceof JAXBElement<?>) {
+	
+				Object wrapped = ((JAXBElement)value).getValue();
+				
+	            @SuppressWarnings("unchecked")
+	            Class clazz = wrapped.getClass();
+	            JAXBElement contentObject = new JAXBElement(new QName(clazz.getSimpleName()), clazz, wrapped);
+	            JAXBSource source = new JAXBSource(jc, contentObject);
+	            elem = jc.createUnmarshaller().unmarshal(source, clazz);				
+				
+			} else {
+				
+				// Usual case
+			
+	            @SuppressWarnings("unchecked")
+	            Class<T> clazz = (Class<T>) value.getClass();
+	            JAXBElement<T> contentObject = new JAXBElement<T>(new QName(clazz.getSimpleName()), clazz, value);
+	            JAXBSource source = new JAXBSource(jc, contentObject);
+	            elem = jc.createUnmarshaller().unmarshal(source, clazz);
+			}
 			
 			/*
 			 * Losing content here?
@@ -1386,7 +1483,14 @@ public class XmlUtils {
     		xpath.setNamespaceContext(nsContext);
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
             
-            log.info("evaluate returned " + nl.getLength() );
+            if (log.isDebugEnabled()) {
+            	log.debug("evaluate returned " + nl.getLength() );
+            }
+            
+            if (nl.getLength()==0) {
+            	log.info("no results for xpath " + xpathExpression );
+            }
+            
             for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
             }
@@ -1434,10 +1538,13 @@ public class XmlUtils {
     	  public void fatalError(TransformerException exception)
     	   throws TransformerException {
     	    
-       	    log.error(exception.getMessage(), exception);
+    		if (Docx4jProperties.getProperty("docx4j.openpackaging.exceptions.LogBeforeThrow", true)) {
+    			log.error(exception.getMessage(), exception);
+    		}
 
     	    // This is an error which the processor cannot recover from; 
     	    // e.g. a malformed stylesheet or input document
+    		// (or a cancelled request) 
     	    // so I must throw this exception here.
     	    throw exception;
     	    

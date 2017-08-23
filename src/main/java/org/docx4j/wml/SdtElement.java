@@ -1,15 +1,20 @@
 package org.docx4j.wml;
 
 
-//import javax.xml.bind.Unmarshaller;
 
 /**
- * This interface is implemented by the 
- * classes which represent a content
- * control (ie SdtBlock, SdtRun, CTSdtRow, CTSdtCell). 
+ * Content controls (Sdt) contain properties (SdtPr) and content (SdtContent).
+ * 
+ * In JAXB, there are different Java objects for the content controls, depending on whether they
+ * wrap block-level, row-level, cell-level, or run-level content (ie SdtBlock, SdtRun, CTSdtRow, CTSdtCell).  
+ * 
+ * Those objects all implement this SdtElement interface.
+ * 
+ * Similarly, there are different Java objects for the SdtContent, depending on whether they
+ * wrap block-level, row-level, cell-level, or run-level content.  Those objects all implement the SdtContent interface
+ * (new in 3.3.4).
  * 
  * @since 2.7
- *
  */
 public interface SdtElement  {
 
@@ -54,7 +59,17 @@ public interface SdtElement  {
     public void setSdtEndPr(CTSdtEndPr value);
 
     
-    public ContentAccessor getSdtContent();
+    /**
+     * Changed in v3.3.4
+     * @return
+     */
+    public SdtContent getSdtContent();
+    
+    /**
+     * @param sdtContent
+     * @since 3.3.4
+     */
+    public void setSdtContent(SdtContent sdtContent);
     
 //    /**
 //     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.

@@ -12,6 +12,7 @@ import javax.xml.bind.Marshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 public class NamespacePrefixMapperUtils {
 	
@@ -49,6 +50,7 @@ public class NamespacePrefixMapperUtils {
 		// will be true soon..
 		haveTried = true;
 		
+		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
@@ -59,18 +61,37 @@ public class NamespacePrefixMapperUtils {
 		}
 		
 		Marshaller m=testContext.createMarshaller();
+		
+		if (System.getProperty("java.vendor").contains("Android")) {
+			log.info("Android .. assuming RI.");  // Avoid unwanted Android logging; art logs the full ClassNotFoundException 
+			return tryUsingRI(m);						
+		}
+		
 		try {
 			// Assume use of Java 6 implementation (ie not RI)
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new NamespacePrefixMapperSunInternal() );
+			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperSunInternal");
+			
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
 			log.info("Using NamespacePrefixMapperSunInternal, which is suitable for Java 6");
-			prefixMapper = new NamespacePrefixMapperSunInternal();
+			prefixMapper = c.newInstance();
 			return prefixMapper;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
 		} catch (javax.xml.bind.PropertyException notJava6) {
 			// OpenJDK (1.6.0_23) does this
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		}  catch (ClassNotFoundException notJava6) {
+			// We shouldn't get here on Android, but we may using RI elsewhere
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		} catch (InstantiationException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		} catch (IllegalAccessException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
 			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
 		}
@@ -109,10 +130,11 @@ public class NamespacePrefixMapperUtils {
 		Marshaller m=testContext.createMarshaller();
 		try {
 			// Assume use of Java 6 implementation (ie not RI)
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new NamespacePrefixMapperRelationshipsPartSunInternal() );
-			log.info("Using NamespacePrefixMapperSunInternal, which is suitable for Java 6");
-			prefixMapperRels = new NamespacePrefixMapperRelationshipsPartSunInternal();
+			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal");
+			
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
+			log.info("Using NamespacePrefixMapperRelationshipsPartSunInternal, which is suitable for Java 6");
+			prefixMapperRels = c.newInstance();
 			return prefixMapperRels;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			// javax.xml.bind.PropertyException
@@ -121,6 +143,18 @@ public class NamespacePrefixMapperUtils {
 		} catch (javax.xml.bind.PropertyException notJava6) {
 			log.warn(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
+		}  catch (ClassNotFoundException notJava6) {
+			// We shouldn't get here on Android, but we may using RI elsewhere
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
+		} catch (InstantiationException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
+		} catch (IllegalAccessException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
 		}
 	}
 
@@ -157,6 +191,8 @@ public class NamespacePrefixMapperUtils {
 	 */
 	public static void setProperty(Marshaller marshaller, Object namespacePrefixMapper) throws JAXBException {
 		
+		log.debug("attempting to setProperty on marshaller " + marshaller.getClass().getName() );
+		
 		try {
 			if ( namespacePrefixMapper.getClass().getName().equals(
 						"org.docx4j.jaxb.NamespacePrefixMapper")
@@ -181,6 +217,7 @@ public class NamespacePrefixMapperUtils {
 			
 		} catch (javax.xml.bind.PropertyException e) {
 			
+			log.error("Couldn't setProperty on marshaller " + marshaller.getClass().getName() );
 			log.error(e.getMessage(), e);
 			throw e;
 			
@@ -190,20 +227,8 @@ public class NamespacePrefixMapperUtils {
 	
 	public static String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) throws JAXBException {
 
-		Object namespacePrefixMapper = getPrefixMapper();
-		
-		if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-			// Java 6
-			return ((NamespacePrefixMapperSunInternal)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
-			
-		} else if (namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapper")) {
-    		// JAXB Reference Implementation		
-			return ((NamespacePrefixMapper)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
-			
-		} else {
-			log.warn("Namespace prefix mapper not found!");
-			return null;
-		}
+		NamespacePrefixMapperInterface namespacePrefixMapper = (NamespacePrefixMapperInterface)getPrefixMapper();
+		return namespacePrefixMapper.getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
 		
 	}
 	
@@ -260,6 +285,33 @@ public class NamespacePrefixMapperUtils {
 		return  entries;
     	
     }
+    
+	/**
+	 * Word requires all mcIgnorable prefixes to be declared at the document level.
+	 * 
+	 * @param mcIgnorable
+	 * @param doc
+	 */
+	public static void declareNamespaces(String mcIgnorable, Document doc) {
+		
+		if (mcIgnorable==null) return;
+		
+		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
+		while (st.hasMoreTokens()) {
+			String prefix = (String) st.nextToken();
+			
+			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
+			
+			if (uri==null) {
+				log.warn("No mapping for prefix '" + prefix + "'");
+			} else {
+	    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
+	    				"xmlns:" + prefix, uri);
+				
+			}
+		}
+		
+	}
     
     
 }

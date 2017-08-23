@@ -90,6 +90,7 @@ public class SdtRun implements SdtElement, Child
      */
     public void setSdtPr(SdtPr value) {
         this.sdtPr = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**
@@ -124,7 +125,7 @@ public class SdtRun implements SdtElement, Child
      *     {@link CTSdtContentRun }
      *     
      */
-    public ContentAccessor getSdtContent() {
+    public SdtContent getSdtContent() {
         return sdtContent;
     }
 
@@ -140,8 +141,9 @@ public class SdtRun implements SdtElement, Child
      *     {@link CTSdtContentRun }
      *     
      */
-    public void setSdtContent(CTSdtContentRun value) {
-        this.sdtContent = value;
+    public void setSdtContent(SdtContent value) {
+        this.sdtContent = (CTSdtContentRun)value;
+        ((CTSdtContentRun)value).setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**

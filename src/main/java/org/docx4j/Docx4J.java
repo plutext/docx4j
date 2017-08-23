@@ -22,7 +22,6 @@ package org.docx4j;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -32,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import net.engio.mbassy.bus.MBassador;
 
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
@@ -49,7 +46,9 @@ import org.docx4j.events.WellKnownJobTypes;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
+import org.docx4j.model.datastorage.DomToXPathMap;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
+import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -72,6 +71,8 @@ import org.docx4j.wml.SdtPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+
+import net.engio.mbassy.bus.MBassador;
 
 
 /** This is a facade for some typical uses of Docx4J:
@@ -398,7 +399,9 @@ public class Docx4J {
 		
 		customXmlDataStoragePart 
 			= CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(wmlPackage);
-		if (customXmlDataStoragePart==null) {
+		if (customXmlDataStoragePart==null
+				&& flags != FLAG_BIND_REMOVE_SDT /* OK if that's all we're doing */) {
+			
 			throw new Docx4JException("Couldn't find CustomXmlDataStoragePart! exiting..");
 		}
 	
@@ -413,17 +416,43 @@ public class Docx4J {
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
 			
-			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML );
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEHandler );
 			startEvent.publish();
 			
-			// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
-			// and does that whether or not we have an XPaths part
-			openDoPEHandler = new OpenDoPEHandler(wmlPackage);
-			openDoPEHandler.preprocess();
+				// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
+				// and does that whether or not we have an XPaths part
+				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
+				openDoPEHandler.preprocess();
+				
+				DomToXPathMap domToXPathMap = openDoPEHandler.getDomToXPathMap();
+				
+				// TODO: now null out openDoPEHandler
+
+			new EventFinished(startEvent).publish();
 			
-			BindingHandler bh = new BindingHandler(wmlPackage);
-			bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
-			bh.applyBindings();
+			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEIntegrity );
+			startEvent.publish();
+			
+				// since 3.3.2
+				OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
+				odi.process(wmlPackage);
+
+			new EventFinished(startEvent).publish();
+			
+//			if (log.isDebugEnabled()) {
+//				Docx4J.save(wmlPackage, 
+//						new File(System.getProperty("user.dir") + "/_preprocessed.docx"));
+//				System.out.println("saved .. use NextBookmarkId "
+//						+ openDoPEHandler.getNextBookmarkId().get());
+//			}
+			
+			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_BindingHandler );
+			startEvent.publish();
+			
+				BindingHandler bh = new BindingHandler(wmlPackage);
+				bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
+				bh.setDomToXPathMap(domToXPathMap); // since 3.3.6
+				bh.applyBindings();
 			
 			new EventFinished(startEvent).publish();
 		}
@@ -593,10 +622,20 @@ public class Docx4J {
 			try {
 				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
 				baos.close();
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
+			} catch (ConversionException e) {
 				new EventFinished(startEvent).publish();
-				throw new Docx4JException("Problem converting to PDF; check URL " + URL + "\n" + e.getMessage(), e);
+				if (e.getResponse()!=null) {
+					if (e.getResponse().getStatusLine().getStatusCode()==403) {
+						throw new Docx4JException("Problem converting to PDF; license expired?", e);
+					} else {
+						log.error(e.getResponse().getStatusLine().getStatusCode() + " " + e.getResponse().getStatusLine().getReasonPhrase());
+					}
+				}
+				// the content is in the outputstream, we can't inspect that here.
+				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
+			} catch (Exception e) {
+				new EventFinished(startEvent).publish();
+				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
 			}
 			
 		}

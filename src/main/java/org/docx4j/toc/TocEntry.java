@@ -64,11 +64,13 @@ public class TocEntry {
 	
 	private TocEntry() {}
 	
-	public TocEntry(PropertyResolver propertyResolver, PageDimensions pageDimensions) { 
+	public TocEntry(PropertyResolver propertyResolver, PageDimensions pageDimensions, STTabTlc leader) { 
 		
 		this.propertyResolver = propertyResolver;
 		this.writableWidthTwips = pageDimensions.getWritableWidthTwips(); 
+    	this.leader = leader;
 	}
+	
 	
 	private PropertyResolver propertyResolver;
 
@@ -85,6 +87,9 @@ public class TocEntry {
 		@since 3.2.0
      */
     private int writableWidthTwips; 
+    
+    private STTabTlc leader;
+    
 
 //    private String entryValue;
     private List<R> entryValues = new ArrayList<R>();
@@ -243,7 +248,9 @@ public class TocEntry {
         tabs2.getTab().add(tabstop2); 
         tabstop2.setVal(STTabJc.RIGHT);
         tabstop2.setPos(BigInteger.valueOf(writableWidthTwips) );  
-        tabstop2.setLeader(STTabTlc.DOT);
+        
+        tabstop2.setLeader(leader);
+        
         // Create object for pStyle
         if (styleId==null) {
         	log.warn("No style found for " + String.format(TocStyles.TOC_STYLE_MASK, entryLevel+1) );

@@ -88,7 +88,7 @@ public class RunFontSelectorCalibriCheckBox {
 			Element foInline = (Element)df.getFirstChild();
 //			System.out.println(foInline.getAttribute("font-family"));
 			
-			assertEquals(foInline.getAttribute("font-family"), expectedFont[i]);
+			assertEquals(expectedFont[i], foInline.getAttribute("font-family"));
 		}
 		
 	}	

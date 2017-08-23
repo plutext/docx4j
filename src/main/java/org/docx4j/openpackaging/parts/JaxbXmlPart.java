@@ -24,6 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -32,10 +34,19 @@ import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.Location;
+import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -48,12 +59,18 @@ import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.LocationAwareXMLStreamException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -230,7 +247,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * 
 	 * @since 3.0.0
 	 */
-	public void variableReplace(java.util.HashMap<String, String> mappings) throws JAXBException, Docx4JException {
+	public void variableReplace(java.util.Map<String, String> mappings) throws JAXBException, Docx4JException {
 		
 		// Get the contents as a string
 		String wmlTemplateString = null;
@@ -267,10 +284,356 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		
 	}
 	
+    /**
+     * Use an XSLT to alter the contents of this part.  You can transform to whatever
+     * you like (ie it doesn't have to be WordML content), which is why the API design
+     * is that you provide the Result object. 
+     *  
+     * If you do want to replace the content in this part, convert your result to
+     * and element or input stream, then invoke unmarshal on it, then setContents. 
+     * (Unmarshal takes care of any unexpected content, sidestepping the issue of 
+     *  whether to do that before the transform (where reading the part directly),
+     *  or after).
+     * 
+     * @param xslt
+     * @param transformParameters
+     * @throws Exception
+	 * @since 3.3.6
+     */    
+    public void transform(Templates xslt,
+			  Map<String, Object> transformParameters, Result result) throws Docx4JException {
+
+		//JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+    	
+		if (jaxbElement==null) {
+
+			PartStore partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} 
+			
+			XmlUtils.transform(new StreamSource(is), xslt, transformParameters, result);
+
+		} else {
+			org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();			
+			try {
+				this.marshal(doc);
+			} catch (JAXBException e) {
+				// shouldn't happen
+				throw new Docx4JException("Marshalling exception preparing content for transform", e);
+			}
+			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+			
+		}
+
+//		try {
+//			return (E) XmlUtils.unwrap(result.getResult() );
+//		} catch (JAXBException e) {
+//			throw new Docx4JException("Problem with transform result", e);
+//		}	
+
+
+	}
+	
+	
 //	private static String convertStreamToString(java.io.InputStream is) {
 //	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 //	    return s.hasNext() ? s.next() : "";
-//	}	
+//	}
+	
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your SAXHandler. 
+	 * This is offered as an alternative to the similar methods which use StAX.  If you are
+	 * unsure which to use, you should probably use the StAX approach.
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param saxHandler
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws Docx4JException
+	 * @throws IOException
+	 * @throws JAXBException
+	 */
+	public void pipe(SAXHandler saxHandler) throws ParserConfigurationException, SAXException, Docx4JException, IOException, JAXBException {
+		
+	    SAXParserFactory spf = SAXParserFactory.newInstance();
+	    spf.setNamespaceAware(true);
+	    SAXParser saxParser = spf.newSAXParser();		
+		
+	    XMLReader xmlReader = saxParser.getXMLReader();
+	    xmlReader.setContentHandler(saxHandler);
+	    
+	    PartStore partStore = null;
+	    
+		if (jaxbElement==null) {
+
+			partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Fetching from part store " + name);
+					
+			    xmlReader.parse(new InputSource(is));	
+			}
+			
+		} else {
+			
+			// TODO inefficient? But for now..
+		    xmlReader.parse(new InputSource(
+		    		XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc)));            
+		}
+		
+        //log.debug((new String(baos.toByteArray())).substring(0, 4000) );
+		
+		if (jaxbElement==null
+				&& partStore instanceof ZipPartStore ) {
+			
+			log.debug("Just update the entry in the ZipPartStore");
+			
+			// Just update the entry in the ZipPartStore
+			ByteArray byteArray = ((ZipPartStore)partStore).getByteArray(this.getPartName().getName().substring(1));
+			byteArray.setBytes(saxHandler.getOutputStream().toByteArray());
+			
+		} else {
+			
+			if (jaxbElement==null
+					&& log.isInfoEnabled()) {				
+				log.info(partStore.getClass().getName() + ": can't update in place, so unmarshalling.");
+			} else {			
+				log.debug("unmarshalling");
+			}
+			jaxbElement = this.unmarshal( new ByteArrayInputStream(saxHandler.getOutputStream().toByteArray()) );  // so much for avoiding JAXB!
+			
+		}
+	}
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your StAXHandler. 
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param handler
+	 * @throws XMLStreamException
+	 * @throws Docx4JException
+	 * @throws JAXBException
+	 */
+	public void pipe(StAXHandlerInterface handler) throws XMLStreamException, Docx4JException, JAXBException {
+		
+		pipe( handler, null);
+	}
+	
+	/**
+	 * Replace the contents of this part with the output of passing it through your StAXHandler. 
+	 * 
+	 * This is most efficient in the case where there has been no need for JAXB to unmarshal
+	 * the contents.  In this case, it is possible to process then save the contents without
+	 * incurring JAXB overhead (you may see 1/4 heap usage).
+	 * 
+	 * @param handler
+	 * @param filter
+	 * @throws XMLStreamException
+	 * @throws Docx4JException
+	 * @throws JAXBException
+	 */
+	public void pipe(StAXHandlerInterface handler, StreamFilter filter) throws XMLStreamException, Docx4JException, JAXBException {
+		
+	       XMLInputFactory xmlif = null;
+	        xmlif = XMLInputFactory.newInstance();
+	        xmlif.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
+	        xmlif.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, Boolean.TRUE);
+	        xmlif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+	        
+	        // Nonfatal errors and warnings
+	        xmlif.setXMLReporter(
+	        		(new XMLReporter() {
+
+	            @Override
+	            public void report(String message, String errorType, Object relatedInformation, Location location) throws XMLStreamException {
+	    			log.warn("Error:" + errorType + ", " + message + " at line " + location.getLineNumber() + ", col " +   location.getColumnNumber());
+	            }
+	        })
+	        );
+	        
+	        // xmlif.setProperty(XMLInputFactory.RESOLVER
+	        // xmlif.setProperty(XMLInputFactory.ALLOCATOR
+	    
+	    // First, set up stream reader
+	    XMLStreamReader xmlr = null;
+	    PartStore partStore = null;
+
+		if (jaxbElement==null) {
+
+			partStore = this.getPackage().getSourcePartStore();
+			String name = this.getPartName().getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Fetching from part store " + name);
+					
+		        if (filter==null) {
+		        	xmlr = xmlif.createXMLStreamReader(is);
+		        } else {
+		        	xmlr = xmlif.createFilteredReader(xmlif.createXMLStreamReader(is), filter);            
+		        }
+					
+			}
+			
+		} else {
+			
+			// TODO marshal to XmlStreamWriter or event, then read from that.
+			// But for now..
+	        if (filter==null) {
+	        	xmlr = xmlif.createXMLStreamReader(XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc));
+	        } else {
+	        	xmlr = xmlif.createFilteredReader(
+	        			xmlif.createXMLStreamReader(
+	        					XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc)), filter);            
+	        }			
+		}
+		
+        XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();            
+        XMLStreamWriter xmlWriter = null; // outputFactory.createXMLStreamWriter(outputFile);    
+        ByteArrayOutputStream baos = null;
+        
+		if (jaxbElement==null) {
+			baos = new ByteArrayOutputStream(); 
+			xmlWriter = outputFactory.createXMLStreamWriter(baos, "UTF-8");
+				// Avoid  Underlying stream encoding 'Cp1252' and input paramter for writeStartDocument() method 'UTF-8' do not match.
+				// (Which StAX implementation is that?)
+				// See further http://stackoverflow.com/questions/2943605/stax-setting-the-version-and-encoding-using-xmlstreamwriter
+			
+		} else {
+			
+			// TODO make a XmlStreamWriter we can read from
+			// But for now
+			baos = new ByteArrayOutputStream(); 
+			xmlWriter = outputFactory.createXMLStreamWriter(baos, "UTF-8");
+		}
+		
+		try {
+			log.debug("StAX implementation details:");
+			log.debug(xmlr.getClass().getName());
+			log.debug(xmlWriter.getClass().getName());
+			handler.handle(xmlr, xmlWriter);
+			
+		} catch (/* fatal error */ LocationAwareXMLStreamException e) {
+			
+			log.error(e.getMessage() + " at line " + e.getLocation().getLineNumber() + ", col " +   e.getLocation().getColumnNumber());
+			e.getCause().printStackTrace();
+			
+			// now print that out
+			InputStream is = null;
+			if (jaxbElement==null) {
+				
+
+				partStore = this.getPackage().getSourcePartStore();
+				String name = this.getPartName().getName();
+				is = partStore.loadPart( 
+						name.substring(1));			
+
+				if (is==null) {
+					log.warn(name + " missing from part store");
+					throw new Docx4JException(name + " missing from part store");
+				}
+				
+			} else {
+				
+				is = XmlUtils.marshaltoInputStream(jaxbElement, true, this.jc);            
+			}
+			if (is!=null) {
+
+				try {
+					List<String> lines = IOUtils.readLines(is);
+					String line = lines.get(
+							e.getLocation().getLineNumber()-1);
+					
+					int PRIOR_CHARS = 100;
+					
+					int start = 0;
+					if (e.getLocation().getColumnNumber()>PRIOR_CHARS) {
+						start = e.getLocation().getColumnNumber() - PRIOR_CHARS;
+					}
+					int end = e.getLocation().getColumnNumber() + PRIOR_CHARS;
+					if (end > line.length()-1 ) {
+						end = line.length()-1;
+					}
+					
+					log.error("error is at pos " + PRIOR_CHARS + " in " + line.substring(start, end));
+					
+//					if (e.getMessage().contains("NamespaceURI")) {
+//						// lets print them
+//						if (lines.get(0).endsWith("?>")) {
+//							// assume at start of line 1
+//							line = lines.get(1);
+//						} else {
+//							// assume at start of line 0
+//							line = lines.get(0);
+//						}
+//						end = line.indexOf(">");
+//						if (end<0) end = 2000;
+//						if (end > line.length()-1 ) {
+//							end = line.length()-1;
+//						}
+//						log.error("Namespace decs: " + line.substring(0, end));
+//					}
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+			// now rethrow
+			throw (XMLStreamException)e.getCause();
+			
+		}
+        
+        xmlr.close();
+        xmlWriter.flush();
+        xmlWriter.close();  
+        
+        //log.debug((new String(baos.toByteArray())).substring(0, 4000) );
+		
+		if (jaxbElement==null
+				&& partStore instanceof ZipPartStore ) {
+			
+			log.debug("Just update the entry in the ZipPartStore");
+			
+			// Just update the entry in the ZipPartStore
+			ByteArray byteArray = ((ZipPartStore)partStore).getByteArray(this.getPartName().getName().substring(1));
+			byteArray.setBytes(baos.toByteArray());
+			
+		} else {
+			
+			if (jaxbElement==null
+					&& log.isInfoEnabled()) {				
+				log.info(partStore.getClass().getName() + ": can't update in place, so unmarshalling.");
+			} else {			
+				log.debug("unmarshalling");
+			}
+			jaxbElement = this.unmarshal( new ByteArrayInputStream(baos.toByteArray()) );  // so much for avoiding JAXB!
+			
+		}
+	}
+	
 	
     /**
      * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.
@@ -315,6 +678,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
+	    		// this method needs to be suitably overridden in a subclass,
+	    		// to .setMcIgnorable
 	    	
 	    	// Commented out, since I'm not sure it is ever useful to do this?
 //			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
@@ -388,18 +753,53 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    	
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
+				
+				// We currently canonicalize twice:
+				// 1. trim namespaces
+				// 2. add mcIgnorable
 	    		
-	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc);
+	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
 	    		
-	    		// Example of what to do for a namespace not known to JAXB
-	    		//doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
-	    		//		"xmlns:wp14", "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing");
+	    		// Now, we need to add back in the mcIgnorable ones
+	    		NamespacePrefixMapperUtils.declareNamespaces(this.getMceIgnorable(), doc);
+	    		/* that generalises the following:
+	    		if (this.getMceIgnorable().contains("w15")) {
+		    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
+		    				"xmlns:w15", "http://schemas.microsoft.com/office/word/2012/wordml");
+	    			
+	    		}
+	    		*/
 	    		
-	    		log.debug("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
+	    		log.warn("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
 	    		
 	    		Init.init();
-	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE);
+	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE); 
+	    		/* EXCLUSIVE works, with 
+	    		
+						byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+						
+				   EXCLUSIVE does not work, if you use	    	
+				   
+				   		c.canonicalizeSubtree(doc, null) or 
+				   		c.canonicalizeSubtree(doc, null)
+				   		
+				   since org.docx4j.org.apache.xml.security.c14n.Canonicalizer then pushes w15 etc down the tree
+				   
+				   INCLUSIVE works c.canonicalizeSubtree(doc)
+				   
+				   In effect, the choice between EXCLUSIVE and INCLUSIVE comes down to
+				   the handling of attributes in the XML namespace, such as xml:lang and xml:space.
+				   
+				   TODO revisit which is preferable.
+				*/
+	    		
+	    		
+	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces " + this.getMceIgnorable());
+	    		
 	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+	    		//byte[] bytes = c.canonicalizeSubtree(doc); // for INCLUSIVE
+	    		
+	    		
 	    		IOUtils.write(bytes, os);
 	    		
 	    	} else {
@@ -453,7 +853,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	in the resulting XML document.
 
     	The problem is that if "v2" is included in the value of @mc:Ignorable, and there is no declaration 
-    	of that prefix, then Microsoft Word 2010 will report the document to be corrupt. (Powerpoint 2010
+    	of that prefix, then Microsoft Word 2010 and 2013 will report the document to be corrupt. (Powerpoint 2010
     	is the same)
 
     	So the challenge is, when marshalling, how to populate the mc:Ignorable attribute, and guarantee 

@@ -140,6 +140,12 @@ public class Xpathref implements Evaluable {
 		//org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, id);	
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(id);
 		String thisXPath = xpathObj.getDataBinding().getXpath();
+		
+		int xpathBaseIdx = thisXPath.indexOf(xpathBase);
+		if (xpathBaseIdx<0) {
+			// nothing to do
+			return null;
+		}
 
 		if (thisXPath.trim().startsWith("count") ) {
 			
@@ -148,22 +154,40 @@ public class Xpathref implements Evaluable {
 			// or xpath="count(/oda:answers/oda:repeat[@qref='r1_OE']/oda:row)=999"
 			
 			// We want to enhance EXCEPT for the deepest repeat.
-			int pos = thisXPath.indexOf(xpathBase) + xpathBase.length();
+			int pos = xpathBaseIdx + xpathBase.length();
+			String tail = thisXPath.substring(pos);
+			log.debug("the tail: " +  tail);
 			
-			if (thisXPath.substring(pos).contains("oda:repeat")) {
-				// There are deeper repeats in thisXPath than xpathBase,
-				// so enhance ..
-				// NB this code is currently specific to oda:answers XML
+			if (tail.contains("oda:repeat") /* oda:answers XML case */ ) {
+				// There are deeper repeats in thisXPath than xpathBase, so enhance
+				log.debug("deeper repeats in count");
 			} else {
-				System.out.println("retaining: " + thisXPath);
-				return null; // ?
+				
+				if (tail.contains("/")) {
+					// There are deeper bits to thisXPath than xpathBase, so enhance normally..
+					log.debug("deeper bits in count");
+				} else if (tail.startsWith("[")) {
+					log.debug("index needs enhancement"); // if you want to count the elements in a repeat, you won't have [1]; having that means something different.					
+				} else if (tail.startsWith(")")) {
+					log.debug("retaining (repeat count): " + thisXPath); // we want to count elements in the repeat, so don't add an index!
+					return null;
+				} else {
+					log.info("fallback, enhance: " + thisXPath); // for example?
+				}
+				
 			}
+			
 		} 
 		
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
-
-		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
-			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
+		
+		
+		if (log.isDebugEnabled() ) {
+			if (thisXPath.equals(newPath)) {
+				log.debug("xpath base " + xpathBase + " enhanced NO CHANGE to " + newPath);
+			} else {
+				log.debug("xpath " + thisXPath + " enhanced to " + newPath + " using xpath base " + xpathBase);
+			}
 		}
 
 		// Clone the xpath

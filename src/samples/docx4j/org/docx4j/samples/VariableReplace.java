@@ -34,7 +34,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
  * There are at least 3 approaches for replacing variables in 
  * a docx.
  * 
- * 1. as shows in this example
+ * 1. as shows in this example (but consider VariableReplaceStAX instead!)
  * 2. using Merge Fields (see org.docx4j.model.fields.merge.MailMerger)
  * 3. binding content controls to an XML Part (via XPath)
  * 

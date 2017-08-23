@@ -59,6 +59,23 @@ public class ArrayListWml<E> extends ArrayList<E> {
 					throw new RuntimeException("You can't add Text directly to a paragraph; add it to a run (R) and add that.");
 				}
 			}
+			
+			if (parent instanceof R) {
+				if (e instanceof R) {
+					throw new RuntimeException("You can't nest a run inside a run");
+				} else if (e instanceof P) {
+					throw new RuntimeException("You can't nest a paragraph inside a run.");
+				} else if (e instanceof Tbl) {
+					throw new RuntimeException("You can't add a table inside a run.");
+				}
+			}
+			
+			if (parent instanceof SdtContent) {
+				if (e instanceof SdtContent) {
+					throw new RuntimeException("You can't nest a bare SdtContent directly inside SdtContent");
+				}
+			}
+			
 		}
 		
 		if (e instanceof JAXBElement /* workaround */) {

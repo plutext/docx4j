@@ -33,6 +33,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 import org.docx4j.XmlUtils;
 import org.docx4j.utils.ResourceUtils;
 
@@ -99,9 +100,38 @@ ValidationEventHandler{
 //	          }
 	          
 	          //output line and column number
-	//          System.out.println("Column is " + 
-	//                locator.getColumnNumber() + 
-	//                " at line number " + locator.getLineNumber());
+	          if (locator.getColumnNumber()>-1) {
+		          log.warn("Column is " + 
+		                locator.getColumnNumber() + 
+		                " at line number " + locator.getLineNumber());
+	          }
+	          
+	          // We get good results from XmlUtils.unmarshal(node)  :-)
+	          if (locator.getNode()!=null) {
+	        	  Node node = locator.getNode();
+	        	  log.warn("troublesome node: " + XmlUtils.w3CDomNodeToString(node));
+	        	  if (node.getParentNode()!=null) {
+		        	  log.warn("in parent node: " + XmlUtils.w3CDomNodeToString(node.getParentNode()));
+		        	  Node parent = node.getParentNode();
+		        	  String path = "";
+		        	  while (parent!=null) {
+		        		  path = getLocalName(parent) + "/" + path;
+		        		  parent = parent.getParentNode();
+		        	  }
+		        	  log.warn(path + getLocalName(node));
+	        	  }
+	          }
+
+	          if (locator.getOffset()>-1) {
+		          log.warn("At offset " + 
+			                locator.getOffset());
+	        	  
+	          }
+	          
+	          if (locator.getObject()!=null ) {
+	        	  log.warn(locator.getObject().getClass().getName());
+	          }
+	          
 	     } else if (ve.getSeverity()==ve.WARNING) {
 	    	 
 	    	   log.warn(printSeverity(ve) + "Message is " + ve.getMessage());  
@@ -111,16 +141,34 @@ ValidationEventHandler{
 	
 	    		   try {
 		     		    log.warn("Resetting error counter to work around https://github.com/gf-metro/jaxb/issues/22");
+		     		    	// As at 2017 06 29 that repo has disappeared!
+		     		    	// See instead https://github.com/javaee/jaxb-v2/
+		     		    
 		   				Field field = null;
 		   				if (Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE) {
 							field = Class.forName("com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
-						} else {
-							field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+		   				} else if (Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP) {
+		   					// Its IBM's implementation eg Websphere 7+ where an IBM Unmarshaller is being used
+		   					// (controlled by com.ibm.xml.xlxp.jaxb.opti.level)
+			     		    log.warn("with IBM unmarshaller");
+		   					field = Class.forName("com.ibm.jtc.jax.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+
+		   				} else {
+							try {
+								field = Class.forName("com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext").getDeclaredField("errorsCounter");
+							} catch (Exception e) {
+				   				log.error("Trying to reset error counter, but not using JAXB RI:- ");		   					
+				   				log.error(e.getMessage());
+				   			}
 						}
 		   				
-		   		        field.setAccessible(true);
-		   		        field.set(null, 10);
-		   		        log.warn(".. reset successful");
+		   				if (field==null) {
+			   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");		   					
+		   				} else {
+			   		        field.setAccessible(true);
+			   		        field.set(null, 10);
+			   		        log.warn(".. reset successful");		   					
+		   				}
 		   			} catch (Exception e) {
 		   				log.error(e.getMessage());
 		   				log.error("Unable to reset error counter. See https://github.com/plutext/docx4j/issues/164");
@@ -131,10 +179,26 @@ ValidationEventHandler{
 	     }
 	      // JAXB provider should attempt to continue its current operation. 
 	      // (Marshalling, Unmarshalling, Validating)
-	     log.info("continuing (with possible element/attribute loss)");
+	    if (shouldContinue) {
+	    	log.info("continuing (with possible element/attribute loss)");
+	    } else {
+	    	log.info("shouldContinue is set to false");
+	    }
 	     return shouldContinue;
              
      }
+    
+    private String getLocalName(Node sourceNode) {
+    	
+    	if (sourceNode.getLocalName()==null) {
+    		// eg element was created using createElement() 
+    		return sourceNode.getNodeName();
+    	
+    	} else {
+    		return sourceNode.getLocalName();
+    	}
+    	
+    }    
     
     public String printSeverity(ValidationEvent ve) {
     	

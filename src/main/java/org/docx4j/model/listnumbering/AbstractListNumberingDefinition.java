@@ -188,12 +188,20 @@ public class AbstractListNumberingDefinition {
 
             // loop through the levels it defines and instantiate those
             //foreach (XmlNode levelNode in levelNodes)
-            for ( Lvl levelNode : levelNodes )
-            {
-                ListLevel level = new ListLevel(levelNode);
-
-                this.listLevels.put(level.getID(), level);
+            for ( Lvl levelNode : levelNodes )  {
+            	readLevel(levelNode);
             }
+        }
+        
+        /**
+         * @param levelNode
+         * @since 3.3.6
+         */
+        public void readLevel(Lvl levelNode) {
+
+            ListLevel level = new ListLevel(levelNode);
+            this.listLevels.put(level.getID(), level);
+        	
         }
 
         private String linkedStyleId;

@@ -38,12 +38,24 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Don't attempt to reuse this; create a new TocFinder object each time you invoke it.
+ *
+ */
 public class TocFinder  extends CallbackImpl {
 	
-	private static Logger log = LoggerFactory.getLogger(TocFinder.class);				
-	
-	
+	private static Logger log = LoggerFactory.getLogger(TocFinder.class);
+		
 	SdtBlock tocSDT = null;
+	/**
+	 * @return
+	 * @since 3.3.1
+	 */
+	public SdtBlock getTocSDT() {
+		return tocSDT;
+	}
+
+
 	/**
 	 * The first sectPr after the ToC, so we can
 	 * calculate right tab setting

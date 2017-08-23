@@ -8,26 +8,19 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
-import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.finders.SdtFinder;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
-import org.docx4j.model.listnumbering.Emulator;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.listnumbering.ListLevel;
 import org.docx4j.model.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTShd;
-import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtElement;
@@ -35,13 +28,8 @@ import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
-import org.docx4j.wml.PPrBase.NumPr;
-import org.docx4j.wml.PPrBase.PBdr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 
 /**
  * Create list items in OL or UL (as appropriate).
@@ -111,7 +99,18 @@ public class ListsToContentControls {
 		//TODO: Convert to visitor behaviour here like TraversalUtil.visit with onlyBody = false
 		
 		ListsToContentControls lc = new ListsToContentControls(wmlPackage);
+		
+		if (lc.ndp==null) {
+			log.info("No NumberingDefinitionsPart, skipping");
+			return;
+		}
 		lc.process();
+		
+//		try {
+//			wmlPackage.save(new File("cc.docx"));
+//		} catch (Docx4JException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void process() {
@@ -282,12 +281,14 @@ public class ListsToContentControls {
 				} else {
 					ilvl = numPr.getIlvl().getVal();
 				}
+				log.debug("ilvl: " + ilvl.intValue());
 				
 				ListSpec listSpec = listStack.peek();
 				if (listSpec==null
 						|| (numId!=null
 								&& !numId.equals(listSpec.numId))) {
 					// new or different list
+					log.debug("NEW LIST");
 					
 					// if its a different list, pop all levels
 					if (listSpec!=null) {
@@ -296,6 +297,9 @@ public class ListsToContentControls {
 					
 					// add appropriate levels
 					for (int i=0; i<=ilvl.intValue(); i++) {
+						
+						log.debug("adding level " + i);
+						
 						listSpec = new ListSpec(numId, BigInteger.valueOf(i));
 						listSpec.sdtList = new SdtBlock();
 						setTag(listSpec.sdtList, numId, ilvl);			
@@ -319,13 +323,18 @@ public class ListsToContentControls {
 				} else // (numId.equals(listSpec.numId)) 
 				{
 					// same list
+					log.debug("listSpec.ilvl.intValue():" + listSpec.ilvl.intValue());
 					
 					if (ilvl.equals(listSpec.ilvl)) {
 						// just add to it
+						log.debug("same level");
 					} else if (ilvl.compareTo(listSpec.ilvl)>0) {
 
 						// deeper, so add levels
-						for (int i=listSpec.ilvl.intValue(); i<ilvl.intValue(); i++) {
+						for (int i=listSpec.ilvl.intValue()+1; i<=ilvl.intValue(); i++) {
+							
+							log.debug("adding level " + i);
+							
 							listSpec = new ListSpec(numId, BigInteger.valueOf(i));
 							listSpec.sdtList = new SdtBlock();
 							setTag(listSpec.sdtList, numId, ilvl);			
@@ -341,9 +350,10 @@ public class ListsToContentControls {
 						}
 						
 					} else {
-						log.debug("popping");
+						log.debug("must be pop...");
 						// shallower, so pop levels
 						for (int i=listSpec.ilvl.intValue(); i>ilvl.intValue(); i--) {
+							log.debug("popping");
 							listStack.pop();
 							listSpec = listStack.peek();
 							log.debug("popped!");

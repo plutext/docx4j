@@ -49,6 +49,7 @@ import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.PPrBase.PStyle;
@@ -67,35 +68,23 @@ public class SwitchProcessor {
     private static final int MILLION = 1000000;
     
     private TocEntry entry = null;
+    private STTabTlc leader;
+    
     private boolean proceed = true;
     private boolean styleFound = false;
     
     private boolean pageNumbers = true;
+        
+//    public SwitchProcessor(PageDimensions pageDimensions) {
+//    
+//    	this.pageDimensions = pageDimensions;
+//    }
     
-    private Calendar now = Calendar.getInstance();
-    private Calendar later = Calendar.getInstance();
-    
-    private final static String TRIAL_BLURB = "<!-- Plutext TOC helper trial/evaluation expired -->"; 
-    private final static P TRIAL_P = Context.getWmlObjectFactory().createP();
-    static {
-    	
-      R r = Context.getWmlObjectFactory().createR();
-      TRIAL_P.getContent().add(r);
-            
-      Text text = Context.getWmlObjectFactory().createText(); 
-      JAXBElement<Text> textWrapped = Context.getWmlObjectFactory().createRT(text);  
-      
-      text.setValue(TRIAL_BLURB);
-      r.getContent().add(textWrapped);    	
-    }
-    
-    public SwitchProcessor(PageDimensions pageDimensions) {
-    
-        later.set(2015, 11, 3); // 0 is January, so 11 is Dec
-    	
+    public SwitchProcessor(PageDimensions pageDimensions, STTabTlc leader) {
+        
     	this.pageDimensions = pageDimensions;
+    	this.leader = leader;
     }
-    
     
     public List<TocEntry> processSwitches(WordprocessingMLPackage wordMLPackage, List<P> pList, 
     		List<SwitchInterface> switchesList,
@@ -332,7 +321,7 @@ public class SwitchProcessor {
 
     public TocEntry getEntry(){
         if(entry == null){
-            entry = new TocEntry(propertyResolver, pageDimensions);
+            entry = new TocEntry(propertyResolver, pageDimensions, leader);
         }
         return entry;
     }

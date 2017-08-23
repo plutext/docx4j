@@ -35,6 +35,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 /**
  * <p>Java class for CT_CellStyles complex type.
  * 
+ * <p>This element contains the named cell styles, consisting of a sequence of named style records. A named cell style is a collection of direct or themed formatting (e.g., cell border, cell fill, and font type/size/style) grouped together into a single named style, and can be applied to a cell.
+
+[Example: For example, "Normal", "Heading 1", "Title", and "20% Accent1" are named cell styles expressed below. They have builtInId's associated with them, and use xfId to reference the specific formatting elements pertaining to the particular style. The xfId is a zero-based index, referencing an xf record in the cellStyleXfs collection.
+
+<cellStyles count="4">
+  <cellStyle name="20% - Accent1" xfId="3" builtinId="30"/>
+  <cellStyle name="Heading 1" xfId="2" builtinId="16"/>
+  <cellStyle name="Normal" xfId="0" builtinId="0"/>
+  <cellStyle name="Title" xfId="1" builtinId="15"/>
+</cellStyles>
+
+ * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>

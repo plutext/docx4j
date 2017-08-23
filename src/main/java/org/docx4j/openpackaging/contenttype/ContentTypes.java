@@ -116,6 +116,13 @@ public class ContentTypes {
 		"application/vnd.ms-office.activeX+xml";
 	
 	
+	/**
+	 * @since 3.3.2
+	 */
+	public final static String WEB_EXTENSION_TASKPANES = "application/vnd.ms-office.webextensiontaskpanes+xml";	
+	public final static String WEB_EXTENSION_WEBEXTENSION = "application/vnd.ms-office.webextension+xml";
+	
+	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";
@@ -126,6 +133,8 @@ public class ContentTypes {
 	// PartName="/word/comments.xml"
 	public final static String WORDPROCESSINGML_COMMENTS = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";
 
+	public final static String WORDPROCESSINGML_COMMENTS_EXTENDED = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml";
+	
 	// PartName="/word/endnotes.xml"
 	public final static String WORDPROCESSINGML_ENDNOTES = "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml";
 	// PartName="/word/fontTable.xml"
@@ -146,6 +155,8 @@ public class ContentTypes {
 	
 	// PartName="/word/numbering.xml"
 	public final static String WORDPROCESSINGML_NUMBERING ="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"; 
+	
+	public final static String WORDPROCESSINGML_PEOPLE ="application/vnd.openxmlformats-officedocument.wordprocessingml.people+xml";
 	
 	public final static String WORDPROCESSINGML_SETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml";

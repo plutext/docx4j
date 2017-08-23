@@ -12,7 +12,8 @@ It uses JAXB to create the Java representation.
 - Create new docx/pptx/xlsx 
 - Programmatically manipulate docx/pptx/xlsx (anything the file format allows)
 - CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats & conditionals, and importing XHTML) 
-- Export as HTML or PDF
+- Export as HTML
+- Export as PDF (using Plutext's PDF Converter, or use docx4j-export-FO project)
 - Produce/consume Word 2007's xmlPackage (pkg) format
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
@@ -21,7 +22,7 @@ How do I build docx4j?
 ----------------------
 
 Get it from GitHub, at https://github.com/plutext/docx4j
-For more details, see http://www.docx4java.org/blog/2012/05/docx4j-from-github-in-eclipse/
+For more details, see http://www.docx4java.org/blog/2015/06/docx4j-from-github-in-eclipse-5-years-on/
 
 If you are working with the source code, please join the developer
 mailing list:
@@ -36,9 +37,13 @@ http://www.docx4java.org/downloads.html
 How do I get started?
 ------------------
 
-See the Getting Started guide.
+See the Getting Started guide:  https://github.com/plutext/docx4j/tree/master/docs
+
+and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-page/
 
 And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
+
+You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
 
 
 Where to get help?

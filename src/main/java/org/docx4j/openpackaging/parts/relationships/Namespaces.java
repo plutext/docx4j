@@ -121,6 +121,12 @@ public class Namespaces {
 
 	public final static String COMMENTS = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+
+	public final static String COMMENTS_EXTENDED = 
+			"http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
+	
+	public final static String OFFICE_2011_PEOPLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/people";
 	
 	public final static String AF = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
@@ -344,5 +350,8 @@ public class Namespaces {
 	public final static String XFORMS = "http://www.w3.org/2002/xforms";
 
 	public final static String XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+	
+	public final static String WEB_EXTENSION_TASKPANES = "http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11";
+	public final static String WEB_EXTENSION_WEBEXTENSION = "http://schemas.microsoft.com/office/webextensions/webextension/2010/11";
 	
 }

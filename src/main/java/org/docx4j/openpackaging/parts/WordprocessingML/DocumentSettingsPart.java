@@ -88,8 +88,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 
 		/* 
 		 * In DocumentSettingsPart, the namespaces are actually used somewhere in the body,
-		 * so JAXB will declare them. 
-		 * Our job is simply to set the value of ignorable suitable.
+		 * so JAXB will declare them.  But it might just set it locally on the element
+		 * So our job here is twofold:  set the value of ignorable suitably, and
+		 * pass it to namespacePrefixMapper 
 		 */
 
 		boolean needW14 = false;
@@ -120,9 +121,17 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		} 
 		log.debug(mceIgnorableVal);
 		
+		namespacePrefixMapper.setMcIgnorable(mceIgnorableVal );
+		
 		this.jaxbElement.setIgnorable(mceIgnorableVal);
 				
     }
+	
+	@Override		
+    protected String getMceIgnorable() {
+    	return this.jaxbElement.getIgnorable();
+    }
+	
 	
 	/**
 	 * Get a compatibility setting in the Word namespace, by name

@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -90,7 +92,7 @@ public class Cell implements Child
     private Object parent;
 
     /**
-     * Gets the value of the f property.
+     * Gets the value of the f (Formula) property.
      * 
      * @return
      *     possible object is
@@ -114,7 +116,7 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the v property.
+     * Gets the value of the v (Cell Value) property.
      * 
      * @return
      *     possible object is
@@ -138,7 +140,7 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the is property.
+     * Gets the value of the is (Rich Text Inline) property.
      * 
      * @return
      *     possible object is
@@ -186,7 +188,7 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the r property.
+     * Gets the value of the r (Reference) property.  An A1 style reference to the location of this cell.
      * 
      * @return
      *     possible object is
@@ -210,7 +212,8 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the s property.
+     * Gets the value of the s (Style Index) property.  The index of this cell's style. Style records are 
+     * stored in the Styles Part.
      * 
      * @return
      *     possible object is
@@ -226,7 +229,7 @@ public class Cell implements Child
     }
 
     /**
-     * Sets the value of the s property.
+     * Sets the value of the s (Style Index) property.  The index of this cell's style. Style records are stored in the Styles Part.
      * 
      * @param value
      *     allowed object is
@@ -238,7 +241,7 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the t property.
+     * Gets the value of the t (Cell Data Type) property.  An enumeration representing the cell's data type.
      * 
      * @return
      *     possible object is
@@ -294,7 +297,10 @@ public class Cell implements Child
     }
 
     /**
-     * Gets the value of the vm property.
+     * Gets the value of the vm (Value Metadata Index) property.  The zero-based index of the value metadata record associated 
+     * with this cell's value. Metadata records are stored in the Metadata Part. Value metadata is extra 
+     * information stored at the cell level, but associated with the value rather than the cell itself. 
+     * Value metadata is accessible via formula reference.
      * 
      * @return
      *     possible object is
@@ -348,7 +354,16 @@ public class Cell implements Child
     public void setPh(Boolean value) {
         this.ph = value;
     }
-
+    
+    /**
+     * Get the WorksheetPart
+     * @return
+     * @since 3.3.3
+     */
+    public WorksheetPart getWorksheetPart() {
+    	return ((Row)getParent()).getWorksheetPart();
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

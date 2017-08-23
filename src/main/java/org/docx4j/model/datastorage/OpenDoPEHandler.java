@@ -38,14 +38,15 @@ import javax.xml.bind.JAXBElement;
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
+import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
-import org.docx4j.finders.TcFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -63,20 +64,27 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Id;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.SdtContent;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
+import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.Tr;
 import org.opendope.conditions.Condition;
 import org.opendope.xpaths.Xpaths;
+import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class OpenDoPEHandler {
 
 	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandler.class);
+	
+	public static boolean ENABLE_XPATH_CACHE = true;
 	
 	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null; 
 	private Map<String, Condition> conditionsMap = null; 
@@ -133,10 +141,47 @@ public class OpenDoPEHandler {
             }
 		}
 
+		// Precalculate repeat counts, for approx 30% gain
+		// @ since 3.3.6
+		if (ENABLE_XPATH_CACHE) {
+						
+			// We're only caching the first one we encounter
+			// (even though, in principle, there could be multiple, and ODH is set up for that)
+			CustomXmlDataStoragePart cdsp = 
+					CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
+							(WordprocessingMLPackage)wordMLPackage);
+		
+			if (cdsp==null) {
+				log.warn("No CustomXmlDataStoragePart found; can't cache.");
+				/* TODO: would fail on StandardisedAnswersPart
+				 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
+				 */
+			} else {
+				
+				long start = System.currentTimeMillis();
+			
+				Document data = cdsp.getData().getDocument();
+				
+				domToXPathMap = new DomToXPathMap(data);
+				domToXPathMap.map();
+//				countMap = domToXPathMap.getCountMap();
+				long end = System.currentTimeMillis();
+				long time = end - start;
+	
+				log.debug("Mapped " + domToXPathMap.getCountMap().size() + " in " + time + "ms");
+			}
+		}
+				
+		
 		shallowTraversor = new ShallowTraversor();
 		shallowTraversor.wordMLPackage = wordMLPackage;
 		
 		bookmarkRenumber = new BookmarkRenumber(wordMLPackage);
+	}
+
+	private DomToXPathMap domToXPathMap = null;
+	public DomToXPathMap getDomToXPathMap() {
+		return domToXPathMap;
 	}
 
 	private WordprocessingMLPackage wordMLPackage;
@@ -299,6 +344,9 @@ public class OpenDoPEHandler {
 			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().clear();
 			wordMLPackage.getMainDocumentPart().getConditionsPart().getContents().getCondition().addAll(conditionsMap.values());
 		}
+		
+		log.debug(this.conditionTiming.toString());
+		log.debug("conditions in total: " + this.conditionTimingTotal/1000);  // in seconds
 
 		return wordMLPackage;
 	}
@@ -728,6 +776,7 @@ public class OpenDoPEHandler {
 
 				}
 			}
+			
 		}
 
 	}
@@ -737,6 +786,9 @@ public class OpenDoPEHandler {
 		return (CTSdtRepeatedSection)sdtPr.getByClass(CTSdtRepeatedSection.class);
 	}
 
+	private StringBuffer conditionTiming = new StringBuffer();
+	
+	private long conditionTimingTotal = 0;
 	/**
 	 * This applies to any sdt which might be a conditional|repeat
 	 *
@@ -791,7 +843,20 @@ public class OpenDoPEHandler {
 				log.error("Missing condition " + conditionId);
 			}
 
-			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap) ) {
+			long startTime = System.currentTimeMillis();
+			c.setDomToXPathMap(domToXPathMap);
+			boolean cResult = c.evaluate(wordMLPackage, customXmlDataStorageParts, conditionsMap, xpathsMap);
+			
+			long duration = System.currentTimeMillis() - startTime;
+			conditionTimingTotal += duration;
+			// on a big XML, these might take around 250ms
+			
+			if (log.isDebugEnabled() 
+					&& duration>750) {
+				conditionTiming.append(c.toString(conditionsMap, xpathsMap) + "," + duration + "\n");				
+			}
+			
+			if ( cResult ) {
 				log.debug("so keeping");
 
 				List<Object> newContent = new ArrayList<Object>();
@@ -799,8 +864,10 @@ public class OpenDoPEHandler {
 				return newContent;
 
 			} else if (reverterSupported){
+				log.debug("false");
 				return conditionFalse(sdt);
 			} else {
+				log.debug("false");
 				return new ArrayList<Object>(); // effectively, delete
 				// Potentially slightly faster processing, since 
 				// the conditionFalse sdt doesn't need to be created.
@@ -897,23 +964,65 @@ public class OpenDoPEHandler {
         // .. OpenDoPEIntegrity fixes this where it is not OK, but
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
-		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
-		if (tcFinder.tcList.size()>0) {
-			Tc tc = tcFinder.tcList.get(0);
+        
+        
+        TableObjectFinder tableObjectFinder = new TableObjectFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+        
+		if (/* not in table */ tableObjectFinder.result==null) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+			
+		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
+			Tc tc = (Tc)tableObjectFinder.result;
 			tc.getContent().clear();
 			P p = Context.getWmlObjectFactory().createP();
 			tc.getContent().add(p);			
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();
 	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-		} else {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+	        
+		} else /* should not happen */ {
+			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());			
 		}
 		
 		return newContent;		
 	}
 
+	/**
+	 * Determine the first tr, tc, tbl we encounter nested in here
+	 * 
+	 * @author jharrop
+	 *
+	 */
+	private static class  TableObjectFinder extends CallbackImpl {
+		
 
+		public Object result;
+				
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof Tbl
+					|| o instanceof Tr
+					|| o instanceof Tc ) {
+				result = o;
+			}			
+			return null; 
+		}
+		
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			return (result==null);
+		}
+	}
+	
+	
 //	private Object obtainParent(Object sdt) {
 //		if (!(sdt instanceof Child))
 //			throw new IllegalArgumentException("Object of class "
@@ -993,7 +1102,7 @@ public class OpenDoPEHandler {
 		
 		// for a w15 repeat, we clone the child repeatingSectionItem sdt
 		// TODO: review
-		ContentAccessor ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
+		SdtContent ca = ((SdtElement)repeatingSectionSdt).getSdtContent();
 		
 		// replace its content
 		SdtElement repeatingItem = (SdtElement)XmlUtils.unwrap(ca.getContent().get(0));
@@ -1072,14 +1181,36 @@ public class OpenDoPEHandler {
 		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 
 		log.info("/n/n Repeat: using xpath: " + xpathBase + " and " + prefixMappings);
-		List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
-				storeItemId, xpathBase, prefixMappings);
-		// storeItemId, xpathBase+"/*", prefixMappings);
+		
+		String tmpPath = xpathBase.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+		tmpPath = tmpPath.substring(0,tmpPath.lastIndexOf("/")); // parent
+//		System.out.println(tmpPath + ":" + this.countMap.get(tmpPath));
+		
+		Integer numRepeats = null;
+		if (domToXPathMap!=null) numRepeats = this.domToXPathMap.getCountMap().get(tmpPath); // @since 3.3.6
+		
+		if (numRepeats==null 
+				|| log.isDebugEnabled() ) {
+			
+			// fallback to old way
+			log.info("countMap null for " + tmpPath);
+			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts, storeItemId, xpathBase, prefixMappings);
+			
+			if (numRepeats!=null
+					&& numRepeats!=repeatedSiblings.size() ) {
+				String message = "For " + xpathBase + ", " + numRepeats + "!=" + repeatedSiblings.size();
+				log.error(message);
+				throw new RuntimeException(message);
+			}
+			numRepeats = repeatedSiblings.size();
+		}
+		
 
 		// Count siblings
-		int numRepeats = repeatedSiblings.size();
-		log.debug("yields REPEATS: " + numRepeats);
-
+		if (log.isDebugEnabled() ) {
+			log.debug("yields REPEATS: "  + xpathBase + ":" + numRepeats);
+		}
+		
 		if (numRepeats == 0) {
 			
 			if (isW15RepeatingSection) {
@@ -1195,22 +1326,36 @@ public class OpenDoPEHandler {
         // .. OpenDoPEIntegrity fixes this where it is not OK, but
         // where it needs to insert a tc, it has no way of adding original tcPr, so
         // we handle this here
-		TcFinder tcFinder = new TcFinder();
-		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tcFinder);
-		if (tcFinder.tcList.size()>0) {
-			Tc tc = tcFinder.tcList.get(0);
+        TableObjectFinder tableObjectFinder = new TableObjectFinder();
+		new TraversalUtil(((SdtElement)sdt).getSdtContent().getContent(), tableObjectFinder);
+        
+		if (/* not in table */ tableObjectFinder.result==null) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains block level stuff */ tableObjectFinder.result instanceof Tbl) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+	        
+		} else if (/* contains row level stuff */ tableObjectFinder.result instanceof Tr) {
+	        ((SdtElement)sdt).getSdtContent().getContent().clear();	
+			
+		} else if (/* contains cell level stuff */ tableObjectFinder.result instanceof Tc) {
+			Tc tc = (Tc)tableObjectFinder.result;
 			tc.getContent().clear();
 			P p = Context.getWmlObjectFactory().createP();
-			tc.getContent().add(p);
+			tc.getContent().add(p);			
 	        ((SdtElement)sdt).getSdtContent().getContent().clear();
 	        ((SdtElement)sdt).getSdtContent().getContent().add(tc);
-		} else {
-	        ((SdtElement)sdt).getSdtContent().getContent().clear();
+	        
+		} else /* should not happen */ {
+			log.error("unexpected encountered " + tableObjectFinder.result.getClass().getName());
 		}
-        
+
 		
 		return newContent;
 	}
+	
+	private int DEBUG_REPEAT_CAP = -1; // should be -1, except when developing!
+	private int totalRepeated = 0;
 	
 	private List<Object> cloneRepeatSdt(Object sdt, String xpathBase,
 			int numRepeats) {
@@ -1231,6 +1376,11 @@ public class OpenDoPEHandler {
 		}
 
 		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
+		
+		if (DEBUG_REPEAT_CAP>0 && DEBUG_REPEAT_CAP<numRepeats) {
+			log.warn("Capping repeats at " + DEBUG_REPEAT_CAP + "(down from " + numRepeats);
+			numRepeats = DEBUG_REPEAT_CAP;
+		}
 
 		for (int i = 0; i < numRepeats; i++) {
 
@@ -1247,6 +1397,11 @@ public class OpenDoPEHandler {
 			
 			// Clone
 			newContent.add(XmlUtils.deepCopy(sdt));
+			totalRepeated++;
+		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("Repeated in total so far: " + totalRepeated);
 		}
 
 		return newContent;
@@ -1567,10 +1722,21 @@ public class OpenDoPEHandler {
 		dataBinding.setPrefixMappings(
 				xpathObj.getDataBinding().getPrefixMappings());
 		
-		//xPaths.getXpath().add(newXPathObj);
-		if (xpathsMap.put(newXPathId, newXPathObj)!=null) {
-			log.error("New xpath entry overwrites existing xpath " + newXPathId);
+		Xpath oldKey = xpathsMap.put(newXPathId, newXPathObj);
+		if (oldKey!=null) {
+			if (oldKey.getDataBinding().getXpath().equals(newPath)) {
+				// OK
+				if (log.isDebugEnabled()) {
+					log.debug("New xpath entry overwrites existing identical xpath " + newXPathId);
+				}
+			} else {
+				// bad
+				log.warn("New xpath entry overwrites existing different xpath " + newXPathId);					
+				log.warn("Old: " + oldKey.getDataBinding().getXpath());					
+				log.warn("New: " + newPath);					
+			}
 		}
+		
 		return newXPathObj;
 	}
 

@@ -32,6 +32,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 /**
  * <p>Java class for CT_CellStyle complex type.
  * 
+ * <p>This element expresses the name and related formatting records for a named cell style in this workbook. 
+ * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>

@@ -19,11 +19,14 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.model.datastorage.DomToXPathMap;
+import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.slf4j.Logger;
@@ -121,9 +124,140 @@ public class Condition implements Evaluable {
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			Map<String, Condition> conditionsMap,
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+		
+		if (OpenDoPEHandler.ENABLE_XPATH_CACHE
+				&& domToXPathMap != null
+				&& particle instanceof Xpathref) {
+			
+			Xpathref xpRef = (Xpathref)particle;
+			
+			String xpath = xpRef.toString(conditionsMap, xpathsMap);
+			
+			/*
+			 * Examples:
+			 * 
+			 * string(/project[1]/phases[1]/phase[1][1]/finding[3][1]/rating[1])='Info'
+
+				count(/project[1]/phases[1]/phase[1][1]/finding[3][1]/examples[1]/example[1][1])>0
+			 */
+			if (xpath.startsWith("string") ) {
+
+				// maybe we can handle this
+				
+				// clean it
+				String tmpPath = xpath.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+				String path = extractPath(tmpPath);
+				
+				// can we re-assemble?
+				if (tmpPath.startsWith("string(" + path + ")='")) {
+					
+					String val = domToXPathMap.getPathMap().get(path);
+					boolean result = (tmpPath.equals("string(" + path + ")='"+val +"'"));
+					
+					if (result==false) {
+						// try again ignoring whitespace (treat it as insignificant, matching particle.evaluate
+						result = (tmpPath.equals("string(" + path + ")='"+val.trim() +"'"));
+					}
+					
+					if (this.id.startsWith("tVK") ||
+							log.isDebugEnabled()) {
+						boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
+					
+						if (result==tmpCheck) {
+//							System.out.println("Manual string calc worked");
+						} else {
+							String message ="PANIC! Manual string calc doesn't match XPath eval!\n"
+							+ xpath
+							+ "\nstring(" + path + ")='"+val +"'\n";
+
+							log.error(message);
+							throw new RuntimeException(message);
+							
+						}
+					}
+					return result;
+				}
+				
+			} else if ( xpath.startsWith("count")) {
+				// maybe we can handle this; currently we handle >0
+				
+				// clean it
+				String tmpPath = xpath.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+				String path = extractPath(tmpPath);
+			
+				// can we re-assemble?
+				if (tmpPath.equals("count(" + path + ")>0")) {
+					// match!
+					
+					Integer val = domToXPathMap.getCountMap().get(path);
+					if (val==null) {
+						// to be expected only if count is zero OR if there were a mixture of element names,
+						// so we didn't count it for repeat purposes.
+						// So check the PREFIX_ALL_NODES entry.
+						val = domToXPathMap.getCountMap().get(DomToXPathMap.PREFIX_ALL_NODES + path);
+					}
+					if (val==null /* still */) { 
+						if (  log.isDebugEnabled()) {
+							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
+							if (tmpCheck) {
+								String message ="FIXME.  Expected map entry facilitating manual eval of  " + path;
+								log.error(message);
+								throw new RuntimeException(message);
+							} else {
+								System.out.println("Manual count calc worked for null case");							
+							}
+							return tmpCheck;
+						} else {
+							return false;  // no entry, ,so count is zero
+						}
+
+					} else {
+						boolean result = (val>0);
+					
+						if ( log.isDebugEnabled()) {
+							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
+						
+							if (result==tmpCheck) {
+								System.out.println("Manual count calc worked");
+							} else {
+								
+								String message ="PANIC! Manual count calc doesn't match XPath eval!\n"
+										+ xpath
+										+ "\ncount(" + path + ")>0\n" + val;
+
+								log.error(message);
+								throw new RuntimeException(message);
+								
+							}
+						}
+						return result;
+					}
+					
+				} else {
+					log.debug("No manual count eval coded for: " + tmpPath); // so perform slow full eval
+				}
+			
+			}
+			
+		}
 
 		return particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
     }
+	
+	private  String extractPath(String xpath) {
+		
+		int firstBracket = xpath.indexOf("(");
+		int lastBracket = xpath.indexOf(")");
+		
+		return xpath.substring(firstBracket+1, lastBracket);
+	}
+	
+	@XmlTransient
+	private DomToXPathMap domToXPathMap = null;
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
+	}
+	
 
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
 			Map<String, Condition> conditionsMap,
@@ -346,5 +480,10 @@ public class Condition implements Evaluable {
     public void setSource(String value) {
         this.source = value;
     }
+    
+//	public static void main(String[] args) throws Exception {
+//
+//		System.out.println(extractPath("string(/project[1]/phases[1]/phase[1][1]/finding[3][1])='Info'"));
+//	}
     
 }

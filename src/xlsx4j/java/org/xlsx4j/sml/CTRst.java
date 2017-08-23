@@ -93,7 +93,7 @@ public class CTRst implements Child
     }
 
     /**
-     * Gets the value of the r property.
+     * Gets the value of the r (Rich Text Run) property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,

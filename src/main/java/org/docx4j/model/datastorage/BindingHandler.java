@@ -100,6 +100,11 @@ public class BindingHandler {
 	
 	private static BindingHyperlinkResolver hyperlinkResolver;
 	
+	private DomToXPathMap domToXPathMap = null;
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
+	}
+
 	private AtomicInteger bookmarkId = null;
 
 	/**
@@ -251,6 +256,7 @@ public class BindingHandler {
 				// Slower, fully featured. The default.
 				log.info("Using BindingTraverserXSLT, which is slower, but fully featured");
 				traverser = new BindingTraverserXSLT();
+				((BindingTraverserXSLT)traverser).setDomToXPathMap(this.domToXPathMap);
 			}
 			
 			traverser.setStartingIdForNewBookmarks(initBookmarkIdStart());
@@ -294,6 +300,8 @@ public class BindingHandler {
 				WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings) {
 			
+			log.debug(xpath + " with " + prefixMappings);
+			
 			try {
 				
 				if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {
@@ -315,8 +323,10 @@ public class BindingHandler {
 //					return null;
 				}
 				
-				//String r = part.xpathGetString(xpath, prefixMappings);
-				String r = part.cachedXPathGetString(xpath, prefixMappings); // EXPERIMENTAL
+//				if (log.isDebugEnabled() ) {
+//					log.debug("Invoking " + part.getClass().getName() + ".cachedXPathGetString");
+//				}
+				String r = part.cachedXPathGetString(xpath, prefixMappings); 
 				if (r==null) {
 					// never expect null, since an empty result set is converted to an empty string
 					log.error(xpath + " unexpectedly null!");

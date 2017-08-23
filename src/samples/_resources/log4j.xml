@@ -61,11 +61,23 @@
   		<level value="warn"/> 
 	</logger>	
 
+    <logger name="org.docx4j.TraversalUtil">
+  		<level value="warn"/> 
+	</logger>	
+
+    <logger name="org.docx4j.XmlUtils">
+  		<level value="warn"/> 
+	</logger>	
+
     <logger name="org.docx4j.utils.ResourceUtils">
   		<level value="debug"/>  <!--  to help users identify where settings are coming from -->
 	</logger>	
     
     <logger name="org.docx4j.convert.in">
+  		<level value="warn"/> 
+	</logger>	
+	
+    <logger name="org.docx4j.convert.in.xhtml">
   		<level value="warn"/> 
 	</logger>	
 
@@ -96,6 +108,10 @@
   		<level value="debug"/> 
 	</logger>	
 
+    <logger name="org.docx4j.convert.out.html.ListsToContentControls">
+  		<level value="warn"/> 
+	</logger>	
+
     <logger name="org.docx4j.diff">
   		<level value="warn"/> 
 	</logger>
@@ -105,7 +121,7 @@
 	</logger>
 
     <logger name="org.docx4j.fonts.PhysicalFonts">
-  		<level value="debug"/> 
+  		<level value="info"/> 
 	</logger>    
 	
     <logger name="org.docx4j.fonts.RunFontSelector">
@@ -119,12 +135,12 @@
 	<logger name="org.docx4j.model">
 		<level value="warn"/> 
 	</logger>	
-
-	<logger name="org.docx4j.model.datastorage">
-		<level value="warn"/> 
-	</logger>	
 		
 	<logger name="org.docx4j.model.fields">
+		<level value="warn"/> 
+	</logger>	
+
+	<logger name="org.docx4j.model.listnumbering">
 		<level value="warn"/> 
 	</logger>	
 	
@@ -138,6 +154,10 @@
 
 	<logger name="org.docx4j.model.styles">
 		<level value="warn"/> 
+	</logger>	
+
+	<logger name="org.docx4j.model.table">
+		<level value="info"/> 
 	</logger>	
 	    	
     <logger name="org.docx4j.openpackaging">
@@ -153,7 +173,7 @@
 	</logger>
 
     <logger name="org.docx4j.openpackaging.parts">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>
 
     <logger name="org.docx4j.openpackaging.parts.Parts">
@@ -163,12 +183,46 @@
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
+		
+    <logger name="org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage">
+  		<level value="info"/> 
+	</logger>
 	
+    <logger name="org.docx4j.services.client">
+  		<level value="debug"/> 
+	</logger>	
     <logger name="org.docx4j.toc">
-  		<level value="warn"/> 
+  		<level value="debug"/> 
 	</logger>	
     
     <logger name="org.docx4j.wml">
+  		<level value="warn"/> 
+	</logger>
+
+    <!--  OpenDoPE functionality loggers -->
+
+	<logger name="org.docx4j.model.datastorage">
+		<level value="warn"/> 
+	</logger>	
+		
+    <logger name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.docx4j.openpackaging.parts.XmlPart">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.opendope.conditions.Xpathref">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="org.opendope">
+  		<level value="warn"/> 
+	</logger>
+	
+	
+    <logger name="org.docx4j.org.xhtmlrenderer">
   		<level value="warn"/> 
 	</logger>
 	
@@ -176,6 +230,10 @@
     <!--  Enterprise edition loggers -->
 
     <logger name="com.plutext.merge">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="com.plutext.merge.pptx">
   		<level value="warn"/> 
 	</logger>
 
@@ -199,6 +257,10 @@
   		<level value="info"/> 
 	</logger>
 	
+    <logger name="com.plutext.demo.diagnostics">
+  		<level value="debug"/> 
+	</logger>
+
     
  
     <!--  Root logger -->

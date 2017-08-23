@@ -120,6 +120,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	@Override
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 
+		// NB it is up to you to jaxbElement.setIgnorable; see further McIgnorableNamespaceDeclarator
+		
 //		MainDocumentPartMceIgnorableHelper helper = new MainDocumentPartMceIgnorableHelper();
 //		this.jaxbElement.setIgnorable(
 //				helper.getMceIgnorable(this.getJaxbElement().getBody()));

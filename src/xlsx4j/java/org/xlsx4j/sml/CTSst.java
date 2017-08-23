@@ -33,6 +33,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
+ * 
+ * <p>This element is the root of the Shared String Table, which serves as a collection of individual String Items (si).
+ * 
  * <p>Java class for CT_Sst complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
@@ -75,7 +78,15 @@ public class CTSst implements Child
     private Object parent;
 
     /**
-     * Gets the value of the si property.
+     * Gets the value of the si (String Item) property.
+     * 
+     * <p>This element is the representation of an individual string in the Shared String table.  
+     * 
+     * <p>If the string is just a simple string with formatting applied at the cell level, 
+     * then the String Item (si) should contain a single text element used to express the string.  
+     * However, if the string in the cell is more complex - i.e., has formatting applied at 
+     * the character level - then the string item shall consist of multiple rich text runs which 
+     * collectively are used to express the string.  
      * 
      * <p>
      * This accessor method returns a reference to the live list,

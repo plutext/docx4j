@@ -18,6 +18,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -34,6 +36,7 @@ import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -97,7 +100,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 	}
 			
+	private DomToXPathMap domToXPathMap = null;
 	
+	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {
+		this.domToXPathMap = domToXPathMap;
+	}
+
 	/**
 	 * @param part
 	 * @param pkg
@@ -136,37 +144,43 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			// (which is quicker than default javax.xml.xpath.XPath implementations)
 			if (ENABLE_XPATH_CACHE) {
 				
-//				Xpath xp = xpathsMap.values().iterator().next();
-//				CustomXmlPart cxp  = pkg.getCustomXmlDataStorageParts().get(xp.getDataBinding().getStoreItemID().toLowerCase());
-//				System.out.println("mycxp: " + cxp.getClass().getName());
-//				org.docx4j.openpackaging.parts.CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
-				
-				// We're only caching the first one we encounter
-				// (even though, in principle, there could be multiple)
-				CustomXmlDataStoragePart cdsp = 
-						CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
-								(WordprocessingMLPackage)pkg);
-				
-				if (cdsp==null) {
-					log.warn("No CustomXmlDataStoragePart found; can't cache.");
-					/* TODO: would fail on StandardisedAnswersPart
-					 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
-					 */
-				} else {
+				if (domToXPathMap==null /* should be passed from ODH */) {
+
+					// INIT
+					//				Xpath xp = xpathsMap.values().iterator().next();
+	//				CustomXmlPart cxp  = pkg.getCustomXmlDataStorageParts().get(xp.getDataBinding().getStoreItemID().toLowerCase());
+	//				System.out.println("mycxp: " + cxp.getClass().getName());
+	//				org.docx4j.openpackaging.parts.CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
 					
-					long start = System.currentTimeMillis();
-				
-					Document data = cdsp.getData().getDocument();
+					// We're only caching the first one we encounter
+					// (even though, in principle, there could be multiple)
+					CustomXmlDataStoragePart cdsp = 
+							CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
+									(WordprocessingMLPackage)pkg);
 					
-					DomToXPathMap mapper = new DomToXPathMap(data);
-					Map<String, String> pathMap = mapper.map();
-					long end = System.currentTimeMillis();
-					long time = end - start;
-		
-					log.debug("Mapped " + pathMap.size() + " in " + time + "ms");
+					if (cdsp==null) {
+						log.warn("No CustomXmlDataStoragePart found; can't cache.");
+						/* TODO: would fail on StandardisedAnswersPart
+						 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
+						 */
+					} else {
+						
+						long start = System.currentTimeMillis();
 					
-					bindingTraverserState.setPathMap(pathMap);
+						Document data = cdsp.getData().getDocument();
+						
+						domToXPathMap = new DomToXPathMap(data);
+						domToXPathMap.map();
+						long end = System.currentTimeMillis();
+						long time = end - start;
+			
+						log.debug("Mapped in " + time + "ms");
+						
+					}
 				}
+				Map<String, String> pathMap = domToXPathMap.getPathMap();
+				bindingTraverserState.setPathMap(pathMap);
+				
 			}
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
@@ -174,20 +188,49 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 //			if (log.isDebugEnabled()) {
 //				
 //				org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
-//				
+////				String xml = XmlUtils.w3CDomNodeToString(docResult);
 //				log.debug(XmlUtils.w3CDomNodeToString(docResult));
-//				
-//				return XmlUtils.unmarshal(docResult);
+//				return XmlUtils.unmarshal( docResult);
 //			} else 
 			{
-				//part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
-				return XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
+				// Default behaviour is to fail in the event of content loss
+				return unmarshal(((org.w3c.dom.Document)result.getNode()),
+						Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverserXSLT.ValidationEventContinue", 
+								false));
+			}
+		} catch (UnmarshalException e) {
+
+			if (!Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverserXSLT.ValidationEventContinue", 
+					false)) {
+				log.error("Configured to fail in the case of content loss; "
+						+ "you can set property docx4j.model.datastorage.BindingTraverserXSLT.ValidationEventContinue if you wish to force output to be generated"); 
 			}
 			
+			throw new Docx4JException("Problems applying bindings", e);				
+			
 		} catch (Exception e) {
-			throw new Docx4JException("Problems applying bindings", e);			
+			throw new Docx4JException("Problems applying bindings", e);				
 		}
 	}
+	
+	/**
+	 * Unmarshal a node using Context.jc, WITHOUT fallback to pre-processing in case of failure.
+	 * @param n
+	 * @return
+	 * @throws JAXBException
+	 */
+	private Object unmarshal(Node n, boolean continu) throws JAXBException {
+			
+		Unmarshaller u = Context.jc.createUnmarshaller();		
+		
+		JaxbValidationEventHandler veh = new org.docx4j.jaxb.JaxbValidationEventHandler();
+		veh.setContinue(continu);
+		
+		u.setEventHandler(veh);
+
+		return u.unmarshal( n );
+	}
+	
 	
 	/**
 	 * Workaround for the fact that Xalan doesn't let us pass an AtomicInteger into an extension
@@ -420,9 +463,11 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 		// If we are in a table cell, ensure oversized images are scaled
 		xHTMLImporter.setMaxWidth(-1, null); // re-init
-		if (bindingTraverserState.tc != null) {
+		if (bindingTraverserState.tcStack.peek() != null) {
 		    log.debug("inserting in a tc" );
-		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(bindingTraverserState.tbl, bindingTraverserState.tc, xHTMLImporter);
+		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(
+		    		bindingTraverserState.tblStack.peek(), 
+		    		bindingTraverserState.tcStack.peek(), xHTMLImporter);
 		} 
 		
 		QueryString qs = new QueryString();

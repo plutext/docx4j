@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.util.List;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartAltChunkHost;
 import org.docx4j.openpackaging.parts.PartName;
@@ -73,7 +74,19 @@ public final class HeaderPart extends JaxbXmlPartAltChunkHost<Hdr> implements Co
     }	
 	
 	
-	
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+		
+		// NB it is up to you to jaxbElement.setIgnorable; see further McIgnorableNamespaceDeclarator
+		
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+    protected String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }	
 	
 	
 }

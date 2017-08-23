@@ -89,13 +89,15 @@ public class AbstractMigrator {
 		String newItemId = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
 		dsi.setItemID(newItemId);
 		
-		SchemaRefs srefs = of.createSchemaRefs();
-		dsi.setSchemaRefs(srefs);
-		
-		SchemaRef sref = of.createSchemaRefsSchemaRef();
-		sref.setUri(ns);
-		
-		srefs.getSchemaRef().add(sref);
+		if (ns!=null) {
+			SchemaRefs srefs = of.createSchemaRefs();
+			dsi.setSchemaRefs(srefs);
+			
+			SchemaRef sref = of.createSchemaRefsSchemaRef();
+			sref.setUri(ns);
+			
+			srefs.getSchemaRef().add(sref);
+		}
 		
 		part.setJaxbElement(dsi);
 

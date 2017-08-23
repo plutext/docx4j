@@ -1,6 +1,7 @@
 package org.xlsx4j.samples;
 
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import java.io.File;
+
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
@@ -23,10 +24,9 @@ public class CreateSimpleSpreadsheet {
 		WorksheetPart sheet = pkg.createWorksheetPart(new PartName("/xl/worksheets/sheet1.xml"), "Sheet1", 1);
 		
 		addContent(sheet);
-		
-		SaveToZipFile saver = new SaveToZipFile(pkg);
-		saver.save(outputfilepath);
 				
+		pkg.save(new File(outputfilepath));
+						
 		System.out.println("\n\n done .. " + outputfilepath);	
 	}
 	
@@ -37,12 +37,16 @@ public class CreateSimpleSpreadsheet {
 				
 		// Now add
 		Row row = Context.getsmlObjectFactory().createRow();
+		//row.setR((long) 1);  // optional
+		
 		Cell cell = Context.getsmlObjectFactory().createCell();
 		cell.setV("1234");
+		cell.setR("A1");  // Apple Numbers needs this, or cell content won't show 
 		row.getC().add(cell);
 		
-		
-		row.getC().add(createCell("hello world!"));
+		Cell cell2 = createCell("hello world!");
+		row.getC().add(cell2);
+		cell2.setR("B1"); // be careful the numeral matches the row correctly, or Excel will complain
 		
 		sheetData.getRow().add(row);
 	}

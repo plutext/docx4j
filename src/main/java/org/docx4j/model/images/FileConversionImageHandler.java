@@ -45,6 +45,7 @@ public class FileConversionImageHandler extends AbstractConversionImageHandler {
 	String uri = null;
 		// To create directory:
 		File folder = setupRootFolder(binaryPart);
+		log.debug("image folder: " + folder.getAbsolutePath());
 
 		// Construct a file name from the part name
 		String filename = setupImageName(binaryPart);

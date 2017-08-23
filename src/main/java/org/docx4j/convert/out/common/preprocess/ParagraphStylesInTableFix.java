@@ -341,27 +341,33 @@ public class ParagraphStylesInTableFix {
 	    			log.debug(currentStyle);			    			
 	    			Style thisStyle = allStyles.get(currentStyle);
 	    			
-	    			if (thisStyle!=null
-	    					&& thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
-	    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
-	    				// Very surprising, but testing using Word 2010 SP1,
-	    				// it turns out that table style with name "Normal Table" 
-	    				// is IGNORED (whatever its ID, and whether default or not)!! 
-	    				// Change the name to something
-	    				// else, and it is given effect! GO figure..
-	    				//TBD how localisation affects this.
-	    				// In theory, this style could be based on
-	    				// another.  Haven't tested to see whether that is
-	    				// honoured or not. Assume not.
-	    				break;
-	    			}
-	    			
-	    			tblStyles.add(thisStyle);
-	    			
-	    			if (thisStyle.getBasedOn()!=null) {
-	    				currentStyle = thisStyle.getBasedOn().getVal();
-	    			} else {
+	    			if (thisStyle==null) {
+	    				log.info("Missing " + currentStyle);
 	    				currentStyle = null;
+	    			} else {
+	    			
+		    			if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
+		    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
+		    				// Very surprising, but testing using Word 2010 SP1,
+		    				// it turns out that table style with name "Normal Table" 
+		    				// is IGNORED (whatever its ID, and whether default or not)!! 
+		    				// Change the name to something
+		    				// else, and it is given effect! GO figure..
+		    				//TBD how localisation affects this.
+		    				// In theory, this style could be based on
+		    				// another.  Haven't tested to see whether that is
+		    				// honoured or not. Assume not.
+		    				break;
+		    			}
+		    			
+		    			tblStyles.add(thisStyle);
+		    			
+		    			if (thisStyle.getBasedOn()!=null) {
+		    				currentStyle = thisStyle.getBasedOn().getVal();
+		    			} else {
+		    				currentStyle = null;
+		    			}
+	    			
 	    			}
 	    		} while (currentStyle != null);
 

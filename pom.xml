@@ -10,7 +10,7 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.3.1-SNAPSHOT</version>
+	<version>3.3.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	
@@ -32,90 +32,7 @@
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
     </scm>
 	<inceptionYear>2007</inceptionYear>
-	<developers>
-		<developer>
-			<id>jharrop</id>
-			<name>Jason Harrop</name>
-			<email>jason@plutext.org</email>
-			<organization>Plutext</organization>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+10</timezone>
-		</developer>
-	</developers>
-	<contributors>
-		<contributor>
-			<name>Adam Schmideg</name>
-		</contributor>
-		<contributor>
-			<name>Albert Aymerich</name>
-		</contributor>
-		<contributor>
-			<name>alberto</name>
-		</contributor>
-		<contributor>
-			<name>amdonov</name>
-		</contributor>
-		<contributor>
-			<name>Antoine</name>
-		</contributor>
-		<contributor>
-			<name>Arnaud Kleinpeter</name>
-		</contributor>
-		<contributor>
-			<name>azeloro</name>
-		</contributor>
-		<contributor>
-			<name>Dave Brown</name>
-		</contributor>
-		<contributor>
-			<name>Holger Schlegel</name>
-		</contributor>
-		<contributor>
-			<name>Jeromy Evans</name>
-		</contributor>
-		<contributor>
-			<name>Jojada Tirtowidjojo</name>
-		</contributor>
-		<contributor>
-			<name>Leigh</name>
-		</contributor>
-		<contributor>
-			<name>Manimala Kumar</name>
-		</contributor>
-		<contributor>
-			<name>Marcel</name>
-		</contributor>
-		<contributor>
-			<name>Patrick Linskey</name>
-		</contributor>
-		<contributor>
-			<name>Pierre</name>
-		</contributor>
-		<contributor>
-			<name>ppa_waw</name>
-		</contributor>
-		<contributor>
-			<name>Richard</name>
-		</contributor>
-		<contributor>
-			<name>Serge Grachov</name>
-		</contributor>
-		<contributor>
-			<name>Tinne</name>
-		</contributor>
-		<contributor>
-			<name>y.rolland</name>
-		</contributor>
-		<contributor>
-			<name>denys.zhosan</name>
-		</contributor>
-		<contributor>
-			<name>Anton Reshetnikov</name>
-		</contributor>
-	</contributors>
-	
+
 	  <properties>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -317,7 +234,41 @@
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.2</version>
 			</plugin> 
-         			
+			
+		<!--  mvn package 
+			<plugin> 
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+								</excludes>								
+							</artifactSet>
+			              <shadedArtifactAttached>true</shadedArtifactAttached>
+			              <shadedClassifierName>shaded</shadedClassifierName>
+                          <relocations>
+                            <relocation>
+                              <pattern>org.apache.http</pattern>
+                              <shadedPattern>org.docx4j.apache.http</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.apache.commons.logging</pattern>
+                              <shadedPattern>org.docx4j.slf4j.apache.commons.logging</shadedPattern>
+                            </relocation>
+                          </relocations>                          
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>	
+			 	-->
 		</plugins>
     	<pluginManagement>
 			<plugins>
@@ -456,11 +407,10 @@
 		
 		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
 		so stick with 2.5.2 (since all our other deps still support Java 6)
-
-		<dependency>
+ 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>3.3.0</version>
+			<version>3.3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
@@ -472,45 +422,7 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-		
-				 -->
-
- 
-  <!--  Uncomment this if you are using Java 5.
-
-  		StAX reference implementation,
-        required for MLInputFactory.newInstance() in Differencer
-        iff you are using Java 1.5
-        (not necessary for Java 6)
-        -->
-	        <!--
- 			<dependency>
-			  <groupId>stax</groupId>
-			  <artifactId>stax</artifactId>
-			  <version>1.2.0</version>
-				<exclusions>
-					<exclusion>
-					<groupId>stax</groupId>
-					<artifactId>stax-api</artifactId>
-					</exclusion>
-				</exclusions>
- 			</dependency>  -->
-	<!--  stax 1.2.0 grabs 1.0.1(!); jaxb would grab 1.0.2 (where from?) -->
-
-	<!-- Uncomment this for Java 5
-	
-  			<dependency>
-  				<groupId>javax.xml.bind</groupId>
-  				<artifactId>jaxb-api</artifactId>
-  				<version>2.1</version>
-  			</dependency>
-  			<dependency>
-  				<groupId>com.sun.xml.bind</groupId>
-  				<artifactId>jaxb-impl</artifactId>
-  				<version>2.1.3</version>
-
-  			</dependency>
-	  -->
+		-->
 
 		
 		<!--  events -->
@@ -534,7 +446,8 @@
 		    <version>1.7.21</version>
 		</dependency>		
 
-		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.  -->
+		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.
+                 UNLESS creating shaded jar for Android.  --> 
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
@@ -563,7 +476,7 @@
 					</exclusion>
 				</exclusions>
 		</dependency>
-		
+
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -601,7 +514,13 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.2</version>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>        
+            </exclusions>
+        </dependency>
 						
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

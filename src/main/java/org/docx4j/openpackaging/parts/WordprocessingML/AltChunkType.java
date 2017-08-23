@@ -4,6 +4,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 
 public enum AltChunkType {
 	// Same as http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.alternativeformatimportparttype.aspx
+	// except that has 'htm', not 'html'
 	
 	Xhtml("xhtml", "application/xhtml+xml"),
 				// Alternatively, you can serve your XHTML (any version) as application/xml, or even as text/xml

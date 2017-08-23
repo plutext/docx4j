@@ -24,7 +24,6 @@ package org.docx4j.samples;
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.ProtectDocument;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.STDocProtect;
 
@@ -63,6 +62,11 @@ public class CreateDocxProtected extends AbstractSample {
 		
 		String filename = System.getProperty("user.dir") + "/protect.docx";
 		Docx4J.save(wordMLPackage, new java.io.File(filename), Docx4J.FLAG_SAVE_ZIP_FILE); 
+		
+		// To save encrypted, you'd use FLAG_SAVE_ENCRYPTED_AGILE, for example:
+		// Docx4J.save(wordMLPackage, new java.io.File(filename), Docx4J.FLAG_SAVE_ENCRYPTED_AGILE, "foo"); 
+		
+		
 		System.out.println("Saved " + filename);
 						
 	}

@@ -92,7 +92,7 @@ public class CustomXmlDataStoragePartSelector {
 
 				// OK, this one looks ok
 				String itemId = xp.getDataBinding().getStoreItemID().toLowerCase();
-				System.out.println("Attempting to use item id: " + itemId);
+				log.debug("Attempting to use item id: " + itemId);
 								
 				if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId)==null) {
 

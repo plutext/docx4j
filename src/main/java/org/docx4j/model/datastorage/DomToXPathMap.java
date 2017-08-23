@@ -21,22 +21,58 @@ public class DomToXPathMap {
     
     private Map<String, String> pathMap = null; 
     
-    public DomToXPathMap(Document document) {
+    
+    public Map<String, String> getPathMap() {
+		return pathMap;
+	}
+
+	/**
+     * count the number of child nodes; used for pre-calculation
+     * of (1) repeat xpaths, and (2) certain simple conditions.
+     * 
+     * By default, an entry counts the number of children which
+     * are the same element as the first element child, since this
+     * is what we need for repeats.
+     * 
+     * If there are elements with different names, the count
+     * is put in the map with PREFIX_ALL_NODES prefix.
+     * 
+     * @since 3.3.6
+     */
+    private Map<String, Integer> countMap = null; 
+    
+    public static final String PREFIX_ALL_NODES = "_all_";
+    
+    public Map<String, Integer> getCountMap() {
+		return countMap;
+	}
+
+	public DomToXPathMap(Document document) {
     	this.document = document;
     }
     
-    public Map<String, String> map() {
+    public void map() {
 
         histgrams.clear();
         histgrams.push(new Histgram());
         
         pathMap = new HashMap<String, String>(); 
+        countMap = new HashMap<String, Integer>(); 
         
         walkTree(document);
-        
-        return pathMap;
     }
 
+    private String getLocalName(Node sourceNode) {
+    	
+    	if (sourceNode.getLocalName()==null) {
+    		// eg element was created using createElement() 
+    		return sourceNode.getNodeName();
+    	
+    	} else {
+    		return sourceNode.getLocalName();
+    	}
+    	
+    }
 	
 	public void walkTree( Node sourceNode ) {
 			    	
@@ -64,79 +100,78 @@ public class DomToXPathMap {
                 break;
             case Node.ELEMENT_NODE:
             	
-                histgrams.peek().update(
-                		sourceNode.getNamespaceURI(),
-                		sourceNode.getLocalName(),
-                		/* qname */ sourceNode.getNodeName() );
-                histgrams.push(new Histgram());
+            	try {
+	                histgrams.peek().update(
+	                		sourceNode.getNamespaceURI(),
+	                		getLocalName(sourceNode),
+	                		/* qname */ sourceNode.getNodeName() );
+	                histgrams.push(new Histgram());
+	                
+            	} catch (java.lang.IllegalArgumentException iae) {
             	
-//        		// .. its attributes
-//            	NamedNodeMap atts = sourceNode.getAttributes();
-//            	for (int i = 0 ; i < atts.getLength() ; i++ ) {
-//            		
-//            		Attr attr = (Attr)atts.item(i);
-//
-////            		log.debug("attr.getNodeName(): " + attr.getNodeName());
-////            		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
-////            		log.debug("attr.getLocalName(): " + attr.getLocalName());
-////            		log.debug("attr.getPrefix(): " + attr.getPrefix());
-//            		
-//            		if ( attr.getNodeName().startsWith("xmlns:")) {
-//            			/* A document created from a dom4j document using dom4j 1.6.1's io.domWriter
-//                			does this ?!
-//                			attr.getNodeName(): xmlns:w 
-//                			attr.getNamespaceURI(): null
-//                			attr.getLocalName(): null
-//                			attr.getPrefix(): null
-//                			
-//                			unless i'm doing something wrong, this is another reason to
-//                			remove use of dom4j from docx4j
-//            			*/ 
-//                		; 
-//                		// this is a namespace declaration. not our problem
-//            		} else if (attr.getNamespaceURI()==null) {
-//                		//log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
-//            			((org.w3c.dom.Element)newChild).setAttribute(
-//                				attr.getName(), attr.getValue() );
-//            		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
-//                		; // this is a namespace declaration. not our problem
-//            		} else if ( attr.getNodeName()!=null ) {
-//            				// && attr.getNodeName().equals("xml:space")) {
-//            				// restrict this fix to xml:space only, if necessary
-//
-//            			// Necessary when invoked from BindingTraverserXSLT,
-//            			// com.sun.org.apache.xerces.internal.dom.AttrNSImpl
-//            			// otherwise it was becoming w:space="preserve"!
-//            			
-//						/* eg xml:space
-//						 * 
-//							attr.getNodeName(): xml:space
-//							attr.getNamespaceURI(): http://www.w3.org/XML/1998/namespace
-//							attr.getLocalName(): space
-//							attr.getPrefix(): xml
-//						 */
-//            			
-//                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-//                				attr.getNodeName(), attr.getValue() );	                			
-//            		} else  {
-//                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-//                				attr.getLocalName(), attr.getValue() );	                			
-//            		}
-//            	}
+            		log.error(sourceNode.getClass().getName());
+            		log.error("sourceNode.getNodeName(): " + sourceNode.getNodeName());
+            		log.error("sourceNode.getNamespaceURI(): " + sourceNode.getNamespaceURI());
+            		log.error("sourceNode.getLocalName(): " + sourceNode.getLocalName());
+            		log.error("sourceNode.getPrefix(): " + sourceNode.getPrefix());
+            		log.error("java.vendor="+System.getProperty("java.vendor"));
+            		log.error("java.version="+System.getProperty("java.version"));
+            		
+            		throw iae;            		
+            	}
+            	
+            	String nxpath = getXPath();
 
                 // recurse on each child
                 NodeList children = sourceNode.getChildNodes();
+                int childrenLength = children.getLength();
+
                 
                 if (children == null 
-                		|| children.getLength()==0) {
+                		|| childrenLength==0) {
                 	
                 	// Record the fact this is an empty leaf node
-                	String xpath = getXPath();
-                	pathMap.put(xpath, "");                	
-                	
+                	pathMap.put(nxpath, "");                	
+                	countMap.put(nxpath, 0);
                 } else {
-                    for (int i=0; i<children.getLength(); i++) {
+                	String childName = null;
+                	boolean singleChild = true; // until proven otherwise
+                	int actualCount=0;
+                	int countOtherElements=0;
+                	int countTextNodes = 0;
+                    for (int i=0; i<childrenLength; i++) {
+                    	
+                    	// counting children for repeats and condition pre-calc
+                    	if (children.item(i).getNodeType()==Node.TEXT_NODE) {
+                    		countTextNodes++;
+                    	} else if ( children.item(i).getNodeType()==Node.ELEMENT_NODE) {
+                    		if (childName==null /* init*/) {
+                    			childName = getLocalName((Node)children.item(i));
+                    		}
+                    		if (getLocalName((Node)children.item(i)).equals(childName)) {
+                    			actualCount++;
+                    		} else {
+                    			singleChild = false; // count not useful for REPEAT purpose, but still useful for condition eval
+                    			countOtherElements++;
+                    		}
+                    		
+                    	}
+                    	
                     	walkTree( (Node)children.item(i));
+                    }
+                    if (singleChild) {
+                    	countMap.put(nxpath, actualCount);                    	
+                    } else {
+                    	// store count for condition count( pre calculation;
+                    	// it is convenient to store it in the same map
+                    	countMap.put(PREFIX_ALL_NODES + nxpath, actualCount + countOtherElements + countTextNodes);  
+                    	/* NB XPath spec says 
+                    	 * 
+                    	 *   The count function returns the number of nodes in the argument node-set.
+                    	 *   
+                    	 * which I suspect includes text nodes.  
+                    	 */
+                    	
                     }
                 }
                 

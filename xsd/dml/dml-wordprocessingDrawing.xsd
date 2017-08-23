@@ -5,6 +5,7 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+	xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
 
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
@@ -27,6 +28,11 @@
 		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
 	<xsd:import schemaLocation="dml-documentProperties.xsd"
 		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+		
+	<xsd:import schemaLocation="../odrawxml/oartworddrawing2010.xsd"
+		namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" />
+		
+		
 	<xsd:complexType name="CT_EffectExtent">
 		<xsd:attribute name="l" type="a:ST_Coordinate" use="required">
 			<xsd:annotation>
@@ -690,6 +696,18 @@
 				type="a:CT_NonVisualGraphicFrameProperties" minOccurs="0"
 				maxOccurs="1" />
 			<xsd:element ref="a:graphic" minOccurs="1" maxOccurs="1" />
+			
+			<!--  Not in ECMA 4ed transitional dml-wordprocessingDrawing or 29500 3ed 
+			
+				  Added 2016 06 05 for docx4j 3.3.1
+			-->
+			<xsd:element ref="wp14:sizeRelH" 
+				minOccurs="0"
+				maxOccurs="1" />
+			<xsd:element ref="wp14:sizeRelV"
+				minOccurs="0"
+				maxOccurs="1" />
+			
 		</xsd:sequence>
 		<xsd:attribute name="distT" type="ST_WrapDistance"
 			use="optional">
@@ -776,7 +794,20 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		
+			<!--  Not in ECMA 4ed transitional dml-wordprocessingDrawing or 29500 3ed 
+			
+				  Added 2016 06 05 for docx4j 3.3.1
+			
+			-->
+		<xsd:attribute ref="wp14:anchorId"  use="optional"/>
+		<xsd:attribute ref="wp14:editId"  use="optional"/>
+		
+		
 	</xsd:complexType>
+	
+	
+	
 	<xsd:element name="inline" type="CT_Inline">
 		<xsd:annotation>
 			<xsd:documentation>

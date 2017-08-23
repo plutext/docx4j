@@ -61,6 +61,8 @@ Run JarCheck on result of mvn install to check its compiled for 1.6 (run it on a
 git commit / push upstream
 (uses git-remote-https, if you want to force a particular network connection)
 
+-------------
+
 Start up the Git Bash session and go to your project directory.
 
 Windows users, you need to start up an SSH agent to provide your passkey when needed by the release process.
@@ -86,6 +88,16 @@ Github RSA key is in the c:\.ssh\ directory. If it isn’t then just substitute 
 
 $ ssh-add ~/.ssh/id_rsa
 Enter passphrase for /c/Users/jharrop/.ssh/id_rsa: [the github 2 one]
+
+--------------
+
+Linux
+
+eval "$(ssh-agent -s)"
+
+ssh-add ~/.ssh/id_rsa
+
+---------------
 
 This command prompt can be used to do what follows for the 4 projects.  ie the above only needs to be done once :-)
 

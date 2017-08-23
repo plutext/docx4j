@@ -135,18 +135,26 @@ public class ListNumberingDefinition {
     	this.numNode = numNode;
     	
         this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
-    	log.debug("Constructing model for numId=" + listNumberId);
+//        if (log.isDebugEnabled()) {
+//	    	log.debug("Constructing model for numId=" + listNumberId);
+//	    	log.debug(XmlUtils.marshaltoString(numNode));
+//        }
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
         Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
         if (abstractNumNode == null) {
         	log.warn("No abstractNumId on w:numId=" + listNumberId);
         } else {
+        	log.debug("points to " + abstractNumNode.getVal().toString());
             this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
             if (abstractListDefinition==null) {
             	log.warn("No abstractListDefinition for w:numId=" + listNumberId);  
             	return;
             }
+//            if (log.isDebugEnabled()) {
+//            	log.debug(XmlUtils.marshaltoString(abstractListDefinition.getAbstractNumNode()));
+//            }
+
             if (this.abstractListDefinition.getLevelCount()==0 
             		&& this.abstractListDefinition.hasLinkedStyle()) {
             	
@@ -175,7 +183,8 @@ public class ListNumberingDefinition {
     		Iterator listLevelIterator = this.abstractListDefinition.getListLevels().entrySet().iterator();
     	    while (listLevelIterator.hasNext()) {
     	        Map.Entry pairs = (Map.Entry)listLevelIterator.next();
-    	        this.levels.put( (String)pairs.getKey(), new ListLevel( (ListLevel)pairs.getValue() ) );        	        
+    	        this.levels.put( (String)pairs.getKey(), new ListLevel( (ListLevel)pairs.getValue() ) ); 
+    	        //log.debug("init'd level " + pairs.getKey());
     	    }
 
             // propagate the level overrides into the current list number level definition
@@ -184,7 +193,8 @@ public class ListNumberingDefinition {
             List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
 			if (levelOverrideNodes != null) {
 				/*
-				 * <w:lvlOverride w:ilvl="0"> <w:startOverride w:val="10"/>
+				 * <w:lvlOverride w:ilvl="0"> 
+				 * 		<w:startOverride w:val="10"/>
 				 * </w:lvlOverride>
 				 */
 				for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes) {
@@ -209,6 +219,9 @@ public class ListNumberingDefinition {
 							if (startOverride != null
 									&& startOverride.getVal() != null) {
 								
+								if (this.levels.get(overrideLevelId)==null) {
+									throw new RuntimeException(overrideLevelId + " level missing for abstractListDefinition " + abstractListDefinition.getID());
+								}
 								this.levels.get(overrideLevelId).setStartValue(
 										startOverride.getVal().subtract(BigInteger.ONE));
 								log.debug("level " + overrideLevelId + "starts at " + startOverride.getVal());
@@ -433,6 +446,18 @@ public class ListNumberingDefinition {
     /// <owner alias="ROrleth" />
     public boolean LevelExists(String level)
     {
+    	if (this.levels==null) {
+    		log.info("No levels present in abstractNumId");
+    		if (getAbstractListDefinition()==null) {
+    			log.info("[missing]");
+    		} else {
+    			log.info(XmlUtils.marshaltoString(getAbstractListDefinition()));
+    		}
+    		log.debug("referenced from ");
+    		log.debug(XmlUtils.marshaltoString(numNode));
+    		
+    		return false;
+    	}
         return this.levels.containsKey(level);
     }
 

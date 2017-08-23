@@ -46,6 +46,7 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.services.client.ConversionException;
 import org.docx4j.services.client.Converter;
 import org.docx4j.services.client.ConverterHttp;
 import org.docx4j.services.client.Format;
@@ -53,13 +54,16 @@ import org.docx4j.toc.switches.SwitchProcessor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTSdtDocPart;
+import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
+import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,6 +132,8 @@ public class TocGenerator {
     /**
      * Generate Table of Contents using default TOC instruction, adding it at the beginning of the document
      * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body of document
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
@@ -140,6 +146,8 @@ public class TocGenerator {
      * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document
      * 
      * It is an error if a ToC content control is already present; delete it or use updateToc.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
      * 
      * @param body
      * @param index
@@ -154,6 +162,8 @@ public class TocGenerator {
     /**
      * Generate Table of Contents using default TOC instruction, adding it at the beginning of the document
      * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body of document
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
@@ -164,16 +174,39 @@ public class TocGenerator {
 
     
     /**
-     * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document
+     * Generate Table of Contents using provided TOC instruction, adding at the given index in the body of document,
+     * using dot leader for page numbering (if any).
      * 
      * It is an error if a ToC content control is already present; delete it or use updateToc.
      * 
-     * @param body
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param index
      * @param instruction
+     * @param skipPageNumbering
      * @return SdtBlock control
      */
     public SdtBlock generateToc(int index, String instruction, boolean skipPageNumbering) throws TocException {
+    	
+        return generateToc(  index,  instruction, TocHelper.DEFAULT_TAB_LEADER, skipPageNumbering);
+    }
+
+    /**
+     * Generate Table of Contents using provided TOC instruction, and specified leader (eg dots) before
+     * page number, adding at the given index in the body of document
+     * 
+     * It is an error if a ToC content control is already present; delete it or use updateToc.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
+     * @param index
+     * @param instruction
+     * @param leader
+     * @param skipPageNumbering
+     * @return SdtBlock control
+     * @since 3.3.2
+     */
+    public SdtBlock generateToc(int index, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -195,20 +228,22 @@ public class TocGenerator {
         
         sdt = createSdt();
         body.getContent().add(index, sdt);
-        return generateToc(  sdt,  instruction, skipPageNumbering);
+        return generateToc(  sdt,  instruction, leader, skipPageNumbering);
     }
-
     
     /**
      * Generate Table of Contents in the given sdt with generated heading, and given TOC instruction.
      * See http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/TOC.html for TOC instruction.
+     * 
+     * To alter the ToC heading, use Toc.setTocHeadingText
+     * 
      * @param body
      * @param sdt - assumed already attached to the document
      * @param instruction
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
      */
-    protected SdtBlock generateToc(SdtBlock sdt, String instruction, boolean skipPageNumbering) throws TocException {
+    protected SdtBlock generateToc(SdtBlock sdt, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -220,51 +255,54 @@ public class TocGenerator {
             sdt.setSdtContent(sdtContent);
         }
         
-        /* Is there already a style with *name* (not @styleId): 
-         * 
-         *   <w:style w:type="paragraph" w:styleId="CabealhodoSumrio">
-    			<w:name w:val="TOC Heading"/>
-    	 *
-    	 * If not, fall back to default, or failing that, create it from the XML given here. 
-    	 * 
-    	 * NB: avoid basedOn since that points to Style ID, which is language dependent
-    	 * (ie Heading 1 in English is something different in French, German etc) 
-         */
-        String TOC_HEADING_STYLE = tocStyles.getStyleIdForName(TocStyles.TOC_HEADING);
-        if (TOC_HEADING_STYLE==null) {
-        	log.warn("No definition found for TOC Heading style");
+        if (Toc.getTocHeadingText()!=null) {
         
-        	String HEADING1_STYLE= tocStyles.getStyleIdForName(TocStyles.HEADING_1);
-        
-	        try {
-		        if (TOC_HEADING_STYLE==null) {
-		        	// We need to create it. 
-		        	if (HEADING1_STYLE==null) {
-		        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Nothing);
-		        		style.getBasedOn().setVal(HEADING1_STYLE);
-		        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-		        		
-		        	} else {
-		        		// There is a heading 1 style, so use a simple style based on that
-		        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Heading1);
-		        		style.getBasedOn().setVal(HEADING1_STYLE);
-		        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-		        	}
-		        	
-		        	// either way,
-		        	TOC_HEADING_STYLE = "TOCHeading";
-		        }
-			} catch (Exception e) {
-				throw new TocException(e.getMessage(), e);
-			}
+	        /* Is there already a style with *name* (not @styleId): 
+	         * 
+	         *   <w:style w:type="paragraph" w:styleId="CabealhodoSumrio">
+	    			<w:name w:val="TOC Heading"/>
+	    	 *
+	    	 * If not, fall back to default, or failing that, create it from the XML given here. 
+	    	 * 
+	    	 * NB: avoid basedOn since that points to Style ID, which is language dependent
+	    	 * (ie Heading 1 in English is something different in French, German etc) 
+	         */
+	        String TOC_HEADING_STYLE = tocStyles.getStyleIdForName(TocStyles.TOC_HEADING);
+	        if (TOC_HEADING_STYLE==null) {
+	        	log.warn("No definition found for TOC Heading style");
+	        
+	        	String HEADING1_STYLE= tocStyles.getStyleIdForName(TocStyles.HEADING_1);
+	        
+		        try {
+			        if (TOC_HEADING_STYLE==null) {
+			        	// We need to create it. 
+			        	if (HEADING1_STYLE==null) {
+			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Nothing);
+			        		style.getBasedOn().setVal(HEADING1_STYLE);
+			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
+			        		
+			        	} else {
+			        		// There is a heading 1 style, so use a simple style based on that
+			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Heading1);
+			        		style.getBasedOn().setVal(HEADING1_STYLE);
+			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
+			        	}
+			        	
+			        	// either way,
+			        	TOC_HEADING_STYLE = "TOCHeading";
+			        }
+				} catch (Exception e) {
+					throw new TocException(e.getMessage(), e);
+				}
+	        }
+	        
+	        // 1. Add Toc Heading (eg "Contents" in TOCHeading style)
+	        sdtContent.getContent().add(Toc.generateTocHeading(TOC_HEADING_STYLE));        
         }
-        
-        // 1. Add Toc Heading (eg "Contents" in TOCHeading style)
-        sdtContent.getContent().add(Toc.generateTocHeading(TOC_HEADING_STYLE));
         
         populateToc(  
         		 sdtContent, 
-        		 instruction,  skipPageNumbering);
+        		 instruction,  leader, skipPageNumbering);
         
         return sdt;
         
@@ -281,7 +319,7 @@ public class TocGenerator {
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @return SdtBlock control
      */
-    protected  SdtBlock generateToc(SdtBlock sdt, List<P> tocHeadingP, String instruction, boolean skipPageNumbering) throws TocException {
+    protected  SdtBlock generateToc(SdtBlock sdt, List<P> tocHeadingP, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -303,7 +341,7 @@ public class TocGenerator {
         
         populateToc( 
         		 sdtContent, 
-        		 instruction,  skipPageNumbering);
+        		 instruction, leader, skipPageNumbering);
         
         return sdt;
 
@@ -333,7 +371,8 @@ public class TocGenerator {
      */
     private  void populateToc(
     		SdtContentBlock sdtContent, 
-    		String instruction, boolean skipPageNumbering) throws TocException {
+    		String instruction, STTabTlc leader,
+    		boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -369,7 +408,7 @@ public class TocGenerator {
         // Work out paragraph numbering
         Map<P, ResultTriple> pNumbersMap = numberParagraphs( pList);
         
-        SwitchProcessor sp = new SwitchProcessor(pageDimensions);
+        SwitchProcessor sp = new SwitchProcessor(pageDimensions, leader);
         sp.setStartingIdForNewBookmarks(bookmarkId);
         tocEntries.addAll(
         		sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
@@ -395,7 +434,7 @@ public class TocGenerator {
 	        sdtContent.getContent().add(toc.getLastParagraph());
 	        
 	        // Add page numbers
-	        if(!skipPageNumbering && sp.pageNumbers() ){
+	        if(!skipPageNumbering && sp.pageNumbers() ) {
 	            Map<String, Integer> pageNumbersMap = getPageNumbersMap();
 	            Integer pageNumber;
 	            for(TocEntry entry: tocEntries){
@@ -456,14 +495,31 @@ public class TocGenerator {
     	return (new TocGenerator(wordMLPackage)).updateToc( skipPageNumbering);
     }
     
+    
+
     /**
-     * Update existing TOC in the document with TOC generated by generateToc() method.
+     * Update existing TOC in the document with TOC generated by generateToc() method. Attempt to identify/re-use existing dot leader.
      * @param body
      * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
      * @param reuseExistingToCHeadingP  
      * @return SdtBlock control, or null if no TOC was found
      */
     public  SdtBlock updateToc( boolean skipPageNumbering, boolean reuseExistingToCHeadingP) throws TocException{
+    	
+    	return updateToc(  skipPageNumbering,  reuseExistingToCHeadingP,  null);
+
+    }
+    
+    /**
+     * Update existing TOC in the document with TOC generated by generateToc() method, using specified tab leader.
+     * @param body
+     * @param skipPageNumbering don't generate page numbers (useful for HTML output, or speed, or as a fallback in case of issues)
+     * @param reuseExistingToCHeadingP  
+     * @param leader
+     * @return SdtBlock control, or null if no TOC was found
+     * @since 3.3.2
+     */
+    public  SdtBlock updateToc( boolean skipPageNumbering, boolean reuseExistingToCHeadingP, STTabTlc leader) throws TocException{
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
@@ -483,6 +539,10 @@ public class TocGenerator {
         if(instruction.isEmpty()){
             throw new TocException("TOC instruction text missing");
         }
+        
+        if (leader==null) {
+        	leader = getExistingTabLeader(sdt.getSdtContent().getContent());
+        }
 
         //remove old TOC
         sdt.getSdtContent().getContent().clear();
@@ -490,18 +550,76 @@ public class TocGenerator {
         if (finder.tocHeadingP==null 
         		|| finder.tocHeadingP.size()==0 ) {
         	log.warn("No ToC header paragraph found; generating..");
-            generateToc( sdt, instruction, skipPageNumbering);
+            generateToc( sdt, instruction, leader, skipPageNumbering);
             
         } else if ( !reuseExistingToCHeadingP ) {
             	log.debug("Generating ToC header paragraph ..");
-                generateToc( sdt, instruction, skipPageNumbering);
+                generateToc( sdt, instruction, leader, skipPageNumbering);
                 
         } else {
         	log.debug("Reusing existing ToC header paragraph");
-            generateToc( sdt, finder.tocHeadingP, instruction, skipPageNumbering);        	
+            generateToc( sdt, finder.tocHeadingP, instruction, leader, skipPageNumbering);        	
         }
 
         return sdt;
+    }
+    
+    private STTabTlc getExistingTabLeader(List<Object> contents) {
+    	
+    	STTabTlc leader = null;
+    	
+    	/*  The simple-minded approach we take here is that we try to
+    	 *  look in the second paragraph:
+    	 *  
+	      <w:sdtContent>
+	      
+	        <w:p>
+	          <w:pPr>
+	            <w:pStyle w:val="TOCHeading"/>
+	          </w:pPr>
+	          <w:r>
+	            <w:t>Contents</w:t>
+	          </w:r>
+	        </w:p>
+	        
+	        <w:p>
+	          <w:pPr>
+	            <w:pStyle w:val="TOC1"/>
+	            <w:tabs>
+	              <w:tab w:val="right" w:leader="dot" w:pos="9629"/>
+	            </w:tabs>
+                	 */
+    	
+    	if (contents.size()>1) {
+    		Object o = contents.get(1);
+    		if (o instanceof P) {
+    			P sampleP = (P)o;
+    			if (sampleP.getPPr()!=null
+    					&& sampleP.getPPr()!=null
+    					&& sampleP.getPPr().getTabs()!=null) {
+    				
+    				Tabs sampleTabs = sampleP.getPPr().getTabs();
+    				if (sampleTabs.getTab().size()>0) {
+    					CTTabStop tab = sampleTabs.getTab().get(0);
+    					leader = tab.getLeader();
+    					if (leader==null) {
+    						leader = STTabTlc.NONE;
+        		        	log.debug("Reusing existing leader (in this case, STTabTlc.NONE)");
+    					} else {
+        		        	log.debug("Reusing existing leader");    						
+    					}
+    				}
+    				
+    			}
+    		}
+    	}
+    	
+    	// if can't work it out, log that then return dots
+    	if (leader == null) {
+    		log.info("Couldn't figure out leader from existing ToC; defaulting to dots");
+    		leader = TocHelper.DEFAULT_TAB_LEADER;
+    	}
+    	return leader;
     }
 
     /**
@@ -548,6 +666,8 @@ public class TocGenerator {
 
     private Map<String, Integer> getPageNumbersMapViaService() throws TocException {
     	
+    	log.debug("getPageNumbersMapViaService() starting..");
+    	
     	// We always have to save the pkg, since we always update the entire table
     	// (which might alter the document length)
     	
@@ -579,9 +699,27 @@ public class TocGenerator {
 			
 		try {
 			converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
+			log.debug("page numbers successfully received from service");
+		} catch (ConversionException e) {
+			
+			if (e.getResponse()!=null) {
+
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n HTTP response: " 
+						+ e.getResponse().getStatusLine().getStatusCode()
+						+ " " + e.getResponse().getStatusLine().getReasonPhrase() ,e);
+				
+			} else if (e.getMessage()==null){			
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n",e);
+			} else {
+				throw new TocException("Error in toc web service at " 
+						+ documentServicesEndpoint + "\n" + e.getMessage(),e);				
+			}
+			
 		} catch (Exception e) {
 			throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + e.getMessage(),e);
+						+ documentServicesEndpoint + "\n" + e.getMessage(),e);
 		}
 		
 		/* OLD Converter 1.0-x
@@ -633,7 +771,7 @@ public class TocGenerator {
 			map.put(entry.getKey(), new Integer(entry.getValue().asInt()));
 		}		
 		
-//		System.out.println("map size " + map.size());
+		log.debug("page number map size " + map.size());
 //		System.out.println(map);
 			
 		return map;
@@ -647,6 +785,8 @@ public class TocGenerator {
      * @throws TocException
      */
     private Map<String, Integer> getPageNumbersMapViaFOP() throws TocException {
+    	
+    	log.debug("getPageNumbersMapViaFOP() starting..");
     	
         long start = System.currentTimeMillis();
     	
@@ -758,7 +898,7 @@ public class TocGenerator {
 
     private static String XML_TOCHeading_BasedOn_Heading1 = "<w:style w:styleId=\"TOCHeading\" w:type=\"paragraph\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
             + "<w:name w:val=\"TOC Heading\"/>"
-            + "<w:basedOn w:val=\"Heading1\"/>" // we'll overwite with the style id 
+            + "<w:basedOn w:val=\"Heading1\"/>" // we'll overwrite with the style id 
             + "<w:next w:val=\"Normal\"/>"
             + "<w:uiPriority w:val=\"39\"/>"
             + "<w:semiHidden/>"

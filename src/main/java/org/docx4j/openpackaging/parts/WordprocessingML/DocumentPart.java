@@ -58,9 +58,11 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	 */ 
 	
 	protected CommentsPart commentsPart; 	
+	protected CommentsExtendedPart commentsExtendedPart; 	
 	protected DocumentSettingsPart documentSettingsPart;	
 	protected EndnotesPart endNotesPart; 	
 	protected FontTablePart fontTablePart; 
+	protected PeoplePart peoplePart;  
 	protected ThemePart themePart;  
 	protected FootnotesPart footnotesPart; 
 	protected NumberingDefinitionsPart numberingDefinitionsPart; 	
@@ -114,6 +116,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		} else if (relationshipType.equals(Namespaces.COMMENTS)) {
 			commentsPart = (CommentsPart)part;
 			return true;	
+		} else if (relationshipType.equals(Namespaces.COMMENTS_EXTENDED)) {
+			commentsExtendedPart = (CommentsExtendedPart)part;
+			return true;	
 		} else if (relationshipType.equals(Namespaces.ENDNOTES)) {
 			endNotesPart = (EndnotesPart)part;
 			return true;	
@@ -122,6 +127,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 			return true;	
 		} else if (relationshipType.equals(Namespaces.NUMBERING)) {
 			numberingDefinitionsPart = (NumberingDefinitionsPart)part;
+			return true;	
+		} else if (relationshipType.equals(Namespaces.OFFICE_2011_PEOPLE)) {
+			peoplePart = (PeoplePart)part;
 			return true;	
 		} else if (part instanceof ConditionsPart) {
 			conditionsPart = ((ConditionsPart)part);
@@ -162,6 +170,10 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		return commentsPart;
 	}
 
+	public CommentsExtendedPart getCommentsExtendedPart() {
+		return commentsExtendedPart;
+	}
+	
 
 	public DocumentSettingsPart getDocumentSettingsPart() {
 		return documentSettingsPart;
@@ -260,6 +272,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		return numberingDefinitionsPart;
 	}
 
+	public PeoplePart getPeoplePart() {
+		return peoplePart;
+	}
 
 	public StyleDefinitionsPart getStyleDefinitionsPart() {
 		return getStyleDefinitionsPart(false);

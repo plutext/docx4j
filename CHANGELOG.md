@@ -1,6 +1,208 @@
 CHANGELOG
 =========
 
+
+Version 3.3.6  minor release
+=============
+
+Release date
+------------
+
+xx August 2017
+
+
+Notable Changes in Version 3.3.6 
+---------------------------------
+
+@XmlRootElement on webextension and taskpanes
+
+OpenDoPE performance enhancements:  pre-calculate repeat counts and simple conditions for substantial time saving in ODH step
+
+
+
+Version 3.3.5  minor release
+=============
+
+Release date
+------------
+
+30 June 2017
+
+
+Notable Changes in Version 3.3.5 
+---------------------------------
+
+Support w16cid (commentsIds); see https://msdn.microsoft.com/en-us/library/mt791826(v=office.12).aspx
+(without this, document created in Word 2016 with recent updates, then saved by docx4j, couldn't be re-opened in Word) 
+
+Support w15symex (long hex replacement for symbol char); see https://msdn.microsoft.com/en-us/library/mt459331(v=office.12).aspx
+
+IBM Unmarshaller (usually used in WebSphere v7+) workaround for "errors limit exceeded" (same as Oracle JAXB)
+
+
+
+Version 3.3.4  minor release
+=============
+
+Release date
+------------
+
+15 June 2017
+
+Contributors to this release
+----------------------------
+
+Danilo Zagatto
+
+Greg Kinman
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.4 
+---------------------------------
+
+BinaryPartAbstractImage: ImageMagick executable name fetched from Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.ImageMagickExecutable", "imconvert")
+and workaround for file URL issue on Windows
+
+Parent handling: convenience for user SdtPr set parent (same for SdtContent, now an interface); 
+
+mc-preprocessor.xslt: more Google Docs fixes
+
+samples/BookmarksDuplicateCheck: Check also the ends; option to remediate (ie remove broken ones)
+
+OpenDoPE fixes/enhancements:
+#234  convert #STRING to NodeList
+#235  complex XPaths
+count-type conditions in repeats: perform enhancement in non-oda case
+
+other bugfixes:
+#175 HTML output: conversion to nested <ul> or <ol>
+#164 Reset error counter, this time for IBM's JAXB (in Websphere inc 8.5.5.11)
+
+xlsx4j
+------
+
+fix to support Apple iCloud Numbers (set reference attribute on cell)
+
+loading .pptx and .xlsx files from InputStream
+
+
+Version 3.3.3  minor release
+=============
+
+Release date
+------------
+
+7 February 2017
+
+Contributors to this release
+----------------------------
+
+Ashton Batty
+
+Jason Harrop
+
+Notable Changes in Version 3.3.3 
+---------------------------------
+
+Minor modifications to support use on Android; see https://github.com/plutext/AndroidDocxToHtml
+
+Several bugfixes, including:
+- Handle non-English speaking locales in XmlPart.cachedXPathGetString (used in OpenDoPE content control data binding)
+- Regression in xpathtracker histgram namespace handling (issue #230)
+ 
+
+xlsx4j
+------
+
+Convenience method for cell to access its WorksheetPart; WorksheetPart to get WorkbookPart.
+
+Cell content extraction - formatted (using modified Apache POI code)
+
+
+
+Version 3.3.2  minor release
+=============
+
+Release date
+------------
+
+20 December 2016
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.2 
+---------------------------------
+
+JAXBXmlPart pipe methods, which enable you to process using StAX or SAX
+(avoiding JAXB overhead);  see VariableReplaceStAX for an example
+
+JAXB content model for web extensions
+
+Various bugfixes, including:
+- fix for OpenDoPE complex conditions (broken by 3.3.1)
+- fix for IllegalArgumentException: local part cannot be "null" when creating a QName
+
+
+Version 3.3.1  minor release
+=============
+
+Release date
+------------
+
+16 August 2016
+
+
+Contributors to this release
+----------------------------
+
+https://github.com/ai-github
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.1
+---------------------------------
+
+Contents lists are now of type ArrayListWml, in which parent is automatically set correctly
+
+org.docx4j.anon: new package which converts a docx to lorem ipsum latin, and removes
+other sensitive info, so the docx can safely be shared eg for tech support.  
+For this to work, you'll need to add a new dependency: http://search.maven.org/#artifactdetails%7Ccom.thedeanda%7Clorem%7C2.0%7Cjar
+ 
+OpenDoPE: Two separate performance optimizations which substantially speed up large XML binding jobs.  By traversing the XML data, manually calculate and cache XPaths (tested with 500,000 entries).  Our strategy is to try the cache first (if enabled), then if there is a cache miss, use org.apache.xpath.CachedXPathAPI (the second optimization - CachedXPathAPI  is quicker than default javax.xml.xpath.XPath implementations)
+
+Dedicated parts for w15 CommentsExtended and People
+
+Support anchor attributes wp14:anchorId and wp14:editId; children wp14:sizeRelH, wp14:sizeRelV
+
+Support w:bdo and w:dir from ECMA 376 4ed
+
+workaround for MOXy issue triggering pre-processing from binder: http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
+
+JAXB event handler: make shouldContinue false by default, mc Content pre-processing works in MOXy (for unmarshalling anyway, as distinct from binder)
+
+unmarshall input stream: do mc pre-processing if necessary
+
+New property docx4j.jaxb.marshal.canonicalize:
+Whether to canonicalize during marshalling (defaults to false);
+this is for aesthetic purposes: the Sun/Oracle JAXB reference implementation
+writes a lot of unnecessary namespaces (each one in the JAXB context?).
+
+
+Dependency Changes
+------------------
+
+Added com.thedeanda:lorem:jar:2.0; only required if you want to use org.docx4j.anon (see above)
+ 
+
+
 Version 3.3.0
 =============
 

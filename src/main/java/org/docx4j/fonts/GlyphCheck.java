@@ -57,7 +57,7 @@ public class GlyphCheck {
 		PhysicalFont pf = PhysicalFonts.get(fontName);
 		if (pf==null) {
 			if (!warnedAlready.contains(fontName)) {
-				log.error("Couldn't get font " + fontName);
+				log.warn("Couldn't get font " + fontName);
 				warnedAlready.add(fontName);
 			}
 			return false;
@@ -65,5 +65,20 @@ public class GlyphCheck {
 		
 		return hasChar(pf, c);
 	}
+	
+//	public static void main(String[] args) throws Exception {
+//
+//		PhysicalFonts.discoverPhysicalFonts();
+//		
+//		PhysicalFont physicalFont = PhysicalFonts.get("Times New Roman");
+//		
+//		if (physicalFont==null) {
+//			System.out.println("missing TNR!");
+//		} else {
+//			System.out.println(
+//					GlyphCheck.hasChar(physicalFont, 'ě'));
+//		}
+//		
+//	}
 	
 }

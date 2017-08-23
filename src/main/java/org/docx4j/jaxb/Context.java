@@ -77,7 +77,8 @@ public class Context {
 	public static JAXBImplementation getJaxbImplementation() {
 		return jaxbImplementation;
 	}
-
+	
+	
 	static {
 		JAXBContext tempContext = null;
 
@@ -107,7 +108,7 @@ public class Context {
 			log.info("MOXy JAXB implementation intended..");
 			jaxbImplementation = JAXBImplementation.ECLIPSELINK_MOXy;
 		} catch (Exception e3) {
-			log.info("No MOXy JAXB config found; assume not intended..");
+			log.debug("No MOXy JAXB config found; assume not intended..");
 			log.debug(e3.getMessage());
 		}
 		if (jaxbPropsIS==null) {
@@ -116,15 +117,12 @@ public class Context {
 				Object namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
 				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 					// Java 6
-					log.info("Using Java 6/7 JAXB implementation");
 					jaxbImplementation = JAXBImplementation.ORACLE_JRE;
-
 				} else {
-					log.info("Using JAXB Reference Implementation");
 					jaxbImplementation = JAXBImplementation.REFERENCE;
-
 				}
-				
+				// NB, it could still be IBM, we'll check for this below,
+				// 
 			} catch (JAXBException e) {
 				log.error("PANIC! No suitable JAXB implementation available");
 				log.error(e.getMessage(), e);
@@ -154,24 +152,59 @@ public class Context {
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing", classLoader );
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
+					"org.docx4j.w15symex:org.docx4j.w16cid:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,
+					ProviderProperties.getProviderProperties() );
 			
 			if (tempContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
+				
+			} else if (tempContext.getClass().getName().startsWith("com.ibm.xml.xlxp2.jaxb")) {
+				/*
+				 * Per Michael Glavassevich at https://stackoverflow.com/a/35443723/1031689
+				 * 
+				 * WebSphere Application Server v7+ contains an optimized JAXB implementation that will often
+				 * be used instead of the JAXB implementation that's built into the Java SDK. 
+				 * 
+				 * system property com.ibm.xml.xlxp.jaxb.opti.level=0 setting will cause the 
+				 * JAXB reference implemenation to be used for unmarshalling and marshalling 
+				 * instead of the WebSphere JAXB implementation.
+				 * 
+				 * see further https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/xrun_jvm.htm
+				 *  
+				 * com.ibm.xml.xlxp2.jaxb.JAXBContextImpl is in jar plugins\com.ibm.ws.prereq.xlxp.jar
+				 * 
+				 * This can be simulated outside websphere by using IBM Java, eg IBM J9 VM (build 2.8, JRE 1.8.0 Linux amd64-64
+				 * with lib/endorsed contents:
+				 * 
+				 * 		com.ibm.jaxb.tools.jar
+				 * 		com.ibm.ws.prereq.xlxp.jar
+				 *   
+				 */
+				log.info("Using IBM JAXB implementation; see system property com.ibm.xml.xlxp.jaxb.opti.level in WebSphere v7+ ");
+				jaxbImplementation = JAXBImplementation.IBM_WEBSPHERE_XLXP;
 			} else {
-				log.info("Not using MOXy; using " + tempContext.getClass().getName());				
+				log.info("Not using MOXy; using " + tempContext.getClass().getName());
+				if (jaxbImplementation==JAXBImplementation.ORACLE_JRE) {
+					log.info("Using Java 6+ JAXB implementation");
+	
+				} else if (jaxbImplementation == JAXBImplementation.REFERENCE){
+					log.info("Using JAXB Reference Implementation");
+				}
 			}
 			
 			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
-			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
-			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader );
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader );
-			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
-			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
-			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
+			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader, ProviderProperties.getProviderProperties() );
+			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader, ProviderProperties.getProviderProperties() );
+			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader, ProviderProperties.getProviderProperties() );
+			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader, ProviderProperties.getProviderProperties() );
+			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader, ProviderProperties.getProviderProperties() );
 			
-			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
+			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader, ProviderProperties.getProviderProperties() );
 			
 			try {
 				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
@@ -179,12 +212,12 @@ public class Context {
 						 "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
-						,classLoader );
+						,classLoader, ProviderProperties.getProviderProperties() );
 			} catch (javax.xml.bind.JAXBException e) {
 				log.error(e.getMessage());
 			}
 
-			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader );
+			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader, ProviderProperties.getProviderProperties() );
 			
 			log.debug(".. other contexts loaded ..");
 										

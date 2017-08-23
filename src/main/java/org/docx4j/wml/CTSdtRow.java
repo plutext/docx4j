@@ -90,6 +90,7 @@ public class CTSdtRow implements SdtElement, Child
      */
     public void setSdtPr(SdtPr value) {
         this.sdtPr = value;
+        value.setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**
@@ -124,7 +125,7 @@ public class CTSdtRow implements SdtElement, Child
      *     {@link CTSdtContentRow }
      *     
      */
-    public ContentAccessor getSdtContent() {
+    public SdtContent getSdtContent() {
         return sdtContent;
     }
 
@@ -136,8 +137,9 @@ public class CTSdtRow implements SdtElement, Child
      *     {@link CTSdtContentRow }
      *     
      */
-    public void setSdtContent(CTSdtContentRow value) {
-        this.sdtContent = value;
+    public void setSdtContent(SdtContent value) {
+        this.sdtContent = (CTSdtContentRow) value;
+        ((CTSdtContentRow) value).setParent(this); // unmarshalling does this automatically; this helps user in other cases        
     }
 
     /**

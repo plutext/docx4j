@@ -125,11 +125,14 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 				
 	}
 
-	private CustomXmlDataStorage data;
+	private CustomXmlDataStorage data;  // probably org.docx4j.model.datastorage.CustomXmlDataStorageImpl
 	/**
 	 * @return the data
 	 */
 	public CustomXmlDataStorage getData() {
+//		if (log.isDebugEnabled()) {
+//			log.debug(data.getClass().getName());
+//		}
 		return data;
 	}
 

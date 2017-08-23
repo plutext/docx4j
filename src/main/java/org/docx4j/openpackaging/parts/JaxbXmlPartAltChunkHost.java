@@ -190,7 +190,11 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 			// Can we process it?
 			AltChunkType type = afip.getAltChunkType();
 
-			if (type.equals(AltChunkType.Xhtml) ) {
+			if (type==null ) {
+				
+				log.warn("Unrecognized type for part " + afip.getPartName().getName() );
+				
+			} else if (type.equals(AltChunkType.Xhtml) ) {
 				
 				XHTMLImporter xHTMLImporter= null;
 			    try {

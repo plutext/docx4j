@@ -91,6 +91,8 @@ public class TocSample  {
         fillPageWithContent(documentPart, "Hello 11");
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+    	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
+    	// and point to that in docx4j.properties
         
         tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
         

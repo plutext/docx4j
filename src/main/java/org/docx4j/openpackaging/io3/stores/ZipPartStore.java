@@ -192,7 +192,21 @@ public class ZipPartStore implements PartStore {
         }
 		return bytes.getLength();
 	}
-	
+
+	/**
+	 * This method is to facilitate updating the part without
+	 * JAXB unmarshalling then marshalling.  Not intended for direct
+	 * use by user code.
+	 * 
+	 * @param partName
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.3.2
+	 */
+	public ByteArray getByteArray(String partName) throws Docx4JException {
+
+		return partByteArrays.get(partName);
+	}
 	
 	///// Save methods
 
@@ -240,6 +254,30 @@ public class ZipPartStore implements PartStore {
 	        	if (this.sourcePartStore==null) {
 
 	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
+	        		
+	        		/* If you are seeing this exception:
+	    			
+		    			For processing efficiency, docx4j doesn't actually fully load a part until it is needed.
+		    			
+		    			To load it, it needs to know where to find it (ie its SourcePartStore).
+		    			
+		    			This info is stored at the package level, so if you move a part to a new package, that info is lost.
+		    			
+		    			3 ways to work around this:
+		    			
+		    			1. wordprocessingMLPackage.setSourcePartStore(jaxbXmlPart.getPackage().getSourcePartStore());
+		    			
+		    				but not so good, since in the general case, you might want to use several source packages,
+		    				and, in any case, you can't retrieve the part if you've changed its name
+		    				
+		    			2. unmarshall it, so it is fully loaded and docx4j doesn't try to get it from the source part store
+		    		
+		    					jaxbXmlPart.getContents();
+		    			
+		    			   this works fine, but it is a bit opaque since it relies on a side effect / underlying knowledge of docx4j 
+		    			   
+		    			3. best: create a new part, and set its contents (eg via deepcopy) 
+	    			*/	        		
 
 	        	} else if (this.sourcePartStore==this) {
 
@@ -422,6 +460,18 @@ public class ZipPartStore implements PartStore {
 		private byte[] bytes;
 		public byte[] getBytes() {
 			return bytes;
+		}
+		
+		
+		/**
+		 * Replace the contents. Not intended for direct
+		 * use by user code.
+		 * 
+		 * @param bytes
+		 * @since 3.3.2
+		 */  
+		public void setBytes(byte[] bytes) {
+			this.bytes = bytes;
 		}
 
 		private String mimetype;

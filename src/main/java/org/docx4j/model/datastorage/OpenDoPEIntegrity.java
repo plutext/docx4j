@@ -28,10 +28,12 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -128,6 +130,8 @@ public class OpenDoPEIntegrity {
 	
 		private void process(JaxbXmlPart part) throws Docx4JException {
 			
+			log.info("/n Processing " + part.getPartName().getName() );
+			
 			org.docx4j.openpackaging.packages.OpcPackage pkg 
 				= part.getPackage();		
 				// Binding is a concept which applies more broadly
@@ -141,16 +145,52 @@ public class OpenDoPEIntegrity {
 				// Use constructor which takes Unmarshaller, rather than JAXBContext,
 				// so we can set JaxbValidationEventHandler
 				Unmarshaller u = jc.createUnmarshaller();
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
 				
+				JaxbValidationEventHandler eventHandler = new org.docx4j.jaxb.JaxbValidationEventHandler();
+				//eventHandler.setContinue(true);				
+				u.setEventHandler(eventHandler);
+
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("OpenDoPEIntegrity", this);			
-						
-				org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 				
-				part.setJaxbElement(result);
+				try {
+					
+					javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+					org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+					part.setJaxbElement(result);
+					
+					// this will fail if there is unexpected content, 
+					// since JaxbValidationEventHandler fails by default
+					
+				} catch (Exception e) {
+
+					log.error(e.getMessage(), e);				
+					log.error("Input in question:" + XmlUtils.w3CDomNodeToString(doc));				
+					log.error("Now trying DOMResult..");				
+					
+					DOMResult result = new DOMResult(); 
+					org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+
+					if (log.isDebugEnabled()) {
+						
+						org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
+						
+						//log.debug("After ODI: " + XmlUtils.w3CDomNodeToString(docResult));
+						
+						Object o = XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
+						part.setJaxbElement(o);
+					} else 
+					{
+						//part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
+						Object o = XmlUtils.unmarshal(((org.w3c.dom.Document)result.getNode()) );
+						part.setJaxbElement(o);
+					}
+					
+					
+				}
+				
 			} catch (Exception e) {
+				
 				throw new Docx4JException("Problems ensuring integrity", e);			
 			}
 					

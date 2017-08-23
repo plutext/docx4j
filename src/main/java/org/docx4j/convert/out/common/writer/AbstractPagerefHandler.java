@@ -33,7 +33,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-//In HTML there is only one page - therefore the result is allways a (more or less formatted) "1"
+//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
 public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.FldSimpleNodeWriterHandler {
 	protected int outputType = -1;
 	

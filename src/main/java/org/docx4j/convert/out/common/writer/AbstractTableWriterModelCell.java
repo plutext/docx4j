@@ -23,6 +23,7 @@ package org.docx4j.convert.out.common.writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.table.TableModelCell;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
 import org.w3c.dom.Node;
@@ -56,57 +57,18 @@ import org.w3c.dom.Node;
 	/**
  * A cell in the table holding its own content, too
  */
-public class AbstractTableWriterModelCell {
+public class AbstractTableWriterModelCell extends TableModelCell {
 	
 	private final static Logger logger = LoggerFactory.getLogger(AbstractTableWriterModelCell.class);
-	
-	private AbstractTableWriterModel table;
-	private int row;
-	private int col;
-	protected int rowspan = 0;
-	protected int colspan = 0;
-	/** If this is a real cell or only a placeholder.  Vertically merged
-	 * cells are represented as a real cell on the top and dummy cell(s)
-	 * below */
-	protected boolean dummy = false;
-	
-	/** In XSL FO, we need to write cells for before & after, 
-	 * but not dummy cells for horizontal merge */
-	protected boolean dummyBefore = false;
-	public boolean isDummyBefore() {
-		return dummyBefore;
-	}
-	protected boolean dummyAfter = false;
-	public boolean isDummyAfter() {
-		return dummyAfter;
-	}
-
 	
 	
 	protected Node content = null;
 	
-	TcPr tcPr;
-	public TcPr getTcPr() {
-		return tcPr;
-	}
-
-	/**
-	 * Create a dummy cell without content
-	 */
-	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col) {
-		this.table = table;
-		this.row = row;
-		this.col = col;
-		this.dummy = true;
-	}
 
 	public AbstractTableWriterModelCell(AbstractTableWriterModel table, int row, int col, Tc tc, Node content) {
-		this(table, row, col);
-		dummy = false;
+		super(table, row, col, tc);
 		this.content = content;
 		
-		tcPr = tc.getTcPr();
-
 		if (content==null) {
             if(logger.isErrorEnabled()) {
                 logger.error("No content for row " + row + ", col " + col + "\n"
@@ -123,92 +85,11 @@ public class AbstractTableWriterModelCell {
 		   com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
 		   org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation
 		 */
-		// rowspan
-		try {
-			String vm = tc.getTcPr().getVMerge().getVal();
-			if (vm == null || vm.equals("continue"))
-				dummy = true;
-			// dummy cells propagate this call upwards until a real cell is found
-			incrementRowSpan();
-		} catch (NullPointerException ne) {
-			// no vMerge
-		}
-		if (dummy) {
-			// set its colspan to the same value as its upper neighbor,
-			// so dummy cells will be created to the right if colspan>1
-			colspan = table.getCell(row - 1, col).colspan;
-		} else {
-			// real cell
-			// colspan
-			try {
-				int gridSpan = tc.getTcPr().getGridSpan().getVal().intValue();
-				colspan = gridSpan;
-			} catch (NullPointerException ne) {
-				// no gridSpan
-			}
-		}
 	}
 
-	/**
-	 * How many columns are merged into this cell
-	 * @return 0 if none merged; 1 if two cells are merged so there is one
-	 * extra; etc.  A dummy cell has the same extraCols value as its upper
-	 * neighbor.
-	 */
-	public int getExtraCols() {
-		if (colspan < 2)
-			return 0;
-		else
-			return colspan - 1;
-	}
-
-	public int getExtraRows() {
-		if (rowspan > 1)
-			return rowspan - 1;
-		else
-			return 0;
-	}
-
-	public boolean isDummy() {
-		return dummy;
-	}
 
 	public Node getContent() {
 		return content;
 	}
 
-	public int getColumn() {
-		return col;
-	}
-
-	/**
-	 * If this is a real cell, increment rowspan; if this is a dummy,
-	 * propagate the call to the cell upwards
-	 */
-	protected void incrementRowSpan() {
-		if (dummy)
-			table.getCell(row - 1, col).incrementRowSpan();
-		else
-			rowspan++;
-	}
-
-	public String debugStr() {
-		String s = null;
-		if (dummy)
-			s = "d";
-		else
-			s = "r";
-		s += "(" + row + "," + col + ")";
-		s += colspan;
-		s += rowspan;
-		return s + " ";
-	}
-
-	/*
-	 * @since 3.0.0
-	 */
-	public boolean isVMerged() {
-		return (tcPr != null) && 
-			   (tcPr.getVMerge() != null);
-	}
 }

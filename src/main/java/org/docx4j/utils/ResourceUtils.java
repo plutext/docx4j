@@ -69,14 +69,26 @@ public class ResourceUtils {
     {
     	log.debug("Attempting to load: " + filename);
     	
-        // Try to load resource from jar.
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (loader == null) {  // IKVM (v.0.44.0.5) doesn't set context classloader 
-            loader = ResourceUtils.class.getClassLoader();
-        }
+        // Try to load resource from jar.  
+        ClassLoader loader = ResourceUtils.class.getClassLoader();
         
         java.net.URL url = loader.getResource(filename);
-                
+        
+		if (url == null
+				&& System.getProperty("java.vendor").contains("Android")) {
+			url = loader.getResource("assets/" + filename);
+			if (url!=null) System.out.println("found " + filename + " in assets");
+		}
+
+        if (url == null) {
+        	// this is convenient when trying to load a resource from an arbitrary path,
+        	// since in IKVM you can setContextClassLoader to a URLClassLoader,
+        	// which in turn can be configured at run time to search some dir.
+        	log.debug("Trying Thread.currentThread().getContextClassLoader()");
+        	loader = Thread.currentThread().getContextClassLoader();
+        	url = loader.getResource(filename);
+        }
+        
         if (url == null) {
         	if (filename.contains("jaxb.properties")){
         		log.debug("Not using MOXy, since no resource: " + filename);        		

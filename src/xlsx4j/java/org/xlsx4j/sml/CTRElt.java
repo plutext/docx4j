@@ -29,6 +29,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
+ * <p>This element represents a run of rich text.  A rich text run is a region of text that share 
+ * a common set of properties, such as formatting properties.  The properties are defined in the 
+ * rPr element, and the text displayed to the user is defined in the Text (t) element.
+ * 
  * <p>Java class for CT_RElt complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.

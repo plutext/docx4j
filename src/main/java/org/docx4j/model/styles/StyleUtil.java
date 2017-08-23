@@ -2772,12 +2772,14 @@ public class StyleUtil {
 
 			for (int i=0; i<defsSource.size(); i++) {
 				defsSourceElement = defsSource.get(i);
+				// If there's an element with this name already, remove it
 				for (int j=0; j<defsDestination.size(); j++) {
-					if (defsSourceElement.getName().equals(defsDestination.get(i).getName())) {
-						defsDestination.remove(i);
+					if (defsSourceElement.getName().equals(defsDestination.get(j).getName())) {
+						defsDestination.remove(j);
 						break;
 					}
 				}
+				// Now add the element
 				defsDestination.add(XmlUtils.deepCopy(defsSourceElement));
 			}
 		}

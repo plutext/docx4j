@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
 })
 @XmlRootElement(name = "sdtContent")
 public class SdtContentBlock
-    implements Child, ContentAccessor
+    implements Child, ContentAccessor, SdtContent
 {
 	private static Logger log = LoggerFactory.getLogger(SdtContentBlock.class);	
 

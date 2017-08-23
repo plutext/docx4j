@@ -209,7 +209,7 @@ public class XsltHTMLFunctions {
 	}
 
 	/**
-	 * A customised XSLT might just want the <script> element, because it customises
+	 * A customised XSLT might just want the &lt;script> element, because it customises
 	 * the rest of the <head> element.
 	 * 
 	 * @param conversionContext
