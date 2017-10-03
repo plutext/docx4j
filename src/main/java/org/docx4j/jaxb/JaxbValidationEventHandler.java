@@ -182,7 +182,11 @@ ValidationEventHandler{
 	    if (shouldContinue) {
 	    	log.info("continuing (with possible element/attribute loss)");
 	    } else {
-	    	log.info("shouldContinue is set to false");
+	    	if (log.isDebugEnabled()) {
+	    		log.debug("shouldContinue is set to false", new Throwable());
+	    	} else {
+		    	log.info("shouldContinue is set to false");	    		
+	    	}
 	    }
 	     return shouldContinue;
              
