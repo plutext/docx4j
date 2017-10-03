@@ -41,6 +41,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -589,14 +590,25 @@ public class XmlUtils {
 		}		
 	}
 
+	/**
+	 * Unmarshal a node using Context.jc, WITHOUT fallback to pre-processing in case of failure.
+	 * @param n
+	 * @return
+	 * @throws JAXBException
+	 */
 	public static Object unmarshal(Node n) throws JAXBException {
 			
-		Unmarshaller u = Context.jc.createUnmarshaller();					
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		Unmarshaller u = Context.jc.createUnmarshaller();		
+		
+		JaxbValidationEventHandler veh = new org.docx4j.jaxb.JaxbValidationEventHandler();
+		veh.setContinue(true);
+		
+		u.setEventHandler(veh);
 
 		return u.unmarshal( n );
 	}
 
+	
 	public static Object unmarshal(Node n, JAXBContext jc, Class declaredType) throws JAXBException {
 		
 		// THIS DOESN"T WORK PROPERLY WITH 1.6.0.03 JAXB RI
