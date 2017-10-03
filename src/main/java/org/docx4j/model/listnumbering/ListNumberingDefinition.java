@@ -145,7 +145,7 @@ public class ListNumberingDefinition {
         if (abstractNumNode == null) {
         	log.warn("No abstractNumId on w:numId=" + listNumberId);
         } else {
-        	log.debug("points to " + abstractNumNode.getVal().toString());
+        	log.debug("concrete " + listNumberId + " points to abstract list " + abstractNumNode.getVal().toString());
             this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
             if (abstractListDefinition==null) {
             	log.warn("No abstractListDefinition for w:numId=" + listNumberId);  
