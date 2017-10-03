@@ -330,6 +330,17 @@ public class Differencer {
 			exc.printStackTrace();
 			diffxResult = null;
 		}
+
+		toWML( diffxResult.toString(),  result, author, date,
+				 docPartRelsNewer,  docPartRelsOlder);
+	}
+	
+	public  void toWML(String in, javax.xml.transform.Result result, String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsNewer, RelationshipsPart docPartRelsOlder) {
+		
+		if (log.isDebugEnabled()) {
+			log.debug("in: " + in);
+		}
 		
 		try {
 			
@@ -375,7 +386,6 @@ public class Differencer {
 			
 			
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
-			String res = diffxResult.toString();
 			
 			/* 2014 09 09
 			 * 
@@ -391,24 +401,30 @@ public class Differencer {
 			 *    
 			 * This is a crude workaround.   
 			 */
-			int nsIndex = res.indexOf("xmlns:");
-			int closeTag = res.indexOf(">", nsIndex);
-			String topLevelDecs = res.substring(0, closeTag);
+			int nsIndex = in.indexOf("xmlns:");
+			int closeTag = in.indexOf(">", nsIndex);
+			String topLevelDecs = in.substring(0, closeTag);
 			
-			System.out.println(topLevelDecs);
+			log.debug(topLevelDecs);
 			if (topLevelDecs.contains("xmlns:a14")) {
 				// OK
 			} else {
-				res = topLevelDecs + " xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\""
-						+ res.substring(closeTag);
-				
+				in = topLevelDecs + " xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\""
+						+ in.substring(closeTag);
+			}
+			// 2017 10 02: workaround for where right side contains w14:paraId, but left side doesn't
+			if (topLevelDecs.contains("xmlns:w14")) {
+				// OK
+			} else {
+				in = topLevelDecs + " xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\""
+						+ in.substring(closeTag);
 			}
 			
 			
 			if (log.isDebugEnabled() ) {
-				log.debug("Diff result:" + res);
+				log.debug("Diff result:" + in);
 			} 
-			Reader reader = new StringReader(res);
+			Reader reader = new StringReader(in);
 			
 			String simplified = null;
 				try {
@@ -464,6 +480,7 @@ public class Differencer {
 		transformParameters.put("docPartRelsRight", docPartRelsRight);
 		transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
 		
+		log.debug("invoking xsltDiffx2Wml");
 		XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 	}
 	
@@ -533,6 +550,7 @@ public class Differencer {
 			transformParameters.put("docPartRelsLeft",  null);
 			transformParameters.put("docPartRelsRight", docPartRelsRight);
 			transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
+			log.debug("applying xsltMarkupDelete");
 			XmlUtils.transform(doc, xsltMarkupDelete, transformParameters, result);
 			
 		} catch (Exception exc) {

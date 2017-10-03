@@ -86,7 +86,6 @@ public class CompareDocuments {
 		Body newerBody = ((Document)newerPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		
-		System.out.println("Differencing..");
 		
 		// 2. Do the differencing
 		java.io.StringWriter sw = new java.io.StringWriter();
@@ -97,13 +96,26 @@ public class CompareDocuments {
 		Differencer pd = null;
 		if (DIVIDE_AND_CONQUER) {
 
+			System.out.println("Differencing with DIVIDE_AND_CONQUER..");
+			
+			java.io.StringWriter swInterim = new java.io.StringWriter();
+			
 			Docx4jDriver.diff( XmlUtils.marshaltoW3CDomDocument(newerBody).getDocumentElement(),
 					XmlUtils.marshaltoW3CDomDocument(olderBody).getDocumentElement(),
-					   sw);
+					swInterim);
 				// The signature which takes Reader objects appears to be broken
+			
+			// Now, feed it through diff to wml XSLT
+			pd = new Differencer();
+			pd.toWML(swInterim.toString(), result, "someone", changeDate,
+					newerPackage.getMainDocumentPart().getRelationshipsPart(),
+					olderPackage.getMainDocumentPart().getRelationshipsPart() 
+					);
 			
 		} else {
 
+			System.out.println("Differencing without dividing..");
+			
 			pd = new Differencer();
 			pd.setRelsDiffIdentifier("blagh"); // not necessary in this case 
 			pd.diff(newerBody, olderBody, result, "someone", changeDate,
@@ -125,7 +137,7 @@ public class CompareDocuments {
 		if (DIVIDE_AND_CONQUER) {
 			// No image support at present
 		} else {
-			handleRels(pd, newerPackage.getMainDocumentPart());
+			handleRels(pd, newerPackage.getMainDocumentPart()); // TODO: that needs work, for more complex input
 		}
 		
 		
@@ -177,7 +189,7 @@ public class CompareDocuments {
 	private static void handleRels(Differencer pd, MainDocumentPart newMDP) throws InvalidFormatException {
 		
 		RelationshipsPart rp = newMDP.getRelationshipsPart(); 
-		//System.out.println("before: \n" + rp.getXML());		
+		System.out.println("before: \n" + rp.getXML());		
 		
 		// Since we are going to add rels appropriate to the docs being 
 		// compared, for neatness and to avoid duplication
@@ -221,7 +233,7 @@ public class CompareDocuments {
 			}
 		}
 		
-		//System.out.println("after: \n" + rp.getXML());
+		System.out.println("after: \n" + rp.getXML());
 		
 	}
 	

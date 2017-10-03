@@ -34,6 +34,8 @@ import org.docx4j.XmlUtils;
 import org.eclipse.compare.EventSequenceComparator;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -125,18 +127,9 @@ import com.topologi.diffx.util.Constants;
  *
  */
 public class Docx4jDriver {
+	
+	protected static Logger log = LoggerFactory.getLogger(Docx4jDriver.class);
 
-	// no logger in this class, to minimise external dependencies.
-	// Instead:
-	public static final boolean debug = false;
-	public static void log(String message, boolean force) {
-		if (debug || force) {
-			System.out.println(message);
-		}
-	}
-	public static void log(String message) {
-		log(message, false);
-	}
 
 
   /**
@@ -188,10 +181,10 @@ public class Docx4jDriver {
 			diffxConfig.setIgnoreWhiteSpace(false);
 			diffxConfig.setPreserveWhiteSpace(true);
 
-			log(xml1.getNodeName());
-			log(""+ xml1.getChildNodes().getLength());
-			log(xml2.getNodeName());
-			log(""+ xml2.getChildNodes().getLength());
+			log.debug(xml1.getNodeName());
+			log.debug(""+ xml1.getChildNodes().getLength());
+			log.debug(xml2.getNodeName());
+			log.debug(""+ xml2.getChildNodes().getLength());
 
 			// Root nodes must be the same to do divide+conquer.
 			// Even then, only do it if there
@@ -207,7 +200,7 @@ public class Docx4jDriver {
 				// children?)
 
 				// .. just normal diffx
-				log("Skipping top level LCS");
+				log.debug("Skipping top level LCS");
 				Main.diff(xml1, xml2, out, diffxConfig);
 					// The signature which takes Reader objects appears to be broken
 
@@ -220,7 +213,7 @@ public class Docx4jDriver {
 			DOMRecorder loader = new DOMRecorder();
 			loader.setConfig(diffxConfig);
 
-			log("top level LCS - creating EventSequences...");
+			log.debug("top level LCS - creating EventSequences...");
 			List<EventSequence> leftES = new ArrayList<EventSequence>();
 			for (int i = 0 ; i < xml1.getChildNodes().getLength(); i++ ) {
 				//log( Integer.toString(xml1.getChildNodes().item(i).getNodeType()));
@@ -291,7 +284,7 @@ public class Docx4jDriver {
 			}
 			EventSequenceComparator rightESC = new EventSequenceComparator(rightES);
 
-			log("top level LCS - determining top level LCS...");
+			log.debug("top level LCS - determining top level LCS...");
 			RangeDifference[] rd = RangeDifferencer.findDifferences(leftESC, rightESC);
 
 			SmartXMLFormatter formatter = new SmartXMLFormatter(out);
@@ -301,7 +294,7 @@ public class Docx4jDriver {
 			openResult(rootNodeName, out);
 
 			if (rd.length==0) {
-				log("top level LCS done; there are no differences!");
+				log.debug("top level LCS done; there are no differences!");
 				addComment("No differences", formatter);
 				// Note that our hashcode acts like a canonicaliser
 				// - attribute order doesn't matter.
@@ -316,13 +309,15 @@ public class Docx4jDriver {
 			}
 
 			// Debug: Raw output
-			for (int i=0; i<rd.length; i++ ) {
-				RangeDifference rdi = rd[i];
-				log( rdi.kindString() + " left " + rdi.leftStart() + "," + rdi.leftLength()
-						+ " right " + rdi.rightStart() + "," + rdi.rightLength() );
+			if (log.isDebugEnabled()) {
+				for (int i=0; i<rd.length; i++ ) {
+					RangeDifference rdi = rd[i];
+					log.debug( rdi.kindString() + " left " + rdi.leftStart() + "," + rdi.leftLength()
+							+ " right " + rdi.rightStart() + "," + rdi.rightLength() );
+				}
 			}
 
-			log("top level LCS done; now performing child actions ...");
+			log.debug("top level LCS done; now performing child actions ...");
 
 
 			int leftIdx = 0;
@@ -479,6 +474,7 @@ public class Docx4jDriver {
 				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""
 				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
 				+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\""
+				+ " xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\"" // 	workaround for case where RHS only contains w14		    
 				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 				+ " xmlns:dfx=\"" + Constants.BASE_NS_URI + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
 				+ " xmlns:del=\"" + Constants.DELETE_NS_URI + "\""
