@@ -34,7 +34,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -175,6 +177,10 @@ public class OpenDoPEReverter {
 				findSdtsInTemplatePart((HeaderPart) rp.getPart(r), sdtPrFinder);
 			} else if (r.getType().equals(Namespaces.FOOTER)) {
 				findSdtsInTemplatePart((FooterPart) rp.getPart(r), sdtPrFinder);
+			} else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+				findSdtsInTemplatePart((FootnotesPart) rp.getPart(r), sdtPrFinder);
+			} else if (r.getType().equals(Namespaces.ENDNOTES)) {
+				findSdtsInTemplatePart((EndnotesPart) rp.getPart(r), sdtPrFinder);
 			}
 		}
 	}
@@ -281,6 +287,10 @@ public class OpenDoPEReverter {
 				handleSdtsInInstancePart((HeaderPart) rp.getPart(r));
 			} else if (r.getType().equals(Namespaces.FOOTER)) {
 				handleSdtsInInstancePart((FooterPart) rp.getPart(r));
+			} else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+				handleSdtsInInstancePart((FootnotesPart) rp.getPart(r));
+			} else if (r.getType().equals(Namespaces.ENDNOTES)) {
+				handleSdtsInInstancePart((EndnotesPart) rp.getPart(r));
 			}
 		}
 	}

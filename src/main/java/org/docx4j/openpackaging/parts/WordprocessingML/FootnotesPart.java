@@ -21,14 +21,19 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.util.List;
+
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.ArrayListWml;
 import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.ContentAccessor;
 
 
-public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> {
+public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> implements ContentAccessor {
 	// implements ContentAccessor {
 	
 	/* Unfortunately, this class can't easily implement
@@ -51,6 +56,8 @@ public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> {
 	 */
 	
 	
+	private ArrayListWml<Object> content;
+
 	public FootnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();		
@@ -72,6 +79,22 @@ public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> {
 		
 	}
 
+	/**
+     * Convenience method to getJaxbElement().getEndnote()
+     * @since 2.8.1
+     */
+    public List<Object> getContent() {
+    	if (this.getJaxbElement()==null) {    		
+    		this.setJaxbElement( Context.getWmlObjectFactory().createCTFootnotes() );
+    	}
+    	
+    	if (content == null) {
+            content  = new ArrayListWml<Object>(this.getJaxbElement());
+        }
+        return this.content;
+    	
+    }	
+	
 //    /**
 //     * Convenience method to getJaxbElement().getFootnote()
 //     * @since 2.8.1
