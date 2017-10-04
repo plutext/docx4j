@@ -291,6 +291,10 @@ public class ContentTypes {
 	// PartName="/xl/worksheets/sheet1.xml"
 	public final static String SPREADSHEETML_WORKSHEET = 
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+
+	// PartName="/xl/chartsheets/sheet1.xml"
+	public final static String SPREADSHEETML_CHARTSHEET = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.chartsheet+xml";
 	
 	// PartName="/xl/calcChain.xml"
 	public final static String SPREADSHEETML_CALC_CHAIN = 
