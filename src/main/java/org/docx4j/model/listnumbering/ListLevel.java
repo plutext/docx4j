@@ -410,7 +410,7 @@ public class ListLevel {
 //		private void setNumFmt(STNumberFormat numFmt) {
 //			this.numFmt = numFmt;
 //		}
-	protected NumberFormat getNumFmt() {
+	public NumberFormat getNumFmt() {
 		return numFmt;
 	}
 
