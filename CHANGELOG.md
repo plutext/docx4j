@@ -8,7 +8,18 @@ Version 3.3.6  minor release
 Release date
 ------------
 
-xx August 2017
+7 October 2017
+
+Contributors to this release
+----------------------------
+
+ai-github
+
+Exandra
+
+Jason Harrop
+
+whisper2shade
 
 
 Notable Changes in Version 3.3.6 
@@ -17,6 +28,17 @@ Notable Changes in Version 3.3.6
 @XmlRootElement on webextension and taskpanes
 
 OpenDoPE performance enhancements:  pre-calculate repeat counts and simple conditions for substantial time saving in ODH step
+
+JAXB representation of c14 (http://schemas.microsoft.com/office/drawing/2007/8/2/chart) from odrawxml/chart20070802.xsd
+
+OpenDoPE: bind date sdt
+
+JaxbXmlPart new method transform(Templates xslt, Map<String, Object> transformParameters, Result result)
+
+xlsx4j
+------
+
+Chartsheetpart
 
 
 

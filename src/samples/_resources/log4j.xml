@@ -62,7 +62,7 @@
 	</logger>	
 
     <logger name="org.docx4j.TraversalUtil">
-  		<level value="warn"/> 
+  		<level value="error"/> 
 	</logger>	
 
     <logger name="org.docx4j.XmlUtils">
@@ -80,6 +80,10 @@
     <logger name="org.docx4j.convert.in.xhtml">
   		<level value="warn"/> 
 	</logger>	
+
+    <logger name="org.docx4j.convert.in.xhtml.ListHelper">
+        <level value="warn"/> 
+    </logger>   
 
     <logger name="org.docx4j.convert.out">
   		<level value="warn"/> 
@@ -115,7 +119,11 @@
     <logger name="org.docx4j.diff">
   		<level value="warn"/> 
 	</logger>
-    	
+
+    <logger name="com.topologi">
+        <level value="warn"/> 
+    </logger>
+        
     <logger name="org.docx4j.fonts">
   		<level value="warn"/> 
 	</logger>
