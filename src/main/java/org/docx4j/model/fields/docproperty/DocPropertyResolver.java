@@ -2,7 +2,9 @@ package org.docx4j.model.fields.docproperty;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldFormattingException;
 import org.docx4j.model.fields.FieldValueException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -77,8 +79,18 @@ public class DocPropertyResolver {
 				return (String)value;
 			} else if (value instanceof Integer) {
 				return ((Integer)value).toString();
+			} else if (value instanceof org.docx4j.docProps.custom.Properties.Property) {
+				
+				org.docx4j.docProps.custom.Properties.Property property = (org.docx4j.docProps.custom.Properties.Property)value;
+				if (property.getLpwstr()!=null) {
+					// eg <vt:lpwstr>Martin</vt:lpwstr>
+					return property.getLpwstr();
+				} else {
+					throw new FieldFormattingException(" TODO: handle " + XmlUtils.marshaltoString(property, Context.jcDocPropsCustom));					
+				}
+				
 			} else {
-				throw new FieldFormattingException("TODO: convert " + value.getClass().getName() + " to string");
+				throw new FieldFormattingException(key + " TODO: convert " + value.getClass().getName() + " to string");
 			}
 		}
 
