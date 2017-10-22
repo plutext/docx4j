@@ -152,30 +152,36 @@ public class Condition implements Evaluable {
 				if (tmpPath.startsWith("string(" + path + ")='")) {
 					
 					String val = domToXPathMap.getPathMap().get(path);
-					boolean result = (tmpPath.equals("string(" + path + ")='"+val +"'"));
-					
-					if (result==false) {
-						// try again ignoring whitespace (treat it as insignificant, matching particle.evaluate
-						result = (tmpPath.equals("string(" + path + ")='"+val.trim() +"'"));
-					}
-					
-					if (this.id.startsWith("tVK") ||
-							log.isDebugEnabled()) {
-						boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
-					
-						if (result==tmpCheck) {
-//							System.out.println("Manual string calc worked");
-						} else {
-							String message ="PANIC! Manual string calc doesn't match XPath eval!\n"
-							+ xpath
-							+ "\nstring(" + path + ")='"+val +"'\n";
-
-							log.error(message);
-							throw new RuntimeException(message);
-							
+					if (val==null) {
+						log.info("Couldn't find " + val + " in domToXPathMap path map; reverting to default handling");
+						// so fall through to default handling
+						
+					} else /* use the cached value */ {
+						boolean result = (tmpPath.equals("string(" + path + ")='"+val +"'"));
+						
+						if (result==false) {
+							// try again ignoring whitespace (treat it as insignificant, matching particle.evaluate
+							result = (tmpPath.equals("string(" + path + ")='"+val.trim() +"'"));
 						}
+						
+						if (log.isDebugEnabled()) {
+							
+							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
+						
+							if (result==tmpCheck) {
+	//							System.out.println("Manual string calc worked");
+							} else {
+								String message ="PANIC! Manual string calc doesn't match XPath eval!\n"
+								+ xpath
+								+ "\nstring(" + path + ")='"+val +"'\n";
+	
+								log.error(message);
+								throw new RuntimeException(message);
+								
+							}
+						}
+						return result;
 					}
-					return result;
 				}
 				
 			} else if ( xpath.startsWith("count")) {
