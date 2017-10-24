@@ -144,8 +144,6 @@ public class PropertyResolver {
 		themePart = mdp.getThemePart();
 		numberingDefinitionsPart = mdp.getNumberingDefinitionsPart();
 		init();
-		
-		//
 	}
 	
 //	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
@@ -233,7 +231,6 @@ public class PropertyResolver {
 
 		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
-		
 	}
 	
 	private void initializeThreadLoacalObject() {
@@ -772,59 +769,57 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) {
-
-		// NB Currently used in PDF viaXSLFO only
-
-		log.debug("in getEffectiveRPr");
-
-		// Idea is that you pass pPr if you are using this for XSL FO,
-		// since we need to take account of rPr in paragraph styles
-		// (but not the rPr in a pPr direct formatting, since
-		// that only applies to the paragraph mark).
-		// * For HTML/CSS, this would be null (since the pPr level rPr
-		// * is made into a separate style applied via a second value in
-		// * the class attribute). But, in the CSS case, this
-		// function is not used - since the rPr is made into a style as well.
-
-		// First, the document defaults are applied
-		RPr effectiveRPr = resetToDefaultRPr();
 		
-		// Apply DefaultParagraphFont. We only do it explicitly
+		// NB Currently used in PDF viaXSLFO only
+		
+		log.debug("in getEffectiveRPr");
+		
+//		Idea is that you pass pPr if you are using this for XSL FO,
+//		since we need to take account of rPr in paragraph styles
+//		(but not the rPr in a pPr direct formatting, since
+//       that only applies to the paragraph mark). 
+//		 * For HTML/CSS, this would be null (since the pPr level rPr 
+//		 * is made into a separate style applied via a second value in
+//		 * the class attribute).  But, in the CSS case, this
+		// function is not used - since the rPr is made into a style as well.
+		
+		
+		//	First, the document defaults are applied
+		 RPr effectiveRPr = resetToDefaultRPr();
+		
+			// Apply DefaultParagraphFont.  We only do it explicitly
 		// here as per conditions, because if there is a run style,
 		// walking the hierarchy will include this if it is needed
-		if (expressRPr == null || expressRPr.getRStyle() == null) {
-			applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);
+			if (expressRPr == null || expressRPr.getRStyle() == null ) {
+				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
 		}
-
-		// Next, the table style properties are applied to each table in the
-		// document,
-		// following the conditional formatting inclusions and exclusions
-		// specified
-		// per table.
-
+		
+		//	Next, the table style properties are applied to each table in the document, 
+		//	following the conditional formatting inclusions and exclusions specified 
+		//	per table. 
+		
 		// TODO - if the paragraph is in a table?
-
-		// Next, numbered item and paragraph properties are applied to each
-		// paragraph
-		// formatted with a *numbering *style**.
-
-		// TODO - who uses numbering styles (as opposed to numbering
+				
+		//	Next, numbered item and paragraph properties are applied to each paragraph 
+		//	formatted with a *numbering *style**.
+		
+//			 TODO - who uses numbering styles (as opposed to numbering
 		// via a paragraph style or direct formatting)?
-
-		// Next, paragraph and run properties are
-		// applied to each paragraph as defined by the paragraph style
+		
+		//  Next, paragraph and run properties are 
+		//	applied to each paragraph as defined by the paragraph style
 		// (this includes run properties defined in a paragraph style,
-		// but not run properties directly included in a pPr in the
-		// document (those only apply to a paragraph mark).
-
-		if (pPr == null) {
+		//  but not run properties directly included in a pPr in the
+		//  document (those only apply to a paragraph mark).
+			
+			if (pPr==null) {
 			log.debug("pPr was null");
 		} else {
 			// At the pPr level, what rPr do we have?
 			// .. ascend the paragraph style tree
-			if (pPr.getPStyle() == null) {
-				// log.warn("No pstyle:");
-				// log.debug(XmlUtils.marshaltoString(pPr, true, true));
+				if (pPr.getPStyle()==null) {
+//					log.warn("No pstyle:");
+//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
 			} else {
 				log.debug("pstyle:" + pPr.getPStyle().getVal());
 				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
@@ -832,28 +827,27 @@ public class PropertyResolver {
 				applyRPr(pPrLevelRunStyle, effectiveRPr);
 			}
 			// Check Paragraph rPr (our special hack of using ParaRPr
-			// to format a fo:block)
-			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr()))) {
+				// to format a fo:block) 
+				if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
 				applyRPr(pPr.getRPr(), effectiveRPr);
+				} 
 			}
-		}
-		// Next, run properties are applied to each run with a specific
-		// character style
-		// applied.
+		//	Next, run properties are applied to each run with a specific character style 
+		//	applied. 		
 		RPr resolvedRPr = null;
 		String runStyleId;
-		if (expressRPr != null && expressRPr.getRStyle() != null) {
+		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();
 			resolvedRPr = getEffectiveRPr(runStyleId);
-			applyRPr(resolvedRPr, effectiveRPr);
+			applyRPr(resolvedRPr, effectiveRPr);  
 		}
-
-		// Finally, we apply direct formatting (run properties not from
-		// styles).
-		if (hasDirectRPrFormatting(expressRPr)) {
-			// effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);
+				
+		//	Finally, we apply direct formatting (run properties not from 
+		//	styles).		
+		if (hasDirectRPrFormatting(expressRPr) ) {			
+			//effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);			
 			applyRPr(expressRPr, effectiveRPr);
-		}
+		} 
 		return effectiveRPr;
 
 	}
