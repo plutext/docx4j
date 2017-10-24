@@ -325,6 +325,12 @@ public class PropertyResolver {
 		
 		context.set(threadLocalMap);
 	}
+	
+	public static void clearThreadLocal() {
+		if(context!=null) {
+			context.remove();
+		}
+	}
 
 
 	private void addNormalToResolvedStylePPrComponent() {
