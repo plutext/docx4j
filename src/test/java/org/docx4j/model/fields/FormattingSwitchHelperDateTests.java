@@ -10,20 +10,27 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 public class FormattingSwitchHelperDateTests {
 	
 	static boolean wasDateFormatInferencerUSA = false;
-	
+	static Locale initialLocale;
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Tests assume USA date format
 		wasDateFormatInferencerUSA = Docx4jProperties.getProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", false);		
 		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", true);
+		initialLocale=Locale.getDefault();
+		Locale.setDefault(Locale.ENGLISH); // otherwise dates will be formatted using local language standard
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", wasDateFormatInferencerUSA);
+		Locale.setDefault(initialLocale);
 	}
 	
 	@Test
