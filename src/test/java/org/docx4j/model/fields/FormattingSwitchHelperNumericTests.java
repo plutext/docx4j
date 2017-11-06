@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 @RunWith(value = Parameterized.class)
-public class FormattingSwitchHelperNumericTests {
+public class FormattingSwitchHelperNumericTests extends FormattingTestsBase {
 
 	static Locale initialLocale;
 
@@ -113,38 +113,5 @@ public class FormattingSwitchHelperNumericTests {
 		doit("MERGEFIELD", data, result);
 		doit("DOCPROPERTY", data, result);
 	}
-
-	// ---------------------------------------------------------------------------------------
-
-	private void doit(String fieldname, SwitchTestData triple, String expectedResult)  throws TransformerException, Docx4JException {
-
-		String instr = fieldname + " foo " + triple.format;
-		String result = getFormat(instr, triple.val);
-		assertTrue(result.equals(expectedResult));
-	}
-
-	private String getFormat(String instr, String val) throws TransformerException, Docx4JException {
-
-		FldSimpleModel fsm = new FldSimpleModel();
-		fsm.build(instr);
-		return FormattingSwitchHelper.applyFormattingSwitch(null, fsm, val);
-	}
-
-	private static class SwitchTestData {
-
-		String format;
-		String val;
-
-		public String toString() {
-			return "format " + format + " to data " + val;
-		}
-
-		public SwitchTestData(String format, String val) {
-
-			this.format = format;
-			this.val = val;
-		}
-	}
-
 
 }

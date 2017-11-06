@@ -16,7 +16,7 @@ import java.util.Locale;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(value = Parameterized.class)
-public class FormattingSwitchHelperDateTests {
+public class FormattingSwitchHelperDateTests extends FormattingTestsBase {
 
 	static boolean wasDateFormatInferencerUSA = false;
 	static Locale initialLocale;
@@ -96,40 +96,5 @@ public class FormattingSwitchHelperDateTests {
 	//{"\\@ \"h:mm:ss am/pm\"", "4/15/2013","5:28:34 PM"},
 	//{"\\@ HH:mm", "4/15/2013","17:28"},
 	//{"\\@ \"'Today is 'HH:mm:ss\"", "4/15/2013","Today is 17:28:34"}
-
-
-	// ---------------------------------------------------------------------------------------
-
-	private void doit(String fieldname, SwitchTestData triple, String expectedResult)  throws TransformerException, Docx4JException {
-
-		String instr = fieldname + " foo " + triple.format;
-		String result = getFormat(instr, triple.val);
-		System.out.println(result);
-		assertTrue(result.equals(expectedResult));
-	}
-
-	private String getFormat(String instr, String val) throws TransformerException, Docx4JException {
-
-		FldSimpleModel fsm = new FldSimpleModel();
-		fsm.build(instr);
-		return FormattingSwitchHelper.applyFormattingSwitch(null, fsm, val);
-	}
-
-	private static class SwitchTestData {
-
-		String format;
-		String val;
-
-		public String toString() {
-			return "format " + format + " to data " + val;
-		}
-
-		public SwitchTestData(String format, String val) {
-
-			this.format = format;
-			this.val = val;
-		}
-	}
-
 
 }

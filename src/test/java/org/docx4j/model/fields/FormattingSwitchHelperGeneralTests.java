@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 @RunWith(value = Parameterized.class)
-public class FormattingSwitchHelperGeneralTests {
+public class FormattingSwitchHelperGeneralTests extends FormattingTestsBase{
 
 	// For DOCPROPERTY and MERGEFIELD, = (and presumably all others), \* without arg in Word 2010 sp1
 	// results in Error! Switch argument not specified, .
@@ -69,41 +69,8 @@ public class FormattingSwitchHelperGeneralTests {
 
 	@Test
 	public void testDateParsed()throws TransformerException, Docx4JException {
-		SwitchTestData triple = new SwitchTestData(format, input, result);
-		doit("MERGEFIELD", triple);
-		doit("DOCPROPERTY", triple);
+		SwitchTestData triple = new SwitchTestData(format, input);
+		doit("MERGEFIELD", triple, result);
+		doit("DOCPROPERTY", triple, result);
 	}
-
-	// ---------------------------------------------------------------------------------------
-
-	private void doit(String fieldname, SwitchTestData triple)  throws TransformerException, Docx4JException {
-
-		String instr = fieldname + " foo " + triple.format;
-		String result = getFormat(instr, triple.val);
-		assertTrue(result.equals(triple.expectedResult));
-	}
-
-	private String getFormat(String instr, String val) throws TransformerException, Docx4JException {
-
-		FldSimpleModel fsm = new FldSimpleModel();
-		fsm.build(instr);
-		return FormattingSwitchHelper.applyFormattingSwitch(null, fsm, val);
-	}
-
-
-	private static class SwitchTestData {
-
-		String format;
-		String val;
-		String expectedResult;
-
-		public SwitchTestData(String format, String val, String expectedResult) {
-
-			this.format = format;
-			this.val = val;
-			this.expectedResult = expectedResult;
-		}
-	}
-
-
 }
