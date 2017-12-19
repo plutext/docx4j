@@ -10,6 +10,8 @@ import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Just a basic model for w:fldSimple that gets used in the 
  *  FldSimpleModelConverter for the conversion to pdf/html
@@ -20,6 +22,7 @@ import java.util.List;
 public class FldSimpleModel {
 	
 	private static Logger log = LoggerFactory.getLogger(FldSimpleModel.class);		
+	private static final Pattern TAG_REGEX = Pattern.compile("(<_.+?/>)");
 	
 	protected CTSimpleField fldSimple = null;
 	protected Node content = null;
@@ -74,6 +77,10 @@ public class FldSimpleModel {
 		
 		log.debug("splitParameters: " + text);
 		List<String> ret = Collections.EMPTY_LIST;
+		ret = splitBAparameters(text);
+		if(!ret.isEmpty()) {
+			return ret;
+		}
 		int valStart = -1;
 		boolean inLiteral = false;
 		char ch = '\0';
@@ -107,6 +114,20 @@ public class FldSimpleModel {
 				appendParameter(ret, text.substring(valStart));
 				valStart = -1;
 			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * BS ADD to manage BA custom tags
+	 * @param text
+	 * @return list spllitter parameter
+	 */
+	private static List<String> splitBAparameters(String text) {
+		List<String> ret = new ArrayList<String>();
+		final Matcher matcher = TAG_REGEX.matcher(text);
+		while (matcher.find()) {
+			ret.add(matcher.group(1));
 		}
 		return ret;
 	}
