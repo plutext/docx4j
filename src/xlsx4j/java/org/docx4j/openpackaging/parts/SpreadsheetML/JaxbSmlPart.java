@@ -49,6 +49,8 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPartXPathAware<E>  {
 			return new QueryTablePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_EXTERNAL_LINK)) {
 			return new ExternalLinkPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CHARTSHEET)) {
+			return new ChartsheetPart(new PartName(partName));
 		} else {
 			throw new PartUnrecognisedException("No subclass found for "
 					+ partName + " (content type '" + contentType + "')");

@@ -442,7 +442,9 @@ public class Load3 extends Load {
 				// first, as we do above.
 				part = ctm.getPart("/" + resolvedPartUri, rel);				
 
-				log.debug("ctm returned " + part.getClass().getName() );
+				if (log.isDebugEnabled() && part !=null) {
+					log.debug("ctm returned " + part.getClass().getName() );
+				}
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart
 						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart

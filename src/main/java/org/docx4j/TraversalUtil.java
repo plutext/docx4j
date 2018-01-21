@@ -157,6 +157,7 @@ public class TraversalUtil {
 										
 									} else  {
 										// If this happens, we need to understand why
+										// eg Parent of org.docx4j.wml.Tc is currently org.docx4j.wml.CTSdtContentCell
 										if (log.isWarnEnabled()) {
 											log.warn("Parent of " + o2.getClass().getName()
 													+ " is currently " + ((Child)o2).getParent().getClass().getName());

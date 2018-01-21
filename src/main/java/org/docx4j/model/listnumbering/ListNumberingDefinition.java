@@ -135,24 +135,25 @@ public class ListNumberingDefinition {
     	this.numNode = numNode;
     	
         this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
-        if (log.isDebugEnabled()) {
-	    	log.debug("Constructing model for numId=" + listNumberId);
-	    	log.debug(XmlUtils.marshaltoString(numNode));
-        }
+//        if (log.isDebugEnabled()) {
+//	    	log.debug("Constructing model for numId=" + listNumberId);
+//	    	log.debug(XmlUtils.marshaltoString(numNode));
+//        }
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
         Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
         if (abstractNumNode == null) {
         	log.warn("No abstractNumId on w:numId=" + listNumberId);
         } else {
+        	log.debug("concrete " + listNumberId + " points to abstract list " + abstractNumNode.getVal().toString());
             this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
             if (abstractListDefinition==null) {
             	log.warn("No abstractListDefinition for w:numId=" + listNumberId);  
             	return;
             }
-            if (log.isDebugEnabled()) {
-            	log.debug(XmlUtils.marshaltoString(abstractListDefinition.getAbstractNumNode()));
-            }
+//            if (log.isDebugEnabled()) {
+//            	log.debug(XmlUtils.marshaltoString(abstractListDefinition.getAbstractNumNode()));
+//            }
 
             if (this.abstractListDefinition.getLevelCount()==0 
             		&& this.abstractListDefinition.hasLinkedStyle()) {
@@ -218,6 +219,9 @@ public class ListNumberingDefinition {
 							if (startOverride != null
 									&& startOverride.getVal() != null) {
 								
+								if (this.levels.get(overrideLevelId)==null) {
+									throw new RuntimeException(overrideLevelId + " level missing for abstractListDefinition " + abstractListDefinition.getID());
+								}
 								this.levels.get(overrideLevelId).setStartValue(
 										startOverride.getVal().subtract(BigInteger.ONE));
 								log.debug("level " + overrideLevelId + "starts at " + startOverride.getVal());

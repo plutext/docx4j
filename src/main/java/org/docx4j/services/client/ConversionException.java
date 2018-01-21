@@ -35,6 +35,16 @@ public class ConversionException extends Exception {
 		super(msg);
 	}
 
+	public ConversionException(String msg, Exception e, HttpResponse response) {
+		super(msg, e);
+		this.response=response;
+	}
+
+	public ConversionException(String msg, HttpResponse response) {
+		super(msg);
+		this.response=response;
+	}
+	
 	public ConversionException(HttpResponse response) {
 		super();
 		this.response=response;

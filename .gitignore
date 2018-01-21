@@ -2,3 +2,5 @@
 /bin/
 /dist/
 /bin-testOutput/
+.directory
+

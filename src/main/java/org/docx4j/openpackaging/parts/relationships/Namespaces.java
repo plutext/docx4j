@@ -257,6 +257,10 @@ public class Namespaces {
 	public final static String SPREADSHEETML_WORKSHEET = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
 
+	// chartsheets/sheet1.xml
+	public final static String SPREADSHEETML_CHARTSHEET = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartsheet";
+
 	// ../printerSettings/printerSettings1.bin
 	public final static String SPREADSHEETML_PRINTER_SETTINGS = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings";
