@@ -284,8 +284,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 
 			// Don't change the user's Document object; create a tmp one
-			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wordMLPackage
-					.getMainDocumentPart().getJaxbElement());
+			org.docx4j.wml.Document tmpDoc = wordMLPackage.getMainDocumentPart().getJaxbElement();
 			Containerization.groupAdjacentBorders(tmpDoc.getBody());
 			PageBreak.movePageBreaks(tmpDoc.getBody());
 
@@ -361,7 +360,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				Transformer transformer = XmlUtils.getTransformerFactory().newTransformer();
 				transformer.transform(src, result);
 			} else {
-
+				ThreadLocal myThreadLocal = new ThreadLocal();
+        			myThreadLocal.set("true");
 				XmlUtils.transform(domDoc, xslt, settings.getSettings(), result);
 			}
 			
@@ -375,6 +375,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		} finally {
 			// Clean-up
 			try {
+				PropertyResolver.clearThreadLocal();
 				os.close();
 			} catch (IOException e) {
 				e.printStackTrace();
