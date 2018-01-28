@@ -94,8 +94,25 @@ public class UnitsOfMeasurement {
 		return inchToTwip(inch);
 		
 	}
-	
-	
+
+	/**
+	 * Convert an inches value to twips and return as a double.
+	 */
+	public static double inchToTwipDouble(double inch) {
+		// 1440 twip = 1 inch;
+		return inch * 1440;
+	}
+
+	/**
+	 * Convert a pixel value to twips and return as a double. This may be useful
+	 * where the returned value will then be converted to another unit, and we
+	 * don't want to lose precision due to rounding.
+	 */
+	public static double pxToTwipDouble(double px) {
+		double inch = px / DPI;
+		return inchToTwipDouble(inch);
+	}
+
 	/**
 	 * 1440 twip = 1 inch;Try to guess whether inches or mm looks nicer
 	 * @param left

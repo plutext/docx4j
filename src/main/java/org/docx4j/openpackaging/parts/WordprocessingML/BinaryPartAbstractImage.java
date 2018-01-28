@@ -1222,13 +1222,20 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				writableWidthTwips = maxWidth;
 				log.debug("reduced to: " + writableWidthTwips);
 			}
-			
-			  ImageSize size = imageInfo.getSize();
-			  
-			  Dimension2D dPt = size.getDimensionPt();
-			double imageWidthTwips = dPt.getWidth() * 20;
+
+			ImageSize size = imageInfo.getSize();
+
+			// get image size in pixels
+			Dimension2D dpx = size.getDimensionPx();
+
+			// convert pixels to twips (uses configured DPI setting - NOT the
+			// image DPI)
+			double imageWidthTwips = UnitsOfMeasurement.pxToTwipDouble(dpx.getWidth());
+			double imageHeightTwips = UnitsOfMeasurement.pxToTwipDouble(dpx.getHeight());
+
 			log.debug("imageWidthTwips: " + imageWidthTwips);
-			
+			log.debug("imageHeightTwips: " + imageHeightTwips);
+
 			long cx;
 			long cy;
 			boolean scaled = false;
@@ -1238,15 +1245,16 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				scaled = true;
 				
 				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
-                cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips / imageWidthTwips);
+//                cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips / imageWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(imageHeightTwips * writableWidthTwips / imageWidthTwips);
 				
 			} else {
 
 				log.debug("Scaling image - not necessary");
 				
 				cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
-				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
-				
+//				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
+				cy = UnitsOfMeasurement.twipToEMU(imageHeightTwips);
 			}
 			
 			log.debug("cx=" + cx + "; cy=" + cy);
