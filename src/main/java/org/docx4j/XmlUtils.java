@@ -1047,10 +1047,13 @@ public class XmlUtils {
 			if (value instanceof JAXBElement<?>) {
 	
 				Object wrapped = ((JAXBElement)value).getValue();
+				QName qname = ((JAXBElement)value).getName();
 				
 	            @SuppressWarnings("unchecked")
 	            Class clazz = wrapped.getClass();
-	            JAXBElement contentObject = new JAXBElement(new QName(clazz.getSimpleName()), clazz, wrapped);
+	            JAXBElement contentObject = new JAXBElement(
+	            		qname,
+	            		clazz, wrapped);
 	            JAXBSource source = new JAXBSource(jc, contentObject);
 	            elem = jc.createUnmarshaller().unmarshal(source, clazz);				
 				
