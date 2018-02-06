@@ -84,8 +84,42 @@ java.lang.IllegalArgumentException:
   </xsl:template>
  -->
    
+  <xsl:template match="dfx:ins" >
+	<xsl:variable name="id" 
+				select="java:org.docx4j.diff.Differencer.getId()" />
+    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+          <xsl:apply-templates select="@*|node()"/>
+    </w:ins>
+    
+  </xsl:template>
 
+  <xsl:template match="dfx:del" >
+    <xsl:variable name="id" 
+                select="java:org.docx4j.diff.Differencer.getId()" />
+    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+          <xsl:apply-templates select="@*|node()"/>
+    </w:del>
+    
+  </xsl:template>
+
+  <!-- We don't lose our rPr or w:t elements here,
+  because they are put in by the template
+  matching on text().  -->
+
+  <xsl:template match="w:t">
+
+       <xsl:apply-templates select="node()"/>
+
+  </xsl:template>
   
+  <xsl:template match="w:t[ancestor::dfx:del]">
+
+     <w:delText>
+        <xsl:copy-of select="@*" />
+        <xsl:value-of select="*"/>     
+     </w:delText>
+
+  </xsl:template>
   
   <!--  
   
@@ -196,15 +230,6 @@ java.lang.IllegalArgumentException:
 
   </xsl:template>
 
-  <!-- We don't lose our rPr or w:t elements here,
-  because they are put in by the template
-  matching on text().  -->
-
-  <xsl:template match="w:t">
-
-       <xsl:apply-templates select="node()"/>
-
-  </xsl:template>
 
   <!-- Handle  <w:sym w:font="Wingdings" w:char="F04A" /> -->
   <xsl:template match="w:sym">
