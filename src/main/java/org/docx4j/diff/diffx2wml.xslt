@@ -62,9 +62,20 @@ java.lang.IllegalArgumentException:
 <xsl:preserve-space elements="ins del w:t"/> 
 
   <xsl:template match="/ | @*|node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
+    <xsl:choose>
+        <xsl:when test="parent::w:r"> <!--  handle eg w:br -->
+            <w:r>
+                <xsl:copy>
+                  <xsl:apply-templates select="@*|node()"/>
+                </xsl:copy>
+            </w:r>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:copy>
+              <xsl:apply-templates select="@*|node()"/>
+            </xsl:copy>
+        </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 
@@ -84,42 +95,6 @@ java.lang.IllegalArgumentException:
   </xsl:template>
  -->
    
-  <xsl:template match="dfx:ins" >
-	<xsl:variable name="id" 
-				select="java:org.docx4j.diff.Differencer.getId()" />
-    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
-          <xsl:apply-templates select="@*|node()"/>
-    </w:ins>
-    
-  </xsl:template>
-
-  <xsl:template match="dfx:del" >
-    <xsl:variable name="id" 
-                select="java:org.docx4j.diff.Differencer.getId()" />
-    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
-          <xsl:apply-templates select="@*|node()"/>
-    </w:del>
-    
-  </xsl:template>
-
-  <!-- We don't lose our rPr or w:t elements here,
-  because they are put in by the template
-  matching on text().  -->
-
-  <xsl:template match="w:t">
-
-       <xsl:apply-templates select="node()"/>
-
-  </xsl:template>
-  
-  <xsl:template match="w:t[ancestor::dfx:del]">
-
-     <w:delText>
-        <xsl:copy-of select="@*" />
-        <xsl:value-of select="*"/>     
-     </w:delText>
-
-  </xsl:template>
   
   <!--  
   
@@ -217,9 +192,25 @@ java.lang.IllegalArgumentException:
 
 
   <xsl:template match="w:r">
+  
+    <xsl:for-each select="*">
+    
+        <xsl:choose>
+            <xsl:when test="self::w:t and count(dfx:del)>0">
+                <!-- handle: <w:t>This is sample <dfx:del>doc</dfx:del></w:t>  -->
+                <xsl:apply-templates select="." mode="splitText" />
+            </xsl:when>
+            <xsl:when test="self::w:rPr" />
+            <xsl:otherwise>
+                <xsl:apply-templates select="." />
+            </xsl:otherwise>
+        
+        </xsl:choose>
+    
+    </xsl:for-each>
 
-       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference|w:pPr"/> 
       <!-- NB: 
+           <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference|w:pPr"/> 
       		1.  note w:pPr (!), that's required because diffX might create
       		
 				    <w:r dfx:insert="true">
@@ -229,6 +220,81 @@ java.lang.IllegalArgumentException:
       		2. this XSLT drops run content other than these. What else to keep? -->
 
   </xsl:template>
+
+  <!-- handle: <w:t>This is sample <dfx:del>doc</dfx:del></w:t>  -->
+  <xsl:template match="w:t" mode="splitText">
+  
+    <xsl:for-each select="node()">
+    
+        <xsl:choose>
+            <xsl:when test="self::dfx:del">
+                <xsl:variable name="id" 
+                            select="java:org.docx4j.diff.Differencer.getId()" />
+                <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+                    <w:r>
+                        <xsl:copy-of select="../../w:rPr" />
+                        <w:delText>
+                            <xsl:copy-of select="../@xml:space"></xsl:copy-of>
+                            <xsl:value-of select="."/>
+                        </w:delText>
+                    </w:r>
+                </w:del>
+            
+            </xsl:when>
+            <xsl:when test="self::dfx:ins">
+                <xsl:variable name="id" 
+                            select="java:org.docx4j.diff.Differencer.getId()" />
+                <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+                    <w:r>
+                        <xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
+                        <w:t>
+                            <xsl:copy-of select="../@xml:space"></xsl:copy-of>
+                            <xsl:value-of select="."/>
+                        </w:t>
+                    </w:r>
+                </w:ins>
+            
+            </xsl:when>
+            <xsl:otherwise>
+                    <w:r>
+                        <xsl:copy-of select="../../w:rPr" />
+                        <w:t>
+                            <xsl:copy-of select="../@xml:space"></xsl:copy-of>
+                            <xsl:value-of select="."/>
+                        </w:t>
+                    </w:r>
+            </xsl:otherwise>
+        
+        </xsl:choose>
+    
+    </xsl:for-each>
+ </xsl:template>
+
+  <xsl:template match="w:t">
+
+       <xsl:apply-templates select="node()"/>
+
+  </xsl:template>
+  
+  <xsl:template match="w:t[ancestor::dfx:del]">
+
+     <w:delText>
+        <xsl:copy-of select="@*" />
+        <xsl:value-of select="*"/>     
+     </w:delText>
+
+  </xsl:template>
+
+  <xsl:template match="text()[not(ancestor::wp:*)]">
+  
+      <w:r>
+        <xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
+        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
+      </w:r>
+    
+  </xsl:template>
+
+
 
 
   <!-- Handle  <w:sym w:font="Wingdings" w:char="F04A" /> -->
@@ -572,46 +638,37 @@ java.lang.IllegalArgumentException:
   </xsl:template>
 
 
-  <xsl:template match="ins">
-  
-  			<xsl:variable name="id" 
-				select="java:org.docx4j.diff.Differencer.getId()" />
-  
-
+  <xsl:template match="dfx:ins|ins" > <!--  2018 Feb: both these occur! -->
+    <xsl:variable name="id" 
+                select="java:org.docx4j.diff.Differencer.getId()" />
     <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
-
-      <w:r>
-   		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
-        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
-      </w:r>
+          <xsl:apply-templates select="@*|node()"/>
+        <!--   
+              <w:r>
+                <xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
+                <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
+              </w:r>
+         -->
     </w:ins>
     
   </xsl:template>
 
-  <xsl:template match="del">
-
-  			<xsl:variable name="id" 
-				select="java:org.docx4j.diff.Differencer.getId()" />
-
-
+  <xsl:template match="dfx:del|del" > <!--  2018 Feb: both these occur! -->
+    <xsl:variable name="id" 
+                select="java:org.docx4j.diff.Differencer.getId()" />
     <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
-
-      <w:r>
-      	<xsl:apply-templates select="../../w:rPr"/>
-        <w:delText><xsl:value-of select="."/></w:delText>
-      </w:r>
+          <xsl:apply-templates select="@*|node()"/>
+        <!--   
+          <w:r>
+          	<xsl:apply-templates select="../../w:rPr"/>
+            <w:delText><xsl:value-of select="."/></w:delText>
+          </w:r>
+         -->
     </w:del>
-
-  </xsl:template>
-
-  <xsl:template match="text()[not(ancestor::wp:*)]">
-  
-      <w:r>
-   		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
-        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
-      </w:r>
     
   </xsl:template>
+
+
 
 <!--  special case where diffx picks up a delete and insert as changes 
       to a single w:drawing  
