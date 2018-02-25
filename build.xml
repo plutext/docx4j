@@ -7,7 +7,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.3.6"/>
+	<property name="version" value="3.3.7-SNAPSHOT"/>
 	<property name="importxhtml-version" value="3.3.6"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
@@ -183,10 +183,10 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.4/docx4j-export-fo-3.3.4.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.6/docx4j-export-fo-3.3.6.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.1/fop-2.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.2/fop-2.2.jar"/>
          
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.8/batik-svg-dom-1.8.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar"/>
@@ -365,7 +365,7 @@
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.5/docx4j-MOXy-JAXBContext-3.3.5.jar" todir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.6/docx4j-MOXy-JAXBContext-3.3.6.jar" todir="${release.dir}/optional/MOXy"/>
 		        
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
