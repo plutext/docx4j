@@ -46,7 +46,7 @@ public class TocUpdateDemo  {
         
         
 //        	Toc.setTocHeadingText("Sumário");
-        tocGenerator.updateToc( false); // true --> skip page numbering; its currently much faster
+        tocGenerator.updateToc( false); // true --> skip page numbering
 	        
 	        wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TocUpdateDemo.docx") );
         
