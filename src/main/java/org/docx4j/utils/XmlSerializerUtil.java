@@ -5,8 +5,12 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XmlSerializerUtil {
+
+	private static Logger log = LoggerFactory.getLogger(XmlSerializerUtil.class);	
 	
 	public static void serialize(Source source, Result result,
 			boolean omit_xml_declaration, boolean method_xml) throws Docx4JException {
@@ -47,6 +51,8 @@ public class XmlSerializerUtil {
 			serializer.transform( source, result );	
 			
 		} catch (Exception e) {
+			
+			log.error(e.getMessage(),e);
 			throw new Docx4JException("Exception writing Document to OutputStream: " + e.getMessage(), e);
 		}
 	}
