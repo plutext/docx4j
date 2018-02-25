@@ -315,6 +315,11 @@ public class TraversalUtil {
 			return null;
 		}
 
+		if (o instanceof JAXBElement) {
+			log.debug(".. unwrapping");
+			o = XmlUtils.unwrap(o);
+		}
+		
 		log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
 		
