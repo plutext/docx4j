@@ -291,6 +291,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     			}
     		}    		
     	}
+    	if (defaultParagraphStyle==null) {
+    		log.warn("No default paragraph style defined");
+    	}
     
     	
 		return defaultParagraphStyle;
