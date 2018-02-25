@@ -161,8 +161,12 @@ public class SdtWriter {
 				result = identity.toNode(context.getWmlPackage(), sdtPr, map, childResults);
 			}
 		}
-		
-		return debug(result);
+
+		if (log.isDebugEnabled()) {
+			return debug(result);
+		} else {
+			return result;
+		}
 	}
 
 	/**
