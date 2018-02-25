@@ -879,7 +879,10 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			
 			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
 		}
-		
+		if (xpath ==null) {
+			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+			throw new InputIntegrityException("Couldn't find xpath with id: " + xpathId );
+		}
 		String storeItemId = xpath.getDataBinding().getStoreItemID();
 		String xpathExp = xpath.getDataBinding().getXpath();
 		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
