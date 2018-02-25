@@ -101,7 +101,7 @@ public class TextUtils {
 	 * From http://www.cafeconleche.org/books/xmljava/chapters/ch06s03.html
 	 *
 	 */
-	static class TextExtractor extends DefaultHandler {
+	public static class TextExtractor extends DefaultHandler {
 
 		  private Writer out;
 		  
