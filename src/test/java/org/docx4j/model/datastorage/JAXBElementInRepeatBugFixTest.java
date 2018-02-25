@@ -28,7 +28,7 @@ public class JAXBElementInRepeatBugFixTest {
 		
 		// Process conditionals and repeats
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.preprocess();
+		wordMLPackage = odh.preprocess();
 
 		XmlUtils.marshaltoString(
 				wordMLPackage.getMainDocumentPart().getJaxbElement(), true) ;
