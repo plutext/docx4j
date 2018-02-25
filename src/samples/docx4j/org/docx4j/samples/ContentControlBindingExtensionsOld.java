@@ -80,7 +80,7 @@ public class ContentControlBindingExtensionsOld {
 		// Process conditionals and repeats
 		long startTime = System.currentTimeMillis();
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.preprocess();
+		wordMLPackage = odh.preprocess();
 		long endTime = System.currentTimeMillis();
 		timingSummary.append("OpenDoPEHandler: " + (endTime-startTime));
 
