@@ -52,7 +52,7 @@ public class TrackChangesAccept extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/redlined.docx";
+	    	inputfilepath = System.getProperty("user.dir") + "/OUT_CompareRsid_Newer.docx";
 		}
 		System.out.println(inputfilepath);	    	
 		boolean SAVE = false;
@@ -62,7 +62,7 @@ public class TrackChangesAccept extends AbstractSample {
 		
 		// Load the XLST
 		Source xsltSource  = new StreamSource(
-				ResourceUtils.getResourceViaProperty("docx4j.jaxb.JaxbValidationEventHandler", 
+				ResourceUtils.getResource(
 						"AcceptChanges.xslt")
 				);
 		Templates xslt = XmlUtils.getTransformerTemplate(xsltSource);
