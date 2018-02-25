@@ -46,6 +46,7 @@ import org.docx4j.events.WellKnownJobTypes;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
+import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.DomToXPathMap;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
@@ -376,11 +377,18 @@ public class Docx4J {
 		new EventFinished(bindJobStartEvent).publish();
         
 	}
-	
+
 	/**
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags) throws Docx4JException {
+		bind( wmlPackage,  xmlDocument,  flags, null);
+	}
+	
+	/**
+	 *  Bind the content controls of the passed document to the xml.
+	 */	
+	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags, DocxFetcher docxFetcher) throws Docx4JException {
 		
 		OpenDoPEHandler	openDoPEHandler = null;
 		CustomXmlDataStoragePart customXmlDataStoragePart = null;
@@ -422,7 +430,10 @@ public class Docx4J {
 				// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
 				// and does that whether or not we have an XPaths part
 				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
-				openDoPEHandler.preprocess();
+				if (docxFetcher!=null) {
+					openDoPEHandler.setDocxFetcher(docxFetcher);
+				}
+				wmlPackage = openDoPEHandler.preprocess();
 				
 				DomToXPathMap domToXPathMap = openDoPEHandler.getDomToXPathMap();
 				
