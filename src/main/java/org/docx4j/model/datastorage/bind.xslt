@@ -66,7 +66,7 @@
 		<xsl:variable name="dummy"
 	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('$pos ', $pos))" />
 	
-		<xsl:variable name="dummy"
+		<xsl:variable name="dummy2"
 	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('position() ', position() ))" />
 	
   	<xsl:choose>
@@ -531,7 +531,7 @@
 				</xsl:apply-templates>
 			</xsl:variable>		
 			
- 			<xsl:variable name="dummy"
+ 			<xsl:variable name="dummy2"
         				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('result ', $result))" />
         
         
@@ -856,7 +856,7 @@
   		
   		
   		<xsl:otherwise> <!--  no w:dataBinding, or one spec says to ignore -->  		
-			<xsl:variable name="dummy"
+			<xsl:variable name="dummy3"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( 
 							concat(' processing contents only of ', string(w:sdtPr/w:tag/@w:val) ) )" />  	
 		    <xsl:copy>

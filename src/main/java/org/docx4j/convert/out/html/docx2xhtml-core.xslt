@@ -201,17 +201,18 @@
 			</xsl:choose>
 		</xsl:variable>
 		
-		<xsl:variable name="pPrNode" select="w:pPr" />  
+        <!--  avoid javax.xml.transform.TransformerException: Duplicate variable declaration -->
+		<xsl:variable name="pPrNode2" select="w:pPr" />  
 		
 		<xsl:choose>
 			<xsl:when test="contains( string(../../w:sdtPr/w:tag/@w:val), 'HTML_ELEMENT' )">
 				<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createListItemBlockForPPr( 
-			 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
+			 							$conversionContext, $pPrNode2, $pStyleVal, $childResults)" />
 			</xsl:when>
 			<!--  Usual case -->
 			<xsl:otherwise>
 				<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createBlockForPPr( 
-			 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
+			 							$conversionContext, $pPrNode2, $pStyleVal, $childResults)" />
 			</xsl:otherwise>
 		</xsl:choose>
 			
