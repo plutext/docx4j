@@ -335,6 +335,7 @@ public class OpenDoPEHandler {
 		// XPaths
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) { 
 			// OpenDoPE XPaths part missing is ok if you are just processing w15 repeatingSection)");
+			log.info("No XPaths part; ok if you are just processing w15 repeatingSection");
 		} else {
 			wordMLPackage.getMainDocumentPart().getXPathsPart().getContents().getXpath().clear();
 			wordMLPackage.getMainDocumentPart().getXPathsPart().getContents().getXpath().addAll(xpathsMap.values());
@@ -559,22 +560,25 @@ public class OpenDoPEHandler {
 			// Use reflection, so docx4j can be built
 			// by users who don't have the MergeDocx utility
 			Class<?> documentBuilder = Class
-					.forName("com.plutext.merge.ProcessAltChunk");
+					.forName("com.plutext.merge.altchunk.ProcessAltChunk");
 			// Method method = documentBuilder.getMethod("merge",
 			// wmlPkgList.getClass());
 			Method[] methods = documentBuilder.getMethods();
 			Method processMethod = null;
 			for (int j = 0; j < methods.length; j++) {
 				log.debug(methods[j].getName());
-				if (methods[j].getName().equals("process")) {
+				if (methods[j].getName().equals("process")
+						&& methods[j].getParameterCount()==3) {
 					processMethod = methods[j];
 				}
 			}
 			if (processMethod == null )
 				throw new NoSuchMethodException();
 			return (WordprocessingMLPackage) processMethod.invoke(null,
-					srcPackage);
-
+					srcPackage,
+					xpathsMap,
+					conditionsMap);
+			
 		} catch (ClassNotFoundException e) {
 			extensionMissing(e);
 			justGotAComponent = false;
