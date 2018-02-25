@@ -106,8 +106,11 @@ public class TocStyles {
 		 *  remains in English.
 		 */
 		
-		String defaultPStyleName = sdp.getDefaultParagraphStyle().getName().getVal();
-		defaultPStyleId = sdp.getDefaultParagraphStyle().getStyleId();
+		String defaultPStyleName = null;
+		if (sdp.getDefaultParagraphStyle()!=null) {
+			defaultPStyleName=sdp.getDefaultParagraphStyle().getName().getVal();
+			defaultPStyleId = sdp.getDefaultParagraphStyle().getStyleId();
+		}
 		
 		for (Style s : stylesPartStyles.getStyle()) {
 			
