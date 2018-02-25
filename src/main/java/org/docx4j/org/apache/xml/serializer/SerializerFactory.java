@@ -29,6 +29,8 @@ import org.apache.xml.serializer.SerializationHandler;
 import org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -62,6 +64,9 @@ import org.xml.sax.ContentHandler;
    */
 public final class SerializerFactory
 {
+	
+	private static Logger log = LoggerFactory.getLogger(SerializerFactory.class);	
+	
   /**
    * This constructor is private just to prevent the creation of such an object.
    */
@@ -91,6 +96,7 @@ public final class SerializerFactory
    */
   public static Serializer getSerializer(Properties format)
   {
+	  log.debug("getSerializer invoked" );
       Serializer ser;
 
       try
@@ -125,13 +131,15 @@ public final class SerializerFactory
         }
 
 
-
+  	  	log.debug("findClassLoader" );
         ClassLoader loader = ObjectFactory.findClassLoader();
 
+  	  	log.debug("findProviderClass" );
         Class cls = ObjectFactory.findProviderClass(className, loader, true);
 
         // _serializers.put(method, cls);
 
+  	  	log.debug("newInstance" );
         Object obj = cls.newInstance();
 
         if (obj instanceof SerializationHandler)
