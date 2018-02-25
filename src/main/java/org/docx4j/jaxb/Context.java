@@ -165,14 +165,11 @@ public class Context {
 				/*
 				 * Per Michael Glavassevich at https://stackoverflow.com/a/35443723/1031689
 				 * 
-				 * WebSphere Application Server v7+ contains an optimized JAXB implementation that will often
-				 * be used instead of the JAXB implementation that's built into the Java SDK. 
+				 * WebSphere Application Server v7+ contains an optimized JAXB implementation 
+				 * that will usually be used instead of the JAXB implementation that's built 
+				 * into the Sun/Oracle Java SDK. 
 				 * 
-				 * system property com.ibm.xml.xlxp.jaxb.opti.level=0 setting will cause the 
-				 * JAXB reference implemenation to be used for unmarshalling and marshalling 
-				 * instead of the WebSphere JAXB implementation.
-				 * 
-				 * see further https://www.ibm.com/support/knowledgecenter/en/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/xrun_jvm.htm
+				 * See https://stackoverflow.com/questions/48700004/does-webspheres-jaxb-marshallerproxy-use-the-reference-implementation/48718329#48718329
 				 *  
 				 * com.ibm.xml.xlxp2.jaxb.JAXBContextImpl is in jar plugins\com.ibm.ws.prereq.xlxp.jar
 				 * 
@@ -183,8 +180,28 @@ public class Context {
 				 * 		com.ibm.ws.prereq.xlxp.jar
 				 *   
 				 */
-				log.info("Using IBM JAXB implementation; see system property com.ibm.xml.xlxp.jaxb.opti.level in WebSphere v7+ ");
-				jaxbImplementation = JAXBImplementation.IBM_WEBSPHERE_XLXP;
+				jaxbImplementation = JAXBImplementation.IBM_WEBSPHERE_XLXP; // unless proven otherwise
+				String xlxpContextUsage = tempContext.toString();
+				log.info(xlxpContextUsage);
+				if (xlxpContextUsage!=null && xlxpContextUsage.contains("Fallback JAXBContext will be used to process any requests")) {
+					int pos = xlxpContextUsage.indexOf("Fallback JAXBContext");
+					if (pos>=0) {
+						String fallbackContext = xlxpContextUsage.substring(pos);
+						if (fallbackContext.contains("com/sun/xml/internal/bind")) {
+							jaxbImplementation=JAXBImplementation.ORACLE_JRE;
+						} else if (fallbackContext.contains("com/sun/xml/bind")) {
+							jaxbImplementation=JAXBImplementation.REFERENCE;
+						} else {
+							log.warn("TODO: identify context from " + fallbackContext);
+						}
+					} else {
+						log.warn("No fallback context specified?");						
+					}
+				} else {
+					log.info("Using IBM JAXB implementation; see system property com.ibm.xml.xlxp.jaxb.opti.level in WebSphere v7+ ");					
+				}
+				log.info("Using " + jaxbImplementation);
+				
 			} else {
 				log.info("Not using MOXy; using " + tempContext.getClass().getName());
 				if (jaxbImplementation==JAXBImplementation.ORACLE_JRE) {
