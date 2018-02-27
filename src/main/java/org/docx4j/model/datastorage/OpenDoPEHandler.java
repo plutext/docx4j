@@ -411,6 +411,7 @@ public class OpenDoPEHandler {
 				if (tag == null) {
 					List<Object> newContent = new ArrayList<Object>();
 					newContent.add(sdt);
+					index++;
 					continue;
 				}
 
@@ -420,9 +421,10 @@ public class OpenDoPEHandler {
 						true);
 
 				String componentId = map.get(BINDING_ROLE_COMPONENT);
-				if (componentId == null)
+				if (componentId == null) {
+					index++;
 					continue;
-
+				}
 				// Convert the sdt to a w:altChunk
 				// .. get the IRI
 				String iri = ComponentsPart.getComponentById(components,
@@ -488,8 +490,9 @@ public class OpenDoPEHandler {
 		// Now replace in list
 		for (Integer key : replacements.keySet()) {
 			contentAccessor.getContent().set(key, replacements.get(key));
+			System.out.println("replaced at " + key);
 		}
-
+		
 		// Go through docx in reverse order
 		List<Object> bodyChildren = contentAccessor.getContent();
 		int i = 0;
