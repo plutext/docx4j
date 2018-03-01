@@ -16,7 +16,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
-import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -99,6 +98,8 @@ import org.docx4j.wml.TrPr;
  *
  */
 public class PropertyResolver {
+	
+	private static final ThreadLocal<Map<String,Object>> context = new ThreadLocal<Map<String,Object>>();
 	
 	private static Logger log = Logger.getLogger(PropertyResolver.class);
 	
@@ -224,9 +225,108 @@ public class PropertyResolver {
 		} else {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 		}
+		if(context.get() == null) {
+			initializeThreadLoacalObject();
+		}
 
 		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
+	}
+	
+	private void initializeThreadLoacalObject() {
+		Map<String, Object> threadLocalMap= new HashMap<String, Object>();
+		threadLocalMap.put("Rpr", XmlUtils.deepCopy(documentDefaultRPr));
+		if (documentDefaultRPr.getB() == null) {
+			threadLocalMap.put("B", "true");
+		}
+		else{
+			threadLocalMap.put("B", "false");
+		}
+		
+		if (documentDefaultRPr.getBdr() == null) {
+			threadLocalMap.put("Bdr", "true");
+		}
+		else{
+			threadLocalMap.put("Bdr", "false");
+		}
+		
+		if (documentDefaultRPr.getColor() == null) {
+			threadLocalMap.put("Color", "true");
+		}
+		else{
+			threadLocalMap.put("Color", "false");
+		}
+		
+		if (documentDefaultRPr.getHighlight() == null) {
+			threadLocalMap.put("Highlight", "true");	
+		}
+		else{
+			threadLocalMap.put("Highlight", "false");
+		}
+		
+		if (documentDefaultRPr.getI() == null) {
+			threadLocalMap.put("I", "true");
+		}
+		else{
+			threadLocalMap.put("I", "false");
+		}
+		
+		if (documentDefaultRPr.getRFonts() == null) {
+			threadLocalMap.put("RFonts", "true");
+		}
+		else{
+			threadLocalMap.put("RFonts", "false");
+		}
+		
+		if (documentDefaultRPr.getRtl() == null) {
+			threadLocalMap.put("Rtl", "true");
+		}
+		else{
+			threadLocalMap.put("Rtl", "false");
+		}
+		
+		if (documentDefaultRPr.getShd() == null) {
+			threadLocalMap.put("Shd", "true");
+		}
+		else{
+			threadLocalMap.put("Shd", "false");
+		}
+		
+		if (documentDefaultRPr.getStrike() == null) {
+			threadLocalMap.put("Strike", "true");
+		}
+		else{
+			threadLocalMap.put("Strike", "false");
+		}
+		
+		if (documentDefaultRPr.getSz() == null) {
+			threadLocalMap.put("Sz", "true");
+		}
+		else{
+			threadLocalMap.put("Sz", "false");
+		}
+		
+		if (documentDefaultRPr.getU() == null) {
+			threadLocalMap.put("U", "true");
+		}
+		else{
+			threadLocalMap.put("U", "false");
+		}
+		
+		if (documentDefaultRPr.getVertAlign() == null) {
+			threadLocalMap.put("VertAlign", "true");
+		}
+		else{
+			threadLocalMap.put("VertAlign", "false");
+		}
+		
+		context.set(threadLocalMap);
+	}
+	
+	public static void clearThreadLocal() {
+		if(context!=null) {
+			context.remove();
+		}
 	}
 
 
@@ -311,8 +411,7 @@ public class PropertyResolver {
 		if (thisLevel.getTblPr()!=null) {
 			log.debug("Applying tblPr..");
 			if (result.getTblPr()==null) {
-				result.setTblPr(
-						XmlUtils.deepCopy( thisLevel.getTblPr() ) );
+				result.setTblPr(thisLevel.getTblPr());
 			} else {
 				applyTablePr(thisLevel.getTblPr(), result.getTblPr() );
 			}
@@ -330,8 +429,7 @@ public class PropertyResolver {
 		if (thisLevel.getTrPr()!=null) {
 			log.debug("Applying trPr.. TODO!");
 			if (result.getTrPr()==null) {
-				result.setTrPr(
-						XmlUtils.deepCopy( thisLevel.getTrPr() ));
+				result.setTrPr(thisLevel.getTrPr());
 			} else {
 				applyTrPr(thisLevel.getTrPr(), result.getTrPr() );
 			}
@@ -341,8 +439,7 @@ public class PropertyResolver {
 		if (thisLevel.getTcPr()!=null) {
 			log.debug("Applying tcPr.. TODO!");
 			if (result.getTcPr()==null) {
-				result.setTcPr(
-						XmlUtils.deepCopy( thisLevel.getTcPr() ));
+				result.setTcPr(thisLevel.getTcPr());
 			} else {
 				applyTcPr(thisLevel.getTcPr(), result.getTcPr() );
 			}
@@ -363,8 +460,7 @@ public class PropertyResolver {
 		if (thisLevel.getRPr()!=null) {
 			log.debug("Applying rPr..");
 			if (result.getRPr()==null) {
-				result.setRPr(
-						XmlUtils.deepCopy( thisLevel.getRPr() ));
+				result.setRPr(thisLevel.getRPr());
 			} else {
 				applyRPr(thisLevel.getRPr(), result.getRPr() );
 			}
@@ -422,27 +518,27 @@ public class PropertyResolver {
 				
 				//top
 				if (thisLevelBorders.getTop()!=null) {
-					resultBorders.setTop( XmlUtils.deepCopy(thisLevelBorders.getTop() ));
+					resultBorders.setTop(thisLevelBorders.getTop());
 				}
 				//bottom
 				if (thisLevelBorders.getBottom()!=null) {
-					resultBorders.setBottom( XmlUtils.deepCopy(thisLevelBorders.getBottom() ));
+					resultBorders.setBottom(thisLevelBorders.getBottom());
 				}
 				//left
 				if (thisLevelBorders.getLeft()!=null) {
-					resultBorders.setLeft( XmlUtils.deepCopy(thisLevelBorders.getLeft() ));
+					resultBorders.setLeft( thisLevelBorders.getLeft());
 				}
 				//right
 				if (thisLevelBorders.getRight()!=null) {
-					resultBorders.setRight( XmlUtils.deepCopy(thisLevelBorders.getRight() ));
+					resultBorders.setRight(thisLevelBorders.getRight());
 				}
 				//insideH
 				if (thisLevelBorders.getInsideH()!=null) {
-					resultBorders.setInsideH( XmlUtils.deepCopy(thisLevelBorders.getInsideH() ));
+					resultBorders.setInsideH(thisLevelBorders.getInsideH());
 				}
 				//insideV
 				if (thisLevelBorders.getInsideV()!=null) {
-					resultBorders.setInsideV( XmlUtils.deepCopy(thisLevelBorders.getInsideV() ));
+					resultBorders.setInsideV(thisLevelBorders.getInsideV());
 				}
 			}
 		}
@@ -461,19 +557,19 @@ public class PropertyResolver {
 				
 				//top
 				if (thisLevelCellMar.getTop()!=null) {
-					resultCellMar.setTop( XmlUtils.deepCopy(thisLevelCellMar.getTop() ));
+					resultCellMar.setTop(thisLevelCellMar.getTop());
 				}
 				//bottom
 				if (thisLevelCellMar.getBottom()!=null) {
-					resultCellMar.setBottom( XmlUtils.deepCopy(thisLevelCellMar.getBottom() ));
+					resultCellMar.setBottom(thisLevelCellMar.getBottom());
 				}
 				//left
 				if (thisLevelCellMar.getLeft()!=null) {
-					resultCellMar.setLeft( XmlUtils.deepCopy(thisLevelCellMar.getLeft() ));
+					resultCellMar.setLeft(thisLevelCellMar.getLeft());
 				}
 				//right
 				if (thisLevelCellMar.getRight()!=null) {
-					resultCellMar.setRight( XmlUtils.deepCopy(thisLevelCellMar.getRight() ));
+					resultCellMar.setRight(thisLevelCellMar.getRight());
 				}
 			}
 		}
@@ -594,7 +690,7 @@ public class PropertyResolver {
 				log.warn("resolvedPPr was null. Look into this?");
 				effectivePPr = Context.getWmlObjectFactory().createPPr();
 			} else {
-				effectivePPr = (PPr)XmlUtils.deepCopy(resolvedPPr);
+				effectivePPr = (PPr) XmlUtils.deepCopy(resolvedPPr);
 			}
 			applyPPr(expressPPr, effectivePPr);
 			return effectivePPr;
@@ -685,27 +781,26 @@ public class PropertyResolver {
 		
 		
 		//	First, the document defaults are applied
+		 RPr effectiveRPr = resetToDefaultRPr();
 		
-			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
-			
 			// Apply DefaultParagraphFont.  We only do it explicitly
-			// here as per conditions, because if there is a run style,
-			// walking the hierarchy will include this if it is needed
+		// here as per conditions, because if there is a run style,
+		// walking the hierarchy will include this if it is needed
 			if (expressRPr == null || expressRPr.getRStyle() == null ) {
 				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
-			}
+		}
 		
 		//	Next, the table style properties are applied to each table in the document, 
 		//	following the conditional formatting inclusions and exclusions specified 
 		//	per table. 
 		
-			// TODO - if the paragraph is in a table?
+		// TODO - if the paragraph is in a table?
 				
 		//	Next, numbered item and paragraph properties are applied to each paragraph 
 		//	formatted with a *numbering *style**.
 		
 //			 TODO - who uses numbering styles (as opposed to numbering
-			// via a paragraph style or direct formatting)?
+		// via a paragraph style or direct formatting)?
 		
 		//  Next, paragraph and run properties are 
 		//	applied to each paragraph as defined by the paragraph style
@@ -714,23 +809,23 @@ public class PropertyResolver {
 		//  document (those only apply to a paragraph mark).
 			
 			if (pPr==null) {
-				log.debug("pPr was null");
-			} else {
-				// At the pPr level, what rPr do we have?
-				// .. ascend the paragraph style tree
+			log.debug("pPr was null");
+		} else {
+			// At the pPr level, what rPr do we have?
+			// .. ascend the paragraph style tree
 				if (pPr.getPStyle()==null) {
 //					log.warn("No pstyle:");
 //					log.debug(XmlUtils.marshaltoString(pPr, true, true));
-				} else {
-					log.debug("pstyle:" + pPr.getPStyle().getVal());
-					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
-					// .. and apply those
-					applyRPr(pPrLevelRunStyle, effectiveRPr);
-				}
-				// Check Paragraph rPr (our special hack of using ParaRPr
+			} else {
+				log.debug("pstyle:" + pPr.getPStyle().getVal());
+				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
+				// .. and apply those
+				applyRPr(pPrLevelRunStyle, effectiveRPr);
+			}
+			// Check Paragraph rPr (our special hack of using ParaRPr
 				// to format a fo:block) 
 				if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
-					applyRPr(pPr.getRPr(), effectiveRPr);
+				applyRPr(pPr.getRPr(), effectiveRPr);
 				} 
 			}
 		//	Next, run properties are applied to each run with a specific character style 
@@ -750,7 +845,54 @@ public class PropertyResolver {
 			applyRPr(expressRPr, effectiveRPr);
 		} 
 		return effectiveRPr;
-		
+
+	}
+	
+	private RPr resetToDefaultRPr() {
+
+		Map<String, Object> localMap = (Map<String, Object>) context.get();
+		RPr effectiveRPr = null;
+		if (localMap.get("Rpr") != null) {
+			effectiveRPr = (RPr) localMap.get("Rpr");
+
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setB(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setBdr(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setColor(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setHighlight(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setI(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setRFonts(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setRtl(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setShd(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setStrike(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setSz(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setU(null);
+			}
+			if (("true").equals(localMap.get("B"))) {
+				effectiveRPr.setVertAlign(null);
+			}
+		}
+		return effectiveRPr;
 	}
 	
 	public RPr getEffectiveRPr(String styleId) {
