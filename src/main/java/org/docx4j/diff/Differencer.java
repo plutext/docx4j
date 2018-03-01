@@ -419,6 +419,12 @@ public class Differencer {
 				in = topLevelDecs + " xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\""
 						+ in.substring(closeTag);
 			}
+			if (topLevelDecs.contains("xmlns:o")) {
+				// OK
+			} else {
+				in = topLevelDecs + " xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+						+ in.substring(closeTag);
+			}
 			
 			
 			if (log.isDebugEnabled() ) {
