@@ -97,6 +97,11 @@
 					</w:r>
 				</w:p>
 			</xsl:if>
+
+            <!-- altChunk eg processed Flat OPC XML-->
+            <xsl:if test="./descendant::w:altChunk">
+                 <xsl:copy-of select="./descendant::w:altChunk[1]" />
+            </xsl:if>
 			
       </xsl:when>
 
