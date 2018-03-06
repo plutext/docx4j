@@ -20,13 +20,18 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 
+import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
+import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.OpenDoPEReverter;
@@ -80,6 +85,7 @@ public class ContentControlBindingExtensionsOld {
 		// Process conditionals and repeats
 		long startTime = System.currentTimeMillis();
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+		odh.setDocxFetcher(new MyDocxFetcher() );
 		wordMLPackage = odh.preprocess();
 		long endTime = System.currentTimeMillis();
 		timingSummary.append("OpenDoPEHandler: " + (endTime-startTime));
@@ -200,5 +206,19 @@ public class ContentControlBindingExtensionsOld {
 		System.out.println("* Please visit www.plutext.com if you want to buy it.");
 	}
 	
+	
+	static class MyDocxFetcher implements DocxFetcher {
+
+		@Override
+		public InputStream getDocxFromIRI(String iri) throws Docx4JException {
+			
+			try {
+				return FileUtils.openInputStream(new File(iri));
+			} catch (IOException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			}
+		}
+		
+	}
 
 }
