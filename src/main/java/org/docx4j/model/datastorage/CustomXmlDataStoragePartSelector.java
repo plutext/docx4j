@@ -64,7 +64,7 @@ public class CustomXmlDataStoragePartSelector {
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
 			
 			// Can't do it the easy way, so inspect content controls
-
+			log.info("No XPaths part, so inspecting content controls to identify CustomXmlDataStoragePart");
 			TraversalUtilCCVisitor visitor = new TraversalUtilCCVisitor();
 			visitor.customXmlParts = wordMLPackage.getCustomXmlDataStorageParts();
 			SingleTraversalUtilVisitorCallback ccFinder 
@@ -82,6 +82,11 @@ public class CustomXmlDataStoragePartSelector {
 		} else {
 	
 			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
+			
+			if (xPaths.getXpath().isEmpty()) {
+				log.info("No xpaths found, so can't determine CustomXmlDataStoragePart from them" );
+				return null;
+			}
 			
 			for (Xpath xp : xPaths.getXpath()) {
 				
