@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.packages;
 
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,11 +48,14 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
@@ -549,4 +553,21 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 	}
 	
+	/**
+	 * Reinit fields so this pkg object can be re-used.
+	 * @since 3.3.7
+	 */
+	public void reset() {
+		super.reset();
+
+		mainDoc = null;
+		glossaryDoc = null;
+
+		documentProtectionSettings = new ProtectDocument(this);
+		documentModel = null;
+		headerFooterPolicy = null;
+		fontMapper=null;
+		log.info("reset complete");
+
+	}
 }

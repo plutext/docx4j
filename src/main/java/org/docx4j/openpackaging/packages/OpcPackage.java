@@ -503,7 +503,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				} catch (FileNotFoundException fnf) {
 					
 					/*
-						java.io.FileNotFoundException: no such entry: "EncryptionInfo", had: [Data, CompObj, ObjectPool, 1Table, DocumentSummaryInformation, SummaryInformation, WordDocument, Macros, MsoDataStore]
+						java.io.FileNotFoundException: no such entry: "EncryptionInfo", had: [Data, CompObj, ObjectPool, 1Table, DocumentSummaryInformation, SummaryInformation, WordDocument, Macros, MsoDataStore]
 							at org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode.getEntry(DirectoryNode.java:406)
 							at org.docx4j.org.apache.poi.poifs.filesystem.DirectoryNode.createDocumentInputStream(DirectoryNode.java:194)
 							at org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfo.<init>(EncryptionInfo.java:103)					 
@@ -867,4 +867,23 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		this.name = name;
 	}
 		
+	/**
+	 * Reinit fields so this pkg object can be re-used.
+	 * @since 3.3.7
+	 */
+	public void reset() {
+		super.reset();
+		handled = new HashMap<String, String>();
+		parts = new Parts();
+		externalResources = new HashMap<ExternalTarget, Part>();
+		customXmlDataStorageParts= new HashMap<String, CustomXmlPart>();
+		sourcePartStore=null;
+		targetPartStore=null;
+		docPropsCorePart=null;
+		docPropsExtendedPart=null;
+		docPropsCustomPart=null;
+		name=null;
+		log.info("reset complete");
+	}
+	
 }

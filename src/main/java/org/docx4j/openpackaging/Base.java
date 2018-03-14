@@ -30,8 +30,11 @@ import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
@@ -304,6 +307,18 @@ public abstract class Base {
 		
 		return rel;
 		
+	}
+
+	/**
+	 * Reinit fields so this pkg object can be re-used.
+	 * @since 3.3.7
+	 */
+	public void reset() {
+		userData = new HashMap<String, Object>();
+		relationships=null;
+		contentType=null;
+		partName=null;
+		log.info("reset complete");
 	}
 	
 }
