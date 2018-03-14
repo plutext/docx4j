@@ -122,6 +122,18 @@ public class Load3 extends Load {
 //		return process();
 //	}
 	
+	/**
+	 * By setting this, you can load the contents into 
+	 * this existing package (ie instead of returning a new one).
+	 * 
+	 * @param existingPkg
+	 * @since 3.3.7
+	 */
+	public void reuseExistingOpcPackage(OpcPackage existingPkg) {
+		this.existingPkg = existingPkg;
+	}	
+	private OpcPackage existingPkg = null;
+	
 	public OpcPackage get() throws Docx4JException {
 		
 		long startTime = System.currentTimeMillis();				
@@ -157,6 +169,19 @@ public class Load3 extends Load {
 
 		// 2. Create a new Package; this'll return the appropriate subclass
 		OpcPackage p = ctm.createPackage(pkgContentType);
+		if (existingPkg==null) {
+			p = ctm.createPackage(pkgContentType);
+		} else {
+			if (existingPkg.getClass()!=p.getClass()) {
+				throw new Docx4JException("Can't fill " + existingPkg.getClass().getName() 
+						+ " with " + p.getClass().getName() + " contents." );
+			}
+			log.info("loading into (re-using) existing package object " + existingPkg.hashCode()); 
+			existingPkg.reset();
+			existingPkg.setPartName(new PartName("/", false));
+			existingPkg.setContentTypeManager(ctm);
+			p = existingPkg;
+		}
 		log.info("Instantiated package of type " + p.getClass().getName() );
 		p.setSourcePartStore(partStore);
 
@@ -174,6 +199,8 @@ public class Load3 extends Load {
 		registerCustomXmlDataStorageParts(p);
 		
 //		partStore.finishLoad();
+		
+		existingPkg = null;
 		
 		long endTime = System.currentTimeMillis();
 		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );
@@ -626,7 +653,9 @@ public class Load3 extends Load {
 			IOUtils.closeQuietly(is);
 		}
 		return part;
-	}	
+	}
+
+
 
 //	// Testing
 //	public static void main(String[] args) throws Exception {
