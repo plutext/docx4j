@@ -52,6 +52,9 @@ import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.io3.Load3;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -354,8 +357,6 @@ public class Docx4J {
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, InputStream xmlDocument, int flags) throws Docx4JException {
 		
-		StartEvent bindJobStartEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage );
-		bindJobStartEvent.publish();
 		
 		if (flags == FLAG_NONE) {
 			//do everything
@@ -373,9 +374,6 @@ public class Docx4J {
 				}
 		}
         bind(wmlPackage, xmlDoc, flags);
-        
-		new EventFinished(bindJobStartEvent).publish();
-        
 	}
 
 	/**
@@ -389,6 +387,9 @@ public class Docx4J {
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags, DocxFetcher docxFetcher) throws Docx4JException {
+
+		StartEvent bindJobStartEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage );
+		bindJobStartEvent.publish();
 		
 		OpenDoPEHandler	openDoPEHandler = null;
 		CustomXmlDataStoragePart customXmlDataStoragePart = null;
@@ -415,6 +416,8 @@ public class Docx4J {
 	
 		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
 			
+			log.debug("insertXMLData");
+			
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_INSERT_XML );
 			startEvent.publish();
 			
@@ -423,6 +426,8 @@ public class Docx4J {
 			new EventFinished(startEvent).publish();
 		}
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
+
+			log.debug("openDoPEHandler");
 			
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEHandler );
 			startEvent.publish();
@@ -433,18 +438,30 @@ public class Docx4J {
 				if (docxFetcher!=null) {
 					openDoPEHandler.setDocxFetcher(docxFetcher);
 				}
-				wmlPackage = openDoPEHandler.preprocess();
+				WordprocessingMLPackage tmpMergeResult = openDoPEHandler.preprocess();
 				
 				DomToXPathMap domToXPathMap = openDoPEHandler.getDomToXPathMap();
 				
 				// TODO: now null out openDoPEHandler
 
+				// Since Docx4J.bind modifies the original document,
+				// as opposed to returning a new one,
+				// we must copy tmpMergeResult contents into the original one.
+				ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+				Docx4J.save(tmpMergeResult, outStream);
+
+				final ZipPartStore partLoader = new ZipPartStore( new ByteArrayInputStream(outStream.toByteArray() ));
+				final Load3 loader = new Load3(partLoader);
+				loader.reuseExistingOpcPackage(wmlPackage); // reuse existing object
+				/* wmlPackage = (WordprocessingMLPackage) */ loader.get();
+				
 			new EventFinished(startEvent).publish();
 			
 			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEIntegrity );
 			startEvent.publish();
 			
 				// since 3.3.2
+				log.debug("OpenDoPEIntegrity");
 				OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
 				odi.process(wmlPackage);
 
@@ -457,6 +474,10 @@ public class Docx4J {
 //						+ openDoPEHandler.getNextBookmarkId().get());
 //			}
 			
+//			System.out.println(
+//					XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//					);		
+			
 			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_BindingHandler );
 			startEvent.publish();
 			
@@ -467,12 +488,23 @@ public class Docx4J {
 			
 			new EventFinished(startEvent).publish();
 		}
+		
+//		System.out.println(
+//				XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//				);		
+		
 		if ((flags & FLAG_BIND_REMOVE_SDT) == FLAG_BIND_REMOVE_SDT) {
 			
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_SDT );
 			startEvent.publish();
 
+			log.debug("removeSDTs");
 			removeSDTs(wmlPackage);
+			
+//			System.out.println(
+//			XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//			);		
+			
 			
 			new EventFinished(startEvent).publish();
 		}
@@ -481,10 +513,13 @@ public class Docx4J {
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_REMOVE_XML );
 			startEvent.publish();
 			
+			log.debug("removeDefinedCustomXmlParts");
 			removeDefinedCustomXmlParts(wmlPackage, customXmlDataStoragePart);
 			
 			new EventFinished(startEvent).publish();
 		}
+
+		new EventFinished(bindJobStartEvent).publish();
 	}
 
 	protected static void insertXMLData(CustomXmlDataStoragePart customXmlDataStoragePart, Document xmlDocument) throws Docx4JException {

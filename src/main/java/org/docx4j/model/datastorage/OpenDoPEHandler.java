@@ -582,6 +582,7 @@ public class OpenDoPEHandler {
 					xpathsMap,
 					conditionsMap);
 			
+			
 		} catch (ClassNotFoundException e) {
 			extensionMissing(e);
 			justGotAComponent = false;
