@@ -7,6 +7,7 @@
     xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
     xmlns:aml="http://schemas.microsoft.com/aml/2001/core"
     xmlns:w10="urn:schemas-microsoft-com:office:word"
+    xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" 
 	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
 	xmlns:java="http://xml.apache.org/xalan/java" 
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -96,6 +97,17 @@
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>
+  
+    <!--  remove w15 repeats, so w:sdt structure encountered in bind.xslt is as expected -->
+    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSection]" priority="5">
+        <!--  keep contents only -->
+        <xsl:apply-templates select="w:sdtContent/*"/>
+    </xsl:template>
+
+    <xsl:template match="w:sdt[w:sdtPr/w15:repeatingSectionItem]" priority="5">
+        <!--  keep contents only -->
+        <xsl:apply-templates select="w:sdtContent/*"/>
+    </xsl:template>
   
   <!-- Integrity: w:tr/w:sdt must contain w:tc, and w:tc must be non-empty
   
