@@ -228,7 +228,9 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				log.warn("Skipping altChunk of type MHT ");
 				continue;
 			} else if (type.equals(AltChunkType.Xml) ) {
-				log.warn("Skipping altChunk of type XML "); // what does Word do??
+//				log.warn("Skipping altChunk of type XML "); // what does Word do??
+				// Assume its Flat OPC XML
+				encounteredDocxAltChunk = true;
 				continue;
 			} else if (type.equals(AltChunkType.TextPlain) ) {
 				
