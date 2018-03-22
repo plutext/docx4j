@@ -2281,7 +2281,7 @@ public class StyleUtil {
 			destination.setBefore(apply(source.getBefore(), destination.getBefore()));
 			destination.setBeforeLines(apply(source.getBeforeLines(), destination.getBeforeLines()));
 			destination.setLine(apply(source.getLine(), destination.getLine()));
-			destination.setLineRule(source.getLineRule());
+			destination.setLineRule(apply(source.getLineRule(), destination.getLineRule()));
 		}
 		return destination;
 	}
