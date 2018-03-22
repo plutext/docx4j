@@ -74,6 +74,7 @@ import org.docx4j.wml.STEm;
 import org.docx4j.wml.STHAnchor;
 import org.docx4j.wml.STHeightRule;
 import org.docx4j.wml.STHint;
+import org.docx4j.wml.STLineSpacingRule;
 import org.docx4j.wml.STShd;
 import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.STTblOverlap;
@@ -176,7 +177,7 @@ public class StyleUtil {
 	 */
 	public static boolean areEqual(SectPr sectPr1, SectPr sectPr2) {
 
-		log.warn("TODO: implementation is incomplete; contributions welcome");						
+		log.warn("TODO: implementation for SectPr is incomplete; contributions welcome");						
 		
 		return (sectPr1 == sectPr2) ||
 				((sectPr1 != null) && (sectPr2 != null) &&	
@@ -2280,11 +2281,16 @@ public class StyleUtil {
 			destination.setBefore(apply(source.getBefore(), destination.getBefore()));
 			destination.setBeforeLines(apply(source.getBeforeLines(), destination.getBeforeLines()));
 			destination.setLine(apply(source.getLine(), destination.getLine()));
-			destination.setLineRule(destination.getLineRule());
+			destination.setLineRule(source.getLineRule());
 		}
 		return destination;
 	}
 
+	public static STLineSpacingRule apply(STLineSpacingRule source, STLineSpacingRule destination) {
+		// defaults to auto
+		return (source == null ? STLineSpacingRule.AUTO : source);
+	}
+	
 	public static Tabs apply(Tabs source, Tabs destination) {
 	CTTabStop sourceTabStop = null;
 	CTTabStop destinationTabStop = null;
