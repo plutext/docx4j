@@ -290,7 +290,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
      * is that you provide the Result object. 
      *  
      * If you do want to replace the content in this part, convert your result to
-     * and element or input stream, then invoke unmarshal on it, then setContents. 
+     * an element or input stream, then invoke unmarshal on it, then setContents. 
      * (Unmarshal takes care of any unexpected content, sidestepping the issue of 
      *  whether to do that before the transform (where reading the part directly),
      *  or after).
