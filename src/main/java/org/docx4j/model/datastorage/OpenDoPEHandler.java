@@ -385,6 +385,14 @@ public class OpenDoPEHandler {
 		return partList;
 	}
 
+	/**
+	 * Component processing 
+	 * 
+	 * @param srcPackage
+	 * @param contentAccessor
+	 * @return
+	 * @throws Docx4JException
+	 */
 	private WordprocessingMLPackage fetchComponents(
 			WordprocessingMLPackage srcPackage, ContentAccessor contentAccessor)
 			throws Docx4JException {
