@@ -2,6 +2,33 @@ CHANGELOG
 =========
 
 
+Version 3.3.7  minor release
+=============
+
+Release date
+------------
+
+25 March 2018
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.7 
+---------------------------------
+
+OpenDoPE: handle w15:databinding; FlatOPC processing fixes; component handling fixes
+
+PDF Converter (commercial, not export-FO) defaults to https (port 443)
+
+IBM JAXB detection improvements
+
+various other fixes
+
+
+
 Version 3.3.6  minor release
 =============
 
