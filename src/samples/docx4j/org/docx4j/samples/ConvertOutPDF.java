@@ -42,11 +42,11 @@ import org.docx4j.services.client.ConversionException;
  * 
  * From v3.3.0, PDF output is by default via Plutext's commercial PDF Converter.
  * 
- * By default, the evaluation instance at:
+ * The evaluation instance is now at:
  * 
- *  	http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert
+ *  	https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert
  *  
- * is used.  To specify your own instance, please set docx4j.properties property: 
+ * This is the default in 3.3.7; earlier versions or to specify your own instance, please set docx4j.properties property: 
  * 
  *      com.plutext.converter.URL=http://your.host:80/v1/00000000-0000-0000-0000-000000000000/convert
  * 
