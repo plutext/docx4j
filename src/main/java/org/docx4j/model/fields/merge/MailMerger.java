@@ -54,7 +54,9 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFFTextType;
 import org.docx4j.wml.SectPr;
+import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -633,6 +635,7 @@ public class MailMerger {
 				// 2.8.1
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				newP.setParent(p.getParent());
                 if(log.isDebugEnabled()) {
                     log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
                 }
@@ -641,12 +644,14 @@ public class MailMerger {
 				// 3.0
 				index = ((java.util.List)p.getParent()).indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				newP.setParent(p.getParent());
 				log.debug("NewP length: " + newP.getContent().size() );
 				((java.util.List) p.getParent()).set(index, newP);
 			} else if (p.getParent() instanceof CTTextbox) {
 				// 3.0.1
 				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				newP.setParent(p.getParent());
                 if(log.isDebugEnabled()) {
                     log.debug("Canonicalised: " + XmlUtils.marshaltoString(newP, true, true));
                 }
@@ -778,11 +783,36 @@ public class MailMerger {
      * @param needToBeRemoved The object that will be removed from the content
      */
     protected static void recursiveRemove(ContentAccessor content, Object needToBeRemoved) {
+
+//    	if (log.isDebugEnabled() ) {
+//    		log.debug("removing " + needToBeRemoved.getClass().getName());
+//    	}
+    	
+    	// we've already removed the simple field
+    	// here we'll be removing a paragraph say.
+    	// But we can't do that in a tc if its the only p
+    	if (needToBeRemoved instanceof P ) {
+    		Object parent = ((Child)needToBeRemoved).getParent();
+    		if (parent==null) {
+    			log.debug("Unknown parent");
+    		} else if (parent instanceof Tc) {
+    			if ( ((Tc)parent).getContent().size()==1 ) {
+    				// a tc must contain a p; it can't be empty
+        			log.debug("preserving p in tc");
+        			return;
+    			}
+    		}
+    		log.debug("parent: " + ((Child)needToBeRemoved).getParent().getClass().getName());
+    		
+    	}
+    	
         if (content.getContent().contains(needToBeRemoved)) {
             content.getContent().remove(needToBeRemoved);
+            log.debug(".. removed");
             return;
         }
 
+        // TODO REVISIT!  I guess this is just trying to match JAXBElement case
         for (Object object : content.getContent()) {
             if (object instanceof ContentAccessor) {
                 recursiveRemove((ContentAccessor) object, needToBeRemoved);
