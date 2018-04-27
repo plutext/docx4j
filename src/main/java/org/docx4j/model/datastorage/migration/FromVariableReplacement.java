@@ -86,10 +86,10 @@ public class FromVariableReplacement extends AbstractMigrator {
         		if ( o instanceof R) {
         			
         			for (Object o2 : ((R)o).getContent() ) {
-                		o2 = XmlUtils.unwrap(o2);
+                		Object o3 = XmlUtils.unwrap(o2);
         				
-        				if ( o2 instanceof Text ) {
-        					handle((R)o, ((Text)o2).getValue(), 0, replacementContent);
+        				if ( o3 instanceof Text ) {
+        					handle((R)o, ((Text)o3).getValue(), 0, replacementContent);
         				} else {
         					// Just add this bit
         					R rnew = new R();
