@@ -220,4 +220,16 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
     	
     }	
 	
+	@Override
+	public void setXML(Document xmlDocument) throws Docx4JException {
+
+		try {
+			this.setJaxbElement(
+					(E)XmlUtils.unmarshal(xmlDocument));
+		} catch (JAXBException e) {
+			throw new Docx4JException("Problem unmarshalling, check content", e);
+		}
+		
+	}
+	
 }

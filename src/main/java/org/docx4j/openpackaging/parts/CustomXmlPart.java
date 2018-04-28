@@ -3,6 +3,7 @@ package org.docx4j.openpackaging.parts;
 import java.util.List;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
@@ -74,9 +75,19 @@ public interface CustomXmlPart {
 	 * @since 3.0.1
 	 */
 	public String getXML() throws Docx4JException;
+
+	/**
+	 * Set the XML data
+	 * @throws Docx4JException 
+	 * 
+	 * @since 3.3.8
+	 */
+	public void setXML(Document xmlDocument) throws Docx4JException;
 	
 	/**
 	 * @since 3.0.2
 	 */
 	public String getItemId();
+	
+	
 }

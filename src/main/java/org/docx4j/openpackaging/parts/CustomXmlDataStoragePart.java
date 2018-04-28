@@ -197,6 +197,16 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 	}
 
 	/**
+	 * Set the XML
+	 * 
+	 * @since 3.3.8
+	 */
+	@Override
+	public void setXML(Document xmlDocument) throws Docx4JException {
+		getData().setDocument(xmlDocument);
+	}
+	
+	/**
 	 * @since 3.0.2
 	 */
 	public String getItemId() {
@@ -242,6 +252,5 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 		super.remove();
     	
     }
-    
-	
+
 }

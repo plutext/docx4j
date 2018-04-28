@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.Docx4jProperties;
@@ -53,6 +54,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPar
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
+import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -147,16 +149,18 @@ public class OpenDoPEHandler {
 						
 			// We're only caching the first one we encounter
 			// (even though, in principle, there could be multiple, and ODH is set up for that)
-			CustomXmlDataStoragePart cdsp = 
+			CustomXmlPart cxp =
 					CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
 							(WordprocessingMLPackage)wordMLPackage);
 		
-			if (cdsp==null) {
+			if (cxp==null) {
 				log.warn("No CustomXmlDataStoragePart found; can't cache.");
 				/* TODO: would fail on StandardisedAnswersPart
 				 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
 				 */
-			} else {
+			} else if (cxp instanceof CustomXmlDataStoragePart) {
+				
+				CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
 				
 				long start = System.currentTimeMillis();
 			
@@ -169,6 +173,22 @@ public class OpenDoPEHandler {
 				long time = end - start;
 	
 				log.debug("Mapped " + domToXPathMap.getCountMap().size() + " in " + time + "ms");
+				
+			} else if (cxp instanceof JaxbCustomXmlDataStoragePart) {
+				
+				Document data = XmlUtils.neww3cDomDocument();
+				try {
+					((JaxbCustomXmlDataStoragePart)cxp).marshal(data);
+				} catch (JAXBException e) {
+					throw new Docx4JException("Problem caching JaxbCustomXmlDataStoragePart", e);
+				}
+				domToXPathMap = new DomToXPathMap(data);
+				domToXPathMap.map();
+//				countMap = domToXPathMap.getCountMap();
+				log.debug("Mapped " + domToXPathMap.getCountMap().size() );
+				
+			} else {
+				log.warn("TODO: cache " + cxp.getClass().getName() );
 			}
 		}
 				

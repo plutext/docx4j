@@ -52,6 +52,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -154,16 +155,18 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 					
 					// We're only caching the first one we encounter
 					// (even though, in principle, there could be multiple)
-					CustomXmlDataStoragePart cdsp = 
+					CustomXmlPart cxp =
 							CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
 									(WordprocessingMLPackage)pkg);
 					
-					if (cdsp==null) {
+					if (cxp==null) {
 						log.warn("No CustomXmlDataStoragePart found; can't cache.");
 						/* TODO: would fail on StandardisedAnswersPart
 						 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
 						 */
-					} else {
+					} else if (cxp instanceof CustomXmlDataStoragePart) {
+						
+						CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
 						
 						long start = System.currentTimeMillis();
 					
@@ -176,6 +179,21 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			
 						log.debug("Mapped in " + time + "ms");
 						
+					} else if (cxp instanceof JaxbCustomXmlDataStoragePart) {
+						
+						Document data = XmlUtils.neww3cDomDocument();
+						try {
+							((JaxbCustomXmlDataStoragePart)cxp).marshal(data);
+						} catch (JAXBException e) {
+							throw new Docx4JException("Problem caching JaxbCustomXmlDataStoragePart", e);
+						}
+						domToXPathMap = new DomToXPathMap(data);
+						domToXPathMap.map();
+//						countMap = domToXPathMap.getCountMap();
+						log.debug("Mapped " + domToXPathMap.getCountMap().size() );
+						
+					} else {
+						log.warn("TODO: cache " + cxp.getClass().getName() );
 					}
 				}
 				

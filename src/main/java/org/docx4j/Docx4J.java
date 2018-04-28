@@ -58,6 +58,7 @@ import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -72,6 +73,7 @@ import org.docx4j.services.client.Format;
 import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.opendope.answers.Answers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -377,6 +379,30 @@ public class Docx4J {
 	}
 
 	/**
+	 *  Bind the content controls of the passed document to the xml (here using optional standardised Answers format).
+	 */	
+	public static void bind(WordprocessingMLPackage wmlPackage, Answers answers, int flags) throws Docx4JException {
+		
+		
+		if (flags == FLAG_NONE) {
+			//do everything
+			flags = (FLAG_BIND_INSERT_XML |
+					 FLAG_BIND_BIND_XML |
+					 FLAG_BIND_REMOVE_SDT |
+					 FLAG_BIND_REMOVE_XML);
+		}
+	    Document xmlDoc = null;
+		if ((flags & FLAG_BIND_INSERT_XML) == FLAG_BIND_INSERT_XML) {
+				try {
+					xmlDoc = XmlUtils.marshaltoW3CDomDocument(answers);
+				} catch (Exception e) {
+					throw new Docx4JException("Problems creating a org.w3c.dom.Document from Answers", e);
+				}
+		}
+        bind(wmlPackage, xmlDoc, flags);
+	}
+	
+	/**
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags) throws Docx4JException {
@@ -392,7 +418,7 @@ public class Docx4J {
 		bindJobStartEvent.publish();
 		
 		OpenDoPEHandler	openDoPEHandler = null;
-		CustomXmlDataStoragePart customXmlDataStoragePart = null;
+		CustomXmlPart customXmlPart = null;
 		RemovalHandler removalHandler = null;
 		//String xpathStorageItemId = null;
 		
@@ -406,9 +432,9 @@ public class Docx4J {
 					 FLAG_BIND_REMOVE_XML);
 		}
 		
-		customXmlDataStoragePart 
+		customXmlPart 
 			= CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(wmlPackage);
-		if (customXmlDataStoragePart==null
+		if (customXmlPart==null
 				&& flags != FLAG_BIND_REMOVE_SDT /* OK if that's all we're doing */) {
 			
 			throw new Docx4JException("Couldn't find CustomXmlDataStoragePart! exiting..");
@@ -421,7 +447,7 @@ public class Docx4J {
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_INSERT_XML );
 			startEvent.publish();
 			
-			insertXMLData(customXmlDataStoragePart, xmlDocument);
+			insertXMLData(customXmlPart, xmlDocument);
 			
 			new EventFinished(startEvent).publish();
 		}
@@ -514,7 +540,7 @@ public class Docx4J {
 			startEvent.publish();
 			
 			log.debug("removeDefinedCustomXmlParts");
-			removeDefinedCustomXmlParts(wmlPackage, customXmlDataStoragePart);
+			removeDefinedCustomXmlParts(wmlPackage, customXmlPart);
 			
 			new EventFinished(startEvent).publish();
 		}
@@ -522,9 +548,9 @@ public class Docx4J {
 		new EventFinished(bindJobStartEvent).publish();
 	}
 
-	protected static void insertXMLData(CustomXmlDataStoragePart customXmlDataStoragePart, Document xmlDocument) throws Docx4JException {
+	protected static void insertXMLData(CustomXmlPart customXmlDataStoragePart, Document xmlDocument) throws Docx4JException {
 		
-		customXmlDataStoragePart.getData().setDocument(xmlDocument);
+		customXmlDataStoragePart.setXML(xmlDocument);
 	}
 
 
@@ -556,7 +582,7 @@ public class Docx4J {
 		}
 	}
 
-	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, CustomXmlDataStoragePart customXmlDataStoragePart) {
+	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, CustomXmlPart customXmlPart) {
 	List<PartName> partsToRemove = new ArrayList<PartName>();
 	RelationshipsPart relationshipsPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
@@ -567,7 +593,7 @@ public class Docx4J {
 			for (Relationship relationship : relationshipsList) {
 				if (Namespaces.CUSTOM_XML_DATA_STORAGE.equals(relationship.getType())) {
 					part = relationshipsPart.getPart(relationship);
-					if (part==customXmlDataStoragePart) {
+					if (part==customXmlPart) {
 						partsToRemove.add(part.getPartName());
 					}
 				}

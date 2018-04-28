@@ -57,7 +57,7 @@ public class CustomXmlDataStoragePartSelector {
 	 * @param wordMLPackage
 	 * @return 
 	 */
-	public static CustomXmlDataStoragePart getCustomXmlDataStoragePart(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+	public static CustomXmlPart getCustomXmlDataStoragePart(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();	
 		
@@ -112,12 +112,12 @@ public class CustomXmlDataStoragePartSelector {
 					if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId) instanceof CustomXmlDataStoragePart) {
 						
 						log.debug("Using " + xp.getDataBinding().getStoreItemID());
-						return (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
+						return wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
 
 					} else if (wordMLPackage.getCustomXmlDataStorageParts().get(itemId) instanceof StandardisedAnswersPart) {
 						
-						log.warn("TODO: support StandardisedAnswersPart");
-						return null;	
+						log.debug("Using " + xp.getDataBinding().getStoreItemID());
+						return wordMLPackage.getCustomXmlDataStorageParts().get(itemId);	
 						
 					} else {
 						log.warn(wordMLPackage.getCustomXmlDataStorageParts().get(itemId).getClass().getName() + " --> can't cast");
