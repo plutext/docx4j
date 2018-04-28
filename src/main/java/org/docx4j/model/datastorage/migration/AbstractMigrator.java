@@ -23,6 +23,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentRun;
+import org.docx4j.wml.CTSdtText;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
@@ -139,6 +140,8 @@ public class AbstractMigrator {
 		
 		Alias alias = Context.getWmlObjectFactory().createSdtPrAlias();
 		alias.setVal(key);
+		sdtPr.getRPrOrAliasOrLock().add(alias);
+		
 		Tag tag = Context.getWmlObjectFactory().createTag();
 		tag.setVal("od:xpath=" + key);
 		sdtPr.setTag(tag);
@@ -150,6 +153,12 @@ public class AbstractMigrator {
 		ctDataBinding.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
 		ctDataBinding.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
 		ctDataBinding.setStoreItemID(storeItemID);
+		
+		// <w:text w:multiLine="1"/>
+		CTSdtText sdtText = Context.getWmlObjectFactory().createCTSdtText();
+		sdtText.setMultiLine(true);
+		sdtPr.getRPrOrAliasOrLock().add(
+				Context.getWmlObjectFactory().createSdtPrText(sdtText));
 					
 		CTSdtContentRun sdtContent = Context.getWmlObjectFactory().createCTSdtContentRun();			
 		sdtRun.setSdtContent(sdtContent);
@@ -175,6 +184,9 @@ public class AbstractMigrator {
 		Xpaths.Xpath xp = new org.opendope.xpaths.ObjectFactory().createXpathsXpath();
 		xp.setId(key);
 		xp.setQuestionID(key);
+		xp.setPrepopulate(false);
+		xp.setRequired(false);
+		xp.setType("string");
 		DataBinding db = new org.opendope.xpaths.ObjectFactory().createXpathsXpathDataBinding();
 		db.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
 		db.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
@@ -188,6 +200,7 @@ public class AbstractMigrator {
 		q.setText(key + "?");
 		Response r = new Response();
 		r.setFree( new Response.Free() );
+		q.setResponse(r);
 		questionsPart.getJaxbElement().getQuestions().getQuestion().add(q);
 	}
 	
