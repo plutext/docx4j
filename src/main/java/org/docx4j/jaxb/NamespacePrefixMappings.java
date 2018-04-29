@@ -334,6 +334,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas")) {
     		return "lc";
     	}
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:mac:vml")) {
+    		return "mv";
+    	}
     	
     	
     	return suggestion;
@@ -531,7 +534,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml
 			return "http://schemas.openxmlformats.org/drawingml/2006/compatibility";	
 		if (prefix.equals("lc"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas";	
-		
+
+		if (prefix.equals("mv"))
+			return "urn:schemas-microsoft-com:mac:vml";
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
