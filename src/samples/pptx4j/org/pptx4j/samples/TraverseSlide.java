@@ -37,10 +37,10 @@ import org.docx4j.samples.AbstractSample;
 
 
 /**
- * This sample is useful if you want to see what objects are used in your document.xml.
+ * This sample is useful if you want to see what objects are used in your Slide part.
  * 
  * This shows a general approach for traversing the JAXB object tree in
- * the Main Document part.  It can also be applied to headers, footers etc. 
+ * a slide part.  
  * 
  * It is an alternative to XSLT, and doesn't require marshalling/unmarshalling.
  * 
