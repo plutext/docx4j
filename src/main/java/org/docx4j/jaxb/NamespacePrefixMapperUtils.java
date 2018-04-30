@@ -67,34 +67,7 @@ public class NamespacePrefixMapperUtils {
 			return tryUsingRI(m);						
 		}
 		
-		try {
-			// Assume use of Java 6 implementation (ie not RI)
-			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperSunInternal");
-			
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
-			log.info("Using NamespacePrefixMapperSunInternal, which is suitable for Java 6");
-			prefixMapper = c.newInstance();
-			return prefixMapper;
-		} catch (java.lang.NoClassDefFoundError notJava6) {
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (javax.xml.bind.PropertyException notJava6) {
-			// OpenJDK (1.6.0_23) does this
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		}  catch (ClassNotFoundException notJava6) {
-			// We shouldn't get here on Android, but we may using RI elsewhere
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (InstantiationException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (IllegalAccessException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		}
+		return tryUsingRI(m);			
 	}
 
 
@@ -128,34 +101,7 @@ public class NamespacePrefixMapperUtils {
 		}
 		
 		Marshaller m=testContext.createMarshaller();
-		try {
-			// Assume use of Java 6 implementation (ie not RI)
-			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal");
-			
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
-			log.info("Using NamespacePrefixMapperRelationshipsPartSunInternal, which is suitable for Java 6");
-			prefixMapperRels = c.newInstance();
-			return prefixMapperRels;
-		} catch (java.lang.NoClassDefFoundError notJava6) {
-			// javax.xml.bind.PropertyException
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);
-		} catch (javax.xml.bind.PropertyException notJava6) {
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);
-		}  catch (ClassNotFoundException notJava6) {
-			// We shouldn't get here on Android, but we may using RI elsewhere
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		} catch (InstantiationException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		} catch (IllegalAccessException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		}
+		return tryRIforRelationshipsPart(m);			
 	}
 
 
