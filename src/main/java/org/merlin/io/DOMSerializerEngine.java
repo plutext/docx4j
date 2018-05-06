@@ -115,8 +115,8 @@ public class DOMSerializerEngine implements OutputEngine {
     switch (node.getNodeType ()) {
       case Node.DOCUMENT_NODE:
         String javaEncoding = writer.getEncoding ();
-//        String ianaEncoding = org.apache.xerces.util.EncodingMap.getJava2IANAMapping (javaEncoding);
-        String ianaEncoding = com.sun.org.apache.xerces.internal.util.EncodingMap.getJava2IANAMapping(javaEncoding);
+        
+        String ianaEncoding = org.docx4j.org.apache.xerces.util.EncodingMap.getJava2IANAMapping (javaEncoding);
         writer.write ("<?xml version=\"1.0\" encoding=\"" + ianaEncoding + "\"?>\n");
         break;
       case Node.DOCUMENT_FRAGMENT_NODE:

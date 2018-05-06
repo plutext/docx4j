@@ -212,7 +212,7 @@ public class BookmarksDuplicateCheck {
 			
 			if (!startIds.contains(i)) {
 				System.out.println("  Missing start for end " + i.longValue());				
-				faulty.add(find(rt.getEnds(), i)); // so remove the corresponding end
+				faulty.add(findEnds(rt.getEnds(), i)); // so remove the corresponding end
 			}
 		}
 		
@@ -232,7 +232,7 @@ public class BookmarksDuplicateCheck {
 		return null; //shouldn't happen
 	}
 
-	private CTMarkupRange find(List<CTMarkupRange> ends, BigInteger id) {
+	private CTMarkupRange findEnds(List<CTMarkupRange> ends, BigInteger id) {
 		
 		for (CTMarkupRange bm : ends) {
 			if (bm.getId()==id) {
