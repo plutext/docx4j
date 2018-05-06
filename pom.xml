@@ -79,7 +79,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<!-- The objective is to generate a jar which is compatible with Java
+					<!-- CHANGE FOR Java 1.5 compatible jar.
+                    
+                        The objective is to generate a jar which is compatible with Java
 						1.5, whilst at the same time allowing @Override annotations in the source
 						code on methods which merely implement an interface (Java 6 allows this,
 						but 1.5 gives an error). When I played around with this, I found that both
@@ -91,10 +93,9 @@
 						mirrors this in Eclipse's compiler settings, and Eclipse then complains about
 						the @Override annotations :-( So you must manually change the Eclipse compiler
 						setting back to 1.6. -->
-					<source>1.5</source>
-					<target>1.5</target>
-
-					<verbose>false</verbose>
+					<source>1.6</source>
+					<target>1.6</target>
+ 					<verbose>false</verbose>
 					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
 					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller:
 						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
@@ -423,28 +424,6 @@
 			<version>1.4.7</version>
 		</dependency>
 		-->
-
-    <dependency>
-        <groupId>javax.xml.bind</groupId>
-        <artifactId>jaxb-api</artifactId>
-        <version>2.3.0</version>
-    </dependency>
-    <dependency>
-        <groupId>com.sun.xml.bind</groupId>
-        <artifactId>jaxb-impl</artifactId>
-        <version>2.3.0</version>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.jaxb</groupId>
-        <artifactId>jaxb-runtime</artifactId>
-        <version>2.3.0</version>
-    </dependency>
-    <dependency>
-        <groupId>javax.activation</groupId>
-        <artifactId>activation</artifactId>
-        <version>1.1.1</version>
-    </dependency>
-    
 		
 		<!--  events -->
 		<dependency>
@@ -807,6 +786,45 @@
    		</dependencies>
    	</profile>
    				-->
+
+    <profile>
+        <id>java-9</id>
+        <activation>
+            <jdk>9</jdk>
+        </activation>
+        <dependencies>
+            <!-- see https://stackoverflow.com/a/50195961/1031689 -->
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>2.3.0</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+        </dependencies>
+    </profile>                
+    <profile>
+        <id>java-10</id>
+        <activation>
+            <jdk>10</jdk>
+        </activation>
+        <dependencies>
+            <!-- see https://stackoverflow.com/a/50195961/1031689 -->
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>2.3.0</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+        </dependencies>
+    </profile>                
 
    </profiles>
 

@@ -46,6 +46,22 @@ And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samp
 You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
 
 
+Java 9 or 10 with Eclipse
+-------------------------
+
+Use Oxygen.3a Release (4.7.3a) or later.
+
+Make sure the Maven configuration is enabled.
+
+In Eclipse, Ctrl-Alt-P, or right-click on the project, Maven, then select the appropriate profile.
+This will pull in the JAXB jars.
+
+If errors show up, check your build path:
+- check you have Java 1.6 or later system library
+- check that for source folders, you don't have excluded ** for pptx4j or xlsx4j (if you do, select excluded then click remove)
+
+
+
 Where to get help?
 ------------------
 
