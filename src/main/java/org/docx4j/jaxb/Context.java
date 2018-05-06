@@ -112,21 +112,31 @@ public class Context {
 			log.debug(e3.getMessage());
 		}
 		if (jaxbPropsIS==null) {
-			// Only probe for other implementations if no MOXy
-			try {
-				Object namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
-				if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-					// Java 6
-					jaxbImplementation = JAXBImplementation.ORACLE_JRE;
-				} else {
-					jaxbImplementation = JAXBImplementation.REFERENCE;
+			
+			if (NamespacePrefixMapperUtils.isJava9orLater()) {
+
+				jaxbImplementation = JAXBImplementation.REFERENCE;
+				
+				// TODO: IBM Java 9??
+				
+			} else {
+				// Only probe for other implementations if no MOXy
+				// and not Java 9
+				try {
+					Object namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
+					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+						// Java 6
+						jaxbImplementation = JAXBImplementation.ORACLE_JRE;
+					} else {
+						jaxbImplementation = JAXBImplementation.REFERENCE;
+					}
+					// NB, it could still be IBM, we'll check for this below,
+					// 
+				} catch (JAXBException e) {
+					log.error("PANIC! No suitable JAXB implementation available");
+					log.error(e.getMessage(), e);
+					e.printStackTrace();
 				}
-				// NB, it could still be IBM, we'll check for this below,
-				// 
-			} catch (JAXBException e) {
-				log.error("PANIC! No suitable JAXB implementation available");
-				log.error(e.getMessage(), e);
-				e.printStackTrace();
 			}
 		}
       

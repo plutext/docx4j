@@ -42,7 +42,15 @@ public class NamespacePrefixMapperUtils {
 	
 	private static boolean haveTried = false;
 	
+	public static boolean isJava9orLater() {
+		
+		return (System.getProperty("java.version").startsWith("9")
+				|| System.getProperty("java.version").startsWith("10") );
+		
+	}
+	
 	public static Object getPrefixMapper() throws JAXBException {
+		
 		
 		if (prefixMapper!=null) return prefixMapper;
 		
@@ -61,13 +69,46 @@ public class NamespacePrefixMapperUtils {
 		}
 		
 		Marshaller m=testContext.createMarshaller();
+
+		if (isJava9orLater()) {
+			return tryUsingRI(m);			
+		}
+
+//		(new Throwable()).printStackTrace();
 		
 		if (System.getProperty("java.vendor").contains("Android")) {
 			log.info("Android .. assuming RI.");  // Avoid unwanted Android logging; art logs the full ClassNotFoundException 
 			return tryUsingRI(m);						
 		}
 		
-		return tryUsingRI(m);			
+		try {
+			// Assume use of Java 6 implementation (ie not RI)
+			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperSunInternal");
+			
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
+			log.info("Using NamespacePrefixMapperSunInternal, which is suitable for Java 6");
+			prefixMapper = c.newInstance();
+			return prefixMapper;
+		} catch (java.lang.NoClassDefFoundError notJava6) {
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		} catch (javax.xml.bind.PropertyException notJava6) {
+			// OpenJDK (1.6.0_23) does this
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		}  catch (ClassNotFoundException notJava6) {
+			// We shouldn't get here on Android, but we may using RI elsewhere
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		} catch (InstantiationException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		} catch (IllegalAccessException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		}
 	}
 
 
@@ -95,14 +136,48 @@ public class NamespacePrefixMapperUtils {
 	public static Object getPrefixMapperRelationshipsPart() throws JAXBException {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
+		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 		}
 		
 		Marshaller m=testContext.createMarshaller();
-		return tryRIforRelationshipsPart(m);			
-	}
+		
+		if (isJava9orLater()) {
+			return tryUsingRI(m);			
+		}
+		
+//		(new Throwable()).printStackTrace();
+		
+		try {
+			// Assume use of Java 6 implementation (ie not RI)
+			Class c = Class.forName("org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal");
+			
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", c.newInstance() );
+			log.info("Using NamespacePrefixMapperRelationshipsPartSunInternal, which is suitable for Java 6");
+			prefixMapperRels = c.newInstance();
+			return prefixMapperRels;
+		} catch (java.lang.NoClassDefFoundError notJava6) {
+			// javax.xml.bind.PropertyException
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);
+		} catch (javax.xml.bind.PropertyException notJava6) {
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);
+		}  catch (ClassNotFoundException notJava6) {
+			// We shouldn't get here on Android, but we may using RI elsewhere
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
+		} catch (InstantiationException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
+		} catch (IllegalAccessException notJava6) {
+			// We shouldn't get here since Class.forName will have already thrown an exception
+			log.warn(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);			
+		}	}
 
 
 	private static Object tryRIforRelationshipsPart(Marshaller m)
