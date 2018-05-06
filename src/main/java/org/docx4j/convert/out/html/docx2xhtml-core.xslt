@@ -12,6 +12,7 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
         
@@ -19,6 +20,9 @@
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
+<!-- Uncomment for MathML (1 of 3); this file is part of Microsoft Office, and not provided in docx4j. Change it to output UTF-8  
+    <xsl:include href="OMML2MML.xslt" />
+ -->
 
 <xsl:param name="conversionContext"/> <!-- select="'passed in'"-->	
 
@@ -130,6 +134,10 @@
 			<xsl:value-of select="$userBodyTail" disable-output-escaping="yes" />
 			
 			<xsl:call-template name="pretty-print-block" />
+            
+<!-- Uncomment for MathML (2 of 3)
+            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=MML_HTMLorMML-full"><xsl:comment/></script>
+            -->
 		</body>
 	</html>
 </xsl:template>
@@ -650,6 +658,14 @@
 		<xsl:copy-of 
 			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.updateComplexFieldDefinition($conversionContext, .)" />  	
   </xsl:template>
+
+<!-- Uncomment for MathML (3 of 3) 
+  <xsl:template match="m:oMathPara" >
+    <math xmlns='http://www.w3.org/1998/Math/MathML'>
+            <xsl:apply-templates/>
+    </math>    
+  </xsl:template>
+-->
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
