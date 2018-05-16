@@ -78,6 +78,19 @@ public class LineSpacing extends AbstractParagraphProperty {
 				log.error("TODO: handle value: " + value.getCssText());
 				return;
 			}
+		} else if (CSSPrimitiveValue.CSS_EMS == type) {
+			// TODO: Use the prevailing font-size, not hardcoded 1em == 16px.
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_EXS == type) {
+			// TODO: Use the prevailing font-size, not hardcoded 1ex == 8px.
+			twip = UnitsOfMeasurement.pxToTwip(8.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
+			// This assumes that the number is actually in rem.
+			// This happens because CSSPrimitiveValue does not support rem, and
+			// so the parser just returns it as a number.
+			// TODO: Use the prevailing font-size, not hardcoded 1rem == 16px.
+			// TODO: Can we figure out that rem was actually used?
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
 		} else {
 			log.error("No support for unit " + type);
 			// twip = 0;  // don't do that; its a very bad default!

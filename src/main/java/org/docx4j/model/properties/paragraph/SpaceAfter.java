@@ -76,9 +76,11 @@ public class SpaceAfter extends AbstractParagraphProperty {
 		} else if (CSSPrimitiveValue.CSS_PT == type) {
 			twip = UnitsOfMeasurement.pointToTwip(fVal);	
 		} else if (CSSPrimitiveValue.CSS_EMS == type) {
-			log.warn("No support for unit: CSS_EMS; instead of em, please use an absolute unit. ");
-			// calculated based on the font size
-			twip = 0;
+			// TODO: Don't hardcode 1em == 16px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_EXS == type) {
+			// TODO: Don't hardcode 1ex == 8px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(8.0f * fVal);
 		} else if (CSSPrimitiveValue.CSS_PX == type) {
 			twip = UnitsOfMeasurement.pxToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
