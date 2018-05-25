@@ -176,6 +176,7 @@ public class TocStyles {
 			// But it might have some other ID.
 			if (clone.getBasedOn()!=null
 					&& clone.getBasedOn().getVal().equals("Normal")
+					&& defaultPStyleId!=null
 					&& !defaultPStyleId.equals("Normal")) {
 				// add it
 //					stylesPartStyles.getStyle().add(
