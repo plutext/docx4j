@@ -25,6 +25,12 @@ import org.docx4j.math.CTSPre;
 import org.docx4j.math.CTSSub;
 import org.docx4j.math.CTSSubSup;
 import org.docx4j.math.CTSSup;
+import org.docx4j.w14.CTFillTextEffect;
+import org.docx4j.w14.CTGlow;
+import org.docx4j.w14.CTProps3D;
+import org.docx4j.w14.CTReflection;
+import org.docx4j.w14.CTScene3D;
+import org.docx4j.w14.CTTextOutlineEffect;
 
 
 /**
@@ -175,6 +181,12 @@ public class ObjectFactory {
     private final static QName _CTParaRPrOriginalEastAsianLayout_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "eastAsianLayout");
     private final static QName _CTParaRPrOriginalSpecVanish_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "specVanish");
     private final static QName _CTParaRPrOriginalOMath_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "oMath");
+    private final static QName _CTParaRPrOriginalGlow_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "glow");
+    private final static QName _CTParaRPrOriginalReflection_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "reflection");
+    private final static QName _CTParaRPrOriginalTextOutline_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "textOutline");
+    private final static QName _CTParaRPrOriginalTextFill_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "textFill");
+    private final static QName _CTParaRPrOriginalScene3D_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "scene3d");
+    private final static QName _CTParaRPrOriginalProps3D_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "props3d");    
     private final static QName _CTFFDataName_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "name");
     private final static QName _CTFFDataEnabled_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "enabled");
     private final static QName _CTFFDataCalcOnExit_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "calcOnExit");
@@ -10587,6 +10599,114 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "altChunk", scope = SdtContentBlock.class)
     public JAXBElement<CTAltChunk> createSdtContentBlockAltChunk(CTAltChunk value) {
         return new JAXBElement<CTAltChunk>(_HdrAltChunk_QNAME, CTAltChunk.class, SdtContentBlock.class, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTGlow }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "glow", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTGlow> createCTParaRPrOriginalGlow(CTGlow value) {
+        return new JAXBElement<CTGlow>(_CTParaRPrOriginalGlow_QNAME, CTGlow.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTReflection }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "reflection", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTReflection> createCTParaRPrOriginalReflection(CTReflection value) {
+        return new JAXBElement<CTReflection>(_CTParaRPrOriginalReflection_QNAME, CTReflection.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTTextOutlineEffect }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "textOutline", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTTextOutlineEffect> createCTParaRPrOriginalTextOutline(CTTextOutlineEffect value) {
+        return new JAXBElement<CTTextOutlineEffect>(_CTParaRPrOriginalTextOutline_QNAME, CTTextOutlineEffect.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFillTextEffect }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "textFill", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTFillTextEffect> createCTParaRPrOriginalTextFill(CTFillTextEffect value) {
+        return new JAXBElement<CTFillTextEffect>(_CTParaRPrOriginalTextFill_QNAME, CTFillTextEffect.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTScene3D }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "scene3d", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTScene3D> createCTParaRPrOriginalScene3D(CTScene3D value) {
+        return new JAXBElement<CTScene3D>(_CTParaRPrOriginalScene3D_QNAME, CTScene3D.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTProps3D }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "props3d", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTProps3D> createCTParaRPrOriginalProps3D(CTProps3D value) {
+        return new JAXBElement<CTProps3D>(_CTParaRPrOriginalProps3D_QNAME, CTProps3D.class, CTParaRPrOriginal.class, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTGlow }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "glow", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTGlow> createCTRPrChangeRPrGlow(CTGlow value) {
+        return new JAXBElement<CTGlow>(_CTParaRPrOriginalGlow_QNAME, CTGlow.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTReflection }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "reflection", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTReflection> createCTRPrChangeRPrReflection(CTReflection value) {
+        return new JAXBElement<CTReflection>(_CTParaRPrOriginalReflection_QNAME, CTReflection.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTTextOutlineEffect }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "textOutline", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTTextOutlineEffect> createCTRPrChangeRPrTextOutline(CTTextOutlineEffect value) {
+        return new JAXBElement<CTTextOutlineEffect>(_CTParaRPrOriginalTextOutline_QNAME, CTTextOutlineEffect.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFillTextEffect }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "textFill", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTFillTextEffect> createCTRPrChangeRPrTextFill(CTFillTextEffect value) {
+        return new JAXBElement<CTFillTextEffect>(_CTParaRPrOriginalTextFill_QNAME, CTFillTextEffect.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTScene3D }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "scene3d", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTScene3D> createCTRPrChangeRPrScene3D(CTScene3D value) {
+        return new JAXBElement<CTScene3D>(_CTParaRPrOriginalScene3D_QNAME, CTScene3D.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTProps3D }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "props3d", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTProps3D> createCTRPrChangeRPrProps3D(CTProps3D value) {
+        return new JAXBElement<CTProps3D>(_CTParaRPrOriginalProps3D_QNAME, CTProps3D.class, CTRPrChange.RPr.class, value);
     }
     
 }

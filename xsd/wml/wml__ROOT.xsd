@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	blockDefault="#all"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns="http://schemas.microsoft.com/office/word/2010/wordml"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+<!--  no real need for this, but keep it for experimental purposes -->
+
+	  <xsd:import id="w" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="wml.xsd"/>
+
+  	<xsd:import id="w14" namespace="http://schemas.microsoft.com/office/word/2010/wordml"
+		schemaLocation="w14_word_2010_wordml.xsd"/>	
+  
+</xsd:schema>

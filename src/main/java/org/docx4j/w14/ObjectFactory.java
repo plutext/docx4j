@@ -67,6 +67,7 @@ public class ObjectFactory {
     private final static QName _CTSRgbColorLum_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "lum");
     private final static QName _CTSRgbColorAlpha_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "alpha");
     private final static QName _CTSRgbColorTint_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "tint");
+    private final static QName _Shadow_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "shadow");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.w14
@@ -631,6 +632,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "tint", scope = CTSchemeColor.class)
     public JAXBElement<CTPositiveFixedPercentage> createCTSchemeColorTint(CTPositiveFixedPercentage value) {
         return new JAXBElement<CTPositiveFixedPercentage>(_CTSRgbColorTint_QNAME, CTPositiveFixedPercentage.class, CTSchemeColor.class, value);
+    }
+    
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTShadow }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "shadow")
+    public JAXBElement<CTShadow> createShadow(CTShadow value) {
+        return new JAXBElement<CTShadow>(_Shadow_QNAME, CTShadow.class, null, value);
     }
 
 }

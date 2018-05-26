@@ -34,6 +34,13 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.docx4j.w14.CTFillTextEffect;
+import org.docx4j.w14.CTGlow;
+import org.docx4j.w14.CTProps3D;
+import org.docx4j.w14.CTReflection;
+import org.docx4j.w14.CTScene3D;
+import org.docx4j.w14.CTShadow;
+import org.docx4j.w14.CTTextOutlineEffect;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -179,7 +186,15 @@ public class CTRPrChange
             @XmlElementRef(name = "kern", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
             @XmlElementRef(name = "bCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
             @XmlElementRef(name = "u", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = U.class),
-            @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+            @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "textFill", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "shadow", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "props3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "reflection", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "glow", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "textOutline", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "scene3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            
         })
         protected List<Object> egrPrBase  = new ArrayListWml<Object>(this);
         @XmlTransient
@@ -242,7 +257,13 @@ public class CTRPrChange
          * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
          * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
          * {@link U }
-         * 
+	     * {@link JAXBElement }{@code <}{@link CTGlow }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTShadow }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTReflection }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTTextOutlineEffect }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTFillTextEffect }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTScene3D }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTProps3D }{@code >}
          * 
          */
         public List<Object> getEGRPrBase() {

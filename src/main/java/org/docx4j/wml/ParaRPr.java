@@ -97,6 +97,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "eastAsianLayout",
     "specVanish",
     "oMath",
+    "glow",
+    "shadow14",
+    "reflection",
+    "textOutline",
+    "textFill",
+    "scene3D",
+    "props3D",    
     "rPrChange"
 })
 public class ParaRPr extends RPrAbstract implements Child

@@ -21,7 +21,16 @@
 
 package org.docx4j.wml; 
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.docx4j.w14.CTFillTextEffect;
+import org.docx4j.w14.CTGlow;
+import org.docx4j.w14.CTProps3D;
+import org.docx4j.w14.CTReflection;
+import org.docx4j.w14.CTScene3D;
+import org.docx4j.w14.CTShadow;
+import org.docx4j.w14.CTTextOutlineEffect;
 
 
 /**
@@ -78,6 +87,20 @@ public abstract class RPrAbstract
     protected CTEastAsianLayout eastAsianLayout;
     protected BooleanDefaultTrue specVanish;
     protected BooleanDefaultTrue oMath;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTGlow glow;
+    @XmlElement(name = "shadow", namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTShadow shadow14;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTReflection reflection;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTTextOutlineEffect textOutline;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTFillTextEffect textFill;
+    @XmlElement(name = "scene3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTScene3D scene3D;
+    @XmlElement(name = "props3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTProps3D props3D;
     protected CTRPrChange rPrChange;
 
     /**
@@ -1016,6 +1039,175 @@ public abstract class RPrAbstract
         this.oMath = value;
     }
 
+    /**
+     * Gets the value of the glow property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTGlow }
+     *     
+     */
+    public CTGlow getGlow() {
+        return glow;
+    }
+
+    /**
+     * Sets the value of the glow property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTGlow }
+     *     
+     */
+    public void setGlow(CTGlow value) {
+        this.glow = value;
+    }
+
+    /**
+     * Gets the value of the shadow14 property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTShadow }
+     *     
+     */
+    public CTShadow getShadow14() {
+        return shadow14;
+    }
+
+    /**
+     * Sets the value of the shadow14 property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTShadow }
+     *     
+     */
+    public void setShadow14(CTShadow value) {
+        this.shadow14 = value;
+    }
+
+    /**
+     * Gets the value of the reflection property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTReflection }
+     *     
+     */
+    public CTReflection getReflection() {
+        return reflection;
+    }
+
+    /**
+     * Sets the value of the reflection property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTReflection }
+     *     
+     */
+    public void setReflection(CTReflection value) {
+        this.reflection = value;
+    }
+
+    /**
+     * Gets the value of the textOutline property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTextOutlineEffect }
+     *     
+     */
+    public CTTextOutlineEffect getTextOutline() {
+        return textOutline;
+    }
+
+    /**
+     * Sets the value of the textOutline property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTextOutlineEffect }
+     *     
+     */
+    public void setTextOutline(CTTextOutlineEffect value) {
+        this.textOutline = value;
+    }
+
+    /**
+     * Gets the value of the textFill property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTFillTextEffect }
+     *     
+     */
+    public CTFillTextEffect getTextFill() {
+        return textFill;
+    }
+
+    /**
+     * Sets the value of the textFill property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTFillTextEffect }
+     *     
+     */
+    public void setTextFill(CTFillTextEffect value) {
+        this.textFill = value;
+    }
+
+    /**
+     * Gets the value of the scene3D property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTScene3D }
+     *     
+     */
+    public CTScene3D getScene3D() {
+        return scene3D;
+    }
+
+    /**
+     * Sets the value of the scene3D property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTScene3D }
+     *     
+     */
+    public void setScene3D(CTScene3D value) {
+        this.scene3D = value;
+    }
+
+    /**
+     * Gets the value of the props3D property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTProps3D }
+     *     
+     */
+    public CTProps3D getProps3D() {
+        return props3D;
+    }
+
+    /**
+     * Sets the value of the props3D property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTProps3D }
+     *     
+     */
+    public void setProps3D(CTProps3D value) {
+        this.props3D = value;
+    }
+    
+    
     /**
      * Gets the value of the rPrChange property.
      * 
