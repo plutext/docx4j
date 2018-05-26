@@ -35,6 +35,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.docx4j.mce.AlternateContent;
+
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -71,6 +73,7 @@ public class R implements Child, ContentAccessor
 {
 
     protected RPr rPr;
+    
     @XmlElementRefs({
         @XmlElementRef(name = "ptab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "yearLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -103,9 +106,11 @@ public class R implements Child, ContentAccessor
         @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "footnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "dayLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class)
+        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class),
+        @XmlElementRef(name = "AlternateContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006", type = AlternateContent.class)
     })
     protected List<Object> content = new ArrayListWml<Object>(this);
+    
     @XmlAttribute(name = "rsidRPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String rsidRPr;
     @XmlAttribute(name = "rsidDel", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -189,6 +194,7 @@ public class R implements Child, ContentAccessor
      * {@link JAXBElement }{@code <}{@link R.FootnoteRef }{@code >}
      * {@link DelText }
      * {@link JAXBElement }{@code <}{@link R.DayLong }{@code >}
+     * {@link AlternateContent }
      * 
      * @since 2.7
      */
