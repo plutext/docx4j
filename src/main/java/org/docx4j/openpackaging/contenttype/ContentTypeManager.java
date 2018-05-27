@@ -482,6 +482,7 @@ public class ContentTypeManager  {
 			return new WebExtensionPart(new PartName(partName));
 			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
+				|| contentType.equals(ContentTypes.IMAGE_SVG)				
 				|| partName.endsWith(".xml")) {
 			
 			// Rarely (but sometimes) used, owing to OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
@@ -489,6 +490,8 @@ public class ContentTypeManager  {
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
 			// will catch the error and load it as a binary part instead.
+			
+			// For SVG, we could unmarshall with our jaxb-svg, but probably little reason to do that.
 			
 			if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLESWITHEFFECTS)) {
 				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");

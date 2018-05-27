@@ -420,7 +420,11 @@ public class ContentTypes {
 	public static final String IMAGE_BMP = "image/bmp";
 	public static final String EXTENSION_BMP = "bmp";
 	
+	// <Default Extension="svg" ContentType="image/svg+xml"/>
+	// Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+	public static final String IMAGE_SVG = "image/svg+xml";
 
+	
 	public static final String XML = "text/xml";
 	
 	
