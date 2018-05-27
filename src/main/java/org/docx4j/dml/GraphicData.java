@@ -30,11 +30,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.dml.picture.Pic;
 
 
@@ -100,6 +102,7 @@ public class GraphicData {
         return this.any;
     }
 
+    @XmlTransient
     public org.docx4j.dml.picture.Pic getPic() {
 
 		for (Object o : getAny() ) {
@@ -110,6 +113,27 @@ public class GraphicData {
 					&& ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {
 				
 					return (Pic)((JAXBElement)o).getValue();
+			}
+		}
+    	return null;    	
+    }
+
+    @XmlTransient
+    public CTWordprocessingShape getWordprocessingShape() {
+    	
+    	/*
+          <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+            <wps:wsp>
+       	 */
+
+		for (Object o : getAny() ) {
+			
+			if (o instanceof CTWordprocessingShape) return (CTWordprocessingShape)o;
+
+			if (o instanceof JAXBElement
+					&& (XmlUtils.unwrap(o) instanceof  CTWordprocessingShape)) {
+				
+					return (CTWordprocessingShape)((JAXBElement)o).getValue();
 			}
 		}
     	return null;    	
