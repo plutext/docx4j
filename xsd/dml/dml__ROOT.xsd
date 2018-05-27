@@ -116,6 +116,12 @@
     <!--  2017 10 02 -->
     <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2007/8/2/chart" schemaLocation="../odrawxml/chart20070802.xsd" />
      
+    <!--  2018 05 --> 
+	<xsd:import schemaLocation="../odrawxml/oartworddrawing2010.xsd"
+		namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" />
+
+	<xsd:import schemaLocation="../odrawxml/oartwordshape.xsd"
+		namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" />
     
 		
 </xsd:schema>
