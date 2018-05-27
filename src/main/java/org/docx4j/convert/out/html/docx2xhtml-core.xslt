@@ -13,6 +13,7 @@
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
     xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     version="1.0"
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
         
@@ -666,6 +667,13 @@
     </math>    
   </xsl:template>
 -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  alternate content     ++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<xsl:template match="mc:AlternateContent" >
+		<xsl:apply-templates select="mc:Fallback/*" />
+	</xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
