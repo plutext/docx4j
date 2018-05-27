@@ -22,6 +22,7 @@ package org.docx4j.samples;
 
 
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -68,7 +69,7 @@ public class VariableReplace {
 		// Input docx has variables in it: ${colour}, ${icecream}
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample.docx";
 
-		boolean save = false;
+		boolean save = true;
 		String outputfilepath = System.getProperty("user.dir")
 				+ "/OUT_VariableReplace.docx";
 
@@ -78,7 +79,7 @@ public class VariableReplace {
 
 		HashMap<String, String> mappings = new HashMap<String, String>();
 		mappings.put("colour", "green");
-		mappings.put("icecream", "chocolate");
+		mappings.put("icecream", newlineToBreakHack("chocolate\nor strawberry"));
 		
 		long start = System.currentTimeMillis();
 
@@ -108,6 +109,32 @@ public class VariableReplace {
 			System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true,
 					true));
 		}
+	}
+	
+	/**
+	 * Hack to convert a new line character into w:br.
+	 * If you need this sort of thing, consider using 
+	 * OpenDoPE content control data binding instead.
+	 *  
+	 * @param r
+	 * @return
+	 */
+	private static String newlineToBreakHack(String r) {
+
+		StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
+		StringBuilder sb = new StringBuilder();
+		
+		boolean firsttoken = true;
+		while (st.hasMoreTokens()) {						
+			String line = (String) st.nextToken();
+			if (firsttoken) {
+				firsttoken = false;
+			} else {
+				sb.append("</w:t><w:br/><w:t>");
+			}
+			sb.append(line);
+		}
+		return sb.toString();	
 	}
 
 }
