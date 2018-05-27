@@ -29,6 +29,7 @@ import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CT
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
+import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
@@ -496,6 +497,13 @@ public class TraversalUtil {
 			if(fldChar.getNumberingChange() != null) {
 				artificialList.add(fldChar.getNumberingChange());
 			}
+			return artificialList;
+		} else if (o instanceof org.docx4j.mce.AlternateContent) {
+			// we also want to traverse the fallback
+			AlternateContent ac = (AlternateContent)o;
+			List<Object> artificialList = new ArrayList<Object>();
+			artificialList.addAll(ac.getChoice());
+			artificialList.add(ac.getFallback());
 			return artificialList;
 		}
 
