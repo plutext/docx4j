@@ -16,7 +16,13 @@
       docx4j 2.7.0 ought to be able to handle.  
       
       See MainDocumentPart's unmarshall method 
-      for an example of how it is invoked. -->
+      for an example of how it is invoked. 
+      
+      NB, we do retain mc:AlternateContent in
+      some places.  For example, 3.3.8 will retain
+      it in w:r.
+      
+      -->
 
 
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
@@ -25,6 +31,11 @@
     <xsl:copy>
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
+  </xsl:template>
+
+  <!--  v3.3.8 is OK with mc:AlternateContent in a run  -->
+  <xsl:template match="w:r">
+  	<xsl:copy-of select="." />
   </xsl:template>
 
   <xsl:template match="mc:AlternateContent">  
