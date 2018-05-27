@@ -23,9 +23,15 @@ import org.docx4j.wml.Hdr;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
+/**
+ * TODO: As of docx4j 3.3.8, mc:AlternateContent
+ * is supported in w:r, so these tests need to be re-worked.
+ *
+ */
 public class AlternateContentPreprocessorTest {
 
 	
@@ -256,6 +262,7 @@ public class AlternateContentPreprocessorTest {
 	}
 
 	@Test
+	@Ignore
 	public void testAltContentMarkSupported() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
@@ -275,6 +282,7 @@ public class AlternateContentPreprocessorTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testAltContentMarkNotSupported() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
