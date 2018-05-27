@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
@@ -280,6 +281,14 @@ public class TraversalUtil {
                 artificialList.addAll(tmpArtificialList);
             artificialList.add(graphicData.getPic().getBlipFill().getBlip());
             return artificialList;
+        } else if (graphicData.getWordprocessingShape() != null) {
+        	CTWordprocessingShape wsp = graphicData.getWordprocessingShape();
+        	if (wsp.getTxbx()==null) {
+        		return null;
+        	} else {
+        		return wsp.getTxbx().getTxbxContent().getEGBlockLevelElts();
+        		// grandchildren, like we do for vml textbox
+        	}
         } else {
             // Chart is in here
             return graphicData.getAny();
