@@ -484,14 +484,10 @@ implements XPathEnabled<E> {
 					// when reading from zip, we use a ByteArrayInputStream, which does support mark.
 					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
 									
-					/* Always try our preprocessor, since if what is first encountered is
-					 * eg:
-					 * 
-				          <w14:glow w14:rad="101600"> ...
-					 *
+					/* Always try our preprocessor, since if what is first encountered is w14:whatever
 					 * the error would be:
 					 *  
-					 *    unexpected element (uri:"http://schemas.microsoft.com/office/word/2010/wordml", local:"glow")
+					 *    unexpected element (uri:"http://schemas.microsoft.com/office/word/2010/wordml", local:"whatever")
 					 *
 					 * but there could well be mc:AlternateContent somewhere 
 					 * further down in the document.
@@ -511,10 +507,11 @@ implements XPathEnabled<E> {
 					
 					try {
 						// mimic docx4j 2.7.0 and earlier behaviour; this will 
-						// drop w14:glow etc; the preprocessor doesn't need to 
+						// drop things we don't have a content model for; the preprocessor doesn't need to 
 						// do that				
 						eventHandler.setContinue(true);
 						binder = jc.createBinder();
+						binder.setEventHandler(eventHandler);
 						jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 					} catch (ClassCastException cce) {
 						/* 
@@ -529,13 +526,7 @@ implements XPathEnabled<E> {
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.SAXConnector.endElement(Unknown Source)
 							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
-							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+							:
 							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
 							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.scan(Unknown Source)
 							at com.sun.xml.internal.bind.unmarshaller.DOMScanner.scan(Unknown Source)
@@ -547,6 +538,8 @@ implements XPathEnabled<E> {
 	
 						log.warn("Binder not available for this docx");
 						Unmarshaller u = jc.createUnmarshaller();
+						eventHandler.setContinue(true);
+						u.setEventHandler(eventHandler);
 						unwrapUsually(u.unmarshal( doc ));		
 						
 					}
@@ -651,6 +644,8 @@ implements XPathEnabled<E> {
 				} catch (ClassCastException cce) {
 					log.warn("Binder not available for this docx");
 					Unmarshaller u = jc.createUnmarshaller();
+					eventHandler.setContinue(true);
+					u.setEventHandler(eventHandler);
 					jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);

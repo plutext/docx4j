@@ -35,6 +35,11 @@
 
   <!--  v3.3.8 is OK with mc:AlternateContent in a run  -->
   <xsl:template match="w:r">
+    <xsl:if test="mc:AlternateContent">
+		<xsl:variable name="dummy" 
+			select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent present in run; retaining')" />
+		<!--  graceful degradation: if there is unexpected content in here, the unexpected content will get dropped -->
+    </xsl:if>
   	<xsl:copy-of select="." />
   </xsl:template>
 
