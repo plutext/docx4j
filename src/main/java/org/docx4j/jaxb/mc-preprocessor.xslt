@@ -33,22 +33,22 @@
     </xsl:copy>
   </xsl:template>
 
-  <!--  v3.3.8 is OK with mc:AlternateContent in a run  -->
-  <xsl:template match="w:r">
-    <xsl:if test="mc:AlternateContent">
-		<xsl:variable name="dummy" 
-			select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent present in run; retaining')" />
-		<!--  graceful degradation: if there is unexpected content in here, the unexpected content will get dropped -->
-    </xsl:if>
-  	<xsl:copy-of select="." />
-  </xsl:template>
-
   <xsl:template match="mc:AlternateContent">  
   
 	<xsl:variable name="dummy" 
 		select="java:org.docx4j.utils.XSLTUtils.logWarn('Found some mc:AlternateContent')" />
 		
   	<xsl:choose>
+  	
+	    <xsl:when test="parent::w:r">
+			  <!--  v3.3.8 is OK with mc:AlternateContent in a run  -->
+			<xsl:variable name="dummyRetain" 
+				select="java:org.docx4j.utils.XSLTUtils.logWarn('mc:AlternateContent present in run; retaining')" />
+		    <xsl:copy>
+		      <xsl:apply-templates select="@*|node()"/>
+		    </xsl:copy>
+		</xsl:when>
+		  	
   	<!-- See comment in SlidePart as to why we don't do this!
   	
   		<xsl:when test="mc:Choice[@Requires='v']">
@@ -108,13 +108,15 @@
        
        and at 201504 <w:pgSz w:h="16839.0" w:w="11907.0"/>
        See http://www.docx4java.org/forums/docx-java-f6/parsing-error-when-reading-a-document-from-google-docs-t2160.html
+       
+       pandoc 2.2.1 makes the same error on tbl:w; see https://github.com/plutext/docx4j/issues/298
         -->
   
   <xsl:template match="@w:w" >
 
   	  <xsl:choose>
   	  	<!--  limit fix to certain cases -->
-  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz' or local-name(..)='gridCol'">
+  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz' or local-name(..)='gridCol' or local-name(..)='tblW'">
 		  	<xsl:attribute name="w:w"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   		</xsl:when>
   		<xsl:otherwise>
