@@ -1474,13 +1474,32 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	public static DocumentFragment xpathDate(WordprocessingMLPackage wmlPackage,
 			JaxbXmlPart sourcePart,
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
-			String storeItemId, String xpath, String prefixMappings, 
+			NodeIterator sdtPrNodeIt, 			
 			String sdtParent,
 			String contentChild,
 			NodeIterator dateNodeIt) {
 		
-		CustomXmlPart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		try {
+			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
+		} catch (JAXBException e) {
+			log.error(e.getMessage(), e);
+		}
+		RPr rPr = null;
+		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
+			o = XmlUtils.unwrap(o); 
+			if (o instanceof RPr) {					
+				rPr = (RPr)o;
+				break;
+			}
+		}
+
+		String storeItemId = sdtPr.getDataBinding().getStoreItemID();
+		String xpath = sdtPr.getDataBinding().getXpath();
+		String prefixMappings = sdtPr.getDataBinding().getPrefixMappings();		
 		
+		CustomXmlPart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());		
 		
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
@@ -1533,7 +1552,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			
 			Date date;
-			RPr rPr = null;
+//			RPr rPr = null;
+			boolean parseException = false;
 			try {
 				date = (Date)dateTimeFormat.parse(r);
 			} catch (ParseException e) {
@@ -1545,11 +1565,10 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 					log.warn(e.getMessage());
 					date = new Date();
 
-					// <w:color w:val="FF0000"/>
-					rPr = factory.createRPr();
-					Color colorRed = factory.createColor();
-					colorRed.setVal("FF0000");
-					rPr.setColor(colorRed);
+					parseException = true;
+					if (rPr==null) {
+						rPr = factory.createRPr();						
+					}
 				}
 			}
 
@@ -1558,6 +1577,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			org.docx4j.wml.R  run = factory.createR();	
 			if (rPr!=null) {
 				run.setRPr(rPr);
+			}
+			if (parseException) {
+				// <w:color w:val="FF0000"/>
+				Color colorRed = factory.createColor();
+				colorRed.setVal("FF0000");
+				rPr.setColor(colorRed);				
 			}
 			org.docx4j.wml.Text text = factory.createText();
 			text.setValue(result);

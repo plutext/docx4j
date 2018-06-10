@@ -276,9 +276,7 @@
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
-											string(w:sdtPr/w:dataBinding/@w:storeItemID),
-											string(w:sdtPr/w:dataBinding/@w:xpath),
-											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+                                            w:sdtPr,
 											$parent,
 											$child,
 											w:sdtPr/w:date)" />
@@ -288,11 +286,9 @@
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
 										$wmlPackage,
-										$sourcePart,
+										$sourcePart, 
 										$customXmlDataStorageParts,
-										string(w:sdtPr/w:dataBinding/@w:storeItemID),
-										string(w:sdtPr/w:dataBinding/@w:xpath),
-										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+                                        w:sdtPr,
 										$parent,
 										$child,
 										w:sdtPr/w:date)" />
