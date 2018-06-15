@@ -157,7 +157,9 @@ public class PropertyFactory {
 	public static List<Property> createProperties(List<CTTblStylePr> tblStylePrList) {
 		
 		List<Property> properties = new ArrayList<Property>();
-		log.warn("TODO - implement for CTTblStylePr!");
+		if (!tblStylePrList.isEmpty()) {
+			log.warn("TODO - implement for CTTblStylePr!");
+		}
 		return properties;		
 	}
 
