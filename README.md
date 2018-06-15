@@ -1,6 +1,8 @@
 README
 ======
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j)
+
 What is docx4j?
 ---------------
 
