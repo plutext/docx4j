@@ -115,13 +115,6 @@ public class Indent extends AbstractParagraphProperty {
 		
 		short type = cssPrimitiveValue.getPrimitiveType();		
 		
-		// TODO
-//		CSSPrimitiveValue.CSS_EMS (Unit 3)
-//		(the 'font-size' of the relevant font)
-//		
-//		CSSPrimitiveValue.CSS_EMX (Unit 4)
-//		(the 'x-height' of the relevant font)		
-		
 		if (CSSPrimitiveValue.CSS_PX == type) {
 			// Unit 5
 			twip = UnitsOfMeasurement.pxToTwip(fVal);
@@ -136,7 +129,13 @@ public class Indent extends AbstractParagraphProperty {
 			twip = UnitsOfMeasurement.inchToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_PT == type) {
 			// Unit 9
-			twip = UnitsOfMeasurement.pointToTwip(fVal);	
+			twip = UnitsOfMeasurement.pointToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_EMS == type) {
+			// TODO: Don't hardcode 1em == 16px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_EXS == type) {
+			// TODO: Don't hardcode 1ex == 8px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(8.0f * fVal);
 		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
 			log.error("Indent: No support for unspecified unit: CSS_NUMBER "); 
 			// http://stackoverflow.com/questions/11479985/what-is-the-default-unit-for-margin-left

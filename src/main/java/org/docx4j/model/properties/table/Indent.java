@@ -65,7 +65,13 @@ public class Indent extends AbstractTableProperty {
 		if (CSSPrimitiveValue.CSS_IN == type) {
 			twip = UnitsOfMeasurement.inchToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_MM == type) {
-			twip = UnitsOfMeasurement.mmToTwip(fVal);		
+			twip = UnitsOfMeasurement.mmToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_EMS == type) {
+			// TODO: Don't hardcode 1em == 16px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_EXS == type) {
+			// TODO: Don't hardcode 1ex == 8px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(8.0f * fVal);
 		} else {
 			log.error("No support for unit " + type);
 			twip = 0;
