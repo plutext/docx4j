@@ -104,7 +104,12 @@ public abstract class Mapper {
 	 * @param pf
 	 */
 	public void put(String key, PhysicalFont pf) {
-		if (fontMappings.get(key.toLowerCase())!=null) {
+		PhysicalFont priorPf = fontMappings.get(key.toLowerCase());
+		if (priorPf != null) {
+			if (priorPf == pf) {
+				// No change, nothing to do.
+				return;
+			}
 			log.warn("Overwriting existing fontMapping: " + key.toLowerCase());
 		}		
 		fontMappings.put(key.toLowerCase(), pf);
