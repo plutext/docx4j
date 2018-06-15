@@ -48,12 +48,28 @@ public class Bold extends AbstractRunProperty {
 	
 	public Bold(CSSValue value) {	
         BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();
-		
-		if (!value.getCssText().toLowerCase().equals("bold")) {
+
+		if (!isBold(value)) {
 			bdt.setVal(Boolean.FALSE);
 		}
 
         this.setObject( bdt );
+	}
+
+	private static boolean isBold(CSSValue value) {
+		String val = value.getCssText().toLowerCase();
+
+		if (val.equals("bold") || val.equals("bolder")) {
+			return true;
+		}
+
+		try {
+			int weight = Integer.parseInt(val);
+			return (weight > 400);
+		}
+		catch (NumberFormatException err) {
+			return false;
+		}
 	}
 
 	@Override
