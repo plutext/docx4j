@@ -54,6 +54,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.Docx4jMarshallerListener;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -675,6 +676,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			Marshaller marshaller = jc.createMarshaller();
 //			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
 			
+//			marshaller.setListener(Docx4jMarshallerListener);
+			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			getContents();
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
@@ -803,7 +806,14 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		IOUtils.write(bytes, os);
 	    		
 	    	} else {
-	    		marshaller.marshal(jaxbElement, os);
+	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
+	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os);
+
+	            marshaller.setListener(new Docx4jMarshallerListener(xsw));
+	            marshaller.marshal(jaxbElement, xsw);
+	            xsw.close();
+	    		
+//	    		marshaller.marshal(jaxbElement, os);
 	    	}
 	    	
 			// Now unset it - prob not nec
