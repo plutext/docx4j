@@ -285,6 +285,9 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 						log.warn("model cell had no contents!");
 					} else {
 						log.debug("copying cell contents..");
+						
+						cellNode = interposeBlockContainer(doc, cellNode, cell.getTcPr());
+						
 						XmlUtils.treeCopy( ((AbstractTableWriterModelCell)cell).getContent().getChildNodes(),
 								cellNode);
 					}
@@ -296,6 +299,18 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 		}
 		return docfrag;
   	}
+  
+    /**
+     * In the FO case, if we need to rotate the text, we do that
+     * by inserting a block-container.
+     * 
+     * @param cellNode
+     * @return
+     */
+    protected Element interposeBlockContainer(Document doc, Element cellNode, TcPr tcPr) {
+    	
+    	return cellNode;    	
+    }
   	
   	protected Element createNode(Document doc, Element parent, int nodeType) {
   	Element ret = createNode(doc, nodeType);

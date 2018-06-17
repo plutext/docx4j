@@ -58,6 +58,7 @@ import org.docx4j.model.properties.table.CellMarginLeft;
 import org.docx4j.model.properties.table.CellMarginRight;
 import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
+import org.docx4j.model.properties.table.tc.TextDir;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
@@ -199,12 +200,16 @@ public class PropertyFactory {
 		if (tcPr.getShd()!=null) {
 			properties.add(new Shading(tcPr.getShd())); 
 		}
+		if (tcPr.getTextDirection() != null ) {
+			properties.add(new TextDir(tcPr.getTextDirection())); 			
+		}
 		
 	}
 	
 	public static void createProperties(List<Property> properties, TcPr tcPr) {
 		createPropertiesTable(properties, tcPr);
 
+		// Why is this done here rather than in createPropertiesTable (or vice versa)?
 		if (tcPr.getTcMar() != null) {
 			TcMar tcMar = tcPr.getTcMar();
 			if (tcMar.getTop() != null)
@@ -216,6 +221,7 @@ public class PropertyFactory {
 			if (tcMar.getRight() != null)
 				properties.add(new CellMarginRight(tcMar.getRight()));
 		}
+		
 	}
 
 	public static List<Property> createProperties(OpcPackage wmlPackage, RPr rPr) {
