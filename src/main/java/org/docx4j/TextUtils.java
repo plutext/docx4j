@@ -23,6 +23,7 @@ package org.docx4j;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 
 import javax.xml.bind.JAXBContext;
@@ -42,7 +43,26 @@ import org.xml.sax.helpers.DefaultHandler;
 public class TextUtils {
 	
 	private static Logger log = LoggerFactory.getLogger(TextUtils.class);	
-		
+
+	/**
+	 * Extract contents of descendant <w:t> elements. 
+	 * 
+	 * @param o
+	 * @return String
+	 * @since 3.4.0
+	 */
+	public static String getText(Object o)  {
+
+		StringWriter w = new StringWriter();
+		try {
+			extractText(o, w, Context.jc);
+		} catch (Exception e) {
+			log.warn(e.getMessage());
+			return null;
+		}
+		return w.toString();
+	}
+	
 	/**
 	 * Extract contents of descendant <w:t> elements. 
 	 * 
