@@ -93,14 +93,12 @@ import org.slf4j.LoggerFactory;
  * 
  * @author jharrop
  *
- */public class UpdateXmlFromDocumentSurface {
+ */
+public class UpdateXmlFromDocumentSurface {
 	
 	private static Logger log = LoggerFactory.getLogger(UpdateXmlFromDocumentSurface.class);	
 	
 	private WordprocessingMLPackage pkg;
-//	Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap;
-//	Document cxpDocument = null;
-//	private static XPath xPath = XPathFactoryUtil.newXPath();
 	
 	/**
 	 * Copy contents of OpenDoPE content controls, including rich text content controls with tag 'od:progid=Word.Document'
@@ -148,14 +146,6 @@ import org.slf4j.LoggerFactory;
 	 * @throws Docx4JException
 	 */
 	public List<CustomXmlPart> updateCustomXmlParts() throws Docx4JException {
-
-//		setupXpathsMap();
-//		cxpDocument = getDocumentFromCXP();
-		
-//		if (cxpDocument==null) {
-//			log.error("No CXP to update; exiting");
-//			return null;
-//		}
 		
 		// For each relevant part,
 		//
@@ -190,100 +180,6 @@ import org.slf4j.LoggerFactory;
 		return updatedParts;
 		
 	}
-	
-//	private void setupXpathsMap() {
-//
-//		if (pkg.getMainDocumentPart().getXPathsPart() == null) {
-//			log.info("OpenDoPE XPaths part missing (ok if you are just processing w15 repeatingSection)");
-//			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>();
-//		} else {
-//			org.opendope.xpaths.Xpaths xPaths = pkg.getMainDocumentPart().getXPathsPart()
-//					.getJaxbElement();
-//            if(log.isDebugEnabled()) {
-//                log.debug(XmlUtils.marshaltoString(xPaths, true, true));
-//            }
-//			
-//			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(2*xPaths.getXpath().size());
-//			
-//			for (Xpaths.Xpath xp : xPaths.getXpath() ) {
-//				
-//				if (xpathsMap.put(xp.getId(), xp)!=null) {
-//					log.error("Duplicates in XPaths part: " + xp.getId());
-//				}
-//				// TODO key should include storeItemID?
-//			}
-//		}
-//		
-//	}
-	
-	
-//	CustomXmlPart cxp; 
-//	
-//	private Document getDocumentFromCXP() throws Docx4JException {
-//		
-//		// We're only caching the first one we encounter
-//		// (even though, in principle, there could be multiple, and ODH is set up for that)
-//		cxp =
-//				CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
-//						(WordprocessingMLPackage)pkg);
-//	
-//		if (cxp==null) {
-//			log.warn("No CustomXmlDataStoragePart found!");
-//			/* TODO: would fail on StandardisedAnswersPart
-//			 * since that extends JaxbCustomXmlDataStoragePart<org.opendope.answers.Answers>
-//			 */
-//			return null;
-//		} else if (cxp instanceof CustomXmlDataStoragePart) {
-//			
-//			CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
-//			
-//			// CustomXmlDataStorage has xpathGetNodes
-//			return cdsp.getData().getDocument();
-//			
-//			
-//		} else if (cxp instanceof JaxbCustomXmlDataStoragePart) {
-//			
-//			// has setNodeValueAtXPath
-//			
-//			Document data = XmlUtils.neww3cDomDocument();
-//			try {
-//				((JaxbCustomXmlDataStoragePart)cxp).marshal(data);
-//			} catch (JAXBException e) {
-//				throw new Docx4JException("Problem caching JaxbCustomXmlDataStoragePart", e);
-//			}
-//			return data;
-//			
-//		} else {
-//			log.warn("TODO: " + cxp.getClass().getName() );
-//			return null;
-//		}
-//		
-//	}
-//
-//	private void updateCXP() throws Docx4JException {
-//		
-//		// We're only caching the first one we encounter
-//		// (even though, in principle, there could be multiple, and ODH is set up for that)
-//		cxp =
-//				CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(
-//						(WordprocessingMLPackage)pkg);
-//	
-//		if (cxp instanceof CustomXmlDataStoragePart) {
-//			
-//			CustomXmlDataStoragePart cdsp = (CustomXmlDataStoragePart)cxp;
-//			cdsp.getData().setDocument(this.cxpDocument);
-//			log.warn("Updated CustomXmlDataStoragePart");
-//			
-//		} else if (cxp instanceof JaxbCustomXmlDataStoragePart) {
-//			
-//			((JaxbCustomXmlDataStoragePart)cxp).setXML(cxpDocument);
-//			log.warn("Updated JaxbCustomXmlDataStoragePart");
-//			
-//		} else {
-//			log.warn("TODO: " + cxp.getClass().getName() );
-//		}
-//		
-//	}
 	
 	
 	private CustomXmlPart getCustomXmlPart(Xpath xpath) {
@@ -612,41 +508,6 @@ import org.slf4j.LoggerFactory;
 		}
 		return false;
 	}
-
-//	private boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
-//
-//		try {
-//			Node node;
-//			synchronized(xPath) {
-//				getNamespaceContext().registerPrefixMappings(prefixMappings);
-//				node = (Node)xPath.evaluate(xpath, cxpDocument,  XPathConstants.NODE );
-//				
-////				System.out.println(node.getClass().getName());
-//				// com.sun.org.apache.xerces.internal.dom.ElementNSImpl
-//				if (node instanceof Element) {
-//					// ((Element)node).setNodeValue(nodeValue);
-//					((Element)node).setTextContent(value);
-//				} else {
-//					throw new Docx4JException("Expected element, but got " + node.getClass().getName() );
-//				}
-//				return true;
-//				
-//			}
-//		} catch (Docx4JException e) {
-//			throw e;
-//		} catch (Exception e) {
-//			throw new Docx4JException("Problems evaluating xpath '" + xpath + "'", e);
-//		}
-//		
-//	}
-//	private NamespacePrefixMappings nsContext;
-//	private NamespacePrefixMappings getNamespaceContext() {
-//		if (nsContext==null) {
-//			nsContext = new NamespacePrefixMappings();
-//			xPath.setNamespaceContext(nsContext);
-//		}
-//		return nsContext;
-//	}
 
 	
 	private WordprocessingMLPackage getAsDocx(SdtBlock sdtBlock) throws InvalidFormatException {
