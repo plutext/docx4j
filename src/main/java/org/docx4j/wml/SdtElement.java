@@ -81,4 +81,13 @@ public interface SdtElement  {
 //     */
 //    void afterUnmarshal(Unmarshaller unmarshaller, Object parent);
 
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     * @since 3.4.0
+     */
+    public Object getParent();
+    
 }
