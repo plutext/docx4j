@@ -17,7 +17,8 @@ public class Docx4jMarshallerListener extends Marshaller.Listener {
     public void beforeMarshal(Object source)  {
         try {
         	if (source instanceof org.docx4j.wml.Body) {
-        		xsw.writeComment("This docx was marshalled (via JAXB) using docx4j " + Version.getDocx4jVersion() );
+        		xsw.writeComment("Powered by docx4j " + Version.getDocx4jVersion() 
+        		+ " (Apache licensed)");
         	}
         } catch(XMLStreamException e) {
             // TODO: handle exception
