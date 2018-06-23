@@ -751,7 +751,7 @@ public class XmlUtils {
 	 * @throws InvalidCanonicalizerException 
 	 * @throws CanonicalizationException 
 	 */
-	private static byte[] trimNamespaces(org.w3c.dom.Document doc, String ignorables) throws InvalidCanonicalizerException, CanonicalizationException {
+	public static byte[] trimNamespaces(org.w3c.dom.Document doc, String ignorables) throws InvalidCanonicalizerException, CanonicalizationException {
 		
     		// Example of what to do for a namespace not known to JAXB
     		//doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,

@@ -1,9 +1,9 @@
 package org.docx4j.jaxb;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBContext;
@@ -261,7 +261,7 @@ public class NamespacePrefixMapperUtils {
     		return EMPTY_STRING;
     	}
 
-    	List<String> entries = new ArrayList<String>();
+    	Set<String> entries = new HashSet<String>();
     	
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {

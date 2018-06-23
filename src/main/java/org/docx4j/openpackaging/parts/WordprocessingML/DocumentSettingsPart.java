@@ -127,9 +127,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 				
     }
 	
-	@Override		
-    protected String getMceIgnorable() {
-    	return this.jaxbElement.getIgnorable();
+	@Override
+	public String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
     }
 	
 	

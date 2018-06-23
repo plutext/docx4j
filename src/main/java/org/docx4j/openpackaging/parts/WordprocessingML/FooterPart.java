@@ -83,7 +83,7 @@ public final class FooterPart extends JaxbXmlPartAltChunkHost<Ftr> implements Co
 	}
 
 	@Override
-    protected String getMceIgnorable() {
+	public String getMceIgnorable() {
     	return this.getJaxbElement().getIgnorable();
     }	
 	

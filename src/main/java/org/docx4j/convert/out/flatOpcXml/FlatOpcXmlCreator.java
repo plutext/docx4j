@@ -20,6 +20,7 @@
 
 package org.docx4j.convert.out.flatOpcXml;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,18 +31,20 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.transform.Transformer;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -184,6 +187,59 @@ public class FlatOpcXmlCreator implements Output {
 		
 	}
 	
+	private static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc, String ignorables) {
+		try {
+
+			Marshaller marshaller = jc.createMarshaller();
+
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());	
+			((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()).setMcIgnorable(ignorables);
+			
+			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
+			marshaller.marshal(o, doc);
+			
+			// For FlatOPC, always canonicalize, since we want to
+			// trim namespaces to make the file as small as possible
+			// (since a key use case is OpenDoPE's UpdateXmlFromDocumentSurface).
+			
+			// Word requires the namespaces to be declared in each part in
+			// the Flat OPC XML.  That is, you can't just declare them once on the root element!
+			
+			// It turns out that things work if you just do this.
+			// ie no need for special processing at the package level.
+
+//			if (true /* always canonicalize! */
+//					|| Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
+
+				byte[] bytes = XmlUtils.trimNamespaces(doc, ignorables);
+				
+				//log.debug(new String(bytes, "UTF-8"));
+				/*MOXy issue where it looks like trimNamespaces drops w namespace!
+				 * 
+					DEBUG org.docx4j.XmlUtils .trimNamespaces line 700 - Input to Canonicalizer: <w:abstractNumId xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="0"/>
+					DEBUG org.docx4j.XmlUtils .marshaltoW3CDomDocument line 903 - <w:abstractNumId w:val="0"></w:abstractNumId>
+					[Fatal Error] :1:28: The prefix "w" for element "w:abstractNumId" is not bound.	
+					
+					where in fact the real problem is a missng @XmlRootElement annotation on the parent node
+					
+						<w:num xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:numId="1"><w:abstractNumId w:val="0"></w:abstractNumId></w:num>					
+					
+					which Sun/Oracle reports.  Once fixed, MOXy is happy as well.
+				*/
+				DocumentBuilder builder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder();
+				return builder.parse(new ByteArrayInputStream(bytes));
+				
+//			} else {
+//
+//				return doc;
+//			}
+		} catch (Exception e) {
+		    throw new RuntimeException(e);
+		}
+	}
+	
+	
 	public static org.docx4j.xmlPackage.Part createRawXmlPart(Part part) throws Docx4JException {
 		
 		String partName = part.getPartName().getName();
@@ -210,12 +266,13 @@ public class FlatOpcXmlCreator implements Output {
 		org.w3c.dom.Document w3cDoc = null;
         
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+			
+			String mceIgnorable = ((JaxbXmlPart)part).getMceIgnorable(); 
 
 			try {
-				w3cDoc = XmlUtils.getNewDocumentBuilder().newDocument();
-				
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
-						NamespacePrefixMapperUtils.getPrefixMapper() );
+//				w3cDoc = XmlUtils.getNewDocumentBuilder().newDocument();
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
+//						NamespacePrefixMapperUtils.getPrefixMapper() );
 					/* Force the RelationshipsPart to be marshalled using
 					 * the normal non-rels part NamespacePrefixMapper,
 					 * since otherwise (because we'd be using 2 namespace
@@ -234,6 +291,11 @@ public class FlatOpcXmlCreator implements Output {
 					 * so if/when this is marshalled again, that could
 					 * have been causing problems as well?? 
 					 */
+
+				JaxbXmlPart jaxbXmlPart = (org.docx4j.openpackaging.parts.JaxbXmlPart)part;
+				w3cDoc = marshaltoW3CDomDocument(jaxbXmlPart.getJaxbElement(), 
+						jaxbXmlPart.getJAXBContext(), mceIgnorable + jaxbXmlPart.getMcChoiceNamespaces());
+				
 		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
 				log.debug( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {

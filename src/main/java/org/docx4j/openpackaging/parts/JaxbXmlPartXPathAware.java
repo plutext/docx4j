@@ -21,7 +21,9 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
@@ -40,6 +42,7 @@ import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -66,7 +69,7 @@ implements XPathEnabled<E> {
 		super(partName);
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	protected Binder<Node> binder;
 	
 	/**
@@ -376,7 +379,7 @@ implements XPathEnabled<E> {
 								"docx4j.openpackaging.parts.JaxbXmlPartXPathAware.binder.eager.OtherParts", false);					
 					}
 				}
-				
+
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 					
@@ -441,6 +444,9 @@ implements XPathEnabled<E> {
 //						eventHandler.setContinue(false);
 //					}
 					u.setEventHandler(eventHandler);
+					
+					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+					u.setListener(docx4jUnmarshallerListener);
 					
 					unwrapUsually(u.unmarshal( xsr ));						
 					

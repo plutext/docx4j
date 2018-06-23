@@ -84,7 +84,7 @@ public final class HeaderPart extends JaxbXmlPartAltChunkHost<Hdr> implements Co
 	}
 
 	@Override
-    protected String getMceIgnorable() {
+	public String getMceIgnorable() {
     	return this.getJaxbElement().getIgnorable();
     }	
 	

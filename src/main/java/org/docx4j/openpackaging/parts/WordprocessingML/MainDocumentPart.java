@@ -131,7 +131,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	}
 
 	@Override
-    protected String getMceIgnorable() {
+	public String getMceIgnorable() {
     	return this.getJaxbElement().getIgnorable();
     }
 	

@@ -24,8 +24,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -55,6 +57,7 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jMarshallerListener;
+import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -764,7 +767,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
 	    		
 	    		// Now, we need to add back in the mcIgnorable ones
-	    		NamespacePrefixMapperUtils.declareNamespaces(this.getMceIgnorable(), doc);
+	    		NamespacePrefixMapperUtils.declareNamespaces(this.getMceIgnorable() + getMcChoiceNamespaces(), doc);
 	    		/* that generalises the following:
 	    		if (this.getMceIgnorable().contains("w15")) {
 		    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
@@ -773,7 +776,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		}
 	    		*/
 	    		
-	    		log.warn("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
+	    		log.debug("Input to Canonicalizer: " + XmlUtils.w3CDomNodeToString(doc));
 	    		
 	    		Init.init();
 	    		Canonicalizer c = Canonicalizer.getInstance(CanonicalizationMethod.EXCLUSIVE); 
@@ -797,9 +800,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				*/
 	    		
 	    		
-	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces " + this.getMceIgnorable());
+	    		log.warn( "canonicalizeSubtree with inclusiveNamespaces {}, {}", this.getMceIgnorable(), getMcChoiceNamespaces() );
 	    		
-	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable());
+	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable()  + getMcChoiceNamespaces());
 	    		//byte[] bytes = c.canonicalizeSubtree(doc); // for INCLUSIVE
 	    		
 	    		
@@ -832,8 +835,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 	}
     
-    protected String getMceIgnorable() {
-    	return null;
+    public String getMceIgnorable() {
+    	return "";
     }
     
     /**
@@ -878,7 +881,30 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
     	Either approach is OK. In the Document Settings part, we use the first approach.  In the Main 
     	Document Part, we use a hybrid approach.
     */	    	
-    }
+	}
+
+	/**
+	 * Prefixes specified in an mc:Choice element. These must be declared, or Word
+	 * can't open the docx. They are collected by Docx4jUnmarshallerListener
+	 * 
+	 * @since 3.4.0
+	 */
+	private Set<String> mcChoiceNamespaces = new HashSet<String>();
+
+	public String getMcChoiceNamespaces() {
+		
+		if (mcChoiceNamespaces.isEmpty() ) return "";
+		
+		StringBuilder sb = new StringBuilder();
+		for (String s : mcChoiceNamespaces) {
+			sb.append(" " + s);
+		}
+		return sb.toString();
+	}
+
+	public void addMcChoiceNamespace(String mcChoiceNamespace) {
+		this.mcChoiceNamespaces.add(mcChoiceNamespace);
+	}
     
     /**
 	 * Unmarshal XML data from the specified InputStream and return the
@@ -927,9 +953,15 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //			}
 			u.setEventHandler(eventHandler);
 			
+			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+			u.setListener(docx4jUnmarshallerListener);
+			
+			System.out.println("set listener");
+			
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
 						u.unmarshal( xsr ));						
+				System.out.println("u ok");
 			} catch (UnmarshalException ue) {
 				
 				if (ue.getLinkedException()!=null 
@@ -988,6 +1020,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			u.setEventHandler(eventHandler);
+			
+			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+			u.setListener(docx4jUnmarshallerListener);
 			
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
