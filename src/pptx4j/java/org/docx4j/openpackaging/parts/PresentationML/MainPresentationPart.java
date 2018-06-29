@@ -20,6 +20,7 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -496,6 +497,29 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		} catch (Exception e) {
 			throw new Pptx4jException("Slide " + index + " not found", e);
 		}
+		
+	}
+
+	/**
+	 * @throws Pptx4jException 
+	 * @since 3.4
+	 */
+	public List<SlidePart> getSlideParts() throws Pptx4jException {
+
+		ensureContent();
+		ensureSldIdLst();
+
+		List<SlidePart> slideParts = new ArrayList<SlidePart>();
+
+		for (Presentation.SldIdLst.SldId entry : this.getJaxbElement().getSldIdLst().getSldId()) {
+			try {
+				slideParts.add( (SlidePart)this.getRelationshipsPart().getPart(entry.getRid()));
+			} catch (Exception e) {
+				throw new Pptx4jException("Slide " + entry.getRid() + " not found", e);
+			}
+		}
+		
+		return slideParts;
 		
 	}
 	
