@@ -281,8 +281,10 @@ public class ObfuscatedFontPart extends BinaryPart {
 	protected void finalize() throws Throwable {
 		
         try {
-    		log.debug("Deleting  " + f.getName());
-			f.delete();
+        	if (f!=null) {
+	    		log.debug("Deleting  " + f.getName());
+				f.delete();
+        	}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
