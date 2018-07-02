@@ -215,10 +215,17 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 //				return XmlUtils.unmarshal( docResult);
 //			} else 
 			{
-				// Default behaviour is to fail in the event of content loss
-				return unmarshal(((org.w3c.dom.Document)result.getNode()),
-						Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverserXSLT.ValidationEventContinue", 
-								false));
+				try {
+					// Default behaviour is to fail in the event of content loss
+					return unmarshal(((org.w3c.dom.Document)result.getNode()),
+							Docx4jProperties.getProperty("docx4j.model.datastorage.BindingTraverserXSLT.ValidationEventContinue", 
+									false));
+				} catch (UnmarshalException e) {
+
+					log.error("Problem: " + XmlUtils.w3CDomNodeToString(result.getNode()));
+					throw e;
+				}
+					
 			}
 		} catch (UnmarshalException e) {
 
