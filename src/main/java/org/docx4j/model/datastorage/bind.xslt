@@ -444,11 +444,15 @@
   			<!--  Convert escaped Flat OPC XML.
   			
   				  We're inserting into a rich text control,
-  				  which in turn means there can't be a w:sdtPr/w:dataBinding.  
+  				  which in turn means there can't be a w:sdtPr/w:dataBinding
+  				  (though there could be a w15:dataBinding)  
   				  
-  				  So the extension function must read xpath from the w:tag, which in turn means the Word Add-In 
+  				  So (prior to w15:dataBinding) the extension function must read xpath from the w:tag, which in turn means the Word Add-In 
   				  editor must write that.
-  				    			
+  				  
+  				  201807: the NoXML/FabDocx AddIn writes the w15:dataBinding element. 
+
+				  	TODO: handle the case where there is no OpenDoPE tag.  				    			
   			 -->
 			<xsl:copy>
 			     <xsl:copy-of select="w:sdtPr"/>
@@ -458,7 +462,24 @@
 		     	</xsl:if>
 			     
 			     <w:sdtContent>
-			     	
+
+					<xsl:choose>
+				  		<xsl:when test="w:sdtContent/w:tc">
+							<w:tc>
+								<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertFlatOPC(
+											$wmlPackage,
+											$sourcePart,
+											$customXmlDataStorageParts,
+											$xPathsMap,
+											$parent,
+											$child,
+											w:sdtPr/w:rPr,
+											$tag )" />
+							</w:tc>			     											
+						</xsl:when>
+						<xsl:otherwise>
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertFlatOPC(
 										$wmlPackage,
@@ -469,6 +490,10 @@
 										$child,
 										w:sdtPr/w:rPr,
 										$tag )" />
+						
+						</xsl:otherwise>
+					</xsl:choose>
+										
 			     </w:sdtContent>
 			     
 			</xsl:copy>  		  			
@@ -701,7 +726,10 @@
   		</xsl:when>
   		
   		<xsl:when test="w:sdtPr/w15:dataBinding and not(w:sdtPr/w:richText) and not(w:sdtPr/w:docPartGallery)">
-  			<!--  honour w15:dataBinding, from docx4j 3.3.7 -->
+  			<!--  honour w15:dataBinding, from docx4j 3.3.7 
+  			
+  					(Flat OPC richText is handled earlier, provided it also has an OpenDoPE tag)
+  			-->
   			
   			<xsl:variable name="content">
 			     <w:sdtContent>
