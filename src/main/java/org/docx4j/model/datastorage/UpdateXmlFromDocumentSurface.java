@@ -51,6 +51,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.samples.PartsList;
+import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.CTSdtText;
 import org.docx4j.wml.ContentAccessor;
@@ -59,6 +60,7 @@ import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
+import org.docx4j.wml.Tc;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,9 +94,17 @@ import org.slf4j.LoggerFactory;
  * Replaces Enterprise's BindInverse.
  * 
  * @author jharrop
- *
+ * @since 3.4.0
  */
 public class UpdateXmlFromDocumentSurface {
+	
+	/*
+	 * TODO:
+	 * - components
+	 * - multiline
+	 * - dates
+	 * - pictures
+	 */
 	
 	private static Logger log = LoggerFactory.getLogger(UpdateXmlFromDocumentSurface.class);	
 	
@@ -216,7 +226,7 @@ public class UpdateXmlFromDocumentSurface {
 
 	private void handleSdt(SdtElement sdt) {
 
-		System.out.println(sdt.getParent().getClass().getName());
+		log.debug(sdt.getParent().getClass().getName());
 		
 		SdtPr sdtPr = sdt.getSdtPr();
 		if (sdtPr!=null) {
@@ -284,29 +294,27 @@ public class UpdateXmlFromDocumentSurface {
 									&& map.get(OpenDoPEHandler.BINDING_PROGID).equals("Word.Document")) ) {
 
 						// For now, we'll just 
-						System.out.println(XmlUtils.marshaltoString(sdt.getSdtContent()));
+						log.info(XmlUtils.marshaltoString(sdt.getSdtContent()));
+						log.info("containing " + sdt.getClass().getName() );
 					
-						if (sdt instanceof SdtBlock) {
+						if (sdt instanceof SdtBlock
+								|| sdt instanceof CTSdtCell) {
 							try {
-								WordprocessingMLPackage blockPkg = getAsDocx((SdtBlock)sdt);
+								WordprocessingMLPackage blockPkg = getAsDocx(sdt);
 								
 								// remove extraneous parts
 								trimParts(blockPkg, blockPkg.getRelationshipsPart(),false);
 						        
 								// List the parts by walking the rels tree
-								debugListParts(blockPkg);
+								//debugListParts(blockPkg);
 								
 								if (blockPkg!=null) {
 									// FlatOPC
 									ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 									blockPkg.save(baos, Docx4J.FLAG_SAVE_FLAT_XML);
+										// unused namespaces are trimmed in there
 									
-									// TODO trim unused namespaces!
-									
-//									String flat = baos.toString("UTF-8");
-//									value = flat.replaceAll("<", "&lt;");
 									value = baos.toString("UTF-8");
-//									System.out.println(value);
 								}
 							} catch (Docx4JException e) {
 								// TODO Auto-generated catch block
@@ -315,13 +323,16 @@ public class UpdateXmlFromDocumentSurface {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
+						} else {
+							// unexpected
+							log.warn("TODO: " + sdt.getClass().getName());
 						}
 						
 					} else {
 
 						value = TextUtils.getText(sdt.getSdtContent());
 //						String value = TextUtils.getText(sdt.getSdtContent()) + System.currentTimeMillis();
-						System.out.println(value);
+//						System.out.println(value);
 						
 					}
 					
@@ -338,13 +349,12 @@ public class UpdateXmlFromDocumentSurface {
 						String prefixMappings = xpath.getDataBinding().getPrefixMappings();
 						
 						log.debug("Processing " + xpathExp);
-						System.out.println("\n\n Processing " + xpathExp);
 						
 						// inject it into the XML file
 						CustomXmlPart cxp = getCustomXmlPart(xpath);
 						if (cxp ==null) throw new Docx4JException("Couldn't find cxp with id: " + xpath.getDataBinding().getStoreItemID());
 						
-						System.out.println(cxp.getClass().getName());
+						//System.out.println(cxp.getClass().getName());
 
 						cxp.setNodeValueAtXPath(xpathExp, value, prefixMappings);
 						
@@ -510,16 +520,29 @@ public class UpdateXmlFromDocumentSurface {
 	}
 
 	
-	private WordprocessingMLPackage getAsDocx(SdtBlock sdtBlock) throws InvalidFormatException {
+	private WordprocessingMLPackage getAsDocx(SdtElement sdtBlock) throws InvalidFormatException {
 		
 		WordprocessingMLPackage clone = (WordprocessingMLPackage)pkg.clone(); // TODO reuse this clone
 		clone.getMainDocumentPart().getContent().clear();
-		clone.getMainDocumentPart().getContent().addAll(sdtBlock.getSdtContent().getContent());
+		
+		log.info("SdtContent: " + sdtBlock.getSdtContent().getContent().get(0).getClass().getName());
+		
+		if (sdtBlock.getSdtContent().getContent().size()==1
+				&& (XmlUtils.unwrap(sdtBlock.getSdtContent().getContent().get(0)) instanceof Tc)) {
+			
+			// <w:sdtContent >
+		    //    <w:tc>
+			Tc tc = (Tc)XmlUtils.unwrap(sdtBlock.getSdtContent().getContent().get(0));
+			clone.getMainDocumentPart().getContent().addAll(tc.getContent());
+			
+		} else {
+			clone.getMainDocumentPart().getContent().addAll(sdtBlock.getSdtContent().getContent());
+		}
 		
 		// Remove headers/footers 
 		clone.getMainDocumentPart().getJaxbElement().getBody().setSectPr(null);
 		
-
+		//log.debug(clone.getMainDocumentPart().getXML());
 		
 		// remove CXPs
 		List<Relationship> relsToRemove = new ArrayList<Relationship>();
@@ -548,7 +571,7 @@ public class UpdateXmlFromDocumentSurface {
 			Method[] methods = documentBuilder.getMethods(); 
 			Method method = null;
 			for (int j=0; j<methods.length; j++) {
-				System.out.println(methods[j].getName());
+				//System.out.println(methods[j].getName());
 				if (methods[j].getName().equals("merge")) {
 					method = methods[j];
 					break;
@@ -661,12 +684,17 @@ public class UpdateXmlFromDocumentSurface {
 	
 	public static void main(String[] args) throws Docx4JException {
 		
-		String input_DOCX = System.getProperty("user.dir") + "/test.docx";
+		String input_DOCX = System.getProperty("user.dir") + "/Altered2010.docx";
 		WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(input_DOCX));
 		
 		UpdateXmlFromDocumentSurface updater = new UpdateXmlFromDocumentSurface(wordMLPackage, false);
-		updater.updateCustomXmlParts();
+		List<CustomXmlPart> parts = updater.updateCustomXmlParts();
+
+		System.out.println(
+				parts.get(0).getXML()
+		);
 		
+		// or we can save the docx 
 		updater.pkg.save(new File(System.getProperty("user.dir") + "/OUT_UpdateXmlFromDocumentSurface.docx"));
 	}
 	
