@@ -1756,36 +1756,19 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 		
 		try {
-			String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
-			log.debug(dataBinding.getXpath() + " yielded result " + r);
-			if (r==null) return nullResultParagraph(sdtParent, "[missing!]");
 
-			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
+			Boolean checkBoxResult = getCheckboxResult(dataBinding, part);
+			if (checkBoxResult==null) return nullResultParagraph(sdtParent, "[missing!]");
 			
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			org.docx4j.wml.Text text = factory.createText();
 			
-			// At present we ignore the checkedState and uncheckedState, except to warn..
-			if (r.equals("true") || r.equals("1")) {
+			if (checkBoxResult.booleanValue()) {
 				
-				if (log.isWarnEnabled() && sdtCheckbox.getCheckedState()!=null) {
-					CTSdtCheckboxSymbol sdtCheckboxSymbol = sdtCheckbox.getCheckedState();
-					if (sdtCheckboxSymbol.getVal()!=null
-							&& !sdtCheckboxSymbol.getVal().equals("2612") ) {
-						log.warn("TODO: handle checkedState " + sdtCheckboxSymbol.getVal());
-					}
-				}
 				text.setValue("☒");
 				
 			} else { // Word treats everything else as false
 
-				if (log.isWarnEnabled() && sdtCheckbox.getUncheckedState()!=null) {
-					CTSdtCheckboxSymbol sdtCheckboxSymbol = sdtCheckbox.getUncheckedState();
-					if (sdtCheckboxSymbol.getVal()!=null
-							&& !sdtCheckboxSymbol.getVal().equals("2610") ) {
-						log.warn("TODO: handle uncheckedState " + sdtCheckboxSymbol.getVal());
-					}
-				}
-				
 				text.setValue("☐");
 			}
 			
@@ -1868,10 +1851,82 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			return docfrag;
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 			return null;
 		} 			
 	}
+
+	private static Boolean getCheckboxResult(CTDataBinding dataBinding, CustomXmlPart part)
+			throws Docx4JException {
+		
+		String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
+		log.debug(dataBinding.getXpath() + " yielded result " + r);
+		
+		if (r==null) return null;
+		
+		if (r.equals("true") || r.equals("1")) {
+
+			return true;
+			
+		} else { // Word treats everything else as false
+
+			return false;
+		}
+	}
+
+	/**
+	 * Set w14:checked correctly
+	 * 
+	 * @since 3.4.0
+	 */
+	public static String w14CheckboxAttr(Map<String, CustomXmlPart> customXmlDataStorageParts,			
+			NodeIterator sdtPrNodeIt) {
+
+		/*
+        <w14:checkbox>
+          <w14:checked w14:val="0"/>
+          <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
+          <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+        </w14:checkbox>
+    */
+		
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		if (sdtPrNode==null) {
+			log.error("Couldn't get sdtPr!");
+			return "0";			
+		} else {
+			try {
+				sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode, Context.jc, SdtPr.class);
+			} catch (JAXBException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		
+		CTDataBinding dataBinding = sdtPr.getDataBinding();
+		CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+				
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
+			return "0";
+		}
+		
+		try {
+			Boolean checkBoxResult = getCheckboxResult(dataBinding, part);
+			if (checkBoxResult==null) {
+				return "0";
+			} else if (checkBoxResult.booleanValue()) {
+				return "1";				
+			} else {
+				return "0";				
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return "0";				
+		} 			
+	}
+	
 	
 	// TODO - add something like this to RelationshipsPart?? 
 	private static PartName getNewPartName(String prefix, String suffix,

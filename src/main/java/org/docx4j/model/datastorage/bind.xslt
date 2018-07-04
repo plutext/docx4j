@@ -183,7 +183,9 @@
   			<!--  since 3.2.2, honour w:dataBinding -->
   			
 			<xsl:copy>
-			     <xsl:copy-of select="w:sdtPr"/>
+				 <w:sdtPr>
+				     <xsl:apply-templates select="w:sdtPr"/>
+				 </w:sdtPr>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -568,11 +570,13 @@
                     <xsl:copy>
                     
                         <!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
-                        <xsl:apply-templates select="w:sdtPr">
-                            <xsl:with-param
-                                name="content"
-                                select="xalan:nodeset($content)"/>
-                        </xsl:apply-templates>
+                        <w:sdtPr>
+	                        <xsl:apply-templates select="w:sdtPr">
+	                            <xsl:with-param
+	                                name="content"
+	                                select="xalan:nodeset($content)"/>
+	                        </xsl:apply-templates>
+                        </w:sdtPr>
         
                         <xsl:if test="w:stdEndPr">
                             <xsl:copy-of select="w:sdtEndPr"/>
@@ -712,9 +716,11 @@
 			<xsl:copy>
 	  				
 				<!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
-			     <xsl:apply-templates select="w:sdtPr">
-					<xsl:with-param name="content" select="xalan:nodeset($content)"/>
-				</xsl:apply-templates>
+				<w:sdtPr>
+				     <xsl:apply-templates select="w:sdtPr">
+						<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+					</xsl:apply-templates>
+				</w:sdtPr>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -864,9 +870,11 @@
 			<xsl:copy>
 			
 				<!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
-			     <xsl:apply-templates select="w:sdtPr">
-					<xsl:with-param name="content" select="xalan:nodeset($content)"/>
-				</xsl:apply-templates>
+				<w:sdtPr>
+				     <xsl:apply-templates select="w:sdtPr">
+						<xsl:with-param name="content" select="xalan:nodeset($content)"/>
+					</xsl:apply-templates>
+				</w:sdtPr>
 			     
 			     <xsl:if test="w:stdEndPr">
 			     	<xsl:copy-of select="w:sdtEndPr"/>
@@ -1014,9 +1022,11 @@
             <xsl:copy>
             
                 <!--  if fragment contains w:hyperlink, then remove stuff from sdtPr -->
-                 <xsl:apply-templates select="w:sdtPr">
-                    <xsl:with-param name="content" select="xalan:nodeset($content)"/>
-                </xsl:apply-templates>
+                <w:sdtPr>
+	                 <xsl:apply-templates select="w:sdtPr">
+	                    <xsl:with-param name="content" select="xalan:nodeset($content)"/>
+	                </xsl:apply-templates>
+                </w:sdtPr>
                  
                  <xsl:if test="w:stdEndPr">
                     <xsl:copy-of select="w:sdtEndPr"/>
@@ -1041,10 +1051,6 @@
   	</xsl:choose>    
   </xsl:template>
 
-  <!-- A content control with SdtPr w:dataBinding and w:text
-	   which contains a w:hyperlink will prevent Word 2007 from
-	   opening the docx, so if there is a w:hyperlink,
-	   make sure  w:dataBinding and w:text are not present.  -->
 
   <xsl:template match="w:sdtPr">  
   	<xsl:param name="content"></xsl:param>
@@ -1053,23 +1059,45 @@
 	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( string(w:tag/@w:val) )" />  	
   	
   	<xsl:choose>
-  		<xsl:when test="count($content//w:hyperlink)>0">
+  		<xsl:when test="$content and count($content//w:hyperlink)>0">
+		  <!-- A content control with SdtPr w:dataBinding and w:text
+			   which contains a w:hyperlink will prevent Word 2007 from
+			   opening the docx, so if there is a w:hyperlink,
+			   make sure  w:dataBinding and w:text are not present.  -->
 			<xsl:variable name="dummy2"
 			    select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( '.. stripping w:dataBinding and w:text' )" />  	
-  			<w:sdtPr>
-  				<xsl:apply-templates />
-  			</w:sdtPr>
+  			<xsl:apply-templates  mode="word2007hyperlinkfix" />
   		</xsl:when>
   		<xsl:otherwise>
-  			<xsl:copy-of select="."/>
+		    <xsl:apply-templates select="@*|node()"/>
   		</xsl:otherwise>
   	</xsl:choose>
   	
   </xsl:template>
+  
+  <!-- 
+          <w14:checkbox>
+            <w14:checked w14:val="1"/>
+            <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
+            <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
+          </w14:checkbox>
+   -->
+  <xsl:template match="w14:checked" >   
+   
+  	<xsl:variable name="attrval"><xsl:value-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14CheckboxAttr(
+						$customXmlDataStorageParts,
+						../..)" /></xsl:variable>
+	<w14:checked w14:val="{$attrval}"/>
+  </xsl:template>
 
   <!-- Remove these if the sdt contains a w:hyperlink -->
-  <xsl:template match="w:dataBinding" />  
-  <xsl:template match="w:text" />  
+  <xsl:template match="w:dataBinding" mode="word2007hyperlinkfix"/>  
+  <xsl:template match="w:text"  mode="word2007hyperlinkfix"/>  
+  <xsl:template match="/ | @*|node()" mode="word2007hyperlinkfix">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
 
 
   <!-- Remove these, so missing data does not result
