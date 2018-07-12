@@ -63,6 +63,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -540,7 +542,7 @@ public class Docx4J {
 			startEvent.publish();
 			
 			log.debug("removeDefinedCustomXmlParts");
-			removeDefinedCustomXmlParts(wmlPackage, customXmlPart);
+			removeDefinedCustomXmlParts(wmlPackage, customXmlPart.getItemId());
 			
 			new EventFinished(startEvent).publish();
 		}
@@ -582,7 +584,8 @@ public class Docx4J {
 		}
 	}
 
-	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, CustomXmlPart customXmlPart) {
+	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, 
+			String itemId) {
 	List<PartName> partsToRemove = new ArrayList<PartName>();
 	RelationshipsPart relationshipsPart = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 	List<Relationship> relationshipsList = ((relationshipsPart != null) && 
@@ -593,8 +596,14 @@ public class Docx4J {
 			for (Relationship relationship : relationshipsList) {
 				if (Namespaces.CUSTOM_XML_DATA_STORAGE.equals(relationship.getType())) {
 					part = relationshipsPart.getPart(relationship);
-					if (part==customXmlPart) {
+					if ( itemId!=null && itemId.equals(((CustomXmlPart)part).getItemId() )) {
 						partsToRemove.add(part.getPartName());
+					} else if (part instanceof XPathsPart) {
+						partsToRemove.add(part.getPartName());
+					} else if (part instanceof ConditionsPart) {
+						partsToRemove.add(part.getPartName());
+					} else {
+						log.warn("Keeping " + part.getPartName() + " of type " + part.getClass().getName());
 					}
 				}
 			}
