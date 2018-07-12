@@ -69,6 +69,7 @@ import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
+import org.docx4j.utils.XMLStreamWriterWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -196,7 +197,6 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * (getContents() is preferred, this is the older/less friendly method name)
 	 * @return
 	 */
-	@Deprecated
 	public E getJaxbElement() {
 		try {
 			return getContents();
@@ -746,7 +746,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
 				marshaller.setProperty("jaxb.formatted.output", true);
 			}
-//			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);			
+//			marshaller.setProperty("com.sun.xml.internal.bind.c14n",true);
 			
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
@@ -800,7 +800,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				*/
 	    		
 	    		
-	    		log.warn( "canonicalizeSubtree with inclusiveNamespaces {}, {}", this.getMceIgnorable(), getMcChoiceNamespaces() );
+	    		log.debug( "canonicalizeSubtree with inclusiveNamespaces {}, {}", this.getMceIgnorable(), getMcChoiceNamespaces() );
 	    		
 	    		byte[] bytes = c.canonicalizeSubtree(doc, this.getMceIgnorable()  + getMcChoiceNamespaces());
 	    		//byte[] bytes = c.canonicalizeSubtree(doc); // for INCLUSIVE
@@ -811,9 +811,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	} else {
 	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
 	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os);
+	            
+	            // get rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl writes
+	            XMLStreamWriterWrapper xsww = new XMLStreamWriterWrapper(this, xsw);
 
-	            marshaller.setListener(new Docx4jMarshallerListener(xsw));
-	            marshaller.marshal(jaxbElement, xsw);
+	            marshaller.setListener(new Docx4jMarshallerListener(xsww));
+	            marshaller.marshal(jaxbElement, xsww);
+	            xsww.close();
 	            xsw.close();
 	    		
 //	    		marshaller.marshal(jaxbElement, os);
@@ -955,13 +959,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			
 			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
 			u.setListener(docx4jUnmarshallerListener);
-			
-			System.out.println("set listener");
-			
+						
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
 						u.unmarshal( xsr ));						
-				System.out.println("u ok");
 			} catch (UnmarshalException ue) {
 				
 				if (ue.getLinkedException()!=null 
