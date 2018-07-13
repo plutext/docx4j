@@ -1012,6 +1012,10 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		// trim whitespace. 
 		r = r.trim();
 		
+		if (xpath.startsWith("local-name")) {
+			r=XmlNameUtil.descapeXmlTypeName(r);
+		}
+		
 		try {
 			log.info(xpath + "\n yielded result '" + r + "'");
 			
@@ -1763,12 +1767,15 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 			org.docx4j.wml.Text text = factory.createText();
 			
+			// TODO: use the symbols specified for checked and uncheckedState
 			if (checkBoxResult.booleanValue()) {
 				
+		        // <w14:checkedState w14:val="2612" w14:font="MS Gothic"/>
 				text.setValue("☒");
 				
 			} else { // Word treats everything else as false
 
+		        // <w14:uncheckedState w14:val="2610" w14:font="MS Gothic"/>
 				text.setValue("☐");
 			}
 			
