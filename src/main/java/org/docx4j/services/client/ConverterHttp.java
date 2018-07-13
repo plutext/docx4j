@@ -114,7 +114,7 @@ public class ConverterHttp implements Converter {
 
         } else if (Format.DOCX.equals(toFormat)) {
 
-        	return new HttpPost(URL+"?application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        	return new HttpPost(URL+"?format=application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         	
         } else {
         	return new HttpPost(URL);
