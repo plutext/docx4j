@@ -1,8 +1,6 @@
 package org.docx4j.model.datastorage.migration;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
@@ -14,72 +12,63 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
-import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.CTSdtText;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.SdtPr.Alias;
 import org.docx4j.wml.SdtRun;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Text;
-import org.docx4j.wml.SdtPr.Alias;
-import org.opendope.answers.Answer;
-import org.opendope.answers.Answers;
 import org.opendope.conditions.Conditions;
-import org.opendope.questions.Question;
-import org.opendope.questions.Questionnaire;
-import org.opendope.questions.Response;
 import org.opendope.xpaths.Xpaths;
-import org.opendope.xpaths.Xpaths.Xpath.DataBinding;
 
 public class AbstractMigrator {
 	
 	protected XPathsPart xPathsPart;
-	protected QuestionsPart questionsPart;
-	protected StandardisedAnswersPart standardisedAnswersPart;
-
-	protected String storeItemID; // of the answers part
+	protected ConditionsPart conditionsPart;
 	
-	protected Map<String, String> keys = new HashMap<String, String>();
-	
-	protected void createParts(WordprocessingMLPackage pkgOut) throws Exception {
-	
-		// Add OpenDoPE parts to target
-		// .. conditions - not that we use this here
-		ConditionsPart conditionsPart = new ConditionsPart(new PartName("/customXml/item1.xml")); // name doesn't matter
-		pkgOut.getMainDocumentPart().addTargetPart(conditionsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); // Word will silently drop the CXPs if they aren't added to the MDP!
-		addPropertiesPart(conditionsPart, "http://opendope.org/conditions");
-		conditionsPart.setJaxbElement(new Conditions());
-		// .. XPaths
-		xPathsPart = new XPathsPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(xPathsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		addPropertiesPart(xPathsPart, "http://opendope.org/xpaths");
-		xPathsPart.setJaxbElement(new Xpaths());
-		// .. Questions
-		questionsPart = new QuestionsPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(questionsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		addPropertiesPart(questionsPart,"http://opendope.org/questions");
-		questionsPart.setJaxbElement(new Questionnaire());
-		Questionnaire.Questions questions = new Questionnaire.Questions();
-		questionsPart.getJaxbElement().setQuestions(questions);
+	protected String storeItemID; // of the bound part
 		
-		// .. Standardised Answer format
-		standardisedAnswersPart = new StandardisedAnswersPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(standardisedAnswersPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		storeItemID = addPropertiesPart(standardisedAnswersPart, "http://opendope.org/answers");	
-		standardisedAnswersPart.setJaxbElement(new Answers());
+	protected void createParts(WordprocessingMLPackage pkgOut) throws InvalidFormatException {
+	
+		createConditionsPart(pkgOut, new Conditions());
+		createXPathsPart(pkgOut, new Xpaths());
 		
 	}
 
-	protected String addPropertiesPart(JaxbCustomXmlDataStoragePart<?> customXmlDataStoragePart, String ns)
+	protected ConditionsPart createConditionsPart(WordprocessingMLPackage pkgOut, Conditions conditions) throws InvalidFormatException {
+		
+		conditionsPart = new ConditionsPart(new PartName("/customXml/item1.xml")); // name doesn't matter
+		pkgOut.getMainDocumentPart().addTargetPart(conditionsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); // Word will silently drop the CXPs if they aren't added to the MDP!
+		addPropertiesPart(pkgOut, conditionsPart, "http://opendope.org/conditions");
+		conditionsPart.setJaxbElement(conditions);
+		return conditionsPart;		
+	}
+	
+	protected XPathsPart createXPathsPart(WordprocessingMLPackage pkgOut, Xpaths xpaths) throws InvalidFormatException {
+		
+		xPathsPart = new XPathsPart(new PartName("/customXml/item1.xml")); 
+		pkgOut.getMainDocumentPart().addTargetPart(xPathsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+		addPropertiesPart(pkgOut, xPathsPart, "http://opendope.org/xpaths");
+		xPathsPart.setJaxbElement(xpaths);
+		return xPathsPart;
+	}
+	
+	
+	protected String addPropertiesPart(WordprocessingMLPackage pkgOut, 
+			Part customXmlDataStoragePart, String ns)
 			throws InvalidFormatException {
 
 		CustomXmlDataStoragePropertiesPart part = new CustomXmlDataStoragePropertiesPart();
@@ -103,30 +92,71 @@ public class AbstractMigrator {
 		part.setJaxbElement(dsi);
 
 		customXmlDataStoragePart.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+
+		pkgOut.getCustomXmlDataStorageParts().put(newItemId.toLowerCase(), (CustomXmlPart)customXmlDataStoragePart);
 		
 		return newItemId;
 	}
 	
 	/**
+	 * create an SdtRun, and add it to replacementContent
+	 * 
 	 * @param r
 	 * @param replacementContent
 	 * @param key
 	 */
 	protected void createContentControl(RPr rPr, List<Object> replacementContent,
-			String key) {
-		// Has it been encountered already?
-		if (!keys.containsKey(key) ) {
-			// add the part entries
-			addPartEntries(key);
-			keys.put(key,  key);
-		} 
+			String key, String xpath, String prefixmappings) {
+
+		SdtRun sdtRun = this.createSdtRun(rPr, key, xpath, prefixmappings);
+		replacementContent.add(sdtRun);
 		
+	}
+	
+	/**
+	 * create an SdtRun
+	 * 
+	 * @param r
+	 * @param key
+	 */
+	protected SdtRun createSdtRun(RPr rPr, 
+			String key, String xpath, String prefixmappings) {
+	
 		// create the content control
 		SdtRun sdtRun = Context.getWmlObjectFactory().createSdtRun();
-		replacementContent.add(sdtRun);
-
-		SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
+		
+		// set SdtPr
+		SdtPr sdtPr = createSdtPr(key, xpath, prefixmappings, storeItemID,
+				false);
 		sdtRun.setSdtPr(sdtPr);
+		// <w:text w:multiLine="1"/>
+		CTSdtText sdtText = Context.getWmlObjectFactory().createCTSdtText();
+		sdtText.setMultiLine(true);
+		sdtPr.getRPrOrAliasOrLock().add(
+				Context.getWmlObjectFactory().createSdtPrText(sdtText));
+		
+		// set contents		
+		CTSdtContentRun sdtContent = Context.getWmlObjectFactory().createCTSdtContentRun();			
+		sdtRun.setSdtContent(sdtContent);
+
+		R rnew = new R();
+		rnew.setRPr( rPr ); // point at old rPr, if any
+		Text text = Context.getWmlObjectFactory().createText();
+		text.setValue(key);
+		rnew.getContent().add(text);
+		
+		sdtContent.getContent().add(rnew);
+		
+		return sdtRun;
+		
+	}
+	
+	protected static SdtPr createSdtPr( String key, String xpath, String prefixmappings,
+			String storeItemID,
+			boolean isRepeat) {
+	
+		
+		SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
 		/* <w:sdtPr>
 		    <w:alias w:val="Title of document"/>
 		    <w:tag w:val="od:xpath=cktpD"/>
@@ -143,65 +173,28 @@ public class AbstractMigrator {
 		sdtPr.getRPrOrAliasOrLock().add(alias);
 		
 		Tag tag = Context.getWmlObjectFactory().createTag();
-		tag.setVal("od:xpath=" + key);
+		if (isRepeat) {
+			tag.setVal("od:repeat=" + key);
+		} else {
+			tag.setVal("od:xpath=" + key);			
+		}
 		sdtPr.setTag(tag);
 		sdtPr.setId();
-		CTDataBinding ctDataBinding = Context.getWmlObjectFactory().createCTDataBinding();
-		JAXBElement<CTDataBinding> jaxbDB = 
-				Context.getWmlObjectFactory().createSdtPrDataBinding(ctDataBinding);
-		sdtPr.setDataBinding(ctDataBinding);
-		ctDataBinding.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
-		ctDataBinding.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
-		ctDataBinding.setStoreItemID(storeItemID);
 		
-		// <w:text w:multiLine="1"/>
-		CTSdtText sdtText = Context.getWmlObjectFactory().createCTSdtText();
-		sdtText.setMultiLine(true);
-		sdtPr.getRPrOrAliasOrLock().add(
-				Context.getWmlObjectFactory().createSdtPrText(sdtText));
+		if (isRepeat) {
+			sdtPr.getRPrOrAliasOrLock().add(new SdtPr.RichText());
+		} else {
+			CTDataBinding ctDataBinding = Context.getWmlObjectFactory().createCTDataBinding();
+			JAXBElement<CTDataBinding> jaxbDB = 
+					Context.getWmlObjectFactory().createSdtPrDataBinding(ctDataBinding);
+			sdtPr.setDataBinding(ctDataBinding);
+			ctDataBinding.setXpath(xpath);
+			ctDataBinding.setPrefixMappings(prefixmappings);
+			ctDataBinding.setStoreItemID(storeItemID);			
+		}
+				
+		return sdtPr;
 					
-		CTSdtContentRun sdtContent = Context.getWmlObjectFactory().createCTSdtContentRun();			
-		sdtRun.setSdtContent(sdtContent);
-
-		R rnew = new R();
-		rnew.setRPr( rPr ); // point at old rPr, if any
-		Text text = Context.getWmlObjectFactory().createText();
-		text.setValue(key);
-		rnew.getContent().add(text);
-		
-		sdtContent.getContent().add(rnew);
-	}
-	
-	private void addPartEntries(String key) {
-		
-		// answer
-		Answer a = new Answer();
-		a.setId(key);
-		a.setValue("${" + key + "}");
-		standardisedAnswersPart.getJaxbElement().getAnswerOrRepeat().add(a);
-		
-		// XPath
-		Xpaths.Xpath xp = new org.opendope.xpaths.ObjectFactory().createXpathsXpath();
-		xp.setId(key);
-		xp.setQuestionID(key);
-		xp.setPrepopulate(false);
-		xp.setRequired(false);
-		xp.setType("string");
-		DataBinding db = new org.opendope.xpaths.ObjectFactory().createXpathsXpathDataBinding();
-		db.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
-		db.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
-		db.setStoreItemID(storeItemID);
-		xp.setDataBinding(db);
-		xPathsPart.getJaxbElement().getXpath().add(xp);
-		
-		// question
-		Question q = new Question();
-		q.setId(key);
-		q.setText(key + "?");
-		Response r = new Response();
-		r.setFree( new Response.Free() );
-		q.setResponse(r);
-		questionsPart.getJaxbElement().getQuestions().getQuestion().add(q);
 	}
 	
 }

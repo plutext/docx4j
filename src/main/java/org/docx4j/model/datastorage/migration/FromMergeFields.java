@@ -35,7 +35,7 @@ import java.util.List;
  * @author jharrop
  * @since 3.0.0
  */
-public class FromMergeFields extends AbstractMigrator {
+public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 	
 	private static Logger log = LoggerFactory.getLogger(FromMergeFields.class);
 	

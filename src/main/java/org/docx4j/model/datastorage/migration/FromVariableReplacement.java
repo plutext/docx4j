@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author jharrop
  * @since 3.0.0
  */
-public class FromVariableReplacement extends AbstractMigrator {
+public class FromVariableReplacement extends AbstractMigratorUsingAnswersFormat {
 	
 	private static Logger log = LoggerFactory.getLogger(FromVariableReplacement.class);
 		
@@ -152,31 +152,31 @@ public class FromVariableReplacement extends AbstractMigrator {
 	 }
 	 
 
-	public String addPropertiesPart(JaxbCustomXmlDataStoragePart<?> customXmlDataStoragePart, String ns)
-			throws InvalidFormatException {
-
-		CustomXmlDataStoragePropertiesPart part = new CustomXmlDataStoragePropertiesPart();
-
-		org.docx4j.customXmlProperties.ObjectFactory of = new org.docx4j.customXmlProperties.ObjectFactory();
-
-		DatastoreItem dsi = of.createDatastoreItem();
-		String newItemId = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
-		dsi.setItemID(newItemId);
-		
-		SchemaRefs srefs = of.createSchemaRefs();
-		dsi.setSchemaRefs(srefs);
-		
-		SchemaRef sref = of.createSchemaRefsSchemaRef();
-		sref.setUri(ns);
-		
-		srefs.getSchemaRef().add(sref);
-		
-		part.setJaxbElement(dsi);
-
-		customXmlDataStoragePart.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		
-		return newItemId;
-	}
+//	public String addPropertiesPart(JaxbCustomXmlDataStoragePart<?> customXmlDataStoragePart, String ns)
+//			throws InvalidFormatException {
+//
+//		CustomXmlDataStoragePropertiesPart part = new CustomXmlDataStoragePropertiesPart();
+//
+//		org.docx4j.customXmlProperties.ObjectFactory of = new org.docx4j.customXmlProperties.ObjectFactory();
+//
+//		DatastoreItem dsi = of.createDatastoreItem();
+//		String newItemId = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
+//		dsi.setItemID(newItemId);
+//		
+//		SchemaRefs srefs = of.createSchemaRefs();
+//		dsi.setSchemaRefs(srefs);
+//		
+//		SchemaRef sref = of.createSchemaRefsSchemaRef();
+//		sref.setUri(ns);
+//		
+//		srefs.getSchemaRef().add(sref);
+//		
+//		part.setJaxbElement(dsi);
+//
+//		customXmlDataStoragePart.addTargetPart(part, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+//		
+//		return newItemId;
+//	}
 	
 	  static class PFinder extends CallbackImpl {
 
