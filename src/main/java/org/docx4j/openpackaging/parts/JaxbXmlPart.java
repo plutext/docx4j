@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2018, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -758,6 +758,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //			}
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    	
+	    	
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
 				// We currently canonicalize twice:
@@ -765,9 +766,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				// 2. add mcIgnorable
 	    		
 	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
-	    		
+
 	    		// Now, we need to add back in the mcIgnorable ones
-	    		NamespacePrefixMapperUtils.declareNamespaces(this.getMceIgnorable() + getMcChoiceNamespaces(), doc);
+		    	String mceIgnorable = "";
+		    	if (this.getMceIgnorable()!=null) {
+		    		mceIgnorable = this.getMceIgnorable();
+		    	}
+	    		NamespacePrefixMapperUtils.declareNamespaces(mceIgnorable + getMcChoiceNamespaces(), doc);
 	    		/* that generalises the following:
 	    		if (this.getMceIgnorable().contains("w15")) {
 		    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
