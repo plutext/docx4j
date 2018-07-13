@@ -62,8 +62,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "content"
 })
 @XmlRootElement(name = "sdtContent")
-public class CTSdtContentCell
-    implements Child, ContentAccessor, SdtContent
+public class CTSdtContentCell extends SdtContent implements Child 
 {
 
     @XmlElementRefs({

@@ -14,8 +14,8 @@ import java.util.List;
  * @author jharrop
  * @since 3.3.4
  */
-public interface SdtContent {
+public abstract class SdtContent implements ContentAccessor {
 	
-	public List<Object> getContent();
+	public abstract List<Object> getContent();
 
 }
