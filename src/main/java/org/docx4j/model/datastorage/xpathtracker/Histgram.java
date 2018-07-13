@@ -13,14 +13,14 @@ import java.util.HashMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class Histgram {
+public class Histgram {
 	
 	private static Logger log = LoggerFactory.getLogger(Histgram.class);	
 	
     private final Map<QName,Integer> occurrence = new HashMap<QName, Integer>();
 
-    private String current;
-    private int currentValue;
+    protected String current;
+    protected int currentValue;
 
     public void update(String uri, String localName, String qName) {
     	
