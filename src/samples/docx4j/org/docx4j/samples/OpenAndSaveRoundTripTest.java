@@ -53,6 +53,10 @@ public class OpenAndSaveRoundTripTest extends AbstractSample {
 		// Load the docx
 		WordprocessingMLPackage wordMLPackage = Docx4J.load(new java.io.File(inputfilepath));
 				
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("hello");
+		
+		wordMLPackage.getMainDocumentPart().marshal(System.out);
+		
 		// Save it
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_OpenAndSaveRoundTripTest.docx";
 		Docx4J.save(wordMLPackage, new File(outputfilepath), Docx4J.FLAG_NONE); //(FLAG_NONE == default == zipped docx)

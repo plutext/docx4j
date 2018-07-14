@@ -377,7 +377,12 @@ public class TraversalUtil {
                 log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = anchor.getGraphic();
                 if (graphic.getGraphicData() != null) {
-                    artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
+                	List<Object> handledGraphicData = handleGraphicData(graphic.getGraphicData());
+                	if (handledGraphicData==null) {
+                		log.warn("TODO: handleGraphicData");
+                	} else {
+                		artificialList.addAll(handledGraphicData);
+                	}
                 }
             }
             if (!artificialList.isEmpty())
