@@ -173,11 +173,11 @@
 	</logger>	
 	    	
     <logger name="org.docx4j.openpackaging">
-  		<level value="info"/> 
+  		<level value="warn"/> 
 	</logger>
 
     <logger name="org.docx4j.openpackaging.io3">
-  		<level value="info"/> 
+  		<level value="error"/> 
 	</logger>
 
     <logger name="org.docx4j.openpackaging.packages">
