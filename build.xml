@@ -131,7 +131,7 @@
         <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"/>
         <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.1/xmlgraphics-commons-2.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
         
@@ -183,32 +183,31 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.3.6/docx4j-export-fo-3.3.6.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.4.0-rc/docx4j-export-fo-3.4.0-rc.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.2/fop-2.2.jar"/>
-         
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.8/batik-svg-dom-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.8/batik-css-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.8/batik-dom-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.8/batik-parser-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.8/batik-util-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.8/batik-bridge-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.8/batik-anim-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.8/batik-script-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.8/batik-xml-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.8/batik-awt-util-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.8/batik-gvt-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.8/batik-transcoder-1.8.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.8/batik-svggen-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.8/batik-extension-1.8.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.8/batik-ext-1.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.10/batik-css-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.10/batik-dom-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.10/batik-util-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.10/batik-constants-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.10/batik-i18n-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.10/batik-bridge-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.10/batik-anim-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.10/batik-script-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.10/batik-xml-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.10/batik-awt-util-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.10/batik-gvt-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.10/batik-transcoder-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.10/batik-svggen-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.10/batik-extension-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.10/batik-ext-1.10.jar"/>
+
+    	<!-- https://github.com/apache/fop/blob/fop-2_3/fop-core/pom.xml#L100 -->
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.7/fontbox-2.0.7.jar"/>
         
 	</path>    
 
@@ -365,7 +364,7 @@
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.6/docx4j-MOXy-JAXBContext-3.3.6.jar" todir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.4.0-rc/docx4j-MOXy-JAXBContext-3.4.0-rc.jar" todir="${release.dir}/optional/MOXy"/>
 		        
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
