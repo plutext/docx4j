@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-MOXy-JAXBContext</artifactId>
+	<version>3.4.0-rc</version>
+	<packaging>jar</packaging>
+	<name>docx4j-MOXy-JAXBContext</name>
+	<description>
+		jaxb.properties files specifying that docx4j should use the EclipseLink MOXy (JAXB) runtime
+	</description>
+	<url>http://www.docx4java.org/</url>
+	<licenses>
+	  <license>
+	    <name>Apache 2</name>
+	    <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	    <distribution>repo</distribution>
+	    <comments>A business-friendly OSS license</comments>
+	  </license>
+  	</licenses>
+	<scm>
+	    <developerConnection>scm:git|git@github.com:plutext/docx4j-MOXy-JAXBContext.git</developerConnection>
+    </scm>
+	<inceptionYear>2013</inceptionYear>
+	<developers>
+		<developer>
+			<id>jharrop</id>
+			<name>Jason Harrop</name>
+			<email>jason@plutext.org</email>
+			<organization>Plutext</organization>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+10</timezone>
+		</developer>
+	</developers>
+	
+	  <properties>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	  </properties>	
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
+		<outputDirectory>bin</outputDirectory>
+		<testOutputDirectory>bin</testOutputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<!-- The objective is to generate a jar which is compatible with Java
+						1.5, whilst at the same time allowing @Override annotations in the source
+						code on methods which merely implement an interface (Java 6 allows this,
+						but 1.5 gives an error). When I played around with this, I found that both
+						maven and ant would happily compile to target 1.5 with the pesky @Override
+						annotations present (irrespective of whether source was set to 1.5 or 1.6).
+						You are not allowed source=1.6, target=1.5; this results in: Failure executing
+						javac, but could not parse the error javac: source release 1.6 requires target
+						release 1.6 So we need source=1.5, target=1.5 The downside is that m2eclipse
+						mirrors this in Eclipse's compiler settings, and Eclipse then complains about
+						the @Override annotations :-( So you must manually change the Eclipse compiler
+						setting back to 1.6. -->
+					<source>1.5</source>
+					<target>1.5</target>
+
+					<verbose>false</verbose>
+					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
+					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller:
+						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<!-- The Source Plugin creates a jar archive of the source files of the
+					current project. -->
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
+				out if your build is failing because you don't have enough. -->
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+					<maxmemory>512m</maxmemory>
+					<!-- 18 MB without the exclusion; still 15MB with -->
+					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+				 </configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.soebes.maven.plugins</groupId>
+				<artifactId>maven-echo-plugin</artifactId>
+				<version>0.1</version>
+				<executions>
+					<execution>
+						<id>install-echo</id>
+						<phase>install</phase>
+						<goals>
+							<goal>echo</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy-echo</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>echo</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<echos>
+						<echo>+-------------------------------------------------------+</echo>
+						<echo>!       Join the docx4j developers mailing list by      !</echo>
+						<echo>!       emailing docx4j-dev-subscribe@docx4java.org     !</echo>
+						<echo>+-------------------------------------------------------+</echo>
+					</echos>
+				</configuration>
+			</plugin>
+		</plugins>
+    	<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>build-helper-maven-plugin</artifactId>
+										<versionRange>[1.3,2.0)</versionRange>
+										<goals>
+											<goal>add-source</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>true</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/jaxb.properties</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+
+	<distributionManagement>
+	    <repository>
+	        <id>internal.repo</id>
+	        <name>Temporary Staging Repository</name>
+	        <url>file://${project.build.directory}/mvn-repo</url>
+	    </repository>
+	</distributionManagement>
+	
+	<profiles> 
+	
+		<!-- Deploy a snapshot to GitHub  
+		
+			 See http://stackoverflow.com/questions/14013644/hosting-a-maven-repository-on-github
+			 
+			 To do this:
+			 0. uncomment distribution management above
+			 1. comment out parent element (top of pom), since this is what makes deploy push to https://oss.sonatype.org
+			 2. comment out maven-javadoc-plugin, since its not worth bothering with that large upload
+			 3. execute 
+			  
+			       mvn clean deploy  -Pgithub-mvn-repo
+		
+		 -->		
+		<profile>
+			<id>github-mvn-repo</id>
+			<build>
+			
+				<plugins>
+				
+				    <plugin>
+				        <artifactId>maven-deploy-plugin</artifactId>
+				        <version>2.8.1</version>
+				        <configuration>
+				            <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+				        </configuration>
+				    </plugin>
+				
+			        <plugin>
+			            <groupId>com.github.github</groupId>
+			            <artifactId>site-maven-plugin</artifactId>
+			            <version>0.12</version>
+			            <configuration>
+			            	<server>github</server>
+			            	<merge>true</merge>
+			                <message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
+			                <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+			                <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+			                <branch>refs/heads/mvn-repo</branch>                        <!-- remote branch name -->
+			                <includes><include>**/*</include></includes>
+			                <repositoryName>docx4j</repositoryName>      <!-- github repo name -->
+			                <repositoryOwner>plutext</repositoryOwner>    <!-- github username  -->
+			            </configuration>
+			            <executions>
+			              <!-- run site-maven-plugin's 'site' target as part of the build's normal 'deploy' phase -->
+			              <execution>
+			                <goals>
+			                  <goal>site</goal>
+			                </goals>
+			                <phase>deploy</phase>
+			              </execution>
+			            </executions>
+			        </plugin>			
+				</plugins>
+			</build>
+		</profile>
+	
+	
+	
+	
+	<!--  use -P eg mvn -Psign-artifacts  -->
+		<profile>
+			<id>sign-artifacts</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+		
+</project>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.docx4j</groupId>
+  <artifactId>docx4j-MOXy-JAXBContext</artifactId>
+  <versioning>
+    <release>3.4.0-rc</release>
+    <versions>
+      <version>3.4.0-rc</version>
+    </versions>
+    <lastUpdated>20180714024306</lastUpdated>
+  </versioning>
+</metadata>
