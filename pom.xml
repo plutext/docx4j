@@ -10,7 +10,7 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.3.8-SNAPSHOT</version>
+	<version>3.4.0-rc</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	

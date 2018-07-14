@@ -2,6 +2,46 @@ CHANGELOG
 =========
 
 
+Version 3.4.0 release candidate
+=============
+
+Release date
+------------
+
+14 July 2018
+
+Contributors to this release
+----------------------------
+
+ewanmellor (NationalBI)
+
+Jason Harrop
+
+
+Notable Changes in Version 3.4.0 
+---------------------------------
+
+Support for Java 9 and 10 (see notes in README for use in Eclipse)
+- Maven profiles for java 9 and 10 
+- Maven pom now specifies source & target 1.6 (previously 1.5)
+
+Preserve mv:AlternateContent in a run. Previously, this would have caused mc-preprocessor 
+to be invoked, selecting one of the pieces of content.
+
+Object model for wps http://schemas.microsoft.com/office/word/2010/wordprocessingShape
+
+Content Control databinding (and OpenDoPE)
+- UpdateXmlFromDocumentSurface: Copy content control content back to the custom XML part, like Microsoft Word does for a content control
+ which has a w:databinding element
+- improvements to migration (from eg VariableReplace)
+- better support for binding standardised Answers format
+- various other improvement
+
+Write docx4j version as XML comment in MainDocument part.
+
+
+
+
 Version 3.3.7  minor release
 =============
 
