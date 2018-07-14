@@ -96,6 +96,7 @@ public class CustomXmlDataStoragePartSelector {
 				
 
 				// OK, this one looks ok
+				//System.out.println(xp.getDataBinding().getXpath());
 				String itemId = xp.getDataBinding().getStoreItemID().toLowerCase();
 				log.debug("Attempting to use item id: " + itemId);
 								
@@ -209,7 +210,7 @@ public class CustomXmlDataStoragePartSelector {
 				} else {
 					
 					String itemId = element.getSdtPr().getDataBinding().getStoreItemID().toLowerCase();
-					log.debug("Attempting to use item id: " + itemId);
+					//System.out.println("Attempting to use item id: " + itemId);
 					
 					customXmlDataStoragePart 
 						= (CustomXmlDataStoragePart)customXmlParts.get(itemId);

@@ -61,6 +61,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+/**
+ * TODO add HTML import, FlatOPC support
+ * @author jharrop
+ */
 public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserNonXSLT.class);		
