@@ -57,7 +57,7 @@ public class PartsList extends AbstractSample {
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/chart.docx";
 		}
-		
+
 			
 		// Load the Package as an OpcPackage, since this 
 		// works for docx, pptx, and xlsx
@@ -118,12 +118,18 @@ public class PartsList extends AbstractSample {
 		} else if (p instanceof DefaultXmlPart) {
 			try {
 				org.w3c.dom.Document doc = ((DefaultXmlPart)p).getDocument();
-				Object o = XmlUtils.unmarshal(doc);
-				if (o instanceof javax.xml.bind.JAXBElement) {
-					sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
-				} else {
-					sb.append(" containing:"  + o.getClass().getName() );
-				}				
+				try {
+					Object o = XmlUtils.unmarshal(doc);
+					if (o instanceof javax.xml.bind.JAXBElement) {
+						sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
+					} else {
+						sb.append(" containing:"  + o.getClass().getName() );
+					}				
+				} catch (javax.xml.bind.UnmarshalException e) {
+					sb.append(" containing raw root element:" + doc.getDocumentElement().getLocalName()); 
+//					sb.append(e.getMessage()); 
+					
+				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

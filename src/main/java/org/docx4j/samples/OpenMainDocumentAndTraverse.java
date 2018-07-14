@@ -24,6 +24,7 @@ package org.docx4j.samples;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -98,12 +99,17 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 
 			@Override
 			public List<Object> apply(Object o) {
+				
+				String wrapped = "";
+				if (o instanceof JAXBElement) wrapped =  " (wrapped in JAXBElement)";
 
+				o = XmlUtils.unwrap(o); 
+				
 				String text = "";
 				if (o instanceof org.docx4j.wml.Text)
 					text = ((org.docx4j.wml.Text) o).getValue();
 
-				System.out.println(indent + o.getClass().getName() + "  \""
+				System.out.println(indent + o.getClass().getName() + wrapped + "  \""
 						+ text + "\"");
 				return null;
 			}
@@ -124,12 +130,12 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 
 					for (Object o : children) {
 
+						this.apply(o);
+
 						// if its wrapped in javax.xml.bind.JAXBElement, get its
 						// value
 						o = XmlUtils.unwrap(o);
-
-						this.apply(o);
-
+						
 						if (this.shouldTraverse(o)) {
 							walkJAXBElements(o);
 						}
