@@ -391,13 +391,26 @@ implements XPathEnabled<E> {
 					
 					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 						log.debug("MOXy: checking whether binder workaround is necessary");
-						// Workaround for MOXy issue http://stackoverflow.com/questions/37225221/moxy-validationevents-triggered-by-unmarshaller-but-not-binder
+						/* Workaround for MOXy issue 
+
+							I can set a ValidationEventHandler on an Unmarshaller, which triggers on an unexpected element ValidationEvent, then catch an UnmarshalException to handle that. That all works as expected :-)
+							
+							If instead I set a ValidationEventHandler on a Binder then call unmarshal, an unexpected element ValidationEvent never triggers.
+							
+							I tested MOXy 2.5.2 and 2.6.3.
+							
+							Looking at the MOXy source code on GitHub, at a high level it looks like it ought to work.
+							
+							JAXBBinder lets you setEventHandler on XMLBinder, and that in turn invokes setErrorHandler on the unmarshallers.
+						 */
 						String contents = IOUtils.toString(is, "UTF-8");  
 						IOUtils.closeQuietly(is);
 						is = new ByteArrayInputStream(contents.getBytes("UTF-8"));	
 						
 						if (contents.contains("AlternateContent")) {
 							// looks like we need to do the workaround
+							// 3.4.0: this needs to be refined, since we can now handle
+							// alternate content in w:r (so than in itself is ok)
 							log.debug("MOXy: yes, performing workaround");
 							// Get object with mc content resolved
 							// could do super.unmarshal(is);
@@ -443,6 +456,7 @@ implements XPathEnabled<E> {
 			        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 			        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
 				    
+			        // XMLStreamReaderWrapper xsrw = new XMLStreamReaderWrapper(this, xsr)
 					Unmarshaller u = jc.createUnmarshaller();
 					
 //					if (is.markSupported()) {
@@ -473,19 +487,52 @@ implements XPathEnabled<E> {
 				if (ue instanceof UnmarshalException) {
 					// Usually..
 					
-					if (((UnmarshalException)ue).getLinkedException()!=null 
-							&& ((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
+					if (((UnmarshalException)ue).getLinkedException()!=null) {
+
+						log.warn(((UnmarshalException)ue).getLinkedException().getMessage());	
 						
-						/*
-							Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
-							Message: The entity "xxe" was referenced, but not declared.
-								at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
-								at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+						if (((UnmarshalException)ue).getLinkedException().getMessage().contains("entity")) {
+						
+							/*
+								Caused by: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[10,19]
+								Message: The entity "xxe" was referenced, but not declared.
+									at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+									at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+								 */
+							log.error(ue.getMessage(), ue);
+							throw ue;
+						}
+
+						if (((UnmarshalException)ue).getLinkedException().getMessage().contains("EmptyPrefixedAttName?prefix=\"xmlns")) {
+							// eg xmlns:ns0=""
+							
+							/*
+								Caused by: org.xml.sax.SAXParseException; lineNumber: 2; columnNumber: 600; The value of the attribute "prefix="xmlns",localpart="ns0",rawname="xmlns:ns0"" is invalid. Prefixed namespace bindings may not be empty.
+									at com.sun.org.apache.xerces.internal.parsers.DOMParser.parse(DOMParser.java:257)
+									at com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderImpl.parse(DocumentBuilderImpl.java:339)
+									at javax.xml.parsers.DocumentBuilder.parse(DocumentBuilder.java:121)
 							 */
-						log.error(ue.getMessage(), ue);
-						throw ue;
+							log.error(ue.getMessage(), ue);
+							if (is.markSupported() ) {
+								is.reset();
+								
+								// read it to string
+								String theString = IOUtils.toString(is, "UTF-8");
+								
+								// remove xmlns:ns0=""
+								String fixed = theString.replace("xmlns:ns0=\"\"", "");
+								if (theString.equals(fixed)) {
+									// no change
+									throw ue;									
+								} else {
+									is = new ByteArrayInputStream(fixed.getBytes("UTF-8"));
+									return this.unmarshal(is, forceBinder);
+								}
+							} else {
+								throw ue;								
+							}
+						}
 					}
-					
 				} else {
 					// eg java.lang.NumberFormatException
 					log.warn( ue.getMessage(), ue);
