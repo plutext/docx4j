@@ -41,9 +41,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -67,11 +69,23 @@ public class ZipPartStore implements PartStore {
 
 
 	HashMap<String, ByteArray> partByteArrays;
+	
+	long MAX_BYTES_Unzip = -1;
+	
+	private void initMaxBytes() {
+
+		MAX_BYTES_Unzip = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip", -1);
+	}
 
 	public ZipPartStore() {
+		
+		initMaxBytes();
 	}
 
 	public ZipPartStore(File f) throws Docx4JException {
+		
+		initMaxBytes();
+		
 		log.info("Filepath = " + f.getPath() );
 
 		ZipFile zf = null;
@@ -93,7 +107,14 @@ public class ZipPartStore implements PartStore {
 			InputStream in = null;
 			try {
 				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry) );
+				if (MAX_BYTES_Unzip>-1
+						&& bytes.length>MAX_BYTES_Unzip) {
+					// entry.getSize() returns -1 earlier :-(
+					throw new PartTooLargeException(entry.getName() + ", length " + entry.getSize() + " exceeds your configured maximum allowed size for unzip.");
+				}
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
+			} catch (PartTooLargeException e) {
+				throw e;
 			} catch (Exception e) {
 				e.printStackTrace() ;
 			}
@@ -108,6 +129,8 @@ public class ZipPartStore implements PartStore {
 
 	public ZipPartStore(InputStream is) throws Docx4JException {
 
+		initMaxBytes();
+		
 		partByteArrays = new HashMap<String, ByteArray>();
        try {
             ZipInputStream zis = new ZipInputStream(is);
@@ -115,9 +138,16 @@ public class ZipPartStore implements PartStore {
             while ((entry = zis.getNextEntry()) != null) {
 				byte[] bytes =  getBytesFromInputStream( zis );
 				//log.debug("Extracting " + entry.getName());
+				if (MAX_BYTES_Unzip>-1
+						&& bytes.length>MAX_BYTES_Unzip) {
+					// entry.getSize() returns -1 earlier :-(
+					throw new PartTooLargeException(entry.getName() + ", length " + entry.getSize() + " exceeds your configured maximum allowed size for unzip.");
+				}
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
             zis.close();
+		} catch (PartTooLargeException e) {
+			throw e;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
@@ -180,6 +210,7 @@ public class ZipPartStore implements PartStore {
         	return null;
         	//throw new Docx4JException("part '" + partName + "' not found");
         }
+        
 		return bytes.getInputStream();
 	}
 	

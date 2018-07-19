@@ -64,6 +64,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.LocationAwareXMLStreamException;
+import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
@@ -133,6 +134,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return jc;
 	}
 	
+	protected static long MAX_BYTES_Unmarshal = -1;
+	
+	static {
+		MAX_BYTES_Unmarshal = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unmarshal", -1);
+	}
+	
+	
 	
 	/** The content tree (ie JAXB representation of the Part) */
 	protected E jaxbElement = null;
@@ -171,6 +179,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 								partStore.getPartSize( name.substring(1)));
 					}
 				} catch (UnsupportedOperationException uoe) {}
+				
+				if (MAX_BYTES_Unmarshal>-1
+						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal) {
+					throw new PartTooLargeException(this.getPartName() + ", length " + this.getContentLengthAsLoaded() + " exceeds your configured maximum allowed size for unmarshal.");
+				}
 					
 				is = partStore.loadPart( 
 						name.substring(1));

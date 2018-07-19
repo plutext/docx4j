@@ -49,6 +49,7 @@ import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.slf4j.Logger;
@@ -107,6 +108,11 @@ implements XPathEnabled<E> {
 					this.setContentLengthAsLoaded(
 							partStore.getPartSize( name.substring(1)));
 				} catch (UnsupportedOperationException uoe) {}
+				
+				if (MAX_BYTES_Unmarshal>-1
+						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal) {
+					throw new PartTooLargeException(this.getPartName() + ", length " + this.getContentLengthAsLoaded() + " exceeds your configured maximum allowed size for unmarshal.");
+				}
 				
 				is = partStore.loadPart( 
 						name.substring(1));
