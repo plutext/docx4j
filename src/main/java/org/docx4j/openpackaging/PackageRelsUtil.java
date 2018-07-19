@@ -14,7 +14,15 @@ public class PackageRelsUtil {
 			if (rel.getType().equals(
 					"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument") ) {
 				return rel.getTarget();
-			}
+			} 
+			else if (rel.getType().equals(
+					"http://schemas.microsoft.com/office/2006/relationships/graphicFrameDoc") ) {
+				// v:shape/@o:gfxdata
+				return rel.getTarget();
+			} 
+//			else {
+//				System.out.println(rel.getType());
+//			}
 		}
 		throw new Docx4JException("No relationship of type officeDocument");
 	}

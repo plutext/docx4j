@@ -74,6 +74,7 @@ import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
+import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
@@ -890,7 +891,9 @@ public class ContentTypeManager  {
 		} 
 				
 		// Nothing in overrides or defaults
-		throw new InvalidFormatException("Couldn't identify package from " + pkgContentType);
+		//throw new InvalidFormatException("Couldn't identify package from " + pkgContentType);
+		log.error("Couldn't identify package from " + pkgContentType);
+		return new DefaultPackage(this);
 	}
 
 	/*
