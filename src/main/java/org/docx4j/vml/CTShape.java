@@ -303,6 +303,12 @@ public class CTShape implements Child, VmlShapeElements, VmlAllCoreAttributes, V
     }    
 
     /**
+     * Where this shape is specified in a mc fallback,
+     * gfxdata basically contains the same wps:wsp
+     * content as is found in mc:Choice/@Requires="wps".
+     * That is, a consumer which isn't formally capable
+     * of undertanding wps can still use this hint, if
+     * it can understand a bit.
      * Encoded Package
      * 
      * @return
