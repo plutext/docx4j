@@ -64,6 +64,22 @@ public class Docx4jProperties {
 			return defaultValue;
 		}
 	}
+	/**
+	 * @since 3.4.0
+	 */
+	public static long getPropertyLong(String key, long defaultValue) {
+		
+		if (properties==null) {init();}
+		String val = properties.getProperty(key);
+		if (val==null) return defaultValue;
+		
+		try {
+			return (Long.parseLong(val));
+		} catch (NumberFormatException e) {
+			log.info(e.getMessage(),e);
+			return defaultValue;
+		}
+	}
 
 	
 	public static Properties getProperties() {
@@ -91,5 +107,13 @@ public class Docx4jProperties {
 		if (properties==null) {init();}
 		properties.setProperty(key, value);		
 	}	
+	/**
+	 * @since 3.4.0
+	 */
+	public static void setPropertyLong(String key, long value) {
+		
+		if (properties==null) {init();}
+		properties.setProperty(key, Long.toString(value));		
+	}
 	
 }
