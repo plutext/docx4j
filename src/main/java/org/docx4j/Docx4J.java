@@ -55,6 +55,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
+import org.docx4j.openpackaging.packages.Filetype;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -236,6 +237,16 @@ public class Docx4J {
 	}
 
 
+	/**
+	 *  Load a docx/pptx/xlsx from a File, where you know in advance what type (zip, compound, flat opc)
+	 *  it is.  Typically you'll cast the result to WordprocessingMLPackage or pptx/xlsx equivalent.
+	 *  @since 3.4.0
+	 */	
+	public static OpcPackage load(final File inFile, Filetype type)  throws Docx4JException {
+		
+		return OpcPackage.load(inFile);
+	}
+	
 	/**
 	 *  Load a Docx Document from a File
 	 */	

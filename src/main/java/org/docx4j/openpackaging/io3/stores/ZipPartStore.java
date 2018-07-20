@@ -32,14 +32,15 @@ import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -100,23 +101,20 @@ public class ZipPartStore implements PartStore {
 		}
 
 		partByteArrays = new HashMap<String, ByteArray>();
-		Enumeration entries = zf.entries();
+		Enumeration entries = zf.getEntries();
 		while (entries.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) entries.nextElement();
-			//log.info( "\n\n" + entry.getName() + "\n" );
+			ZipArchiveEntry entry = (ZipArchiveEntry) entries.nextElement();
+			policePartSize(entry.getSize(), entry.getName());
 			InputStream in = null;
 			try {
 				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry) );
-				if (MAX_BYTES_Unzip>-1
-						&& bytes.length>MAX_BYTES_Unzip) {
-					// entry.getSize() returns -1 earlier :-(
-					throw new PartTooLargeException(entry.getName() + ", length " + entry.getSize() + " exceeds your configured maximum allowed size for unzip.");
-				}
+				policePartSize(bytes.length, entry.getName()); // in case earlier check ineffective
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (PartTooLargeException e) {
 				throw e;
 			} catch (Exception e) {
-				e.printStackTrace() ;
+	            log.error(e.getMessage());
+	            throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
 			}
 		}
 		 // At this point, we've finished with the zip file
@@ -126,6 +124,16 @@ public class ZipPartStore implements PartStore {
 			 exc.printStackTrace();
 		 }
 	}
+	
+	private void policePartSize(long length, String entryName) throws PartTooLargeException {
+
+		if (MAX_BYTES_Unzip>-1
+				&& length>MAX_BYTES_Unzip) {
+			throw new PartTooLargeException(entryName + ", length " + length 
+					+ " exceeds your configured maximum allowed size for unzip.");
+		}
+		
+	}
 
 	public ZipPartStore(InputStream is) throws Docx4JException {
 
@@ -133,16 +141,13 @@ public class ZipPartStore implements PartStore {
 		
 		partByteArrays = new HashMap<String, ByteArray>();
        try {
-            ZipInputStream zis = new ZipInputStream(is);
-            ZipEntry entry = null;
+            ZipArchiveInputStream zis = new ZipArchiveInputStream(is);
+            ArchiveEntry entry = null;
             while ((entry = zis.getNextEntry()) != null) {
+            	// How to read the data descriptor for length? ie before reading?
 				byte[] bytes =  getBytesFromInputStream( zis );
 				//log.debug("Extracting " + entry.getName());
-				if (MAX_BYTES_Unzip>-1
-						&& bytes.length>MAX_BYTES_Unzip) {
-					// entry.getSize() returns -1 earlier :-(
-					throw new PartTooLargeException(entry.getName() + ", length " + entry.getSize() + " exceeds your configured maximum allowed size for unzip.");
-				}
+				policePartSize(bytes.length, entry.getName()); 
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
             zis.close();
@@ -241,22 +246,22 @@ public class ZipPartStore implements PartStore {
 	
 	///// Save methods
 
-	private ZipOutputStream zos;
+	private ZipArchiveOutputStream zos;
 
 	/**
 	 * @param zipOutputStream the zipOutputStream to set
 	 */
 	public void setOutputStream(OutputStream os) {
-		this.zos = new ZipOutputStream(os);
+		this.zos = new ZipArchiveOutputStream(os);
 	}
 
 	public void saveContentTypes(ContentTypeManager ctm) throws Docx4JException {
 
 		try {
 
-	        zos.putNextEntry(new ZipEntry("[Content_Types].xml"));
+	        zos.putArchiveEntry(new ZipArchiveEntry("[Content_Types].xml"));
 	        ctm.marshal(zos);
-	        zos.closeEntry();
+	        zos.closeArchiveEntry();
 
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling Content_Types ", e);
@@ -275,7 +280,7 @@ public class ZipPartStore implements PartStore {
 
 		try {
 	        // Add ZIP entry to output stream.
-	        zos.putNextEntry(new ZipEntry(targetName));
+	        zos.putArchiveEntry(new ZipArchiveEntry(targetName));
 
 	        if (part.isUnmarshalled() ) {
 	        	log.debug("marshalling " + part.getPartName() );
@@ -333,7 +338,7 @@ public class ZipPartStore implements PartStore {
 
 
 	        // Complete the entry
-	        zos.closeEntry();
+	        zos.closeArchiveEntry();
 
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling JaxbXmlPart " + part.getPartName(), e);
@@ -347,12 +352,12 @@ public class ZipPartStore implements PartStore {
 		try {
 
 	        // Add ZIP entry to output stream.
-	        zos.putNextEntry(new ZipEntry(targetName));
+	        zos.putArchiveEntry(new ZipArchiveEntry(targetName));
 
 	        part.getData().writeDocument( zos );
 
 	        // Complete the entry
-	        zos.closeEntry();
+	        zos.closeArchiveEntry();
 
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling CustomXmlDataStoragePart " + part.getPartName(), e);
@@ -367,7 +372,7 @@ public class ZipPartStore implements PartStore {
 		try {
 
 		    // Add ZIP entry to output stream.
-		    zos.putNextEntry(new ZipEntry(targetName));
+		    zos.putArchiveEntry(new ZipArchiveEntry(targetName));
 
 		   Document doc =  part.getDocument();
 
@@ -390,7 +395,7 @@ public class ZipPartStore implements PartStore {
 
 
 		    // Complete the entry
-		    zos.closeEntry();
+		    zos.closeArchiveEntry();
 
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling XmlPart " + part.getPartName(), e);
@@ -437,8 +442,8 @@ public class ZipPartStore implements PartStore {
 				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
 				// (though 64-bit version is fine)
 				
-				ZipEntry ze = new ZipEntry(resolvedPartUri);
-				ze.setMethod(ZipOutputStream.STORED);
+				ZipArchiveEntry ze = new ZipArchiveEntry(resolvedPartUri);
+				ze.setMethod(ZipArchiveOutputStream.STORED);
 				
 				// must set size, compressed size, and crc-32
 				ze.setSize(bytes.length);
@@ -448,15 +453,15 @@ public class ZipPartStore implements PartStore {
 			    crc.update(bytes);	
 			    ze.setCrc(crc.getValue());
 				
-				zos.putNextEntry(ze);				
+				zos.putArchiveEntry(ze);				
 			} else {
-				zos.putNextEntry(new ZipEntry(resolvedPartUri));
+				zos.putArchiveEntry(new ZipArchiveEntry(resolvedPartUri));
 			}
 
 	        zos.write( bytes );
 
 			// Complete the entry
-	        zos.closeEntry();
+	        zos.closeArchiveEntry();
 
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);

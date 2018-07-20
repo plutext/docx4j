@@ -247,7 +247,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 *            The docx file 
 	 */	
 	public static OpcPackage load(final java.io.File docxFile) throws Docx4JException {
-		return load(docxFile, null);
+		return load(docxFile, "");
 	}
 	
 	/**
@@ -433,6 +433,67 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	public static OpcPackage load(final InputStream is, Filetype type, String password) throws Docx4JException {
 
 		return load(null, is, type, password);
+	}
+
+	/**
+	 * convenience method to load from a file, where you know the Filetype
+	 * (if it is Filetype.ZippedPackage, ZipFile will be used instead of ZipArchiveInputStream)
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 * 
+	 * @Since 3.4.0           
+	 */
+	public static OpcPackage load(final File file, Filetype type) throws Docx4JException {
+		return load(file, type, null);
+	}
+
+	/**
+	 * convenience method to load from a file, where you know the Filetype
+	 * (if it is Filetype.ZippedPackage, ZipFile will be used instead of ZipArchiveInputStream)
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 * 
+	 * @Since 3.4.0           
+	 */
+	public static OpcPackage load(final File file, Filetype type, String password) throws Docx4JException {
+
+		PackageIdentifier pkgIdentifier = new PackageIdentifierTransient(file.getName());
+		
+		if (type.equals(Filetype.ZippedPackage)){
+
+			StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
+			startEvent.publish();			
+			
+			// We can/should use Common Compress' ZipFile in preference to ZipArchiveInputStream
+			final ZipPartStore partLoader = new ZipPartStore(file);
+			final Load3 loader = new Load3(partLoader);
+			OpcPackage opcPackage = loader.get();
+			
+			if (pkgIdentifier!=null) {
+				opcPackage.setName(pkgIdentifier.name());
+			}
+			
+			new EventFinished(startEvent).publish();						
+			return opcPackage;
+			
+		} else {
+			try {			
+				return load(pkgIdentifier,
+						new FileInputStream(file),
+						type,
+						password);
+			} catch (final FileNotFoundException e) {
+				OpcPackage.log.error(e.getMessage(), e);
+				throw new Docx4JException("Couldn't load file from " + file.getAbsolutePath(), e);
+			}
+			
+		}
 	}
 	
 	/**
