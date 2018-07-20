@@ -10,7 +10,7 @@
   
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>3.4.0-rc</version>
+	<version>3.4.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	
@@ -105,6 +105,37 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
+	     <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-enforcer-plugin</artifactId>
+	        <version>3.0.0-M2</version> 
+	        <executions>
+	          <execution>
+	            <id>enforce-bytecode-version</id>
+	            <goals>
+	              <goal>enforce</goal>
+	            </goals>
+	            <configuration>
+	              <rules>
+	                <enforceBytecodeVersion>
+	                  <maxJdkVersion>1.6</maxJdkVersion>
+	                  <excludes>
+	                    <exclude>org.mindrot:jbcrypt</exclude>
+	                  </excludes>
+	                </enforceBytecodeVersion>
+	              </rules>
+	              <fail>true</fail>
+	            </configuration>
+	          </execution>
+	        </executions>
+	        <dependencies>
+	          <dependency>
+	            <groupId>org.codehaus.mojo</groupId>
+	            <artifactId>extra-enforcer-rules</artifactId>
+	            <version>1.0-beta-9</version>
+	          </dependency>
+	        </dependencies>
+	      </plugin>			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -164,35 +195,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.soebes.maven.plugins</groupId>
-				<artifactId>maven-echo-plugin</artifactId>
-				<version>0.1</version>
-				<executions>
-					<execution>
-						<id>install-echo</id>
-						<phase>install</phase>
-						<goals>
-							<goal>echo</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>deploy-echo</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>echo</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<echos>
-						<echo>+-------------------------------------------------------+</echo>
-						<echo>!       Join the docx4j developers mailing list by      !</echo>
-						<echo>!       emailing docx4j-dev-subscribe@docx4java.org     !</echo>
-						<echo>+-------------------------------------------------------+</echo>
-					</echos>
-				</configuration>
-			</plugin>
 <!-- 			
 		<plugin>
             <groupId>org.basepom.maven</groupId>
@@ -233,7 +235,10 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
 			</plugin> 
 			
 		<!--  mvn package 
@@ -433,14 +438,14 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
+			<version>1.7.25</version>
 		</dependency>
 
 		<!--  instead of FOP's commons-logging -->		
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.21</version>
+		    <version>1.7.25</version>
 		</dependency>		
 
 		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.
@@ -448,7 +453,7 @@
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
-		  <version>1.7.21</version>
+		  <version>1.7.25</version>
 		</dependency>		
 		<dependency>
 			<groupId>log4j</groupId>
@@ -478,9 +483,15 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+			<version>3.5</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
 		</dependency>
-		 
+
+		<!--  3.4.0: used for zip/unzip -->		 
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-compress</artifactId>
+		    <version>1.12</version>
+		</dependency>		 
 		 
 		 <!--  supports org.apache.commons.lang.NotImplementedException -->
 		 <!-- 
@@ -495,13 +506,13 @@
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.10</version>
+			<version>1.11</version>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version> <!--  2.2 works -->
+			<version>2.5</version> <!--  2.2 works -->
 		</dependency>
 		
 		<!-- you can comment out if you don't want
@@ -510,7 +521,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>4.5.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -522,20 +533,20 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.7.3</version>
+			<version>2.7.9</version>
 		</dependency>
 		
 		<dependency>
 		  <groupId>com.fasterxml.jackson.core</groupId>
 		  <artifactId>jackson-databind</artifactId>
-			<version>2.7.3</version>
+			<version>2.7.9.4</version>
 		</dependency>		
 		
 
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
 		<artifactId>xmlgraphics-commons</artifactId>
-		<version>2.1</version>
+		<version>2.3</version>
 		<exclusions>
 			<exclusion>
 				<groupId>commons-logging</groupId>
@@ -618,14 +629,14 @@
 		<dependency>
 		    <groupId>com.google.guava</groupId>
 		    <artifactId>guava</artifactId>
-		    <version>19.0</version>
+		    <version>20.0</version>
 		</dependency>	
 		
 		<!--  for anon functionality; since 3.3.1 -->
 		<dependency>
 		    <groupId>com.thedeanda</groupId>
 		    <artifactId>lorem</artifactId>
-		    <version>2.0</version>
+		    <version>2.1</version>
 		</dependency>		
 		
 		<dependency>
