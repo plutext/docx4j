@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.packages.Filetype;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -61,8 +62,13 @@ public class PartsList extends AbstractSample {
 			
 		// Load the Package as an OpcPackage, since this 
 		// works for docx, pptx, and xlsx
-		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath));
+		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath), Filetype.ZippedPackage);
 		
+		handlePkg(opcPackage, printContentTypes);
+	}
+	
+	public static void handlePkg(OpcPackage opcPackage, boolean printContentTypes) {
+
 		if (printContentTypes)
 			printContentTypes(opcPackage);
 		
