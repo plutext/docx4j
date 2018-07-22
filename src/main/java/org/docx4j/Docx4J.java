@@ -240,7 +240,7 @@ public class Docx4J {
 	/**
 	 *  Load a docx/pptx/xlsx from a File, where you know in advance what type (zip, compound, flat opc)
 	 *  it is.  Typically you'll cast the result to WordprocessingMLPackage or pptx/xlsx equivalent.
-	 *  @since 3.4.0
+	 *  @since 6.0.0
 	 */	
 	public static OpcPackage load(final File inFile, Filetype type)  throws Docx4JException {
 		

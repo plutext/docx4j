@@ -1884,7 +1884,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	/**
 	 * Set w14:checked correctly
 	 * 
-	 * @since 3.4.0
+	 * @since 6.0.0
 	 */
 	public static String w14CheckboxAttr(Map<String, CustomXmlPart> customXmlDataStorageParts,			
 			NodeIterator sdtPrNodeIt) {

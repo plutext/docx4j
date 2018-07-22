@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
 /**
- * @since 3.4.0
+ * @since 6.0.0
  */	
 public class TextDir extends AbstractTcProperty {
 	

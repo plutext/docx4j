@@ -199,7 +199,7 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 	/**
 	 * Set the XML
 	 * 
-	 * @since 3.3.8
+	 * @since 6.0.0
 	 */
 	@Override
 	public void setXML(Document xmlDocument) throws Docx4JException {

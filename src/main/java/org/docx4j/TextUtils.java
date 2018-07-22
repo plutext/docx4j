@@ -49,7 +49,7 @@ public class TextUtils {
 	 * 
 	 * @param o
 	 * @return String
-	 * @since 3.4.0
+	 * @since 6.0.0
 	 */
 	public static String getText(Object o)  {
 

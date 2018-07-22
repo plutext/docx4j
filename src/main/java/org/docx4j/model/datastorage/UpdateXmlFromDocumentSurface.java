@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
  * Replaces Enterprise's BindInverse.
  * 
  * @author jharrop
- * @since 3.4.0
+ * @since 6.0.0
  */
 public class UpdateXmlFromDocumentSurface {
 	

@@ -444,7 +444,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @return
 	 * @throws Docx4JException
 	 * 
-	 * @Since 3.4.0           
+	 * @Since 6.0.0           
 	 */
 	public static OpcPackage load(final File file, Filetype type) throws Docx4JException {
 		return load(file, type, null);
@@ -459,7 +459,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @return
 	 * @throws Docx4JException
 	 * 
-	 * @Since 3.4.0           
+	 * @Since 6.0.0           
 	 */
 	public static OpcPackage load(final File file, Filetype type, String password) throws Docx4JException {
 

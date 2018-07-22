@@ -86,7 +86,7 @@ public interface SdtElement  {
      * 
      * @return
      *     The parent object.
-     * @since 3.4.0
+     * @since 6.0.0
      */
     public Object getParent();
     
