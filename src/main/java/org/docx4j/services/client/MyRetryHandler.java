@@ -42,7 +42,7 @@ import javax.net.ssl.SSLException;
 
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
-import org.apache.http.annotation.Immutable;
+//import org.apache.http.annotation.Immutable;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -51,7 +51,7 @@ import org.apache.http.util.Args;
 import org.apache.http.impl.client.RequestWrapper;
 
 
-@Immutable
+//@Immutable
 public class MyRetryHandler implements HttpRequestRetryHandler {
 
 
