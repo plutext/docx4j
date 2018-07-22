@@ -71,11 +71,11 @@ public class ZipPartStore implements PartStore {
 
 	HashMap<String, ByteArray> partByteArrays;
 	
-	long MAX_BYTES_Unzip = -1;
+	long MAX_BYTES_Unzip_Error = -1;
 	
 	private void initMaxBytes() {
 
-		MAX_BYTES_Unzip = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip", -1);
+		MAX_BYTES_Unzip_Error = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip.error", -1);
 	}
 
 	public ZipPartStore() {
@@ -104,11 +104,11 @@ public class ZipPartStore implements PartStore {
 		Enumeration entries = zf.getEntries();
 		while (entries.hasMoreElements()) {
 			ZipArchiveEntry entry = (ZipArchiveEntry) entries.nextElement();
-			policePartSize(entry.getSize(), entry.getName());
+			policePartSize(f, entry.getSize(), entry.getName());
 			InputStream in = null;
 			try {
 				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry) );
-				policePartSize(bytes.length, entry.getName()); // in case earlier check ineffective
+				policePartSize(f, bytes.length, entry.getName()); // in case earlier check ineffective
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (PartTooLargeException e) {
 				throw e;
@@ -125,12 +125,17 @@ public class ZipPartStore implements PartStore {
 		 }
 	}
 	
-	private void policePartSize(long length, String entryName) throws PartTooLargeException {
+	private void policePartSize(File f, long length, String entryName) throws PartTooLargeException {
 
-		if (MAX_BYTES_Unzip>-1
-				&& length>MAX_BYTES_Unzip) {
-			throw new PartTooLargeException(entryName + ", length " + length 
-					+ " exceeds your configured maximum allowed size for unzip.");
+		if (MAX_BYTES_Unzip_Error>-1
+				&& length>MAX_BYTES_Unzip_Error) {
+			if (f==null) {
+				throw new PartTooLargeException(entryName + ", length " + length 
+						+ " exceeds your configured maximum allowed size for unzip.");
+			} else {
+				throw new PartTooLargeException(f.getName() + ", " + entryName + ", length " + length 
+						+ " exceeds your configured maximum allowed size for unzip.");				
+			}
 		}
 		
 	}
@@ -147,7 +152,7 @@ public class ZipPartStore implements PartStore {
             	// How to read the data descriptor for length? ie before reading?
 				byte[] bytes =  getBytesFromInputStream( zis );
 				//log.debug("Extracting " + entry.getName());
-				policePartSize(bytes.length, entry.getName()); 
+				policePartSize(null, bytes.length, entry.getName()); 
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
             zis.close();

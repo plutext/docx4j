@@ -134,10 +134,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return jc;
 	}
 	
-	protected static long MAX_BYTES_Unmarshal = -1;
+	protected static long MAX_BYTES_Unmarshal_Error = -1;
 	
 	static {
-		MAX_BYTES_Unmarshal = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unmarshal", -1);
+		MAX_BYTES_Unmarshal_Error = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unmarshal.error", -1);
 	}
 	
 	
@@ -180,8 +180,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					}
 				} catch (UnsupportedOperationException uoe) {}
 				
-				if (MAX_BYTES_Unmarshal>-1
-						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal) {
+				if (MAX_BYTES_Unmarshal_Error>-1
+						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal_Error) {
 					throw new PartTooLargeException(this.getPartName() + ", length " + this.getContentLengthAsLoaded() + " exceeds your configured maximum allowed size for unmarshal.");
 				}
 					

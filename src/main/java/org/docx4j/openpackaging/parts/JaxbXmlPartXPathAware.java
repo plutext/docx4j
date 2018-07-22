@@ -109,8 +109,8 @@ implements XPathEnabled<E> {
 							partStore.getPartSize( name.substring(1)));
 				} catch (UnsupportedOperationException uoe) {}
 				
-				if (MAX_BYTES_Unmarshal>-1
-						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal) {
+				if (MAX_BYTES_Unmarshal_Error>-1
+						&& this.getContentLengthAsLoaded()>MAX_BYTES_Unmarshal_Error) {
 					throw new PartTooLargeException(this.getPartName() + ", length " + this.getContentLengthAsLoaded() + " exceeds your configured maximum allowed size for unmarshal.");
 				}
 				
