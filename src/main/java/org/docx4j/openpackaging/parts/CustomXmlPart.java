@@ -80,7 +80,7 @@ public interface CustomXmlPart {
 	 * Set the XML data
 	 * @throws Docx4JException 
 	 * 
-	 * @since 3.3.8
+	 * @since 6.0.0
 	 */
 	public void setXML(Document xmlDocument) throws Docx4JException;
 	

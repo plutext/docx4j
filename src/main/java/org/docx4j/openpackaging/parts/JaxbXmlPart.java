@@ -909,7 +909,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * Prefixes specified in an mc:Choice element. These must be declared, or Word
 	 * can't open the docx. They are collected by Docx4jUnmarshallerListener
 	 * 
-	 * @since 3.4.0
+	 * @since 6.0.0
 	 */
 	private Set<String> mcChoiceNamespaces = new HashSet<String>();
 
