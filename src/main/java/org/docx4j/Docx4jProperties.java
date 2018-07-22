@@ -65,7 +65,7 @@ public class Docx4jProperties {
 		}
 	}
 	/**
-	 * @since 3.4.0
+	 * @since 6.0.0
 	 */
 	public static long getPropertyLong(String key, long defaultValue) {
 		
@@ -108,7 +108,7 @@ public class Docx4jProperties {
 		properties.setProperty(key, value);		
 	}	
 	/**
-	 * @since 3.4.0
+	 * @since 6.0.0
 	 */
 	public static void setPropertyLong(String key, long value) {
 		
