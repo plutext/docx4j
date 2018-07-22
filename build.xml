@@ -7,8 +7,8 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="3.4.0-rc"/>
-	<property name="importxhtml-version" value="3.3.6-1"/>
+	<property name="version" value="6.0.0"/>
+	<property name="importxhtml-version" value="6.0.0"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
 
@@ -83,7 +83,7 @@
     
         
         <!-- TODO put these in optional
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
      -->
     
@@ -106,31 +106,31 @@
 
         <pathelement location="${m2Repository}/net/engio/mbassador/1.2.4.2/mbassador-1.2.4.2.jar"/>
 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
         
         <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.21/jcl-over-slf4j-1.7.21.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.25/jcl-over-slf4j-1.7.25.jar"/>
          -->
          
         <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.21/slf4j-log4j12-1.7.21.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
          -->
         <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>  -->
         
                 
-        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar"/>
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.10/commons-codec-1.10.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.5/commons-lang3-3.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.12/commons-compress-1.12.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.11/commons-codec-1.11.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.5/commons-io-2.5.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.2/httpclient-4.5.2.jar"/>
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.4/httpcore-4.4.4.jar"/>
-        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.6/httpclient-4.5.6.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.10/httpcore-4.4.10.jar"/>
 
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.7.3/jackson-core-2.7.3.jar"/>
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.7.3/jackson-databind-2.7.3.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.7.9/jackson-core-2.7.9.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.7.9.4/jackson-databind-2.7.9.4.jar"/>
         <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
-
+ 
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
@@ -144,15 +144,26 @@
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
         <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/> 
 
-        <pathelement location="${m2Repository}/com/google/guava/guava/19.0/guava-19.0.jar"/>
-
-        <pathelement location="${m2Repository}/com/thedeanda/lorem/2.0/lorem-2.0.jar"/>
+        <pathelement location="${m2Repository}/com/google/guava/guava/20.0/guava-20.0.jar"/>
+        <pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
 
 <!--     	
         <pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
         <pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
          -->
-        
+
+<!--
+        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.0/jaxb-runtime-2.3.0.jar"/>
+        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/2.3.0/jaxb-core-2.3.0.jar"/>
+        <pathelement location="${m2Repository}/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
+        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.0/txw2-2.3.0.jar"/>
+        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.5/istack-commons-runtime-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.7.8/stax-ex-1.7.8.jar"/>
+        <pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.13/FastInfoset-1.2.13.jar"/>
+        <pathelement location="${m2Repository}/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
+    	
+    	-->
+    	
 <!-- Uncomment to use the vfs stuff in docx4j-extras
 
         <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>
@@ -183,7 +194,7 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/3.4.0-rc/docx4j-export-fo-3.4.0-rc.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.0.0/docx4j-export-fo-6.0.0.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>

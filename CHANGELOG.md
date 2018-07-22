@@ -2,13 +2,13 @@ CHANGELOG
 =========
 
 
-Version 3.4.0 release candidate
+Version 6.0.0 
 =============
 
 Release date
 ------------
 
-14 July 2018
+22 July 2018
 
 Contributors to this release
 ----------------------------
@@ -18,8 +18,14 @@ ewanmellor (NationalBI)
 Jason Harrop
 
 
-Notable Changes in Version 3.4.0 
+Notable Changes in Version 6.0.0 
 ---------------------------------
+
+Docx4j 6.x will be the last series supporting Java 6.  
+(docx4j 7.x, when released, will require Java 7+) 
+
+New dependency commons-compress used for zip/unzip.  Most other
+deps updated to last version supporting Java 6.
 
 Support for Java 9 and 10 (see notes in README for use in Eclipse)
 - Maven profiles for java 9 and 10 
@@ -39,6 +45,9 @@ Content Control databinding (and OpenDoPE)
 
 Write docx4j version as XML comment in MainDocument part.
 
+New properties docx4j.openpackaging.parts.MAX_BYTES.unzip.error and docx4j.openpackaging.parts.MAX_BYTES.unmarshal.error which can be 
+set to positive values to have docx4j throw a PartTooLarge exception 
+if a part is larger than the set value. 
 
 
 
