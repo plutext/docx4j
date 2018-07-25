@@ -624,7 +624,7 @@
 														w:sdtPr,
 														$parent,
 														$child,
-														$multiLine)" />
+														$multiLine, $bookmarkIdCounter)" />
 										</w:p>
 									</w:tc>
 								</w:tr>
@@ -648,7 +648,7 @@
 													w:sdtPr,
 													$parent,
 													$child,
-													$multiLine)" />
+													$multiLine, $bookmarkIdCounter)" />
 									</w:p>
 								</w:tc>
 							</w:tr>
@@ -672,7 +672,7 @@
 												w:sdtPr,
 												$parent,
 												$child,
-												$multiLine)" />
+												$multiLine, $bookmarkIdCounter)" />
 								</w:p>
 							</w:tc>
 				  		</xsl:when>				  		
@@ -692,7 +692,7 @@
 											w:sdtPr,
 											$parent,
 											$child,
-											$multiLine)" />
+											$multiLine, $bookmarkIdCounter)" />
 							</w:p>
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level --> 
@@ -707,7 +707,7 @@
 										w:sdtPr,
 										$parent,
 										$child,
-										$multiLine)" />
+										$multiLine, $bookmarkIdCounter)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
@@ -765,7 +765,7 @@
 														w:sdtPr,
 														$parent,
 														$child,
-														$multiLine)" />
+														$multiLine, $bookmarkIdCounter)" />
 										</w:p>
 									</w:tc>
 								</w:tr>
@@ -791,7 +791,7 @@
 													w:sdtPr,
 													$parent,
 													$child,
-													$multiLine)" />
+													$multiLine, $bookmarkIdCounter)" />
 									</w:p>
 								</w:tc>
 							</w:tr>
@@ -817,7 +817,7 @@
 												w:sdtPr,
 												$parent,
 												$child,
-												$multiLine)" />
+												$multiLine, $bookmarkIdCounter)" />
 								</w:p>
 							</w:tc>
 				  		</xsl:when>				  		
@@ -839,7 +839,7 @@
 											w:sdtPr,
 											$parent,
 											$child,
-											$multiLine)" />
+											$multiLine, $bookmarkIdCounter)" />
 							</w:p>
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level --> 
@@ -856,7 +856,7 @@
 										w:sdtPr,
 										$parent,
 										$child,
-										$multiLine)" />
+										$multiLine, $bookmarkIdCounter)" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
@@ -917,7 +917,7 @@
                                                         w:sdtPr,
                                                         $parent,
                                                         $child,
-                                                        $multiLine)" />
+                                                        $multiLine, $bookmarkIdCounter)" />
                                         </w:p>
                                     </w:tc>
                                 </w:tr>
@@ -943,7 +943,7 @@
                                                     w:sdtPr,
                                                     $parent,
                                                     $child,
-                                                    $multiLine)" />
+                                                    $multiLine, $bookmarkIdCounter)" />
                                     </w:p>
                                 </w:tc>
                             </w:tr>
@@ -969,7 +969,7 @@
                                                 w:sdtPr,
                                                 $parent,
                                                 $child,
-                                                $multiLine)" />
+                                                $multiLine, $bookmarkIdCounter)" />
                                 </w:p>
                             </w:tc>
                         </xsl:when>                     
@@ -991,7 +991,7 @@
                                             w:sdtPr,
                                             $parent,
                                             $child,
-                                            $multiLine)" />
+                                            $multiLine, $bookmarkIdCounter)" />
                             </w:p>
                         </xsl:when>
                         <xsl:otherwise>  <!--  run level --> 
@@ -1008,7 +1008,7 @@
                                         w:sdtPr,
                                         $parent,
                                         $child,
-                                        $multiLine)" />
+                                        $multiLine, $bookmarkIdCounter)" />
                         </xsl:otherwise>        
                     </xsl:choose>    
                  </w:sdtContent>

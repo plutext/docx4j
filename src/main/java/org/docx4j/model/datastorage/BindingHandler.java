@@ -85,7 +85,7 @@ public class BindingHandler {
 	public static BindingHyperlinkResolver getHyperlinkResolver() {
 		
 		if (hyperlinkResolver==null) {
-			hyperlinkResolver = new BindingHyperlinkResolver();
+			hyperlinkResolver = new BindingHyperlinkResolver(); 
 		}
 		return hyperlinkResolver;
 	}
@@ -99,6 +99,28 @@ public class BindingHandler {
 	}
 	
 	private static BindingHyperlinkResolver hyperlinkResolver;
+	
+	private static ValueInserterPlainText valueInserterPlainText;
+
+	public static ValueInserterPlainText getValueInserterPlainText() {
+		if (valueInserterPlainText==null) {
+			// Standard implementation
+			valueInserterPlainText = new ValueInserterPlainTextImpl();
+		}
+		return valueInserterPlainText;
+	}
+
+	/**
+	 * Allow user to customise what is inserted into the document when the
+	 * bind is performed.
+	 * 
+	 * @param valueInserterPlainText
+	 * @since 6.0.1
+	 */
+	public static void setValueInserterPlainText(ValueInserterPlainText valueInserterPlainText) {
+		BindingHandler.valueInserterPlainText = valueInserterPlainText;
+	}
+	
 	
 	private DomToXPathMap domToXPathMap = null;
 	public void setDomToXPathMap(DomToXPathMap domToXPathMap) {

@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBException;
@@ -58,7 +57,6 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.w14.CTSdtCheckbox;
-import org.docx4j.w14.CTSdtCheckboxSymbol;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtDate;
@@ -69,7 +67,7 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.TblWidth;
+import org.opendope.xpaths.Xpaths;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,7 +312,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	private static final String placeholderResourceFallback = "org/docx4j/model/datastorage/placeholder.xml";
 	private static final String placeholderResource = "OpenDoPE/placeholder.xml"; // default, can be overridden since 3.2.0
 	
-	private static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
+	protected static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
 		
 		// One time
 		if (placeholderFragment==null) {
@@ -875,7 +873,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			NodeIterator sdtPrNodeIt, 
 			String sdtParent,
 			String contentChild,				
-			boolean multiLine) {
+			boolean multiLine,
+			BookmarkCounter bookmarkCounter) {
 		
 		SdtPr sdtPr = null;
 		Node sdtPrNode = sdtPrNodeIt.nextNode();
@@ -919,7 +918,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				 customXmlDataStorageParts,
 				 storeItemId,  xpathExp,  prefixMappings,
 				 sdtPr, sdtParent, contentChild,
-				  multiLine);
+				  multiLine, bookmarkCounter);
 	}
 	
 	
@@ -935,7 +934,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			NodeIterator sdtPrNodeIt, 			
 			String sdtParent,
 			String contentChild,				
-			boolean multiLine) {
+			boolean multiLine,
+			BookmarkCounter bookmarkCounter) {
 
 		SdtPr sdtPr = null;
 		Node sdtPrNode = sdtPrNodeIt.nextNode();
@@ -954,7 +954,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				 sdtPr, 			
 				 sdtParent,
 				 contentChild,				
-				  multiLine);
+				  multiLine, bookmarkCounter);
 	}
 	
 	/**
@@ -979,7 +979,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			SdtPr sdtPr, 			
 			String sdtParent,
 			String contentChild,				
-			 boolean multiLine) {
+			 boolean multiLine,
+			 BookmarkCounter bookmarkCounter) {
 		
 		/**
 		 * TODO test cases:
@@ -1028,41 +1029,13 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				}
 			}
 
-			if (r==null || r.equals("")) {
-				return createPlaceholder(rPr, "p");
-			}
 			
-			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
-			DocumentFragment docfrag = docContainer.createDocumentFragment();
-			
-			StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
-			
-			if (multiLine) {
-				// our docfrag may contain several runs
-				boolean firsttoken = true;
-				while (st.hasMoreTokens()) {						
-					String line = (String) st.nextToken();
-					
-					if (firsttoken) {
-						firsttoken = false;
-					} else {
-						addBrRunToDocFrag(docfrag, rPr);
-					}
-					
-					processString(sourcePart, docfrag, line, rPr);						
-				}
-				
-			} else {
-				// not multiline, so remove any CRLF in data;
-				// our docfrag wil contain a single run
-				StringBuilder sb = new StringBuilder();
-				while (st.hasMoreTokens()) {						
-					sb.append( st.nextToken() );
-				}
-				
-				processString(sourcePart, docfrag, sb.toString(), rPr);
-			}				
-			return docfrag;			
+			Xpaths.Xpath.DataBinding dataBinding = new Xpaths.Xpath.DataBinding();
+			dataBinding.setXpath(xpath);
+			dataBinding.setPrefixMappings(prefixMappings);
+			dataBinding.setStoreItemID(storeItemId);
+			return BindingHandler.getValueInserterPlainText().toOpenXml(dataBinding,  rPr, multiLine, bookmarkCounter,
+					r, sourcePart);				
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -1071,109 +1044,6 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 	}
 
-	
-	private static void addBrRunToDocFrag(DocumentFragment docfrag, RPr rPr) throws JAXBException {
-		
-		// Not sure whether there is ever anything of interest in the rPr, 
-		// but add it anyway
-		org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-		if (rPr!=null) {
-			run.setRPr(rPr);
-		}
-		run.getRunContent().add(Context.getWmlObjectFactory().createBr());
-		
-		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
-		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
-	}
-	
-	private static void processString(JaxbXmlPart sourcePart, DocumentFragment docfrag, String text, RPr rPr) throws JAXBException {
-				
-		int pos = BindingHandler.getHyperlinkResolver().getIndexOfURL(text);
-		if (pos==-1 || BindingHandler.getHyperlinkStyleId() == null) {				
-			addRunToDocFrag(sourcePart, docfrag,  text,  rPr);
-			return;
-		} 
-		
-		// There is a hyperlink to deal with
-		
-		// We'll need to remove:
-		//   <w:dataBinding w:storeItemID="{5448916C-134B-45E6-B8FE-88CC1FFC17C3}" w:xpath="/myxml[1]/element2[1]" w:prefixMappings=""/>
-		//   <w:text w:multiLine="true"/>
-		// or Word can't open the resulting docx, but we can't do it here,
-		// since sdtPr is in effect read only.  So it is done in bind.xslt
-		
-		if (pos==0) {
-			int spacePos = text.indexOf(" ");
-			if (spacePos==-1) {
-				addHyperlinkToDocFrag(sourcePart, docfrag,  text);
-				return;					
-			}
-			
-			// Could contain more than one hyperlink, so process recursively					
-			String first = text.substring(0, spacePos);
-			String rest = text.substring(spacePos);
-			
-			addHyperlinkToDocFrag( sourcePart,  docfrag,  first);
-			// .. now the recursive bit ..
-			processString(sourcePart,  docfrag,  rest,  rPr);	
-			return;
-		}
-		
-		String first = text.substring(0, pos);
-		String rest = text.substring(pos);
-		
-		addRunToDocFrag( sourcePart,  docfrag,  first, rPr);
-		// .. now the recursive bit ..
-		processString(sourcePart,  docfrag,  rest, rPr);				
-	}
-	
-	private static void addRunToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String string, RPr rPr) {
-		
-		org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-		if (rPr!=null) {
-			run.setRPr(rPr);
-		}
-		org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
-		run.getRunContent().add(text);
-		if (string.startsWith(" ") || string.endsWith(" ") ) {
-			// TODO: tab character?
-			log.debug("setting xml:space=preserve for '" + string + "'");
-			text.setSpace("preserve");
-		}
-		text.setValue(string);
-					
-		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
-				
-		// avoid WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
-		// but  NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation. 
-		// at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
-		// docfrag.appendChild(fragdoc.importNode(document, true));
-		// so:			
-		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);
-				
-	}
-	
-	private static void addHyperlinkToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String url) throws JAXBException {
-		
-		// We need to add a relationship to word/_rels/document.xml.rels
-		// but since its external, we don't use the 
-		// usual wordMLPackage.getMainDocumentPart().addTargetPart
-		// mechanism
-		org.docx4j.relationships.ObjectFactory factory =
-			new org.docx4j.relationships.ObjectFactory();
-		
-		org.docx4j.relationships.Relationship rel = factory.createRelationship();
-		rel.setType( Namespaces.HYPERLINK  );
-		rel.setTarget(url);
-		rel.setTargetMode("External");  
-								
-		sourcePart.getRelationshipsPart().addRelationship(rel);  // addRelationship sets the rel's @Id
-
-		Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(
-				BindingHandler.getHyperlinkResolver().generateHyperlink(rel.getId(), url));
-		XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
-	}
-	
 	
 	public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 			JaxbXmlPart sourcePart,
