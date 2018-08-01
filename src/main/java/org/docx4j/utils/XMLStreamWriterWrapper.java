@@ -176,21 +176,26 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 		underlying.writeEntityRef(name);
 		
 	}
-
+	
 	@Override
 	public void writeStartDocument() throws XMLStreamException {
-		underlying.writeStartDocument();
+		// Sun/Oracle JAXB always invokes this
+		log.debug("writeStartDocument ");
+		writeStartDocument("UTF-8", "1.0");
 		
 	}
 
 	@Override
 	public void writeStartDocument(String version) throws XMLStreamException {
-		underlying.writeStartDocument(version);
+		// MOXy always invokes this
+		log.debug("writeStartDocument " + version);
+		writeStartDocument("UTF-8", version);
 		
 	}
 
 	@Override
 	public void writeStartDocument(String encoding, String version) throws XMLStreamException {
+		log.debug("writeStartDocument " + encoding);
 		underlying.writeStartDocument(encoding, version);
 		
 	}

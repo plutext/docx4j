@@ -828,7 +828,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		
 	    	} else {
 	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
-	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os);
+	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os, "UTF-8");
 	            
 	            // get rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl writes
 	            XMLStreamWriterWrapper xsww = new XMLStreamWriterWrapper(this, xsw);
