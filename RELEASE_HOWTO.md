@@ -20,6 +20,7 @@ When it comes to the actual release, follow the below for:
 
 + xhtmlrenderer
 + docx4j-ImportXHTML
++ docx4j-export-FO
 
 + docx4j-MOXy
 
@@ -96,6 +97,7 @@ Linux
 eval "$(ssh-agent -s)"
 
 ssh-add ~/.ssh/id_rsa
+Enter passphrase for ... .ssh/id_rsa: [the github 2 one]
 
 ---------------
 
@@ -264,7 +266,10 @@ Run ant release (requires both docx4j and -ImportXHTML to be in maven)
 
 ----
 
+Put id /docx4j dir
 Announce release in docx4j forum
+Update downloads.html (includes link to release announcement)
+Update news
 
 ----
 

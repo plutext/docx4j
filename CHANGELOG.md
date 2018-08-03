@@ -2,7 +2,27 @@ CHANGELOG
 =========
 
 
-Version 6.0.0 
+Version 6.0.1 
+=============
+
+Release date
+------------
+
+3 August 2018
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Notable Changes in Version 6.0.1 
+---------------------------------
+
+In many cases v6.0.0 release writes <?xml version="1.0" ?> omitting encoding "UTF-8".
+This release corrects that, and is recommended for this reason.
+
+
+Version 6.0.0 (NOT RECOMMENDED)
 =============
 
 Release date
