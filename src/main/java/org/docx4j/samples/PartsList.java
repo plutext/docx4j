@@ -33,6 +33,8 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -65,7 +67,12 @@ public class PartsList extends AbstractSample {
 		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath), Filetype.ZippedPackage);
 		
 		handlePkg(opcPackage, printContentTypes);
+		
+		// Uncomment if you want to look at any temp fonts before they are deleted!
+		// Thread.sleep(60000);
 	}
+	
+	
 	
 	public static void handlePkg(OpcPackage opcPackage, boolean printContentTypes) {
 
@@ -158,6 +165,13 @@ public class PartsList extends AbstractSample {
 		
 		if (p instanceof VbaDataPart) {
 			System.out.println( ((VbaDataPart)p).getXML() );
+		}
+		
+		if (p instanceof FontTablePart) {
+			// What fonts are embedded?
+			// To see output, log org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart
+			// at level INFO, or look in the temp font dir (before the program terminates) 
+			((FontTablePart)p).processEmbeddings();
 		}
 		
 	}
