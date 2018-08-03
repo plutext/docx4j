@@ -37,7 +37,9 @@ import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -124,6 +126,10 @@ public class OpenDoPEIntegrity {
 					process((HeaderPart) rp.getPart(r));
 				} else if (r.getType().equals(Namespaces.FOOTER)) {
 					process((FooterPart) rp.getPart(r));
+				} else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+					process((FootnotesPart) rp.getPart(r));
+				} else if (r.getType().equals(Namespaces.ENDNOTES)) {
+					process((EndnotesPart) rp.getPart(r));
 				}
 			}
 		}

@@ -51,7 +51,9 @@ import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
@@ -399,6 +401,10 @@ public class OpenDoPEHandler {
 				partList.add((HeaderPart) rp.getPart(r));
 			} else if (r.getType().equals(Namespaces.FOOTER)) {
 				partList.add((FooterPart) rp.getPart(r));
+			} else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+				partList.add((FootnotesPart) rp.getPart(r));
+			} else if (r.getType().equals(Namespaces.ENDNOTES)) {
+				partList.add((EndnotesPart) rp.getPart(r));
 			}
 		}
 

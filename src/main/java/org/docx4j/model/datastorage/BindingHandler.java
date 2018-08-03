@@ -32,7 +32,9 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -224,7 +226,12 @@ public class BindingHandler {
 					applyBindings((HeaderPart) rp.getPart(r));
 				} else if (r.getType().equals(Namespaces.FOOTER)) {
 					applyBindings((FooterPart) rp.getPart(r));
-				}
+                } else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+                    applyBindings((FootnotesPart) rp.getPart(r));
+                } else if (r.getType().equals(Namespaces.ENDNOTES)) {
+                    applyBindings((EndnotesPart) rp.getPart(r));
+                }
+
 			}
 		}
 		

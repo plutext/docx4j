@@ -38,7 +38,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -136,6 +138,10 @@ public class RemovalHandler {
                                 removeSDTs((HeaderPart) rp.getPart(r), quantifier, keys);
                         } else if (r.getType().equals(Namespaces.FOOTER)) {
                                 removeSDTs((FooterPart) rp.getPart(r), quantifier, keys);
+                        } else if (r.getType().equals(Namespaces.FOOTNOTES)) {
+                                removeSDTs((FootnotesPart) rp.getPart(r), quantifier, keys);
+                        } else if (r.getType().equals(Namespaces.ENDNOTES)) {
+                                removeSDTs((EndnotesPart) rp.getPart(r), quantifier, keys);
                         }
                 }
         }
