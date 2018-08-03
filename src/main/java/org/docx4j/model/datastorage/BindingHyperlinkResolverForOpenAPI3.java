@@ -9,6 +9,18 @@ import org.slf4j.LoggerFactory;
 
 public class BindingHyperlinkResolverForOpenAPI3 extends BindingHyperlinkResolver {
 
+	/*
+		In OpenAPI 3, a Reference Object is a simple object to allow referencing 
+		other components in the specification, internally and externally.
+	
+		The Reference Object is defined by JSON Reference and follows the same structure, 
+		behavior and rules; reference resolution is accomplished as defined by the 
+		JSON Reference specification
+		
+		Here we add a hyperlink if the contents starts with "#/components".
+		So this class is OpenAPI specific (not for general JSON References).     
+	 */
+	
 	private static Logger log = LoggerFactory.getLogger(BindingHyperlinkResolver.class);	
 	
 	private static final String COMPONENT_REF = "#/components"; 

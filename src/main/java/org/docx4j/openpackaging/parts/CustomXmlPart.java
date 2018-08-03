@@ -29,7 +29,7 @@ public interface CustomXmlPart {
 	 * Use org.apache.xpath.CachedXPathAPI, since this is much quicker than default javax.xml.xpath.XPath implementations
 	 * (Apache's anyway) for large XML files.
 
-	 * This is because Apache's old XPathAPI classinstantiated a new XPathContext 
+	 * This is because Apache's old XPathAPI class instantiated a new XPathContext 
 	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
 	 * XPathAPIObject instead retains its context as long as the object persists, 
 	 * reusing the DTMs. 
