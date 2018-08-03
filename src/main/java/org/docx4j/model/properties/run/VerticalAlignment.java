@@ -78,14 +78,14 @@ public class VerticalAlignment extends AbstractRunProperty {
 		STVerticalAlignRun va = ((CTVerticalAlignRun)this.getObject()).getVal();
 		
 		if ( STVerticalAlignRun.SUBSCRIPT.equals(va) ) {
-			return composeCss(CSS_NAME, "bottom") + composeCss("font-size", "xx-small");
+			return composeCss(CSS_NAME, "sub") + composeCss("font-size", "smaller");
 			
 			// Another approach is position:relative, and top: or bottom:,
 			// but it seems better, all other things being equal, to use
 			// properties with equivalent names
 			
 		} else if ( STVerticalAlignRun.SUPERSCRIPT.equals(va) ) {
-			return composeCss(CSS_NAME, "top") + composeCss("font-size", "xx-small");
+			return composeCss(CSS_NAME, "super") + composeCss("font-size", "smaller");
 		} else {
 			// STVerticalAlignRun.BASELINE
 			return null;
