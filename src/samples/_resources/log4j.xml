@@ -191,7 +191,7 @@
     <logger name="org.docx4j.openpackaging.parts.Parts">
   		<level value="info"/> 
 	</logger>
-    
+
     <logger name="org.docx4j.openpackaging.parts.ThemePart">
   		<level value="warn"/> 
 	</logger>
@@ -200,6 +200,10 @@
   		<level value="info"/> 
 	</logger>
 	
+    <logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart">
+  		<level value="warn"/> 
+	</logger>
+    
     <logger name="org.docx4j.services.client">
   		<level value="debug"/> 
 	</logger>	
