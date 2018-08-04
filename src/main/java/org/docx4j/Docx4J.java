@@ -50,6 +50,7 @@ import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.DomToXPathMap;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
+import org.docx4j.model.datastorage.OpenDoPEIntegrityAfterBinding;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -526,6 +527,17 @@ public class Docx4J {
 				bh.applyBindings();
 			
 			new EventFinished(startEvent).publish();
+			
+			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEIntegrityAfterBinding );
+			startEvent.publish();
+			
+				// since 6.0.3
+				log.debug("OpenDoPEIntegrityAfterBinding");
+				OpenDoPEIntegrityAfterBinding odiab = new OpenDoPEIntegrityAfterBinding();
+				odiab.process(wmlPackage);
+
+			new EventFinished(startEvent).publish();
+			
 		}
 		
 //		System.out.println(

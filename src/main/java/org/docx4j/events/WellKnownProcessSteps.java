@@ -10,6 +10,7 @@ public enum WellKnownProcessSteps implements ProcessStep {
 	BIND_BIND_XML_OpenDoPEHandler,
 	BIND_BIND_XML_OpenDoPEIntegrity,
 	BIND_BIND_XML_BindingHandler,
+	BIND_BIND_XML_OpenDoPEIntegrityAfterBinding,
 	BIND_REMOVE_SDT,
 	BIND_REMOVE_XML,
 	PDF,
