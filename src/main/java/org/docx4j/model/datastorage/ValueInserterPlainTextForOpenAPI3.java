@@ -87,6 +87,16 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 		
 		// w:bookmarkStart w:id=\"" + id + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" />" +
 		addBookmarkStart( bookmarkName,  id,  docfrag);
+		/*
+		 * BE WARNED: putting w:bookmarkStart inside a text sdt causes Word
+		 * (2016) at least to not open docx, giving decidedly unhelpful
+		 * HRESULT 0x800004005 at line 0 column 0.
+		 * 
+		 * So in a new IntegrityAfterBind step, we'll move this bookmark outside of the control.
+		 * (The alternative to that would be to add something new to bind.xslt that either
+		 *  allowed us to insert a bookmark before handing over to Java for the sdt content,
+		 *  OR Java handles inserting the entire SDT (and so could insert a bookmark before) ). 
+		 */
 		
 		// the run
 		addRun( val, docfrag);
