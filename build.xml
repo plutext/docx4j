@@ -194,7 +194,7 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.0.0/docx4j-export-fo-6.0.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.0.1/docx4j-export-fo-6.0.1.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
@@ -375,7 +375,7 @@
 
     	<!-- MOXy -->
         <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.4.0-rc/docx4j-MOXy-JAXBContext-3.4.0-rc.jar" todir="${release.dir}/optional/MOXy"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/6.0.0/docx4j-MOXy-JAXBContext-6.0.0.jar" todir="${release.dir}/optional/MOXy"/>
 		        
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
         <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
