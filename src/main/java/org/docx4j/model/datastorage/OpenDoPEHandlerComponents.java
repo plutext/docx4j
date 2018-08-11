@@ -226,15 +226,13 @@ public class OpenDoPEHandlerComponents {
 		// process altChunk
 		try {
 			// Use reflection, so docx4j can be built
-			// by users who don't have the MergeDocx utility
+			// by users who don't have the Enterprise MergeDocx utility
 			Class<?> documentBuilder = Class
 					.forName("com.plutext.merge.altchunk.ProcessAltChunk");
-			// Method method = documentBuilder.getMethod("merge",
-			// wmlPkgList.getClass());
 			Method[] methods = documentBuilder.getMethods();
 			Method processMethod = null;
 			for (int j = 0; j < methods.length; j++) {
-				log.debug(methods[j].getName());
+//				log.debug(methods[j].getName());
 				if (methods[j].getName().equals("process")
 						&& methods[j].getParameterCount()==5) {
 					processMethod = methods[j];
@@ -500,14 +498,11 @@ public class OpenDoPEHandlerComponents {
 
 			log.debug("Encountered Conditional: " + tag.getVal());
 
-			// TODO later; perhaps take context from condition eg
-			//    xpath="local-name(/yaml/paths[1]/*[1]/*[1])='get'" 
+			// later perhaps, could take context from condition eg
+			//    xpath="local-name(/yaml/paths[1]/*[1]/*[1])='get'"
 			
-//			// this only handles simple conditions
-//			Condition c = conditionsMap.get(conditionId);
-//			if (c == null) {
-//				log.error("Missing condition " + conditionId);
-//			}
+			// but ability to explicity set context on a component
+			// is effective, so no need for this.
 
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
@@ -667,32 +662,6 @@ public class OpenDoPEHandlerComponents {
 			
 		}
 		
-		
-	private List<Object> processOpenDopeRepeat(Object sdt,
-			Map<String, CustomXmlPart> customXmlDataStorageParts) {
-
-		Tag tag = OpenDoPEHandler.getSdtPr(sdt).getTag();
-
-		HashMap<String, String> map = QueryString.parseQueryString(
-				tag.getVal(), true);
-
-		String repeatId = map.get(OpenDoPEHandler.BINDING_ROLE_REPEAT);
-
-		// Check, whether we are in an old repeat case. These can be removed.
-		if (StringUtils.isEmpty(repeatId))
-			return new ArrayList<Object>();
-
-//		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
-//				xPaths, repeatId);		
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(repeatId);
-
-		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
-		String xpath = xpathObj.getDataBinding().getXpath();
-		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
-
-		// TODO: set context from xpath
-		return null;
-	}
 	}
 	
 }

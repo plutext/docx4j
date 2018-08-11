@@ -33,6 +33,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
+import org.docx4j.model.datastorage.OpenDoPEHandlerComponents;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.OpenDoPEReverter;
 import org.docx4j.model.datastorage.RemovalHandler;
@@ -40,6 +41,7 @@ import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+
 
 
 /**
@@ -81,15 +83,37 @@ public class ContentControlBindingExtensionsOld {
 		
 		StringBuilder timingSummary = new StringBuilder();
 		
+		// Process components
+		
+		// Docx4j 6.1: simplified component process model:
+		// 1. components don't have to be at the top paragraph level of the content tree,
+		// BUT:
+		// 2. component processing is now done before condition/repeat processing
+		// 3. component processing is not recursive anymore
+		// 4. components typically use the "main" answer file
+		long startTime = System.currentTimeMillis();
+		OpenDoPEHandlerComponents componentsHandler =
+				new OpenDoPEHandlerComponents(wordMLPackage);
+		componentsHandler.setDocxFetcher(new MyDocxFetcher() );
+		wordMLPackage = componentsHandler.fetchComponents();
+		long endTime = System.currentTimeMillis();
+		timingSummary.append("Component processing: " + (endTime-startTime));
+		
+		System.out.println(
+				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+				);	
+		
+		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+		saver.save(filepathprefix + "_components_done.docx");
+		System.out.println("Saved: " + filepathprefix + "_components_done.docx");				
 
 		// Process conditionals and repeats
-		long startTime = System.currentTimeMillis();
+		startTime = System.currentTimeMillis();
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.setDocxFetcher(new MyDocxFetcher() );
 		wordMLPackage = odh.preprocess();
-		long endTime = System.currentTimeMillis();
-		timingSummary.append("OpenDoPEHandler: " + (endTime-startTime));
-
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nOpenDoPEHandler: " + (endTime-startTime));
+		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		
@@ -103,7 +127,7 @@ public class ContentControlBindingExtensionsOld {
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		
-		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+		saver = new SaveToZipFile(wordMLPackage);
 		saver.save(filepathprefix + "_preprocessed.docx");
 		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
 		

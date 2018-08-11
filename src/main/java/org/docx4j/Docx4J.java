@@ -49,6 +49,7 @@ import org.docx4j.model.datastorage.CustomXmlDataStoragePartSelector;
 import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.DomToXPathMap;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
+import org.docx4j.model.datastorage.OpenDoPEHandlerComponents;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.OpenDoPEIntegrityAfterBinding;
 import org.docx4j.model.datastorage.RemovalHandler;
@@ -471,14 +472,20 @@ public class Docx4J {
 			
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEHandler );
 			startEvent.publish();
+
+				// since 6.1, component processing happens first,
+				// and as a discrete step
+				OpenDoPEHandlerComponents componentsHandler =
+						new OpenDoPEHandlerComponents(wmlPackage);
+				if (docxFetcher!=null) {
+					componentsHandler.setDocxFetcher(docxFetcher);
+				}
+				WordprocessingMLPackage tmpMergeResult = componentsHandler.fetchComponents();
 			
 				// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
 				// and does that whether or not we have an XPaths part
-				openDoPEHandler = new OpenDoPEHandler(wmlPackage);
-				if (docxFetcher!=null) {
-					openDoPEHandler.setDocxFetcher(docxFetcher);
-				}
-				WordprocessingMLPackage tmpMergeResult = openDoPEHandler.preprocess();
+				openDoPEHandler = new OpenDoPEHandler(tmpMergeResult);
+				tmpMergeResult = openDoPEHandler.preprocess();
 				
 				DomToXPathMap domToXPathMap = openDoPEHandler.getDomToXPathMap();
 				
