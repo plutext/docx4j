@@ -259,14 +259,14 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Repeat above for -ImportXHTML
+Repeat above for -ImportXHTML and export-FO
 
-Run ant release (requires both docx4j and -ImportXHTML to be in maven)
+Run ant release (requires docx4j, -ImportXHTML and export-FO to be in maven)
  
 
 ----
 
-Put id /docx4j dir
+Put in /docx4j dir
 Announce release in docx4j forum
 Update downloads.html (includes link to release announcement)
 Update news
