@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.TraversalUtil;
@@ -17,6 +20,7 @@ import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
@@ -37,27 +41,123 @@ import org.opendope.xpaths.Xpaths;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+/**
+ * Process OpenDoPE components.
+ * 
+ * From 6.1, components can be at any level in the
+ * content hierarchy where an SdtBlock is allowed.
+ * 
+ * From 6.1, components support the idea of an XPath 
+ * context: where an XPath is not absolute, it will be
+ * interpreted relative to context. Context can be
+ * provided explicitly (the id of an XPath in the XPaths 
+ * part).  If not provided explicitly, we can read it
+ * from an enclosing repeat.  (We don't do that for 
+ * conditions right now, since they are a bit more tricky).
+ * 
+ * In 6.1, the section break handling is missing.
+ * TODO: consider whether it is needed.  May be useful
+ * for top level components which add headers/footers?
+ * 
+ * Note this is invoked after repeats in the document
+ * itself have been processed.
+ * 
+ * @author jharrop
+ *
+ */
 public class OpenDoPEHandlerComponents {
+
+	// Docx4j 6.1: re-designed component processing model:
+	// 1. components don't have to be at the top paragraph level of the content tree,
+	// 2. they can use an XPath context
+	// BUT:
+	// 3. component processing is now done before condition/repeat processing
+	// 4. component processing is not recursive anymore
+	// 5. components typically use the "main" answer file
+	
+	// TODO: make this step optional
+	
+	private WordprocessingMLPackage srcPackage;
 
 	private org.opendope.components.Components components;
 		
-	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap;
-	
-	private Map<String, Condition> conditionsMap;
-	
-	public OpenDoPEHandlerComponents(org.opendope.components.Components components,
-			Map<String, Xpath> xpathsMap2, Map<String, Condition> conditionsMap2) {
+	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
+	private Map<String, Condition> conditionsMap = null; 
 
-		this.components = components;
-		this.xpathsMap = xpathsMap2;
-		this.conditionsMap = conditionsMap2;
+	private static DocxFetcher docxFetcher;
+
+	public static DocxFetcher getDocxFetcher() {
+		return docxFetcher;
 	}
+
+	public static void setDocxFetcher(DocxFetcher docxFetcher) {
+		OpenDoPEHandlerComponents.docxFetcher = docxFetcher;
+	}
+	
+	public OpenDoPEHandlerComponents(WordprocessingMLPackage wordMLPackage)
+			throws Docx4JException {
+
+		this.srcPackage = wordMLPackage;
+
+		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
+			log.info("OpenDoPE XPaths part missing (ok if you are just processing w15 repeatingSection)");
+			return;
+			
+		} else {
+			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+            }
+			
+			xpathsMap = new HashMap<String, org.opendope.xpaths.Xpaths.Xpath>(2*xPaths.getXpath().size());
+			
+			for (Xpaths.Xpath xp : xPaths.getXpath() ) {
+				
+				if (xpathsMap.put(xp.getId(), xp)!=null) {
+					log.error("Duplicates in XPaths part: " + xp.getId());
+				}
+				// TODO key should include storeItemID?
+			}
+			
+		}
+
+		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
+			org.opendope.conditions.Conditions conditions = wordMLPackage.getMainDocumentPart()
+					.getConditionsPart().getJaxbElement();
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(conditions, true, true));
+            }
+			
+			conditionsMap = new HashMap<String, Condition>(2*conditions.getCondition().size());
+			
+			for (Condition c : conditions.getCondition()) {
+				if (conditionsMap.put(c.getId(), c)!=null) {
+					log.error("Duplicates in Conditions part: " + c.getId());
+				}
+			}
+		}
+		
+		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
+			components = wordMLPackage.getMainDocumentPart()
+					.getComponentsPart().getJaxbElement();
+            if(log.isDebugEnabled()) {
+                log.debug(XmlUtils.marshaltoString(components, true, true));
+            }
+		}
+	}	
 	
 	
 	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandlerComponents.class);
 
 	protected boolean justGotAComponent = false;
+	
+	/**
+	 * altChunkRel.getId(), xpathId so TODO make this work across parts!
+	 */
+	Map<String, String> altChunkXPathContexts = new HashMap<String, String>(); 
 	
 	/**
 	 * Component processing 
@@ -67,26 +167,60 @@ public class OpenDoPEHandlerComponents {
 	 * @return
 	 * @throws Docx4JException
 	 */
-	protected WordprocessingMLPackage fetchComponents(
-			WordprocessingMLPackage srcPackage, ContentAccessor contentAccessor)
+	public WordprocessingMLPackage fetchComponents()
 			throws Docx4JException {
+		
+		if (xpathsMap==null) return srcPackage;
+		
+		// A component can apply in both the main document part,
+		// and in headers/footers. See further
+		// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
+		// A component added to the
+		// main document part could add new headers/footers.
+		// So we need to work out what parts to preprocess
+		// here inside this do loop.
+		Set<ContentAccessor> partList = OpenDoPEHandler.getParts(srcPackage);
 
-		// convert components to altChunk
-//		Map<Integer, CTAltChunk> replacements = new HashMap<Integer, CTAltChunk>();
-//		Integer index = 0;
+//		System.out.println("before component processing");
+//		System.out.println(wordMLPackage.getMainDocumentPart().getXML());
+
 		justGotAComponent = false;
+		
+		// Convert any sdt with <w:tag w:val="od:component=comp1"/>
+		// to altChunk, and for MergeDocx users, to
+		// real WordML.
+		for (ContentAccessor part : partList) {
 
-//		LinkedList<Integer> continuousBeforeIndex = new LinkedList<Integer>();
-//		List<Boolean> continuousBefore = new ArrayList<Boolean>();
-//
-//		List<Boolean> continuousAfter = new ArrayList<Boolean>();
+//			LinkedList<Integer> continuousBeforeIndex = new LinkedList<Integer>();
+//			List<Boolean> continuousBefore = new ArrayList<Boolean>();
+	//
+//			List<Boolean> continuousAfter = new ArrayList<Boolean>();
 
-		FindComponentsTraversor t = new FindComponentsTraversor();
-		t.wordMLPackage = srcPackage;
-		t.walkJAXBElements(contentAccessor);		
+			FindComponentsTraversor t = new FindComponentsTraversor();
+			t.wordMLPackage = srcPackage;
+			t.walkJAXBElements(part.getContent());		
+		}
+		
 
 		if (!justGotAComponent) {
 			return srcPackage;
+		}
+		
+//		Map<QName, org.w3c.dom.Document> answerDomDocs = new HashMap<QName, org.w3c.dom.Document>();
+//		CustomXmlPart data = CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(srcPackage);
+//		if (data instanceof CustomXmlDataStoragePart) {
+//			Document doc = ((CustomXmlDataStoragePart)data).getData().getDocument();
+//			answerDomDocs.put(getQName(doc.getDocumentElement()), doc);
+//		} else {
+//			throw new Docx4JException("TODO: handle " + data.getClass().getName());
+//		}
+		Map<QName, CustomXmlPart> answerDomDocs = new HashMap<QName, CustomXmlPart>();
+		CustomXmlPart data = CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(srcPackage);
+		if (data instanceof CustomXmlDataStoragePart) {
+			Document doc = ((CustomXmlDataStoragePart)data).getData().getDocument();
+			answerDomDocs.put(getQName(doc.getDocumentElement()), data);
+		} else {
+			throw new Docx4JException("TODO: handle " + data.getClass().getName());
 		}
 
 		// process altChunk
@@ -102,7 +236,7 @@ public class OpenDoPEHandlerComponents {
 			for (int j = 0; j < methods.length; j++) {
 				log.debug(methods[j].getName());
 				if (methods[j].getName().equals("process")
-						&& methods[j].getParameterCount()==3) {
+						&& methods[j].getParameterCount()==5) {
 					processMethod = methods[j];
 				}
 			}
@@ -110,8 +244,10 @@ public class OpenDoPEHandlerComponents {
 				throw new NoSuchMethodException();
 			return (WordprocessingMLPackage) processMethod.invoke(null,
 					srcPackage,
+					answerDomDocs,
 					xpathsMap,
-					conditionsMap);
+					conditionsMap,
+					altChunkXPathContexts);
 			
 			
 		} catch (ClassNotFoundException e) {
@@ -129,6 +265,12 @@ public class OpenDoPEHandlerComponents {
 			throw new Docx4JException("Problem processing w:altChunk", e);
 		}
 	}
+	
+  private QName getQName(Element el) {
+	    QName qname = new QName(el.getNamespaceURI(), el.getLocalName());
+	    System.out.println(qname);
+	    return qname;
+	}	
 
 //	public void makeContinuous(SectPr sectPr) {
 //
@@ -193,6 +335,9 @@ public class OpenDoPEHandlerComponents {
 	private class FindComponentsTraversor extends CallbackImpl {
 
 		WordprocessingMLPackage wordMLPackage;
+				
+	    private LinkedList<String> repeatContext = new LinkedList<String>();
+		
 
 		@Override
 		public List<Object> apply(Object wrapped) throws RuntimeException {
@@ -232,12 +377,32 @@ public class OpenDoPEHandlerComponents {
 			List<Object> newChildren = new ArrayList<Object>();
 
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
+			
+			// Add repeat context?
+			boolean mustPopRepeat = false;
+			if (parentUnwrapped instanceof SdtElement) {
+				Tag tag = ((SdtElement)parentUnwrapped).getSdtPr().getTag();
+				if (tag == null) {
+					log.debug("no tag " + XmlUtils.marshaltoString(parentUnwrapped));
+				} else {
+					HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+					String repeatId = map.get(OpenDoPEHandler.BINDING_ROLE_REPEAT);
+					if (repeatId!=null) {
+						repeatContext.push(repeatId);
+						mustPopRepeat = true;
+					}
+				}
+			}
+
+				
+				
 			List<Object> children = getChildren(parentUnwrapped);
 			if (children == null) {
-				log.debug("no children: " + parentUnwrapped.getClass().getName());
+//				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
 			} else {
 				for (Object o : children) {
+					// apply
 					newChildren.addAll(this.apply(o));
 				}
 			}
@@ -260,6 +425,11 @@ public class OpenDoPEHandlerComponents {
 				}
 			}
 			
+			// Remove repeat context?
+			if (mustPopRepeat) {
+				repeatContext.pop();
+			}
+			
 		}
 		
 	/**
@@ -279,7 +449,7 @@ public class OpenDoPEHandlerComponents {
 			
 			Id id = OpenDoPEHandler.getSdtPr(sdt).getId();
 			if (id!=null) {
-				log.debug("Processing " + id.getVal());
+//				log.debug("Processing " + id.getVal());
 			}
 			
 			Tag tag = OpenDoPEHandler.getSdtPr(sdt).getTag();
@@ -299,6 +469,9 @@ public class OpenDoPEHandlerComponents {
 //		String xp = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
 		String componentId = map.get(OpenDoPEHandler.BINDING_ROLE_COMPONENT);
 		
+		// Is there an explicit XPath context for this component?
+		String componentContextId = map.get(OpenDoPEHandler.BINDING_ROLE_COMPONENT_CONTEXT);
+		
 		if (componentId ==null && conditionId == null && repeatId == null ) {
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
@@ -310,7 +483,18 @@ public class OpenDoPEHandlerComponents {
 		if (componentId!=null) {
 			
 			justGotAComponent = true;
-			return foo(wordMLPackage, componentId);
+			
+			if (componentContextId!=null) {
+				log.debug("Using explicit component context " + componentContextId);
+				return processOpenDopeComponent(wordMLPackage, componentId, componentContextId);				
+			} else if (!repeatContext.isEmpty()) {
+				log.debug("Using component context inferred from repeat " + repeatContext.peek());
+				return processOpenDopeComponent(wordMLPackage, componentId, repeatContext.peek());								
+			} else {
+				// No context, its just root
+				log.debug("No context, its just root " );
+				return processOpenDopeComponent(wordMLPackage, componentId, null);
+			}
 						
 		} else if (conditionId != null) {
 
@@ -347,8 +531,8 @@ public class OpenDoPEHandlerComponents {
 		
 	}
 
-		private List<Object> foo(WordprocessingMLPackage srcPackage, 
-				String componentId) throws Docx4JException {
+		private List<Object> processOpenDopeComponent(WordprocessingMLPackage srcPackage, 
+				String componentId, String xpathId) throws Docx4JException {
 			
 			// Convert the sdt to a w:altChunk
 			// .. get the IRI
@@ -356,7 +540,7 @@ public class OpenDoPEHandlerComponents {
 					componentId).getIri();
 			log.debug("Fetching " + iri);
 
-			if (OpenDoPEHandler.getDocxFetcher() == null) {
+			if (getDocxFetcher() == null) {
 				log.error("You need a docxFetcher (and the MergeDocx extension) to fetch components");
 				throw new Docx4JException("You need a docxFetcher (and the MergeDocx extension) to fetch components");
 			}
@@ -365,7 +549,7 @@ public class OpenDoPEHandlerComponents {
 			AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(
 					getNewPartName("/chunk", ".docx", srcPackage
 							.getMainDocumentPart().getRelationshipsPart()));
-			afiPart.setBinaryData(OpenDoPEHandler.getDocxFetcher().getDocxFromIRI(iri));
+			afiPart.setBinaryData(getDocxFetcher().getDocxFromIRI(iri));
 
 			afiPart.setContentType(new ContentType(
 					"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")); // docx
@@ -375,6 +559,10 @@ public class OpenDoPEHandlerComponents {
 			CTAltChunk ac = Context.getWmlObjectFactory()
 					.createCTAltChunk();
 			ac.setId(altChunkRel.getId());
+			
+			altChunkXPathContexts.put(altChunkRel.getId(), xpathId);
+			
+			System.out.println("Using altChunkRel " + altChunkRel.getId() + " and " + xpathId);
 
 //			replacements.put(index, ac);
 			List<Object> newContent = new ArrayList<Object>();

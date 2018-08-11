@@ -21,11 +21,9 @@ package org.docx4j.model.datastorage;
 
 import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,33 +41,25 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
-import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.w15.CTSdtRepeatedSection;
-import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTLock;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Id;
 import org.docx4j.wml.P;
-import org.docx4j.wml.PPr;
 import org.docx4j.wml.SdtContent;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
-import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
@@ -95,8 +85,6 @@ public class OpenDoPEHandler {
 			throws Docx4JException {
 
 		this.wordMLPackage = wordMLPackage;
-		
-		
 
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 			log.info("OpenDoPE XPaths part missing (ok if you are just processing w15 repeatingSection)");
@@ -120,6 +108,7 @@ public class OpenDoPEHandler {
 			}
 			
 		}
+		
 		if (wordMLPackage.getMainDocumentPart().getConditionsPart() != null) {
 			org.opendope.conditions.Conditions conditions = wordMLPackage.getMainDocumentPart()
 					.getConditionsPart().getJaxbElement();
@@ -135,6 +124,7 @@ public class OpenDoPEHandler {
 				}
 			}
 		}
+		
 		if (wordMLPackage.getMainDocumentPart().getComponentsPart() != null) {
 			components = wordMLPackage.getMainDocumentPart()
 					.getComponentsPart().getJaxbElement();
@@ -239,6 +229,7 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
 	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
+	public final static String BINDING_ROLE_COMPONENT_CONTEXT = "od:context";
 
 	public final static String BINDING_CONTENTTYPE = "od:ContentType";
 	public final static String BINDING_HANDLER = "od:Handler";
@@ -322,37 +313,16 @@ public class OpenDoPEHandler {
 	 */
 	public WordprocessingMLPackage preprocess() throws Docx4JException {
 		
-		OpenDoPEHandlerComponents componentsHandler =
-				new OpenDoPEHandlerComponents(components, xpathsMap, conditionsMap);
-
-		do {
-			// A component can apply in both the main document part,
-			// and in headers/footers. See further
-			// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
-			// A component added to the
-			// main document part could add new headers/footers.
-			// So we need to work out what parts to preprocess
-			// here inside this do loop.
-			Set<ContentAccessor> partList = getParts(wordMLPackage);
-
-			// Process repeats and conditionals.
-			try {
-				for (ContentAccessor part : partList) {
-					new TraversalUtil(part, shallowTraversor);
-				}
-			} catch (InputIntegrityException iie) { // RuntimeException
-				throw new Docx4JException(iie.getMessage(), iie);
-			}
-
-			// Convert any sdt with <w:tag w:val="od:component=comp1"/>
-			// to altChunk, and for MergeDocx users, to
-			// real WordML.
+		Set<ContentAccessor> partList = getParts(wordMLPackage);
+			
+		// Process repeats and conditionals.
+		try {
 			for (ContentAccessor part : partList) {
-				wordMLPackage = componentsHandler.fetchComponents(wordMLPackage, part);
+				new TraversalUtil(part, shallowTraversor);
 			}
-
-		} while (componentsHandler.justGotAComponent);
-		// ie repeat the whole process if you got a component
+		} catch (InputIntegrityException iie) { // RuntimeException
+			throw new Docx4JException(iie.getMessage(), iie);
+		}
 		
 		// Write our maps back to their parts
 		// XPaths
@@ -373,17 +343,6 @@ public class OpenDoPEHandler {
 		log.debug("conditions in total: " + this.conditionTimingTotal/1000);  // in seconds
 
 		return wordMLPackage;
-	}
-
-
-	private static DocxFetcher docxFetcher;
-
-	public static DocxFetcher getDocxFetcher() {
-		return docxFetcher;
-	}
-
-	public static void setDocxFetcher(DocxFetcher docxFetcher) {
-		OpenDoPEHandler.docxFetcher = docxFetcher;
 	}
 
 	protected static Set<ContentAccessor> getParts(WordprocessingMLPackage srcPackage) {
@@ -514,7 +473,7 @@ public class OpenDoPEHandler {
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
 			List<Object> children = getChildren(parentUnwrapped);
 			if (children == null) {
-				log.debug("no children: " + parentUnwrapped.getClass().getName());
+//				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
 			} else {
 				for (Object o : children) {
