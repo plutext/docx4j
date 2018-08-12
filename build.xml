@@ -16,9 +16,7 @@
 	
 	<property name="m2Repository" value="../../.m2/repository"/>	
 	
-    <!--.NET properties 
-    <property name="ikvm.dir" value="/Java/ikvm/ikvm-7.3.4830.0"/>
-    -->
+    <!--.NET properties -->
     <property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
     <property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 	
@@ -473,12 +471,7 @@
 		<exec executable="${ikvmc}">
             <arg value="-out:${dist}/docx4j.dll" />
             <arg value="-keyfile:Plutext.snk" />
-            <arg value="-version:${version}.81" /> <!--  must be of the form a.b.c.d -->
-            <!--
-            	.1 is last IKVM 7.3.4830.0
-                .5 uses IKVM 8.1.5717.0, fixes canonicalisation problem
-            
-            -->
+            <arg value="-version:${version}.84" /> <!--  must be of the form a.b.c.d -->
             <arg value="-reference:dll/slf4j-api.dll" />            
             <!-- 
             <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
