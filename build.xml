@@ -462,10 +462,12 @@
 	    	<path refid="FOP-stuff.classpath"/>
 	    	 -->      
 	    	<!--   	        
-	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
-			 -->
 			<pathelement location="${dist}/docx4j-${version}.jar" />
-	    </path>
+      
+      Use mvn docx4j build, since it is this which injects the version number.
+			 -->
+        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>
+      </path>
         <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
                  
 		<exec executable="${ikvmc}">
