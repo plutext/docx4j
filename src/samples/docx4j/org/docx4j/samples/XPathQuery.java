@@ -5,6 +5,7 @@ import java.util.List;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class XPathQuery {
 
@@ -23,14 +24,16 @@ public class XPathQuery {
 	 * passing true into getJAXBNodesViaXPath. Updating it again 
 	 * (with current JAXB 2.1.x or 2.2.x) will cause an error.
 	 * 
-	 * 2. For some objects,JAXB can’t get parent (with getParent)
-	 * 
-	 * 3. For some document, JAXB can’t set up the XPath at all!
+	 * 2. For some documents, JAXB can’t set up the XPath at all!
 	 * 
 	 * If these problems affect you, you could try using
 	 * MOXy as your JAXB implementation (which docx4j supports
-	 * as from forthcoming docx4j 3.0).  See 
+	 * as from docx4j 3.0).  See 
 	 * http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html
+	 * 
+	 * In you want to delete the object you've found, bear in mind
+	 * it may be wrapped in a JAXBElement. 
+	 * Do it as explained at https://stackoverflow.com/a/52134975/1031689
 	 * 
 	 * Alternatively, the tried and tested approach is
 	 * to use TraversalUtil;
@@ -51,13 +54,13 @@ public class XPathQuery {
 		
 		System.out.println("got " + list.size() + " matching " + xpath );
 		
+		int i=1;
 		for (Object o : list) {
 			
-			//System.out.println(o.getClass().getName() );
+			System.out.println("\n " + i + ":" + o.getClass().getName() );
 			
 			Object o2 = XmlUtils.unwrap(o);
-			// this is ok, provided the results of the Callback
-			// won't be marshalled			
+			System.out.println("with parent:" + ((Child)o2).getParent().getClass().getName() );
 			
 			if (o2 instanceof org.docx4j.wml.Text) {
 				
@@ -65,17 +68,12 @@ public class XPathQuery {
 				
 				System.out.println( txt.getValue() );
 				
-				// Demonstrate the getParent bug
-				//Object parent = txt.getParent();			
-				//System.out.println( "parent: " +  XmlUtils.unwrap(parent).getClass().getName() );
 			} else {
 				System.out.println( XmlUtils.marshaltoString(o, true, true));
 			}
-
 			
-			
+			i++;
 		}
-						
 	}
 	
 		
