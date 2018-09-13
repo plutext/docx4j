@@ -143,13 +143,13 @@ public class UnitsOfMeasurement {
 	private static String getHex(float f) {
 		
 		int i = Math.round(f);
+		String hexValue = Integer.toHexString(i);
 		
-		if (i<=16) {
+		if (i < 16) {
 			// Pad so we have 2 digits
-			return "0" + Integer.toHexString( i );
-		} else {
-			return Integer.toHexString( i );
+			return "0" + hexValue;
 		}
+		return hexValue;
 	}
 
 	/**

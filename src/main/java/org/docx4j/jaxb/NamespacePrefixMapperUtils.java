@@ -58,6 +58,12 @@ public class NamespacePrefixMapperUtils {
 		// will be true soon..
 		haveTried = true;
 		
+		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+			// since 6.1.0
+			log.info("Using MOXy NamespacePrefixMapper");
+			prefixMapper = new NamespacePrefixMapperMOXy();
+			return prefixMapper;
+		}
 		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
@@ -215,7 +221,13 @@ public class NamespacePrefixMapperUtils {
 		log.debug("attempting to setProperty on marshaller " + marshaller.getClass().getName() );
 		
 		try {
-			if ( namespacePrefixMapper.getClass().getName().equals(
+			if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+				
+				marshaller.setProperty("eclipselink.namespace-prefix-mapper", 
+						namespacePrefixMapper ); 				
+				log.debug("setProperty: eclipselink.namespace-prefix-mapper");
+			
+			} else if ( namespacePrefixMapper.getClass().getName().equals(
 						"org.docx4j.jaxb.NamespacePrefixMapper")
 					|| namespacePrefixMapper.getClass().getName().equals(
 							"org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart") ) {
@@ -243,7 +255,6 @@ public class NamespacePrefixMapperUtils {
 			throw e;
 			
 		}
-		
 	}
 	
 	public static String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) throws JAXBException {
