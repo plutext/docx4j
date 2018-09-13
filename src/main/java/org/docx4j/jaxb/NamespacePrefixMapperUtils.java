@@ -142,6 +142,14 @@ public class NamespacePrefixMapperUtils {
 	public static Object getPrefixMapperRelationshipsPart() throws JAXBException {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
+
+		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+			// since 6.1.0
+			log.info("Using MOXy NamespacePrefixMapper");
+			prefixMapperRels = new NamespacePrefixMapperRelationshipsPartMOXy();
+			return prefixMapperRels;
+		}
+
 		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
