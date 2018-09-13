@@ -104,7 +104,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			throws InvalidFormatException {
 		
 		super(new PartName(PartName.getRelationshipsPartName(
-				new String(sourceP.getPartName().getName() ))) ); // though we won't be using that, since it is dynamic
+				sourceP.getPartName().getName() )) ); // though we won't be using that, since it is dynamic
 		
 		this.sourceP = sourceP;
 		init();
@@ -500,13 +500,13 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 				// it is not enough to be unique in just the rp (eg media parts)
 
-				String proposedName = new String(part.getPartName().getName());
+				String proposedName = part.getPartName().getName();
 				log.debug("Detected duplicate partname: " + proposedName );
 				if (proposedName.indexOf(".")>0) {
 					// TODO: strip trailing numerals off prefix
 					// eg footer1 should become footer
 					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf(".")), 
-							"." + new String(part.getPartName().getExtension()), 
+							"." + part.getPartName().getExtension(), 
 							this.getPackage().getParts().getParts() );				
 				} else {
 					newPartName = getNewPartName( proposedName, 
