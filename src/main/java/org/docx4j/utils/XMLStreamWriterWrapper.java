@@ -1,19 +1,12 @@
 package org.docx4j.utils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Stack;
-import java.util.StringTokenizer;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 
 /**
  * This wrapper drops xmlns="" since OpenXML specifies
@@ -26,119 +19,53 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 	
 	protected static Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapper.class);
 	
-	public XMLStreamWriterWrapper(JaxbXmlPart part, XMLStreamWriter underlying) {
-		this.part = part;
-		this.underlying = underlying;
-		
-//		log.debug(
-//				underlying.getProperty(name)
-	}
 
-	public void setIgnorableNamespaces(String mcIgnorable) {
-		this.mcIgnorable = mcIgnorable;
-	}
-	
 	XMLStreamWriter underlying;
 	JaxbXmlPart part;
 	
-	String mcIgnorable;	
-	private HashSet<String> topLevelPrefixesWritten = new HashSet<String>(); 
-    
-    // Kohsuke's
-    private final static Object SEEN_NOTHING = new Object();
-    private final static Object SEEN_ELEMENT = new Object();
-    private final static Object SEEN_DATA = new Object();
-
-    private Object state = SEEN_NOTHING;
-    private Stack<Object> stateStack = new Stack<Object>();
-    
-    
-    public void indent() throws XMLStreamException {
-    	// overridden in subclass
-    }
-    
-    protected int depth = 0;
-    
-    protected void onStartElement() throws XMLStreamException {
-    	stateStack.push(SEEN_ELEMENT);
-        state = SEEN_NOTHING;
-        indent();
-        depth++;
-    }    
-    
-    protected void onEmptyElement() throws XMLStreamException {
-        state = SEEN_ELEMENT;    	
-        indent();
-        // don't increment depth
-    }    
-
-    protected void onEndElement() throws XMLStreamException {
-        depth--;
-        if (state == SEEN_ELEMENT) {
-            indent();
-        }
-        state = stateStack.pop();
-    }    
-	
-	
+	public XMLStreamWriterWrapper(JaxbXmlPart part, XMLStreamWriter underlying) {
+		this.part = part;
+		this.underlying = underlying;
+	}
 	
 	@Override
-	public void writeStartElement(String localName) throws XMLStreamException {		
-		
-		onStartElement();
+	public void writeStartElement(String localName) throws XMLStreamException {
 		underlying.writeStartElement(localName);
 		
-		if (depth==1) { 
-			declareIgnorableNamespaces();
-		}
 	}
 
 	@Override
 	public void writeStartElement(String namespaceURI, String localName) throws XMLStreamException {
-
-		onStartElement();
 		underlying.writeStartElement(namespaceURI, localName);
 		
-		if (depth==1) { 
-			declareIgnorableNamespaces();
-		}
 	}
 
 	@Override
 	public void writeStartElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-
-		onStartElement();
 		underlying.writeStartElement(prefix, localName, namespaceURI);
-
-		if (depth==1) { 
-			declareIgnorableNamespaces();
-		}
+		
 	}
 
 	@Override
 	public void writeEmptyElement(String namespaceURI, String localName) throws XMLStreamException {
-		onEmptyElement();
 		underlying.writeEmptyElement(namespaceURI, localName);
 		
 	}
 
 	@Override
 	public void writeEmptyElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
-		onEmptyElement();
 		underlying.writeEmptyElement(prefix, localName, namespaceURI);
 		
 	}
 
 	@Override
 	public void writeEmptyElement(String localName) throws XMLStreamException {
-		onEmptyElement();
 		underlying.writeEmptyElement(localName);
 		
 	}
 
 	@Override
 	public void writeEndElement() throws XMLStreamException {
-		onEndElement();
 		underlying.writeEndElement();
 		
 	}
@@ -180,33 +107,6 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 		
 	}
 
-	/**
-	 * Write namespaces Word needs at top level to open documents
-	 * which use mc.  Added especially for MOXy case.
-	 * 
-	 * @throws XMLStreamException
-	 * @since 6.1.0
-	 */
-	private void declareIgnorableNamespaces() throws XMLStreamException {
-		
-		if (mcIgnorable==null) return;
-		
-		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
-		while (st.hasMoreTokens()) {
-			String prefix = (String) st.nextToken();
-			
-			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
-			
-			if (uri==null) {
-				log.warn("No mapping for prefix '" + prefix + "'");
-			} else {
-				writeNamespace(prefix, uri);
-				topLevelPrefixesWritten.add(prefix);
-			}
-		}
-		
-	}
-	
 	@Override
 	public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
 		if (namespaceURI==null) {
@@ -219,14 +119,7 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 			if (log.isDebugEnabled()) {
 				log.debug("Writing {}={}", prefix, namespaceURI);
 			}
-			
-			if (// depth==1 &&
-					topLevelPrefixesWritten.contains(prefix)) {
-				// already wrote this.
-			} else {
-				// usual case
-				underlying.writeNamespace(prefix, namespaceURI);
-			}
+			underlying.writeNamespace(prefix, namespaceURI);
 		}
 	}
 
