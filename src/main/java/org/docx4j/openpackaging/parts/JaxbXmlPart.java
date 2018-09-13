@@ -71,6 +71,7 @@ import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.utils.XMLStreamWriterWrapper;
+import org.docx4j.utils.XMLStreamWriterWrapperIndenting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -827,14 +828,39 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		IOUtils.write(bytes, os);
 	    		
 	    	} else {
+	    		
 	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
 	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os, "UTF-8");
 	            
 	            // get rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl writes
-	            XMLStreamWriterWrapper xsww = new XMLStreamWriterWrapper(this, xsw);
+	            XMLStreamWriterWrapper xsww = null;
+				if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
+					xsww = new XMLStreamWriterWrapperIndenting(this, xsw); 
+				} else {
+					xsww = new XMLStreamWriterWrapper(this, xsw); 
+				}
 
 	            marshaller.setListener(new Docx4jMarshallerListener(xsww));
+	            
+	    		// Word requires certain namespaces to be written at the document level;
+	            // these are the ones used in the top level ignorable attribute, plus any
+	            // used in attribute values in the mc elements themselves.
+	            // The JAXB reference implementation does this (courtesy of namespacePrefixMapper
+	            // or automatically??), but MOXy needs some help:-
+	            
+		    	String mceIgnorable = "";
+		    	if (this.getMceIgnorable()!=null) {
+		    		mceIgnorable = this.getMceIgnorable();
+		    	} 
+				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(mceIgnorable + getMcChoiceNamespaces());
+	            // If necessary, we could do it in our streamwriter; there is some 
+	            // code in git history to do that 
+//	    		xsww.setIgnorableNamespaces(mceIgnorable + getMcChoiceNamespaces());
+	            
 	            marshaller.marshal(jaxbElement, xsww);
+	            	// JAXB sends empty elements as start, end :-(
+	            	// for a way around this, see https://stackoverflow.com/questions/27158723/write-empty-tag-with-jaxb-and-xmlstreamwriter
+	            
 	            xsww.close();
 	            xsw.close();
 	    		
