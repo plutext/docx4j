@@ -12,7 +12,17 @@ public class XPathFactoryUtil {
 	
 	private static XPathFactory xPathFactory;
 	
-    private static final String DTM_MANAGER_PROP_NAME = "org.apache.xml.dtm.DTMManager";  
+    /**
+     * org.apache.xpath.jaxp.XPathFactoryImpl is recommended. Use something else at your own risk!
+     * @param xPathFactory
+     * @since 6.1.0
+     */
+    public static void setxPathFactory(XPathFactory xPathFactory) {
+		XPathFactoryUtil.xPathFactory = xPathFactory;
+        log.info("xpath implementation: " + XPathFactoryUtil.xPathFactory.getClass().getName());
+	}
+
+	private static final String DTM_MANAGER_PROP_NAME = "org.apache.xml.dtm.DTMManager";  
     private static final String DTM_MANAGER_CLASS_NAME = "org.apache.xml.dtm.ref.DTMManagerDefault";  	
 	
 	public static synchronized XPathFactory getXPathFactory() {
