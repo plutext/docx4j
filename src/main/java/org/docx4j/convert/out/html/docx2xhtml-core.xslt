@@ -672,6 +672,14 @@
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
 	<xsl:template match="mc:AlternateContent" >
+		<xsl:variable name="info" 
+			select="concat('mc:AlternateContent selecting Fallback ie ignoring mc:Choice Requires ', 
+					mc:Choice/@Requires, 
+					' containing ', 
+					local-name(mc:Choice/*[1]))"/>
+		<xsl:variable name="dummy"
+			select="java:org.docx4j.convert.out.common.XsltCommonFunctions.logInfo($conversionContext, 
+			$info)" />
 		<xsl:apply-templates select="mc:Fallback/*" />
 	</xsl:template>
 
