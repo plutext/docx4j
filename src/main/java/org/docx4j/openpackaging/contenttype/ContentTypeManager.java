@@ -255,9 +255,11 @@ public class ContentTypeManager  {
 		while (i.hasNext()) {
 			Map.Entry e = (Map.Entry)i.next();
 			if (e != null) {
-				log.debug("Inspecting " + e.getValue());
+				if (log.isDebugEnabled()) {
+					log.debug("Inspecting " + e.getValue());
+				}
 				if ( ((CTOverride)e.getValue()).getContentType().equals(contentType) ) {
-					log.debug("Matched!");
+//					log.debug("Matched!");
 					return (URI)e.getKey(); 
 				}
 			} 
@@ -275,21 +277,25 @@ public class ContentTypeManager  {
 		// look for an override
 		CTOverride overrideCT = (CTOverride) overrideContentType.get(new URI(partName));
 		if (overrideCT!=null ) {
-			String contentType = overrideCT.getContentType(); 
-			log.debug("Found content type '" + contentType + "' for " + partName);
+			String contentType = new String(overrideCT.getContentType()); 
+			if (log.isDebugEnabled()) {
+				log.debug("Found content type '" + contentType + "' for " + partName);
+			}
 			 p = newPartForContentType(contentType, partName, rel);
 			 p.setContentType( new ContentType(contentType) );
 			 return p;
 		}		
 		
 		// if there is no override, get use the file extension
-		String ext = partName.substring(partName.indexOf(".") + 1).toLowerCase();
+		String ext = new String(partName.substring(partName.indexOf(".") + 1).toLowerCase());
 		log.debug("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
 		if (defaultCT!=null ) {
 			String contentType = defaultCT.getContentType();
-			log.debug("Found content type '" + contentType + "' for "
-							+ partName);
+			if (log.isDebugEnabled()) {			
+				log.debug("Found content type '" + contentType + "' for "
+								+ partName);
+			}
 			p = newPartForContentType(contentType, partName, rel);
 			p.setContentType(new ContentType(contentType));
 			return p;
