@@ -20,10 +20,12 @@
 package org.docx4j.openpackaging.parts;
 
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +70,8 @@ import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOuputStream;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.utils.XMLStreamWriterWrapper;
@@ -772,6 +776,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //			}
 	    	setMceIgnorable( (McIgnorableNamespaceDeclarator) namespacePrefixMapper);
 	    	
+	    	String mceIgnorable = "";
+	    	if (this.getMceIgnorable()!=null) {
+	    		mceIgnorable = this.getMceIgnorable();
+	    	}
 	    	
 			if (Docx4jProperties.getProperty("docx4j.jaxb.marshal.canonicalize", false)) {
 				
@@ -782,10 +790,6 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		Document doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, jc); // NB that code trims namespaces
 
 	    		// Now, we need to add back in the mcIgnorable ones
-		    	String mceIgnorable = "";
-		    	if (this.getMceIgnorable()!=null) {
-		    		mceIgnorable = this.getMceIgnorable();
-		    	}
 	    		NamespacePrefixMapperUtils.declareNamespaces(mceIgnorable + getMcChoiceNamespaces(), doc);
 	    		/* that generalises the following:
 	    		if (this.getMceIgnorable().contains("w15")) {
@@ -827,44 +831,90 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		
 	    		IOUtils.write(bytes, os);
 	    		
+	    	} else if (!Docx4jProperties.getProperty(
+	    			"docx4j.openpackaging.parts.JaxbXmlPart.MarshalToOutputStreamViaXMLStreamWriter", false)){
+	    		// The default (except in v6.0.x)
+	    		log.debug("Marshalling to " + os.getClass().getName());
+	    		
+				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(
+						mceIgnorable + getMcChoiceNamespaces());  
+				
+				if (this instanceof MainDocumentPart) {
+					
+					OutputStream filteredOS;
+					
+//					if (os instanceof org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream) {
+						
+						BufferedOutputStream buffered = new BufferedOutputStream(os);
+						
+						filteredOS = 
+								new MainDocumentPartFilterOuputStream(
+										buffered, 
+										this.getPackage().isNew()); // BufferedOutputStream helps a lot here
+						
+						marshaller.marshal(jaxbElement, filteredOS);
+						
+						buffered.flush(); // Critical for Sun/Oracle JAXB in 1.8.0_181, otherwise there is content loss at the end of the part 
+						
+//					} else {
+//						filteredOS = new MainDocumentPartFilterOuputStream(os, this.getPackage().isNew());
+//							// Avoid BufferedOutputStream, especially where Sun/Oracle JAXB is writing to a ByteArrayOutputStream
+//							// which can prevent content from appearing
+//						marshaller.marshal(jaxbElement, filteredOS);
+//					}
+					
+					
+				} else {
+					// no huge need for BufferedOutputStream; MOXy may be a little faster; Sun/Oracle a little slower
+					// Would require further testing
+//					BufferedOutputStream buffered = new BufferedOutputStream(os);
+//					marshaller.marshal(jaxbElement, buffered); 
+//					buffered.flush();
+					
+					marshaller.marshal(jaxbElement, os); 
+					
+				}
+	    		
 	    	} else {
+	    		// Typically unused in v6.1.0
+	    		log.debug("MarshalToOutputStreamViaXMLStreamWriter set; " + os.getClass().getName());
+
+	    		// Possible extension point: let user use their own XMLStreamWriter	    		
 	    		
 	    		XMLOutputFactory xof = XMLOutputFactory.newFactory();
 	            XMLStreamWriter xsw = xof.createXMLStreamWriter(os, "UTF-8");
 	            
 	            // get rid of xmlns="" which com.sun.xml.internal.stream.writers.XMLStreamWriterImpl writes
 	            XMLStreamWriterWrapper xsww = null;
+	            
+	            // An XMLStreamWriter is normally unable to produce empty elements,
+	            // but ours do.
 				if (Docx4jProperties.getProperty("docx4j.jaxb.formatted.output", true)) {
 					xsww = new XMLStreamWriterWrapperIndenting(this, xsw); 
 				} else {
 					xsww = new XMLStreamWriterWrapper(this, xsw); 
 				}
+				// It would also be possible to give user the choice between using
+				// empty-element (aka self-closing) tags or not, but there has
+				// been no demand for HTML style no empty-elements
 
-	            marshaller.setListener(new Docx4jMarshallerListener(xsww));
+	            marshaller.setListener(new Docx4jMarshallerListener(xsww, this.getPackage().isNew()));
 	            
 	    		// Word requires certain namespaces to be written at the document level;
 	            // these are the ones used in the top level ignorable attribute, plus any
 	            // used in attribute values in the mc elements themselves.
-	            // The JAXB reference implementation does this (courtesy of namespacePrefixMapper
-	            // or automatically??), but MOXy needs some help:-
+	            // JAXB reference implementation and MOXy do this
+	            // with namespace handler's getPreDeclaredNamespaceUris 
 	            
-		    	String mceIgnorable = "";
-		    	if (this.getMceIgnorable()!=null) {
-		    		mceIgnorable = this.getMceIgnorable();
-		    	} 
 				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(mceIgnorable + getMcChoiceNamespaces());
 	            // If necessary, we could do it in our streamwriter; there is some 
 	            // code in git history to do that 
 //	    		xsww.setIgnorableNamespaces(mceIgnorable + getMcChoiceNamespaces());
 	            
 	            marshaller.marshal(jaxbElement, xsww);
-	            	// JAXB sends empty elements as start, end :-(
-	            	// for a way around this, see https://stackoverflow.com/questions/27158723/write-empty-tag-with-jaxb-and-xmlstreamwriter
 	            
 	            xsww.close();
 	            xsw.close();
-	    		
-//	    		marshaller.marshal(jaxbElement, os);
 	    	}
 	    	
 			// Now unset it - prob not nec
