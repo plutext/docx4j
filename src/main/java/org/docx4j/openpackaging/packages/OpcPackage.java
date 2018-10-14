@@ -225,6 +225,20 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	
 	protected DocPropsCustomPart docPropsCustomPart;
 	
+	
+	boolean isNew = true;	
+	/**
+	 * Was this pkg created from scratch in docx4j, or loaded?
+	 * @return
+	 */
+	public boolean isNew() {
+		return isNew;
+	}
+
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
+	}
+
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
 	 * or PresentationMLPackage
@@ -462,7 +476,6 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * @Since 6.0.0           
 	 */
 	public static OpcPackage load(final File file, Filetype type, String password) throws Docx4JException {
-
 		PackageIdentifier pkgIdentifier = new PackageIdentifierTransient(file.getName());
 		
 		if (type.equals(Filetype.ZippedPackage)){
@@ -474,6 +487,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			final ZipPartStore partLoader = new ZipPartStore(file);
 			final Load3 loader = new Load3(partLoader);
 			OpcPackage opcPackage = loader.get();
+			
+			opcPackage.setNew(false);
 			
 			if (pkgIdentifier!=null) {
 				opcPackage.setName(pkgIdentifier.name());
@@ -521,6 +536,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			final ZipPartStore partLoader = new ZipPartStore(is);
 			final Load3 loader = new Load3(partLoader);
 			OpcPackage opcPackage = loader.get();
+
+			opcPackage.setNew(false);
 			
 			if (pkgIdentifier!=null) {
 				opcPackage.setName(pkgIdentifier.name());
@@ -575,6 +592,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				final ZipPartStore partLoader = new ZipPartStore(is2);
 				final Load3 loader = new Load3(partLoader);
 				OpcPackage opcPackage = loader.get();
+
+				opcPackage.setNew(false);
 				
 				if (pkgIdentifier!=null) {
 					opcPackage.setName(pkgIdentifier.name());

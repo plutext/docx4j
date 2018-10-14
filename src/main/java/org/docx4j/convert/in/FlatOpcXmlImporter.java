@@ -214,6 +214,8 @@ public class FlatOpcXmlImporter  {
 		
 		Load.registerCustomXmlDataStorageParts(packageResult);
 		 
+		packageResult.setNew(false);
+		
 		 return packageResult;
 		
 	}
