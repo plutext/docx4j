@@ -37,6 +37,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.docx4j.Docx4jProperties;
+import org.docx4j.Version;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.CoreProperties;
@@ -214,14 +215,17 @@ public class SaveToZipFile {
 						CoreProperties cp = ((DocPropsCorePart)part).getJaxbElement();
 						
 						// Only set creator if not already present
-						String creator= Docx4jProperties.getProperties().getProperty("docx4j.dc.creator.value", "docx4j");
-						if (cp.getCreator()==null) {
+						String creator= Docx4jProperties.getProperties().getProperty("docx4j.dc.creator.value", 
+								"docx4j " + Version.getDocx4jVersion());
+						if (cp.getCreator()==null
+								&& part.getPackage().isNew() ) {
 							org.docx4j.docProps.core.dc.elements.ObjectFactory of = new org.docx4j.docProps.core.dc.elements.ObjectFactory(); 
 							cp.setCreator(of.createSimpleLiteral() );
 							cp.getCreator().getContent().add(creator);
 						} 
 						
-						String modifier= Docx4jProperties.getProperties().getProperty("docx4j.dc.lastModifiedBy.value", "docx4j");
+						String modifier= Docx4jProperties.getProperties().getProperty(
+								"docx4j.dc.lastModifiedBy.value", "docx4j " + Version.getDocx4jVersion());
 						cp.setLastModifiedBy(modifier);
 					}
 				}				
@@ -231,13 +235,19 @@ public class SaveToZipFile {
 					if (appWrite) {
 						Properties cp = ((DocPropsExtendedPart)part).getJaxbElement();
 						
-						cp.setApplication( 
-								Docx4jProperties.getProperties().getProperty("docx4j.Application", "docx4j")
-								);
-						
-						String version = Docx4jProperties.getProperties().getProperty("docx4j.AppVersion");
-						if ( version!=null ) {
-							cp.setAppVersion(version);
+						// Only set if not already present (v6.1.0)
+						if (cp.getApplication()==null) {
+							cp.setApplication( 
+									Docx4jProperties.getProperties().getProperty("docx4j.Application", "docx4j")
+									);
+							
+							// of the form XX.YYYY where X and Y represent numerical values
+							// Since -SNAPSHOT will cause Word 2010 x64 to treat the docx as corrupt! 
+							// we retain docx4j.AppVersion, instead of using Version.getDocx4jVersion()
+							String version = Docx4jProperties.getProperties().getProperty("docx4j.AppVersion");
+							if ( version!=null ) {
+								cp.setAppVersion(version);
+							}
 						}
 						
 					}
