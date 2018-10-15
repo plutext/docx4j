@@ -20,6 +20,7 @@
 package org.docx4j.samples;
 
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.samples.AbstractSample;
@@ -40,13 +41,18 @@ public class TocUpdateDemo  {
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         
 
-        TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
-        	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
-        	// and point to that in docx4j.properties
         
+        
+        TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
+
+        // If you want to automatically fix any broken bookmarks
+        Docx4jProperties.setProperty("docx4j.toc.BookmarksIntegrity.remediate", true);
         
 //        	Toc.setTocHeadingText("Sumário");
-        tocGenerator.updateToc( false); // true --> skip page numbering
+        	tocGenerator.updateToc(); // including page numbers 
+        	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
+        	// from https://converter-eval.plutext.com/ and point to that in docx4j.properties
+        	// (or try docx4j-export-fo)
 	        
 	        wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TocUpdateDemo.docx") );
         
