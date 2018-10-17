@@ -1598,7 +1598,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			NodeIterator sdtPrNodeIt,
 			String sdtParent,
 			String contentChild) {
-
+		
 		SdtPr sdtPr = null;
 		Node sdtPrNode = sdtPrNodeIt.nextNode();
 		if (sdtPrNode==null) {
@@ -1611,6 +1611,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				log.error(e.getMessage(), e);
 			}
 		}
+
+    	RPr sdtRPr = null;
+	    Object sdtRPrObj = sdtPr.getByClass(RPr.class); 
+	    if (sdtRPrObj!=null) {
+	    	sdtRPr = (RPr)sdtRPrObj;
+	    }
 		
 		/*
 	        <w14:checkbox>
@@ -1663,13 +1669,20 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			
 			org.docx4j.wml.R  run = factory.createR();					
 			RPr rpr = factory.createRPr(); 
+		    run.setRPr(rpr);
+
 		    RFonts rfonts = factory.createRFonts(); 
 		    rpr.setRFonts(rfonts); 
 		        rfonts.setEastAsia( "MS Gothic"); 
 		        rfonts.setHint(org.docx4j.wml.STHint.EAST_ASIA);
 		        rfonts.setHAnsi( "MS Gothic"); 
 		        rfonts.setAscii( "MS Gothic");	
-		    run.setRPr(rpr);
+		    
+		    if (sdtRPr!=null) {
+		    	// Preserve checkbox font size
+		    	 if (sdtRPr.getSz()!=null) rpr.setSz(sdtRPr.getSz());
+		    	 if (sdtRPr.getSzCs()!=null) rpr.setSzCs(sdtRPr.getSzCs());
+		    }
 		    
 		    run.getContent().add(text);
 			
