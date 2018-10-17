@@ -192,19 +192,36 @@
 		     	</xsl:if>
 			     
 			     <w:sdtContent>
-			     	
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14Checkbox(
+					<xsl:choose>
+						<xsl:when test="w:sdtContent/w:tc">
+							<w:tc>
+								<xsl:if test="w:sdtContent/w:tc/w:tcPr">
+									<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+								</xsl:if>
+								<!-- xsl:copy-of select="w:sdtContent/w:tc/w:p" /-->
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14Checkbox(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												w:sdtPr,
+												'tc',
+												$child)" />
+							</w:tc>
+						</xsl:when>
+						<xsl:otherwise>
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.w14Checkbox(
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
 												w:sdtPr,
 												$parent,
 												$child)" />
+						</xsl:otherwise>
+					</xsl:choose>			     
 			     </w:sdtContent>
-			     
 			</xsl:copy>    			
-
 		</xsl:when>  		
 
   		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
