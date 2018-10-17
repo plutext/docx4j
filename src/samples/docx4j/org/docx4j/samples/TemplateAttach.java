@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2018, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,110 +22,55 @@
 package org.docx4j.samples;
 
 import java.io.File;
-import java.net.URI;
 
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.contenttype.CTOverride;
-import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.Docx4J;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.wml.CTRel;
-import org.docx4j.wml.CTSettings;
 
 /**
- * Creates a WordprocessingML document from the template (dotx file),
- * and optionally, attaches that template (for example, instead of Normal.dot)
- * 
- * Be sure to set String templatePath. 
- * 
- * In Flat OPC terms, aim is to produce:
- * 
-  <pkg:part pkg:name="/word/settings.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml">
-    <pkg:xmlData>
-      <w:settings xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main">
-        <w:attachedTemplate r:id="rId1"/>
-      </w:settings>
-    </pkg:xmlData>
-  </pkg:part>
- *   <pkg:part pkg:name="/word/_rels/settings.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml">
-    <pkg:xmlData>
-      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" Target="file:///C:\Users\jharrop\AppData\Roaming\Microsoft\Templates\fabdocx-release-20101002B.dotm" TargetMode="External"/>
-      </Relationships>
-    </pkg:xmlData>
-  </pkg:part>
-
+ *Shows how to creates a WordprocessingML document from a template (dotx file),
+ * and how to attach a template (for example, instead of Normal.dot)
  * 
  * @author Jason Harrop
  */
 public class TemplateAttach extends AbstractSample {
 	
-	static boolean attachTemplate = true; // whether to set w:attachedTemplate
-
 	public static void main(String[] args) throws Exception {
 		
-		String dotx = "C:\\Users\\jharrop\\AppData\\Roaming\\Microsoft\\Templates\\mytemplate.dotx";
-		String templatePath = "file:///" + dotx;
+		String dotxPath = "C:\\Users\\jharrop\\AppData\\Roaming\\Microsoft\\Templates\\mytemplate.dotx";
+		String templatePath = "file:///" + dotxPath;
 		
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/OUT_TemplateAttach.docx";	    	
+	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/Normal.dotm";	    	
 		}
 		
-		boolean save = 
-			(inputfilepath == null ? false : true);
-				
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new File(dotx));
-		// NB: clone here if your use case requires it
+    	String outputfilepath = System.getProperty("user.dir") + "/OUT_TemplateAttach.docx";	    	
 		
-		// Replace dotx content type with docx
-		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
-		
-		// Get <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml"/>
-		CTOverride override = ctm.getOverrideContentType().get(new URI("/word/document.xml")); // note this assumption
-		if (dotx.endsWith("dotm")) // // macro enabled?			
-		{
-			override.setContentType(org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED);  
+		WordprocessingMLPackage docx = null;
+		if (inputfilepath.endsWith(".dotx")
+				|| inputfilepath.endsWith(".dotm") ) {
+			// If its a dotx, make a docx out of it
+			System.out.println("Converting template to docx...");
+			WordprocessingMLPackage dotx = Docx4J.load(new File(inputfilepath));
+			docx = (WordprocessingMLPackage) dotx.cloneAs(ContentTypes.WORDPROCESSINGML_DOCUMENT);
+				// or WORDPROCESSINGML_DOCUMENT_MACROENABLED if you wish
+				// TODO if it was a dotm, you may need to remove the macro parts from the clone
+
+			// The dotx should be unchanged
+			dotx.save(new File(System.getProperty("user.dir") + "/OUT_TemplateAttach_RTT.dotx"));
 		} else {
-			override.setContentType(org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT);  
+			docx = Docx4J.load(new File(inputfilepath));
 		}
 		
-		
-		if (attachTemplate) {
-			// Create settings part, and init content
-			DocumentSettingsPart dsp = new DocumentSettingsPart();
-			CTSettings settings = Context.getWmlObjectFactory().createCTSettings();
-			dsp.setJaxbElement(settings);
-			wordMLPackage.getMainDocumentPart().addTargetPart(dsp);
-			
-			// Create external rel
-			RelationshipsPart rp = RelationshipsPart.createRelationshipsPartForPart(dsp); 		
-			org.docx4j.relationships.Relationship rel = new org.docx4j.relationships.ObjectFactory().createRelationship();
-			rel.setType( Namespaces.ATTACHED_TEMPLATE  );
-			rel.setTarget(templatePath);
-			rel.setTargetMode("External");  		
-			rp.addRelationship(rel); // addRelationship sets the rel's @Id
-			
-			settings.setAttachedTemplate(
-					(CTRel)XmlUtils.unmarshalString("<w:attachedTemplate xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" + rel.getId() + "\"/>", Context.jc, CTRel.class)
-					);
-			 
-			// or (yuck)... 
-	//		CTRel id = new CTRel();
-	//		id.setId( rel.getId() );
-	//		JAXBElement<CTRel> je = new JAXBElement<CTRel>(
-	//				new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "attachedTemplate"), 
-	//				CTRel.class, null, id);
-	//		settings.setAttachedTemplate(je.getValue());
-		}
+		// attach the template.  This example uses the path you've specified, not inputfilepath
+		System.out.println("Attaching template to docx...");
+		docx.attachTemplate(templatePath);
 		
 		// Now save it
-		if (save) {
-			wordMLPackage.save(new java.io.File(inputfilepath) );
+		if (outputfilepath!=null) {
+			docx.save(new java.io.File(outputfilepath) );
 		} 
 	}
 	

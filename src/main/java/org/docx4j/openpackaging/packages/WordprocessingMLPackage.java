@@ -22,7 +22,6 @@ package org.docx4j.openpackaging.packages;
 
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,14 +47,11 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
-import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
@@ -495,7 +491,20 @@ public class WordprocessingMLPackage extends OpcPackage {
 		return wmlPack;
 		
 	}
-
+	
+	/**
+	 * Attach a template to this document.
+	 * This is just an easy way to access the same method in DocumentSettingsPart 
+	 * (which lives under the MainDocumentPart)
+	 * 
+	 * @param templatePath
+	 * @since 6.1.0
+	 */
+	public void attachTemplate(String templatePath) {
+		
+		this.getMainDocumentPart().attachTemplate(templatePath);
+	}
+	
 	
 	@Override
 	protected void finalize() throws Throwable {

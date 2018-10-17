@@ -76,6 +76,7 @@ import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLTemplatePackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -641,17 +642,32 @@ public class ContentTypeManager  {
 		defaultContentType.put(extension.toLowerCase(), defaultCT);
 	}
 	
+	/**
+	 * @param partName
+	 * @param contentType
+	 * @since 6.1.0
+	 */
+	public void addOverrideContentType(PartName partName, String contentType) {
+		
+		CTOverride defaultCT = ctFactory.createCTOverride();
+		defaultCT.setPartName(partName.getName());
+		defaultCT.setContentType(contentType);
+		
+		overrideContentType.put(partName.getURI(), defaultCT);
+	}
 
 	/**
 	 * Delete a content type based on the specified part name. If the specified
-	 * part name is register with an override content type, then this content
-	 * type is remove, else the content type is remove in the default content
-	 * type list if it exists.
+	 * part name is registered with an override content type, then this content
+	 * type is removed, else the content type is removed in the default content
+	 * type list if it exists.  Deprecated since you'd typically NOT want to
+	 * accidentally remove *.xml or *.rels from the default Content type list 
 	 * 
 	 * @param partUri
 	 *            The part URI associated with the override content type to
 	 *            delete.
 	 */
+	@Deprecated
 	public void removeContentType(PartName partName) {
 		if (partName == null)
 			throw new IllegalArgumentException("partName");
@@ -666,6 +682,42 @@ public class ContentTypeManager  {
 		this.defaultContentType.remove(partName.getExtension().toLowerCase());
 	}
 
+	/**
+	 * Delete an override content type based on the specified part name. 
+	 * 
+	 * @param partUri
+	 *            The part URI associated with the override content type to
+	 *            delete.
+	 * @since 6.1.0
+	 */
+	public void removeOverrideContentType(PartName partName) {
+		if (partName == null)
+			throw new IllegalArgumentException("partName");
+		
+		// Override content type
+		if (this.overrideContentType != null
+				&& (this.overrideContentType.get(partName.getURI()) != null)) {
+			this.overrideContentType.remove(partName.getURI());
+			return;
+		}
+	}
+
+	/**
+	 * Delete a default content type based on the specified part name. Note 
+	 * that you'd typically NOT want to remove *.xml or *.rels from the default
+	 * Content type list 
+	 * 
+	 * @param partUri
+	 *            The part URI associated with the override content type to
+	 *            delete.
+	 * @since 6.1.0
+	 */
+	public void removeDefaultContentType(String ext) {
+
+		// Default content type
+		this.defaultContentType.remove(ext.toLowerCase());
+	}
+	
 	/**
 	 * Check if the specified content type is already registered
 	 * as a default content type.  We don't currently have a method
@@ -686,6 +738,26 @@ public class ContentTypeManager  {
 //						&& this.overrideContentType.values().contains(contentType)));
 	}
 
+	/**
+	 * Check if the specified content type is already registered
+	 * as a default content type.  We don't currently have a method
+	 * to check whether its registered as an override content type;
+	 * getContentType(PartName partName) may suffice for that purpose.
+	 * 
+	 * @param contentType
+	 *            The content type to check.
+	 * @return <code>true</code> if the specified content type is already
+	 *         registered, then <code>false</code>.
+	 * @since 6.1.0
+	 */
+	public boolean isOverrideContentTypeRegistered(String contentType) {
+		if (contentType == null)
+			throw new IllegalArgumentException("contentType");
+
+		return (this.overrideContentType != null 
+				&& this.overrideContentType.values().contains(contentType));
+	}
+	
 	/**
 	 * Get the content type for the specified part, if any.
 	 * 
@@ -865,15 +937,23 @@ public class ContentTypeManager  {
 		
 		OpcPackage p;
 		
-		  
 		// Check overrides first
 		if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT) 
-				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)
-				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
-				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)  ) {
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) ) {
+			
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
+			p.setContentType(new ContentType(pkgContentType));			
 			return p;
+			
+		} else if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)  ) {
+			
+			log.info("Detected WordprocessingMLTemplatePackage package ");
+			p = new WordprocessingMLTemplatePackage(this);
+			p.setContentType(new ContentType(pkgContentType));			
+			return p;
+			
 		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED) 
@@ -881,6 +961,7 @@ public class ContentTypeManager  {
 				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
+			p.setContentType(new ContentType(pkgContentType));			
 			return p;
 		} else if (pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK) 
 				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) 
@@ -889,10 +970,12 @@ public class ContentTypeManager  {
 			//  "xlam", "xlsb" ?
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
+			p.setContentType(new ContentType(pkgContentType));			
 			return p;			
 		} else if (pkgContentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
 			log.info("Detected Glox file ");
 			p = new GloxPackage(this);
+			p.setContentType(new ContentType(pkgContentType));			
 			return p;						
 		} 
 				

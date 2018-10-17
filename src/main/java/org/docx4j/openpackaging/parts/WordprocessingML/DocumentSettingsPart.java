@@ -31,6 +31,9 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -38,6 +41,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.org.apache.poi.EncryptedDocumentException;
 import org.docx4j.org.apache.poi.poifs.crypt.CryptoFunctions;
 import org.docx4j.org.apache.poi.poifs.crypt.HashAlgorithm;
@@ -45,6 +49,7 @@ import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTCompat;
 import org.docx4j.wml.CTCompatSetting;
 import org.docx4j.wml.CTDocProtect;
+import org.docx4j.wml.CTRel;
 import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.STAlgClass;
 import org.docx4j.wml.STAlgType;
@@ -480,5 +485,45 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
             this.jaxbElement.setDocumentProtection(documentProtection);
         }
         return this.jaxbElement.getDocumentProtection();
-    }    
+    }
+    
+	/**
+	 * @param templatePath
+	 * @since 6.1.0
+	 */
+	public void attachTemplate(String templatePath) {
+
+    	if (this.getJaxbElement()==null) {
+    		this.jaxbElement=new CTSettings();
+    	}
+    	
+    	RelationshipsPart rp = this.getRelationshipsPart(true);
+
+    	CTRel relId = getJaxbElement().getAttachedTemplate();
+    	if (relId==null) {
+    		relId = Context.getWmlObjectFactory().createCTRel();
+			JAXBElement<CTRel> je = new JAXBElement<CTRel>(
+					new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "attachedTemplate"), 
+					CTRel.class, null, relId);
+			this.getJaxbElement().setAttachedTemplate(je.getValue());
+			
+//			settings.setAttachedTemplate(
+//			(CTRel)XmlUtils.unmarshalString("<w:attachedTemplate xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"" + rel.getId() + "\"/>", Context.jc, CTRel.class)
+//			);
+			
+    	} else {
+    		// removing existing
+    		rp.removeRelationship(rp.getRelationshipByID(relId.getId()));
+    	}
+    				
+		// Create external rel
+		org.docx4j.relationships.Relationship rel = new org.docx4j.relationships.ObjectFactory().createRelationship();
+		rel.setType( Namespaces.ATTACHED_TEMPLATE  );
+		rel.setTarget(templatePath);
+		rel.setTargetMode("External");  		
+		rp.addRelationship(rel); // addRelationship sets the rel's @Id
+			
+		relId.setId(rel.getId());	
+	}
+    
 }

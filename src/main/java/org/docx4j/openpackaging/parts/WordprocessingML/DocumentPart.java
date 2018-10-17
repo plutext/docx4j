@@ -37,6 +37,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.CTSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -189,7 +190,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 		if (documentSettingsPart==null) {
 			if (createIfAbsent) {
 				documentSettingsPart = new DocumentSettingsPart();
-				this.addTargetPart(documentSettingsPart);	
+				this.addTargetPart(documentSettingsPart);
+				
+				documentSettingsPart.setContents(new CTSettings());
 			} else {
 				return null;
 			}

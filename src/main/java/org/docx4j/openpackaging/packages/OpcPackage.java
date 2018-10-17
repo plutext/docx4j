@@ -54,6 +54,8 @@ import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
+import org.docx4j.openpackaging.PackageRelsUtil;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -933,6 +935,42 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return result;
 		
 	}
+	
+	/**
+	 * @return
+	 * @throws Docx4JException 
+	 * @since 6.1.0
+	 */
+	public OpcPackage cloneAs(String targetContentType) throws Docx4JException {
+		
+		// This approach to cloning supports having different objects
+		// for WordprocessingMLPackage and WordprocessingMLTemplatePackage,
+		// should that distinction prove useful
+		
+		if (targetContentType.equals(this.getContentType())) {
+			log.debug("No change to content type " + this.getContentType());
+			return clone();
+		}		
+		
+		// first temporarily change this content type to target
+		// No need to change it in this pkg object, so we don't!
+		//ContentType existing = this.contentType;
+		String mainPartNameString = PackageRelsUtil.getNameOfMainPart(this.getRelationshipsPart());
+		PartName mainPartName = new PartName("/" + mainPartNameString);
+//		String pkgContentType = this.contentTypeManager.getContentType(new PartName("/" + mainPartName));
+		this.contentTypeManager.removeOverrideContentType(mainPartName);
+		this.contentTypeManager.addOverrideContentType(mainPartName.getURI(), targetContentType);
+		
+		// then clone it
+		OpcPackage clone = this.clone();
+		
+		// now change content type back
+		this.contentTypeManager.removeOverrideContentType(mainPartName);
+		this.contentTypeManager.addOverrideContentType(mainPartName.getURI(), this.getContentType());
+		
+		return clone;
+	}
+	
 
 	@Override
 	public String name() {

@@ -782,6 +782,26 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		}
 				
 	}
+
+	/**
+	 * Attach a template to this document.
+	 * This is just an easy way to access the same method in DocumentSettingsPart 
+	 * 
+	 * @param templatePath
+	 * @since 6.1.0
+	 */
+	public void attachTemplate(String templatePath) {
+		
+		DocumentSettingsPart dsp = null;
+		try {
+			dsp = this.getDocumentSettingsPart(true);
+		} catch (InvalidFormatException e) {
+			// shouldn't happen
+			log.error(e.getMessage(), e);
+		}
+		dsp.attachTemplate(templatePath);
+	}
+	
 	
 	GlossaryDocumentPart glossaryDocumentPart;
 	/**
