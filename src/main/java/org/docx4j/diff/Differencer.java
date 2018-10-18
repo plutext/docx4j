@@ -328,7 +328,7 @@ public class Differencer {
 			toWML( diffxResult.toString(),  result, author, date,
 				docPartRelsNewer,  docPartRelsOlder);
 		} catch (Exception exc) {
-			throw new RuntimeException("Docx4jDriver.diff failed.", exc);
+			throw new RuntimeException("diffWorker failed.", exc);
 		} finally {
 			IOUtils.closeQuietly(diffxResult);
 		}
