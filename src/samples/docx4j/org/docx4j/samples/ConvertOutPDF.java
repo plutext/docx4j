@@ -36,6 +36,7 @@ import org.docx4j.model.fields.FieldUpdater;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.services.client.ConversionException;
+import org.docx4j.services.client.ConversionRateLimitException;
 
 /**
  * Demo of PDF output.
@@ -45,8 +46,11 @@ import org.docx4j.services.client.ConversionException;
  * The evaluation instance is now at:
  * 
  *  	https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert
- *  
- * This is the default in 3.3.7; earlier versions or to specify your own instance, please set docx4j.properties property: 
+ * 
+ * In 6.1.0 or later, it defaults to a local instance you'd need to install.
+ * So if you want to use the converter-eval instance, you'll need to uncomment below.
+ *   
+ * To specify your own instance, please set docx4j.properties property: 
  * 
  *      com.plutext.converter.URL=http://your.host:80/v1/00000000-0000-0000-0000-000000000000/convert
  * 
@@ -66,9 +70,12 @@ public class ConvertOutPDF extends AbstractSample {
 		
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
-    	// URL of converter instance
-//		Docx4jProperties.setProperty("com.plutext.converter.URL", 
-//				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");    	
+    	// URL of converter instance; 
+		Docx4jProperties.setProperty("com.plutext.converter.URL", 
+		// .. install your own at 			
+				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");    	
+		// .. or perform a quick test against 
+//				"https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert");    	
     	
     	// XSL-FO only
     	saveFO = true;
@@ -87,19 +94,21 @@ public class ConvertOutPDF extends AbstractSample {
 		} catch (IllegalArgumentException e) {
 		}
 		
-		// Font regex (optional)
-		// Set regex if you want to restrict to some defined subset of fonts
-		// Here we have to do this before calling createContent,
-		// since that discovers fonts
-		String regex = null;
-		// Windows:
-		// String
-		// regex=".*(calibri|camb|cour|arial|symb|times|Times|zapf).*";
-		//regex=".*(calibri|camb|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
-		// Mac
-		// String
-		// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
-		PhysicalFonts.setRegex(regex);
+		if (Docx4J.pdfViaFO()) {
+			// Font regex (optional)
+			// Set regex if you want to restrict to some defined subset of fonts
+			// Here we have to do this before calling createContent,
+			// since that discovers fonts
+			String regex = null;
+			// Windows:
+			// String
+			// regex=".*(calibri|camb|cour|arial|symb|times|Times|zapf).*";
+			//regex=".*(calibri|camb|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
+			// Mac
+			// String
+			// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
+			PhysicalFonts.setRegex(regex);
+		}
 
 		// Document loading (required)
 		WordprocessingMLPackage wordMLPackage;
@@ -138,17 +147,28 @@ public class ConvertOutPDF extends AbstractSample {
 			try {
 				Docx4J.toPDF(wordMLPackage, os);
 			} catch (Docx4JException e) {
-				e.printStackTrace();
-				// What did we write?
-				IOUtils.closeQuietly(os);
-				System.out.println(
-						FileUtils.readFileToString(new File(outputfilepath)));
-				if (e.getCause()!=null
-						&& e.getCause() instanceof ConversionException) {
+				if (e.getCause()!=null) {
+
+					if ( e.getCause() instanceof ConversionRateLimitException) {
+						// Possible if you send too many requests to converter-eval.plutext.com
+						// or a commercial SAAS endpoint.  Please install your own instance. 
+						System.err.println("API rate limit exceeded");
+						System.err.println("Maybe you sent too many requiests to converter-eval.plutext.com? Please install your own instance. ");
 					
-					ConversionException ce = (ConversionException)e.getCause();
-					ce.printStackTrace();
+					} else if ( e.getCause() instanceof ConversionException) {
+					
+						ConversionException ce = (ConversionException)e.getCause();
+						ce.printStackTrace();
+					}
+				} else {
+					// What did we write?
+					IOUtils.closeQuietly(os);
+					System.out.println(
+							FileUtils.readFileToString(new File(outputfilepath)));
+					e.printStackTrace();
+					
 				}
+				return;
 			}
 			System.out.println("Saved: " + outputfilepath);
 
