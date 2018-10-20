@@ -231,6 +231,8 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
 	public final static String BINDING_ROLE_COMPONENT_CONTEXT = "od:context";
 
+	public final static String BINDING_ROLE_FINISHER = "od:finish";	
+	
 	public final static String BINDING_CONTENTTYPE = "od:ContentType";
 	public final static String BINDING_HANDLER = "od:Handler";
 	public final static String BINDING_PROGID = "od:progid"; // eg =Word.Document

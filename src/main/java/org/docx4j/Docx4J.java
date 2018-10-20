@@ -27,7 +27,9 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,6 +55,9 @@ import org.docx4j.model.datastorage.OpenDoPEHandlerComponents;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.OpenDoPEIntegrityAfterBinding;
 import org.docx4j.model.datastorage.RemovalHandler;
+import org.docx4j.model.datastorage.XsltFinisher;
+import org.docx4j.model.datastorage.XsltProvider;
+import org.docx4j.model.datastorage.XsltProviderImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
@@ -177,7 +182,7 @@ public class Docx4J {
 	public static final int FLAG_BIND_INSERT_XML = 1;
 	
 	/** Insert the data of the xml in the content controls 
-	 *  Not needed, if the document will only be opened in word 
+	 *  Not needed, if the document will only be opened in Word 
 	 *  and not converted to other formats.
 	 */
 	public static final int FLAG_BIND_BIND_XML = 2;
@@ -423,11 +428,21 @@ public class Docx4J {
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags) throws Docx4JException {
 		bind( wmlPackage,  xmlDocument,  flags, null);
 	}
-	
+
 	/**
 	 *  Bind the content controls of the passed document to the xml.
 	 */	
 	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags, DocxFetcher docxFetcher) throws Docx4JException {
+		bind( wmlPackage,  xmlDocument,  flags,  docxFetcher, null, null, null); // no final formatting step
+	}
+	
+	/**
+	 *  Bind the content controls of the passed document to the xml, applying some formatting finishing touches 
+	 *  to the final docx. 
+	 *  @since 6.1.0
+	 */	
+	public static void bind(WordprocessingMLPackage wmlPackage, Document xmlDocument, int flags, DocxFetcher docxFetcher,
+			XsltProvider xsltProvider, String xsltFinisherfilename, Map<String, Map<String, Object>> finisherParams) throws Docx4JException {
 
 		StartEvent bindJobStartEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage );
 		bindJobStartEvent.publish();
@@ -466,6 +481,7 @@ public class Docx4J {
 			
 			new EventFinished(startEvent).publish();
 		}
+		BindingHandler bh = null;
 		if ((flags & FLAG_BIND_BIND_XML) == FLAG_BIND_BIND_XML) {
 
 			log.debug("openDoPEHandler");
@@ -473,14 +489,21 @@ public class Docx4J {
 			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_OpenDoPEHandler );
 			startEvent.publish();
 
-				// since 6.1, component processing happens first,
-				// and as a discrete step
-				OpenDoPEHandlerComponents componentsHandler =
-						new OpenDoPEHandlerComponents(wmlPackage);
-				if (docxFetcher!=null) {
-					componentsHandler.setDocxFetcher(docxFetcher);
+				WordprocessingMLPackage tmpMergeResult = wmlPackage;
+				
+				// component processing is OFF by default
+				if (Docx4jProperties.getProperty("docx4j.model.datastorage.OpenDoPEHandlerComponents.enabled", 
+						false)) {
+					
+					// since 6.1, component processing happens first,
+					// and as a discrete step
+					OpenDoPEHandlerComponents componentsHandler =
+							new OpenDoPEHandlerComponents(wmlPackage);
+					if (docxFetcher!=null) {
+						componentsHandler.setDocxFetcher(docxFetcher);
+					}
+					tmpMergeResult = componentsHandler.fetchComponents();
 				}
-				WordprocessingMLPackage tmpMergeResult = componentsHandler.fetchComponents();
 			
 				// since 3.2.2, OpenDoPEHandler also handles w15 repeatingSection,
 				// and does that whether or not we have an XPaths part
@@ -528,7 +551,7 @@ public class Docx4J {
 			startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_BindingHandler );
 			startEvent.publish();
 			
-				BindingHandler bh = new BindingHandler(wmlPackage);
+				bh = new BindingHandler(wmlPackage);
 				bh.setStartingIdForNewBookmarks(openDoPEHandler.getNextBookmarkId());
 				bh.setDomToXPathMap(domToXPathMap); // since 3.3.6
 				bh.applyBindings();
@@ -545,6 +568,20 @@ public class Docx4J {
 
 			new EventFinished(startEvent).publish();
 			
+		}
+		
+		// User can provide an XSLT to perform some formatting
+		if (xsltProvider!=null) {
+
+			StartEvent startEvent = new StartEvent( WellKnownJobTypes.BIND, wmlPackage, WellKnownProcessSteps.BIND_BIND_XML_XsltFinisher );
+			startEvent.publish();
+			
+			XsltFinisher finisher = new XsltFinisher(wmlPackage);
+			XsltFinisher.setXsltProvider(xsltProvider );
+						
+			finisher.apply(wmlPackage.getMainDocumentPart(), bh.getXpathsMap(), xsltFinisherfilename, finisherParams);
+			
+			new EventFinished(startEvent).publish();			
 		}
 		
 //		System.out.println(
@@ -721,6 +758,7 @@ public class Docx4J {
 			settings.setWmlPackage(wmlPackage);
 			settings.setApacheFopMime("application/pdf");
 			toFO(settings, outputStream, FLAG_NONE);
+			new EventFinished(startEvent).publish();
 		} else {
 			
 			// Configure this property to point to your own Converter instance.
@@ -733,25 +771,14 @@ public class Docx4J {
 			try {
 				converter.convert(baos.toByteArray(), Format.DOCX, Format.PDF, outputStream);
 				baos.close();
-			} catch (ConversionException e) {
-				new EventFinished(startEvent).publish();
-				if (e.getResponse()!=null) {
-					if (e.getResponse().getStatusLine().getStatusCode()==403) {
-						throw new Docx4JException("Problem converting to PDF; license expired?", e);
-					} else {
-						log.error(e.getResponse().getStatusLine().getStatusCode() + " " + e.getResponse().getStatusLine().getReasonPhrase());
-					}
-				}
-				// the content is in the outputstream, we can't inspect that here.
-				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
 			} catch (Exception e) {
+				throw new Docx4JException(e.getMessage(), e);
+			} finally {
 				new EventFinished(startEvent).publish();
-				throw new Docx4JException("Problem converting to PDF; \nusing URL " + URL + "\n" + e.getMessage(), e);
 			}
 			
 		}
 		
-		new EventFinished(startEvent).publish();
 	}
 	
 	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
