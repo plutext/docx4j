@@ -358,10 +358,9 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsMap,
+										w:sdtPr,
 										$parent,
 										$child,
-										w:sdtPr/w:rPr,
-										$tag,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
@@ -380,10 +379,9 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsMap,
+										w:sdtPr,
 										$parent,
 										$child,
-										w:sdtPr/w:rPr,
-										$tag,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
@@ -401,10 +399,9 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsMap,
+										w:sdtPr,
 										$parent,
 										$child,
-										w:sdtPr/w:rPr,
-										$tag,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
 				  		</xsl:when>				  		
@@ -424,10 +421,9 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsMap,
+										w:sdtPr,
 										$parent,
 										$child,
-										w:sdtPr/w:rPr,
-										$tag,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
 				  		</xsl:when>
@@ -446,10 +442,9 @@
 										$sourcePart,
 										$customXmlDataStorageParts,
 										$xPathsMap,
+										w:sdtPr,
 										$parent,
 										$child,
-										w:sdtPr/w:rPr,
-										$tag,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
 				  		</xsl:otherwise>  		
@@ -1084,6 +1079,18 @@
 			<xsl:variable name="dummy2"
 			    select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log( '.. stripping w:dataBinding and w:text' )" />  	
   			<xsl:apply-templates  mode="word2007hyperlinkfix" />
+  		</xsl:when>
+  		<xsl:when test="$content and count($content//w:rStyle[@w:val = 'PlaceholderText' ])>0">
+  			<!--  If the sdt content contains <w:rStyle w:val="PlaceholderText"/> add w:showingPlcHdr
+  			
+  				  RemovalHandler will use w:showingPlcHdr to retain this sdt in the Quantifier.ALL_BUT_PLACEHOLDERS case.
+  				  
+  				  RemovalHandler could just check for this rStyle value directly, but w:showingPlcHdr is more correct
+  				  (since in the future we could support placeholders which have some different stylename)
+  			
+  			 -->
+	        <w:showingPlcHdr/>
+		    <xsl:apply-templates select="@*|node()"/>
   		</xsl:when>
   		<xsl:otherwise>
 		    <xsl:apply-templates select="@*|node()"/>

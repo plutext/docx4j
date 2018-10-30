@@ -637,18 +637,10 @@ public class Docx4J {
 		return (visitor != null ? visitor.getdefinedStoreItemId() : null);
 	}
 
-	protected static void removeSDTs(WordprocessingMLPackage wmlPackage)throws Docx4JException {
-	RemovalHandler removalHandler;
-	removalHandler = new RemovalHandler();
-	removalHandler.removeSDTs(wmlPackage.getMainDocumentPart(), RemovalHandler.Quantifier.ALL, (String[])null);
-		for (Part part:wmlPackage.getParts().getParts().values()) {
-			if (part instanceof HeaderPart) {
-				removalHandler.removeSDTs((HeaderPart)part, RemovalHandler.Quantifier.ALL, (String[])null);
-			}
-			else if (part instanceof FooterPart) {
-				removalHandler.removeSDTs((FooterPart)part, RemovalHandler.Quantifier.ALL, (String[])null);
-			}
-		}
+	protected static void removeSDTs(WordprocessingMLPackage wmlPackage) throws Docx4JException {
+		
+		RemovalHandler removalHandler = new RemovalHandler();
+		removalHandler.removeSDTs(wmlPackage);
 	}
 
 	protected static void removeDefinedCustomXmlParts(WordprocessingMLPackage wmlPackage, 

@@ -30,15 +30,16 @@
 	xmlns:xalan="http://xml.apache.org/xalan"  
   exclude-result-prefixes="a aml java o pic pkg r v w wp WX w10">
 
-  <xsl:param name="all" select="false" />
+  <xsl:param name="all" select="false" /> <!-- keep contents (unless empty since this triggers that), but remove sdt -->
+  <xsl:param name="all_but_placeholders" select="false" />
   <xsl:param name="types" select="'repeat condition'" />
 
   <xsl:output indent="yes" omit-xml-declaration="no" standalone="yes" />
 
-  <xsl:param name="xpath" select="$all or contains($types, 'xpath')" />
-  <xsl:param name="empty" select="$xpath or contains($types, 'empty')" />
-  <xsl:param name="repeat" select="$all or contains($types, 'repeat')" />
-  <xsl:param name="condition" select="$all or contains($types, 'condition')" />
+  <xsl:param name="xpath" select="$all or $all_but_placeholders or contains($types, 'xpath')" />
+  <xsl:param name="empty" select="$xpath or contains($types, 'empty')" /> <!--  by default, SDTs which are considered empty are removed, INCLUDING CONTENTS  -->
+  <xsl:param name="repeat" select="$all or $all_but_placeholders  or contains($types, 'repeat')" />
+  <xsl:param name="condition" select="$all or $all_but_placeholders  or contains($types, 'condition')" />
 
   <xsl:template match="/ | @* | node()">
     <xsl:copy>
@@ -72,6 +73,12 @@
       <xsl:when test="$xpath and contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">
         <xsl:apply-templates select="w:sdtContent/node()" />
        </xsl:when>
+
+      <!--  @since 6.1.0 --> 
+      <xsl:when test="$all_but_placeholders and (count(w:sdtPr/w:showingPlcHdr)=1)">
+      	<!--  keep placeholder sdt -->
+        <xsl:copy-of select="."/>
+       </xsl:when>       
         
       <!-- if we are to remove SDTs referencing empty XML nodes, remove the resulting element entirely
            EXCEPT for a tc, which we keep.  Consider a parameter which allows for the tc to be removed? -->

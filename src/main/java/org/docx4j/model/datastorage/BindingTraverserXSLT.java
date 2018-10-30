@@ -38,6 +38,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -311,8 +312,32 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	private static byte[] placeholderBytes = null;
 	private static final String placeholderResourceFallback = "org/docx4j/model/datastorage/placeholder.xml";
 	private static final String placeholderResource = "OpenDoPE/placeholder.xml"; // default, can be overridden since 3.2.0
-	
-	protected static DocumentFragment createPlaceholder(RPr rPr, String contentParent) throws Exception {
+
+	/**
+	 * Calling code should set w:sdtPr/w:showingPlaceholder (ie bind.xslt), so RemovalHandler can do
+	 * the right thing for Quantifier.ALL_BUT_PLACEHOLDERS case.
+	 * 
+	 * bind.xslt inserts the correct element structure for a simple bind, so 
+	 * all we do here is return the w:r element.
+	 * 
+	 * @param rPr
+	 * @param sdtParent
+	 * @return
+	 * @throws Exception
+	 */
+	protected static DocumentFragment createPlaceholder(RPr rPr) throws Exception {
+		return createPlaceholder(rPr, "p"); // this returns the w:r, which bind.xslt then wraps as appropriate.
+	}
+	/**
+	 * Used from convertXHTML, since bind.xslt leaves it to extension function
+	 * to insert correct element structure.
+	 * 
+	 * @param rPr
+	 * @param sdtParent
+	 * @return
+	 * @throws Exception
+	 */
+	protected static DocumentFragment createPlaceholder(RPr rPr, String sdtParent) throws Exception {
 		
 		// One time
 		if (placeholderFragment==null) {
@@ -322,17 +347,22 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			createPlaceholderBytes();
 		}
 
-		
-		if (contentParent.equals("p")) {
-			// Will always be invoked with this, for xpathGenerateRuns
+		if (sdtParent.equals("p")) {
 
 			if (rPr==null) {
 				// Usual case, just reuse the fragment
 				return placeholderFragment;
 			} else {
 				// Specific formatting
+				// Note that changing the stylename will affect Quantifier.ALL_BUT_PLACEHOLDERS processing
 				R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
-				run.setRPr(rPr);
+				
+				// preserve existing rPr, but apply extra
+				if (run.getRPr()==null) {
+					run.setRPr(new RPr());
+				}
+				StyleUtil.apply(rPr, run.getRPr());
+				
 				Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
 				DocumentFragment docfrag = tmpDoc.createDocumentFragment();
 				XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
@@ -340,14 +370,14 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			}
 			
 		} else {
-			
+						
 			R run = (R)XmlUtils.unmarshal(new ByteArrayInputStream(placeholderBytes));
 			run.setRPr(rPr);
 			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
 			
 			DocumentFragment docfrag = tmpDoc.createDocumentFragment();
 			
-			if (contentParent.equals("tbl")) {
+			if (sdtParent.equals("tbl")) {
 				
 				org.w3c.dom.Element wtr = tmpDoc.createElementNS(Namespaces.NS_WORD12, "tr");
 				docfrag.appendChild(wtr);
@@ -361,7 +391,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				wp.appendChild(tmpDoc.getDocumentElement());
 				return docfrag;
 				
-			} else if (contentParent.equals("tr")) {
+			} else if (sdtParent.equals("tr")) {
 				
 				org.w3c.dom.Element wtc = tmpDoc.createElementNS(Namespaces.NS_WORD12, "tc");
 				docfrag.appendChild(wtc);
@@ -372,8 +402,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				wp.appendChild(tmpDoc.getDocumentElement());
 				return docfrag;
 				
-			} else if (contentParent.equals("tc")
-					|| contentParent.equals("body")) {
+			} else if (sdtParent.equals("tc")
+					|| sdtParent.equals("body")) {
 								
 				org.w3c.dom.Element wp = tmpDoc.createElementNS(Namespaces.NS_WORD12, "p");
 				docfrag.appendChild(wp);
@@ -439,14 +469,26 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			//String storeItemId, String xpath, String prefixMappings,
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
+			NodeIterator sdtPrNodeIt, 
 			String sdtParent,
 			String contentChild,				
-			NodeIterator rPrNodeIt, 
-			String tag,
+//			NodeIterator rPrNodeIt, 
+//			String tag,
 			Map<String, Integer> sequenceCounters,
 			BookmarkCounter bookmarkCounter) {
 
 		log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
+
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		try {
+			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
+		} catch (JAXBException e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		String tag = sdtPr.getTag().getVal();
+		
 		
 		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 		DocumentFragment docfrag = docContainer.createDocumentFragment();
@@ -537,13 +579,10 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 		try {
 
-			RPr rPrSDT = null;
-			Node rPrNode = rPrNodeIt.nextNode();
-			if (rPrNode!=null) {
-				rPrSDT = (RPr)XmlUtils.unmarshal(rPrNode);
-			}
+			RPr rPrSDT = (RPr)sdtPr.getByClass(RPr.class);
 			
 			if (r==null || r.trim().equals("")) {
+				// sdtPr.setShowingPlcHdr(true); altering here doesn't work; must do it in XSLT.				
 				return createPlaceholder(rPrSDT, sdtParent);
 			}
 

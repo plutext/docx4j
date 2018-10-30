@@ -15,14 +15,13 @@
  */
 package org.docx4j.model.datastorage;
 
-import static org.docx4j.XmlUtils.getTransformerTemplate;
 import static org.docx4j.XmlUtils.marshaltoW3CDomDocument;
 import static org.docx4j.XmlUtils.prepareJAXBResult;
 import static org.docx4j.XmlUtils.transform;
 import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.ALL;
+import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.ALL_BUT_PLACEHOLDERS;
 import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.NAMED;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,10 +29,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.docx4j.Docx4jProperties;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -43,16 +43,16 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
  * Tool to remove content controls (Structured Document Tags) from an OpenXML document part.
  * 
- * But only if they contain an OpenDoPE tag (od:).
- *
  * <p>
- * This tool removes SDTs tagged with a certain quantifier from the document part. It supports to remove any set of
- * <code>od:xpath</code>, <code>od:repeat</code> and <code>od:condition</code> tags.
+ * This tool removes SDTs tagged with a certain quantifier from the document part.
  * </p>
  * <p>
  * Restrictions:
@@ -64,7 +64,7 @@ import org.w3c.dom.Document;
  * <li>
  * In case of qualified removal (in effect not {@link Quantifier#ALL}), bindings containing more than one qualifier are
  * not supported, that is, when you tag <code>od:repeat=/this&amp;od:xpath=/that</code>, the SDT is removed whenever you
- * specify to remove either repeat or bind tags.</li>
+ * specify to remove either repeat or bind tags. (multiple qualifiers are not recommended in any case!)</li>
  * </ul>
  *
  * @author Karsten Tinnefeld
@@ -72,11 +72,9 @@ import org.w3c.dom.Document;
  */
 public class RemovalHandler {
 
-        private static final String templateFile = RemovalHandler.class.getName()
-                        .replace('.', '/')
-                        + ".xslt";
-
-        private final Templates removalTemplate;
+		private static Logger log = LoggerFactory.getLogger(RemovalHandler.class);		
+	
+    	static Templates removalTemplate;			
 
         /**
          * Initializes the removal handler.
@@ -86,18 +84,36 @@ public class RemovalHandler {
          */
         public RemovalHandler() {
 
-                final InputStream templateStream = getClass().getClassLoader()
-                                .getResourceAsStream(templateFile);
-                final Source templateSource = new StreamSource(templateStream);
-                try {
-                        this.removalTemplate = getTransformerTemplate(templateSource);
+    		try {
+    			final Source xsltSource = new StreamSource(
+    						ResourceUtils.getResourceViaProperty(
+    								"docx4j.model.datastorage.RemovalHandler.xslt",
+    								"org/docx4j/model/datastorage/RemovalHandler.xslt"));
+    			removalTemplate = XmlUtils.getTransformerTemplate(xsltSource);
 
-                } catch (TransformerConfigurationException e) {
-                        throw new IllegalStateException(
-                                        "Error instantiating SDT removal stylesheet", e);
-                }
+            } catch (Exception e) {
+                    throw new IllegalStateException(
+                                    "Error instantiating SDT removal stylesheet", e);
+            }
         }
 
+        
+        /**
+         * Removes Structured Document Tags from the main document part, headers, and footer, 
+         * preserving their contents.
+         *
+         * @param wordMLPackage
+         *            The docx package to modify (in situ).
+         *            
+         * @throws Docx4JException
+         *             In case any transformation error occurs.
+         * @since 6.1.0
+         */
+        public void removeSDTs(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+        	removeSDTs(wordMLPackage, getQuantifier() , (String[])null);
+        }
+        
         /**
          * Removes Structured Document Tags from the main document part, headers, and footer, 
          * preserving their contents.
@@ -105,8 +121,8 @@ public class RemovalHandler {
          * In case key "empty" is specified, value bindings (xpath) are removed only
          * if they have void contents (e.g. the XML points nowhere).
          *
-         * @param part
-         *            The document part to modify (in situ).
+         * @param wordMLPackage
+         *            The docx package to modify (in situ).
          * @param quantifier
          *            The quantifier regarding which kinds of parts are to be
          *            removed.
@@ -127,7 +143,7 @@ public class RemovalHandler {
 
                 removeSDTs(wordMLPackage.getMainDocumentPart(), quantifier, keys);
 
-                // Add headers/footers
+                // Remove from headers/footers
                 RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
                                 .getRelationshipsPart();
                 for (Relationship r : rp.getRelationships().getRelationship()) {
@@ -140,6 +156,32 @@ public class RemovalHandler {
                 }
         }
 
+        
+        /**
+         * Removes Structured Document Tags from a document part, preserving their
+         * contents.
+         *
+         * In case key "empty" is specified, value bindings (xpath) are removed only
+         * if they have void contents (e.g. the XML points nowhere).
+         *
+         * @param part
+         *            The document part to modify (in situ).
+         * @param quantifier
+         *            The quantifier regarding which kinds of parts are to be
+         *            removed.
+         * @param keys
+         *            In case of {@link Quantifier#NAMED}, quantifier names. All
+         *            strings except "xpath", "condition", "repeat", "empty" are
+         *            ignored.
+         * @throws Docx4JException
+         *             In case any transformation error occurs.
+         */
+        public void removeSDTs(final JaxbXmlPart<? extends Object> part)
+                        throws Docx4JException {
+
+        	removeSDTs(part, getQuantifier() , (String[])null);
+        }
+        
         /**
          * Removes Structured Document Tags from a document part, preserving their
          * contents.
@@ -165,6 +207,7 @@ public class RemovalHandler {
 
                 final Map<String, Object> parameters = new HashMap<String, Object>();
                 parameters.put("all", quantifier == ALL);
+                parameters.put("all_but_placeholders", quantifier == ALL_BUT_PLACEHOLDERS);
                 if (quantifier == NAMED)
                         parameters.put("types", ArrayUtils.toString(keys));
 
@@ -181,6 +224,29 @@ public class RemovalHandler {
                                         "Error unmarshalling document part for SDT removal", e);
                 }
         }
+        
+        private Quantifier defaultQuantifier = null;
+        private Quantifier getQuantifier() {
+        	
+        	if (defaultQuantifier!=null) return defaultQuantifier;
+        	
+        	String q = Docx4jProperties.getProperty("docx4j.model.datastorage.RemovalHandler.Quantifier", "ALL");
+        	
+        	if (q.equals("ALL")) {
+        		defaultQuantifier = Quantifier.ALL;
+        	} else if (q.equals("ALL_BUT_PLACEHOLDERS")) {
+        		defaultQuantifier = Quantifier.ALL_BUT_PLACEHOLDERS;
+        	} else if (q.equals("DEFAULT")) {
+        		defaultQuantifier = Quantifier.DEFAULT;
+        	} else if (q.equals("NAMED")) {
+        		defaultQuantifier = Quantifier.NAMED;
+        	} else {
+        		log.warn("Unknown Quantifier property value: " + q);
+        		defaultQuantifier = Quantifier.ALL;        		
+        	}
+        	
+        	return defaultQuantifier;
+        }
 
         /**
          * A quantifier specifying kinds of SDTs.
@@ -191,6 +257,13 @@ public class RemovalHandler {
                  * Every SDT shall be removed.  From 3.3.0, this really means all SDTs in the main document part.
                  */
                 ALL,
+
+                /**
+                 * Every SDT shall be removed except those which are identified as placeholders.
+                 * Currently, to be identified as a placeholder, it must use rStyle 'PlaceholderText'.
+                 * @since 6.1.0 
+                 */
+                ALL_BUT_PLACEHOLDERS,
                 
                 /**
                  * The default SDTs shall be removed, that is, condition and repeat.
