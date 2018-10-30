@@ -847,10 +847,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						
 						BufferedOutputStream buffered = new BufferedOutputStream(os);
 						
+						boolean isNew = (this.getPackage()==null) ? true : this.getPackage().isNew(); // handle edge cases eg unit test where there is no package 
+						
 						filteredOS = 
 								new MainDocumentPartFilterOuputStream(
 										buffered, 
-										this.getPackage().isNew()); // BufferedOutputStream helps a lot here
+										isNew); // BufferedOutputStream helps a lot here
 						
 						marshaller.marshal(jaxbElement, filteredOS);
 						
