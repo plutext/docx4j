@@ -2796,7 +2796,7 @@ public class StyleUtil {
 	public static TblWidth apply(TblWidth source, TblWidth destination) {
 		//Type gets ignored
 		if ((source != null) && (!isEmpty(source.getW()))) {
-			if (destination == null)
+			if (destination == null) 	
 				destination = Context.getWmlObjectFactory().createTblWidth();
 			
 			destination.setW(source.getW());
@@ -2814,40 +2814,62 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/**
+	 * Tbl, Tc borders; PBdr, and RPr border.
+	 * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/ST_Border.html
+	 *  
+	 * @param source
+	 * @param destination
+	 * @return
+	 */
 	private static STBorder apply(STBorder source, STBorder destination) {
-		return ((source == null) || STBorder.NIL.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
+	/**
+	 * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/ST_Shd.html
+	 * 
+	 * @param source
+	 * @param destination
+	 * @return
+	 */
 	public static STShd apply(STShd source, STShd destination) {
-		return ((source == null) || STShd.NIL.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 	
+	/**
+	 * http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/ST_TblOverlap.html
+	 * 
+	 * @param source
+	 * @param destination
+	 * @return
+	 */
 	public static STTblOverlap apply(STTblOverlap source, STTblOverlap destination) {
-		return ((source == null) || STTblOverlap.NEVER.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	public static STTblLayoutType apply(STTblLayoutType source, STTblLayoutType destination) {
-		return ((source == null) || STTblLayoutType.AUTOFIT.equals(source) ? destination : source);
+		return (source == null ? destination : source);
 	}
 
 	public static UnderlineEnumeration apply(UnderlineEnumeration source, UnderlineEnumeration destination) {
-		return ((source == null) || UnderlineEnumeration.NONE.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	public static STTextEffect apply(STTextEffect source, STTextEffect destination) {
-		return ((source == null) || STTextEffect.NONE.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	public static STEm apply(STEm source, STEm destination) {
-		return ((source == null) || STEm.NONE.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	public static STVerticalAlignRun apply(STVerticalAlignRun source, STVerticalAlignRun destination) {
-		return ((source == null) || STVerticalAlignRun.BASELINE.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 
 	public static STVerticalJc apply(STVerticalJc source, STVerticalJc destination) {
-		return ((source == null) || STVerticalJc.CENTER.equals(source) ? destination : source);
+		return (source == null  ? destination : source);
 	}
 	
 	public static BooleanDefaultTrue apply(BooleanDefaultTrue source, BooleanDefaultTrue destination) {
@@ -2858,19 +2880,16 @@ public class StyleUtil {
 		return (source == null ? destination : source);
 	}
 
-//	protected static BigInteger apply(BigInteger source, BigInteger destination) {
-//		return (source == null || BigInteger.ZERO.equals(source) ? destination : source);
-//	}
 	// Need to honour eg <w:ind w:firstLine="0"/>
 	protected static BigInteger apply(BigInteger source, BigInteger destination) {
 		return (source == null  ? destination : source);
 	}
 
-	protected static Integer apply(Integer source, Integer destination) {
-		return (source == null || source.intValue() == 0 ? destination : source);
-	}
+//	protected static Integer apply(Integer source, Integer destination) {
+//		return (source == null || source.intValue() == 0 ? destination : source);
+//	}
 
 	protected static String apply(String source, String destination) {
-		return (source == null || source.length() == 0 ? destination : source);
+		return (source == null  ? destination : source);
 	}
 }
