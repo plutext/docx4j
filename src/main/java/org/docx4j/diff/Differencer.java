@@ -49,6 +49,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.parts.Part;
@@ -324,15 +325,13 @@ public class Differencer {
 			Docx4jDriver.diff(newer,
 					   older,
 					   diffxResult);
-				// The signature which takes Reader objects appears to be broken
-			diffxResult.close();
+			toWML( diffxResult.toString(),  result, author, date,
+				docPartRelsNewer,  docPartRelsOlder);
 		} catch (Exception exc) {
-			exc.printStackTrace();
-			diffxResult = null;
+			throw new RuntimeException("diffWorker failed.", exc);
+		} finally {
+			IOUtils.closeQuietly(diffxResult);
 		}
-
-		toWML( diffxResult.toString(),  result, author, date,
-				 docPartRelsNewer,  docPartRelsOlder);
 	}
 	
 	public  void toWML(String in, javax.xml.transform.Result result, String author, java.util.Calendar date,
