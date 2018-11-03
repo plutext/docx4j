@@ -506,7 +506,6 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 						type,
 						password);
 			} catch (final FileNotFoundException e) {
-				OpcPackage.log.error(e.getMessage(), e);
 				throw new Docx4JException("Couldn't load file from " + file.getAbsolutePath(), e);
 			}
 			
@@ -617,7 +616,6 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			FlatOpcXmlImporter xmlPackage = new FlatOpcXmlImporter(is); 
 			return xmlPackage.get(); 
 		} catch (final Exception e) {
-			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load xml from stream ",e);
 		} finally {
 			new EventFinished(startEvent).publish();									
