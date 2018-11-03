@@ -22,6 +22,7 @@ package org.docx4j.samples;
 
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.docx4j.XmlUtils;
@@ -57,6 +58,8 @@ public class ContentControlsInfoStructure extends AbstractSample {
 	
 	private static org.opendope.conditions.Conditions conditions;
 	private static org.opendope.xpaths.Xpaths xPaths;
+	
+	private static boolean SHOW_BINDING_ROLE_XPATH = true;
 	
 	public static void main(String[] args) throws Exception {
 		
@@ -100,7 +103,7 @@ public class ContentControlsInfoStructure extends AbstractSample {
 	
 	public static class TraversalUtilContentControlVisitor extends TraversalUtilVisitor<SdtElement> {
 		
-		IndentingVisitorCallback callback; // so we can get indentation
+		IndentingVisitorCallback callback; // so we can get indentation and repeat context
 		
 		@Override
 		public void apply(SdtElement element, Object parent, List<Object> siblings) {
@@ -124,7 +127,8 @@ public class ContentControlsInfoStructure extends AbstractSample {
 				
 				Tag tag = sdtPr.getTag();
 				if (tag == null) {
-					//System.out.println(sb.toString());					
+					sb.append("\n"+callback.indent + "  UNTAGGED" );					
+					System.out.println(sb.toString());					
 					return;
 				}
 				
@@ -137,6 +141,8 @@ public class ContentControlsInfoStructure extends AbstractSample {
 				String repeatId = map.get(OpenDoPEHandler.BINDING_ROLE_REPEAT);
 				String xp = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
 				
+				String repeatContext = callback.getRepeatContext();
+				
 				if (conditionId!=null ) {
 					Condition c = ConditionsPart.getConditionById(conditions,
 							conditionId);
@@ -148,16 +154,27 @@ public class ContentControlsInfoStructure extends AbstractSample {
 						org.opendope.conditions.Xpathref xpathRef = (Xpathref)c.getParticle();
 						if (xpathRef == null) {
 							sb.append("\n"+callback.indent + "  " + "Condition " + c.getId() + " references a missing xpath!");
-						}
-						
-						org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xpathRef.getId());
-						if (xpath==null) {
-							sb.append("\n"+callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
 						} else {
-							sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						
+							org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xpathRef.getId());
+							if (xpath==null) {
+								sb.append("\n"+callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
+							} else {
+								String path = xpath.getDataBinding().getXpath();
+								sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + path );
+								if (repeatContext!=null) {
+									String repeatContextPath = XPathsPart.getXPathById(xPaths, repeatContext).getDataBinding().getXpath();
+									String simpliedPath=path.substring(path.indexOf("/"));
+									if (simpliedPath.startsWith(repeatContextPath)) {
+//										sb.append("\n"+callback.indent + "  " + ".. OK"); 
+									} else {
+										sb.append("\n"+callback.indent + "  " + simpliedPath + " not in " + repeatContext + ": " + repeatContextPath); 							
+									}
+								}
+							}
 						}
 					} else {
-						//sb.append("\n"+"Complex condition: " + XmlUtils.marshaltoString(c, true, true) );
+						sb.append("\n"+"Complex condition: " + XmlUtils.marshaltoString(c, true, true) );
 					}
 					System.out.println(sb.toString());					
 					
@@ -168,26 +185,49 @@ public class ContentControlsInfoStructure extends AbstractSample {
 					if (xpath==null) {
 						sb.append("\n"+callback.indent + "  " + "XPath specified in repeat '" + repeatId + "' is missing!");
 					} else {
-						sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						String path = xpath.getDataBinding().getXpath();
+						sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + path );
+						if (repeatContext!=null) {
+							// check this repeat is properly nested
+							String repeatContextPath = XPathsPart.getXPathById(xPaths, repeatContext).getDataBinding().getXpath();
+							if (path.startsWith(repeatContextPath)) {
+//								sb.append("\n"+callback.indent + "  " + ".. OK"); 
+							} else {
+								sb.append("\n"+callback.indent + "  " + ".. !? not in " + repeatContext + ": " + repeatContextPath); 							
+							}
+						}
 					}
-					System.out.println(sb.toString());					
+					System.out.println(sb.toString());	
 					
 				} else if (xp!=null) {
 					
-					org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xp);
-					
-					if (xpath==null) {
-						sb.append("\n"+callback.indent + "  " + "XPath specified with id '" + xp + "' is missing!");
-					} else {
-						sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+					if (SHOW_BINDING_ROLE_XPATH) {
+						org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xp);
+						
+						if (xpath==null) {
+							sb.append("\n"+callback.indent + "  " + "XPath specified with id '" + xp + "' is missing!");
+						} else {
+							String path = xpath.getDataBinding().getXpath();
+							sb.append("\n"+callback.indent + "  " +  xpath.getId() + ": " + path );
+							if (repeatContext!=null) {
+								String repeatContextPath = XPathsPart.getXPathById(xPaths, repeatContext).getDataBinding().getXpath();
+								if (path.startsWith(repeatContextPath)) {
+//									sb.append("\n"+callback.indent + "  " + ".. OK"); 
+								} else {
+									sb.append("\n"+callback.indent + "  " + ".. ?? not in " + repeatContext + ": " + repeatContextPath); 							
+								}
+							}
+						}
+						System.out.println(sb.toString());
 					}
-					// System.out.println(sb.toString());					
+					
+				} else {
+					sb.append("\n"+callback.indent + "  " + "Check me?");
+					System.out.println(sb.toString());
 					
 				}
 				
 			}
-			
-			
 	
 		}
 	
@@ -201,13 +241,45 @@ public class ContentControlsInfoStructure extends AbstractSample {
 		
 		String indent = "";
 		
+	    private LinkedList<String> repeatContext = new LinkedList<String>();
+	    public String getRepeatContext() {
+	    	return repeatContext.peek();
+	    }
+		
 		@Override
 		public void walkJAXBElements(Object parent) {
+			
+			
+			// Add repeat context?
+			Object parentUnwrapped = XmlUtils.unwrap(parent);
+			boolean mustPopRepeat = false;
+			if (parentUnwrapped instanceof SdtElement) {
+				Tag tag = ((SdtElement)parentUnwrapped).getSdtPr().getTag();
+				if (tag == null) {
+					log.debug("no tag " + XmlUtils.marshaltoString(parentUnwrapped));
+				} else {
+					HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+					String repeatId = map.get(OpenDoPEHandler.BINDING_ROLE_REPEAT);
+					if (repeatId!=null) {
+						repeatContext.push(repeatId);
+						mustPopRepeat = true;
+					}
+				}
+			}
 			
 			List children = getChildren(parent);
 			if (children != null) {
 				String oldIndent = indent;
-				indent += "  ";
+				if (parentUnwrapped instanceof SdtElement) {
+					indent += "  ";
+//					SdtPr sdtPr = ((SdtElement)parentUnwrapped).getSdtPr();
+//					if (sdtPr==null) {
+//						System.out.println("ERROR: sdtPr missing!");
+//					} else {
+//						String tag = sdtPr.getTag()==null ? "MISSING" : sdtPr.getTag().getVal(); 					
+//						System.out.println("indent for " + parent.getClass().getName() + " with tag " + tag);
+//					}
+				}
 				for (Object o : children) {
 					// if its wrapped in javax.xml.bind.JAXBElement, get its
 					// value; this is ok, provided the results of the Callback
@@ -220,6 +292,12 @@ public class ContentControlsInfoStructure extends AbstractSample {
 				}
 				indent = oldIndent;
 			}
+			
+			// Remove repeat context?
+			if (mustPopRepeat) {
+				repeatContext.pop();
+			}
+			
 		}
 		
 	}
