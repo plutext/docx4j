@@ -19,7 +19,6 @@
  */
 package org.docx4j.services.client;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,35 +37,30 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Java client library for Plutext PDF Converter
  * 
  * @since 3.3.0
  */
 public class ConverterHttp implements Converter {
-	
-	private static Logger log = LoggerFactory.getLogger(ConverterHttp.class);	
-	
-		
-	private String URL = null;  
-	
+
+	private static Logger	log	= LoggerFactory.getLogger(ConverterHttp.class);
+
+	private String			URL	= null;
 
 	public ConverterHttp() {
 	}
-	
+
 	public ConverterHttp(String endpointURL) {
-		
+
 		log.debug("starting, with endpointURL: " + endpointURL);
-		
-		if (endpointURL!=null) {
+
+		if (endpointURL != null) {
 			this.URL = endpointURL;
 		}
-		
+
 	}
-	
-	
-	
+
 	/**
 	 * Convert File fromFormat to toFormat, streaming result to OutputStream os.
 	 * 
@@ -81,50 +75,50 @@ public class ConverterHttp implements Converter {
 	 * @throws IOException
 	 * @throws ConversionException
 	 */
-	public void convert(File f, Format fromFormat, Format toFormat, OutputStream os) throws IOException, ConversionException {
-		
-		checkParameters(fromFormat, toFormat);
-		
-//        CloseableHttpClient httpclient = HttpClients.createDefault();
-		CloseableHttpClient httpclient = HttpClients.custom()
-		        .setRetryHandler(new MyRetryHandler() )
-		        .build();
-		
-        try {
-            HttpPost httppost = getUrlForFormat(toFormat);
-            
-            HttpEntity reqEntity = new FileEntity(f, map(fromFormat) );
-            
-            httppost.setEntity(reqEntity);
+	public void convert(File f, Format fromFormat, Format toFormat, OutputStream os)
+			throws IOException, ConversionException {
 
-            execute(httpclient, httppost, os);
-        	log.debug("..done");
-        } finally {
-            httpclient.close();
-        }
-		
+		checkParameters(fromFormat, toFormat);
+
+		// CloseableHttpClient httpclient = HttpClients.createDefault();
+		CloseableHttpClient httpclient = HttpClients.custom().setRetryHandler(new MyRetryHandler()).build();
+
+		try {
+			HttpPost httppost = getUrlForFormat(toFormat);
+
+			HttpEntity reqEntity = new FileEntity(f, map(fromFormat));
+
+			httppost.setEntity(reqEntity);
+
+			execute(httpclient, httppost, os);
+			log.debug("..done");
+		} finally {
+			httpclient.close();
+		}
+
 	}
-	
+
 	private HttpPost getUrlForFormat(Format toFormat) {
 
-        if (Format.TOC.equals(toFormat)) {
-        	//httppost = new HttpPost(URL+"/?bookmarks");  
-//        	System.out.println(URL+"?format=application/json");
-        	return new HttpPost(URL+"?format=application/json");
+		if (Format.TOC.equals(toFormat)) {
+			// httppost = new HttpPost(URL+"/?bookmarks");
+			// System.out.println(URL+"?format=application/json");
+			return new HttpPost(URL + "?format=application/json");
 
-        } else if (Format.DOCX.equals(toFormat)) {
+		} else if (Format.DOCX.equals(toFormat)) {
 
-        	return new HttpPost(URL+"?format=application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        	
-        } else {
-        	return new HttpPost(URL);
-        }
-		
+			return new HttpPost(
+					URL + "?format=application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+		} else {
+			return new HttpPost(URL);
+		}
+
 	}
 
-
 	/**
-	 * Convert InputStream fromFormat to toFormat, streaming result to OutputStream os.
+	 * Convert InputStream fromFormat to toFormat, streaming result to
+	 * OutputStream os.
 	 * 
 	 * fromFormat supported: DOC, DOCX
 	 * 
@@ -140,29 +134,37 @@ public class ConverterHttp implements Converter {
 	 * @throws IOException
 	 * @throws ConversionException
 	 */
-	public void convert(InputStream instream, Format fromFormat, Format toFormat, OutputStream os) throws IOException, ConversionException {
-		
+	public void convert(InputStream instream, Format fromFormat, Format toFormat, OutputStream os)
+			throws IOException, ConversionException {
+
 		checkParameters(fromFormat, toFormat);
-		
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        try {
-            HttpPost httppost = getUrlForFormat(toFormat);
-            
-            BasicHttpEntity reqEntity = new BasicHttpEntity();
-            reqEntity.setContentType( map(fromFormat).getMimeType() ); // messy that API is different to FileEntity
-            reqEntity.setContent(instream);            
 
-            httppost.setEntity(reqEntity);
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		try {
+			HttpPost httppost = getUrlForFormat(toFormat);
 
-            execute(httpclient, httppost, os);
-        } finally {
-            httpclient.close();
-        }
-		
+			BasicHttpEntity reqEntity = new BasicHttpEntity();
+			reqEntity.setContentType(map(fromFormat).getMimeType()); // messy
+																		// that
+																		// API
+																		// is
+																		// different
+																		// to
+																		// FileEntity
+			reqEntity.setContent(instream);
+
+			httppost.setEntity(reqEntity);
+
+			execute(httpclient, httppost, os);
+		} finally {
+			httpclient.close();
+		}
+
 	}
 
 	/**
-	 * Convert byte array fromFormat to toFormat, streaming result to OutputStream os.
+	 * Convert byte array fromFormat to toFormat, streaming result to
+	 * OutputStream os.
 	 * 
 	 * fromFormat supported: DOC, DOCX
 	 * 
@@ -175,24 +177,31 @@ public class ConverterHttp implements Converter {
 	 * @throws IOException
 	 * @throws ConversionException
 	 */
-	public void convert(byte[] bytesIn, Format fromFormat, Format toFormat, OutputStream os) throws IOException, ConversionException {
-		
+	public void convert(byte[] bytesIn, Format fromFormat, Format toFormat, OutputStream os)
+			throws IOException, ConversionException {
+
 		checkParameters(fromFormat, toFormat);
-		
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        try {
-            HttpPost httppost = getUrlForFormat(toFormat);
-            
-            HttpEntity reqEntity = new ByteArrayEntity(bytesIn, map(fromFormat) ); // messy that API is different to FileEntity
 
-            httppost.setEntity(reqEntity);
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		try {
+			HttpPost httppost = getUrlForFormat(toFormat);
 
-            execute(httpclient, httppost, os);
-            
-        } finally {
-            httpclient.close();
-        }
-		
+			HttpEntity reqEntity = new ByteArrayEntity(bytesIn, map(fromFormat)); // messy
+																					// that
+																					// API
+																					// is
+																					// different
+																					// to
+																					// FileEntity
+
+			httppost.setEntity(reqEntity);
+
+			execute(httpclient, httppost, os);
+
+		} finally {
+			httpclient.close();
+		}
+
 	}
 
 	/**
@@ -201,70 +210,77 @@ public class ConverterHttp implements Converter {
 	 * @param os
 	 * @throws IOException
 	 * @throws ClientProtocolException
-	 * @throws ConversionException 
+	 * @throws ConversionException
 	 */
-	protected void execute(CloseableHttpClient httpclient, HttpPost httppost,
-			OutputStream os) throws  ClientProtocolException, ConversionException {
+	protected void execute(CloseableHttpClient httpclient, HttpPost httppost, OutputStream os)
+			throws ClientProtocolException, ConversionException {
 
 		CloseableHttpResponse response = null;
 		try {
-						
+
 			response = httpclient.execute(httppost);
 
-			//System.out.println(""+response.getStatusLine());
-		    HttpEntity resEntity = response.getEntity();
-		    resEntity.writeTo(os);
-		    int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode==403) {
-				throw new ConversionException("403 license expired?", response);				
-			} else if (statusCode==429) {
-				// Possible if you send too many requests to converter-eval.plutext.com
-				// or a commercial SAAS endpoint.  Install your own instance?  
+			// System.out.println(""+response.getStatusLine());
+			HttpEntity resEntity = response.getEntity();
+			resEntity.writeTo(os);
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode == 403) {
+				throw new ConversionException("403 license expired?", response);
+			} else if (statusCode == 429) {
+				// Possible if you send too many requests to
+				// converter-eval.plutext.com
+				// or a commercial SAAS endpoint. Install your own instance?
 				// eg Kong: {"message":"API rate limit exceeded"}
-				throw new ConversionRateLimitException("API rate limit exceeded", response);				
-			} else if (statusCode!=200) {
-				throw new ConversionException(response.getStatusLine().getStatusCode() + "\n" 
-							+ response);
+				throw new ConversionRateLimitException("API rate limit exceeded", response);
+			} else if (statusCode != 200) {
+				throw new ConversionException(response.getStatusLine().getStatusCode() + "\n" + response);
 			}
 		} catch (java.net.UnknownHostException uhe) {
-    		log.error("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n");
-			throw new ConversionException(uhe.getMessage(), uhe);		    
+			throw new ConversionException("Looks like you have the wrong host in your endpoint URL '" + URL + "'", uhe);
 
 		} catch (java.net.SocketException se) {
-			
+
 			log.error(se.getMessage());
-			
+
 			if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS") > -1) {
-				// In some circumstances, the converter will return an error before waiting for
+				// In some circumstances, the converter will return an error
+				// before waiting for
 				// the request to complete.
-				// On Windows, you get "java.net.SocketException: Connection reset",
-				// whereas on Linux and OSX, the SocketException still occurs, but the response is read
-				// (though possibly only sometimes/partially, since the socket exception occurs
+				// On Windows, you get "java.net.SocketException: Connection
+				// reset",
+				// whereas on Linux and OSX, the SocketException still occurs,
+				// but the response is read
+				// (though possibly only sometimes/partially, since the socket
+				// exception occurs
 				// in BasicHttpEntity.writeTo)
-				log.error("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
-				// Try to ensure user sees this, even if they don't have logging configured!
-				System.err.println("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
+				log.error(
+						"This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
+				// Try to ensure user sees this, even if they don't have logging
+				// configured!
+				System.err.println(
+						"This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
 			}
-			
-			// TODO: What happens on Android? 
-			throw new ConversionException(se.getMessage(), se);		    
+
+			// TODO: What happens on Android?
+			throw new ConversionException(se.getMessage(), se);
 
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-			throw new ConversionException(ioe.getMessage(), ioe);		    
+			throw new ConversionException(ioe.getMessage(), ioe);
 		} finally {
-		    try {
-		    	if (response==null) {
-		    		log.error("\nLooks like your endpoint URL '" + URL + "' is wrong\n");
-		    	} else {
-		    		response.close();
-		    	}
-			} catch (IOException e) {}
+			try {
+				if (response == null) {
+					log.error("\nLooks like your endpoint URL '" + URL + "' is wrong\n");
+				} else {
+					response.close();
+				}
+			} catch (IOException e) {
+			}
 		}
 	}
 
 	private ContentType map(Format f) {
-		
+
 		if (Format.DOCX.equals(f)) {
 			return ContentType.create("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 		} else if (Format.DOC.equals(f)) {
@@ -272,26 +288,25 @@ public class ConverterHttp implements Converter {
 		}
 		return null;
 	}
-	
-	private void checkParameters(Format fromFormat, Format toFormat) throws  ConversionException {
 
-		if (URL==null) {
-			throw new ConversionException("Endpoint URL not configured.");			
+	private void checkParameters(Format fromFormat, Format toFormat) throws ConversionException {
+
+		if (URL == null) {
+			throw new ConversionException("Endpoint URL not configured.");
 		}
-		
-		if ( Format.DOCX.equals(fromFormat) ||  Format.DOC.equals(fromFormat) ) {
+
+		if (Format.DOCX.equals(fromFormat) || Format.DOC.equals(fromFormat)) {
 			// OK
 		} else {
 			throw new ConversionException("Conversion from format " + fromFormat + " not supported");
 		}
-		
-		if (Format.PDF.equals(toFormat) || Format.TOC.equals(toFormat)
-				|| Format.DOCX.equals(toFormat)) {
+
+		if (Format.PDF.equals(toFormat) || Format.TOC.equals(toFormat) || Format.DOCX.equals(toFormat)) {
 			// OK
 		} else {
-			throw new ConversionException("Conversion to format " + toFormat + " not supported");			
+			throw new ConversionException("Conversion to format " + toFormat + " not supported");
 		}
-		
+
 	}
-	
+
 }

@@ -48,7 +48,6 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 			}
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 
@@ -83,7 +82,6 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 			}
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 	}

@@ -794,8 +794,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.info("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage());
-			throw new Docx4JException(e.getMessage(), e);
+			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n", e);
 		}			
 	}
 
@@ -810,8 +809,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.info("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage());
-			throw new Docx4JException(e.getMessage(), e);
+			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n", e);
 		}			
 		
 	}

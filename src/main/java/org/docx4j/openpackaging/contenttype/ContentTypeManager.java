@@ -51,7 +51,6 @@ package org.docx4j.openpackaging.contenttype;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
@@ -71,10 +70,10 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
+import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
-import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLTemplatePackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
@@ -123,47 +122,44 @@ import org.glox4j.openpackaging.packages.GloxPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Manage package content types ([Content_Types].xml ) .
  * 
  * @author Julien Chable
  * @version 1.0
  */
-public class ContentTypeManager  {
-	
-	protected static Logger log = LoggerFactory.getLogger(ContentTypeManager.class);
-	
+public class ContentTypeManager {
+
+	protected static Logger				log							= LoggerFactory.getLogger(ContentTypeManager.class);
+
 	/**
 	 * Content type part name.
 	 */
-	public static final String CONTENT_TYPES_PART_NAME = "[Content_Types].xml";
+	public static final String			CONTENT_TYPES_PART_NAME		= "[Content_Types].xml";
 
 	/**
 	 * Content type namespace
 	 */
-	public static final String TYPES_NAMESPACE_URI = "http://schemas.openxmlformats.org/package/2006/content-types";
+	public static final String			TYPES_NAMESPACE_URI			= "http://schemas.openxmlformats.org/package/2006/content-types";
 
-	
-	
 	/* Xml elements in content type part */
 
-	private static final String TYPES_TAG_NAME = "Types";
+	private static final String			TYPES_TAG_NAME				= "Types";
 
-	private static final String DEFAULT_TAG_NAME = "Default";
+	private static final String			DEFAULT_TAG_NAME			= "Default";
 
-	private static final String EXTENSION_ATTRIBUTE_NAME = "Extension";
+	private static final String			EXTENSION_ATTRIBUTE_NAME	= "Extension";
 
-	private static final String CONTENT_TYPE_ATTRIBUTE_NAME = "ContentType";
+	private static final String			CONTENT_TYPE_ATTRIBUTE_NAME	= "ContentType";
 
-	private static final String OVERRIDE_TAG_NAME = "Override";
+	private static final String			OVERRIDE_TAG_NAME			= "Override";
 
-	private static final String PART_NAME_ATTRIBUTE_NAME = "PartName";
+	private static final String			PART_NAME_ATTRIBUTE_NAME	= "PartName";
 
 	/**
 	 * Default content type tree. <Extension, ContentType>
 	 */
-	private TreeMap<String, CTDefault> defaultContentType;
+	private TreeMap<String, CTDefault>	defaultContentType;
 
 	/**
 	 * @return the defaultContentType
@@ -177,7 +173,7 @@ public class ContentTypeManager  {
 	 * Override content type tree.
 	 */
 	private TreeMap<URI, CTOverride> overrideContentType;
-	
+
 	/**
 	 * @return the overrideContentType
 	 * @since 2.8.1
@@ -188,34 +184,36 @@ public class ContentTypeManager  {
 
 	private static ObjectFactory ctFactory = new ObjectFactory();
 
-	public ContentTypeManager()  {
+	public ContentTypeManager() {
 		init();
 	}
-	
+
 	private void init() {
 		defaultContentType = new TreeMap<String, CTDefault>();
 		overrideContentType = new TreeMap<URI, CTOverride>();
 	}
 
-//	/**
-//	 * Build association extention-> content type (will be stored in
-//	 * [Content_Types].xml) for example ContentType="image/png" Extension="png"
-//	 * 
-//	 * @param partUri
-//	 *            the uri that will be stored
-//	 * @return <b>false</b> if an error occured.
-//	 */
-//	public void addContentType(PartName partName, String contentType) {
-//		boolean defaultCTExists = false;
-//		String extension = partName.getExtension();
-//		if ((extension.length() == 0)
-//				|| (this.defaultContentType.containsKey(extension) 
-//						&& !(defaultCTExists = this.defaultContentType.containsValue(contentType)))) {
-//			this.addOverrideContentType(partName.getURI(), contentType);
-//		} else if (!defaultCTExists) {
-//			this.addDefaultContentType(extension, contentType);
-//		}
-//	}
+	// /**
+	// * Build association extention-> content type (will be stored in
+	// * [Content_Types].xml) for example ContentType="image/png"
+	// Extension="png"
+	// *
+	// * @param partUri
+	// * the uri that will be stored
+	// * @return <b>false</b> if an error occured.
+	// */
+	// public void addContentType(PartName partName, String contentType) {
+	// boolean defaultCTExists = false;
+	// String extension = partName.getExtension();
+	// if ((extension.length() == 0)
+	// || (this.defaultContentType.containsKey(extension)
+	// && !(defaultCTExists =
+	// this.defaultContentType.containsValue(contentType)))) {
+	// this.addOverrideContentType(partName.getURI(), contentType);
+	// } else if (!defaultCTExists) {
+	// this.addDefaultContentType(extension, contentType);
+	// }
+	// }
 
 	/**
 	 * Add an override content type for a specific part.
@@ -226,120 +224,118 @@ public class ContentTypeManager  {
 	 *            Content type of the part.
 	 */
 	public void addOverrideContentType(URI partUri, CTOverride contentType) {
-		log.debug("Registered " + partUri.toString() + " of type " + contentType.getContentType() );
+		log.debug("Registered " + partUri.toString() + " of type " + contentType.getContentType());
 		overrideContentType.put(partUri, contentType);
 	}
-	
+
 	public void addOverrideContentType(URI partUri, String contentType) {
 
 		CTOverride overrideCT = ctFactory.createCTOverride();
-		overrideCT.setPartName( partUri.toASCIIString() );
-		overrideCT.setContentType(contentType );
-		
+		overrideCT.setPartName(partUri.toASCIIString());
+		overrideCT.setContentType(contentType);
+
 		overrideContentType.put(partUri, overrideCT);
 	}
 
-//	public String getOverrideContentType(URI partUri) {
-//		return overrideContentType.get(partUri);
-//	}
+	// public String getOverrideContentType(URI partUri) {
+	// return overrideContentType.get(partUri);
+	// }
 
-
-	/* Given a content type, return the Part Name URI is it
-	 * overridden by.
-	 */ 
+	/*
+	 * Given a content type, return the Part Name URI is it overridden by.
+	 */
 	public URI getPartNameOverridenByContentType(String contentType) {
-		
+
 		// hmm, can there only be one instance of a given
 		// content type?
-		
+
 		Iterator i = overrideContentType.entrySet().iterator();
 		while (i.hasNext()) {
-			Map.Entry e = (Map.Entry)i.next();
+			Map.Entry e = (Map.Entry) i.next();
 			if (e != null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Inspecting " + e.getValue());
 				}
-				if ( ((CTOverride)e.getValue()).getContentType().equals(contentType) ) {
-//					log.debug("Matched!");
-					return (URI)e.getKey(); 
+				if (((CTOverride) e.getValue()).getContentType().equals(contentType)) {
+					// log.debug("Matched!");
+					return (URI) e.getKey();
 				}
-			} 
-		} 		
+			}
+		}
 		return null;
-		
+
 	}
-	
+
 	/* Return a part of the appropriate sub class */
-	public  Part getPart(String partName, Relationship rel) throws URISyntaxException, PartUnrecognisedException,
-	 InvalidFormatException {
-		
+	public Part getPart(String partName, Relationship rel)
+			throws URISyntaxException, PartUnrecognisedException, InvalidFormatException {
+
 		Part p;
 
 		// look for an override
 		CTOverride overrideCT = (CTOverride) overrideContentType.get(new URI(partName));
-		if (overrideCT!=null ) {
-			String contentType = new String(overrideCT.getContentType()); 
+		if (overrideCT != null) {
+			String contentType = new String(overrideCT.getContentType());
 			if (log.isDebugEnabled()) {
 				log.debug("Found content type '" + contentType + "' for " + partName);
-			}
-			 p = newPartForContentType(contentType, partName, rel);
-			 p.setContentType( new ContentType(contentType) );
-			 return p;
-		}		
-		
-		// if there is no override, get use the file extension
-		String ext = new String(partName.substring(partName.indexOf(".") + 1).toLowerCase());
-		log.debug("Looking at extension '" + ext);
-		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
-		if (defaultCT!=null ) {
-			String contentType = defaultCT.getContentType();
-			if (log.isDebugEnabled()) {			
-				log.debug("Found content type '" + contentType + "' for "
-								+ partName);
 			}
 			p = newPartForContentType(contentType, partName, rel);
 			p.setContentType(new ContentType(contentType));
 			return p;
 		}
-		
+
+		// if there is no override, get use the file extension
+		String ext = new String(partName.substring(partName.indexOf(".") + 1).toLowerCase());
+		log.debug("Looking at extension '" + ext);
+		CTDefault defaultCT = (CTDefault) defaultContentType.get(ext);
+		if (defaultCT != null) {
+			String contentType = defaultCT.getContentType();
+			if (log.isDebugEnabled()) {
+				log.debug("Found content type '" + contentType + "' for " + partName);
+			}
+			p = newPartForContentType(contentType, partName, rel);
+			p.setContentType(new ContentType(contentType));
+			return p;
+		}
+
 		// otherwise
 		log.error("No content type found for " + partName);
-		return null;		
-		
+		return null;
+
 	}
-	
+
 	public Part newPartForContentType(String contentType, String partName, Relationship rel)
-		throws InvalidFormatException, PartUnrecognisedException {
-				
+			throws InvalidFormatException, PartUnrecognisedException {
+
 		// TODO - a number of WordML parts aren't listed here!
-		if (rel!=null && rel.getType().equals(Namespaces.AF) ) {
+		if (rel != null && rel.getType().equals(Namespaces.AF)) {
 			// Could have just passed String relType
 			// Null where used from BPAI, and a FlatOpcXmlImporter case.
 			// Cases where rel is not available can prepare a suitable dummy
-			
-			AlternativeFormatInputPart afip = 
-				new AlternativeFormatInputPart(new PartName(partName) );
+
+			AlternativeFormatInputPart afip = new AlternativeFormatInputPart(new PartName(partName));
 			afip.setContentType(new ContentType(contentType));
 			return afip;
-			
-		} else if (rel!=null && rel.getType().equals(Namespaces.EMBEDDED_PKG) ) {
-			
-			EmbeddedPackagePart epp = new EmbeddedPackagePart(new PartName(partName) );
+
+		} else if (rel != null && rel.getType().equals(Namespaces.EMBEDDED_PKG)) {
+
+			EmbeddedPackagePart epp = new EmbeddedPackagePart(new PartName(partName));
 			epp.setContentType(new ContentType(contentType));
 			return epp;
 
-		} else if (rel!=null && rel.getType().equals(Namespaces.OLE_OBJECT) ) {
-			
+		} else if (rel != null && rel.getType().equals(Namespaces.OLE_OBJECT)) {
+
 			OleObjectBinaryPart olePart = new OleObjectBinaryPart(new PartName(partName));
 			olePart.setContentType(new ContentType(contentType));
 			return olePart;
-			
-		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
+
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) {
 			return CreateMainDocumentPartObject(partName);
-			// how is the main document distinguished from the glossary document?
+			// how is the main document distinguished from the glossary
+			// document?
 			// Answer:- Main Document is a Package level relationship target,
 			// whereas the Glossary Document is a Part-level target (from the
-			// Main Document part)						
+			// Main Document part)
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)) {
 			return CreateMainDocumentPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE)) {
@@ -347,52 +343,52 @@ public class ContentTypeManager  {
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)) {
 			return CreateMainDocumentPartObject(partName);
 		} else if (contentType.equals(ContentTypes.PACKAGE_COREPROPERTIES)) {
-			return CreateDocPropsCorePartObject(partName ); 
+			return CreateDocPropsCorePartObject(partName);
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMPROPERTIES)) {
-			return CreateDocPropsCustomPartObject(partName );
+			return CreateDocPropsCustomPartObject(partName);
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_EXTENDEDPROPERTIES)) {
-			return CreateDocPropsExtendedPartObject(partName );
-			
+			return CreateDocPropsExtendedPartObject(partName);
+
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE)) {
-			
-			// NB, since this is just "application/xml", it 
+
+			// NB, since this is just "application/xml", it
 			return new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(new PartName(partName));
-			
+
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGEPROPERTIES)) {
-			return CreateCustomXmlDataStoragePropertiesPartObject(partName );			
+			return CreateCustomXmlDataStoragePropertiesPartObject(partName);
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
-			return CreateObfuscatedFontPartObject(partName );
+			return CreateObfuscatedFontPartObject(partName);
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)
 				|| contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_XML_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.ActiveXControlXmlPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME)) {
-			return CreateThemePartObject(partName );
+			return CreateThemePartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS)) {
-			return CreateCommentsPartObject(partName );
+			return CreateCommentsPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS_EXTENDED)) {
 			return new CommentsExtendedPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_ENDNOTES)) {
-			return CreateEndnotesPartObject(partName );
+			return CreateEndnotesPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_FONTTABLE)) {
-			return CreateFontTablePartObject(partName );
+			return CreateFontTablePartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_FOOTER)) {
-			return CreateFooterPartObject(partName );
+			return CreateFooterPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_FOOTNOTES)) {
-			return CreateFootnotesPartObject(partName );
+			return CreateFootnotesPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_GLOSSARYDOCUMENT)) {
-			return CreateGlossaryDocumentPartObject(partName );
+			return CreateGlossaryDocumentPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_HEADER)) {
-			return CreateHeaderPartObject(partName );
+			return CreateHeaderPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_NUMBERING)) {
-			return CreateNumberingPartObject(partName );
+			return CreateNumberingPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_SETTINGS)) {
-			return CreateDocumentSettingsPartObject(partName );
-		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLES)) { 
-			return CreateStyleDefinitionsPartObject( partName);
+			return CreateDocumentSettingsPartObject(partName);
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLES)) {
+			return CreateStyleDefinitionsPartObject(partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_WEBSETTINGS)) {
-			return CreateWebSettingsPartObject(partName );
+			return CreateWebSettingsPartObject(partName);
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_DATA)) {
 			return new VbaDataPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT)) {
@@ -407,8 +403,10 @@ public class ContentTypeManager  {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_TIFF)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageTiffPart(new PartName(partName));
-//		} else if (contentType.equals(ContentTypes.IMAGE_EPS)) {
-//			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageEpsPart(new PartName(partName));
+			// } else if (contentType.equals(ContentTypes.IMAGE_EPS)) {
+			// return new
+			// org.docx4j.openpackaging.parts.WordprocessingML.ImageEpsPart(new
+			// PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_BMP)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageBmpPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_EMF) || contentType.equals(ContentTypes.IMAGE_EMF2)) {
@@ -419,118 +417,124 @@ public class ContentTypeManager  {
 			return new PeoplePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
 			return new VMLPart(new PartName(partName));
-//			return new VMLBinaryPart(new PartName(partName));				
+			// return new VMLBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
 			try {
 				return JaxbDmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
+				return new BinaryPart(new PartName(partName));
 			}
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentation")
 				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
 				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
-						) {
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)) {
 			try {
 				return JaxbPmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
+				return new BinaryPart(new PartName(partName));
 			}
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)
 				|| contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED)
 				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE)
-				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED)) { 
+				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED)) {
 			try {
 				return new WorkbookPart(new PartName(partName));
 			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
+				return new BinaryPart(new PartName(partName));
 			}
-			
+
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
 			try {
 				return JaxbSmlPart.newPartForContentType(contentType, partName);
 			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
+				return new BinaryPart(new PartName(partName));
 			}
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME_OVERRIDE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));	
-			
+			return new org.docx4j.openpackaging.parts.DrawingML.ThemeOverridePart(new PartName(partName));
+
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
-//			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
-			
-			// Use reflection, since the dig sig functionality is in Enterprise only
+			// return new
+			// org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new
+			// PartName(partName));
+
+			// Use reflection, since the dig sig functionality is in Enterprise
+			// only
 			try {
-				Class<?> xmlSignaturePart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart");
+				Class<?> xmlSignaturePart = Class
+						.forName("org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart");
 				Constructor<?> cons = xmlSignaturePart.getConstructor(PartName.class);
 				PartName pn = new PartName(partName);
 				return (Part) cons.newInstance(pn);
 			} catch (Exception e) {
-				return CreateDefaultXmlPartObject(partName );				
-			}			
-			
+				return CreateDefaultXmlPartObject(partName);
+			}
+
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_ORIGIN_PART)) {
-//			return new org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart(new PartName(partName));
-			
-			// Use reflection, since the dig sig functionality is in Enterprise only
+			// return new
+			// org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart(new
+			// PartName(partName));
+
+			// Use reflection, since the dig sig functionality is in Enterprise
+			// only
 			try {
-				Class<?> originPart = Class.forName("org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart");
+				Class<?> originPart = Class
+						.forName("org.docx4j.openpackaging.parts.digitalsignature.SignatureOriginPart");
 				Constructor<?> cons = originPart.getConstructor(PartName.class);
 				PartName pn = new PartName(partName);
 				return (Part) cons.newInstance(pn);
 			} catch (Exception e) {
-				return new BinaryPart( new PartName(partName));				
-			}			
-			
+				return new BinaryPart(new PartName(partName));
+			}
+
 		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_TASKPANES)) {
 			return new TaskpanesPart(new PartName(partName));
 
 		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_WEBEXTENSION)) {
 			return new WebExtensionPart(new PartName(partName));
-			
-		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
-				|| contentType.equals(ContentTypes.IMAGE_SVG)				
+
+		} else if (contentType.equals(ContentTypes.APPLICATION_XML) || contentType.equals(ContentTypes.IMAGE_SVG)
 				|| partName.endsWith(".xml")) {
-			
-			// Rarely (but sometimes) used, owing to OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
-			
+
+			// Rarely (but sometimes) used, owing to
+			// OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
+
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
 			// will catch the error and load it as a binary part instead.
-			
-			// For SVG, we could unmarshall with our jaxb-svg, but probably little reason to do that.
-			
+
+			// For SVG, we could unmarshall with our jaxb-svg, but probably
+			// little reason to do that.
+
 			if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLESWITHEFFECTS)) {
 				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");
-				
+
 			} else {
-				log.warn("DefaultPart used for part '" + partName 
-						+ "' of content type '" + contentType + "'");				
+				log.warn("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");
 			}
-			
-			return CreateDefaultXmlPartObject(partName );
-			
+
+			return CreateDefaultXmlPartObject(partName);
+
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_FONT_DATA)) {
-			
+
 			return new FontDataPart(new PartName(partName));
-			
+
 		} else {
-			
+
 			log.error("No subclass found for " + partName + "; defaulting to binary");
-			//throw new PartUnrecognisedException("No subclass found for " + partName + " (content type '" + contentType + "')");		
-			return new BinaryPart( new PartName(partName));
+			// throw new PartUnrecognisedException("No subclass found for " +
+			// partName + " (content type '" + contentType + "')");
+			return new BinaryPart(new PartName(partName));
 		}
 
 	}
 
-	public Part CreateDefaultXmlPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateDefaultXmlPartObject(String partName) throws InvalidFormatException {
 		return new DefaultXmlPart(new PartName(partName));
 	}
-	
-	public Part CreateMainDocumentPartObject(String partName)
-			throws InvalidFormatException {
+
+	public Part CreateMainDocumentPartObject(String partName) throws InvalidFormatException {
 		return new MainDocumentPart(new PartName(partName));
 	}
 
@@ -538,87 +542,71 @@ public class ContentTypeManager  {
 		return new StyleDefinitionsPart(new PartName(partName));
 	}
 
-	public Part CreateDocumentSettingsPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateDocumentSettingsPartObject(String partName) throws InvalidFormatException {
 		return new DocumentSettingsPart(new PartName(partName));
 	}
 
-	public Part CreateWebSettingsPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateWebSettingsPartObject(String partName) throws InvalidFormatException {
 		return new WebSettingsPart(new PartName(partName));
 	}
 
-	public Part CreateFontTablePartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateFontTablePartObject(String partName) throws InvalidFormatException {
 		return new FontTablePart(new PartName(partName));
 	}
 
-	public Part CreateThemePartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateThemePartObject(String partName) throws InvalidFormatException {
 		return new ThemePart(new PartName(partName));
 	}
 
-	public Part CreateDocPropsCorePartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateDocPropsCorePartObject(String partName) throws InvalidFormatException {
 		return new DocPropsCorePart(new PartName(partName));
 	}
 
-	public Part CreateDocPropsExtendedPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateDocPropsExtendedPartObject(String partName) throws InvalidFormatException {
 		return new DocPropsExtendedPart(new PartName(partName));
 	}
 
-	public Part CreateDocPropsCustomPartObject(String partName)
-			throws InvalidFormatException {
-		log.info("Using DocPropsCustomPart ...");		
+	public Part CreateDocPropsCustomPartObject(String partName) throws InvalidFormatException {
+		log.info("Using DocPropsCustomPart ...");
 		return new DocPropsCustomPart(new PartName(partName));
 	}
-	
-	public Part CreateCommentsPartObject(String partName)
-			throws InvalidFormatException {
+
+	public Part CreateCommentsPartObject(String partName) throws InvalidFormatException {
 		return new CommentsPart(new PartName(partName));
 	}
 
-	public Part CreateCustomXmlDataStoragePropertiesPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateCustomXmlDataStoragePropertiesPartObject(String partName) throws InvalidFormatException {
 		return new CustomXmlDataStoragePropertiesPart(new PartName(partName));
 	}
 
-	public Part CreateEndnotesPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateEndnotesPartObject(String partName) throws InvalidFormatException {
 		return new EndnotesPart(new PartName(partName));
 	}
 
-	public Part CreateFooterPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateFooterPartObject(String partName) throws InvalidFormatException {
 		return new FooterPart(new PartName(partName));
 	}
 
-	public Part CreateFootnotesPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateFootnotesPartObject(String partName) throws InvalidFormatException {
 		return new FootnotesPart(new PartName(partName));
 	}
 
-	public Part CreateGlossaryDocumentPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateGlossaryDocumentPartObject(String partName) throws InvalidFormatException {
 		return new GlossaryDocumentPart(new PartName(partName));
 	}
 
-	public Part CreateHeaderPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateHeaderPartObject(String partName) throws InvalidFormatException {
 		return new HeaderPart(new PartName(partName));
 	}
 
-	public Part CreateNumberingPartObject(String partName)
-			throws InvalidFormatException {
+	public Part CreateNumberingPartObject(String partName) throws InvalidFormatException {
 		return new NumberingDefinitionsPart(new PartName(partName));
 	}
-		
-	public Part CreateObfuscatedFontPartObject(String partName)
-			throws InvalidFormatException {
+
+	public Part CreateObfuscatedFontPartObject(String partName) throws InvalidFormatException {
 		return new ObfuscatedFontPart(new PartName(partName));
 	}
-	
+
 	/**
 	 * Add a content type associated with the specified extension.
 	 * 
@@ -628,31 +616,31 @@ public class ContentTypeManager  {
 	 *            The content type associated with the specified extension.
 	 */
 	public void addDefaultContentType(String extension, CTDefault contentType) {
-		log.debug("Registered " + extension );
+		log.debug("Registered " + extension);
 		defaultContentType.put(extension.toLowerCase(), contentType);
 	}
-	
+
 	public void addDefaultContentType(String extension, String contentType) {
-		
+
 		CTDefault defaultCT = ctFactory.createCTDefault();
 		defaultCT.setExtension(extension.toLowerCase());
 		defaultCT.setContentType(contentType);
-		
-		log.debug("Registered " + extension );
+
+		log.debug("Registered " + extension);
 		defaultContentType.put(extension.toLowerCase(), defaultCT);
 	}
-	
+
 	/**
 	 * @param partName
 	 * @param contentType
 	 * @since 6.1.0
 	 */
 	public void addOverrideContentType(PartName partName, String contentType) {
-		
+
 		CTOverride defaultCT = ctFactory.createCTOverride();
 		defaultCT.setPartName(partName.getName());
 		defaultCT.setContentType(contentType);
-		
+
 		overrideContentType.put(partName.getURI(), defaultCT);
 	}
 
@@ -660,8 +648,8 @@ public class ContentTypeManager  {
 	 * Delete a content type based on the specified part name. If the specified
 	 * part name is registered with an override content type, then this content
 	 * type is removed, else the content type is removed in the default content
-	 * type list if it exists.  Deprecated since you'd typically NOT want to
-	 * accidentally remove *.xml or *.rels from the default Content type list 
+	 * type list if it exists. Deprecated since you'd typically NOT want to
+	 * accidentally remove *.xml or *.rels from the default Content type list
 	 * 
 	 * @param partUri
 	 *            The part URI associated with the override content type to
@@ -671,10 +659,9 @@ public class ContentTypeManager  {
 	public void removeContentType(PartName partName) {
 		if (partName == null)
 			throw new IllegalArgumentException("partName");
-		
+
 		// Override content type
-		if (this.overrideContentType != null
-				&& (this.overrideContentType.get(partName.getURI()) != null)) {
+		if (this.overrideContentType != null && (this.overrideContentType.get(partName.getURI()) != null)) {
 			this.overrideContentType.remove(partName.getURI());
 			return;
 		}
@@ -683,7 +670,7 @@ public class ContentTypeManager  {
 	}
 
 	/**
-	 * Delete an override content type based on the specified part name. 
+	 * Delete an override content type based on the specified part name.
 	 * 
 	 * @param partUri
 	 *            The part URI associated with the override content type to
@@ -693,19 +680,18 @@ public class ContentTypeManager  {
 	public void removeOverrideContentType(PartName partName) {
 		if (partName == null)
 			throw new IllegalArgumentException("partName");
-		
+
 		// Override content type
-		if (this.overrideContentType != null
-				&& (this.overrideContentType.get(partName.getURI()) != null)) {
+		if (this.overrideContentType != null && (this.overrideContentType.get(partName.getURI()) != null)) {
 			this.overrideContentType.remove(partName.getURI());
 			return;
 		}
 	}
 
 	/**
-	 * Delete a default content type based on the specified part name. Note 
-	 * that you'd typically NOT want to remove *.xml or *.rels from the default
-	 * Content type list 
+	 * Delete a default content type based on the specified part name. Note that
+	 * you'd typically NOT want to remove *.xml or *.rels from the default
+	 * Content type list
 	 * 
 	 * @param partUri
 	 *            The part URI associated with the override content type to
@@ -717,12 +703,12 @@ public class ContentTypeManager  {
 		// Default content type
 		this.defaultContentType.remove(ext.toLowerCase());
 	}
-	
+
 	/**
-	 * Check if the specified content type is already registered
-	 * as a default content type.  We don't currently have a method
-	 * to check whether its registered as an override content type;
-	 * getContentType(PartName partName) may suffice for that purpose.
+	 * Check if the specified content type is already registered as a default
+	 * content type. We don't currently have a method to check whether its
+	 * registered as an override content type; getContentType(PartName partName)
+	 * may suffice for that purpose.
 	 * 
 	 * @param contentType
 	 *            The content type to check.
@@ -733,16 +719,16 @@ public class ContentTypeManager  {
 		if (contentType == null)
 			throw new IllegalArgumentException("contentType");
 
-		return this.defaultContentType.values().contains(contentType); 
-//				|| (this.overrideContentType != null 
-//						&& this.overrideContentType.values().contains(contentType)));
+		return this.defaultContentType.values().contains(contentType);
+		// || (this.overrideContentType != null
+		// && this.overrideContentType.values().contains(contentType)));
 	}
 
 	/**
-	 * Check if the specified content type is already registered
-	 * as a default content type.  We don't currently have a method
-	 * to check whether its registered as an override content type;
-	 * getContentType(PartName partName) may suffice for that purpose.
+	 * Check if the specified content type is already registered as a default
+	 * content type. We don't currently have a method to check whether its
+	 * registered as an override content type; getContentType(PartName partName)
+	 * may suffice for that purpose.
 	 * 
 	 * @param contentType
 	 *            The content type to check.
@@ -754,10 +740,9 @@ public class ContentTypeManager  {
 		if (contentType == null)
 			throw new IllegalArgumentException("contentType");
 
-		return (this.overrideContentType != null 
-				&& this.overrideContentType.values().contains(contentType));
+		return (this.overrideContentType != null && this.overrideContentType.values().contains(contentType));
 	}
-	
+
 	/**
 	 * Get the content type for the specified part, if any.
 	 * 
@@ -771,8 +756,7 @@ public class ContentTypeManager  {
 		if (partName == null)
 			throw new IllegalArgumentException("partName");
 
-		if ((this.overrideContentType != null)
-				&& this.overrideContentType.containsKey(partName.getURI()))
+		if ((this.overrideContentType != null) && this.overrideContentType.containsKey(partName.getURI()))
 			return this.overrideContentType.get(partName.getURI()).getContentType();
 
 		String extension = partName.getExtension().toLowerCase();
@@ -800,60 +784,62 @@ public class ContentTypeManager  {
 			this.overrideContentType.clear();
 	}
 
-	
-	public void parseContentTypesFile(InputStream contentTypes) 
-		throws InvalidFormatException {
-		
+	public void parseContentTypesFile(InputStream contentTypes) throws InvalidFormatException {
+
 		CTTypes types;
-		
+
 		try {
-	        XMLInputFactory xif = XMLInputFactory.newInstance();
-	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-	        XMLStreamReader xsr = xif.createXMLStreamReader(contentTypes);			
-	        
+			XMLInputFactory xif = XMLInputFactory.newInstance();
+			xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is
+																	// merely
+																	// ignored,
+																	// its
+																	// presence
+																	// doesn't
+																	// cause an
+																	// exception
+			XMLStreamReader xsr = xif.createXMLStreamReader(contentTypes);
+
 			Unmarshaller u = Context.jcContentTypes.createUnmarshaller();
-			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+
+			// u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.debug("unmarshalling " + this.getClass().getName() );		
-			
-			Object res = XmlUtils.unwrap(u.unmarshal( xsr ));
-			//types = (CTTypes)((JAXBElement)res).getValue();				
-			types = (CTTypes)res;
-			//log.debug( types.getClass().getName() + " unmarshalled" );
-			
+			log.debug("unmarshalling " + this.getClass().getName());
+
+			Object res = XmlUtils.unwrap(u.unmarshal(xsr));
+			// types = (CTTypes)((JAXBElement)res).getValue();
+			types = (CTTypes) res;
+			// log.debug( types.getClass().getName() + " unmarshalled" );
+
 			if (log.isDebugEnabled()) {
-				XmlUtils.marshaltoString(res, true, true, Context.jcContentTypes );
+				XmlUtils.marshaltoString(res, true, true, Context.jcContentTypes);
 			}
 
 			CTDefault defaultCT;
 			CTOverride overrideCT;
-			for(Object o : types.getDefaultOrOverride() ) {
-				
+			for (Object o : types.getDefaultOrOverride()) {
+
 				if (o instanceof CTDefault) {
-					defaultCT = (CTDefault)o;
-					addDefaultContentType( defaultCT.getExtension(), defaultCT  );
+					defaultCT = (CTDefault) o;
+					addDefaultContentType(defaultCT.getExtension(), defaultCT);
 				}
-				
+
 				if (o instanceof CTOverride) {
-					overrideCT = (CTOverride)o;
-					URI uri = new URI(overrideCT.getPartName() );
-					addOverrideContentType(uri, overrideCT );
+					overrideCT = (CTOverride) o;
+					URI uri = new URI(overrideCT.getPartName());
+					addOverrideContentType(uri, overrideCT);
 				}
 			}
-			
-		} catch (Exception e ) {
-			log.error(e.getMessage(), e);
+
+		} catch (Exception e) {
 			throw new InvalidFormatException("Bad [Content_Types].xml", e);
 		}
-		
-		
 	}
 
 	private CTTypes buildTypes() {
-		
+
 		// Build the JAXB object
 		ObjectFactory factory = new ObjectFactory();
 		CTTypes types = factory.createCTTypes();
@@ -866,169 +852,161 @@ public class ContentTypeManager  {
 			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
 				types.getDefaultOrOverride().add(entry.getValue());
 			}
-		}	
+		}
 		return types;
 	}
-	
-//	public void listTypes() {
-//		
-//
-//		for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
-//			
-//			System.out.println("// " + entry.getValue().getExtension());
-//			System.out.println("public final static String XX =" );
-//			System.out.println(entry.getValue().getContentType());
-//		}
-//
-//		if (overrideContentType != null) {
-//			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
-//				System.out.println("// " + entry.getValue().getPartName());
-//				System.out.println("public final static String XX =" );
-//				System.out.println("\"" + entry.getValue().getContentType() + "\";");
-//			}
-//		}	
-//	}
-	
-    public void marshal(org.w3c.dom.Node node) throws JAXBException {
-		
+
+	// public void listTypes() {
+	//
+	//
+	// for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
+	//
+	// System.out.println("// " + entry.getValue().getExtension());
+	// System.out.println("public final static String XX =" );
+	// System.out.println(entry.getValue().getContentType());
+	// }
+	//
+	// if (overrideContentType != null) {
+	// for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
+	// System.out.println("// " + entry.getValue().getPartName());
+	// System.out.println("public final static String XX =" );
+	// System.out.println("\"" + entry.getValue().getContentType() + "\";");
+	// }
+	// }
+	// }
+
+	public void marshal(org.w3c.dom.Node node) throws JAXBException {
+
 		try {
 			Marshaller marshaller = Context.jcContentTypes.createMarshaller();
-			
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper() );
-			
-			log.debug("marshalling " + this.getClass().getName() + " ..." );									
-			
+
+			NamespacePrefixMapperUtils.setProperty(marshaller, NamespacePrefixMapperUtils.getPrefixMapper());
+
+			log.debug("marshalling " + this.getClass().getName() + " ...");
+
 			marshaller.marshal(buildTypes(), node);
-			
-			log.debug("content types marshalled \n\n" );									
+
+			log.debug("content types marshalled \n\n");
 
 		} catch (JAXBException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage(), e);
 			throw e;
 		}
-    }
-    
-    public void marshal(java.io.OutputStream os) throws JAXBException {
-		
+	}
+
+	public void marshal(java.io.OutputStream os) throws JAXBException {
+
 		try {
 			Marshaller marshaller = Context.jcContentTypes.createMarshaller();
-			
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper() );
-			
-			log.debug("marshalling " + this.getClass().getName() + " ..." );									
+
+			NamespacePrefixMapperUtils.setProperty(marshaller, NamespacePrefixMapperUtils.getPrefixMapper());
+
+			log.debug("marshalling " + this.getClass().getName() + " ...");
 			marshaller.marshal(buildTypes(), os);
 
 		} catch (JAXBException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}
 
-	
-
-	/** Return a package of the appropriate type.  Used when loading an existing
-	 *  Package, with an already populated [Content_Types].xml.  When 
-	 *  creating a new Package, start with the new WordprocessingMLPackage constructor. */
+	/**
+	 * Return a package of the appropriate type. Used when loading an existing
+	 * Package, with an already populated [Content_Types].xml. When creating a
+	 * new Package, start with the new WordprocessingMLPackage constructor.
+	 */
 	public OpcPackage createPackage(String pkgContentType) throws InvalidFormatException {
-		
+
 		OpcPackage p;
-		
+
 		// Check overrides first
-		if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT) 
-				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) ) {
-			
+		if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)) {
+
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
-			p.setContentType(new ContentType(pkgContentType));			
+			p.setContentType(new ContentType(pkgContentType));
 			return p;
-			
-		} else if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
-				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)  ) {
-			
+
+		} else if (pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE)
+				|| pkgContentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)) {
+
 			log.info("Detected WordprocessingMLTemplatePackage package ");
 			p = new WordprocessingMLTemplatePackage(this);
-			p.setContentType(new ContentType(pkgContentType));			
+			p.setContentType(new ContentType(pkgContentType));
 			return p;
-			
-		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN) 
-				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
-				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED) 
-				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED) 
-				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
+
+		} else if (pkgContentType.equals(ContentTypes.PRESENTATIONML_MAIN)
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
+				|| pkgContentType.equals(ContentTypes.PRESENTATIONML_SLIDESHOW)) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
-			p.setContentType(new ContentType(pkgContentType));			
+			p.setContentType(new ContentType(pkgContentType));
 			return p;
-		} else if (pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK) 
-				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) 
-				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE) 
-				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) ) {
-			//  "xlam", "xlsb" ?
+		} else if (pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED)
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE)
+				|| pkgContentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED)) {
+			// "xlam", "xlsb" ?
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
-			p.setContentType(new ContentType(pkgContentType));			
-			return p;			
-		} else if (pkgContentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
+			p.setContentType(new ContentType(pkgContentType));
+			return p;
+		} else if (pkgContentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)) {
 			log.info("Detected Glox file ");
 			p = new GloxPackage(this);
-			p.setContentType(new ContentType(pkgContentType));			
-			return p;						
-		} 
-				
+			p.setContentType(new ContentType(pkgContentType));
+			return p;
+		}
+
 		// Nothing in overrides or defaults
-		//throw new InvalidFormatException("Couldn't identify package from " + pkgContentType);
+		// throw new InvalidFormatException("Couldn't identify package from " +
+		// pkgContentType);
 		log.error("Couldn't identify package from " + pkgContentType);
 		return new DefaultPackage(this);
 	}
 
 	/*
 	 * Gets the content type from an extension.
-	 
-	public static String getContentTypeFromExtension(String extension) {
-		if ((extension.equals(ContentTypes.EXTENSION_JPG_1))
-				|| (extension.equals(ContentTypes.EXTENSION_JPG_2))) {
-			return ContentTypes.IMAGE_JPEG;
-		}
-		if (extension.equals(ContentTypes.EXTENSION_PNG)) {
-			return ContentTypes.IMAGE_PNG;
-		}
-		if (extension.equals(ContentTypes.EXTENSION_GIF)) {
-			return ContentTypes.IMAGE_GIF;
-		}
-		if (extension.equals(ContentTypes.EXTENSION_TIFF)) {
-			return ContentTypes.IMAGE_TIFF;
-		}
-		if (extension.equals(ContentTypes.EXTENSION_PICT)) {
-			return ContentTypes.IMAGE_PICT;
-		}
-		return null;
-	}
-*/
-	
-    public boolean isContentEqual(ContentTypeManager other) throws Docx4JException {
-    	
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-    	ByteArrayOutputStream baos2 = new ByteArrayOutputStream(); 
-    	try {
-        	marshal(baos);
+	 * 
+	 * public static String getContentTypeFromExtension(String extension) { if
+	 * ((extension.equals(ContentTypes.EXTENSION_JPG_1)) ||
+	 * (extension.equals(ContentTypes.EXTENSION_JPG_2))) { return
+	 * ContentTypes.IMAGE_JPEG; } if
+	 * (extension.equals(ContentTypes.EXTENSION_PNG)) { return
+	 * ContentTypes.IMAGE_PNG; } if
+	 * (extension.equals(ContentTypes.EXTENSION_GIF)) { return
+	 * ContentTypes.IMAGE_GIF; } if
+	 * (extension.equals(ContentTypes.EXTENSION_TIFF)) { return
+	 * ContentTypes.IMAGE_TIFF; } if
+	 * (extension.equals(ContentTypes.EXTENSION_PICT)) { return
+	 * ContentTypes.IMAGE_PICT; } return null; }
+	 */
+
+	public boolean isContentEqual(ContentTypeManager other) throws Docx4JException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+		try {
+			marshal(baos);
 			other.marshal(baos2);
 		} catch (JAXBException e) {
 			throw new Docx4JException("Error marshalling parts", e);
 		}
-    	
-    	return java.util.Arrays.equals(baos.toByteArray(), baos2.toByteArray());
 
-    }
-	
-    public String toString() {
-    	
-    	CTTypes types = buildTypes();
-    	return XmlUtils.marshaltoString(types, true, true, Context.jcContentTypes);
-    	
-    }
-	
+		return java.util.Arrays.equals(baos.toByteArray(), baos2.toByteArray());
+
+	}
+
+	public String toString() {
+
+		CTTypes types = buildTypes();
+		return XmlUtils.marshaltoString(types, true, true, Context.jcContentTypes);
+
+	}
+
 }

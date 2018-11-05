@@ -27,21 +27,21 @@ import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
-public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
+public abstract class JaxbDmlPart<E> extends JaxbXmlPartXPathAware<E> {
 
 	public JaxbDmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
-		setJAXBContext(Context.jc);						
+		setJAXBContext(Context.jc);
 	}
 
 	public JaxbDmlPart() throws InvalidFormatException {
 		super(new PartName("/xl/blagh.xml"));
-		setJAXBContext(Context.jc);						
+		setJAXBContext(Context.jc);
 	}
 
 	public static Part newPartForContentType(String contentType, String partName)
-	throws InvalidFormatException, PartUnrecognisedException {
-		
+			throws InvalidFormatException, PartUnrecognisedException {
+
 		if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_COLORS)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DATA)) {
@@ -49,9 +49,12 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_STYLE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName)); 
-//		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
-//			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName));
+			// } else if
+			// (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
+			// return new
+			// org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new
+			// PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DRAWING)) {
 			return new Drawing(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_CHART)) {
@@ -60,30 +63,27 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPartXPathAware<E> {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutHeaderPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_CHART_SHAPES)) {
 			return new ChartShapePart(new PartName(partName));
+		} else {
+			throw new PartUnrecognisedException(
+					"No subclass found for " + partName + " (content type '" + contentType + "')");
 		}
-		else {
-			throw new PartUnrecognisedException("No subclass found for "
-					+ partName + " (content type '" + contentType + "')");
-		}
-	}	
-	
-//    public E unmarshal( java.io.InputStream is ) throws JAXBException {
-//    	
-//		try {
-//			setJAXBContext(Context.jcPML);						
-//		    		    
-//			Unmarshaller u = jc.createUnmarshaller();
-//			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-//
-//			jaxbElement = (E)u.unmarshal( is );						
-//			log.debug( this.getClass().getName() + " unmarshalled" );									
-//
-//		} catch (JAXBException e ) {
-//			log.error(e.getMessage(), e);
-//			throw e;
-//		}
-//		return jaxbElement;
-//    }	
-    
-	
+	}
+
+	// public E unmarshal( java.io.InputStream is ) throws JAXBException {
+	//
+	// try {
+	// setJAXBContext(Context.jcPML);
+	//
+	// Unmarshaller u = jc.createUnmarshaller();
+	// u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+	//
+	// jaxbElement = (E)u.unmarshal( is );
+	// log.debug( this.getClass().getName() + " unmarshalled" );
+	//
+	// } catch (JAXBException e ) {
+	// throw e;
+	// }
+	// return jaxbElement;
+	// }
+
 }
