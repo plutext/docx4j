@@ -214,6 +214,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		}
 	}
 	
+	@Override
 	public OpcPackage getPackage() {
 		return this;
 	}
@@ -281,7 +282,16 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		PackageIdentifier name = new PackageIdentifierTransient(docxFile.getName());
 		
 		try {
-			return OpcPackage.load(name, new FileInputStream(docxFile), password );
+			 final FileInputStream fileInputStream = new FileInputStream(docxFile);
+			    try {
+				return OpcPackage.load(name, fileInputStream, password);
+			    } finally {
+				try {
+				    fileInputStream.close();
+				} catch (final IOException e) {
+				    log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
+				}
+			    }
 		} catch (final FileNotFoundException e) {
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
@@ -302,7 +312,16 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	public static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password) throws Docx4JException {
 		
 		try {
-			return OpcPackage.load(pkgIdentifier, new FileInputStream(docxFile), password );
+			final FileInputStream fileInputStream = new FileInputStream(docxFile);
+			try {
+				return OpcPackage.load(pkgIdentifier, fileInputStream, password);
+			} finally {
+				try {
+					fileInputStream.close();
+				} catch (final IOException e) {
+					log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
+				}
+			}
 		} catch (final FileNotFoundException e) {
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
@@ -496,11 +515,18 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			return opcPackage;
 			
 		} else {
-			try {			
-				return load(pkgIdentifier,
-						new FileInputStream(file),
-						type,
-						password);
+			try {
+
+				final FileInputStream fileInputStream = new FileInputStream(file);
+				try {
+					return load(pkgIdentifier, fileInputStream, type, password);
+				} finally {
+					try {
+						fileInputStream.close();
+					} catch (final IOException e) {
+						log.warn("Could not close fileInputStream of file {}: {}", file.toString(), e.getMessage());
+					}
+				}
 			} catch (final FileNotFoundException e) {
 				throw new Docx4JException("Couldn't load file from " + file.getAbsolutePath(), e);
 			}
@@ -911,6 +937,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	
 
 	/** @since 2.7.2 */
+	@Override
 	public OpcPackage clone() {
 		
 		OpcPackage result = null;
@@ -983,6 +1010,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 * Reinit fields so this pkg object can be re-used.
 	 * @since 3.3.7
 	 */
+	@Override
 	public void reset() {
 		super.reset();
 		handled = new HashMap<String, String>();
