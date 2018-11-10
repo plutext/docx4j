@@ -172,10 +172,19 @@ public class TocStyles {
 			styleNameToID.put(name, clone.getStyleId());
 			log.info("Added a styles definition for " + name);
 			
+			// Remember, generally speaking, style name is standardised and English,
+			// but style id is localised, and basedOn is an IDREF.
+			
 			// Our default TOC styles assume a style with ID "Normal" is present.
-			// But it might have some other ID.
+			// There are 2 cases to consider:
+			// Case 1: user is using default TOC styles, with a non-English docx (so their document default style is something else)
+			// Case 2: user has substituted their own TOC styles (ie with localised style id).
+			// We don't worry about case 2 here.  User is responsible for ensuring the TOC styles are consistent with their document
+			// (ie are basedOn a style id present in their styles part)
+			
+			// For case 1
 			if (clone.getBasedOn()!=null
-					&& clone.getBasedOn().getVal().equals("Normal")
+					&& clone.getBasedOn().getVal().equals("Normal") /* the style id used in basedOn in our default styles */ 
 					&& defaultPStyleId!=null
 					&& !defaultPStyleId.equals("Normal")) {
 				// add it
