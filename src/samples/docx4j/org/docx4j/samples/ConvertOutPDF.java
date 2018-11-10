@@ -43,12 +43,13 @@ import org.docx4j.services.client.ConversionRateLimitException;
  * 
  * From v3.3.0, PDF output is by default via Plutext's commercial PDF Converter.
  * 
- * The evaluation instance is now at:
+ * In 6.1.0 or later, it defaults to a local instance you'd need to install.
+ * 
+ * There is an evaluation instance at:
  * 
  *  	https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert
  * 
- * In 6.1.0 or later, it defaults to a local instance you'd need to install.
- * So if you want to use the converter-eval instance, you'll need to uncomment below.
+ * but if you want to use it, you'll need to explicitly set that endpoint.
  *   
  * To specify your own instance, please set docx4j.properties property: 
  * 
@@ -71,9 +72,9 @@ public class ConvertOutPDF extends AbstractSample {
     	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
     	// URL of converter instance; 
-		Docx4jProperties.setProperty("com.plutext.converter.URL", 
+		//Docx4jProperties.setProperty("com.plutext.converter.URL", 
 		// .. install your own at 			
-				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");    	
+//				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");    	
 		// .. or perform a quick test against 
 //				"https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert");    	
     	
@@ -153,7 +154,7 @@ public class ConvertOutPDF extends AbstractSample {
 						// Possible if you send too many requests to converter-eval.plutext.com
 						// or a commercial SAAS endpoint.  Please install your own instance. 
 						System.err.println("API rate limit exceeded");
-						System.err.println("Maybe you sent too many requiests to converter-eval.plutext.com? Please install your own instance. ");
+						System.err.println("Maybe you sent too many requests to a third party instance? Please install your own instance. ");
 					
 					} else if ( e.getCause() instanceof ConversionException) {
 					

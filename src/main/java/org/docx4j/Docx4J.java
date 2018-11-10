@@ -754,7 +754,7 @@ public class Docx4J {
 		} else {
 			
 			// Configure this property to point to your own Converter instance.
-			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://converter-eval.plutext.com:80/v1/00000000-0000-0000-0000-000000000000/convert");
+			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			save(wmlPackage, baos);

@@ -726,7 +726,7 @@ public class TocGenerator {
     	    	
     	// 
 		String documentServicesEndpoint = Docx4jProperties.getProperty("com.plutext.converter.URL", 
-				"https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert");
+				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
 		
 		Converter converter = new ConverterHttp(documentServicesEndpoint); 
 
