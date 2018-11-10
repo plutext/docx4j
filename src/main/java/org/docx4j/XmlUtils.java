@@ -644,14 +644,14 @@ public class XmlUtils {
 	
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
 			java.util.Map<String, ?> mappings, JAXBContext jc) throws JAXBException {
-	    String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
+	    String wmlString = replace(wmlTemplateString, new StringBuilder(), mappings).toString();
 	    log.debug("Results of substitution: " + wmlString);
 	    return unmarshalString(wmlString, jc);
 	 }
 	
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
 			java.util.Map<String, ?> mappings, JAXBContext jc, Class<?> declaredType) throws JAXBException {
-	      String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
+	      String wmlString = replace(wmlTemplateString, new StringBuilder(), mappings).toString();
 	      return unmarshalString(wmlString, jc, declaredType);
 	   }
 	
