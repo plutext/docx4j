@@ -730,6 +730,8 @@ public class XmlUtils {
 	}
 	
 	/**
+	 * Knows how to setMcIgnorable on wml.Document only.
+	 * 
 	 * @param prefixMapper
 	 * @param o
 	 * @since 3.1.1
@@ -739,7 +741,8 @@ public class XmlUtils {
 		if (o instanceof org.docx4j.wml.Document) {
 			String ignorables = ((org.docx4j.wml.Document)o).getIgnorable();
 			if (ignorables!=null) {
-				prefixMapper.setMcIgnorable(ignorables);				
+				prefixMapper.setMcIgnorable(ignorables);	
+				// TODO, add getMcChoiceNamespaces()
 			}
 			return ignorables;
 		}
@@ -798,6 +801,9 @@ public class XmlUtils {
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
 			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			
+			// WARNING: that won't guarantee you have all the top level declarations you need
+			// if you are using MOXy. This is a TODO, using XMLStreamWriterWrapper 
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -970,7 +976,7 @@ public class XmlUtils {
 					DEBUG org.docx4j.XmlUtils .marshaltoW3CDomDocument line 903 - <w:abstractNumId w:val="0"></w:abstractNumId>
 					[Fatal Error] :1:28: The prefix "w" for element "w:abstractNumId" is not bound.	
 					
-					where in fact the real problem is a missng @XmlRootElement annotation on the parent node
+					where in fact the real problem is a missing @XmlRootElement annotation on the parent node
 					
 						<w:num xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:numId="1"><w:abstractNumId w:val="0"></w:abstractNumId></w:num>					
 					
