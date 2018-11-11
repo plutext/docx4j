@@ -227,6 +227,12 @@ public class BindingHandler {
 				}
 			}
 		}
+
+		Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
+		
+		public Map<String, org.opendope.xpaths.Xpaths.Xpath> getXpathsMap() {
+			return xpathsMap;
+		}
 		
 		public void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
@@ -239,7 +245,6 @@ public class BindingHandler {
 				getHyperlinkResolver().activateHyperlinkStyle(wordMLPackage);
 //			}
 				
-			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
 			
 			if ( wordMLPackage.getMainDocumentPart().getXPathsPart() == null) {
 				log.warn("OpenDoPE XPaths part missing"); // OK if no OpenDoPE stuff is used
