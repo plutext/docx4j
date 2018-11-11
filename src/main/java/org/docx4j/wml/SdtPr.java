@@ -29,6 +29,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -36,6 +37,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.w14.CTSdtCheckbox;
 import org.docx4j.w15.CTSdtAppearance;
 import org.docx4j.w15.CTSdtRepeatedSection;
@@ -420,7 +422,48 @@ public class SdtPr
     	}
     }
     
-
+    /**
+     * @param set
+     * @since 6.1.0
+     */
+    public void setShowingPlcHdr(boolean set) {
+    	
+    	JAXBElement<BooleanDefaultTrue> plcHdr = null;
+    	    	
+    	// Is there an existing value
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if (o instanceof JAXBElement 
+    				&& ((JAXBElement)o).getName().getLocalPart().equals("showingPlcHdr")) {
+    			
+    			plcHdr = (JAXBElement<BooleanDefaultTrue>)o;
+    			break;
+    		} 
+    	}
+    	
+    	if (plcHdr==null) {
+    		
+    		if (set) {
+    			plcHdr = Context.getWmlObjectFactory().createSdtPrShowingPlcHdr(new BooleanDefaultTrue() );
+    			getRPrOrAliasOrLock().add(plcHdr);
+    		}
+    		
+    	} else {
+    		
+    		if (set) {
+    			// if its false, set it
+    			if (!plcHdr.getValue().isVal()) {
+    				plcHdr.setValue(new BooleanDefaultTrue() );
+    			}
+    		} else /* remove */ {
+    			getRPrOrAliasOrLock().remove(plcHdr);
+    		}
+    		
+    	}
+    	
+    	
+    }
+    
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
