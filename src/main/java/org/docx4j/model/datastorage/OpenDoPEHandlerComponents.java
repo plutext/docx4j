@@ -10,7 +10,6 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang3.StringUtils;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -30,15 +29,11 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Id;
-import org.docx4j.wml.P;
-import org.docx4j.wml.PPr;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
-import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.opendope.conditions.Condition;
 import org.opendope.xpaths.Xpaths;
-import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -48,6 +43,7 @@ import org.w3c.dom.Element;
  * Process OpenDoPE components.
  * 
  * From 6.1, components can be at any level in the
+ * Main Document Part 
  * content hierarchy where an SdtBlock is allowed.
  * 
  * From 6.1, components support the idea of an XPath 
@@ -62,14 +58,12 @@ import org.w3c.dom.Element;
  * TODO: consider whether it is needed.  May be useful
  * for top level components which add headers/footers?
  * 
- * Note this is invoked after repeats in the document
- * itself have been processed.
- * 
  * @author jharrop
- *
  */
 public class OpenDoPEHandlerComponents {
 
+	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandlerComponents.class);
+	
 	// Docx4j 6.1: re-designed component processing model:
 	// 1. components don't have to be at the top paragraph level of the content tree,
 	// 2. they can use an XPath context
@@ -78,10 +72,16 @@ public class OpenDoPEHandlerComponents {
 	// 4. component processing is not recursive anymore
 	// 5. components typically use the "main" answer file
 	
+	// We only support components in the MainDocumentPart,
+	// since MergeDocx can concatenate content in that part,
+	// but not in other parts.
+	
 	// TODO: make this step optional
 	
 	private WordprocessingMLPackage srcPackage;
 
+	protected boolean justGotAComponent = false;
+	
 	private org.opendope.components.Components components;
 		
 	private Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap = null;
@@ -150,14 +150,13 @@ public class OpenDoPEHandlerComponents {
 	}	
 	
 	
-	private static Logger log = LoggerFactory.getLogger(OpenDoPEHandlerComponents.class);
 
-	protected boolean justGotAComponent = false;
 	
 	/**
-	 * altChunkRel.getId(), xpathId so TODO make this work across parts!
+	 * altChunkRel.getId(), xpathId 
 	 */
-	Map<String, String> altChunkXPathContexts = new HashMap<String, String>(); 
+	Map<String, String> altChunkXPathContexts = new HashMap<String, String>();
+		// We'd need PartName to map to that, if we were to support parts other than MDP!
 	
 	/**
 	 * Component processing 
@@ -172,15 +171,6 @@ public class OpenDoPEHandlerComponents {
 		
 		if (xpathsMap==null) return srcPackage;
 		
-		// A component can apply in both the main document part,
-		// and in headers/footers. See further
-		// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
-		// A component added to the
-		// main document part could add new headers/footers.
-		// So we need to work out what parts to preprocess
-		// here inside this do loop.
-		Set<ContentAccessor> partList = OpenDoPEHandler.getParts(srcPackage);
-
 //		System.out.println("before component processing");
 //		System.out.println(wordMLPackage.getMainDocumentPart().getXML());
 
@@ -189,31 +179,21 @@ public class OpenDoPEHandlerComponents {
 		// Convert any sdt with <w:tag w:val="od:component=comp1"/>
 		// to altChunk, and for MergeDocx users, to
 		// real WordML.
-		for (ContentAccessor part : partList) {
+		ContentAccessor part = srcPackage.getMainDocumentPart();
 
 //			LinkedList<Integer> continuousBeforeIndex = new LinkedList<Integer>();
 //			List<Boolean> continuousBefore = new ArrayList<Boolean>();
-	//
+//
 //			List<Boolean> continuousAfter = new ArrayList<Boolean>();
 
-			FindComponentsTraversor t = new FindComponentsTraversor();
-			t.wordMLPackage = srcPackage;
-			t.walkJAXBElements(part.getContent());		
-		}
-		
+		FindComponentsTraversor t = new FindComponentsTraversor();
+		t.wordMLPackage = srcPackage;
+		t.walkJAXBElements(part.getContent());		
 
 		if (!justGotAComponent) {
 			return srcPackage;
 		}
 		
-//		Map<QName, org.w3c.dom.Document> answerDomDocs = new HashMap<QName, org.w3c.dom.Document>();
-//		CustomXmlPart data = CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(srcPackage);
-//		if (data instanceof CustomXmlDataStoragePart) {
-//			Document doc = ((CustomXmlDataStoragePart)data).getData().getDocument();
-//			answerDomDocs.put(getQName(doc.getDocumentElement()), doc);
-//		} else {
-//			throw new Docx4JException("TODO: handle " + data.getClass().getName());
-//		}
 		Map<QName, CustomXmlPart> answerDomDocs = new HashMap<QName, CustomXmlPart>();
 		CustomXmlPart data = CustomXmlDataStoragePartSelector.getCustomXmlDataStoragePart(srcPackage);
 		if (data instanceof CustomXmlDataStoragePart) {
@@ -250,13 +230,11 @@ public class OpenDoPEHandlerComponents {
 			
 		} catch (ClassNotFoundException e) {
 			extensionMissing(e);
-			justGotAComponent = false;
 			return srcPackage;
 			// throw new Docx4JException("Problem processing w:altChunk", e);
 		} catch (NoSuchMethodException e) {
 			// Degrade gracefully
 			extensionMissing(e);
-			justGotAComponent = false;
 			return srcPackage;
 			// throw new Docx4JException("Problem processing w:altChunk", e);
 		} catch (Exception e) {
