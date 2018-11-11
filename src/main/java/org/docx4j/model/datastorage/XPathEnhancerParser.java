@@ -23,7 +23,14 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.language.AngleBracketTemplateLexer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class XPathEnhancerParser extends Parser {
+	
+	private static Logger log = LoggerFactory.getLogger(XPathEnhancerParser.class);
+	
+	
     public static final String[] tokenNames = new String[] {
         "<invalid>", "<EOR>", "<DOWN>", "<UP>", "PATHSEP", "ABRPATH", "LPAR", "RPAR", "LBRAC", "RBRAC", "MINUS", "PLUS", "DOT", "MUL", "DOTDOT", "AT", "COMMA", "PIPE", "LESS", "MORE", "LE", "GE", "COLON", "CC", "APOS", "QUOT", "AxisName", "NodeType", "Literal", "Number", "NCName", "Digits", "Whitespace", "NCNameStartChar", "NCNameChar", "PermittedHighSurrogateChar", "LowSurrogateChar", "'processing-instruction'", "'or'", "'and'", "'='", "'!='", "'div'", "'mod'", "'$'"
     };
@@ -115,6 +122,12 @@ public class XPathEnhancerParser extends Parser {
     private int prefixLength;
 
     public static String enhanceXPath(final String prefix, final int index, final String xpath) {
+    	
+    	if (log.isDebugEnabled()) {
+    		log.debug("prefix: " + prefix);
+    		log.debug("index: " + index);
+    		log.debug("xpath: " + xpath);
+    	}
         
       final ANTLRStringStream stringStream = new ANTLRStringStream(xpath);
       final XPathEnhancerLexer xl = new XPathEnhancerLexer(stringStream);
