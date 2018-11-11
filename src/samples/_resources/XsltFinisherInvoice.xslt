@@ -20,24 +20,21 @@
     version="1.0"
         exclude-result-prefixes="java xalan w a o v WX aml w10 pkg wp pic">	
         
-<!--  In this XSLT, you can apply arbitrary transformations to your OpenXML.
+<!--  Example: shading a row in the invoice example .
 
-	  A typical use is to apply formatting depending on the bound values.
+	  See ContentControlBindingExtensions for an example of how to use this. 
 
-      This template is a sample which you can modify/extend to meet your needs.
-      
-      To point to your template, adjust docx4jproperty docx4j.model.datastorage.XsltFinisher.xslt.
-      Unless you change that, the code expects you to rename this XsltFinisherCustom.xslt
-      
-	  See ContentControlBindingExtensions for an example of how to use this.       
+	  In this XSLT, you can apply arbitrary transformations to your OpenXML.
 
 		w:sdtPr/w:tag/@w:val='od:finish=xyz'
 		
 	  by convention would be used to invoke a template named xyz.
 
-	  This XSLT can be applied after binding has been performed.
-      
-      See also XsltFinisherInvoice and XsltFinisherOpenAPI for examples. 
+	  This XSLT is applied after binding has been performed.
+	  
+	  A typical use is to apply formatting depending on the bound values.
+	  
+	  This is an example, for use with the invoice template in sample-docs/word/databinding.
 
  -->        
         
@@ -59,25 +56,39 @@
   </xsl:template>
   
   <xsl:template match="w:sdt">  
+  <!-- 
+  	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
+
+	<xsl:variable name="parent" select="local-name(ancestor::*[self::w:body or self::w:hdr or self::w:ftr or self::w:p or self::w:r or self::w:tbl or self::w:tr or self::w:tc][1])" />
+	<xsl:variable name="child"  select="local-name(descendant::*[self::w:p or self::w:r or self::w:t or self::w:tbl or self::w:tr or self::w:tc][1])" />
+ -->
 	<xsl:choose>
 
 		<xsl:when
 			test="contains(string(w:sdtPr/w:tag/@w:val), 'od:finish')">
+			
+		<xsl:variable name="dummy"
+	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(string(w:sdtPr/w:tag/@w:val))" />
+			
 			
 			<!--  call extension function to get template name -->
 			<xsl:variable name="tagVal" select="string(w:sdtPr/w:tag/@w:val)" />
 			<xsl:variable name="templateName" select="java:org.docx4j.model.datastorage.XsltFinisher.getTemplateName($tagVal)" />			
 
 			<!--  then invoke it  -->
-			<!--  
-				<xsl:comment><xsl:value-of select="$templateName"/></xsl:comment>
-		 	-->
-		 
+			<xsl:comment><xsl:value-of select="$templateName"/></xsl:comment>
+			<!--  the following doesn't work
+				<xsl:call-template name="{$templateName}"/>
+				but might in Saxon: https://www.oxygenxml.com/archives/xsl-list/200005/msg01114.html
+				with saxon:allow-avt="yes"
+				
+				So instead:
+					 -->
+		
 			<xsl:choose>
-
-				<!-- add your tests here; this one would match od:finish=finishVal1 -->		
-				<xsl:when test="$templateName = 'finishVal1'">
-					<xsl:call-template name="finishVal1Template" />
+		
+				<xsl:when test="$templateName = 't_r'">
+					<xsl:call-template name="invoiceShade" />
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:comment>Missing action for <xsl:value-of select="$templateName"/></xsl:comment>
@@ -98,10 +109,8 @@
 	</xsl:choose>
   </xsl:template>
 
- 
-<!--  Example: shading a row in the invoice example.
-      Replace this with what you need.  -->  
-  <xsl:template name="finishVal1Template">  
+<!--  Example: shading a row in the invoice example  -->  
+  <xsl:template name="invoiceShade">  
 
 	
 	<!-- get the XPath of the 2nd cell; but most flexible to just pass sdtPr -->
@@ -147,7 +156,7 @@
     <xsl:template match="w:tcPr" mode="invoice_Action">
     
     	<xsl:variable name="fillColor"
-     		select="java:org.docx4j.model.datastorage.XsltFinisher.getParam($finisherParams, 'invoiceShade', 'fillColor')"/>
+     		select="java:org.docx4j.model.datastorage.XsltFinisher.getParam($finisherParams, 't_r', 'fillColor')"/>
     
     	<w:tcPr>
     		<w:shd w:color="auto" w:fill="{$fillColor}" w:val="clear"/>

@@ -191,6 +191,8 @@ public class XsltFinisher {
 	 * 
 	 * - string vs int / number?
 	 * 
+	 * - method to add image
+	 * 
 	 */
 	
 	public static String getXPathValue(
@@ -212,7 +214,19 @@ public class XsltFinisher {
 		String storeItemId = dataBinding.getStoreItemID();
 		String xpath = dataBinding.getXpath();
 		String prefixMappings = dataBinding.getPrefixMappings();
+		
+		return getXPathValue(pathMap, pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+	}
 
+	public static String getXPathValue(
+			Map<String, String> pathMap,
+			WordprocessingMLPackage pkg, 			
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			String storeItemId,
+			String xpath,
+			String prefixMappings
+			) {
+		
 		String r=null;
 		if (pathMap!=null ) {
 			// Try the "cache"
@@ -241,7 +255,7 @@ public class XsltFinisher {
 		
 		return r;
 	}
-
+	
 	private static String normalisePath(String xpIn) {
 		
 		return xpIn.replace("][1]", "]");

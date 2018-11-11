@@ -21,7 +21,7 @@ public class XsltProviderImpl implements XsltProvider {
 			xsltSource = new StreamSource(
 						ResourceUtils.getResourceViaProperty(
 								"docx4j.model.datastorage.XsltFinisher.xslt",
-								"org/docx4j/model/datastorage/XsltFinisher.xslt"));
+								"XsltFinisherCustom.xslt"));
 		} catch (IOException e) {
 			throw new TransformerConfigurationException(e.getMessage(), e);
 		}
