@@ -156,6 +156,11 @@ public class FlatOpcXmlCreator implements Output {
 			JAXBContext jc = Context.jcXmlPackage;
 			Marshaller marshaller=jc.createMarshaller();
 			
+			// TODO 6.1.0 JAXB_FORMATTED_OUTPUT here doesn't work.
+			// Changing org/docx4j/org/apache/xml/serializer/docx4j_xalan_output_xml.properties
+			// to indent=yes doesn't help either.
+			// But you can get formatted output using the approach demo'd in the main method below.
+			
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 				NamespacePrefixMapperUtils.setProperty(marshaller, 
 						NamespacePrefixMapperUtils.getPrefixMapper());

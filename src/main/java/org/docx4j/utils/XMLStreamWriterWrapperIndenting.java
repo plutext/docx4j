@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
  */
 public class XMLStreamWriterWrapperIndenting extends XMLStreamWriterWrapper {
 	
+	// TODO: write newline before element with self-closing tag. 
+	
 	protected static Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapperIndenting.class);
 		
     private int depth = 0;
