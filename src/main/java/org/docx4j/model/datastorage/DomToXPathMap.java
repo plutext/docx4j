@@ -135,7 +135,7 @@ public class DomToXPathMap {
                 	countMap.put(nxpath, 0);
                 } else {
                 	String childName = null;
-                	boolean singleChild = true; // until proven otherwise
+                	boolean singleChild = true; // do all children have the same name? true until proven otherwise
                 	int actualCount=0;
                 	int countOtherElements=0;
                 	int countTextNodes = 0;
@@ -154,24 +154,41 @@ public class DomToXPathMap {
                     			singleChild = false; // count not useful for REPEAT purpose, but still useful for condition eval
                     			countOtherElements++;
                     		}
-                    		
                     	}
+                    	// Note we are ignoring comments and PIs here.  Putting those in your XML part is unsupported.
                     	
                     	walkTree( (Node)children.item(i));
                     }
                     if (singleChild) {
+                    	// all children have the same name
                     	countMap.put(nxpath, actualCount);                    	
+                    	if (log.isDebugEnabled()) {
+                    		log.debug(nxpath + "= " + actualCount);
+                    	}
                     } else {
                     	// store count for condition count( pre calculation;
                     	// it is convenient to store it in the same map
-                    	countMap.put(PREFIX_ALL_NODES + nxpath, actualCount + countOtherElements + countTextNodes);  
+                    	
+                    	// we don't do mixed content, so only count text nodes if
+                    	// there is no element content (to avoid whitespace treated as significant as a text node between 2 real nodes and counting)
+                    	// TODO: detect mixed content and warn?
+                    	int val;
+                    	if (actualCount + countOtherElements>0) {
+                        	val = actualCount + countOtherElements;                    		
+                    	} else {
+                        	val = countTextNodes;                    		                    		
+                    	}
+                    	
+                    	countMap.put(PREFIX_ALL_NODES + nxpath, val);  
                     	/* NB XPath spec says 
                     	 * 
                     	 *   The count function returns the number of nodes in the argument node-set.
                     	 *   
                     	 * which I suspect includes text nodes.  
                     	 */
-                    	
+                    	if (log.isDebugEnabled()) {
+                    		log.debug(PREFIX_ALL_NODES + " {} : {} = {} + {} + {} ", nxpath, val,  actualCount, countOtherElements, countTextNodes );
+                    	}
                     }
                 }
                 
