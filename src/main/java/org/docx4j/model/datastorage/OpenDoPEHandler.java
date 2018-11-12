@@ -791,10 +791,13 @@ public class OpenDoPEHandler {
 		if (StringUtils.isEmpty(repeatId))
 			return new ArrayList<Object>();
 
-//		org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(
-//				xPaths, repeatId);		
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = xpathsMap.get(repeatId);
 
+		if (xpathObj==null) {
+			log.error("repeat " + repeatId + " is missing from xpaths");
+			throw new RuntimeException("repeat " + repeatId + " is missing from xpaths");
+		}
+		
 		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 		String xpath = xpathObj.getDataBinding().getXpath();
 		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
@@ -865,6 +868,44 @@ public class OpenDoPEHandler {
 	public long fixBTime = 0;
 	
 	/**
+	 * Massage the xpath into an expected format, by dropping
+	 * any trailing '/' or [1]
+	 * 
+	 * @param xpath
+	 * @return
+	 */
+	protected static String getRepeatXpathBase(String xpath) {
+		
+		String xpathBase;
+		
+		// if (xpath.endsWith("/*")) {
+		// xpathBase = xpath.substring(0, xpath.length()-2);
+		// } else
+		if (xpath.endsWith("/")) {
+			xpathBase = xpath.substring(0, xpath.length() - 1);
+
+		} else 
+			// Check, whether the xpath ends with a [1]. If so, guess it comes
+			// from a round-tripped path and strip it
+			if (xpath.endsWith("[1]")) {
+
+				xpathBase = xpath.substring(0, xpath.length() - 3);
+
+		} else {
+			xpathBase = xpath;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("-> " + xpathBase);
+		}
+
+		// DON'T Drop any trailing position! That breaks nested repeats
+		// if (xpathBase.endsWith("]"))
+		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
+		
+		return xpathBase;
+	}
+	
+	/**
 	 * Process a repeat, whether its an OpenDoPE repeat, or a w15:RepeatingSection
 	 * @param sdt
 	 * @param customXmlDataStorageParts
@@ -880,46 +921,79 @@ public class OpenDoPEHandler {
 			String prefixMappings,
 			boolean isW15RepeatingSection) throws W15RepeatZeroException {
 
-
+		
+		if (log.isDebugEnabled()) {
+			log.debug("/n/n Repeat: " + xpath);
+			log.debug("   " + xpath);
+		}
 		long startTime = System.currentTimeMillis();
 		
 		// Get the bound XML
-		String xpathBase;
-		// if (xpath.endsWith("/*")) {
-		// xpathBase = xpath.substring(0, xpath.length()-2);
-		// } else
-		if (xpath.endsWith("/")) {
-			xpathBase = xpath.substring(0, xpath.length() - 1);
+		String xpathBase = getRepeatXpathBase(xpath);
 
-			// Check, whether the xpath ends with a [1]. If so, guess it comes
-			// from a round-tripped path and strip it
-		} else if (xpath.endsWith("[1]")) {
-			xpathBase = xpath.substring(0, xpath.length() - 3);
-
-		} else {
-			xpathBase = xpath;
-		}
-
-		// DON'T Drop any trailing position! That breaks nested repeats
-		// if (xpathBase.endsWith("]"))
-		// xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
-
-		log.info("/n/n Repeat: using xpath: " + xpathBase + " and " + prefixMappings);
+//		log.info("/n/n Repeat: using xpath: " + xpathBase + " and prefix mapping " + prefixMappings);
 		
-		String tmpPath = xpathBase.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
-		tmpPath = tmpPath.substring(0,tmpPath.lastIndexOf("/")); // parent
-//		System.out.println(tmpPath + ":" + this.countMap.get(tmpPath));
+		String countPath = null; // used for domToXPathMap
 		
 		Integer numRepeats = null;
-		if (domToXPathMap!=null) numRepeats = this.domToXPathMap.getCountMap().get(tmpPath); // @since 3.3.6
+		if (domToXPathMap!=null) {
+
+			countPath = xpathBase.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+			//countPath = countPath.replace("*[1]", "*");  // DO NOT do that; it would be wrong! See XPathEnhancerTest  
+
+			if (log.isDebugEnabled()) {
+				log.debug("-> " + countPath);
+			}
+			
+			if (countPath.endsWith("*")) {				
+				// experimental, 6.1.0
+				log.debug("ends with * in " + countPath );
+				String tmpPath2 = countPath.substring(0,countPath.lastIndexOf("/")); // parent
+				log.debug("so lookup " + tmpPath2 );
+				numRepeats = domToXPathMap.getCountMap().get(DomToXPathMap.PREFIX_ALL_NODES + tmpPath2);
+				log.debug(" .. result " + numRepeats);
+				
+				/* TODO doesn't match, since we look up:
+				 * 
+				 *   /yaml/components[1]/schemas[1]
+				 *   
+				 * but map contains 
+				 * 
+				 *   /yaml[1]/components[1]/schemas[1]
+				 */
+			} else if (countPath.contains("*")) {
+				log.debug("skipping domToXPathMap.getCountMap() for " + countPath);
+			} else {
+				// if animals/dog is repeating, we need to count dogs (this gives us the number of child nodes)
+				// but what if there is a mix of dog and cat?
+				// Well, if there is, the entry will be  under PREFIX_ALL_NODES, so this will return null, which is what
+				// we want (it falls back to old processing below).
+				//countPath = countPath.substring(0,countPath.lastIndexOf("/")); // parent
+				//numRepeats = this.domToXPathMap.getCountMap().get(countPath); // @since 3.3.6	
+				// BUT CONSIDER: is there a problem if the user wishes to repeat dog, but the all children are actually cat,
+				// so that it is cat which is counted and stored under parent?! YES, TODO FIXME.  If the user wraps a 
+				// repeat around dog, they are entitled to expect that it repeat (and not any cat)
+				// So in 6.1.0, we fallback to evaluating the XPath properly to be sure we get this right. Correct but slower.
+				// (this is better than saying: don't have mixed children if you want to repeat just one type) 
+				// Alternatively, you could repeat * which would be handled above, then have a condition inside sensitive to child name.
+				log.debug("skipping domToXPathMap.getCountMap() for " + countPath);
+			}
+		}
 		
 		if (numRepeats==null 
 				|| log.isDebugEnabled() ) {
 			
-			// fallback to old way
-			log.info("countMap null for " + tmpPath);
-			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts, storeItemId, xpathBase, prefixMappings);
+			// fallback to old way using xpathBase (ie original unchanged value)
 			
+			if (log.isDebugEnabled()) {
+				log.debug("debug enabled, so instead of countMap for {}, query {} ",  countPath, xpathBase);
+			} else {
+				log.info("countMap null for {}, so query {} ",  countPath, xpathBase);				
+			}
+			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts, storeItemId, 
+					xpathBase, prefixMappings);
+			
+			// Debug, check counts match
 			if (numRepeats!=null
 					&& numRepeats!=repeatedSiblings.size() ) {
 				String message = "For " + xpathBase + ", " + numRepeats + "!=" + repeatedSiblings.size();
@@ -968,7 +1042,7 @@ public class OpenDoPEHandler {
 			dt.index = i;
 			new TraversalUtil(repeated.get(i), dt);
 		}
-		log.info(".. deep traversals done ");
+		log.info(".. deep traversals done \n\n");
 		
 		fixBTime += (System.currentTimeMillis()-startTime);
 		

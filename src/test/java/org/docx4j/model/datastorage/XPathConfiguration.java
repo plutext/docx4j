@@ -1,4 +1,4 @@
-package org.docx4j.xpathextend.grammar;
+package org.docx4j.model.datastorage;
 
 public class XPathConfiguration {
 
