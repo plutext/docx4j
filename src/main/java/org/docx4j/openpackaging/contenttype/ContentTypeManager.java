@@ -51,7 +51,6 @@ package org.docx4j.openpackaging.contenttype;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
@@ -71,10 +70,10 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
+import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
-import org.docx4j.openpackaging.packages.DefaultPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLTemplatePackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
@@ -845,7 +844,6 @@ public class ContentTypeManager  {
 			}
 			
 		} catch (Exception e ) {
-			log.error(e.getMessage(), e);
 			throw new InvalidFormatException("Bad [Content_Types].xml", e);
 		}
 		

@@ -119,7 +119,6 @@ public class TagSingleBox extends SdtTagHandler {
 			return attachContents(docfrag, xhtmlDiv, contents);
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 
@@ -146,7 +145,6 @@ public class TagSingleBox extends SdtTagHandler {
 				return attachContents(docfrag, xhtmlDiv, contents);
 				
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
 				throw new TransformerException(e);
 			}
 		}

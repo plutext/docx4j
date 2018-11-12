@@ -19,7 +19,6 @@
  */
 package org.docx4j.convert.out.common;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import org.docx4j.convert.out.AbstractConversionSettings;
@@ -96,7 +95,6 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			logDebugStep(log, "Conversion done", startTime);
 			
 //		} catch (Docx4JException e) {
-//			log.error(e.getMessage(), e);
 //			throw e;
 		} catch (IllegalArgumentException e) {
 			if (e.getMessage().contains("Only non-null Positions with an index can be checked")) {
@@ -105,7 +103,6 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 				throw new Docx4JException("Exception exporting package", e);
 			}
 		} catch (Exception e) {
-			log.error("Exception exporting package", e);
 			throw new Docx4JException("Exception exporting package", e);
 		} 
 	}

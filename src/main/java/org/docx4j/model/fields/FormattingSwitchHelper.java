@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.wml.NumberFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Formats the string value of the field according to the three possible formatting switches:
@@ -209,6 +209,9 @@ public class FormattingSwitchHelper {
 		public FieldResultIsNotADateOrTimeException(String string) {
 			super(string);
 		}
+		public FieldResultIsNotADateOrTimeException(String string,Exception cause) {
+			super(string,cause);
+		}
 	}
 	
 	private static class FieldResultIsNotANumberException extends Exception {
@@ -366,8 +369,7 @@ public class FormattingSwitchHelper {
 				
 				return (Date)dateTimeFormat.parse(dateStr);
 			} catch (ParseException e) {
-				log.warn("Can't parse " + dateStr + " using format " + inputFormat);				
-				throw new FieldResultIsNotADateOrTimeException();
+				throw new FieldResultIsNotADateOrTimeException("Can't parse " + dateStr + " using format " + inputFormat,e);
 			}
 		}
 	}

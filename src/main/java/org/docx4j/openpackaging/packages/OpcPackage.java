@@ -55,11 +55,9 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.PackageRelsUtil;
-import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.Save;
@@ -285,7 +283,6 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		try {
 			return OpcPackage.load(name, new FileInputStream(docxFile), password );
 		} catch (final FileNotFoundException e) {
-			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
 	}
@@ -307,7 +304,6 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		try {
 			return OpcPackage.load(pkgIdentifier, new FileInputStream(docxFile), password );
 		} catch (final FileNotFoundException e) {
-			OpcPackage.log.error(e.getMessage(), e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
 	}

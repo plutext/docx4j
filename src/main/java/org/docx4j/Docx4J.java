@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,26 +56,20 @@ import org.docx4j.model.datastorage.OpenDoPEIntegrityAfterBinding;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.model.datastorage.XsltFinisher;
 import org.docx4j.model.datastorage.XsltProvider;
-import org.docx4j.model.datastorage.XsltProviderImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.Filetype;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.services.client.ConversionException;
 import org.docx4j.services.client.Converter;
 import org.docx4j.services.client.ConverterHttp;
 import org.docx4j.services.client.Format;
@@ -794,8 +787,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.info("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage());
-			throw new Docx4JException(e.getMessage(), e);
+			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterVisitor not found; if you want it, add docx4j-export-FO to your path.  Doing so will disable Plutext's PDF Converter." + "/n" + e.getMessage(), e);
 		}			
 	}
 
@@ -810,8 +802,7 @@ public class Docx4J {
 			return (Exporter<FOSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			log.info("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage());
-			throw new Docx4JException(e.getMessage(), e);
+			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage(), e);
 		}			
 		
 	}

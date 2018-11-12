@@ -46,12 +46,9 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 				docfrag.appendChild(xhtmlDiv);						
     			return attachContents(docfrag, xhtmlDiv, childResults);
 			}
-			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
-
 	}
 	
 
@@ -81,12 +78,8 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 				docfrag.appendChild(xhtmlDiv);						
     			return attachContents(docfrag, xhtmlDiv, resultSoFar);
 			}
-			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 	}
-	
-	    	
 }

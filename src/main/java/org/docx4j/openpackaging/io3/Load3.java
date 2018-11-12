@@ -220,7 +220,6 @@ public class Load3 extends Load {
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
 			
 		} finally {

@@ -167,7 +167,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				return new PartName(PartName.getRelationshipsPartName(
 						sourceP.getPartName().getName() ));
 			} catch (InvalidFormatException e) {
-				log.error(e.getMessage(), e);
 				throw new RuntimeException(e);
 			}
 		} else {

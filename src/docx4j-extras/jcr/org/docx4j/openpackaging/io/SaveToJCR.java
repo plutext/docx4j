@@ -732,10 +732,8 @@ public class SaveToJCR {
 			
 			Version firstVersion = cmContentNode.checkin();
 		} catch (Exception e ) {
-			log.error(e);
 			throw new Docx4JException("Failed to put binary part", e);			
 		} finally {
-			
 			try {
 				log.debug("closing binary input stream");
 				bin.close();

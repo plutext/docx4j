@@ -188,7 +188,6 @@ public class LoadFromZipNG extends Load {
             }
             zis.close();
         } catch (Exception e) {
-            log.error(e.getMessage());
             throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
         }	
 	            
@@ -270,9 +269,7 @@ public class LoadFromZipNG extends Load {
 			rp.unmarshal(is);
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new Docx4JException("Error getting document from Zipped Part: _rels/.rels " , e);
-			
 		} finally {
 			IOUtils.closeQuietly(is);
 		}
