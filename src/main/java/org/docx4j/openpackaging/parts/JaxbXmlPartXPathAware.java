@@ -21,15 +21,12 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -713,7 +710,6 @@ implements XPathEnabled<E> {
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-			log.error(e.getMessage(), e);
 			throw e;
 		}
 	}

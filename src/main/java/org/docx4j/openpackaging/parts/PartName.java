@@ -153,7 +153,6 @@ public final class PartName implements Comparable<PartName> {
 		try {
 			partURI = new URI(partName);
 		} catch (URISyntaxException e) {
-			log.error( e.getMessage() );
 			throw new IllegalArgumentException(
 					"partName argmument is not a valid OPC part name !");
 		}

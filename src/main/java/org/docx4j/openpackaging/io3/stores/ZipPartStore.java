@@ -36,11 +36,11 @@ import java.util.zip.CRC32;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -113,7 +113,6 @@ public class ZipPartStore implements PartStore {
 			} catch (PartTooLargeException e) {
 				throw e;
 			} catch (Exception e) {
-	            log.error(e.getMessage());
 	            throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
 			}
 		}
@@ -159,10 +158,8 @@ public class ZipPartStore implements PartStore {
 		} catch (PartTooLargeException e) {
 			throw e;
         } catch (Exception e) {
-            log.error(e.getMessage());
             throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
         }
-
 	}
 
 	private PartStore sourcePartStore;

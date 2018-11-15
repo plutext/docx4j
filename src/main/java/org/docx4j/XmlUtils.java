@@ -41,7 +41,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -66,10 +65,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
-import org.docx4j.jaxb.JAXBImplementation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -1520,8 +1517,7 @@ public class XmlUtils {
             }
             return result;
         } catch (XPathExpressionException e) {
-			log.error("Problem with '" + xpathExpression + "'", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Problem with '" + xpathExpression + "'",e);
         }
     }	
 

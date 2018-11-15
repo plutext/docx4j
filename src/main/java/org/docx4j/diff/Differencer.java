@@ -1327,8 +1327,7 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
 									reader.getNamespaceURI(i) );
 						}
 					} catch (XMLStreamException e) {
-						log.error("Issue at element: " + reader.getLocalName() + "\n", e);
-						throw e;
+						throw new XMLStreamException("Issue at element: " + reader.getLocalName() + "\n",e);
 					}
                     
                     break;

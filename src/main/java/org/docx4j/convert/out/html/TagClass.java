@@ -133,7 +133,6 @@ public class TagClass extends SdtTagHandler {
 			return attachContents(docfrag, xhtmlDiv, childResults);
 			
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new TransformerException(e);
 		}
 
@@ -153,11 +152,7 @@ public class TagClass extends SdtTagHandler {
 				return attachContents(docfrag, xhtmlDiv, resultSoFar);
 				
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
 				throw new TransformerException(e);
 			}
 		}
-		
-	
-
 }

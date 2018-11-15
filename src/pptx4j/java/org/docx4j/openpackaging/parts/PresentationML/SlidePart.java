@@ -20,17 +20,9 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import java.io.IOException;
-
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Templates;
-import javax.xml.transform.dom.DOMResult;
 
-import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
@@ -312,7 +304,6 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 //			return jaxbElement;
 //			
 //		} catch (JAXBException e) {
-//			log.error(e.getMessage(), e);
 //			throw e;
 //		}
 //	}	

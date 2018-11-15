@@ -50,7 +50,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -199,8 +198,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
-				log.error("Problem with part " + this.getPartName());
-				throw new Docx4JException(e.getMessage(), e);
+				throw new Docx4JException("Problem with part " + this.getPartName(), e);
 //			} catch (Docx4JException e) {
 //				log.error(e.getMessage(), e);
 			} finally {
@@ -721,12 +719,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(null);
 			
 		} catch (Docx4JException e) {
-			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
-		} catch (JAXBException e) {
-			log.error(e.getMessage(), e);
-			throw e;
-		}
+		} 
 	}
     
     /**
@@ -924,13 +918,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	
 
 		} catch (Docx4JException e) {
-			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
-		} catch (JAXBException e) {
-			log.error(e.getMessage(), e);
-			throw e;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 			throw new JAXBException(e);  // avoid change to method signature
 		}
 	}
@@ -1070,7 +1059,6 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 							at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
 						 */
-					log.error(ue.getMessage(), ue);
 					throw ue;
 				}
 				
@@ -1094,15 +1082,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					}
 											
 				} else {
-					log.error(ue.getMessage(), ue);
-					log.error(".. and mark not supported");
-					throw ue;
+					throw new UnmarshalException("Mark not supported",ue);
 				}
 			}
 			
 
 		} catch (XMLStreamException e1) {
-			log.error(e1.getMessage(), e1);
 			throw new JAXBException(e1);
 		}
 		return jaxbElement;

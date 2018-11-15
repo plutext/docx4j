@@ -38,8 +38,8 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -937,8 +937,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			xpath = xpathsMap.get(xpathId);
 
 		} catch (InputIntegrityException iie) {
-			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
-			throw iie;
+			throw new InputIntegrityException("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag,iie);
 			
 			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
 		}

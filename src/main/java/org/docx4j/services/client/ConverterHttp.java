@@ -227,12 +227,10 @@ public class ConverterHttp implements Converter {
 							+ response);
 			}
 		} catch (java.net.UnknownHostException uhe) {
-    		log.error("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n");
-			throw new ConversionException(uhe.getMessage(), uhe);		    
-
+			throw new ConversionException("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n", uhe);		    
 		} catch (java.net.SocketException se) {
 			
-			log.error(se.getMessage());
+			String errorMessage="";
 			
 			if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS") > -1) {
 				// In some circumstances, the converter will return an error before waiting for
@@ -241,16 +239,13 @@ public class ConverterHttp implements Converter {
 				// whereas on Linux and OSX, the SocketException still occurs, but the response is read
 				// (though possibly only sometimes/partially, since the socket exception occurs
 				// in BasicHttpEntity.writeTo)
-				log.error("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
-				// Try to ensure user sees this, even if they don't have logging configured!
-				System.err.println("This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client");
+				errorMessage="This behaviour may be Windows client OS specific; please look in the server logs or try a Linux client";
 			}
 			
 			// TODO: What happens on Android? 
-			throw new ConversionException(se.getMessage(), se);		    
+			throw new ConversionException(errorMessage, se);		    
 
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
 			throw new ConversionException(ioe.getMessage(), ioe);		    
 		} finally {
 		    try {
