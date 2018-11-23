@@ -6,7 +6,6 @@
 	
 	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	
-	xmlns:wordml2010="http://schemas.microsoft.com/office/word/2010/wordml"
 	xmlns:wordml201011="http://schemas.microsoft.com/office/word/2010/11/wordml"
 
 	version="1.0" exclude-result-prefixes="java">	
@@ -98,7 +97,6 @@
   </xsl:template>
 
   <!--  Most JAXB implementations don't signal additional attributes as errors. -->
-  <xsl:template match="@wordml2010:*" />  
   <xsl:template match="@wordml201011:*" />  
   
   
