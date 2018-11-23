@@ -41,6 +41,13 @@ import org.docx4j.w14.CTReflection;
 import org.docx4j.w14.CTScene3D;
 import org.docx4j.w14.CTShadow;
 import org.docx4j.w14.CTTextOutlineEffect;
+
+import org.docx4j.w14.CTLigatures;
+import org.docx4j.w14.CTNumForm;
+import org.docx4j.w14.CTNumSpacing;
+import org.docx4j.w14.CTOnOff;
+import org.docx4j.w14.CTStylisticSets;
+
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -194,7 +201,11 @@ public class CTRPrChange
             @XmlElementRef(name = "glow", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
             @XmlElementRef(name = "textOutline", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
             @XmlElementRef(name = "scene3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
-            
+            @XmlElementRef(name = "ligatures", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "numForm", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "numSpacing", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "stylisticSets", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
+            @XmlElementRef(name = "cntxtAlts", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class)
         })
         protected List<Object> egrPrBase  = new ArrayListWml<Object>(this);
         @XmlTransient
@@ -264,7 +275,11 @@ public class CTRPrChange
 	     * {@link JAXBElement }{@code <}{@link CTFillTextEffect }{@code >}
 	     * {@link JAXBElement }{@code <}{@link CTScene3D }{@code >}
 	     * {@link JAXBElement }{@code <}{@link CTProps3D }{@code >}
-         * 
+	     * {@link JAXBElement }{@code <}{@link CTLigatures }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTNumSpacing }{@code >}77
+	     * {@link JAXBElement }{@code <}{@link CTNumForm }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTStylisticSets }{@code >}
+	     * {@link JAXBElement }{@code <}{@link CTOnOff }{@code >}
          */
         public List<Object> getEGRPrBase() {
             if (egrPrBase == null) {

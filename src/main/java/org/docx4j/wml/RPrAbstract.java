@@ -32,6 +32,13 @@ import org.docx4j.w14.CTScene3D;
 import org.docx4j.w14.CTShadow;
 import org.docx4j.w14.CTTextOutlineEffect;
 
+import org.docx4j.w14.CTLigatures;
+import org.docx4j.w14.CTNumForm;
+import org.docx4j.w14.CTNumSpacing;
+import org.docx4j.w14.CTOnOff;
+import org.docx4j.w14.CTStylisticSets;
+
+
 
 /**
  * A common superclass for RPr and ParaRPr.
@@ -101,6 +108,16 @@ public abstract class RPrAbstract
     protected CTScene3D scene3D;
     @XmlElement(name = "props3d", namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
     protected CTProps3D props3D;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTLigatures ligatures;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTNumForm numForm;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTNumSpacing numSpacing;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTStylisticSets stylisticSets;
+    @XmlElement(namespace = "http://schemas.microsoft.com/office/word/2010/wordml")
+    protected CTOnOff cntxtAlts;
     protected CTRPrChange rPrChange;
 
     /**
@@ -1207,6 +1224,125 @@ public abstract class RPrAbstract
         this.props3D = value;
     }
     
+    /**
+     * Gets the value of the ligatures property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTLigatures }
+     *     
+     */
+    public CTLigatures getLigatures() {
+        return ligatures;
+    }
+
+    /**
+     * Sets the value of the ligatures property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTLigatures }
+     *     
+     */
+    public void setLigatures(CTLigatures value) {
+        this.ligatures = value;
+    }
+
+    /**
+     * Gets the value of the numForm property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTNumForm }
+     *     
+     */
+    public CTNumForm getNumForm() {
+        return numForm;
+    }
+
+    /**
+     * Sets the value of the numForm property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTNumForm }
+     *     
+     */
+    public void setNumForm(CTNumForm value) {
+        this.numForm = value;
+    }
+
+    /**
+     * Gets the value of the numSpacing property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTNumSpacing }
+     *     
+     */
+    public CTNumSpacing getNumSpacing() {
+        return numSpacing;
+    }
+
+    /**
+     * Sets the value of the numSpacing property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTNumSpacing }
+     *     
+     */
+    public void setNumSpacing(CTNumSpacing value) {
+        this.numSpacing = value;
+    }
+
+    /**
+     * Gets the value of the stylisticSets property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTStylisticSets }
+     *     
+     */
+    public CTStylisticSets getStylisticSets() {
+        return stylisticSets;
+    }
+
+    /**
+     * Sets the value of the stylisticSets property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStylisticSets }
+     *     
+     */
+    public void setStylisticSets(CTStylisticSets value) {
+        this.stylisticSets = value;
+    }
+
+    /**
+     * Gets the value of the cntxtAlts property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTOnOff }
+     *     
+     */
+    public CTOnOff getCntxtAlts() {
+        return cntxtAlts;
+    }
+
+    /**
+     * Sets the value of the cntxtAlts property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTOnOff }
+     *     
+     */
+    public void setCntxtAlts(CTOnOff value) {
+        this.cntxtAlts = value;
+    }    
     
     /**
      * Gets the value of the rPrChange property.

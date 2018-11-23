@@ -98,6 +98,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 	    "textFill",
 	    "scene3D",
 	    "props3D",
+	    "ligatures",
+	    "numForm",
+	    "numSpacing",
+	    "stylisticSets",
+	    "cntxtAlts",	    
 	    "rPrChange"
 })
 @XmlRootElement(name = "rPr") // shouldn't really be here, since ParaRPr is also w:rPr

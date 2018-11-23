@@ -1,4 +1,3 @@
-
 package org.docx4j.wml;
 
 import javax.xml.bind.JAXBElement;
@@ -31,6 +30,12 @@ import org.docx4j.w14.CTProps3D;
 import org.docx4j.w14.CTReflection;
 import org.docx4j.w14.CTScene3D;
 import org.docx4j.w14.CTTextOutlineEffect;
+
+import org.docx4j.w14.CTLigatures;
+import org.docx4j.w14.CTNumForm;
+import org.docx4j.w14.CTNumSpacing;
+import org.docx4j.w14.CTOnOff;
+import org.docx4j.w14.CTStylisticSets;
 
 
 /**
@@ -186,7 +191,12 @@ public class ObjectFactory {
     private final static QName _CTParaRPrOriginalTextOutline_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "textOutline");
     private final static QName _CTParaRPrOriginalTextFill_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "textFill");
     private final static QName _CTParaRPrOriginalScene3D_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "scene3d");
-    private final static QName _CTParaRPrOriginalProps3D_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "props3d");    
+    private final static QName _CTParaRPrOriginalProps3D_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "props3d");
+    private final static QName _CTParaRPrOriginalLigatures_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "ligatures");
+    private final static QName _CTParaRPrOriginalNumForm_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "numForm");
+    private final static QName _CTParaRPrOriginalNumSpacing_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "numSpacing");
+    private final static QName _CTParaRPrOriginalStylisticSets_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "stylisticSets");
+    private final static QName _CTParaRPrOriginalCntxtAlts_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordml", "cntxtAlts");    
     private final static QName _CTFFDataName_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "name");
     private final static QName _CTFFDataEnabled_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "enabled");
     private final static QName _CTFFDataCalcOnExit_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "calcOnExit");
@@ -6331,6 +6341,51 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTLigatures }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "ligatures", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTLigatures> createCTParaRPrOriginalLigatures(CTLigatures value) {
+        return new JAXBElement<CTLigatures>(_CTParaRPrOriginalLigatures_QNAME, CTLigatures.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumForm }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "numForm", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTNumForm> createCTParaRPrOriginalNumForm(CTNumForm value) {
+        return new JAXBElement<CTNumForm>(_CTParaRPrOriginalNumForm_QNAME, CTNumForm.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumSpacing }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "numSpacing", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTNumSpacing> createCTParaRPrOriginalNumSpacing(CTNumSpacing value) {
+        return new JAXBElement<CTNumSpacing>(_CTParaRPrOriginalNumSpacing_QNAME, CTNumSpacing.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStylisticSets }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "stylisticSets", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTStylisticSets> createCTParaRPrOriginalStylisticSets(CTStylisticSets value) {
+        return new JAXBElement<CTStylisticSets>(_CTParaRPrOriginalStylisticSets_QNAME, CTStylisticSets.class, CTParaRPrOriginal.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTOnOff }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "cntxtAlts", scope = CTParaRPrOriginal.class)
+    public JAXBElement<CTOnOff> createCTParaRPrOriginalCntxtAlts(CTOnOff value) {
+        return new JAXBElement<CTOnOff>(_CTParaRPrOriginalCntxtAlts_QNAME, CTOnOff.class, CTParaRPrOriginal.class, value);
+    }
+    
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTFFName }{@code >}}
      * 
      */
@@ -6726,6 +6781,51 @@ public class ObjectFactory {
         return new JAXBElement<BooleanDefaultTrue>(_CTParaRPrOriginalOMath_QNAME, BooleanDefaultTrue.class, CTRPrChange.RPr.class, value);
     }
 
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTLigatures }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "ligatures", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTLigatures> createCTRPrChangeRPrLigatures(CTLigatures value) {
+        return new JAXBElement<CTLigatures>(_CTParaRPrOriginalLigatures_QNAME, CTLigatures.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumForm }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "numForm", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTNumForm> createCTRPrChangeRPrNumForm(CTNumForm value) {
+        return new JAXBElement<CTNumForm>(_CTParaRPrOriginalNumForm_QNAME, CTNumForm.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumSpacing }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "numSpacing", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTNumSpacing> createCTRPrChangeRPrNumSpacing(CTNumSpacing value) {
+        return new JAXBElement<CTNumSpacing>(_CTParaRPrOriginalNumSpacing_QNAME, CTNumSpacing.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStylisticSets }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "stylisticSets", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTStylisticSets> createCTRPrChangeRPrStylisticSets(CTStylisticSets value) {
+        return new JAXBElement<CTStylisticSets>(_CTParaRPrOriginalStylisticSets_QNAME, CTStylisticSets.class, CTRPrChange.RPr.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTOnOff }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordml", name = "cntxtAlts", scope = CTRPrChange.RPr.class)
+    public JAXBElement<CTOnOff> createCTRPrChangeRPrCntxtAlts(CTOnOff value) {
+        return new JAXBElement<CTOnOff>(_CTParaRPrOriginalCntxtAlts_QNAME, CTOnOff.class, CTRPrChange.RPr.class, value);
+    }
+    
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTCustomXmlBlock }{@code >}}
      * 

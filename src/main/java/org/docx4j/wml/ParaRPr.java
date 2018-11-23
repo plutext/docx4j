@@ -103,7 +103,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "textOutline",
     "textFill",
     "scene3D",
-    "props3D",    
+    "props3D", 
+    "ligatures",
+    "numForm",
+    "numSpacing",
+    "stylisticSets",
+    "cntxtAlts",    
     "rPrChange"
 })
 public class ParaRPr extends RPrAbstract implements Child

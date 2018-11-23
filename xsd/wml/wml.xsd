@@ -34,6 +34,8 @@ REVISION HISTORY
 
 20180526 - Add mc:AlternateContent to w:r
            Add w14 text effects to rPr 
+           
+20181124   Add w14 EG_RPrOpenType to rPr. (since docx4j 6.1.0)           
 	
 USAGE INSTRUCTIONS
 	  
@@ -60,6 +62,8 @@ USAGE INSTRUCTIONS
 
 	// 201805: Extensions don't work with xjc 2.3.0? https://stackoverflow.com/questions/28145306/how-to-use-jaxb-extensions-on-xjc-command-line?rq=1
 	// so use 2.2.11 instead
+
+ 	 sh /bvols/\@Overflow/No_COW/java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
 	
  	 sh /media/jharrop/Overflow/java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /media/jharrop/Overflow/java/parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
 	 
@@ -7286,26 +7290,16 @@ PRINCIPLES:
 				</xsd:annotation>
 			</xsd:element>
 			
-<!-- 	extended by the addition of one or more of the following elements: 
-			glow, shadow, reflection, textOutline, textFill
-			  
-  <xsd:group name="EG_RPrTextEffects">
-    <xsd:sequence>
-      <xsd:element name="glow" minOccurs="0" type="CT_Glow"/>
-      <xsd:element name="shadow" minOccurs="0" type="CT_Shadow"/>
-      <xsd:element name="reflection" minOccurs="0" type="CT_Reflection"/>
-      <xsd:element name="textOutline" minOccurs="0" type="CT_TextOutlineEffect"/>
-      <xsd:element name="textFill" minOccurs="0" type="CT_FillTextEffect"/>
-      <xsd:element name="scene3d" minOccurs="0" type="CT_Scene3D"/>
-      <xsd:element name="props3d" minOccurs="0" type="CT_Props3D"/>
-    </xsd:sequence>
-  </xsd:group>
+<!-- extended by the addition of one or more of the following elements: 
+
+		glow, shadow, reflection, textOutline, textFill, scene3d, props3d, 
+		
+		ligatures, numForm, numSpacing, stylisticSets, cntxtAlts. 
           
  -->			
 			<xsd:group ref="w14:EG_RPrTextEffects" minOccurs="0"></xsd:group>
+			<xsd:group ref="w14:EG_RPrOpenType" minOccurs="0"></xsd:group>
 
- <!--  TODO: scene2.6.1.22d, props2.6.1.20d, ligatures, numForm, numSpacing, stylisticSets, cntxtAlts		
-  -->
 		</xsd:sequence>
 	</xsd:group>
 	
