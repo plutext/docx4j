@@ -62,8 +62,8 @@ Release: October 8, 2012 -->
   
   
   <xsd:attributeGroup name="AG_Parids">
-    <xsd:attribute name="paraId" type="w:ST_LongHexNumber" use="optional" />
-    <xsd:attribute name="textId" type="w:ST_LongHexNumber" use="optional" />
+    <xsd:attribute name="paraId" type="w:ST_LongHexNumber"/>
+    <xsd:attribute name="textId" type="w:ST_LongHexNumber"/>
   </xsd:attributeGroup>
   
   <xsd:attribute name="anchorId" type="w:ST_LongHexNumber"/>
