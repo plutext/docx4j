@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
@@ -76,6 +77,21 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.NUMBERING);
 	}
+	
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+
+		// NB if you add ignorable content, it is up to you to jaxbElement.setIgnorable correctly; see further McIgnorableNamespaceDeclarator
+		// You don't need to worry about this if you are merely loading an existing part.
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+	public String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+	
 	
     HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions; 
 	public HashMap<String, AbstractListNumberingDefinition> getAbstractListDefinitions() {

@@ -200,6 +200,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlRootElement(name = "numbering")
 public class Numbering implements Child
 {
+    @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String ignorable;
 
     protected List<Numbering.NumPicBullet> numPicBullet;
     protected List<Numbering.AbstractNum> abstractNum;
@@ -319,6 +321,30 @@ public class Numbering implements Child
         this.numIdMacAtCleanup = value;
     }
 
+    /**
+     * Gets the value of the ignorable property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getIgnorable() {
+        return ignorable;
+    }
+
+    /**
+     * Sets the value of the ignorable property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setIgnorable(String value) {
+        this.ignorable = value;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
@@ -1665,6 +1691,7 @@ public class Numbering implements Child
             this.numPicBulletId = value;
         }
 
+        
         /**
          * Gets the parent object in the object tree representing the unmarshalled xml document.
          * 
