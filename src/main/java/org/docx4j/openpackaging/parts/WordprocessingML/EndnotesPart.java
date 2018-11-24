@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
@@ -83,5 +84,18 @@ public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes> {
 //    	return this.getJaxbElement().getEndnote();
 //    }	
 	
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+
+		// NB if you add ignorable content, it is up to you to jaxbElement.setIgnorable correctly; see further McIgnorableNamespaceDeclarator
+		// You don't need to worry about this if you are merely loading an existing part.
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+	public String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
 
 }
