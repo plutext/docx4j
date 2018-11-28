@@ -253,8 +253,10 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		ContentTypeManager ctm = new ContentTypeManager();
 		
-		Part tmpDocPart = xmlPackage.getRawPart(ctm,  "/word/document.xml", null);
-		Part tmpStylesPart = xmlPackage.getRawPart(ctm,  "/word/styles.xml", null);
+		WordprocessingMLPackage tmpPkg = (WordprocessingMLPackage)xmlPackage.get(); 
+		
+		Part tmpDocPart = tmpPkg.getMainDocumentPart();
+		Part tmpStylesPart = tmpPkg.getMainDocumentPart().getStyleDefinitionsPart();
 		
 		// This code assumes all the existing rels etc of 
 		// the existing main document part are still relevant.

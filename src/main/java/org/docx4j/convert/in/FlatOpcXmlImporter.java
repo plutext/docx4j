@@ -59,6 +59,7 @@ import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
@@ -170,21 +171,24 @@ public class FlatOpcXmlImporter  {
 		//			ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
 		
 		// Create the right type of package
-		// TODO:
-		// Get package rels:
-		// <pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">
-		// .. and find rel of Type officeDocument
-		// .. <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-		// and follow that to its target,
-		// and see what content type is set on that.
-		// But the following (well known locations) will do for now.
-		if (parts.get("/word/document.xml")!=null) {
-			packageResult = new  WordprocessingMLPackage(ctm);
-		} else if (parts.get("/ppt/presentation.xml")!=null) {
-			packageResult = new  PresentationMLPackage(ctm);
-		} else {
-			throw new Docx4JException("Unrecognised package");
+		RelationshipsPart tmpRp = new RelationshipsPart();
+		org.docx4j.xmlPackage.Part part = parts.get("/_rels/.rels");
+		if (part == null) {
+			throw new Docx4JException("Couldn't find pkg rels /_rels/.rels" );
 		}
+		try {
+			populateRelationshipsPart(tmpRp, part.getXmlData().getAny());
+		} catch (JAXBException e) {
+			throw new Docx4JException(e.getMessage(), e);
+		}
+		Relationship r = tmpRp.getRelationshipByType(Namespaces.DOCUMENT);
+			// eg <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1" />
+		org.docx4j.xmlPackage.Part officeDocument = parts.get(r.getTarget());
+		if (officeDocument==null) {
+			throw new Docx4JException("Couldn't find part named " + r.getTarget());
+		}
+		
+		packageResult = ctm.createPackage(officeDocument.getContentType());
 		log.info("Creating " + packageResult.getClass().getName() );
 		
 		// 4. Start with _rels/.rels
@@ -196,14 +200,8 @@ public class FlatOpcXmlImporter  {
 //		</Relationships>		
 		
 		String partName = "/_rels/.rels"; // note leading '/'
-		
-		RelationshipsPart rp = getRelationshipsPartFromXmlPackage(packageResult, partName);		
+		RelationshipsPart rp = getRelationshipsPartFromXmlPackage(packageResult, partName);				
 		packageResult.setRelationships(rp);
-		//rp.setPackageRelationshipPart(true);		
-		
-		
-		log.info( "Object created for: " + partName);
-		//log.info( rp.toString());
 		
 		// 5. Now recursively 
 //		(i) create new Parts for each thing listed
@@ -219,6 +217,7 @@ public class FlatOpcXmlImporter  {
 		 return packageResult;
 		
 	}
+
 	
 	private RelationshipsPart getRelationshipsPartFromXmlPackage(Base p, String partName) 
 			throws Docx4JException {
