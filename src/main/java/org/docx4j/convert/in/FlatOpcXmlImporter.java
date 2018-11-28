@@ -137,6 +137,9 @@ public class FlatOpcXmlImporter  {
 		
 		parts = new HashMap<String, org.docx4j.xmlPackage.Part>();
 		for(org.docx4j.xmlPackage.Part p : flatOpcXml.getPart() ) {
+			if (log.isDebugEnabled()) {
+				log.debug("Adding " + p.getName());
+			}
 			parts.put(p.getName(), p);
 		}
 		
@@ -182,8 +185,15 @@ public class FlatOpcXmlImporter  {
 			throw new Docx4JException(e.getMessage(), e);
 		}
 		Relationship r = tmpRp.getRelationshipByType(Namespaces.DOCUMENT);
+		String target = r.getTarget();
+		if (target.startsWith("/")) {
+			// Word Online as at November 2018.  Buggy?!
 			// eg <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1" />
-		org.docx4j.xmlPackage.Part officeDocument = parts.get(r.getTarget());
+			log.debug("target " + target + " already starts with '/'.  Word Online docx? " );
+		} else {
+			target = "/" + target;
+		}
+		org.docx4j.xmlPackage.Part officeDocument = parts.get(target);
 		if (officeDocument==null) {
 			throw new Docx4JException("Couldn't find part named " + r.getTarget());
 		}
