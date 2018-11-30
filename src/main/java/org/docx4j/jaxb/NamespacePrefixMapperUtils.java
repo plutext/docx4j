@@ -159,7 +159,7 @@ public class NamespacePrefixMapperUtils {
 		Marshaller m=testContext.createMarshaller();
 		
 		if (isJava9orLater()) {
-			return tryUsingRI(m);			
+			return tryRIforRelationshipsPart(m);			
 		}
 		
 //		(new Throwable()).printStackTrace();
