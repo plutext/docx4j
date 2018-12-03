@@ -115,6 +115,10 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 	}
 	
 	
+	/* cachedXPath falls through to xpathGetString (ie no caching is done in this class)
+	 * (non-Javadoc)
+	 * @see org.docx4j.openpackaging.parts.CustomXmlPart#cachedXPathGetString(java.lang.String, java.lang.String)
+	 */
 	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException {
 
 		if (log.isDebugEnabled()) {

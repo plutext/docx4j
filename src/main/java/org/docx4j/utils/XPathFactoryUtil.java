@@ -13,7 +13,9 @@ public class XPathFactoryUtil {
 	private static XPathFactory xPathFactory;
 	
     /**
+     * Specify the XPath factory used in getJAXBNodesViaXPath.
      * org.apache.xpath.jaxp.XPathFactoryImpl is recommended. Use something else at your own risk!
+     * Note that setting this currently doesn't affect the XPath implementation used in OpenDoPE processing.
      * @param xPathFactory
      * @since 6.1.0
      */
