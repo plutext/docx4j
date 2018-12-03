@@ -247,73 +247,77 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static BinaryPartAbstractImage createImagePart(
 			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes) throws Exception {
-				
+
 		// Whatever image type this is, we're going to need 
 		// to know its dimensions.
 		// For that we use ImageInfo, which can only
 		// load an image from a URI.
-		
-		// So first, write the bytes to a temp file		
-		File tmpImageFile = File.createTempFile("img", ".img");
-		
-		FileOutputStream fos = new FileOutputStream(tmpImageFile);
-		fos.write(bytes);
-		fos.close();
-        log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
-				
-		ImageInfo info = ensureFormatIsSupported(tmpImageFile, bytes, true);
-		
-		// In the absence of an exception, tmpImageFile now contains an image 
-		// Word will accept
-		
-		ContentTypeManager ctm = opcPackage.getContentTypeManager();
-		
-		// Ensure the relationships part exists
-        if (sourcePart.getRelationshipsPart() == null) {
-			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
-        }
 
-		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
-				
-        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
-		
-//		System.out.println(ext);
-		
-		BinaryPartAbstractImage imagePart = 
-                (BinaryPartAbstractImage) ctm.newPartForContentType(
-				info.getMimeType(), 
-                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
-				
-        log.debug("created part " + imagePart.getClass().getName()
-                + " with name " + imagePart.getPartName().toString());
-		
-		FileInputStream fis = new FileInputStream(tmpImageFile); 		
-        imagePart.setBinaryData(fis);
-				
-        imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
-		
-		imagePart.setImageInfo(info);
+		// So first, write the bytes to a temp file
+		File tmpImageFile = null;
+		try {
+			tmpImageFile = File.createTempFile("img", ".img");
+			try(FileOutputStream fos = new FileOutputStream(tmpImageFile)) {
+				fos.write(bytes);
+			}catch(Exception e) {
+				throw e;
+			}
+			log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
 
-		// Delete the tmp file
-		// As per http://stackoverflow.com/questions/991489/i-cant-delete-a-file-in-java
-		// the following 3 lines are necessary, at least on Win 7 x64
-		// Also reported on Win XP, but in my testing, the files were deleting OK anyway.
-		fos = null;
-		fis = null;
-		if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.TempFiles.ForceGC", true)) {
-			System.gc();
+			ImageInfo info = ensureFormatIsSupported(tmpImageFile, bytes, true);
+
+			// In the absence of an exception, tmpImageFile now contains an image 
+			// Word will accept
+			ContentTypeManager ctm = opcPackage.getContentTypeManager();
+
+			// Ensure the relationships part exists
+			if (sourcePart.getRelationshipsPart() == null) {
+				RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+			}
+
+			String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+			String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
+			// System.out.println(ext);
+
+			BinaryPartAbstractImage imagePart = 
+					(BinaryPartAbstractImage) ctm.newPartForContentType(
+							info.getMimeType(), 
+							createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
+
+			log.debug("created part " + imagePart.getClass().getName()
+					+ " with name " + imagePart.getPartName().toString());
+
+			try(FileInputStream fis = new FileInputStream(tmpImageFile)){
+				imagePart.setBinaryData(fis);
+				imagePart.rels.add(sourcePart.addTargetPart(imagePart, proposedRelId));
+				imagePart.setImageInfo(info);
+			}catch(Exception e) {
+				throw e;
+			}
+
+			cleanTempFile(tmpImageFile);
+			return imagePart;
+
+		}catch(Exception e) {
+			cleanTempFile(tmpImageFile);
+			throw e;
 		}
-        if (tmpImageFile.delete()) {
-            log.debug(".. deleted " + tmpImageFile.getAbsolutePath());
-		} else {
-			log.warn("Couldn't delete tmp file " + tmpImageFile.getAbsolutePath());
-			tmpImageFile.deleteOnExit();
-			// If that doesn't work, see "Clean Up Your Mess: Managing Temp Files in Java Apps"
-			// at devx.com
+	}
+
+	private static void cleanTempFile(File tmpImageFile) {
+		if(tmpImageFile != null) {
+			if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.TempFiles.ForceGC", true)) {
+				System.gc();
+			}
+			if (tmpImageFile.delete()) {
+				log.debug(".. deleted " + tmpImageFile.getAbsolutePath());
+			} else {
+				log.warn("Couldn't delete tmp file " + tmpImageFile.getAbsolutePath());
+				tmpImageFile.deleteOnExit();
+				// If that doesn't work, see "Clean Up Your Mess: Managing Temp Files in Java Apps"
+				// at devx.com
+			}
 		}
-		
-		return imagePart;
-		
 	}
 	
 	/**
