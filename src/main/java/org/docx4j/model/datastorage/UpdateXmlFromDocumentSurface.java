@@ -109,6 +109,9 @@ public class UpdateXmlFromDocumentSurface {
 	private static Logger log = LoggerFactory.getLogger(UpdateXmlFromDocumentSurface.class);	
 	
 	private WordprocessingMLPackage pkg;
+	public WordprocessingMLPackage getPkg() {
+		return pkg;
+	}
 	
 	/**
 	 * Copy contents of OpenDoPE content controls, including rich text content controls with tag 'od:progid=Word.Document'
