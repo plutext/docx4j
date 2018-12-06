@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.xml.sax.SAXException;
@@ -83,6 +84,10 @@ public class TextUtils {
 	 * @return
 	 */
 	public static void extractText(Object o, Writer w, JAXBContext jc) throws Exception {
+		
+		if (o==null) {
+			throw new Docx4JException("Can't extractText from null object");
+		}
 		
 		Marshaller marshaller=jc.createMarshaller();
 		NamespacePrefixMapperUtils.setProperty(marshaller, 
