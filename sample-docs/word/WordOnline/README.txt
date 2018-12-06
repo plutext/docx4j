@@ -25,4 +25,4 @@ Compare Word 2016 (which is correct):
 
 If you open the Word Online docx in Word 2016 then save it, it "normalises" the rel to Target="word/document.xml" 
 
-docx4j should do the same (but currently leaves things as-is).
+docx4j should do the same (but currently leaves things as-is).  Tracking at https://github.com/plutext/docx4j/issues/332

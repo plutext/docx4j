@@ -25,7 +25,7 @@ public class WordOnlineDocx {
 		// Note docx4j 6.0.x will write out the same dodgy rel:
 		//     <Relationship Target="/word/document22.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Id="rId1"/>
 		//                           ^
-		// No attempt is made to normalise/fix this.
+		// No attempt is made to normalise/fix this; tracking at https://github.com/plutext/docx4j/issues/332
 
 	}
 

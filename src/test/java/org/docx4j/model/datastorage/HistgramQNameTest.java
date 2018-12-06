@@ -113,6 +113,8 @@ public class HistgramQNameTest {
 		case1.setName("118905");
 		
 		JAXBContext jaxbContext = JAXBContext.newInstance(CaseData.class);
+			// that won't use MOXy, which will cause problems
+			// if MOXy is on your classpath during testing
 
 		System.out.println(XmlUtils.marshaltoString(case1, jaxbContext));
 		
