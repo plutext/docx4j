@@ -488,8 +488,12 @@ public class Docx4J {
 				if (Docx4jProperties.getProperty("docx4j.model.datastorage.OpenDoPEHandlerComponents.enabled", 
 						false)) {
 					
-					// since 6.1, component processing happens first,
+					// since 6.1, component processing happens earlier than before,
 					// and as a discrete step
+					// This step could potentially be done before insertXMLData, 
+					// since it doesn't need CustomXmlDataStoragePart to be present
+					// (ie it would work in the case where we can't figure that out
+					//  eg there are no XPaths in the docx)
 					OpenDoPEHandlerComponents componentsHandler =
 							new OpenDoPEHandlerComponents(wmlPackage);
 					if (docxFetcher!=null) {
