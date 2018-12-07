@@ -95,7 +95,7 @@
 	
 	
     <logger name="org.docx4j.convert.out.common.AbstractConversionContext">
-  		<level value="debug"/> 
+  		<level value="warn"/> 
 	</logger>	
 
     <logger name="org.docx4j.convert.out.common.Preprocess"> <!-- the class -->
@@ -114,6 +114,10 @@
     <!-- PDF output via XSL FO: change this to warn to hide messages -->	
     <logger name="org.docx4j.convert.out.common.writer.AbstractMessageWriter">
   		<level value="debug"/> 
+	</logger>	
+
+    <logger name="org.docx4j.convert.out.fo">
+  		<level value="warn"/> 
 	</logger>	
 
     <logger name="org.docx4j.convert.out.html.ListsToContentControls">
@@ -137,7 +141,7 @@
 	</logger>    
 	
     <logger name="org.docx4j.fonts.RunFontSelector">
-  		<level value="warn"/> 
+  		<level value="error"/> 
 	</logger>
     
 	<logger name="org.docx4j.jaxb">
@@ -215,9 +219,19 @@
   		<level value="warn"/> 
 	</logger>
 
+    <logger name="org.docx4j.utils.XPathFactoryUtil">
+  		<level value="info"/> 
+	</logger>
+
+
+
     <!--  OpenDoPE functionality loggers -->
 
 	<logger name="org.docx4j.model.datastorage">
+		<level value="warn"/> 
+	</logger>	
+	
+	<logger name="org.docx4j.model.datastorage.OpenDoPEHandlerComponents">
 		<level value="warn"/> 
 	</logger>	
 		
@@ -249,11 +263,15 @@
   		<level value="warn"/> 
 	</logger>
 
-    <logger name="com.plutext.merge.pptx">
+    <logger name="com.plutext.merge.CustomXmlPartHandler">
   		<level value="warn"/> 
 	</logger>
 
     <logger name="com.plutext.merge.altchunk">
+  		<level value="warn"/> 
+	</logger>
+
+    <logger name="com.plutext.merge.pptx">
   		<level value="warn"/> 
 	</logger>
 
