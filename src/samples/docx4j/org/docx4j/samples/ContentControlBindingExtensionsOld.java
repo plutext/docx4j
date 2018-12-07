@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
@@ -35,9 +37,12 @@ import org.docx4j.model.datastorage.DocxFetcher;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEHandlerComponents;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
+import org.docx4j.model.datastorage.OpenDoPEIntegrityAfterBinding;
 import org.docx4j.model.datastorage.OpenDoPEReverter;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
+import org.docx4j.model.datastorage.XsltFinisher;
+import org.docx4j.model.datastorage.XsltProviderImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -83,6 +88,9 @@ public class ContentControlBindingExtensionsOld {
 		
 		StringBuilder timingSummary = new StringBuilder();
 		
+//		long startTime, endTime;
+//		SaveToZipFile saver = null;
+		
 		// Process components
 		
 		// Docx4j 6.1: simplified component process model:
@@ -91,6 +99,7 @@ public class ContentControlBindingExtensionsOld {
 		// 2. component processing is now done before condition/repeat processing
 		// 3. component processing is not recursive anymore
 		// 4. components typically use the "main" answer file
+		// For this to work (ie docx altChunks to be processed), you need Enterprise 6.1.0
 		long startTime = System.currentTimeMillis();
 		OpenDoPEHandlerComponents componentsHandler =
 				new OpenDoPEHandlerComponents(wordMLPackage);
@@ -118,6 +127,7 @@ public class ContentControlBindingExtensionsOld {
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		
 		
+		
 		startTime = System.currentTimeMillis();
 		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
 		odi.process(wordMLPackage);
@@ -143,63 +153,59 @@ public class ContentControlBindingExtensionsOld {
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
 		String bound = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
-		System.out.println(
-				);
+		System.out.println( bound);
 		saver.save(filepathprefix + "_bound.docx");
 		System.out.println("Saved: " + filepathprefix + "_bound.docx");
+				
+		// OpenDoPEIntegrityAfterBinding
+		startTime = System.currentTimeMillis();
+		OpenDoPEIntegrityAfterBinding odiab = new OpenDoPEIntegrityAfterBinding();
+		odiab.process(wordMLPackage);
+
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nOpenDoPEIntegrityAfterBinding: " + (endTime-startTime));
+		String odiabMarshalled = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
+		System.out.println( odiabMarshalled
+				);
+		saver.save(filepathprefix + "_bound.docx");
+		System.out.println("Saved: " + filepathprefix + "_intAftrB.docx");
+
 		
-		// process altChunk
-		if (bound.contains("altChunk")) {
-			try {
-				// Use reflection, so docx4j can be built
-				// by users who don't have the MergeDocx utility
-				Class<?> documentBuilder = Class
-						.forName("com.plutext.merge.ProcessAltChunk");
-				// Method method = documentBuilder.getMethod("merge",
-				// wmlPkgList.getClass());
-				Method[] methods = documentBuilder.getMethods();
-				Method processMethod = null;
-				for (int j = 0; j < methods.length; j++) {
-	//				log.debug(methods[j].getName());
-					if (methods[j].getName().equals("process")) {
-						processMethod = methods[j];
-					}
-				}
-				if (processMethod == null )
-					throw new NoSuchMethodException();
-				
-				startTime = System.currentTimeMillis();
-				
-				wordMLPackage = (WordprocessingMLPackage) processMethod.invoke(null,
-						wordMLPackage);
-	
-				endTime = System.currentTimeMillis();
-				timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
-				System.out.println(
-						XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-						);
-				saver.save(filepathprefix + "_altChunksMerged.docx");
-				System.out.println("Saved: " + filepathprefix + "_altChunksMerged.docx");
-	
-				
-			} catch (ClassNotFoundException e) {
-			} catch (NoSuchMethodException e) {
-			} catch (Exception e) {
-				throw new Docx4JException("Problem processing w:altChunk", e);
-			}	
-		}
+		// docx4j 6.1:  user-defined XSLT
+		
+//		XsltFinisher finisher = new XsltFinisher(wordMLPackage);
+//		finisher.setXsltProvider(new XsltProviderImpl() );
+//		
+//		Map<String, Map<String, Object>> finisherParams = new HashMap<String, Map<String, Object>>(); 
+//		Map<String, Object> tcPrParams = new HashMap<String, Object>();
+//		tcPrParams.put("fillColor", "5250D0");
+//		finisherParams.put("t_r",  tcPrParams);
+//		
+//		finisher.apply(wordMLPackage.getMainDocumentPart(), bh.getXpathsMap(), null, finisherParams);
+		
+//		String finished = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
+//		System.out.println( finished
+//				);
+//		saver.save(filepathprefix + "_finished.docx");
+//		System.out.println("Saved: " + filepathprefix + "_finished.docx");
+		
 		
 		// Either demonstrate reverter, or stripping of controls;
 		// you can't do both. So comment out one or the other.
+		
 //		reverter(inputfilepath, filepathprefix + "_bound.docx");
 //		
 		// Strip content controls
 		startTime = System.currentTimeMillis();
 		RemovalHandler rh = new RemovalHandler();
-		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
+		rh.removeSDTs(wordMLPackage, Quantifier.ALL_BUT_PLACEHOLDERS);
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
 
+		String stripped = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
+		System.out.println( stripped
+				);
+		
 		saver.save(filepathprefix + "_stripped.docx");
 		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
 		
