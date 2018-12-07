@@ -2,6 +2,69 @@ CHANGELOG
 =========
 
 
+Version 6.1.0 
+=============
+
+Release date
+------------
+
+? December 2018
+
+Contributors to this release
+----------------------------
+
+https://github.com/adolbin
+
+Jason Harrop
+
+https://github.com/Lood
+
+Mioara
+
+https://github.com/P2EQgf
+
+https://github.com/verkhovin
+
+
+
+Notable Changes in Version 6.1.0 
+---------------------------------
+
+IMPORTANT: Force namespaces used in mc:choice to be declared top-level. If 
+they aren't there, Word can't open the docx.
+
+mc:Ignorable: support attribute in footnotes/endnotes, numbering, styles 
+(already supported in main and headers/footers) 
+
+w14 namespace handling improvements: Don't drop these attributes in mc-preprocessor.xslt; 
+Support w14:EG_RPrOpenType elements
+
+PDF Converter now defaults to localhost endpoint to avoid information leakage.
+(controlled by docx4j property com.plutext.converter.URL)
+The localhost endpoint will only work if you download and install the converter there! 
+If you choose to use converter-eval.plutext.com, please only use it for light testing purposes.
+
+BookmarksIntegrity checking now part of docx4j proper; used before ToC updating
+
+AttachTemplate now part of docx4j proper; method cloneAs
+
+OpenDoPE finisher: optional step in which formatting can be applied
+(this is often neater than using conditional content controls just for formatting)
+
+OpenDoPE RemovalHandler: new Quantifier.ALL_BUT_PLACEHOLDERS (ie remove content controls, 
+but keep any placeholders inserted where there is empty content), ability to specify 
+Quantifier via docx4j.properties; also ability to substitute your own RemovalHandler.xslt.
+
+OpenDoPE: simplified component processing model [requires Enterprise]:
+ 1. components don't have to be at the top paragraph level of the content tree,
+ BUT:
+ 2. component processing is now done before condition/repeat processing
+ 3. component processing is not recursive anymore
+ 4. components typically use the "main" answer file
+component processing is OFF by default
+Enable it with property "docx4j.model.datastorage.OpenDoPEHandlerComponents.enabled"
+
+
 Version 6.0.1 
 =============
 
@@ -51,7 +114,7 @@ Support for Java 9 and 10 (see notes in README for use in Eclipse)
 - Maven profiles for java 9 and 10 
 - Maven pom now specifies source & target 1.6 (previously 1.5)
 
-Preserve mv:AlternateContent in a run. Previously, this would have caused mc-preprocessor 
+Preserve mc:AlternateContent in a run. Previously, this would have caused mc-preprocessor 
 to be invoked, selecting one of the pieces of content.
 
 Object model for wps http://schemas.microsoft.com/office/word/2010/wordprocessingShape

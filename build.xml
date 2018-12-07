@@ -7,7 +7,7 @@
     <property name="source" value="1.6"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="6.0.1"/>
+	<property name="version" value="6.1.0"/>
 	<property name="importxhtml-version" value="6.0.1"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>

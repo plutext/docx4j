@@ -276,14 +276,36 @@ Update news
 .NET releases
 
 Nuget publish procedure:
-1.	use ant to create the DLL
-	a.	(no SNK for Nuget)
-2.	in Visual Studio, remove reference to existing DLL; copy/add the new one
-3.	update docx4j.properties (don't need that in -ImportXHTML nuspec, since it is pulled in automatically)
+(see also HOWTO_update.txt on M4600)
+
+Create the dll:
+0.  you'll need slf4j-api.dll (use the version in nuget, or update it first: IKVM needs to use the version end-users will be using, or they'll get TypeInitializationException).
+    should just be 1.7.5.4
+1.  get branch:  git checkout tags/docx4j-6.0.1 -b docx4j-6.0.1
+2.  mvn install (to ensure deps are present, and since it is only mvn which writes docx4j version)
+4.	ant dist.NET to create the DLL, strong named since that's useful for VSTO
+
+C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\sn -v can be used to check
+	
+docx4.NET in Visual Studio:	
+0.  git clone https://github.com/plutext/docx4j.NET.git
+1.	open that in Visual Studio, remove reference to existing DLL; copy/add the new one
+2.	update docx4j.properties (don't need that in -ImportXHTML nuspec, since it is pulled in automatically)
+3.  build (issues doing this with VS Community 2017 on Yoga; use VS 2010 on M4600 VM )
 4.	test it works
-5.	open the existing .nuspec file (inNuGet Package Explorer)
-6.	update the version number etc
-7.	save it
-8.	publish (key is in user profiles doc)
-9.  extract new .nuspec file from .nupkg (since the tool doesn't seem to save it)
-9.  push to GitHub
+5.  update nuget deps?
+
+NuGet Package Explorer:
+6.	open the existing .nuspec file (in NuGet Package Explorer application, v4.1 or later required, I'm using 4.4.46, but that mangles @src attribute on save, so you'll need to fix it)
+7.	update the version number etc, then save it
+8.	publish (key is in user profiles doc; i left the append 'api/v2/package' option ticked)
+9.  save new .nuspec (save metadata as..) if you edited in NuGet Package Explorer 
+10.  push to GitHub
+
+Procedure for -ImportXHTML is similar,
+  but copy the docx4j.dll into it first.
+
+TODO: review which version of .NET to target (see howto file)  
+  
+
+
