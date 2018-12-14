@@ -22,6 +22,8 @@ package org.docx4j.samples;
 
 
 import org.docx4j.XmlUtils;
+import org.docx4j.model.datastorage.migration.VariablePrepare;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
@@ -44,14 +46,8 @@ public class DisplayMainDocumentPartXml extends AbstractSample {
 			/*
 			 * You can invoke this from an OS command line with something like:
 			 * 
-			 * java -cp dist/docx4j.jar:dist/log4j-1.2.15.jar
-			 * org.docx4j.samples.DisplayMainDocumentPartXml inputdocx
+			 *   java -cp docx4j-6.1.0-shaded.jar org.docx4j.samples.DisplayMainDocumentPartXml sample-docs/word/sample-docx.docx 
 			 * 
-			 * Note the minimal set of supporting jars.
-			 * 
-			 * If there are any images in the document, you will also need:
-			 * 
-			 * dist/xmlgraphics-commons-1.4.jar:dist/commons-logging-1.1.1.jar
 			 */
 
 			try {
@@ -63,6 +59,9 @@ public class DisplayMainDocumentPartXml extends AbstractSample {
 			
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+
+			// Remove gumpf so it is easier to read
+			VariablePrepare.prepare(wordMLPackage);
 			
 		   	// Pretty print the main document part
 			System.out.println(
@@ -73,3 +72,5 @@ public class DisplayMainDocumentPartXml extends AbstractSample {
 		
 
 	}
+
+
