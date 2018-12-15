@@ -8,7 +8,7 @@ Version 6.1.0
 Release date
 ------------
 
-? December 2018
+15 December 2018
 
 Contributors to this release
 ----------------------------
