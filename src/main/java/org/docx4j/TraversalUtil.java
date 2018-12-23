@@ -581,6 +581,11 @@ public class TraversalUtil {
 
 			((org.docx4j.wml.ContentAccessor) o).getContent().clear();
 			((org.docx4j.wml.ContentAccessor) o).getContent().addAll(newChildren);
+
+		} else if (o instanceof List /* eg org.docx4j.wml.ArrayListWml */) {
+			// a little unexpected?
+			((List) o).clear();
+			((List) o).addAll(newChildren);
 			
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
 			
