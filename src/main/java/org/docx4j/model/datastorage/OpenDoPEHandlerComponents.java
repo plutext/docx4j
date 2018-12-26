@@ -23,9 +23,11 @@ import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.Body;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Id;
@@ -188,7 +190,15 @@ public class OpenDoPEHandlerComponents {
 
 		FindComponentsTraversor t = new FindComponentsTraversor();
 		t.wordMLPackage = srcPackage;
-		t.walkJAXBElements(part.getContent());		
+		if (part instanceof MainDocumentPart /* which it will be in this release */) {
+			// avoid invoking walkJAXBElements on a list,
+			// (docx4j 6.1.0 doesn't know how to replace children there,
+			//  which it needs to do if the component is a child of w:body)
+			Body b = ((MainDocumentPart)part).getJaxbElement().getBody();
+			t.walkJAXBElements(b);
+		} else {
+			t.walkJAXBElements(part.getContent());			
+		}
 
 		if (!justGotAComponent) {
 			return srcPackage;
@@ -220,6 +230,7 @@ public class OpenDoPEHandlerComponents {
 			}
 			if (processMethod == null )
 				throw new NoSuchMethodException();
+			
 			return (WordprocessingMLPackage) processMethod.invoke(null,
 					srcPackage,
 					answerDomDocs,
@@ -535,7 +546,7 @@ public class OpenDoPEHandlerComponents {
 			
 			altChunkXPathContexts.put(altChunkRel.getId(), xpathId);
 			
-			System.out.println("Using altChunkRel " + altChunkRel.getId() + " and " + xpathId);
+			log.debug("Using altChunkRel " + altChunkRel.getId() + " and " + xpathId);
 
 //			replacements.put(index, ac);
 			List<Object> newContent = new ArrayList<Object>();

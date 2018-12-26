@@ -583,7 +583,11 @@ public class TraversalUtil {
 			((org.docx4j.wml.ContentAccessor) o).getContent().addAll(newChildren);
 
 		} else if (o instanceof List /* eg org.docx4j.wml.ArrayListWml */) {
-			// a little unexpected?
+			// a little unexpected? Would happen if you pass walkJAXBElements a list, 
+			// and your walkJAXBElements invokes replaceChildren
+			// That is best avoided, since this was not added until after 6.1.0
+			log.debug("replaceChildren invoked on list object");
+			
 			((List) o).clear();
 			((List) o).addAll(newChildren);
 			

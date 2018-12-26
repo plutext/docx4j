@@ -17,7 +17,25 @@
 package org.jvnet.jaxb2_commons.ppp;
 
 /**
- * @author gk5885
+ * In docx4j, there are a couple of edge cases to 
+ * be aware of:
+ * 
+ * <ol>
+ * 	<li>What is the parent of something wrapped in a JAXBElement?
+ * 
+ *      ArrayListWml seeks to set this to the object containing the content list.
+ *      
+ *      (If the JAXBElement is not added to a content list, then this won't be done.
+ *       TraversalUtil seeks to handle some of those cases.) </li>
+ *       
+ *  <li>When a field is set explicitly (eg setPPr) to some object, is the object's parent set? 
+ *  
+ *       Generally not.</li>
+ * </ol>
+ *      
+ * 
+ * 
+ * @author jason@plutext.org, gk5885
  * 
  */
 public interface Child
