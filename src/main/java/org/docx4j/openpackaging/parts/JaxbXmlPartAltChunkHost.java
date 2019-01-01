@@ -292,7 +292,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				Method[] methods = documentBuilder.getMethods(); 
 				Method method = null;
 				for (int j=0; j<methods.length; j++) {
-					System.out.println(methods[j].getName());
+					//log.debug(methods[j].getName());
 					if (methods[j].getName().equals("process")
 							&& methods[j].getParameterTypes().length==1) {
 						method = methods[j];
