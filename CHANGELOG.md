@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+Version 8.0.0 
+=============
+
+Release date
+------------
+
+(unreleased)
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+(your name here)
+
+
+Notable Changes in Version 8.0.0 
+---------------------------------
+
+Minimum supported Java version is 8.0
+
+
+
+
 Version 6.1.0 
 =============
 
