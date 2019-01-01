@@ -515,8 +515,21 @@ public class OpenDoPEHandlerComponents {
 		
 	}
 
+		/**
+		 * Convert the component sdt to w:altChunk
+		 * 
+		 * @param srcPackage
+		 * @param componentId
+		 * @param xpathId  gives the context in which the component is to be used
+		 * @return
+		 * @throws Docx4JException
+		 */
 		private List<Object> processOpenDopeComponent(WordprocessingMLPackage srcPackage, 
 				String componentId, String xpathId) throws Docx4JException {
+			
+			// TODO: here we convert component sdt to w:altChunk,
+			// then, in PEJ, we process altChunks by converting them to content controls.
+			// Consider adding a code path in which we just process the content control directly? 
 			
 			// Convert the sdt to a w:altChunk
 			// .. get the IRI
