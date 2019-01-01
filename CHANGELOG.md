@@ -23,6 +23,15 @@ Notable Changes in Version 8.0.0
 
 Minimum supported Java version is 8.0
 
+The following dependencies were updated:
+  com.fasterxml.jackson.core:jackson-core ............... 2.7.9 -> 2.9.8 
+  com.fasterxml.jackson.core:jackson-databind ......... 2.7.9.4 -> 2.9.8 [JDK 1.7]
+  com.google.guava:guava ............................ 20.0 -> 27.0.1-jre [JDK 1.8]
+  commons-io:commons-io ..................................... 2.5 -> 2.6 [JDK 1.7]
+  net.engio:mbassador ................................. 1.2.4.2 -> 1.3.2 [JDK 1.7]
+  org.apache.commons:commons-compress ..................... 1.12 -> 1.18 [JDK 1.7]
+  org.apache.commons:commons-lang3 ........................ 3.5 -> 3.8.1 [JDK 1.7]
+
 
 
 

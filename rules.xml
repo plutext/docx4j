@@ -16,7 +16,7 @@
       </ignoreVersions>
     </rule>
     
-<!-- depends on JDK 7 -->
+<!-- depends on JDK 7 
 
 <rule groupId="org.eclipse.persistence" artifactId="org.eclipse.persistence.moxy" comparisonMethod="maven">
       <ignoreVersions>
@@ -76,6 +76,7 @@
         <ignoreVersion type="regex">3\.7.*</ignoreVersion>
       </ignoreVersions>
     </rule>
+    -->
     
 <!--  these deps latest currently OK 
 
