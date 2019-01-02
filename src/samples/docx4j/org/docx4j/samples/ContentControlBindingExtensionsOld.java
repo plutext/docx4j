@@ -46,6 +46,7 @@ import org.docx4j.model.datastorage.XsltProviderImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.utils.XPathFactoryUtil;
 
 
 
@@ -79,7 +80,13 @@ public class ContentControlBindingExtensionsOld {
 	public static void main(String[] args) throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_Saxon_XPath2.docx";
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
+		
+		// Without Saxon, you are restricted to XPath 1.0
+		boolean USE_SAXON = true; // set this to true; add Saxon to your classpath, and uncomment below 
+//		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
+//		        new net.sf.saxon.xpath.XPathFactoryImpl());		
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
