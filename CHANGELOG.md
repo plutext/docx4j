@@ -32,7 +32,7 @@ The following dependencies were updated:
   org.apache.commons:commons-compress ..................... 1.12 -> 1.18 [JDK 1.7]
   org.apache.commons:commons-lang3 ........................ 3.5 -> 3.8.1 [JDK 1.7]
 
-
+OpenDoPE support for XPath 2.0, 3.0 (requires Saxon)
 
 
 Version 6.1.0 

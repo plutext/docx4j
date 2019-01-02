@@ -353,7 +353,7 @@ public class BindingHandler {
 //				if (log.isDebugEnabled() ) {
 //					log.debug("Invoking " + part.getClass().getName() + ".cachedXPathGetString");
 //				}
-				String r = part.cachedXPathGetString(xpath, prefixMappings); 
+				String r = part.cachedXPathGetString(xpath, prefixMappings);  // typically org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.cachedXPathGetString
 				if (r==null) {
 					// never expect null, since an empty result set is converted to an empty string
 					log.error(xpath + " unexpectedly null!");

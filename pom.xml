@@ -586,24 +586,11 @@
 		</exclusions>
 	</dependency>
 
-<!-- These work for basic marshalling/unmarshalling,
-     but not with our XSLT extension functions.
-<dependency>
-    <groupId>net.sf.saxon</groupId>
-    <artifactId>saxon</artifactId>
-    <version>8.7</version>
-</dependency>
-<dependency>
-    <groupId>net.sf.saxon</groupId>
-    <artifactId>saxon-dom</artifactId>
-    <version>8.7</version>
-</dependency>
--->
 <!-- Saxon for XPath
 <dependency>
   <groupId>net.sf.saxon</groupId>
   <artifactId>Saxon-HE</artifactId>
-  <version>9.9.0-1</version>
+  <version>9.9.0-2</version>
 </dependency>
 -->
 

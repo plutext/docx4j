@@ -20,6 +20,10 @@ public class XPathFactoryUtil {
      * @since 6.1.0
      */
     public static void setxPathFactory(XPathFactory xPathFactory) {
+    	
+		// Often org.apache.xpath.jaxp.XPathImpl,
+    	// but for XPath > 1.0, you can use net.sf.saxon.xpath.XPathFactoryImpl()
+    	
 		XPathFactoryUtil.xPathFactory = xPathFactory;
         log.info("xpath implementation: " + XPathFactoryUtil.xPathFactory.getClass().getName());
 	}

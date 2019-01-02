@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CustomXmlDataStorageImpl extends XmlPart implements CustomXmlDataStorage {
+	// Note: Most of the CustomXmlDataStorage implementation is actually in XmlPart
 	
 	// Note: this looks like it is a part, given that it extends XmlPart. 
 	// However, it is actually a representation of the data in a 

@@ -22,6 +22,7 @@ package org.docx4j.model.datastorage;
 import java.util.List;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Node;
 
 /**
@@ -51,11 +52,14 @@ public interface CustomXmlDataStorage {
 	public String xpathGetString(String xpath, String prefixMappings) throws Docx4JException;
 	
 	/**
-	 * Uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
+	 * (Unless you are using Saxon as your XPath implementation (XPathFactoryUtil.setxPathFactory))
+	 * this uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
 	 * have the drawback of instantiating a new XPathContext 
 	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
 	 * XPathAPIObject instead retains its context as long as the object persists, 
 	 * reusing the DTMs. 
+	 * 
+	 * If you are using Saxon, then the cache won't be used.
 	 * 
 	 * @see discardCacheXPathObject
 

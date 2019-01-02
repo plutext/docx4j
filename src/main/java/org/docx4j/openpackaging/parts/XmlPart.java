@@ -24,8 +24,6 @@ package org.docx4j.openpackaging.parts;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerException;
@@ -127,6 +125,7 @@ public abstract class XmlPart extends Part {
 	 * @throws Docx4JException
 	 */
 	public String xpathGetString(String xpathString, String prefixMappings)  throws Docx4JException {
+		
 		try {
 			
 			String result;
@@ -155,8 +154,33 @@ public abstract class XmlPart extends Part {
 	private CachedXPathAPI cachedXPathAPI = null;
 	private String cachedPrefixMappings = null;
 	
+	/**
+	 * (Unless you are using Saxon as your XPath implementation (XPathFactoryUtil.setxPathFactory))
+	 * this uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
+	 * have the drawback of instantiating a new XPathContext 
+	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
+	 * XPathAPIObject instead retains its context as long as the object persists, 
+	 * reusing the DTMs. 
+	 * 
+	 * If you are using Saxon, then the cache won't be used.
+	 * 
+	 * @see discardCacheXPathObject
+
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 * @throws Docx4JException
+	 * @since 3.3.1
+	 */
 	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException {
 
+		
+		if (xPath.getClass().getName().equals("net.sf.saxon.xpath.XPathEvaluator")) {
+			return xpathGetString( xpath, prefixMappings);
+		}
+		
+		// eg org.apache.xpath.jaxp.XPathImpl
+		
 		if (cachedXPathAPI==null) {
 			cachedXPathAPI = new CachedXPathAPI();
 
@@ -179,8 +203,7 @@ public abstract class XmlPart extends Part {
 			getNamespaceContext().registerPrefixMappings(prefixMappings);
 			
 		}
-		
-		
+				
 		try {
 			
 			XObject xo = cachedXPathAPI.eval(doc, xpath, getNamespaceContext());

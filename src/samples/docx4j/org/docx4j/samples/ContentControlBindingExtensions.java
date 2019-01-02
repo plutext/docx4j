@@ -38,6 +38,8 @@ import org.docx4j.model.datastorage.ValueInserterPlainTextImpl;
 import org.docx4j.model.datastorage.XsltProvider;
 import org.docx4j.model.datastorage.XsltProviderImpl;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
 
 
@@ -68,6 +70,9 @@ public class ContentControlBindingExtensions {
 	static String filepathprefix;
 	
 	public static void main(String[] args) throws Exception {
+
+		// Without Saxon, you are restricted to XPath 1.0
+		boolean USE_SAXON = false; // set this to true; add Saxon to your classpath, and uncomment below 
 		
 		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
 		String input_XML = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice-data.xml";
@@ -75,6 +80,10 @@ public class ContentControlBindingExtensions {
 		
 		// resulting docx
 		String OUTPUT_DOCX = System.getProperty("user.dir") + "/OUT_ContentControlsMergeXML.docx";
+		
+//		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
+//		        new net.sf.saxon.xpath.XPathFactoryImpl());
+		
 
 		// Load input_template.docx
 		WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(input_DOCX));

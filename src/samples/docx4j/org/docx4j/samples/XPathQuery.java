@@ -5,6 +5,7 @@ import java.util.List;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.utils.XPathFactoryUtil;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class XPathQuery {
@@ -41,12 +42,18 @@ public class XPathQuery {
 	 * 
 	 */
 	public static void main(String[] args) throws Exception {
-
+		
+		// Without Saxon, you are restricted to XPath 1.0
+		boolean USE_SAXON = false; // set this to true; add Saxon to your classpath, and uncomment below 
+		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 				
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-				
+		
+//		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
+//		        new net.sf.saxon.xpath.XPathFactoryImpl());
+		
 		String xpath = "//w:t[contains(text(),'scaled')]";
 		//String xpath = "//w:r[w:t[contains(text(),'scaled')]]";
 		

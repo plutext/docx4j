@@ -133,6 +133,7 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 //		if (log.isDebugEnabled()) {
 //			log.debug(data.getClass().getName());
 //		}
+		// typically org.docx4j.model.datastorage.CustomXmlDataStorageImpl
 		return data;
 	}
 
