@@ -2,6 +2,32 @@ CHANGELOG
 =========
 
 
+Version 6.1.1 
+=============
+
+Release date
+------------
+
+(not yet released)
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 6.1.0 
+---------------------------------
+
+TraversalUtil replaceChildren: support replacing in a bare List object.
+
+OpenDoPE removal handler: new option ALL_BUT_PLACEHOLDERS_CONTENT, 
+Ordinarily, if an SDT contains XML but no real content, that XML is also removed.  
+Choose this option if you want to keep placeholder XML (but remove the SDT).
+
+
+
 Version 6.1.0 
 =============
 
