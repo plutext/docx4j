@@ -301,8 +301,7 @@ public class FieldRef {
 			if (o instanceof FieldRef) {
 				// contains a nested field?!
 				FieldRef nested = (FieldRef)o;
-				log.error("Nested field " + nested.getFldName() );				
-				
+				log.error("Nested field detected");
 			} else {
                 if(log.isErrorEnabled()) {
                     log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
@@ -310,7 +309,15 @@ public class FieldRef {
 			}
 			return null;
 		}
-	}	
+	}
+
+	/**
+	 * Check whether this field is nested
+	 */
+	public boolean isNestedField() {
+		Object o = XmlUtils.unwrap(instructions.get(0));
+		return o instanceof FieldRef;
+	}
 	
 	private ContentAccessor parent;
 	public ContentAccessor getParent() {

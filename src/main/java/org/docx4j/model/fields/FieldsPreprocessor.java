@@ -252,6 +252,8 @@ public class FieldsPreprocessor {
 		
 		if (fieldRef.isLock()) return true;
 		
+		if (fieldRef.isNestedField())
+			return true;
 		
 		String fldName = fieldRef.getFldName();
 		if (fldName==null) return true;
