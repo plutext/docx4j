@@ -184,7 +184,7 @@ implements XPathEnabled<E> {
 	 * If you have modified your JAXB objects (eg added or changed a 
 	 * w:p paragraph), you need to update the association. The problem
 	 * is that this can only be done ONCE, owing to a bug in JAXB:
-	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * see https://github.com/javaee/jaxb-v2/issues/459
 	 * 
 	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
 	 * 
@@ -209,7 +209,7 @@ implements XPathEnabled<E> {
 	 * If you have modified your JAXB objects (eg added or changed a 
 	 * w:p paragraph), you need to update the association. The problem
 	 * is that this can only be done ONCE, owing to a bug in JAXB:
-	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * see https://github.com/javaee/jaxb-v2/issues/459
 	 * 
 	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
 
@@ -238,7 +238,7 @@ implements XPathEnabled<E> {
 	 * If you have modified your JAXB objects (eg added or changed a 
 	 * w:p paragraph), you need to update the association. The problem
 	 * is that this can only be done ONCE, owing to a bug in JAXB:
-	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * see https://github.com/javaee/jaxb-v2/issues/459
 	 * 
 	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
 	 * 
