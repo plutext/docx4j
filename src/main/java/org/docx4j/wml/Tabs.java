@@ -64,7 +64,7 @@ public class Tabs
 {
 
     @XmlElement(required = true)
-    protected List<CTTabStop> tab;
+    protected List<CTTabStop> tab =  new ArrayListWml<CTTabStop>(this);
     @XmlTransient
     private Object parent;
 
@@ -92,7 +92,7 @@ public class Tabs
      */
     public List<CTTabStop> getTab() {
         if (tab == null) {
-            tab = new ArrayList<CTTabStop>();
+            tab = new ArrayListWml<CTTabStop>(this);
         }
         return this.tab;
     }

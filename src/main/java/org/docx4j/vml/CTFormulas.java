@@ -21,7 +21,7 @@
 
 package org.docx4j.vml;
 
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,7 +57,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTFormulas implements Child
 {
 
-    protected List<CTF> f;
+    protected List<CTF> f = new ArrayListVml<CTF>(this);
     @XmlTransient
     private Object parent;
 
@@ -85,7 +85,7 @@ public class CTFormulas implements Child
      */
     public List<CTF> getF() {
         if (f == null) {
-            f = new ArrayList<CTF>();
+            f = new ArrayListVml<CTF>(this);
         }
         return this.f;
     }

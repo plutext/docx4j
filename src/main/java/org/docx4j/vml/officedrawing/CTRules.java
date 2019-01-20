@@ -21,7 +21,7 @@
 
 package org.docx4j.vml.officedrawing;
 
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -61,7 +61,7 @@ public class CTRules
     implements Child
 {
 
-    protected List<CTR> r;
+    protected List<CTR> r = new ArrayListVml<CTR>(this);
     @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
@@ -91,7 +91,7 @@ public class CTRules
      */
     public List<CTR> getR() {
         if (r == null) {
-            r = new ArrayList<CTR>();
+            r = new ArrayListVml<CTR>(this);
         }
         return this.r;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.vml;
 
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,7 +57,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTHandles implements Child
 {
 
-    protected List<CTH> h;
+    protected List<CTH> h = new ArrayListVml<CTH>(this);
     @XmlTransient
     private Object parent;
 
@@ -85,7 +85,7 @@ public class CTHandles implements Child
      */
     public List<CTH> getH() {
         if (h == null) {
-            h = new ArrayList<CTH>();
+            h = new ArrayListVml<CTH>(this);
         }
         return this.h;
     }

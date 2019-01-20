@@ -63,7 +63,7 @@ public class CTCaptions implements Child
 {
 
     @XmlElement(required = true)
-    protected List<CTCaption> caption;
+    protected List<CTCaption> caption = new ArrayListWml<CTCaption>(this);
     protected CTAutoCaptions autoCaptions;
     @XmlTransient
     private Object parent;
@@ -92,7 +92,7 @@ public class CTCaptions implements Child
      */
     public List<CTCaption> getCaption() {
         if (caption == null) {
-            caption = new ArrayList<CTCaption>();
+            caption = new ArrayListWml<CTCaption>(this);
         }
         return this.caption;
     }

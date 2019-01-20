@@ -103,7 +103,7 @@ public class CTFFDDList implements Child
     protected CTFFDDList.Result result;
     @XmlElement(name = "default")
     protected CTFFDDList.Default _default;
-    protected List<CTFFDDList.ListEntry> listEntry;
+    protected List<CTFFDDList.ListEntry> listEntry = new ArrayListWml<CTFFDDList.ListEntry>(this);
     @XmlTransient
     private Object parent;
 
@@ -179,7 +179,7 @@ public class CTFFDDList implements Child
      */
     public List<CTFFDDList.ListEntry> getListEntry() {
         if (listEntry == null) {
-            listEntry = new ArrayList<CTFFDDList.ListEntry>();
+            listEntry = new ArrayListWml<CTFFDDList.ListEntry>(this);
         }
         return this.listEntry;
     }

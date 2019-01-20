@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTDocPartBehaviors implements Child
 {
 
-    protected List<CTDocPartBehavior> behavior;
+    protected List<CTDocPartBehavior> behavior = new ArrayListWml<CTDocPartBehavior>(this);
     @XmlTransient
     private Object parent;
 
@@ -87,7 +87,7 @@ public class CTDocPartBehaviors implements Child
      */
     public List<CTDocPartBehavior> getBehavior() {
         if (behavior == null) {
-            behavior = new ArrayList<CTDocPartBehavior>();
+            behavior = new ArrayListWml<CTDocPartBehavior>(this);
         }
         return this.behavior;
     }

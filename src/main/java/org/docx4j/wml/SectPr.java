@@ -94,7 +94,7 @@ public class SectPr
         @XmlElement(name = "headerReference", type = HeaderReference.class),
         @XmlElement(name = "footerReference", type = FooterReference.class)
     })
-    protected List<CTRel> egHdrFtrReferences;
+    protected List<CTRel> egHdrFtrReferences = new ArrayListWml<CTRel>(this);
     protected CTFtnProps footnotePr;
     protected CTEdnProps endnotePr;
     protected SectPr.Type type;
@@ -153,7 +153,7 @@ public class SectPr
      */
     public List<CTRel> getEGHdrFtrReferences() {
         if (egHdrFtrReferences == null) {
-            egHdrFtrReferences = new ArrayList<CTRel>();
+            egHdrFtrReferences = new ArrayListWml<CTRel>(this);
         }
         return this.egHdrFtrReferences;
     }

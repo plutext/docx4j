@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -105,7 +105,7 @@ public class CTRoundRect implements Child, VmlShapeElements, VmlAllCoreAttribute
         @XmlElementRef(name = "callout", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
         @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> pathOrFormulasOrHandles;
+    protected List<JAXBElement<?>> pathOrFormulasOrHandles  = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "arcsize")
     protected String arcsize;
     @XmlAttribute(name = "opacity")
@@ -264,7 +264,7 @@ public class CTRoundRect implements Child, VmlShapeElements, VmlAllCoreAttribute
     @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;
     }
@@ -275,7 +275,7 @@ public class CTRoundRect implements Child, VmlShapeElements, VmlAllCoreAttribute
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;    	
     }    

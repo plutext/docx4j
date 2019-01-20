@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTDocVars implements Child
 {
 
-    protected List<CTDocVar> docVar;
+    protected List<CTDocVar> docVar = new ArrayListWml<CTDocVar>(this);
     @XmlTransient
     private Object parent;
 
@@ -87,7 +87,7 @@ public class CTDocVars implements Child
      */
     public List<CTDocVar> getDocVar() {
         if (docVar == null) {
-            docVar = new ArrayList<CTDocVar>();
+            docVar = new ArrayListWml<CTDocVar>(this);
         }
         return this.docVar;
     }

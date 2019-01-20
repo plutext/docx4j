@@ -203,9 +203,9 @@ public class Numbering implements Child
     @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
     protected String ignorable;
 
-    protected List<Numbering.NumPicBullet> numPicBullet;
-    protected List<Numbering.AbstractNum> abstractNum;
-    protected List<Numbering.Num> num;
+    protected List<Numbering.NumPicBullet> numPicBullet = new ArrayListWml<Numbering.NumPicBullet>(this);
+    protected List<Numbering.AbstractNum> abstractNum = new ArrayListWml<Numbering.AbstractNum>(this);
+    protected List<Numbering.Num> num  = new ArrayListWml<Numbering.Num>(this);
     protected Numbering.NumIdMacAtCleanup numIdMacAtCleanup;
     @XmlTransient
     private Object parent;
@@ -234,7 +234,7 @@ public class Numbering implements Child
      */
     public List<Numbering.NumPicBullet> getNumPicBullet() {
         if (numPicBullet == null) {
-            numPicBullet = new ArrayList<Numbering.NumPicBullet>();
+            numPicBullet = new ArrayListWml<Numbering.NumPicBullet>(this);
         }
         return this.numPicBullet;
     }
@@ -263,7 +263,7 @@ public class Numbering implements Child
      */
     public List<Numbering.AbstractNum> getAbstractNum() {
         if (abstractNum == null) {
-            abstractNum = new ArrayList<Numbering.AbstractNum>();
+            abstractNum = new ArrayListWml<Numbering.AbstractNum>(this);
         }
         return this.abstractNum;
     }
@@ -292,7 +292,7 @@ public class Numbering implements Child
      */
     public List<Numbering.Num> getNum() {
         if (num == null) {
-            num = new ArrayList<Numbering.Num>();
+            num = new ArrayListWml<Numbering.Num>(this);
         }
         return this.num;
     }

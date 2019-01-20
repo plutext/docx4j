@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -111,7 +111,7 @@ public class CTShapetype implements Child, VmlShapeElements, VmlAllCoreAttribute
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class),
         @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egShapeElements;
+    protected List<JAXBElement<?>> egShapeElements  = new ArrayListVml<JAXBElement<?>>(this);
     @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
     protected CTComplex complex;
     @XmlAttribute(name = "master", namespace = "urn:schemas-microsoft-com:office:office")
@@ -275,7 +275,7 @@ public class CTShapetype implements Child, VmlShapeElements, VmlAllCoreAttribute
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (egShapeElements == null) {
-            egShapeElements = new ArrayList<JAXBElement<?>>();
+            egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.egShapeElements;
     }

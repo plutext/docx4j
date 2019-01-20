@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTSdtEndPr implements Child
 {
 
-    protected List<RPr> rPr;
+    protected List<RPr> rPr  = new ArrayListWml<RPr>(this);
     @XmlTransient
     private Object parent;
 
@@ -87,7 +87,7 @@ public class CTSdtEndPr implements Child
      */
     public List<RPr> getRPr() {
         if (rPr == null) {
-            rPr = new ArrayList<RPr>();
+            rPr = new ArrayListWml<RPr>(this);
         }
         return this.rPr;
     }

@@ -66,7 +66,7 @@ public class CTFootnotes
     @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
     protected String ignorable;
 	
-    protected List<CTFtnEdn> footnote;
+    protected List<CTFtnEdn> footnote = new ArrayListWml<CTFtnEdn>(this);
     @XmlTransient
     private Object parent;
 
@@ -94,7 +94,7 @@ public class CTFootnotes
      */
     public List<CTFtnEdn> getFootnote() {
         if (footnote == null) {
-            footnote = new ArrayList<CTFtnEdn>();
+            footnote = new ArrayListWml<CTFtnEdn>(this);
         }
         return this.footnote;
     }

@@ -71,7 +71,7 @@ public class CTCustomXmlPr implements Child
 {
 
     protected CTCustomXmlPr.Placeholder placeholder;
-    protected List<CTAttr> attr;
+    protected List<CTAttr> attr = new ArrayListWml<CTAttr>(this);
     @XmlTransient
     private Object parent;
 
@@ -123,7 +123,7 @@ public class CTCustomXmlPr implements Child
      */
     public List<CTAttr> getAttr() {
         if (attr == null) {
-            attr = new ArrayList<CTAttr>();
+            attr = new ArrayListWml<CTAttr>(this);
         }
         return this.attr;
     }

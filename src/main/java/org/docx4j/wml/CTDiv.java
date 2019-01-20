@@ -88,7 +88,7 @@ public class CTDiv implements Child
     @XmlElement(required = true)
     protected CTSignedTwipsMeasure marBottom;
     protected CTDivBdr divBdr;
-    protected List<CTDivs> divsChild;
+    protected List<CTDivs> divsChild = new ArrayListWml<CTDivs>(this);
     @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected BigInteger id;
     @XmlTransient
@@ -286,7 +286,7 @@ public class CTDiv implements Child
      */
     public List<CTDivs> getDivsChild() {
         if (divsChild == null) {
-            divsChild = new ArrayList<CTDivs>();
+            divsChild = new ArrayListWml<CTDivs>(this);
         }
         return this.divsChild;
     }

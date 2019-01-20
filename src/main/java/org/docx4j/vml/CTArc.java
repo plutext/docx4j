@@ -23,7 +23,7 @@ package org.docx4j.vml;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -107,7 +107,7 @@ public class CTArc implements Child, VmlShapeElements, VmlAllCoreAttributes, Vml
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class),
         @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egShapeElements;
+    protected List<JAXBElement<?>> egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "startAngle")
     protected BigDecimal startAngle;
     @XmlAttribute(name = "endAngle")
@@ -267,7 +267,7 @@ public class CTArc implements Child, VmlShapeElements, VmlAllCoreAttributes, Vml
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (egShapeElements == null) {
-            egShapeElements = new ArrayList<JAXBElement<?>>();
+            egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.egShapeElements;
     }

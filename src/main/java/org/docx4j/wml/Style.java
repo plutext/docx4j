@@ -192,7 +192,7 @@ public class Style implements Child
     protected CTTblPrBase tblPr;
     protected TrPr trPr;
     protected TcPr tcPr;
-    protected List<CTTblStylePr> tblStylePr;
+    protected List<CTTblStylePr> tblStylePr  = new ArrayListWml<CTTblStylePr>(this);
     @XmlAttribute(name = "type", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String type;
     @XmlAttribute(name = "styleId", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -732,7 +732,7 @@ public class Style implements Child
      */
     public List<CTTblStylePr> getTblStylePr() {
         if (tblStylePr == null) {
-            tblStylePr = new ArrayList<CTTblStylePr>();
+            tblStylePr = new ArrayListWml<CTTblStylePr>(this);
         }
         return this.tblStylePr;
     }

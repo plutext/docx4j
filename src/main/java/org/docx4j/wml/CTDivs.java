@@ -61,7 +61,7 @@ public class CTDivs implements Child
 {
 
     @XmlElement(required = true)
-    protected List<CTDiv> div;
+    protected List<CTDiv> div = new ArrayListWml<CTDiv>(this);
     @XmlTransient
     private Object parent;
 
@@ -89,7 +89,7 @@ public class CTDivs implements Child
      */
     public List<CTDiv> getDiv() {
         if (div == null) {
-            div = new ArrayList<CTDiv>();
+            div = new ArrayListWml<CTDiv>(this);
         }
         return this.div;
     }

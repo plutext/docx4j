@@ -61,7 +61,7 @@ public class CTRecipients implements Child
 {
 
     @XmlElement(required = true)
-    protected List<CTRecipientData> recipientData;
+    protected List<CTRecipientData> recipientData = new ArrayListWml<CTRecipientData>(this);
     @XmlTransient
     private Object parent;
 
@@ -89,7 +89,7 @@ public class CTRecipients implements Child
      */
     public List<CTRecipientData> getRecipientData() {
         if (recipientData == null) {
-            recipientData = new ArrayList<CTRecipientData>();
+            recipientData = new ArrayListWml<CTRecipientData>(this);
         }
         return this.recipientData;
     }

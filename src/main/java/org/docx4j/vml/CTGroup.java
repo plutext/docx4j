@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -133,7 +133,7 @@ public class CTGroup implements Child, VmlShapeElements, VmlAllCoreAttributes
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class),
         @XmlElementRef(name = "callout", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> pathOrFormulasOrHandles;
+    protected List<JAXBElement<?>> pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "editas")
     protected STEditAs editas;
     @XmlAttribute(name = "tableproperties", namespace = "urn:schemas-microsoft-com:office:office")
@@ -274,7 +274,7 @@ public class CTGroup implements Child, VmlShapeElements, VmlAllCoreAttributes
     @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;
     }
@@ -285,7 +285,7 @@ public class CTGroup implements Child, VmlShapeElements, VmlAllCoreAttributes
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;    	
     }

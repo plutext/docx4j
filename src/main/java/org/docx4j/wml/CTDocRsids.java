@@ -62,7 +62,7 @@ public class CTDocRsids implements Child
 {
 
     protected CTLongHexNumber rsidRoot;
-    protected List<CTLongHexNumber> rsid;
+    protected List<CTLongHexNumber> rsid = new ArrayListWml<CTLongHexNumber>(this);
     @XmlTransient
     private Object parent;
 
@@ -114,7 +114,7 @@ public class CTDocRsids implements Child
      */
     public List<CTLongHexNumber> getRsid() {
         if (rsid == null) {
-            rsid = new ArrayList<CTLongHexNumber>();
+            rsid = new ArrayListWml<CTLongHexNumber>(this);
         }
         return this.rsid;
     }

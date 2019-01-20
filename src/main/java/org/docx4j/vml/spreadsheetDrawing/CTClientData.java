@@ -22,7 +22,7 @@
 package org.docx4j.vml.spreadsheetDrawing;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -198,7 +198,7 @@ public class CTClientData implements Child
         @XmlElementRef(name = "FmlaRange", namespace = "urn:schemas-microsoft-com:office:excel", type = JAXBElement.class),
         @XmlElementRef(name = "Page", namespace = "urn:schemas-microsoft-com:office:excel", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> moveWithCellsOrSizeWithCellsOrAnchor;
+    protected List<JAXBElement<?>> moveWithCellsOrSizeWithCellsOrAnchor = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "ObjectType", required = true)
     protected STObjectType objectType;
     @XmlTransient
@@ -294,7 +294,7 @@ public class CTClientData implements Child
      */
     public List<JAXBElement<?>> getMoveWithCellsOrSizeWithCellsOrAnchor() {
         if (moveWithCellsOrSizeWithCellsOrAnchor == null) {
-            moveWithCellsOrSizeWithCellsOrAnchor = new ArrayList<JAXBElement<?>>();
+            moveWithCellsOrSizeWithCellsOrAnchor = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.moveWithCellsOrSizeWithCellsOrAnchor;
     }

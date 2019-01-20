@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -106,7 +106,7 @@ public class CTLine implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
         @XmlElementRef(name = "callout", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egShapeElements;
+    protected List<JAXBElement<?>> egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "from")
     protected String from;
     @XmlAttribute(name = "to")
@@ -266,7 +266,7 @@ public class CTLine implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (egShapeElements == null) {
-            egShapeElements = new ArrayList<JAXBElement<?>>();
+            egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.egShapeElements;
     }

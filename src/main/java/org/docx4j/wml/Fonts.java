@@ -91,7 +91,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class Fonts implements Child
 {
 
-    protected List<Fonts.Font> font;
+    protected List<Fonts.Font> font = new ArrayListWml<Fonts.Font>(this);
     @XmlTransient
     private Object parent;
 
@@ -119,7 +119,7 @@ public class Fonts implements Child
      */
     public List<Fonts.Font> getFont() {
         if (font == null) {
-            font = new ArrayList<Fonts.Font>();
+            font = new ArrayListWml<Fonts.Font>(this);
         }
         return this.font;
     }
