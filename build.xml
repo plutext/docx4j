@@ -7,14 +7,14 @@
     <property name="source" value="1.6"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="6.1.0"/>
+	<property name="version" value="6.1.1"/>
 	<property name="importxhtml-version" value="6.1.0"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
-	<property name="m2Repository" value="../../.m2/repository"/>	
+	<property name="m2Repository" value="/home/jharrop/.m2/repository"/>	
 	
     <!--.NET properties -->
     <property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
@@ -192,7 +192,7 @@
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.0.1/docx4j-export-fo-6.1.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.1.0/docx4j-export-fo-6.1.0.jar"/>
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
         
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>

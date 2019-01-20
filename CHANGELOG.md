@@ -8,7 +8,7 @@ Version 6.1.1
 Release date
 ------------
 
-(not yet released)
+21 January 2019
 
 
 Contributors to this release
@@ -17,8 +17,10 @@ Contributors to this release
 Jason Harrop
 
 
-Notable Changes in Version 6.1.0 
+Notable Changes in Version 6.1.1 
 ---------------------------------
+
+dml, vml and mc lists are now of type ArrayListDml|Vml|Mce respecitvely, in which parent is automatically set correctly
 
 TraversalUtil replaceChildren: support replacing in a bare List object.
 
