@@ -29,6 +29,7 @@ import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CT
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
+import org.docx4j.jaxb.Context;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -43,10 +44,15 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.CTObject;
 import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
+import org.docx4j.wml.ProofErr;
+import org.docx4j.wml.R;
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +136,7 @@ public class TraversalUtil {
 								// It shouldn't be (as ArrayListWml usually handles), but do nothing 
 								if (log.isDebugEnabled()) {
 									if ( ((Child)o2).getParent()==null) {
-										log.debug("Unknown parent for " + o2.getClass().getName());										
+										log.debug("Unknown parent for " + o2.getClass().getName());	
 									} else  {
 										log.debug("Parent of " + o2.getClass().getName()
 												+ " is currently " + ((Child)o2).getParent().getClass().getName());
@@ -162,7 +168,9 @@ public class TraversalUtil {
 										// eg Parent of org.docx4j.wml.Tc is currently org.docx4j.wml.CTSdtContentCell
 										if (log.isWarnEnabled()) {
 											log.warn("Parent of " + o2.getClass().getName()
-													+ " is currently " + ((Child)o2).getParent().getClass().getName());
+													+ " is currently " + ((Child)o2).getParent().getClass().getName()
+													+ " not " + parent.getClass().getName()													
+													);
 										}
 										// We don't things in this case
 										//((Child)o2).setParent(parent);									
@@ -191,11 +199,14 @@ public class TraversalUtil {
 									
 									// This can happen because getChildren() skips layers,
 									// so the 'parent' passed in here might actually be the grandparent
-									log.info("Parent of "
+									log.debug("Parent of "
 											+ o2.getClass().getName()
 											+ " is currently "
 											+ ((Child) o2).getParent().getClass()
-													.getName());
+													.getName()
+									+ " not " + parent.getClass().getName() );	
+									//  eg Parent of org.docx4j.wml.P is currently org.docx4j.wml.Body not org.docx4j.wml.ArrayListWml
+									//  which is as it should be.
 								}
 							} else {
 								log.info(o2.getClass().getName() + " not an instanceof Child!");
@@ -344,6 +355,13 @@ public class TraversalUtil {
             artificialList.add( ((org.docx4j.wml.Document)o).getBody() );
             return artificialList;
 			
+        } else if (o instanceof Br
+        		|| o instanceof CTBookmark
+        		|| o instanceof CTMarkupRange) {			
+        	return null;
+        } else if (o instanceof R.Tab
+        		|| o instanceof R.LastRenderedPageBreak) {			
+        	return null;
 		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
 			
@@ -379,7 +397,11 @@ public class TraversalUtil {
                 if (graphic.getGraphicData() != null) {
                 	List<Object> handledGraphicData = handleGraphicData(graphic.getGraphicData());
                 	if (handledGraphicData==null) {
-                		log.warn("TODO: handleGraphicData");
+                		log.info("handleGraphicData returned an empty list");
+                		if (log.isDebugEnabled()) {
+                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc, 
+                					"http://schemas.openxmlformats.org/drawingml/2006/main", "graphic", org.docx4j.dml.Graphic.class));
+                		}
                 	} else {
                 		artificialList.addAll(handledGraphicData);
                 	}
@@ -408,7 +430,10 @@ public class TraversalUtil {
 
         } else if (o instanceof Pict) {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
-			
+
+        } else if (o instanceof ProofErr) {			
+        	return null;
+        	
 		} else if (o instanceof org.docx4j.dml.picture.Pic) { // Post 2.7.1; untested
 			
 			org.docx4j.dml.picture.Pic dmlPic = ((org.docx4j.dml.picture.Pic)o);
@@ -514,7 +539,7 @@ public class TraversalUtil {
 
 		// OK, what is this? Use reflection ..
 		// This should work for things including w:drawing
-		log.debug(".. looking for method which returns list "  );
+		log.debug(o.getClass().getName() + " .. looking for method which returns list "  );
 		try {
 			Method[] methods = o.getClass().getDeclaredMethods();
 			for (int i = 0; i<methods.length; i++) {
@@ -525,8 +550,7 @@ public class TraversalUtil {
 			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
 		log.debug(".. no list member");
 		return null;
