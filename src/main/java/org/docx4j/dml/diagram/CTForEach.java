@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -79,23 +79,23 @@ public class CTForEach {
         @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
         @XmlElement(name = "constrLst", type = CTConstraints.class)
     })
-    protected List<Object> algOrShapeOrPresOf;
+    protected List<Object> algOrShapeOrPresOf = new ArrayListDml<Object>(this);
     @XmlAttribute
     protected String name;
     @XmlAttribute
     protected String ref;
     @XmlAttribute
-    protected List<STAxisType> axis;
+    protected List<STAxisType> axis = new ArrayListDml<STAxisType>(this);
     @XmlAttribute
-    protected List<STElementType> ptType;
+    protected List<STElementType> ptType = new ArrayListDml<STElementType>(this);
     @XmlAttribute
-    protected List<Boolean> hideLastTrans;
+    protected List<Boolean> hideLastTrans  = new ArrayListDml<Boolean>(this);
     @XmlAttribute
-    protected List<Integer> st;
+    protected List<Integer> st = new ArrayListDml<Integer>(this);
     @XmlAttribute
-    protected List<Long> cnt;
+    protected List<Long> cnt = new ArrayListDml<Long>(this);
     @XmlAttribute
-    protected List<Integer> step;
+    protected List<Integer> step = new ArrayListDml<Integer>(this);
 
     /**
      * Gets the value of the algOrShapeOrPresOf property.
@@ -129,7 +129,7 @@ public class CTForEach {
      */
     public List<Object> getAlgOrShapeOrPresOf() {
         if (algOrShapeOrPresOf == null) {
-            algOrShapeOrPresOf = new ArrayList<Object>();
+            algOrShapeOrPresOf = new ArrayListDml<Object>(this);
         }
         return this.algOrShapeOrPresOf;
     }
@@ -214,7 +214,7 @@ public class CTForEach {
      */
     public List<STAxisType> getAxis() {
         if (axis == null) {
-            axis = new ArrayList<STAxisType>();
+            axis = new ArrayListDml<STAxisType>(this);
         }
         return this.axis;
     }
@@ -243,7 +243,7 @@ public class CTForEach {
      */
     public List<STElementType> getPtType() {
         if (ptType == null) {
-            ptType = new ArrayList<STElementType>();
+            ptType = new ArrayListDml<STElementType>(this);
         }
         return this.ptType;
     }
@@ -272,7 +272,7 @@ public class CTForEach {
      */
     public List<Boolean> getHideLastTrans() {
         if (hideLastTrans == null) {
-            hideLastTrans = new ArrayList<Boolean>();
+            hideLastTrans = new ArrayListDml<Boolean>(this);
         }
         return this.hideLastTrans;
     }
@@ -301,7 +301,7 @@ public class CTForEach {
      */
     public List<Integer> getSt() {
         if (st == null) {
-            st = new ArrayList<Integer>();
+            st = new ArrayListDml<Integer>(this);
         }
         return this.st;
     }
@@ -330,7 +330,7 @@ public class CTForEach {
      */
     public List<Long> getCnt() {
         if (cnt == null) {
-            cnt = new ArrayList<Long>();
+            cnt = new ArrayListDml<Long>(this);
         }
         return this.cnt;
     }
@@ -359,7 +359,7 @@ public class CTForEach {
      */
     public List<Integer> getStep() {
         if (step == null) {
-            step = new ArrayList<Integer>();
+            step = new ArrayListDml<Integer>(this);
         }
         return this.step;
     }

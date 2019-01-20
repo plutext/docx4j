@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -61,7 +61,7 @@ public class CTNumData {
 
     protected String formatCode;
     protected CTUnsignedInt ptCount;
-    protected List<CTNumVal> pt;
+    protected List<CTNumVal> pt  = new ArrayListDml<CTNumVal>(this);
     protected CTExtensionList extLst;
 
     /**
@@ -136,7 +136,7 @@ public class CTNumData {
      */
     public List<CTNumVal> getPt() {
         if (pt == null) {
-            pt = new ArrayList<CTNumVal>();
+            pt = new ArrayListDml<CTNumVal>(this);
         }
         return this.pt;
     }

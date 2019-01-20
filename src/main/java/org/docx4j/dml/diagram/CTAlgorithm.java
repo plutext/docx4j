@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -60,7 +60,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 })
 public class CTAlgorithm {
 
-    protected List<CTParameter> param;
+    protected List<CTParameter> param = new ArrayListDml<CTParameter>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(required = true)
     protected STAlgorithmType type;
@@ -92,7 +92,7 @@ public class CTAlgorithm {
      */
     public List<CTParameter> getParam() {
         if (param == null) {
-            param = new ArrayList<CTParameter>();
+            param = new ArrayListDml<CTParameter>(this);
         }
         return this.param;
     }

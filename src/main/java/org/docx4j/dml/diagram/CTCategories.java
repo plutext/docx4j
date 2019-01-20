@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTCategories {
 
-    protected List<CTCategory> cat;
+    protected List<CTCategory> cat = new ArrayListDml<CTCategory>(this);
 
     /**
      * Gets the value of the cat property.
@@ -79,7 +79,7 @@ public class CTCategories {
      */
     public List<CTCategory> getCat() {
         if (cat == null) {
-            cat = new ArrayList<CTCategory>();
+            cat = new ArrayListDml<CTCategory>(this);
         }
         return this.cat;
     }

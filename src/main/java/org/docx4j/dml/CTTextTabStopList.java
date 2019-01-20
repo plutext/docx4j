@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -79,7 +79,7 @@ public class CTTextTabStopList {
      */
     public List<CTTextTabStop> getTab() {
         if (tab == null) {
-            tab = new ArrayList<CTTextTabStop>();
+            tab = new ArrayListDml<CTTextTabStop>(this);
         }
         return this.tab;
     }

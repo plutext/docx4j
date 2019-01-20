@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTLvl {
 
-    protected List<CTStrVal> pt;
+    protected List<CTStrVal> pt = new ArrayListDml<CTStrVal>(this);
 
     /**
      * Gets the value of the pt property.
@@ -79,7 +79,7 @@ public class CTLvl {
      */
     public List<CTStrVal> getPt() {
         if (pt == null) {
-            pt = new ArrayList<CTStrVal>();
+            pt = new ArrayListDml<CTStrVal>(this);
         }
         return this.pt;
     }

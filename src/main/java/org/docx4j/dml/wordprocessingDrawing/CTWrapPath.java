@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.wordprocessingDrawing;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +62,7 @@ public class CTWrapPath {
     @XmlElement(required = true)
     protected CTPoint2D start;
     @XmlElement(required = true)
-    protected List<CTPoint2D> lineTo;
+    protected List<CTPoint2D> lineTo = new ArrayListDml<CTPoint2D>(this);
     @XmlAttribute
     protected Boolean edited;
 
@@ -114,7 +114,7 @@ public class CTWrapPath {
      */
     public List<CTPoint2D> getLineTo() {
         if (lineTo == null) {
-            lineTo = new ArrayList<CTPoint2D>();
+            lineTo = new ArrayListDml<CTPoint2D>(this);
         }
         return this.lineTo;
     }

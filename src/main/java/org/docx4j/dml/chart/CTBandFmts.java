@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTBandFmts {
 
-    protected List<CTBandFmt> bandFmt;
+    protected List<CTBandFmt> bandFmt = new ArrayListDml<CTBandFmt>(this);
 
     /**
      * Gets the value of the bandFmt property.
@@ -79,7 +79,7 @@ public class CTBandFmts {
      */
     public List<CTBandFmt> getBandFmt() {
         if (bandFmt == null) {
-            bandFmt = new ArrayList<CTBandFmt>();
+            bandFmt = new ArrayListDml<CTBandFmt>(this);
         }
         return this.bandFmt;
     }

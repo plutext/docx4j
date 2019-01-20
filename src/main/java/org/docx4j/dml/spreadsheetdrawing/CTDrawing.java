@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +62,7 @@ public class CTDrawing {
         @XmlElement(name = "twoCellAnchor", type = CTTwoCellAnchor.class),
         @XmlElement(name = "oneCellAnchor", type = CTOneCellAnchor.class)
     })
-    protected List<Object> egAnchor;
+    protected List<Object> egAnchor = new ArrayListDml<Object>(this);
 
     /**
      * Gets the value of the egAnchor property.
@@ -90,7 +90,7 @@ public class CTDrawing {
      */
     public List<Object> getEGAnchor() {
         if (egAnchor == null) {
-            egAnchor = new ArrayList<Object>();
+            egAnchor = new ArrayListDml<Object>(this);
         }
         return this.egAnchor;
     }

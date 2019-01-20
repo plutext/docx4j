@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -58,7 +58,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTPie3DChart implements ListSer  {
 
     protected CTBoolean varyColors;
-    protected List<CTPieSer> ser;
+    protected List<CTPieSer> ser = new ArrayListDml<CTPieSer>(this);
     protected CTDLbls dLbls;
     protected CTExtensionList extLst;
 
@@ -110,7 +110,7 @@ public class CTPie3DChart implements ListSer  {
      */
     public List<CTPieSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTPieSer>();
+            ser = new ArrayListDml<CTPieSer>(this);
         }
         return this.ser;
     }

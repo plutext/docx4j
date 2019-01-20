@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTOfficeArtExtensionList {
 
-    protected List<CTOfficeArtExtension> ext;
+    protected List<CTOfficeArtExtension> ext = new ArrayListDml<CTOfficeArtExtension>(this);
 
     /**
      * Gets the value of the ext property.
@@ -79,7 +79,7 @@ public class CTOfficeArtExtensionList {
      */
     public List<CTOfficeArtExtension> getExt() {
         if (ext == null) {
-            ext = new ArrayList<CTOfficeArtExtension>();
+            ext = new ArrayListDml<CTOfficeArtExtension>(this);
         }
         return this.ext;
     }

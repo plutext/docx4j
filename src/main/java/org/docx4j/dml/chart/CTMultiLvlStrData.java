@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -58,7 +58,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTMultiLvlStrData {
 
     protected CTUnsignedInt ptCount;
-    protected List<CTLvl> lvl;
+    protected List<CTLvl> lvl = new ArrayListDml<CTLvl>(this);
     protected CTExtensionList extLst;
 
     /**
@@ -109,7 +109,7 @@ public class CTMultiLvlStrData {
      */
     public List<CTLvl> getLvl() {
         if (lvl == null) {
-            lvl = new ArrayList<CTLvl>();
+            lvl = new ArrayListDml<CTLvl>(this);
         }
         return this.lvl;
     }

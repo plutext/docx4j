@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -68,7 +68,7 @@ import org.docx4j.dml.CTTextBody;
 public class CTLegend {
 
     protected CTLegendPos legendPos;
-    protected List<CTLegendEntry> legendEntry;
+    protected List<CTLegendEntry> legendEntry = new ArrayListDml<CTLegendEntry>(this);
     protected CTLayout layout;
     protected CTBoolean overlay;
     protected CTShapeProperties spPr;
@@ -123,7 +123,7 @@ public class CTLegend {
      */
     public List<CTLegendEntry> getLegendEntry() {
         if (legendEntry == null) {
-            legendEntry = new ArrayList<CTLegendEntry>();
+            legendEntry = new ArrayListDml<CTLegendEntry>(this);
         }
         return this.legendEntry;
     }

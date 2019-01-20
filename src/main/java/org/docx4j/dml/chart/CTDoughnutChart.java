@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTDoughnutChart implements ListSer {
 
     protected CTBoolean varyColors;
-    protected List<CTPieSer> ser;
+    protected List<CTPieSer> ser = new ArrayListDml<CTPieSer>(this);
     protected CTDLbls dLbls;
     protected CTFirstSliceAng firstSliceAng;
     protected CTHoleSize holeSize;
@@ -116,7 +116,7 @@ public class CTDoughnutChart implements ListSer {
      */
     public List<CTPieSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTPieSer>();
+            ser = new ArrayListDml<CTPieSer>(this);
         }
         return this.ser;
     }

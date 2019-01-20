@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -82,7 +82,7 @@ public class CTLayoutNode {
         @XmlElement(name = "shape", type = CTShape.class),
         @XmlElement(name = "alg", type = CTAlgorithm.class)
     })
-    protected List<Object> algOrShapeOrPresOf;
+    protected List<Object> algOrShapeOrPresOf = new ArrayListDml<Object>(this);
     @XmlAttribute
     protected String name;
     @XmlAttribute
@@ -125,7 +125,7 @@ public class CTLayoutNode {
      */
     public List<Object> getAlgOrShapeOrPresOf() {
         if (algOrShapeOrPresOf == null) {
-            algOrShapeOrPresOf = new ArrayList<Object>();
+            algOrShapeOrPresOf = new ArrayListDml<Object>(this);
         }
         return this.algOrShapeOrPresOf;
     }

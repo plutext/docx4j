@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -77,7 +77,7 @@ public class CTGroupShape {
         @XmlElement(name = "cxnSp", type = CTConnector.class),
         @XmlElement(name = "grpSp", type = CTGroupShape.class)
     })
-    protected List<Object> spOrGrpSpOrGraphicFrame;
+    protected List<Object> spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
 
     /**
      * Gets the value of the nvGrpSpPr property.
@@ -155,7 +155,7 @@ public class CTGroupShape {
      */
     public List<Object> getSpOrGrpSpOrGraphicFrame() {
         if (spOrGrpSpOrGraphicFrame == null) {
-            spOrGrpSpOrGraphicFrame = new ArrayList<Object>();
+            spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
         }
         return this.spOrGrpSpOrGraphicFrame;
     }

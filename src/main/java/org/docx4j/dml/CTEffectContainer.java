@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -91,7 +91,7 @@ public class CTEffectContainer {
         @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
         @XmlElement(name = "fill", type = CTFillEffect.class)
     })
-    protected List<Object> egEffect;
+    protected List<Object> egEffect = new ArrayListDml<Object>(this);
     @XmlAttribute
     protected STEffectContainerType type;
     @XmlAttribute
@@ -152,7 +152,7 @@ public class CTEffectContainer {
      */
     public List<Object> getEGEffect() {
         if (egEffect == null) {
-            egEffect = new ArrayList<Object>();
+            egEffect = new ArrayListDml<Object>(this);
         }
         return this.egEffect;
     }

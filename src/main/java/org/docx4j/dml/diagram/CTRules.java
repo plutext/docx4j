@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTRules {
 
-    protected List<CTNumericRule> rule;
+    protected List<CTNumericRule> rule = new ArrayListDml<CTNumericRule>(this);
 
     /**
      * Gets the value of the rule property.
@@ -79,7 +79,7 @@ public class CTRules {
      */
     public List<CTNumericRule> getRule() {
         if (rule == null) {
-            rule = new ArrayList<CTNumericRule>();
+            rule = new ArrayListDml<CTNumericRule>(this);
         }
         return this.rule;
     }

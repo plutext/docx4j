@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -88,7 +88,7 @@ public class CTPresetColor {
         @XmlElementRef(name = "greenOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "alpha", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egColorTransform;
+    protected List<JAXBElement<?>> egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
     @XmlAttribute
     protected STPresetColorVal val;
 
@@ -143,7 +143,7 @@ public class CTPresetColor {
      */
     public List<JAXBElement<?>> getEGColorTransform() {
         if (egColorTransform == null) {
-            egColorTransform = new ArrayList<JAXBElement<?>>();
+            egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
         }
         return this.egColorTransform;
     }

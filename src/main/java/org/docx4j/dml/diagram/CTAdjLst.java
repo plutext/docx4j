@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTAdjLst {
 
-    protected List<CTAdj> adj;
+    protected List<CTAdj> adj = new ArrayListDml<CTAdj>(this);
 
     /**
      * Gets the value of the adj property.
@@ -79,7 +79,7 @@ public class CTAdjLst {
      */
     public List<CTAdj> getAdj() {
         if (adj == null) {
-            adj = new ArrayList<CTAdj>();
+            adj = new ArrayListDml<CTAdj>(this);
         }
         return this.adj;
     }

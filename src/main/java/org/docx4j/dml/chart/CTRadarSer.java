@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -77,7 +77,7 @@ public class CTRadarSer implements SerContent {
     protected CTSerTx tx;
     protected CTShapeProperties spPr;
     protected CTMarker marker;
-    protected List<CTDPt> dPt;
+    protected List<CTDPt> dPt = new ArrayListDml<CTDPt>(this);
     protected CTDLbls dLbls;
     protected CTAxDataSource cat;
     protected CTNumDataSource val;
@@ -227,7 +227,7 @@ public class CTRadarSer implements SerContent {
      */
     public List<CTDPt> getDPt() {
         if (dPt == null) {
-            dPt = new ArrayList<CTDPt>();
+            dPt = new ArrayListDml<CTDPt>(this);
         }
         return this.dPt;
     }

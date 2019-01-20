@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -90,7 +90,7 @@ public class CTScRgbColor {
         @XmlElementRef(name = "redMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "comp", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egColorTransform;
+    protected List<JAXBElement<?>> egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
     @XmlAttribute(required = true)
     protected int r;
     @XmlAttribute(required = true)
@@ -149,7 +149,7 @@ public class CTScRgbColor {
      */
     public List<JAXBElement<?>> getEGColorTransform() {
         if (egColorTransform == null) {
-            egColorTransform = new ArrayList<JAXBElement<?>>();
+            egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
         }
         return this.egColorTransform;
     }

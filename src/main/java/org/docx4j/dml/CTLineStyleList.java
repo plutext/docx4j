@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTLineStyleList {
 
     @XmlElement(required = true)
-    protected List<CTLineProperties> ln;
+    protected List<CTLineProperties> ln = new ArrayListDml<CTLineProperties>(this);
 
     /**
      * Gets the value of the ln property.
@@ -81,7 +81,7 @@ public class CTLineStyleList {
      */
     public List<CTLineProperties> getLn() {
         if (ln == null) {
-            ln = new ArrayList<CTLineProperties>();
+            ln = new ArrayListDml<CTLineProperties>(this);
         }
         return this.ln;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTColorSchemeList {
 
-    protected List<CTColorSchemeAndMapping> extraClrScheme;
+    protected List<CTColorSchemeAndMapping> extraClrScheme = new ArrayListDml<CTColorSchemeAndMapping>(this);
 
     /**
      * Gets the value of the extraClrScheme property.
@@ -79,7 +79,7 @@ public class CTColorSchemeList {
      */
     public List<CTColorSchemeAndMapping> getExtraClrScheme() {
         if (extraClrScheme == null) {
-            extraClrScheme = new ArrayList<CTColorSchemeAndMapping>();
+            extraClrScheme = new ArrayListDml<CTColorSchemeAndMapping>(this);
         }
         return this.extraClrScheme;
     }

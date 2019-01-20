@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTStyleDefinitionHeaderLst {
 
-    protected List<CTStyleDefinitionHeader> styleDefHdr;
+    protected List<CTStyleDefinitionHeader> styleDefHdr= new ArrayListDml<CTStyleDefinitionHeader>(this);
 
     /**
      * Gets the value of the styleDefHdr property.
@@ -79,7 +79,7 @@ public class CTStyleDefinitionHeaderLst {
      */
     public List<CTStyleDefinitionHeader> getStyleDefHdr() {
         if (styleDefHdr == null) {
-            styleDefHdr = new ArrayList<CTStyleDefinitionHeader>();
+            styleDefHdr = new ArrayListDml<CTStyleDefinitionHeader>(this);
         }
         return this.styleDefHdr;
     }

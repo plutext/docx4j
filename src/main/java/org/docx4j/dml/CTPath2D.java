@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -74,7 +74,7 @@ public class CTPath2D {
         @XmlElement(name = "moveTo", type = CTPath2DMoveTo.class),
         @XmlElement(name = "cubicBezTo", type = CTPath2DCubicBezierTo.class)
     })
-    protected List<Object> closeOrMoveToOrLnTo;
+    protected List<Object> closeOrMoveToOrLnTo = new ArrayListDml<Object>(this);
     @XmlAttribute
     protected Long w;
     @XmlAttribute
@@ -115,7 +115,7 @@ public class CTPath2D {
      */
     public List<Object> getCloseOrMoveToOrLnTo() {
         if (closeOrMoveToOrLnTo == null) {
-            closeOrMoveToOrLnTo = new ArrayList<Object>();
+            closeOrMoveToOrLnTo = new ArrayListDml<Object>(this);
         }
         return this.closeOrMoveToOrLnTo;
     }

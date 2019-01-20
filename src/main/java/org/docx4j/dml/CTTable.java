@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -61,7 +61,7 @@ public class CTTable {
     protected CTTableProperties tblPr;
     @XmlElement(required = true)
     protected CTTableGrid tblGrid;
-    protected List<CTTableRow> tr;
+    protected List<CTTableRow> tr  = new ArrayListDml<CTTableRow>(this);
 
     /**
      * Gets the value of the tblPr property.
@@ -135,7 +135,7 @@ public class CTTable {
      */
     public List<CTTableRow> getTr() {
         if (tr == null) {
-            tr = new ArrayList<CTTableRow>();
+            tr = new ArrayListDml<CTTableRow>(this);
         }
         return this.tr;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -63,7 +63,7 @@ public class CTBackgroundFillStyleList {
         @XmlElement(name = "grpFill", type = CTGroupFillProperties.class),
         @XmlElement(name = "gradFill", type = CTGradientFillProperties.class)
     })
-    protected List<Object> egFillProperties;
+    protected List<Object> egFillProperties = new ArrayListDml<Object>(this);
 
     /**
      * Gets the value of the egFillProperties property.
@@ -94,7 +94,7 @@ public class CTBackgroundFillStyleList {
      */
     public List<Object> getEGFillProperties() {
         if (egFillProperties == null) {
-            egFillProperties = new ArrayList<Object>();
+            egFillProperties = new ArrayListDml<Object>(this);
         }
         return this.egFillProperties;
     }

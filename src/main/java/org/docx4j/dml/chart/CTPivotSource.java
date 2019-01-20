@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +62,7 @@ public class CTPivotSource {
     protected String name;
     @XmlElement(required = true)
     protected CTUnsignedInt fmtId;
-    protected List<CTExtensionList> extLst;
+    protected List<CTExtensionList> extLst  = new ArrayListDml<CTExtensionList>(this);
 
     /**
      * Gets the value of the name property.
@@ -136,7 +136,7 @@ public class CTPivotSource {
      */
     public List<CTExtensionList> getExtLst() {
         if (extLst == null) {
-            extLst = new ArrayList<CTExtensionList>();
+            extLst = new ArrayListDml<CTExtensionList>(this);
         }
         return this.extLst;
     }

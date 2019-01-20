@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -75,14 +75,14 @@ public class CTOfPieChart implements ListSer {
     @XmlElement(required = true)
     protected CTOfPieType ofPieType;
     protected CTBoolean varyColors;
-    protected List<CTPieSer> ser;
+    protected List<CTPieSer> ser = new ArrayListDml<CTPieSer>(this);
     protected CTDLbls dLbls;
     protected CTGapAmount gapWidth;
     protected CTSplitType splitType;
     protected CTDouble splitPos;
     protected CTCustSplit custSplit;
     protected CTSecondPieSize secondPieSize;
-    protected List<CTChartLines> serLines;
+    protected List<CTChartLines> serLines  = new ArrayListDml<CTChartLines>(this);
     protected CTExtensionList extLst;
 
     /**
@@ -157,7 +157,7 @@ public class CTOfPieChart implements ListSer {
      */
     public List<CTPieSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTPieSer>();
+            ser = new ArrayListDml<CTPieSer>(this);
         }
         return this.ser;
     }
@@ -330,7 +330,7 @@ public class CTOfPieChart implements ListSer {
      */
     public List<CTChartLines> getSerLines() {
         if (serLines == null) {
-            serLines = new ArrayList<CTChartLines>();
+            serLines = new ArrayListDml<CTChartLines>(this);
         }
         return this.serLines;
     }

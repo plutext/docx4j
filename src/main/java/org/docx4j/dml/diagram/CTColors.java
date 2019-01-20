@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -72,7 +72,7 @@ public class CTColors {
         @XmlElement(name = "hslClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTHslColor.class),
         @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class)
     })
-    protected List<Object> egColorChoice;
+    protected List<Object> egColorChoice = new ArrayListDml<Object>(this);
     @XmlAttribute
     protected STClrAppMethod meth;
     @XmlAttribute
@@ -107,7 +107,7 @@ public class CTColors {
      */
     public List<Object> getEGColorChoice() {
         if (egColorChoice == null) {
-            egColorChoice = new ArrayList<Object>();
+            egColorChoice = new ArrayListDml<Object>(this);
         }
         return this.egColorChoice;
     }
