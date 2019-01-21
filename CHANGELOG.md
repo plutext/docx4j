@@ -20,7 +20,8 @@ Jason Harrop
 Notable Changes in Version 6.1.1 
 ---------------------------------
 
-dml, vml and mc lists are now of type ArrayListDml|Vml|Mce respecitvely, in which parent is automatically set correctly
+vml and mc lists are now of type ArrayListVml|Mce respecitvely, in which parent object is automatically set correctly
+(as is done for wml objects)
 
 TraversalUtil replaceChildren: support replacing in a bare List object.
 
