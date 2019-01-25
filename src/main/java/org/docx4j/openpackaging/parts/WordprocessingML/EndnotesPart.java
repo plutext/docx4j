@@ -24,19 +24,19 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.util.List;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.ArrayListWml;
 import org.docx4j.wml.CTEndnotes;
+import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.ContentAccessor;
 
 
-public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes> implements ContentAccessor {
+public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes>
+    implements ContentAccessor<CTFtnEdn> {
 	
-	private ArrayListWml<Object> content;
-
 
 	/* Unfortunately, this class can't easily implement
 	 * ContentAccessor, because to do that,
@@ -83,16 +83,20 @@ public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes> implem
      * Convenience method to getJaxbElement().getEndnote()
      * @since 2.8.1
      */
-    public List<Object> getContent() {
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createCTEndnotes() );
-    	}
-    	
-    	if (content == null) {
-            content  = new ArrayListWml<Object>(this.getJaxbElement());
-        }
-        return this.content;
-    	
+    public List<CTFtnEdn> getContent() {
+    	try {
+            CTEndnotes contents = this.getContents();
+            if (contents==null) {           
+                contents = Context.getWmlObjectFactory().createCTEndnotes();
+                this.setContents(contents);
+            }
+        
+            return contents.getEndnote();
+        } catch (Docx4JException e) {
+            // Similar exception handling as in deprectad JaxbXmlPart.getJaxbElement(). 
+            log.error(e.getMessage(), e);
+            return null;
+        } 
     }	
 	
 

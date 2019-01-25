@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
     "content"
 })
 @XmlRootElement(name = "p")
-public class P implements Child, ContentAccessor
+public class P implements Child, ContentAccessor<Object>
 {
 	private static Logger log = LoggerFactory.getLogger(P.class);	
 
@@ -469,7 +469,7 @@ public class P implements Child, ContentAccessor
     })
     @XmlRootElement(name = "hyperlink")    
     public static class Hyperlink
-        implements Child, ContentAccessor
+        implements Child, ContentAccessor<Object>
     {
 
         @XmlElementRefs({

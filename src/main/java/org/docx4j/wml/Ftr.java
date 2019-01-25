@@ -64,7 +64,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "ftr")
 public class Ftr
-    implements Child, ContentAccessor
+    implements Child, ContentAccessor<Object>
 {
 
     @XmlElementRefs({

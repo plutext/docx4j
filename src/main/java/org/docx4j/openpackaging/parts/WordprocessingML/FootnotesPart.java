@@ -24,17 +24,18 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.util.List;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.ArrayListWml;
 import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.ContentAccessor;
 
 
-public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> implements ContentAccessor {
-	// implements ContentAccessor {
+public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes>
+    implements ContentAccessor<CTFtnEdn> {
 	
 	/* Unfortunately, this class can't easily implement
 	 * ContentAccessor, because to do that,
@@ -53,11 +54,14 @@ public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> impl
 	 * the first thing to do would be to change wml.xsd, so we generate
 	 * distinct classes CTFtn and CTEdn.  But that would be backwards incompatible,
 	 * unless we also retained CTFtnEdn in some fashion?
+	 * 
+	 * JABOJ78: Is this really that hard to accomplished. By removing generic <Object> from
+	 * ContentAccessor.getList return and letting FootnotesPart return list of CTFootnotes seems
+	 * to do the trick!
+	 * 
 	 */
 	
 	
-	private ArrayListWml<Object> content;
-
 	public FootnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();		
@@ -79,20 +83,25 @@ public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> impl
 		
 	}
 
-	/**
-     * Convenience method to getJaxbElement().getEndnote()
+    /**
+     * Convenience method to getJaxbElement().getFootnote()
      * @since 2.8.1
      */
-    public List<Object> getContent() {
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createCTFootnotes() );
-    	}
+    public List<CTFtnEdn> getContent() {
+    	try {
+    		CTFootnotes contents = this.getContents();
+    		if (contents==null) {    		
+    			contents = Context.getWmlObjectFactory().createCTFootnotes();
+    		    this.setContents(contents);
+    	    }
     	
-    	if (content == null) {
-            content  = new ArrayListWml<Object>(this.getJaxbElement());
-        }
-        return this.content;
-    	
+    	    return contents.getFootnote();
+    	} catch (Docx4JException e) {
+			// Similar exception handling as in deprectad JaxbXmlPart.getJaxbElement(). 
+    		log.error(e.getMessage(), e);
+			return null;
+		} 
+
     }	
 	
 //    /**

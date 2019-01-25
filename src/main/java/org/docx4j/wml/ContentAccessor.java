@@ -5,8 +5,7 @@ import java.util.List;
 /**
  * @since 2.7
  */
-public interface ContentAccessor {
-
-    public List<Object> getContent();
+public interface ContentAccessor<E> {
+    public List<E> getContent();
 	
 }

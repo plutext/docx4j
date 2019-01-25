@@ -22,7 +22,6 @@
 package org.docx4j.wml; 
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
