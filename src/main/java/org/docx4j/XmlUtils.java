@@ -1266,7 +1266,7 @@ public class XmlUtils {
 				
 			    Properties p = xformer.getOutputProperties();
 			    String method = p.getProperty("method");
-			    System.out.println("method: " + method);
+			    //log.debug("method: " + method);
 			    if (method==null || method.equals("xml")) {
 			    
 					((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
