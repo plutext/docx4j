@@ -50,7 +50,12 @@ public class NumberExtractor {
 	 */
 	private String prepare(String string) {
 		
-		string = string.replaceAll(groupingSeparator, "");
+		if (".".equals(groupingSeparator)) {
+			// for example, as may be used in Germany.
+			string = string.replaceAll("\\" + groupingSeparator, "");  // escape it, since otherwise '.' matches all characters of the string
+		} else {
+			string = string.replaceAll(groupingSeparator, ""); // assume it isn't set to be some other regex wildcard.
+		}
 		
 		if (decimalSymbol.equals(".")) {
 			// do nothing
