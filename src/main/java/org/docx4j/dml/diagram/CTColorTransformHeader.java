@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -66,9 +66,9 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 public class CTColorTransformHeader {
 
     @XmlElement(required = true)
-    protected List<CTCTName> title;
+    protected List<CTCTName> title = new ArrayListDml<CTCTName>(this);
     @XmlElement(required = true)
-    protected List<CTCTDescription> desc;
+    protected List<CTCTDescription> desc = new ArrayListDml<CTCTDescription>(this);
     protected CTCTCategories catLst;
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(required = true)
@@ -102,7 +102,7 @@ public class CTColorTransformHeader {
      */
     public List<CTCTName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTCTName>();
+            title = new ArrayListDml<CTCTName>(this);
         }
         return this.title;
     }
@@ -131,7 +131,7 @@ public class CTColorTransformHeader {
      */
     public List<CTCTDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTCTDescription>();
+            desc = new ArrayListDml<CTCTDescription>(this);
         }
         return this.desc;
     }

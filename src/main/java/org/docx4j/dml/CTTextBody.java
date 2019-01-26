@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -62,7 +62,7 @@ public class CTTextBody {
     protected CTTextBodyProperties bodyPr;
     protected CTTextListStyle lstStyle;
     @XmlElement(required = true)
-    protected List<CTTextParagraph> p;
+    protected List<CTTextParagraph> p = new ArrayListDml<CTTextParagraph>(this);
 
     /**
      * Gets the value of the bodyPr property.
@@ -136,7 +136,7 @@ public class CTTextBody {
      */
     public List<CTTextParagraph> getP() {
         if (p == null) {
-            p = new ArrayList<CTTextParagraph>();
+            p = new ArrayListDml<CTTextParagraph>(this);
         }
         return this.p;
     }

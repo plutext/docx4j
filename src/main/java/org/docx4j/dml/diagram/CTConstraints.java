@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTConstraints {
 
-    protected List<CTConstraint> constr;
+    protected List<CTConstraint> constr = new ArrayListDml<CTConstraint>(this);
 
     /**
      * Gets the value of the constr property.
@@ -79,7 +79,7 @@ public class CTConstraints {
      */
     public List<CTConstraint> getConstr() {
         if (constr == null) {
-            constr = new ArrayList<CTConstraint>();
+            constr = new ArrayListDml<CTConstraint>(this);
         }
         return this.constr;
     }

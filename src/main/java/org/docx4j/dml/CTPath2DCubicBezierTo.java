@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTPath2DCubicBezierTo {
 
     @XmlElement(required = true)
-    protected List<CTAdjPoint2D> pt;
+    protected List<CTAdjPoint2D> pt = new ArrayListDml<CTAdjPoint2D>(this);
 
     /**
      * Gets the value of the pt property.
@@ -81,7 +81,7 @@ public class CTPath2DCubicBezierTo {
      */
     public List<CTAdjPoint2D> getPt() {
         if (pt == null) {
-            pt = new ArrayList<CTAdjPoint2D>();
+            pt = new ArrayListDml<CTAdjPoint2D>(this);
         }
         return this.pt;
     }

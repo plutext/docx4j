@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTCxnList {
 
-    protected List<CTCxn> cxn;
+    protected List<CTCxn> cxn = new ArrayListDml<CTCxn>(this);
 
     /**
      * Gets the value of the cxn property.
@@ -79,7 +79,7 @@ public class CTCxnList {
      */
     public List<CTCxn> getCxn() {
         if (cxn == null) {
-            cxn = new ArrayList<CTCxn>();
+            cxn = new ArrayListDml<CTCxn>(this);
         }
         return this.cxn;
     }

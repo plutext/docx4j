@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTPivotFmts {
 
-    protected List<CTPivotFmt> pivotFmt;
+    protected List<CTPivotFmt> pivotFmt = new ArrayListDml<CTPivotFmt>(this);
 
     /**
      * Gets the value of the pivotFmt property.
@@ -79,7 +79,7 @@ public class CTPivotFmts {
      */
     public List<CTPivotFmt> getPivotFmt() {
         if (pivotFmt == null) {
-            pivotFmt = new ArrayList<CTPivotFmt>();
+            pivotFmt = new ArrayListDml<CTPivotFmt>(this);
         }
         return this.pivotFmt;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTGeomGuideList {
 
-    protected List<CTGeomGuide> gd;
+    protected List<CTGeomGuide> gd = new ArrayListDml<CTGeomGuide>(this);
 
     /**
      * Gets the value of the gd property.
@@ -79,7 +79,7 @@ public class CTGeomGuideList {
      */
     public List<CTGeomGuide> getGd() {
         if (gd == null) {
-            gd = new ArrayList<CTGeomGuide>();
+            gd = new ArrayListDml<CTGeomGuide>(this);
         }
         return this.gd;
     }

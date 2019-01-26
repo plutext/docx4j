@@ -20,6 +20,7 @@ import static org.docx4j.XmlUtils.prepareJAXBResult;
 import static org.docx4j.XmlUtils.transform;
 import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.ALL;
 import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.ALL_BUT_PLACEHOLDERS;
+import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.ALL_BUT_PLACEHOLDERS_CONTENT;
 import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.NAMED;
 
 import java.util.HashMap;
@@ -208,6 +209,7 @@ public class RemovalHandler {
                 final Map<String, Object> parameters = new HashMap<String, Object>();
                 parameters.put("all", quantifier == ALL);
                 parameters.put("all_but_placeholders", quantifier == ALL_BUT_PLACEHOLDERS);
+                parameters.put("all_but_placeholders_content", quantifier == ALL_BUT_PLACEHOLDERS_CONTENT);
                 if (quantifier == NAMED)
                         parameters.put("types", ArrayUtils.toString(keys));
 
@@ -236,6 +238,8 @@ public class RemovalHandler {
         		defaultQuantifier = Quantifier.ALL;
         	} else if (q.equals("ALL_BUT_PLACEHOLDERS")) {
         		defaultQuantifier = Quantifier.ALL_BUT_PLACEHOLDERS;
+        	} else if (q.equals("ALL_BUT_PLACEHOLDERS_CONTENT")) {
+        		defaultQuantifier = Quantifier.ALL_BUT_PLACEHOLDERS_CONTENT;
         	} else if (q.equals("DEFAULT")) {
         		defaultQuantifier = Quantifier.DEFAULT;
         	} else if (q.equals("NAMED")) {
@@ -255,11 +259,23 @@ public class RemovalHandler {
 
                 /**
                  * Every SDT shall be removed.  From 3.3.0, this really means all SDTs in the main document part.
+                 * If an SDT does not contain any 'real' content, then remove that XML as well.
                  */
                 ALL,
 
                 /**
-                 * Every SDT shall be removed except those which are identified as placeholders.
+                 * Ordinarily, if an SDT contains XML but no real content, 
+                 * that XML is also removed.  
+                 * Choose this option if you want to keep placeholder XML (but remove the SDT).
+                 * Currently, to be identified as a placeholder, it must use rStyle 'PlaceholderText'.
+                 * @since 6.1.1 
+                 */
+                ALL_BUT_PLACEHOLDERS_CONTENT,
+                
+                /**
+                 * Ordinarily, if an SDT contains XML but no real content, 
+                 * that XML is also removed.  
+                 * Choose this option if you want to keep placeholder XML (keeping the SDT as well).
                  * Currently, to be identified as a placeholder, it must use rStyle 'PlaceholderText'.
                  * @since 6.1.0 
                  */

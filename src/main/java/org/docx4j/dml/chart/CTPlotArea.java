@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -107,14 +107,14 @@ public class CTPlotArea {
         @XmlElement(name = "pie3DChart", type = CTPie3DChart.class),
         @XmlElement(name = "stockChart", type = CTStockChart.class)
     })
-    protected List<Object> areaChartOrArea3DChartOrLineChart;
+    protected List<Object> areaChartOrArea3DChartOrLineChart = new ArrayListDml<Object>(this);
     @XmlElements({
         @XmlElement(name = "catAx", type = CTCatAx.class),
         @XmlElement(name = "serAx", type = CTSerAx.class),
         @XmlElement(name = "valAx", type = CTValAx.class),
         @XmlElement(name = "dateAx", type = CTDateAx.class)
     })
-    protected List<Object> valAxOrCatAxOrDateAx;
+    protected List<Object> valAxOrCatAxOrDateAx = new ArrayListDml<Object>(this);
     protected CTDTable dTable;
     protected CTShapeProperties spPr;
     protected CTExtensionList extLst;
@@ -182,7 +182,7 @@ public class CTPlotArea {
      */
     public List<Object> getAreaChartOrArea3DChartOrLineChart() {
         if (areaChartOrArea3DChartOrLineChart == null) {
-            areaChartOrArea3DChartOrLineChart = new ArrayList<Object>();
+            areaChartOrArea3DChartOrLineChart = new ArrayListDml<Object>(this);
         }
         return this.areaChartOrArea3DChartOrLineChart;
     }
@@ -214,7 +214,7 @@ public class CTPlotArea {
      */
     public List<Object> getValAxOrCatAxOrDateAx() {
         if (valAxOrCatAxOrDateAx == null) {
-            valAxOrCatAxOrDateAx = new ArrayList<Object>();
+            valAxOrCatAxOrDateAx = new ArrayListDml<Object>(this);
         }
         return this.valAxOrCatAxOrDateAx;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTExtensionList {
 
-    protected List<CTExtension> ext;
+    protected List<CTExtension> ext = new ArrayListDml<CTExtension>(this);
 
     /**
      * Gets the value of the ext property.
@@ -79,7 +79,7 @@ public class CTExtensionList {
      */
     public List<CTExtension> getExt() {
         if (ext == null) {
-            ext = new ArrayList<CTExtension>();
+            ext = new ArrayListDml<CTExtension>(this);
         }
         return this.ext;
     }

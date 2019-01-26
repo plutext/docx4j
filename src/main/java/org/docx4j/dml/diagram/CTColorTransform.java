@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -67,10 +67,10 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlRootElement(name = "colorsDef")
 public class CTColorTransform {
 
-    protected List<CTCTName> title;
-    protected List<CTCTDescription> desc;
+    protected List<CTCTName> title = new ArrayListDml<CTCTName>(this);
+    protected List<CTCTDescription> desc = new ArrayListDml<CTCTDescription>(this);
     protected CTCTCategories catLst;
-    protected List<CTCTStyleLabel> styleLbl;
+    protected List<CTCTStyleLabel> styleLbl = new ArrayListDml<CTCTStyleLabel>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute
     protected String uniqueId;
@@ -101,7 +101,7 @@ public class CTColorTransform {
      */
     public List<CTCTName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTCTName>();
+            title = new ArrayListDml<CTCTName>(this);
         }
         return this.title;
     }
@@ -130,7 +130,7 @@ public class CTColorTransform {
      */
     public List<CTCTDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTCTDescription>();
+            desc = new ArrayListDml<CTCTDescription>(this);
         }
         return this.desc;
     }
@@ -183,7 +183,7 @@ public class CTColorTransform {
      */
     public List<CTCTStyleLabel> getStyleLbl() {
         if (styleLbl == null) {
-            styleLbl = new ArrayList<CTCTStyleLabel>();
+            styleLbl = new ArrayListDml<CTCTStyleLabel>(this);
         }
         return this.styleLbl;
     }

@@ -100,7 +100,7 @@ public class Styles implements Child
 
     protected DocDefaults docDefaults;
     protected Styles.LatentStyles latentStyles;
-    protected List<Style> style;
+    protected List<Style> style  = new ArrayListWml<Style>(this);
     @XmlTransient
     private Object parent;
 
@@ -176,7 +176,7 @@ public class Styles implements Child
      */
     public List<Style> getStyle() {
         if (style == null) {
-            style = new ArrayList<Style>();
+            style = new ArrayListWml<Style>(this);
         }
         return this.style;
     }

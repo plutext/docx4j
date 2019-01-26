@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTDocParts implements Child
 {
 
-    protected List<CTDocPart> docPart;
+    protected List<CTDocPart> docPart = new ArrayListWml<CTDocPart>(this);
     @XmlTransient
     private Object parent;
 
@@ -87,7 +87,7 @@ public class CTDocParts implements Child
      */
     public List<CTDocPart> getDocPart() {
         if (docPart == null) {
-            docPart = new ArrayList<CTDocPart>();
+            docPart = new ArrayListWml<CTDocPart>(this);
         }
         return this.docPart;
     }

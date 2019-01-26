@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -58,17 +58,17 @@ public class CTPresentationOf {
 
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute
-    protected List<STAxisType> axis;
+    protected List<STAxisType> axis = new ArrayListDml<STAxisType>(this);
     @XmlAttribute
-    protected List<STElementType> ptType;
+    protected List<STElementType> ptType = new ArrayListDml<STElementType>(this);
     @XmlAttribute
-    protected List<Boolean> hideLastTrans;
+    protected List<Boolean> hideLastTrans = new ArrayListDml<Boolean>(this);
     @XmlAttribute
-    protected List<Integer> st;
+    protected List<Integer> st = new ArrayListDml<Integer>(this);
     @XmlAttribute
-    protected List<Long> cnt;
+    protected List<Long> cnt = new ArrayListDml<Long>(this);
     @XmlAttribute
-    protected List<Integer> step;
+    protected List<Integer> step = new ArrayListDml<Integer>(this);
 
     /**
      * Gets the value of the extLst property.
@@ -118,7 +118,7 @@ public class CTPresentationOf {
      */
     public List<STAxisType> getAxis() {
         if (axis == null) {
-            axis = new ArrayList<STAxisType>();
+            axis = new ArrayListDml<STAxisType>(this);
         }
         return this.axis;
     }
@@ -147,7 +147,7 @@ public class CTPresentationOf {
      */
     public List<STElementType> getPtType() {
         if (ptType == null) {
-            ptType = new ArrayList<STElementType>();
+            ptType = new ArrayListDml<STElementType>(this);
         }
         return this.ptType;
     }
@@ -176,7 +176,7 @@ public class CTPresentationOf {
      */
     public List<Boolean> getHideLastTrans() {
         if (hideLastTrans == null) {
-            hideLastTrans = new ArrayList<Boolean>();
+            hideLastTrans = new ArrayListDml<Boolean>(this);
         }
         return this.hideLastTrans;
     }
@@ -205,7 +205,7 @@ public class CTPresentationOf {
      */
     public List<Integer> getSt() {
         if (st == null) {
-            st = new ArrayList<Integer>();
+            st = new ArrayListDml<Integer>(this);
         }
         return this.st;
     }
@@ -234,7 +234,7 @@ public class CTPresentationOf {
      */
     public List<Long> getCnt() {
         if (cnt == null) {
-            cnt = new ArrayList<Long>();
+            cnt = new ArrayListDml<Long>(this);
         }
         return this.cnt;
     }
@@ -263,7 +263,7 @@ public class CTPresentationOf {
      */
     public List<Integer> getStep() {
         if (step == null) {
-            step = new ArrayList<Integer>();
+            step = new ArrayListDml<Integer>(this);
         }
         return this.step;
     }

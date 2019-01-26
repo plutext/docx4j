@@ -21,7 +21,6 @@
 
 package org.docx4j.vml.officedrawing;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,6 +28,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.vml.ArrayListVml;
 import org.docx4j.vml.STExt;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -61,7 +62,7 @@ public class CTRelationTable
     implements Child
 {
 
-    protected List<CTRelation> rel;
+    protected List<CTRelation> rel = new ArrayListVml<CTRelation>(this);
     @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
@@ -91,7 +92,7 @@ public class CTRelationTable
      */
     public List<CTRelation> getRel() {
         if (rel == null) {
-            rel = new ArrayList<CTRelation>();
+            rel = new ArrayListVml<CTRelation>(this);
         }
         return this.rel;
     }

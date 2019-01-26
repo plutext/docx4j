@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -104,7 +104,7 @@ public class CTOval implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
         @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> pathOrFormulasOrHandles;
+    protected List<JAXBElement<?>> pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "opacity")
     protected String opacity;
     @XmlAttribute(name = "stroked")
@@ -261,7 +261,7 @@ public class CTOval implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
     @Deprecated
     public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;
     }
@@ -272,7 +272,7 @@ public class CTOval implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (pathOrFormulasOrHandles == null) {
-            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
+            pathOrFormulasOrHandles = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.pathOrFormulasOrHandles;    	
     }    

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTDashStopList {
 
-    protected List<CTDashStop> ds;
+    protected List<CTDashStop> ds = new ArrayListDml<CTDashStop>(this);
 
     /**
      * Gets the value of the ds property.
@@ -79,7 +79,7 @@ public class CTDashStopList {
      */
     public List<CTDashStop> getDs() {
         if (ds == null) {
-            ds = new ArrayList<CTDashStop>();
+            ds = new ArrayListDml<CTDashStop>(this);
         }
         return this.ds;
     }

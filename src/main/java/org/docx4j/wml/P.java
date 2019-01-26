@@ -830,7 +830,7 @@ public class P implements Child, ContentAccessor
             @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
             @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class)
         })
-        protected List<Object> content;
+        protected List<Object> content = new ArrayListWml<Object>(this);
         @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STDirection val;
         @XmlTransient
@@ -893,7 +893,7 @@ public class P implements Child, ContentAccessor
          */
         public List<Object> getContent() {
             if (content == null) {
-                content = new ArrayList<Object>();
+                content = new ArrayListWml<Object>(this);
             }
             return this.content;
         }
@@ -1012,7 +1012,7 @@ public class P implements Child, ContentAccessor
             @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class),
             @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
         })
-        protected List<Object> content;
+        protected List<Object> content = new ArrayListWml<Object>(this);
         @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected STDirection val;
         @XmlTransient
@@ -1075,7 +1075,7 @@ public class P implements Child, ContentAccessor
          */
         public List<Object> getContent() {
             if (content == null) {
-                content = new ArrayList<Object>();
+                content = new ArrayListWml<Object>(this);
             }
             return this.content;
         }

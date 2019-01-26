@@ -23,7 +23,7 @@ package org.docx4j.dml;
 
 import org.jvnet.jaxb2_commons.ppp.Child;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.*;
@@ -95,7 +95,7 @@ public class CTBlip implements Child {
         @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
         @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class)
     })
-    protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor;
+    protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayListDml<Object>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute
     protected STBlipCompression cstate;
@@ -146,7 +146,7 @@ public class CTBlip implements Child {
      */
     public List<Object> getAlphaBiLevelOrAlphaCeilingOrAlphaFloor() {
         if (alphaBiLevelOrAlphaCeilingOrAlphaFloor == null) {
-            alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayList<Object>();
+            alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayListDml<Object>(this);
         }
         return this.alphaBiLevelOrAlphaCeilingOrAlphaFloor;
     }

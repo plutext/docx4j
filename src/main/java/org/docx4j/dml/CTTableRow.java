@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTTableRow {
 
-    protected List<CTTableCell> tc;
+    protected List<CTTableCell> tc = new ArrayListDml<CTTableCell>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(required = true)
     protected long h;
@@ -86,7 +86,7 @@ public class CTTableRow {
      */
     public List<CTTableCell> getTc() {
         if (tc == null) {
-            tc = new ArrayList<CTTableCell>();
+            tc = new ArrayListDml<CTTableCell>(this);
         }
         return this.tc;
     }

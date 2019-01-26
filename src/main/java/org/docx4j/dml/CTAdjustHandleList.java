@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -60,7 +60,7 @@ public class CTAdjustHandleList {
         @XmlElement(name = "ahXY", type = CTXYAdjustHandle.class),
         @XmlElement(name = "ahPolar", type = CTPolarAdjustHandle.class)
     })
-    protected List<Object> ahXYOrAhPolar;
+    protected List<Object> ahXYOrAhPolar = new ArrayListDml<Object>(this);
 
     /**
      * Gets the value of the ahXYOrAhPolar property.
@@ -87,7 +87,7 @@ public class CTAdjustHandleList {
      */
     public List<Object> getAhXYOrAhPolar() {
         if (ahXYOrAhPolar == null) {
-            ahXYOrAhPolar = new ArrayList<Object>();
+            ahXYOrAhPolar = new ArrayListDml<Object>(this);
         }
         return this.ahXYOrAhPolar;
     }

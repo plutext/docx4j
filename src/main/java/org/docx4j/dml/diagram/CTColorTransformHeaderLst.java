@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTColorTransformHeaderLst {
 
-    protected List<CTColorTransformHeader> colorsDefHdr;
+    protected List<CTColorTransformHeader> colorsDefHdr  = new ArrayListDml<CTColorTransformHeader>(this);
 
     /**
      * Gets the value of the colorsDefHdr property.
@@ -79,7 +79,7 @@ public class CTColorTransformHeaderLst {
      */
     public List<CTColorTransformHeader> getColorsDefHdr() {
         if (colorsDefHdr == null) {
-            colorsDefHdr = new ArrayList<CTColorTransformHeader>();
+            colorsDefHdr = new ArrayListDml<CTColorTransformHeader>(this);
         }
         return this.colorsDefHdr;
     }

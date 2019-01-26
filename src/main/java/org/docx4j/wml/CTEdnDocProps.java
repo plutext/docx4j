@@ -57,7 +57,7 @@ public class CTEdnDocProps
     extends CTEdnProps
 {
 
-    protected List<CTFtnEdnSepRef> endnote;
+    protected List<CTFtnEdnSepRef> endnote = new ArrayListWml<CTFtnEdnSepRef>(this);
 
     /**
      * Gets the value of the endnote property.
@@ -83,7 +83,7 @@ public class CTEdnDocProps
      */
     public List<CTFtnEdnSepRef> getEndnote() {
         if (endnote == null) {
-            endnote = new ArrayList<CTFtnEdnSepRef>();
+            endnote = new ArrayListWml<CTFtnEdnSepRef>(this);
         }
         return this.endnote;
     }

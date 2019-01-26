@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -85,10 +85,10 @@ public class CTBubbleSer implements SerContentXY {
     protected CTSerTx tx;
     protected CTShapeProperties spPr;
     protected CTBoolean invertIfNegative;
-    protected List<CTDPt> dPt;
+    protected List<CTDPt> dPt = new ArrayListDml<CTDPt>(this);
     protected CTDLbls dLbls;
-    protected List<CTTrendline> trendline;
-    protected List<CTErrBars> errBars;
+    protected List<CTTrendline> trendline = new ArrayListDml<CTTrendline>(this);
+    protected List<CTErrBars> errBars = new ArrayListDml<CTErrBars>(this);
     protected CTAxDataSource xVal;
     protected CTNumDataSource yVal;
     protected CTNumDataSource bubbleSize;
@@ -239,7 +239,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTDPt> getDPt() {
         if (dPt == null) {
-            dPt = new ArrayList<CTDPt>();
+            dPt = new ArrayListDml<CTDPt>(this);
         }
         return this.dPt;
     }
@@ -292,7 +292,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTTrendline> getTrendline() {
         if (trendline == null) {
-            trendline = new ArrayList<CTTrendline>();
+            trendline = new ArrayListDml<CTTrendline>(this);
         }
         return this.trendline;
     }
@@ -321,7 +321,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTErrBars> getErrBars() {
         if (errBars == null) {
-            errBars = new ArrayList<CTErrBars>();
+            errBars = new ArrayListDml<CTErrBars>(this);
         }
         return this.errBars;
     }

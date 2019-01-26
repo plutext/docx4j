@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -75,7 +75,7 @@ import org.docx4j.dml.CTTextBody;
 })
 public class CTDLbls {
 
-    protected List<CTDLbl> dLbl;
+    protected List<CTDLbl> dLbl = new ArrayListDml<CTDLbl>(this);
     protected CTBoolean delete;
     protected CTNumFmt numFmt;
     protected CTShapeProperties spPr;
@@ -116,7 +116,7 @@ public class CTDLbls {
      */
     public List<CTDLbl> getDLbl() {
         if (dLbl == null) {
-            dLbl = new ArrayList<CTDLbl>();
+            dLbl = new ArrayListDml<CTDLbl>(this);
         }
         return this.dLbl;
     }

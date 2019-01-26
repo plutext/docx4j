@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTPath2DList {
 
-    protected List<CTPath2D> path;
+    protected List<CTPath2D> path = new ArrayListDml<CTPath2D>(this);
 
     /**
      * Gets the value of the path property.
@@ -79,7 +79,7 @@ public class CTPath2DList {
      */
     public List<CTPath2D> getPath() {
         if (path == null) {
-            path = new ArrayList<CTPath2D>();
+            path = new ArrayListDml<CTPath2D>(this);
         }
         return this.path;
     }

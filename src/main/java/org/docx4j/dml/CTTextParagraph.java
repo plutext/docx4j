@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -65,7 +65,7 @@ public class CTTextParagraph {
         @XmlElement(name = "fld", type = CTTextField.class),
         @XmlElement(name = "br", type = CTTextLineBreak.class)
     })
-    protected List<Object> egTextRun;
+    protected List<Object> egTextRun = new ArrayListDml<Object>(this);
     protected CTTextCharacterProperties endParaRPr;
 
     /**
@@ -118,7 +118,7 @@ public class CTTextParagraph {
      */
     public List<Object> getEGTextRun() {
         if (egTextRun == null) {
-            egTextRun = new ArrayList<Object>();
+            egTextRun = new ArrayListDml<Object>(this);
         }
         return this.egTextRun;
     }

@@ -85,7 +85,7 @@ public class CTFFData implements Child
         @XmlElementRef(name = "statusText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "ddList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> nameOrEnabledOrCalcOnExit;
+    protected List<JAXBElement<?>> nameOrEnabledOrCalcOnExit = new ArrayListWml<JAXBElement<?>>(this);
     @XmlTransient
     private Object parent;
 
@@ -122,7 +122,7 @@ public class CTFFData implements Child
      */
     public List<JAXBElement<?>> getNameOrEnabledOrCalcOnExit() {
         if (nameOrEnabledOrCalcOnExit == null) {
-            nameOrEnabledOrCalcOnExit = new ArrayList<JAXBElement<?>>();
+            nameOrEnabledOrCalcOnExit = new ArrayListWml<JAXBElement<?>>(this);
         }
         return this.nameOrEnabledOrCalcOnExit;
     }

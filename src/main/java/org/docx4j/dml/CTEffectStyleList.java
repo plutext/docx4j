@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CTEffectStyleList {
 
     @XmlElement(required = true)
-    protected List<CTEffectStyleItem> effectStyle;
+    protected List<CTEffectStyleItem> effectStyle = new ArrayListDml<CTEffectStyleItem>(this);
 
     /**
      * Gets the value of the effectStyle property.
@@ -81,7 +81,7 @@ public class CTEffectStyleList {
      */
     public List<CTEffectStyleItem> getEffectStyle() {
         if (effectStyle == null) {
-            effectStyle = new ArrayList<CTEffectStyleItem>();
+            effectStyle = new ArrayListDml<CTEffectStyleItem>(this);
         }
         return this.effectStyle;
     }

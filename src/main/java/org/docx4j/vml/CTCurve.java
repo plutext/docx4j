@@ -22,7 +22,7 @@
 package org.docx4j.vml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -108,7 +108,7 @@ public class CTCurve implements Child, VmlShapeElements, VmlAllCoreAttributes, V
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class),
         @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egShapeElements;
+    protected List<JAXBElement<?>> egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
     @XmlAttribute(name = "from")
     protected String from;
     @XmlAttribute(name = "control1")
@@ -272,7 +272,7 @@ public class CTCurve implements Child, VmlShapeElements, VmlAllCoreAttributes, V
      */
     public List<JAXBElement<?>> getEGShapeElements() {
         if (egShapeElements == null) {
-            egShapeElements = new ArrayList<JAXBElement<?>>();
+            egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
         }
         return this.egShapeElements;
     }

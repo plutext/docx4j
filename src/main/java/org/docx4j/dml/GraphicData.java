@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -67,7 +67,7 @@ import org.docx4j.dml.picture.Pic;
 public class GraphicData {
 
     @XmlAnyElement(lax = true)
-    protected List<Object> any;
+    protected List<Object> any = new ArrayListDml<Object>(this);
     @XmlAttribute
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "token")
@@ -97,7 +97,7 @@ public class GraphicData {
      */
     public List<Object> getAny() {
         if (any == null) {
-            any = new ArrayList<Object>();
+            any = new ArrayListDml<Object>(this);
         }
         return this.any;
     }

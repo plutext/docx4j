@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -81,10 +81,10 @@ public class CTAreaSer implements SerContent {
     protected CTSerTx tx;
     protected CTShapeProperties spPr;
     protected CTPictureOptions pictureOptions;
-    protected List<CTDPt> dPt;
+    protected List<CTDPt> dPt  = new ArrayListDml<CTDPt>(this);
     protected CTDLbls dLbls;
-    protected List<CTTrendline> trendline;
-    protected List<CTErrBars> errBars;
+    protected List<CTTrendline> trendline = new ArrayListDml<CTTrendline>(this);
+    protected List<CTErrBars> errBars = new ArrayListDml<CTErrBars>(this);
     protected CTAxDataSource cat;
     protected CTNumDataSource val;
     protected CTExtensionList extLst;
@@ -233,7 +233,7 @@ public class CTAreaSer implements SerContent {
      */
     public List<CTDPt> getDPt() {
         if (dPt == null) {
-            dPt = new ArrayList<CTDPt>();
+            dPt = new ArrayListDml<CTDPt>(this);
         }
         return this.dPt;
     }
@@ -286,7 +286,7 @@ public class CTAreaSer implements SerContent {
      */
     public List<CTTrendline> getTrendline() {
         if (trendline == null) {
-            trendline = new ArrayList<CTTrendline>();
+            trendline = new ArrayListDml<CTTrendline>(this);
         }
         return this.trendline;
     }
@@ -315,7 +315,7 @@ public class CTAreaSer implements SerContent {
      */
     public List<CTErrBars> getErrBars() {
         if (errBars == null) {
-            errBars = new ArrayList<CTErrBars>();
+            errBars = new ArrayListDml<CTErrBars>(this);
         }
         return this.errBars;
     }

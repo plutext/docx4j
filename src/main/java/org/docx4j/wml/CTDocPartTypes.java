@@ -61,7 +61,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTDocPartTypes implements Child
 {
 
-    protected List<CTDocPartType> type;
+    protected List<CTDocPartType> type = new ArrayListWml<CTDocPartType>(this);
     @XmlAttribute(name = "all", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean all;
     @XmlTransient
@@ -91,7 +91,7 @@ public class CTDocPartTypes implements Child
      */
     public List<CTDocPartType> getType() {
         if (type == null) {
-            type = new ArrayList<CTDocPartType>();
+            type = new ArrayListWml<CTDocPartType>(this);
         }
         return this.type;
     }

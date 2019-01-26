@@ -211,9 +211,6 @@ public class ConverterHttp implements Converter {
 						
 			response = httpclient.execute(httppost);
 
-			//System.out.println(""+response.getStatusLine());
-		    HttpEntity resEntity = response.getEntity();
-		    resEntity.writeTo(os);
 		    int statusCode = response.getStatusLine().getStatusCode();
 			if (statusCode==403) {
 				throw new ConversionException("403 license expired?", response);				
@@ -226,6 +223,11 @@ public class ConverterHttp implements Converter {
 				throw new ConversionException(response.getStatusLine().getStatusCode() + "\n" 
 							+ response);
 			}
+			
+			// we got a 200, so write the result
+		    HttpEntity resEntity = response.getEntity();
+		    resEntity.writeTo(os);
+		    
 		} catch (java.net.UnknownHostException uhe) {
 			throw new ConversionException("\nLooks like you have the wrong host in your endpoint URL '" + URL + "'\n", uhe);		    
 		} catch (java.net.SocketException se) {

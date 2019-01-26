@@ -3,13 +3,18 @@ package org.docx4j.mce;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -68,10 +73,10 @@ import javax.xml.bind.annotation.XmlType;
     "fallback"
 })
 @XmlRootElement(name = "AlternateContent")
-public class AlternateContent {
+public class AlternateContent implements Child {
 
     @XmlElement(name = "Choice")
-    protected List<AlternateContent.Choice> choice;
+    protected List<AlternateContent.Choice> choice = new ArrayListMce<AlternateContent.Choice>(this);
     @XmlElement(name = "Fallback")
     protected AlternateContent.Fallback fallback;
     @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
@@ -105,7 +110,7 @@ public class AlternateContent {
      */
     public List<AlternateContent.Choice> getChoice() {
         if (choice == null) {
-            choice = new ArrayList<AlternateContent.Choice>();
+            choice = new ArrayListMce<AlternateContent.Choice>(this);
         }
         return this.choice;
     }
@@ -206,6 +211,34 @@ public class AlternateContent {
         this.processContent = value;
     }
 
+    @XmlTransient
+    private Object parent;
+    
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
 
     /**
      * <p>Java class for anonymous complex type.
@@ -234,10 +267,10 @@ public class AlternateContent {
     @XmlType(name = "", propOrder = {
         "any"
     })
-    public static class Choice {
+    public static class Choice implements Child {
 
         @XmlAnyElement(lax = true)
-        protected List<Object> any;
+        protected List<Object> any = new ArrayListMce<Object>(this);
         @XmlAttribute(name = "Requires", required = true)
         protected String requires;
         @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
@@ -271,7 +304,7 @@ public class AlternateContent {
          */
         public List<Object> getAny() {
             if (any == null) {
-                any = new ArrayList<Object>();
+                any = new ArrayListMce<Object>(this);
             }
             return this.any;
         }
@@ -372,6 +405,35 @@ public class AlternateContent {
             this.processContent = value;
         }
 
+        @XmlTransient
+        private Object parent;
+        
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+        
     }
 
 
@@ -401,10 +463,10 @@ public class AlternateContent {
     @XmlType(name = "", propOrder = {
         "any"
     })
-    public static class Fallback {
+    public static class Fallback implements Child {
 
         @XmlAnyElement(lax = true)
-        protected List<Object> any;
+        protected List<Object> any = new ArrayListMce<Object>(this);
         @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
         protected String ignorable;
         @XmlAttribute(name = "MustUnderstand", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
@@ -436,7 +498,7 @@ public class AlternateContent {
          */
         public List<Object> getAny() {
             if (any == null) {
-                any = new ArrayList<Object>();
+                any = new ArrayListMce<Object>(this);
             }
             return this.any;
         }
@@ -513,6 +575,35 @@ public class AlternateContent {
             this.processContent = value;
         }
 
+        @XmlTransient
+        private Object parent;
+        
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+        
     }
 
 }

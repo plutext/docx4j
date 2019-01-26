@@ -110,8 +110,8 @@ public class CTOdso implements Child
     protected CTOdso.ColDelim colDelim;
     protected CTMailMergeSourceType type;
     protected BooleanDefaultTrue fHdr;
-    protected List<CTOdsoFieldMapData> fieldMapData;
-    protected List<CTRel> recipientData;
+    protected List<CTOdsoFieldMapData> fieldMapData = new ArrayListWml<CTOdsoFieldMapData>(this);
+    protected List<CTRel> recipientData = new ArrayListWml<CTRel>(this);
     @XmlTransient
     private Object parent;
 
@@ -283,7 +283,7 @@ public class CTOdso implements Child
      */
     public List<CTOdsoFieldMapData> getFieldMapData() {
         if (fieldMapData == null) {
-            fieldMapData = new ArrayList<CTOdsoFieldMapData>();
+            fieldMapData = new ArrayListWml<CTOdsoFieldMapData>(this);
         }
         return this.fieldMapData;
     }
@@ -312,7 +312,7 @@ public class CTOdso implements Child
      */
     public List<CTRel> getRecipientData() {
         if (recipientData == null) {
-            recipientData = new ArrayList<CTRel>();
+            recipientData = new ArrayListWml<CTRel>(this);
         }
         return this.recipientData;
     }

@@ -20,6 +20,11 @@ public class PackageRelsUtil {
 				// v:shape/@o:gfxdata
 				return rel.getTarget();
 			} 
+			else if (rel.getType().equals(
+					"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramLayout") ) {
+				// Glox
+				return rel.getTarget();
+			} 
 //			else {
 //				System.out.println(rel.getType());
 //			}

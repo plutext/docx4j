@@ -65,7 +65,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTColumns implements Child
 {
 
-    protected List<CTColumn> col;
+    protected List<CTColumn> col = new ArrayListWml<CTColumn>(this);
     @XmlAttribute(name = "equalWidth", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean equalWidth;
     @XmlAttribute(name = "space", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -101,7 +101,7 @@ public class CTColumns implements Child
      */
     public List<CTColumn> getCol() {
         if (col == null) {
-            col = new ArrayList<CTColumn>();
+            col = new ArrayListWml<CTColumn>(this);
         }
         return this.col;
     }

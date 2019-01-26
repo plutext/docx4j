@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTCustSplit {
 
-    protected List<CTUnsignedInt> secondPiePt;
+    protected List<CTUnsignedInt> secondPiePt = new ArrayListDml<CTUnsignedInt>(this);
 
     /**
      * Gets the value of the secondPiePt property.
@@ -79,7 +79,7 @@ public class CTCustSplit {
      */
     public List<CTUnsignedInt> getSecondPiePt() {
         if (secondPiePt == null) {
-            secondPiePt = new ArrayList<CTUnsignedInt>();
+            secondPiePt = new ArrayListDml<CTUnsignedInt>(this);
         }
         return this.secondPiePt;
     }

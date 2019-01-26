@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -66,12 +66,12 @@ public class CTArea3DChart implements ListSer {
 
     protected CTGrouping grouping;
     protected CTBoolean varyColors;
-    protected List<CTAreaSer> ser;
+    protected List<CTAreaSer> ser = new ArrayListDml<CTAreaSer>(this);
     protected CTDLbls dLbls;
     protected CTChartLines dropLines;
     protected CTGapAmount gapDepth;
     @XmlElement(required = true)
-    protected List<CTUnsignedInt> axId;
+    protected List<CTUnsignedInt> axId = new ArrayListDml<CTUnsignedInt>(this);
     protected CTExtensionList extLst;
 
     /**
@@ -146,7 +146,7 @@ public class CTArea3DChart implements ListSer {
      */
     public List<CTAreaSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTAreaSer>();
+            ser = new ArrayListDml<CTAreaSer>(this);
         }
         return this.ser;
     }
@@ -247,7 +247,7 @@ public class CTArea3DChart implements ListSer {
      */
     public List<CTUnsignedInt> getAxId() {
         if (axId == null) {
-            axId = new ArrayList<CTUnsignedInt>();
+            axId = new ArrayListDml<CTUnsignedInt>(this);
         }
         return this.axId;
     }

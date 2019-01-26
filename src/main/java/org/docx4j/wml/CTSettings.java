@@ -413,7 +413,7 @@ public class CTSettings
     protected BooleanDefaultTrue gutterAtTop;
     protected BooleanDefaultTrue hideSpellingErrors;
     protected BooleanDefaultTrue hideGrammaticalErrors;
-    protected List<CTWritingStyle> activeWritingStyle;
+    protected List<CTWritingStyle> activeWritingStyle = new ArrayListWml<CTWritingStyle>(this);
     protected CTProof proofState;
     protected BooleanDefaultTrue formsDesign;
     protected CTRel attachedTemplate;
@@ -478,7 +478,7 @@ public class CTSettings
     @XmlElement(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
     protected CTMathPr mathPr;
     protected BooleanDefaultTrue uiCompat97To2003;
-    protected List<CTSettings.AttachedSchema> attachedSchema;
+    protected List<CTSettings.AttachedSchema> attachedSchema = new ArrayListWml<CTSettings.AttachedSchema>(this);
     protected CTLanguage themeFontLang;
     protected CTColorSchemeMapping clrSchemeMapping;
     protected BooleanDefaultTrue doNotIncludeSubdocsInStats;
@@ -486,7 +486,7 @@ public class CTSettings
     protected CTSettings.ForceUpgrade forceUpgrade;
     protected CTCaptions captions;
     protected CTReadingModeInkLockDown readModeInkLockDown;
-    protected List<CTSmartTagType> smartTagType;
+    protected List<CTSmartTagType> smartTagType = new ArrayListWml<CTSmartTagType>(this);
     @XmlElement(namespace = "http://schemas.openxmlformats.org/schemaLibrary/2006/main")
     protected SchemaLibrary schemaLibrary;
     protected CTShapeDefaults shapeDefaults;
@@ -1038,7 +1038,7 @@ public class CTSettings
      */
     public List<CTWritingStyle> getActiveWritingStyle() {
         if (activeWritingStyle == null) {
-            activeWritingStyle = new ArrayList<CTWritingStyle>();
+            activeWritingStyle = new ArrayListWml<CTWritingStyle>(this);
         }
         return this.activeWritingStyle;
     }
@@ -2579,7 +2579,7 @@ public class CTSettings
      */
     public List<CTSettings.AttachedSchema> getAttachedSchema() {
         if (attachedSchema == null) {
-            attachedSchema = new ArrayList<CTSettings.AttachedSchema>();
+            attachedSchema = new ArrayListWml<CTSettings.AttachedSchema>(this);
         }
         return this.attachedSchema;
     }
@@ -2776,7 +2776,7 @@ public class CTSettings
      */
     public List<CTSmartTagType> getSmartTagType() {
         if (smartTagType == null) {
-            smartTagType = new ArrayList<CTSmartTagType>();
+            smartTagType = new ArrayListWml<CTSmartTagType>(this);
         }
         return this.smartTagType;
     }

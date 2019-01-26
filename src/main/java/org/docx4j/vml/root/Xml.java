@@ -21,7 +21,7 @@
 
 package org.docx4j.vml.root;
 
-import java.util.ArrayList;
+import org.docx4j.vml.ArrayListVml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -62,7 +62,7 @@ public class Xml
 {
 
     @XmlAnyElement(lax = true)
-    protected List<Object> any;
+    protected List<Object> any = new ArrayListVml<Object>(this);
     @XmlTransient
     private Object parent;
 
@@ -90,7 +90,7 @@ public class Xml
      */
     public List<Object> getAny() {
         if (any == null) {
-            any = new ArrayList<Object>();
+            any = new ArrayListVml<Object>(this);
         }
         return this.any;
     }

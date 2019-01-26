@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTConnectionSiteList {
 
-    protected List<CTConnectionSite> cxn;
+    protected List<CTConnectionSite> cxn= new ArrayListDml<CTConnectionSite>(this);
 
     /**
      * Gets the value of the cxn property.
@@ -79,7 +79,7 @@ public class CTConnectionSiteList {
      */
     public List<CTConnectionSite> getCxn() {
         if (cxn == null) {
-            cxn = new ArrayList<CTConnectionSite>();
+            cxn = new ArrayListDml<CTConnectionSite>(this);
         }
         return this.cxn;
     }

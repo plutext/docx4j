@@ -128,7 +128,7 @@ public class CTTrPrBase implements Child
         @XmlElementRef(name = "gridBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "jc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore;
+    protected List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore = new ArrayListWml<JAXBElement<?>>(this);
     @XmlTransient
     private Object parent;
 
@@ -167,7 +167,7 @@ public class CTTrPrBase implements Child
      */
     public List<JAXBElement<?>> getCnfStyleOrDivIdOrGridBefore() {
         if (cnfStyleOrDivIdOrGridBefore == null) {
-            cnfStyleOrDivIdOrGridBefore = new ArrayList<JAXBElement<?>>();
+            cnfStyleOrDivIdOrGridBefore = new ArrayListWml<JAXBElement<?>>(this);
         }
         return this.cnfStyleOrDivIdOrGridBefore;
     }

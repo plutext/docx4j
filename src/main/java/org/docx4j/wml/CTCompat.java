@@ -254,7 +254,7 @@ public class CTCompat implements Child
     protected BooleanDefaultTrue doNotVertAlignInTxbx;
     protected BooleanDefaultTrue useAnsiKerningPairs;
     protected BooleanDefaultTrue cachedColBalance;
-    protected List<CTCompatSetting> compatSetting;
+    protected List<CTCompatSetting> compatSetting = new ArrayListWml<CTCompatSetting>(this);
     @XmlTransient
     private Object parent;
 
@@ -1842,7 +1842,7 @@ public class CTCompat implements Child
      */
     public List<CTCompatSetting> getCompatSetting() {
         if (compatSetting == null) {
-            compatSetting = new ArrayList<CTCompatSetting>();
+            compatSetting = new ArrayListWml<CTCompatSetting>(this);
         }
         return this.compatSetting;
     }

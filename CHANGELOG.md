@@ -10,12 +10,11 @@ Release date
 
 (unreleased)
 
+
 Contributors to this release
 ----------------------------
 
 Jason Harrop
-
-(your name here)
 
 
 Notable Changes in Version 8.0.0 
@@ -33,6 +32,36 @@ The following dependencies were updated:
   org.apache.commons:commons-lang3 ........................ 3.5 -> 3.8.1 [JDK 1.7]
 
 OpenDoPE support for XPath 2.0, 3.0 (requires Saxon)
+
+
+
+Version 6.1.1 
+=============
+
+Release date
+------------
+
+21 January 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 6.1.1 
+---------------------------------
+
+vml and mc lists are now of type ArrayListVml|Mce respecitvely, in which parent object is automatically set correctly
+(as is done for wml objects)
+
+TraversalUtil replaceChildren: support replacing in a bare List object.
+
+OpenDoPE removal handler: new option ALL_BUT_PLACEHOLDERS_CONTENT, 
+Ordinarily, if an SDT contains XML but no real content, that XML is also removed.  
+Choose this option if you want to keep placeholder XML (but remove the SDT).
+
 
 
 Version 6.1.0 

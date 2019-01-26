@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class TblGridBase implements Child
 {
 
-    protected List<TblGridCol> gridCol;
+    protected List<TblGridCol> gridCol = new ArrayListWml<TblGridCol>(this);
     @XmlTransient
     private Object parent;
 
@@ -87,7 +87,7 @@ public class TblGridBase implements Child
      */
     public List<TblGridCol> getGridCol() {
         if (gridCol == null) {
-            gridCol = new ArrayList<TblGridCol>();
+            gridCol = new ArrayListWml<TblGridCol>(this);
         }
         return this.gridCol;
     }

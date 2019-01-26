@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -59,7 +59,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "tblStyleLst")
 public class CTTableStyleList {
 
-    protected List<CTTableStyle> tblStyle;
+    protected List<CTTableStyle> tblStyle = new ArrayListDml<CTTableStyle>(this);
     @XmlAttribute(required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String def;
@@ -88,7 +88,7 @@ public class CTTableStyleList {
      */
     public List<CTTableStyle> getTblStyle() {
         if (tblStyle == null) {
-            tblStyle = new ArrayList<CTTableStyle>();
+            tblStyle = new ArrayListDml<CTTableStyle>(this);
         }
         return this.tblStyle;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -63,7 +63,7 @@ public class CTDuotoneEffect {
         @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
         @XmlElement(name = "prstClr", type = CTPresetColor.class)
     })
-    protected List<Object> egColorChoice;
+    protected List<Object> egColorChoice = new ArrayListDml<Object>(this);
 
     /**
      * Gets the value of the egColorChoice property.
@@ -94,7 +94,7 @@ public class CTDuotoneEffect {
      */
     public List<Object> getEGColorChoice() {
         if (egColorChoice == null) {
-            egColorChoice = new ArrayList<Object>();
+            egColorChoice = new ArrayListDml<Object>(this);
         }
         return this.egColorChoice;
     }

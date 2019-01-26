@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTDiagramDefinitionHeaderLst {
 
-    protected List<CTDiagramDefinitionHeader> layoutDefHdr;
+    protected List<CTDiagramDefinitionHeader> layoutDefHdr = new ArrayListDml<CTDiagramDefinitionHeader>(this);
 
     /**
      * Gets the value of the layoutDefHdr property.
@@ -79,7 +79,7 @@ public class CTDiagramDefinitionHeaderLst {
      */
     public List<CTDiagramDefinitionHeader> getLayoutDefHdr() {
         if (layoutDefHdr == null) {
-            layoutDefHdr = new ArrayList<CTDiagramDefinitionHeader>();
+            layoutDefHdr = new ArrayListDml<CTDiagramDefinitionHeader>(this);
         }
         return this.layoutDefHdr;
     }

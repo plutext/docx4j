@@ -66,7 +66,7 @@ public class CTEndnotes
     @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
     protected String ignorable;
 
-    protected List<CTFtnEdn> endnote;
+    protected List<CTFtnEdn> endnote = new ArrayListWml<CTFtnEdn>(this);
     @XmlTransient
     private Object parent;
 
@@ -94,7 +94,7 @@ public class CTEndnotes
      */
     public List<CTFtnEdn> getEndnote() {
         if (endnote == null) {
-            endnote = new ArrayList<CTFtnEdn>();
+            endnote = new ArrayListWml<CTFtnEdn>(this);
         }
         return this.endnote;
     }

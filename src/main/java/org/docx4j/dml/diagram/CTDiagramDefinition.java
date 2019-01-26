@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -75,8 +75,8 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlRootElement(name = "layoutDef")
 public class CTDiagramDefinition {
 
-    protected List<CTName> title;
-    protected List<CTDescription> desc;
+    protected List<CTName> title = new ArrayListDml<CTName>(this);
+    protected List<CTDescription> desc = new ArrayListDml<CTDescription>(this);
     protected CTCategories catLst;
     protected CTSampleData sampData;
     protected CTSampleData styleData;
@@ -115,7 +115,7 @@ public class CTDiagramDefinition {
      */
     public List<CTName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTName>();
+            title = new ArrayListDml<CTName>(this);
         }
         return this.title;
     }
@@ -144,7 +144,7 @@ public class CTDiagramDefinition {
      */
     public List<CTDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTDescription>();
+            desc = new ArrayListDml<CTDescription>(this);
         }
         return this.desc;
     }

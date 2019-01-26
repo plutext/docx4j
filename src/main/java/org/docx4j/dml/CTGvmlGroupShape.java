@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -80,7 +80,7 @@ public class CTGvmlGroupShape {
         @XmlElement(name = "pic", type = CTGvmlPicture.class),
         @XmlElement(name = "txSp", type = CTGvmlTextShape.class)
     })
-    protected List<Object> txSpOrSpOrCxnSp;
+    protected List<Object> txSpOrSpOrCxnSp = new ArrayListDml<Object>(this);
     protected CTOfficeArtExtensionList extLst;
 
     /**
@@ -160,7 +160,7 @@ public class CTGvmlGroupShape {
      */
     public List<Object> getTxSpOrSpOrCxnSp() {
         if (txSpOrSpOrCxnSp == null) {
-            txSpOrSpOrCxnSp = new ArrayList<Object>();
+            txSpOrSpOrCxnSp = new ArrayListDml<Object>(this);
         }
         return this.txSpOrSpOrCxnSp;
     }

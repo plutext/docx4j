@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class CTTableGrid {
 
-    protected List<CTTableCol> gridCol;
+    protected List<CTTableCol> gridCol = new ArrayListDml<CTTableCol>(this);
 
     /**
      * Gets the value of the gridCol property.
@@ -79,7 +79,7 @@ public class CTTableGrid {
      */
     public List<CTTableCol> getGridCol() {
         if (gridCol == null) {
-            gridCol = new ArrayList<CTTableCol>();
+            gridCol = new ArrayListDml<CTTableCol>(this);
         }
         return this.gridCol;
     }

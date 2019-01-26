@@ -61,7 +61,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class CTSdtComboBox implements Child
 {
 
-    protected List<CTSdtListItem> listItem;
+    protected List<CTSdtListItem> listItem = new ArrayListWml<CTSdtListItem>(this);
     @XmlAttribute(name = "lastValue", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String lastValue;
     @XmlTransient
@@ -91,7 +91,7 @@ public class CTSdtComboBox implements Child
      */
     public List<CTSdtListItem> getListItem() {
         if (listItem == null) {
-            listItem = new ArrayList<CTSdtListItem>();
+            listItem = new ArrayListWml<CTSdtListItem>(this);
         }
         return this.listItem;
     }

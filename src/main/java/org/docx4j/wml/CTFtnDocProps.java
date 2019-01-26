@@ -58,7 +58,7 @@ public class CTFtnDocProps
     extends CTFtnProps
 {
 
-    protected List<CTFtnEdnSepRef> footnote;
+    protected List<CTFtnEdnSepRef> footnote = new ArrayListWml<CTFtnEdnSepRef>(this);
 
     /**
      * Gets the value of the footnote property.
@@ -84,7 +84,7 @@ public class CTFtnDocProps
      */
     public List<CTFtnEdnSepRef> getFootnote() {
         if (footnote == null) {
-            footnote = new ArrayList<CTFtnEdnSepRef>();
+            footnote = new ArrayListWml<CTFtnEdnSepRef>(this);
         }
         return this.footnote;
     }

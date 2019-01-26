@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -72,13 +72,13 @@ public class CTBarChart implements ListSer {
     protected CTBarDir barDir;
     protected CTBarGrouping grouping;
     protected CTBoolean varyColors;
-    protected List<CTBarSer> ser;
+    protected List<CTBarSer> ser= new ArrayListDml<CTBarSer>(this);
     protected CTDLbls dLbls;
     protected CTGapAmount gapWidth;
     protected CTOverlap overlap;
-    protected List<CTChartLines> serLines;
+    protected List<CTChartLines> serLines = new ArrayListDml<CTChartLines>(this);
     @XmlElement(required = true)
-    protected List<CTUnsignedInt> axId;
+    protected List<CTUnsignedInt> axId = new ArrayListDml<CTUnsignedInt>(this);
     protected CTExtensionList extLst;
 
     /**
@@ -177,7 +177,7 @@ public class CTBarChart implements ListSer {
      */
     public List<CTBarSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTBarSer>();
+            ser = new ArrayListDml<CTBarSer>(this);
         }
         return this.ser;
     }
@@ -278,7 +278,7 @@ public class CTBarChart implements ListSer {
      */
     public List<CTChartLines> getSerLines() {
         if (serLines == null) {
-            serLines = new ArrayList<CTChartLines>();
+            serLines = new ArrayListDml<CTChartLines>(this);
         }
         return this.serLines;
     }
@@ -307,7 +307,7 @@ public class CTBarChart implements ListSer {
      */
     public List<CTUnsignedInt> getAxId() {
         if (axId == null) {
-            axId = new ArrayList<CTUnsignedInt>();
+            axId = new ArrayListDml<CTUnsignedInt>(this);
         }
         return this.axId;
     }
