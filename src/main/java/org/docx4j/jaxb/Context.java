@@ -85,6 +85,7 @@ public class Context {
 		// Display diagnostic info about version of JAXB being used.
 		log.info("java.vendor="+System.getProperty("java.vendor"));
 		log.info("java.version="+System.getProperty("java.version"));
+		log.info("java.vm.name="+System.getProperty("java.vm.name"));
 		
 		// This stuff is just debugging diagnostics
 		try {
