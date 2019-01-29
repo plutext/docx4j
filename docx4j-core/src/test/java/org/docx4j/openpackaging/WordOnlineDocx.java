@@ -14,7 +14,7 @@ public class WordOnlineDocx {
 	@Test
 	public void openDocx() throws JAXBException, Docx4JException {
 		
-		WordprocessingMLPackage wordMLPackage = Docx4J.load(new java.io.File("sample-docs/word/WordOnline/HelloWordOnline.docx"));
+		WordprocessingMLPackage wordMLPackage = Docx4J.load(new java.io.File("src/test/resources/HelloWordOnline.docx"));
 
 //		wordMLPackage.getMainDocumentPart().addParagraphOfText("hello");
 //		wordMLPackage.getMainDocumentPart().marshal(System.out);

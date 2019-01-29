@@ -45,7 +45,7 @@ public class AlternateContentPreprocessorTest {
 	public void testAlternateContent() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-mcAlternateContent.docx";	    	
+			+ "/src/test/resources/2010/2010-mcAlternateContent.docx";	    	
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));				
 
@@ -76,7 +76,7 @@ public class AlternateContentPreprocessorTest {
 		int ERROR_LIMIT = 10;
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-mcAlternateContent.docx";	    	
+			+ "/src/test/resources/2010/2010-mcAlternateContent.docx";	    	
 		
 		for (int i=0; i< (ERROR_LIMIT+5); i++) {
 
@@ -104,7 +104,7 @@ public class AlternateContentPreprocessorTest {
 	public void testAlternateContentMDP() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-mcAlternateContent-MDP.docx";	    	
+			+ "/src/test/resources/2010/2010-mcAlternateContent-MDP.docx";	    	
 		
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));				
@@ -136,7 +136,7 @@ public class AlternateContentPreprocessorTest {
 	public void testGlowAndAlternateContent() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-glow-then-AlternateContent.docx";	    	
+			+ "/src/test/resources/2010/2010-glow-then-AlternateContent.docx";	    	
 		
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));				
@@ -167,7 +167,7 @@ public class AlternateContentPreprocessorTest {
 	public void testHeaderDocx() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-mcAlternateContent-in-header.docx";	    	
+			+ "/src/test/resources/2010/2010-mcAlternateContent-in-header.docx";	    	
 		
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
@@ -212,7 +212,7 @@ public class AlternateContentPreprocessorTest {
 	public void testHeaderFlatOPC() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/2010/2010-mcAlternateContent-in-header.xml";	    			
+			+ "/src/test/resources/2010/2010-mcAlternateContent-in-header.xml";	    			
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));	
 		

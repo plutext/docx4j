@@ -24,7 +24,7 @@ public class EndToEndTest {
 	public void testInvoice() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/databinding/invoice.docx";
+			+ "/src/test/resources/OpenDoPE/invoice.docx";
 		
 		/*
 		 * 
@@ -132,7 +132,7 @@ public class EndToEndTest {
 	public void testNestedRepeats() throws Exception {
 		
 		String inputfilepath = System.getProperty("user.dir") 
-			+ "/sample-docs/word/databinding/CountryRegions.xml";
+			+ "/src/test/resources/OpenDoPE/CountryRegions.xml";
 		
 		/*
 		      <root xmlns="">
