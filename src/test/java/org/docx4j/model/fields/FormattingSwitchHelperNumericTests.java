@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.xml.transform.TransformerException;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.junit.Test;
 
@@ -195,7 +196,7 @@ public class FormattingSwitchHelperNumericTests {
 	   doit("MERGEFIELD", data, "33%");
 	   doit("DOCPROPERTY", data, "33%");
 	} 
-	 
+	
 	 
 	@Test
 	public void testNumber68() throws TransformerException, Docx4JException {
@@ -225,8 +226,6 @@ public class FormattingSwitchHelperNumericTests {
 	   doit("MERGEFIELD", data, "180000");
 	   doit("DOCPROPERTY", data, "180000");
 	} 
-
-
 	
 	@Test
 	public void testNumber42() throws TransformerException, Docx4JException {
@@ -448,7 +447,43 @@ public class FormattingSwitchHelperNumericTests {
 		}
 	} 
 	
+	@Test
+	public void testNumber73() throws TransformerException, Docx4JException {
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", true);
+	   SwitchTestData data = new SwitchTestData("\\# ##%", "33");
+	   doit("MERGEFIELD", data, "3300%");
+	   doit("DOCPROPERTY", data, "3300%");
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", false);
+	} 
 
+	@Test
+	public void testNumber74() throws TransformerException, Docx4JException {
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", true);
+	   SwitchTestData data = new SwitchTestData("\\# ##%", ".33");
+	   doit("MERGEFIELD", data, "33%");
+	   doit("DOCPROPERTY", data, "33%");
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", false);
+	} 
+
+	@Test
+	public void testNumber75() throws TransformerException, Docx4JException {
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", true);
+	   SwitchTestData data = new SwitchTestData("\\# ##%", "0.33");
+	   doit("MERGEFIELD", data, "33%");
+	   doit("DOCPROPERTY", data, "33%");
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", false);
+	} 
+
+	@Test
+	public void testNumber76() throws TransformerException, Docx4JException {
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", true);
+	   SwitchTestData data = new SwitchTestData("\\# ##%", "1.33");
+	   doit("MERGEFIELD", data, "133%");
+	   doit("DOCPROPERTY", data, "133%");
+	   Docx4jProperties.setProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", false);
+	} 
+
+	
 	// All these should return Error! Switch argument not specified.
 	
 	@Test
