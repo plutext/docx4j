@@ -1,0 +1,210 @@
+/**
+ * Copyright 2007 Gregory A. Kick
+ *
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jvnet.jaxb2_commons.ppp;
+
+import static com.sun.codemodel.JExpr._this;
+import static com.sun.codemodel.JExpr.ref;
+import static com.sun.codemodel.JMod.PRIVATE;
+import static com.sun.codemodel.JMod.PUBLIC;
+
+import java.util.logging.Logger;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.xml.sax.ErrorHandler;
+
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JVar;
+import com.sun.tools.xjc.Options;
+import com.sun.tools.xjc.Plugin;
+import com.sun.tools.xjc.outline.ClassOutline;
+import com.sun.tools.xjc.outline.Outline;
+
+/**
+ * @author gk5885
+ * 
+ * Comment by jharrop.
+ * This is the third of the three classes which comprise
+ * the parent pointer plugin.
+ * 
+ * It is required by xjc at the time the xsds are 
+ * compiled, but not by docx4j at compile time
+ * or runtime.
+ * 
+ * So it is included in the docx4j sources for
+ * completeness, but renamed (so it is not found
+ * at compile time).
+ * 
+ * The main reason for renaming it is that it introduces
+ * com.sun.codemodel and com.sun.tools.xjc
+ * as dependencies.
+ * 
+ * com.sun.codemodel is at https://codemodel.dev.java.net/
+ * (CDDL v.10 / GPL v2 dual license) 
+ *   
+ * com.sun.tools.xjc is probably in xjc.jar
+ */
+public class ParentPointerPlugin extends Plugin
+{
+	private static final String className = Plugin.class.getName();
+
+	private static final Logger logger = Logger.getLogger(className);
+
+	private static final String parentFieldName = "parent";
+
+	private static final String parentGetterName = "getParent";
+
+	private static final String parentSetterName = "setParent";
+
+	private static final String unmarshalCallbackName = "afterUnmarshal";
+
+	/**
+	 * @see com.sun.tools.xjc.Plugin#getOptionName()
+	 */
+	@Override
+	public String getOptionName()
+	{
+		return "Xparent-pointer";
+	}
+
+	/**
+	 * @see com.sun.tools.xjc.Plugin#getUsage()
+	 */
+	@Override
+	public String getUsage()
+	{
+		return "-Xparent-pointer : Add a field that points to the parent object.";
+	}
+
+	/**
+	 * @see com.sun.tools.xjc.Plugin#postProcessModel(com.sun.tools.xjc.model.Model,
+	 *      org.xml.sax.ErrorHandler)
+	 */
+	/*@Override
+	public void postProcessModel(Model model, ErrorHandler errorHandler)
+	{
+		logger.entering(className, "postProcessModel");
+		for (CClassInfo classInfo : model.beans().values())
+		{
+			for (CPropertyInfo propertyInfo : classInfo.getProperties())
+			{
+				if (propertyInfo.isCollection())
+				{
+					FieldRenderer fieldRenderer =
+							model.options
+									.getFieldRendererFactory()
+									.getList(
+											model.codeModel
+													.ref(ParentTrackingArrayList.class));
+					propertyInfo.realization = fieldRenderer;
+
+				}
+			}
+		}
+		logger.exiting(className, "postProcessModel");
+	}*/
+
+	/**
+	 * @see com.sun.tools.xjc.Plugin#run(com.sun.tools.xjc.outline.Outline,
+	 *      com.sun.tools.xjc.Options, org.xml.sax.ErrorHandler)
+	 */
+	@Override
+	public boolean run(Outline outline, Options options,
+			ErrorHandler errorHandler)
+	{
+		logger.entering(className, "run");
+		for (ClassOutline classOutline : outline.getClasses())
+		{
+			implementChild(outline, classOutline.implClass);
+			addUnmarshalCallback(outline, classOutline.implClass);
+		}
+		logger.exiting(className, "run", true);
+		return true;
+	}
+
+	private void addParentField(JDefinedClass definedClass)
+	{
+		logger.entering(className, "addParentField");
+		JFieldVar parentField =
+				definedClass.field(PRIVATE, Object.class, parentFieldName);
+		parentField.annotate(XmlTransient.class);
+		logger.exiting(className, "addParentField");
+	}
+
+	private void addParentGetter(Outline outline, JDefinedClass definedClass)
+	{
+		logger.entering(className, "addParentGetter");
+		JMethod getParentMethod =
+				definedClass.method(PUBLIC, Object.class, parentGetterName);
+		getParentMethod.body()._return(ref(_this(), parentFieldName));
+		getParentMethod
+				.javadoc()
+				.append(
+						"Gets the parent object in the object tree representing the unmarshalled xml document.");
+		getParentMethod.javadoc().addReturn().append("The parent object.");
+		logger.exiting(className, "addParentGetter");
+	}
+
+	private void addParentSetter(Outline outline, JDefinedClass definedClass)
+	{
+		logger.entering(className, "addParentSetter");
+		JMethod setParentMethod =
+				definedClass.method(PUBLIC, outline.getCodeModel().VOID,
+						parentSetterName);
+		JVar parentSetterVar =
+				setParentMethod.param(Object.class, parentFieldName);
+		setParentMethod.body().assign(ref(_this(), parentFieldName),
+				parentSetterVar);
+		logger.exiting(className, "addParentSetter");
+	}
+
+	private void addUnmarshalCallback(Outline outline,
+			JDefinedClass definedClass)
+	{
+		logger.entering(className, "addUnmarshalCallback");
+		JMethod afterUnmarshalMethod =
+				definedClass.method(PUBLIC, outline.getCodeModel().VOID,
+						unmarshalCallbackName);
+		JVar unmarshallerVar =
+				afterUnmarshalMethod.param(Unmarshaller.class, "unmarshaller");
+		JVar parentVar =
+				afterUnmarshalMethod.param(Object.class, parentFieldName);
+		afterUnmarshalMethod.body().invoke(parentSetterName).arg(parentVar);
+		afterUnmarshalMethod
+				.javadoc()
+				.append(
+						"This method is invoked by the JAXB implementation on each instance when unmarshalling completes.");
+		afterUnmarshalMethod.javadoc().addParam(unmarshallerVar).append(
+				"The unmarshaller that generated the instance.");
+		afterUnmarshalMethod.javadoc().addParam(parentVar).append(
+				"The parent object in the object tree.");
+		logger.exiting(className, "addUnmarshalCallback");
+	}
+
+	private void implementChild(Outline outline, JDefinedClass definedClass)
+	{
+		logger.entering(className, "implementChild");
+		definedClass._implements(Child.class);
+		addParentField(definedClass);
+		addParentGetter(outline, definedClass);
+		addParentSetter(outline, definedClass);
+		logger.exiting(className, "implementChild");
+	}
+}

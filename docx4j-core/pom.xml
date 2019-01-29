@@ -3,76 +3,31 @@
 	<modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>
-  
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
 	<version>8.0.0-SNAPSHOT</version>
-
-    <packaging>pom</packaging>
-
-    <name>docx4j parent</name>
-    
-    <modules>
-        <module>docx4j-openxml-objects</module>
-        <module>docx4j-openxml-objects-pml</module>
-        <module>docx4j-openxml-objects-sml</module>
-        <module>docx4j-core</module>
-        <module>docx4j-diffx</module>
-        <module>docx4j-samples-docx4j</module>
-        <module>docx4j-samples-pptx4j</module>
-        <module>docx4j-samples-xlsx4j</module>
-        <module>docx4j-samples-glox4j</module>
-    </modules>
+  </parent>
+  
+	<artifactId>docx4j-core</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-core</name>
 	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format as used in docx
 		documents, pptx presentations, and xlsx spreadsheets.
 	</description>
-	<url>http://www.docx4java.org/</url>
-	<licenses>
-	  <license>
-	    <name>Apache 2</name>
-	    <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-	    <distribution>repo</distribution>
-	    <comments>A business-friendly OSS license</comments>
-	  </license>
-  	</licenses>
-	<scm>
-	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-    </scm>
-	<inceptionYear>2007</inceptionYear>
 
-	  <properties>
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
-    <github.global.server>github</github.global.server>
-	  </properties>	
-	  
 	
 	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
+			     You need to run mvn test from the command line to recompile, then Eclipse can run 
+			     the new code.  -->
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
- 					<verbose>false</verbose>
-					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
-					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller:
-						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-			</plugin>
 	     <plugin>
 	        <groupId>org.apache.maven.plugins</groupId>
 	        <artifactId>maven-enforcer-plugin</artifactId>
@@ -143,24 +98,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
-				out if your build is failing because you don't have enough
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<configuration>
-					<maxmemory>512m</maxmemory>
-			        <additionalparam>-Xdoclint:none</additionalparam> 
-				 </configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>. -->
 <!-- 			
 		<plugin>
             <groupId>org.basepom.maven</groupId>
@@ -208,10 +145,65 @@
 			</plugin> 
 			
 		</plugins>
+        
+		<resources>
+			<!-- be sure to get xml,xlst resources in various src trees -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<!-- 
+			<resource>
+				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+			 -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>	
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
+				</excludes> </resource> -->
+		</resources>
 	</build>
+	
 	
 	<dependencies>
 
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-openxml-objects</artifactId>
+            <version>8.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-openxml-objects-pml</artifactId>
+            <version>8.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-openxml-objects-sml</artifactId>
+            <version>8.0.0-SNAPSHOT</version>
+		</dependency>
+        
 		<dependency>
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
