@@ -561,8 +561,8 @@ public class FormattingSwitchHelper {
 								encounteredNonFiller = true;
 							}
 
-						} else if ((ch == '\u2030') // â€°
-								|| (ch == 'E') || (ch == '\u00A4') // Â¤
+						} else if ((ch == '\u2030') // ‰ per mille
+								|| (ch == 'E') || (ch == '\u00A4') // ¤ currency sign
 						) {
 
 							// escape them by quoting
