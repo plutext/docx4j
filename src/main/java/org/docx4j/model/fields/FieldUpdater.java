@@ -219,11 +219,16 @@ public class FieldUpdater {
 				} catch (TransformerException e) {
 					e.printStackTrace();
 				}
-
-				String key = fsm.getFldParameters().get(0);
-				String val = (String) docPropertyResolver.getValue(key); 
+				String val = null;
+				String key = null;
 				try {
-				  val = (String) docPropertyResolver.getValue(key); 
+					// Safe checking when fldParameters is 0 (… and null just for good measure)
+					if (fsm.getFldParameters() != null && fsm.getFldParameters().size() > 0) {
+						key = fsm.getFldParameters().get(0);
+						// Maybe the actual bug many of us have. This solved it for me: Remove any " char that may appear in the key name
+						key = key.replaceAll("\"", "");
+						val = (String) docPropertyResolver.getValue(key);
+					}
 				} catch (FieldValueException e) {
 					report.append( instr + "\n");
 					report.append( key + " -> NOT FOUND! \n");	
