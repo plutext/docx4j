@@ -1,26 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" kind="src" output="bin" path="src/main/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" path="src/samples/_resources"/>
-	<classpathentry kind="src" path="src/samples/glox4j"/>
-	<classpathentry kind="src" path="src/samples/docx4j"/>
 	<classpathentry kind="src" path="src/samples/pptx4j"/>
 	<classpathentry kind="src" path="src/samples/xlsx4j"/>
-	<classpathentry kind="src" output="bin" path="src/pptx4j/java">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="bin" path="src/main/resources">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" output="bin-testOutput" path="src/test/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
@@ -41,16 +23,6 @@
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="bin" path="src/glox4j/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="bin" path="src/diffx">
-		<attributes>
-			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
