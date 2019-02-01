@@ -7,10 +7,17 @@
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
-  
+
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
-	<version>8.0.0-SNAPSHOT</version>
+	
+	<version>${revision}</version>
+	<properties>
+		<revision>8.0.0-SNAPSHOT</revision>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
+	    <github.global.server>github</github.global.server>
+	</properties>
 
     <packaging>pom</packaging>
 
@@ -47,12 +54,6 @@
     </scm>
 	<inceptionYear>2007</inceptionYear>
 
-	  <properties>
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
-    <github.global.server>github</github.global.server>
-	  </properties>	
-	  
 	
 	<build>
 		<plugins>
@@ -134,7 +135,7 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<!-- The Source Plugin creates a jar archive of the source files of the
 					current project. -->
-				<version>2.1.2</version>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
 						<goals>
