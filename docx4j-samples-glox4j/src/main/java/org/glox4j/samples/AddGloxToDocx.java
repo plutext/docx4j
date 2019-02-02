@@ -11,7 +11,6 @@ import org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart;
-import org.docx4j.samples.AbstractSample;
 import org.docx4j.wml.P;
 import org.glox4j.openpackaging.packages.GloxPackage;
 
@@ -23,7 +22,7 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  * @author jharrop
  *
  */
-public class AddGloxToDocx extends AbstractSample {
+public class AddGloxToDocx {
 
 	private static Logger log = LoggerFactory.getLogger(AddGloxToDocx.class);
 
@@ -32,14 +31,10 @@ public class AddGloxToDocx extends AbstractSample {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
 //			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
 //			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
-			inputfilepath = System.getProperty("user.dir") + "/RectTimeline2.glox";
+		String inputfilepath = System.getProperty("user.dir") + "/RectTimeline2.glox";
 
-		}
 
 		// Make a basic docx
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();

@@ -50,7 +50,6 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.samples.PartsList;
 import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.CTSdtText;
@@ -398,16 +397,16 @@ public class UpdateXmlFromDocumentSurface {
 		
 	}
 	
-	private void debugListParts(WordprocessingMLPackage pkg1) {
-
-		// List the parts by walking the rels tree
-		RelationshipsPart rp = pkg1.getRelationshipsPart();
-		StringBuilder sb = new StringBuilder();
-		PartsList.printInfo(rp.getPartName().getName(), null, rp, sb, "");
-		PartsList.traverseRelationships(pkg1, rp, sb, "    ");
-		System.out.println(sb.toString());
-		
-	}
+//	private void debugListParts(WordprocessingMLPackage pkg1) {
+//
+//		// List the parts by walking the rels tree
+//		RelationshipsPart rp = pkg1.getRelationshipsPart();
+//		StringBuilder sb = new StringBuilder();
+//		PartsList.printInfo(rp.getPartName().getName(), null, rp, sb, "");
+//		PartsList.traverseRelationships(pkg1, rp, sb, "    ");
+//		System.out.println(sb.toString());
+//		
+//	}
 	
 //	private String extractValueFromTc(Tc tc) {
 //		

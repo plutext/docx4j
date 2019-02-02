@@ -23,8 +23,8 @@ package org.docx4j.org.apache.xml.serializer.dom3;
 
 import java.io.IOException;
 
-import org.apache.xml.serializer.DOM3Serializer;
-import org.apache.xml.serializer.SerializationHandler;
+import org.docx4j.org.apache.xml.serializer.DOM3Serializer;
+import org.docx4j.org.apache.xml.serializer.SerializationHandler;
 import org.docx4j.org.apache.xml.serializer.utils.WrappedRuntimeException;
 import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.Node;

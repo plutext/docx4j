@@ -74,7 +74,6 @@ public class PhysicalFonts {
 		if (physicalFontMap.get(key.toLowerCase())!=null) {
 			log.warn("Overwriting existing physicalFontMap entry: " + key.toLowerCase());
 		}
-		log.warn("Added " + pf.getName());
 		physicalFontMap.put(key.toLowerCase(), pf);
 	}
 

@@ -49,7 +49,7 @@ import org.docx4j.org.apache.xalan.templates.OutputProperties;
 import org.apache.xml.utils.DOMBuilder;
 import org.apache.xml.utils.XMLReaderManager;
 import org.docx4j.org.apache.xml.serializer.Method;
-import org.apache.xml.serializer.Serializer;
+import org.docx4j.org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.SerializerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;

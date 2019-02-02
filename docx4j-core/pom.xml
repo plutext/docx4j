@@ -135,18 +135,21 @@
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
 			<version>6.0.0</version>
+		</dependency> 
+
+				<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
 		</dependency>
+		
+		-->
+		
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.moxy</artifactId>
 			<version>2.5.2</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
-		</dependency>
-		-->
 		
 		
 		<!--  events -->
@@ -157,15 +160,16 @@
 		</dependency>
 
 
-		<!--  instead of FOP's commons-logging -->		
+		<!--  instead of FOP's commons-logging 		
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
 		    <version>1.7.25</version>
 		</dependency>		
+		 -->	
 
 		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.
-                 UNLESS creating shaded jar for Android.  --> 
+                 UNLESS creating shaded jar for Android. 
 		 <dependency>
 		  <groupId>org.slf4j</groupId>
 		  <artifactId>slf4j-log4j12</artifactId>
@@ -194,7 +198,7 @@
 					</exclusion>
 				</exclusions>
 		</dependency>
-
+ --> 
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -271,19 +275,6 @@
 		</exclusions>
 	</dependency>
 		
-
-
-	<!-- these two are to correct issues in fop dependency -->
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-api</artifactId>
-		<version>4.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-impl</artifactId>
-		<version>4.3.1</version>
-	</dependency>
 	<dependency>
 		<groupId>xalan</groupId>
 		<artifactId>xalan</artifactId>
@@ -315,14 +306,14 @@
 		     even if the user has just one.
 		     NB: this (or an added source location containing them) is
 		     necessary (at least for Maven 2.2.1) since without this,
-		     Maven doesn't find the Java 6 copy in rt.jar -->
+		     Maven doesn't find the Java 6 copy in rt.jar 
 		<dependency>
 		    <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
 		    <artifactId>JAXBNamespacePrefixMapper</artifactId>
 		    <version>6.1.0</version>
-   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->
    			<scope>provided</scope>
    		</dependency>
+-->
 
 		<dependency>
     		<groupId>org.antlr</groupId>

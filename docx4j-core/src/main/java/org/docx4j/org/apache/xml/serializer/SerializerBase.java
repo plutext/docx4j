@@ -29,9 +29,9 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
 
-import org.apache.xml.serializer.DOMSerializer;
-import org.apache.xml.serializer.NamespaceMappings;
-import org.apache.xml.serializer.SerializationHandler;
+//import org.apache.xml.serializer.DOMSerializer;
+//import org.apache.xml.serializer.NamespaceMappings;
+//import org.apache.xml.serializer.SerializationHandler;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
 import org.slf4j.Logger;

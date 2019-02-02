@@ -88,7 +88,7 @@ public abstract class ToSAXHandler extends SerializerBase
      * serializer implements the TransformState interface which
      * will give the content handler access to the state of
      * the transform. */
-    protected org.apache.xml.serializer.TransformStateSetter m_state = null;
+    protected TransformStateSetter m_state = null;
 
     /**
      * Pass callback to the SAX Handler
@@ -301,7 +301,7 @@ public abstract class ToSAXHandler extends SerializerBase
      *
      * @param ts A reference to a TransformState object
      */
-    public void setTransformState(org.apache.xml.serializer.TransformStateSetter ts) {
+    public void setTransformState(TransformStateSetter ts) {
         this.m_state = ts;
     }
     

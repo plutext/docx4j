@@ -29,8 +29,8 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.ConfigurationException;
+import org.docx4j.fonts.fop.configuration.Configuration;
+import org.docx4j.fonts.fop.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -2,8 +2,6 @@ package org.docx4j.org.apache.xml.serializer;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.xml.serializer.Docx4jMappingRecord;
-import org.apache.xml.serializer.NamespaceMappings;
 //import org.apache.xml.serializer.NamespaceMappings.MappingRecord;
 import org.xml.sax.ContentHandler;
 

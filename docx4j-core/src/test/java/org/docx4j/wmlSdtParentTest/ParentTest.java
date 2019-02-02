@@ -1,4 +1,4 @@
-package org.docx4j.wml;
+package org.docx4j.wmlSdtParentTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -13,6 +13,14 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.wml.Body;
+import org.docx4j.wml.CTBookmark;
+import org.docx4j.wml.Document;
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
+import org.docx4j.wml.SdtBlock;
+import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.SdtPr;
 import org.junit.Test;
 
 public class ParentTest {

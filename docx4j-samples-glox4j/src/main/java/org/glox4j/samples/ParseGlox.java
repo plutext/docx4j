@@ -3,10 +3,9 @@ package org.glox4j.samples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.XmlUtils;
-import org.docx4j.samples.AbstractSample;
 import org.glox4j.openpackaging.packages.GloxPackage;
 
-public class ParseGlox extends AbstractSample {
+public class ParseGlox  {
 	
 	private static Logger log = LoggerFactory.getLogger(ParseGlox.class);						
 
@@ -15,12 +14,8 @@ public class ParseGlox extends AbstractSample {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
 //			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Picture Organization Chart.glox";
-		}
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Picture Organization Chart.glox";
 		
 		GloxPackage gloxPackage = GloxPackage.load(new java.io.File(inputfilepath));
 		

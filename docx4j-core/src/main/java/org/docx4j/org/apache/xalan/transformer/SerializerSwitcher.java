@@ -30,7 +30,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.xalan.templates.OutputProperties;
 import org.apache.xalan.transformer.TransformerImpl;
 import org.docx4j.org.apache.xml.serializer.Method;
-import org.apache.xml.serializer.Serializer;
+import org.docx4j.org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.SerializerFactory;
 import org.xml.sax.ContentHandler;
 

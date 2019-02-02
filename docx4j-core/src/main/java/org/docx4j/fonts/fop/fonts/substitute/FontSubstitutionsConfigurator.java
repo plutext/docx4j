@@ -25,7 +25,7 @@
 
 package org.docx4j.fonts.fop.fonts.substitute;
 
-import org.apache.avalon.framework.configuration.Configuration;
+import org.docx4j.fonts.fop.configuration.Configuration;
 import org.docx4j.fonts.fop.apps.FOPException;
 
 /**

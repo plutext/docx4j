@@ -25,8 +25,6 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.xml.serializer.SerializationHandler;
-import org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
 import org.slf4j.Logger;

@@ -27,7 +27,6 @@ import org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutHeaderPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart;
 import org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart;
-import org.docx4j.samples.AbstractSample;
 import org.docx4j.wml.P;
 import org.glox4j.openpackaging.packages.GloxPackage;
 
@@ -42,7 +41,7 @@ import org.glox4j.openpackaging.packages.GloxPackage;
  * @author jharrop
  *
  */
-public class ExtractGloxFromExemplar extends AbstractSample {
+public class ExtractGloxFromExemplar {
 	
 	private static Logger log = LoggerFactory.getLogger(ExtractGloxFromExemplar.class);						
 
@@ -51,11 +50,7 @@ public class ExtractGloxFromExemplar extends AbstractSample {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/CirclePictureHierarchy.docx";
-		}
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/CirclePictureHierarchy.docx";
 		String outputdir = inputfilepath.substring(0, inputfilepath.lastIndexOf("/")+1);
 		String outputfilename = inputfilepath.substring(inputfilepath.lastIndexOf("/"))+ ".glox";
 		

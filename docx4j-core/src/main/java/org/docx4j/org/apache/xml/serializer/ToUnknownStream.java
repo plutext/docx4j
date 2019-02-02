@@ -29,10 +29,6 @@ import java.util.Vector;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
 
-import org.apache.xml.serializer.DOMSerializer;
-import org.apache.xml.serializer.NamespaceMappings;
-import org.apache.xml.serializer.SerializationHandler;
-import org.apache.xml.serializer.Serializer;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;

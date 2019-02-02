@@ -38,7 +38,6 @@ import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.docx4j.samples.AbstractSample;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.pml.CTGraphicalObjectFrame;
 import org.pptx4j.pml.CommonSlideData;
@@ -63,7 +62,7 @@ import org.pptx4j.pml.Shape;
  * @author jharrop
  *
  */
-public class PptxResizer extends AbstractSample {
+public class PptxResizer {
 	
 	public static SlideSizesWellKnown targetSize = SlideSizesWellKnown.A4;
 	public static boolean landscape = false;
@@ -74,12 +73,8 @@ public class PptxResizer extends AbstractSample {
 	public static void main(String[] args) throws Exception {
 
 
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir")
+		String inputfilepath = System.getProperty("user.dir")
 			+ "/B5.pptx";
-		}
 
 		PptxResizer resize = new PptxResizer();
 		

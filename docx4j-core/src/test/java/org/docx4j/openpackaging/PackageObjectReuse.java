@@ -30,23 +30,17 @@ import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.samples.AbstractSample;
 
 
 /**
  * Demonstrate replacing the contents of WordprocessingMLPackage.
  *
  */
-public class PackageObjectReuse extends AbstractSample {
+public class PackageObjectReuse {
 	
 	public static void main(String[] args) throws Exception {
 
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
-		}
-		System.out.println(inputfilepath);	    	
+	    String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
 		
 		// Load the docx

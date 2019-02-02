@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import javax.xml.transform.Result;
 
-import org.apache.xml.serializer.Docx4jNamespaceMappings;
-import org.apache.xml.serializer.NamespaceMappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;

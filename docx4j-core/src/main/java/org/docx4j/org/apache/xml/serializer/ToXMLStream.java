@@ -27,8 +27,8 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
-import org.apache.xml.serializer.Docx4jNamespaceMappings;
-import org.apache.xml.serializer.NamespaceMappings;
+//import org.apache.xml.serializer.Docx4jNamespaceMappings;
+//import org.apache.xml.serializer.NamespaceMappings;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
 import org.slf4j.Logger;

@@ -25,8 +25,7 @@ import java.util.Properties;
 
 import javax.xml.transform.Result;
 
-import org.apache.xml.serializer.Docx4jNamespaceMappings;
-import org.apache.xml.serializer.NamespaceMappings;
+//import org.apache.xml.serializer.NamespaceMappings;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
 import org.xml.sax.Attributes;

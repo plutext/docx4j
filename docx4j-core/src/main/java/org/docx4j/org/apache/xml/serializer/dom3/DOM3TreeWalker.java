@@ -30,7 +30,7 @@ import java.util.Properties;
 
 //import org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.OutputPropertiesFactory;
-import org.apache.xml.serializer.SerializationHandler;
+import org.docx4j.org.apache.xml.serializer.SerializationHandler;
 import org.docx4j.org.apache.xml.serializer.dom3.NamespaceSupport;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.Utils;
@@ -202,7 +202,7 @@ final class DOM3TreeWalker {
      * Constructor.
      * @param   contentHandler serialHandler The implemention of the SerializationHandler interface
      */
-    DOM3TreeWalker(
+    public DOM3TreeWalker(
         SerializationHandler serialHandler,
         DOMErrorHandler errHandler,
         LSSerializerFilter filter,
@@ -230,7 +230,8 @@ final class DOM3TreeWalker {
         }
     }
 
-    /**
+
+	/**
      * Perform a pre-order traversal non-recursive style.  
      *
      * Note that TreeWalker assumes that the subtree is intended to represent 

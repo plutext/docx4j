@@ -34,10 +34,11 @@ import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.xml.serializer.DOM3Serializer;
+import org.docx4j.org.apache.xml.serializer.DOM3Serializer;
+//import org.apache.xml.serializer.DOM3Serializer;
 import org.docx4j.org.apache.xml.serializer.Encodings;
 import org.docx4j.org.apache.xml.serializer.OutputPropertiesFactory;
-import org.apache.xml.serializer.Serializer;
+import org.docx4j.org.apache.xml.serializer.Serializer;
 import org.docx4j.org.apache.xml.serializer.SerializerFactory;
 import org.docx4j.org.apache.xml.serializer.utils.MsgKey;
 import org.docx4j.org.apache.xml.serializer.utils.SystemIDResolver;

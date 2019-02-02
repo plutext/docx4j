@@ -33,7 +33,6 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.docx4j.samples.AbstractSample;
 
 
 /**
@@ -50,7 +49,7 @@ import org.docx4j.samples.AbstractSample;
  * @author jharrop
  *
  */
-public class TraverseSlide extends AbstractSample {
+public class TraverseSlide {
 
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 
@@ -72,12 +71,8 @@ public class TraverseSlide extends AbstractSample {
 		 * dist/xmlgraphics-commons-1.4.jar:dist/commons-logging-1.1.1.jar
 		 */
 
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir")
+		String inputfilepath = System.getProperty("user.dir")
 			+ "/sample-docs/pptx/pptx-basic.xml";
-		}
 
 		PresentationMLPackage pMLPackage = 
 			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));

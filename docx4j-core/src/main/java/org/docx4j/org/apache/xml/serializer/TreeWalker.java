@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 /*
- * $Id: TreeWalker.java 468654 2006-10-28 07:09:23Z minchau $
+ * $Id$
  */
 package org.docx4j.org.apache.xml.serializer;
 
 import java.io.File;
 
-import org.apache.xml.serializer.SerializationHandler;
+import org.docx4j.org.apache.xml.serializer.SerializationHandler;
 import org.docx4j.org.apache.xml.serializer.utils.AttList;
 import org.docx4j.org.apache.xml.serializer.utils.DOM2Helper;
 import org.w3c.dom.Comment;

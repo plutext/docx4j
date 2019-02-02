@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*
- * $Id: EmptySerializer.java 471981 2006-11-07 04:28:00Z minchau $
+ * $Id$
  */
 package org.docx4j.org.apache.xml.serializer;
 
@@ -30,9 +30,13 @@ import java.util.Vector;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.Transformer;
 
-import org.apache.xml.serializer.DOMSerializer;
-import org.apache.xml.serializer.NamespaceMappings;
-import org.apache.xml.serializer.SerializationHandler;
+import org.docx4j.org.apache.xml.serializer.DOMSerializer;
+import org.docx4j.org.apache.xml.serializer.ExtendedContentHandler;
+import org.docx4j.org.apache.xml.serializer.ExtendedLexicalHandler;
+import org.docx4j.org.apache.xml.serializer.NamespaceMappings;
+import org.docx4j.org.apache.xml.serializer.SerializationHandler;
+import org.docx4j.org.apache.xml.serializer.Serializer;
+import org.docx4j.org.apache.xml.serializer.XSLOutputAttributes;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
