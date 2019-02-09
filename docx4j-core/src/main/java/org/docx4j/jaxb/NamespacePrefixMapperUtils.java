@@ -45,7 +45,8 @@ public class NamespacePrefixMapperUtils {
 	public static boolean isJava9orLater() {
 		
 		return (System.getProperty("java.version").startsWith("9")
-				|| System.getProperty("java.version").startsWith("10") );
+				|| System.getProperty("java.version").startsWith("10")
+				|| System.getProperty("java.version").startsWith("11") );
 		
 	}
 	
