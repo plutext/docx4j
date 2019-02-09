@@ -15,7 +15,7 @@ module docx4j_core {
 	requires docx4j_openxml_objects_sml;
     
 	requires com.sun.xml.bind;
-		requires org.jvnet.staxex; 
+//		requires org.jvnet.staxex; 
 	requires org.slf4j;
 	
     requires transitive antlr.runtime;
@@ -90,7 +90,7 @@ module docx4j_core {
     exports org.docx4j.model.styles;
     exports org.docx4j.model.table;
     exports org.docx4j.openpackaging;
-    exports org.docx4j.openpackaging.contenttype;
+    exports org.docx4j.openpackaging.contenttype;    
     exports org.docx4j.openpackaging.exceptions;
     exports org.docx4j.openpackaging.io;
     exports org.docx4j.openpackaging.io3;
@@ -139,11 +139,6 @@ module docx4j_core {
     exports org.docx4j.toc;
     exports org.docx4j.toc.switches;
     exports org.docx4j.utils;
-    exports org.opendope.answers;
-    exports org.opendope.components;
-    exports org.opendope.conditions;
-    exports org.opendope.questions;
-    exports org.opendope.xpaths;
 
     exports org.docx4j.openpackaging.parts.PresentationML;
     exports org.docx4j.openpackaging.parts.SpreadsheetML;
@@ -163,6 +158,25 @@ module docx4j_core {
     exports org.glox4j.openpackaging.packages;
 
     exports org.merlin.io;
+
     exports org.opendope.SmartArt.dataHierarchy;
+    exports org.opendope.answers;
+    exports org.opendope.components;
+    exports org.opendope.conditions;
+    exports org.opendope.questions;
+    exports org.opendope.xpaths;
+
+    opens org.opendope.SmartArt.dataHierarchy to java.xml.bind, com.sun.xml.bind;
+    opens org.opendope.answers to java.xml.bind, com.sun.xml.bind;
+    opens org.opendope.components to java.xml.bind, com.sun.xml.bind;
+    opens org.opendope.conditions to java.xml.bind, com.sun.xml.bind;
+    opens org.opendope.questions to java.xml.bind, com.sun.xml.bind;
+    opens org.opendope.xpaths to java.xml.bind, com.sun.xml.bind;
+
+    opens org.docx4j.openpackaging.contenttype to java.xml.bind, com.sun.xml.bind;
+    opens org.docx4j.model.structure.jaxb  to java.xml.bind, com.sun.xml.bind;
+
+    opens org.docx4j.model.datastorage  to java.xml.bind, com.sun.xml.bind; // for HistgramQNameTest
+
     
 }
