@@ -276,6 +276,17 @@
 	</dependency>
 		
 	<dependency>
+		<groupId>org.docx4j.org.apache</groupId>
+		<artifactId>xalan-serializer</artifactId>
+		<version>11.7.3-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+		<groupId>org.docx4j.org.apache</groupId>
+		<artifactId>xalan-interpretive</artifactId>
+		<version>11.7.3-SNAPSHOT</version>
+	</dependency>
+		
+<!-- 	<dependency>
 		<groupId>xalan</groupId>
 		<artifactId>xalan</artifactId>
 		<version>2.7.2</version>
@@ -286,7 +297,8 @@
 			</exclusion>
 		</exclusions>
 	</dependency>
-
+ -->
+ 
 <!-- Saxon for XPath
 <dependency>
   <groupId>net.sf.saxon</groupId>

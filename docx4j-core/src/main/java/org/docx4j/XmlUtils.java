@@ -97,7 +97,7 @@ public class XmlUtils {
 	// See http://www.edankert.com/jaxpimplementations.html for
 	// a helpful list.
 		
-	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.apache.xalan.processor.TransformerFactoryImpl";
+	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.docx4j.org.apache.xalan.processor.TransformerFactoryImpl";
 	// TRANSFORMER_FACTORY_PROCESSOR_SUN .. JDK/JRE does not include anything like com.sun.org.apache.xalan.TransformerFactoryImpl
 	
 //	public static String TRANSFORMER_FACTORY_SAXON = "net.sf.saxon.TransformerFactoryImpl";
@@ -1246,7 +1246,7 @@ public class XmlUtils {
 	    log.info("Using " + xformer.getClass().getName());
 	    
 		if (xformer.getClass().getName().equals(
-				"org.apache.xalan.transformer.TransformerImpl")) {
+				"org.docx4j.org.apache.xalan.transformer.TransformerImpl")) {
 			
 			if (Docx4jProperties.getProperty("docx4j.xalan.XALANJ-2419.workaround", false)) {
 			    // Use our patched serializer, which fixes Unicode astral character
@@ -1259,23 +1259,23 @@ public class XmlUtils {
 			    //log.debug("method: " + method);
 			    if (method==null || method.equals("xml")) {
 			    
-					((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+					((org.docx4j.org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
 							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToXMLStream"); 
 				
 			    } else if ( method.equals("html")) {
 
-			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+			    	((org.docx4j.org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
 							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToHTMLStream"); 
 				
 			    } else if ( method.equals("text")) {
 			    	
-			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+			    	((org.docx4j.org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
 							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToTextStream"); 
 			    	
 			    } else {
 			    	
 			    	log.warn("fallback for method: " + method);
-			    	((org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
+			    	((org.docx4j.org.apache.xalan.transformer.TransformerImpl)xformer).setOutputProperty(
 							S_KEY_CONTENT_HANDLER, "org.docx4j.org.apache.xml.serializer.ToUnknownStream"); 
 			    	
 			    }

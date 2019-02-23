@@ -26,13 +26,13 @@ package org.docx4j.org.apache.xml.security.transforms.implementations;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.xml.dtm.DTM;
-import org.apache.xpath.NodeSetDTM;
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.functions.Function;
-import org.apache.xpath.objects.XNodeSet;
-import org.apache.xpath.objects.XObject;
-import org.apache.xpath.res.XPATHErrorResources;
+import org.docx4j.org.apache.xml.dtm.DTM;
+import org.docx4j.org.apache.xpath.NodeSetDTM;
+import org.docx4j.org.apache.xpath.XPathContext;
+import org.docx4j.org.apache.xpath.functions.Function;
+import org.docx4j.org.apache.xpath.objects.XNodeSet;
+import org.docx4j.org.apache.xpath.objects.XObject;
+import org.docx4j.org.apache.xpath.res.XPATHErrorResources;
 import org.docx4j.org.apache.xml.security.utils.I18n;
 import org.docx4j.org.apache.xml.security.utils.XMLUtils;
 import org.w3c.dom.Document;

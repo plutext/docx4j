@@ -49,7 +49,7 @@ import org.w3c.dom.Node;
  * @author jharrop
  *
  */
-public class NamespacePrefixMappings implements NamespaceContext, org.apache.xml.utils.PrefixResolver {
+public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org.apache.xml.utils.PrefixResolver {
 
 /* TODO: check what we have here against https://github.com/OfficeDev/Open-XML-SDK/blob/vNext/DocumentFormat.OpenXml/src/Framework/NamespaceIdMap.cs
  */

@@ -27,10 +27,10 @@ module docx4j_core {
     requires transitive org.apache.commons.io;
     requires transitive org.apache.httpcomponents.httpclient;
     requires transitive org.apache.httpcomponents.httpcore;
-    requires transitive serializer;
+    requires transitive docx4j_xalan_serializer;
 //    requires transitive slf4j.api;
     requires transitive stringtemplate;
-    requires transitive xalan;
+    requires transitive docx4j_xalan_interpretive;
     requires transitive xmlgraphics.commons;
     requires transitive com.fasterxml.jackson.core;
 	requires org.eclipse.persistence.moxy;
@@ -119,8 +119,7 @@ module docx4j_core {
     exports org.docx4j.org.apache.poi.poifs.property;
     exports org.docx4j.org.apache.poi.poifs.storage;
     exports org.docx4j.org.apache.poi.util;
-    exports org.docx4j.org.apache.xalan.templates;
-    exports org.docx4j.org.apache.xalan.transformer;
+
     exports org.docx4j.org.apache.xerces.util;
     exports org.docx4j.org.apache.xml.security;
     exports org.docx4j.org.apache.xml.security.c14n;
@@ -132,9 +131,6 @@ module docx4j_core {
     exports org.docx4j.org.apache.xml.security.transforms.implementations;
     exports org.docx4j.org.apache.xml.security.transforms.params;
     exports org.docx4j.org.apache.xml.security.utils;
-    exports org.docx4j.org.apache.xml.serializer;
-    exports org.docx4j.org.apache.xml.serializer.dom3;
-    exports org.docx4j.org.apache.xml.serializer.utils;
     exports org.docx4j.services.client;
     exports org.docx4j.toc;
     exports org.docx4j.toc.switches;

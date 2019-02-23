@@ -27,7 +27,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.xalan.extensions.ExpressionContext;
+import org.docx4j.org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;

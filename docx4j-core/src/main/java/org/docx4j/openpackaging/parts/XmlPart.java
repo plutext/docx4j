@@ -30,8 +30,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 
-import org.apache.xpath.CachedXPathAPI;
-import org.apache.xpath.objects.XObject;
+import org.docx4j.org.apache.xpath.CachedXPathAPI;
+import org.docx4j.org.apache.xpath.objects.XObject;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
@@ -263,7 +263,7 @@ public abstract class XmlPart extends Part {
 						} else {
 							return "false";					
 						}
-					} catch (org.apache.xpath.XPathException e) {
+					} catch (org.docx4j.org.apache.xpath.XPathException e) {
 						log.debug(e.getMessage());
 						// handle below
 					}
@@ -300,7 +300,7 @@ public abstract class XmlPart extends Part {
 							} else {
 								return "" + d;
 							}
-						} catch (org.apache.xpath.XPathException e) {
+						} catch (org.docx4j.org.apache.xpath.XPathException e) {
 							log.debug(e.getMessage());
 							// handle below
 						}
@@ -332,7 +332,7 @@ public abstract class XmlPart extends Part {
 				
 				return result.getTextContent();
 				
-			} catch (org.apache.xpath.XPathException e) {
+			} catch (org.docx4j.org.apache.xpath.XPathException e) {
 								
 				/* Here we handle the cases where the result is not a nodelist
 				 * 
