@@ -73,6 +73,8 @@ public class ResourceUtils {
         ClassLoader loader = ResourceUtils.class.getClassLoader();
         
         java.net.URL url = loader.getResource(filename);
+    	// For Java 9, the package must be open in module-info!  
+        // See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
         
 		if (url == null
 				&& System.getProperty("java.vendor").contains("Android")) {
@@ -104,5 +106,12 @@ public class ResourceUtils {
         return is;
     }
 	
+    public static void main(String[] args)
+            throws Exception {
+
+    	InputStream is = getResource("org/docx4j/convert/out/html/docx2xhtml.xslt");
+    	System.out.println(is.available());
+    	
+    }
 
 }

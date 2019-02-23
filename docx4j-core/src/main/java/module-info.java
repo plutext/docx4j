@@ -174,5 +174,22 @@ module docx4j_core {
 
     opens org.docx4j.model.datastorage  to java.xml.bind, com.sun.xml.bind; // for HistgramQNameTest
 
+    // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
+	opens org.pptx4j.convert.out.svginhtml;
+	opens org.docx4j.toc;
+	opens org.docx4j.org.apache.xml.security.resource;
+	opens org.docx4j.openpackaging.parts.WordprocessingML;
+	opens org.docx4j.openpackaging.parts.PresentationML;
+	opens org.docx4j.openpackaging.parts.DrawingML;
+	opens org.docx4j.openpackaging.packages;
+	opens org.docx4j.model.shapes;
+	opens org.docx4j.model.fields;
+	// opens org.docx4j.model.datastorage; // opened above
+	opens org.docx4j.jaxb;
+	opens org.docx4j.fonts.substitutions;
+	opens org.docx4j.fonts.microsoft;
+	opens org.docx4j.convert.out.html;
+	opens org.docx4j.convert.in.word2003xml;
+    
     
 }

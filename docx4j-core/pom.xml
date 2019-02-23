@@ -59,6 +59,7 @@
         
 		<resources>
 			<!-- be sure to get xml,xlst resources in various src trees -->
+			<!-- should now all be in src/main/resources 
 			<resource>
 				<directory>src/main/java</directory>
 				<includes>
@@ -66,20 +67,13 @@
 					<include>**/*.xml</include>
 				</includes>
 			</resource>
-			<!-- 
-			<resource>
-				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
-				<includes>
-					<include>*.properties</include>
-				</includes>
-			</resource>
-			 -->
 			<resource>
 				<directory>src/main/java</directory>
 				<includes>
 					<include>**/*.properties</include>
 				</includes>
 			</resource>
+			 -->
 			<resource>
 				<directory>src/test/java</directory>
 				<includes>
