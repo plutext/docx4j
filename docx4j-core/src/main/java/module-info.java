@@ -1,4 +1,5 @@
 module docx4j_core {
+	
     requires com.fasterxml.jackson.databind;
     requires com.google.common;
     requires java.xml.crypto;
@@ -10,12 +11,17 @@ module docx4j_core {
     requires org.apache.commons.lang3;
     requires wmf2svg;
     
-	requires docx4j_openxml_objects;
-	requires docx4j_openxml_objects_pml;
-	requires docx4j_openxml_objects_sml;
+	requires transitive docx4j_openxml_objects;
+	requires transitive docx4j_openxml_objects_pml;
+	requires transitive docx4j_openxml_objects_sml;
     
-	requires com.sun.xml.bind;
-//		requires org.jvnet.staxex; 
+	requires transitive com.sun.xml.bind; // should require the below!
+	requires transitive jakarta.activation;
+	requires transitive org.jvnet.staxex;
+	requires transitive com.sun.xml.txw2;
+	requires transitive com.sun.istack.runtime;
+	requires transitive com.sun.xml.fastinfoset;
+	
 	requires org.slf4j;
 	
     requires transitive antlr.runtime;

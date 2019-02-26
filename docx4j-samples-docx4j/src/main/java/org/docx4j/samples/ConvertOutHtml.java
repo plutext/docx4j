@@ -50,7 +50,7 @@ public class ConvertOutHtml extends AbstractSample {
 	// Config for non-command line version
 	static {
 	
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docxv2.docx";
 
 		save = true;
 		nestLists = true;
