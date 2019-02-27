@@ -6,6 +6,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.exceptions.Xlsx4jException;
 import org.xlsx4j.sml.Sheet;
@@ -16,6 +17,7 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	
 	protected SharedStrings sharedStrings;
 	protected Styles stylesPart;
+	protected ThemePart themePart;
 	
 	public WorkbookPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -45,6 +47,12 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 	public Styles getStylesPart() {
 		return stylesPart;
 	}
+
+	public ThemePart getThemePart() {
+		return themePart;
+	}
+
+	
 	
 	public boolean setPartShortcut(Part part) {
 		
@@ -77,6 +85,9 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		} else 	if (relationshipType.equals(Namespaces.SPREADSHEETML_STYLES)) {
 			stylesPart = (Styles)part;
 			return true;				
+		} else if (relationshipType.equals(Namespaces.THEME)) {
+			themePart = (ThemePart)part;
+			return true;	
 		} else {	
 			return false;
 		}
