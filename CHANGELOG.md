@@ -2,6 +2,40 @@ CHANGELOG
 =========
 
 
+Version 6.1.2 minor release 
+=============
+
+Release date
+------------
+
+27 February 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+rmanitz
+
+
+Notable Changes in Version 6.1.2 
+---------------------------------
+
+Fix for #340 Field handling NumberExtractor, handle group separator '.' (eg German) correctly.
+
+New property docx4j.Fields.Numbers.JavaStylePercentHandling which if set to true multiplies the value by hundred.  
+For example, formatting 0.33 with "\\# ##%" would yield 33%.
+
+Fix for #344 (NPE in TraversalUtil in graphicData)
+Fix for #346 (relating to Fields)
+
+xlsx4j
+------
+
+Convenience method to access ThemePart
+
+
 Version 6.1.1 
 =============
 
