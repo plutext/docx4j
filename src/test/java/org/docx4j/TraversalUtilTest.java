@@ -22,7 +22,7 @@ import junit.framework.Assert;
 public class TraversalUtilTest {
 
 	@Test
-	public void testIssue344() {
+	public void testIssue344Anchor() {
 
 		/* Create
               <wp:anchor distT="45720" distB="45720" distL="114300" distR="114300" simplePos="0" 
@@ -43,6 +43,32 @@ public class TraversalUtilTest {
 		gd.getAny().add(jx);
 
 		List<Object> list = TraversalUtil.getChildrenImpl(anchor);
+
+		Assert.assertNull(list);
+	}
+
+	@Test
+	public void testIssue344Inline() {
+
+		/* Create
+              <wp:inline distT="45720" distB="45720" distL="114300" distR="114300" simplePos="0" 
+              relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="4B7F61D6" wp14:editId="70D91E50">
+                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+		 */
+		org.docx4j.dml.wordprocessingDrawing.Inline inline = (new org.docx4j.dml.wordprocessingDrawing.ObjectFactory()).createInline();
+		org.docx4j.dml.ObjectFactory dmlObjectFactory = new org.docx4j.dml.ObjectFactory();
+		Graphic g = dmlObjectFactory.createGraphic();
+		inline.setGraphic(g);
+		GraphicData gd = dmlObjectFactory.createGraphicData();
+		g.setGraphicData(gd);
+		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wShape =
+				new org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape();
+		JAXBElement<CTWordprocessingShape> jx = (new org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.ObjectFactory()).createWsp(wShape);
+		gd.getAny().add(jx);
+
+		List<Object> list = TraversalUtil.getChildrenImpl(inline);
 
 		Assert.assertNull(list);
 	}
