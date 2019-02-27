@@ -9,7 +9,7 @@ import java.util.List;
  * wrap block-level, row-level, cell-level, or run-level content.  Those objects all implement interface SdtElement.
  *  
  * Similarly, there are different Java objects for the SdtContent, depending on whether they
- * wrap block-level, row-level, cell-level, or run-level content.  Those objects all implement this SdtContent interface.
+ * wrap block-level, row-level, cell-level, or run-level content.  Those objects all extend this SdtContent class.
  * 
  * @author jharrop
  * @since 3.3.4
