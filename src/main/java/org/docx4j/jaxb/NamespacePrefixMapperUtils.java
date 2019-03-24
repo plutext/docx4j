@@ -59,12 +59,12 @@ public class NamespacePrefixMapperUtils {
 		// will be true soon..
 		haveTried = true;
 		
-		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
-			// since 6.1.0
-			log.info("Using MOXy NamespacePrefixMapper");
-			prefixMapper = new NamespacePrefixMapperMOXy();
-			return prefixMapper;
-		}
+//		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+//			// since 6.1.0
+//			log.info("Using MOXy NamespacePrefixMapper");
+//			prefixMapper = new NamespacePrefixMapperMOXy();
+//			return prefixMapper;
+//		}
 		
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
@@ -77,16 +77,16 @@ public class NamespacePrefixMapperUtils {
 		
 		Marshaller m=testContext.createMarshaller();
 
-		if (isJava9orLater()) {
-			return tryUsingRI(m);			
-		}
-
-//		(new Throwable()).printStackTrace();
-		
-		if (System.getProperty("java.vendor").contains("Android")) {
-			log.info("Android .. assuming RI.");  // Avoid unwanted Android logging; art logs the full ClassNotFoundException 
-			return tryUsingRI(m);						
-		}
+//		if (isJava9orLater()) {
+//			return tryUsingRI(m);			
+//		}
+//
+////		(new Throwable()).printStackTrace();
+//		
+//		if (System.getProperty("java.vendor").contains("Android")) {
+//			log.info("Android .. assuming RI.");  // Avoid unwanted Android logging; art logs the full ClassNotFoundException 
+//			return tryUsingRI(m);						
+//		}
 		
 		try {
 			// Assume use of Java 6 implementation (ie not RI)
@@ -96,60 +96,64 @@ public class NamespacePrefixMapperUtils {
 			log.info("Using NamespacePrefixMapperSunInternal, which is suitable for Java 6");
 			prefixMapper = c.newInstance();
 			return prefixMapper;
-		} catch (java.lang.NoClassDefFoundError notJava6) {
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (javax.xml.bind.PropertyException notJava6) {
-			// OpenJDK (1.6.0_23) does this
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		}  catch (ClassNotFoundException notJava6) {
-			// We shouldn't get here on Android, but we may using RI elsewhere
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (InstantiationException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
-		} catch (IllegalAccessException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryUsingRI(m);			
+//		} catch (java.lang.NoClassDefFoundError notJava6) {
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryUsingRI(m);			
+//		} catch (javax.xml.bind.PropertyException notJava6) {
+//			// OpenJDK (1.6.0_23) does this
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryUsingRI(m);			
+//		}  catch (ClassNotFoundException notJava6) {
+//			// We shouldn't get here on Android, but we may using RI elsewhere
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryUsingRI(m);			
+//		} catch (InstantiationException notJava6) {
+//			// We shouldn't get here since Class.forName will have already thrown an exception
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryUsingRI(m);			
+//		} catch (IllegalAccessException notJava6) {
+//			// We shouldn't get here since Class.forName will have already thrown an exception
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryUsingRI(m);			
+//		}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
 
-	private static Object tryUsingRI(Marshaller m)
-			throws JAXBException {
-		try {
-			// Try RI suitable one
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-					new NamespacePrefixMapper() );
-			log.info("Using NamespacePrefixMapper, which is suitable for the JAXB RI");
-			prefixMapper = new NamespacePrefixMapper();
-			return prefixMapper;
-		} catch (java.lang.NoClassDefFoundError notRIEither) {
-			notRIEither.printStackTrace();
-			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-		} catch (javax.xml.bind.PropertyException notRIEither) {
-			notRIEither.printStackTrace();
-			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-		}
-	}
+//	private static Object tryUsingRI(Marshaller m)
+//			throws JAXBException {
+//		try {
+//			// Try RI suitable one
+//			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+//					new NamespacePrefixMapper() );
+//			log.info("Using NamespacePrefixMapper, which is suitable for the JAXB RI");
+//			prefixMapper = new NamespacePrefixMapper();
+//			return prefixMapper;
+//		} catch (java.lang.NoClassDefFoundError notRIEither) {
+//			notRIEither.printStackTrace();
+//			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+//			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+//		} catch (javax.xml.bind.PropertyException notRIEither) {
+//			notRIEither.printStackTrace();
+//			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+//			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+//		}
+//	}
 
 	
 	public static Object getPrefixMapperRelationshipsPart() throws JAXBException {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
 
-		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
-			// since 6.1.0
-			log.info("Using MOXy NamespacePrefixMapper");
-			prefixMapperRels = new NamespacePrefixMapperRelationshipsPartMOXy();
-			return prefixMapperRels;
-		}
+//		if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+//			// since 6.1.0
+//			log.info("Using MOXy NamespacePrefixMapper");
+//			prefixMapperRels = new NamespacePrefixMapperRelationshipsPartMOXy();
+//			return prefixMapperRels;
+//		}
 
 		
 		if (testContext==null) {
@@ -159,9 +163,9 @@ public class NamespacePrefixMapperUtils {
 		
 		Marshaller m=testContext.createMarshaller();
 		
-		if (isJava9orLater()) {
-			return tryRIforRelationshipsPart(m);			
-		}
+//		if (isJava9orLater()) {
+//			return tryRIforRelationshipsPart(m);			
+//		}
 		
 //		(new Throwable()).printStackTrace();
 		
@@ -173,47 +177,53 @@ public class NamespacePrefixMapperUtils {
 			log.info("Using NamespacePrefixMapperRelationshipsPartSunInternal, which is suitable for Java 6");
 			prefixMapperRels = c.newInstance();
 			return prefixMapperRels;
-		} catch (java.lang.NoClassDefFoundError notJava6) {
-			// javax.xml.bind.PropertyException
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);
-		} catch (javax.xml.bind.PropertyException notJava6) {
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);
-		}  catch (ClassNotFoundException notJava6) {
-			// We shouldn't get here on Android, but we may using RI elsewhere
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		} catch (InstantiationException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		} catch (IllegalAccessException notJava6) {
-			// We shouldn't get here since Class.forName will have already thrown an exception
-			log.warn(notJava6.getMessage() + " .. trying RI.");
-			return tryRIforRelationshipsPart(m);			
-		}	}
-
-
-	private static Object tryRIforRelationshipsPart(Marshaller m)
-			throws JAXBException {
-		try {
-			// Try RI suitable one
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-					new NamespacePrefixMapperRelationshipsPart() );
-			log.info("Using NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
-			prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
-			return prefixMapperRels;
-		} catch (java.lang.NoClassDefFoundError notRIEither) {
-			notRIEither.printStackTrace();
-			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-		} catch (javax.xml.bind.PropertyException notRIEither) {
-			notRIEither.printStackTrace();
-			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+//		} catch (java.lang.NoClassDefFoundError notJava6) {
+//			// javax.xml.bind.PropertyException
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryRIforRelationshipsPart(m);
+//		} catch (javax.xml.bind.PropertyException notJava6) {
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryRIforRelationshipsPart(m);
+//		}  catch (ClassNotFoundException notJava6) {
+//			// We shouldn't get here on Android, but we may using RI elsewhere
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryRIforRelationshipsPart(m);			
+//		} catch (InstantiationException notJava6) {
+//			// We shouldn't get here since Class.forName will have already thrown an exception
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryRIforRelationshipsPart(m);			
+//		} catch (IllegalAccessException notJava6) {
+//			// We shouldn't get here since Class.forName will have already thrown an exception
+//			log.warn(notJava6.getMessage() + " .. trying RI.");
+//			return tryRIforRelationshipsPart(m);			
+//		}	
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-	}
+			
+		}
+
+
+//	private static Object tryRIforRelationshipsPart(Marshaller m)
+//			throws JAXBException {
+//		try {
+//			// Try RI suitable one
+//			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+//					new NamespacePrefixMapperRelationshipsPart() );
+//			log.info("Using NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
+//			prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
+//			return prefixMapperRels;
+//		} catch (java.lang.NoClassDefFoundError notRIEither) {
+//			notRIEither.printStackTrace();
+//			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+//			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+//		} catch (javax.xml.bind.PropertyException notRIEither) {
+//			notRIEither.printStackTrace();
+//			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+//			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+//		}
+//	}
 	
 	/**
 	 * setProperty on 'com.sun.xml.bind.namespacePrefixMapper' or

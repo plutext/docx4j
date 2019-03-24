@@ -1,83 +1,132 @@
 README
 ======
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j)
 
-What is docx4j?
+OSGi-friendly docx4j (Experimental) 
 ---------------
 
-docx4j is an open source (Apache v2) library for creating, editing, and saving OpenXML "packages", including docx, pptx, and xslx. 
+This is an OSGi-friendly branch of docx4j, currently tested on Java 8.
 
-It uses JAXB to create the Java representation.
+docx4j usually supports your choice of JAXB implementation: the one in Oracle Java 6 to 8, the Reference Implementation, MOXy, or IBMs.  In this branch,
+we currently only support the JAXB included in Oracle Java 6 to 8.  So in Karaf's config, you need to expose com.sun.xml.internal.bind.marshaller (see further below)
 
-- Open existing docx/pptx/xlsx 
-- Create new docx/pptx/xlsx 
-- Programmatically manipulate docx/pptx/xlsx (anything the file format allows)
-- CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats & conditionals, and importing XHTML) 
-- Export as HTML
-- Export as PDF (using Plutext's PDF Converter, or use docx4j-export-FO project)
-- Produce/consume Word 2007's xmlPackage (pkg) format
-- Apply transforms, including common filters
-- Font support (font substitution, and use of any fonts embedded in the document) 
+Subject to that, it is docx4j 6.1.2.
 
-How do I build docx4j?
-----------------------
+Build
+---------------
 
-Get it from GitHub, at https://github.com/plutext/docx4j
-For more details, see http://www.docx4java.org/blog/2015/06/docx4j-from-github-in-eclipse-5-years-on/
+```
+mvn install
+```
 
-If you are working with the source code, please join the developer
-mailing list:
+Or quickest, 
 
-        docx4j-dev-subscribe@docx4java.org
+```
+mvn install -DskipTests
+```
 
-Where do I get a binary?
-------------------------
+This creates a jar file with all deps embedded.  (However, karaf doesn't 
+seem able to use them?)
+ 
 
-http://www.docx4java.org/downloads.html
+Sample project
+---------------
 
-How do I get started?
-------------------
+https://github.com/plutext/docx4j-OSGi-HelloWorld is a sample project
 
-See the Getting Started guide:  https://github.com/plutext/docx4j/tree/master/docs
+HelloWorld implements BundleActivator, and shows that marshalling works:
 
-and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-page/
+```
+        P p = Context.getWmlObjectFactory().createP();
+        System.out.println(XmlUtils.marshaltoString(p));
+```
 
-And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
+Clone the repo, then:
 
-You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
+```
+mvn install
+```
+
+Run it in Karaf
+---------------
+
+I used Karaf 4.2.4 and openjdk version "1.8.0_202"
+
+Edit etc/config.properties, adding com.sun.xml.internal.bind.marshaller to org.osgi.framework.system.packages.extra
+
+```		
+	org.osgi.framework.system.packages.extra = \
+	    org.apache.karaf.branding, \
+	    sun.misc, \
+	    com.sun.xml.internal.bind.marshaller, \
+```
+
+Start karaf:
+
+```
+bin/karaf start
+```
+
+Download feature.xml then add its file URL as a repo:
+
+```
+karaf@root()> feature:repo-add file:///home/jharrop/git/docx4j/feature.xml                                                                                                                                     
+Adding feature url file:///home/jharrop/git/docx4j/feature.xml
+```
+
+Install:
+
+```
+karaf@root()> feature:install docx4j-deps/6.1
+```
+
+Now you should see something like:
+
+```
+karaf@root()> bundle:list
+START LEVEL 100 , List Threshold: 50
+ID │ State  │ Lvl │ Version │ Name
+───┼────────┼─────┼─────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+23 │ Active │  80 │ 4.2.4   │ Apache Karaf :: OSGi Services :: Event
+45 │ Active │  80 │ 2.7.9   │ Jackson-annotations
+46 │ Active │  80 │ 2.7.9   │ Jackson-core
+47 │ Active │  80 │ 2.7.9   │ jackson-databind
+48 │ Active │  80 │ 20.0.0  │ Guava: Google Core Libraries for Java
+49 │ Active │  80 │ 3.0.0   │ Expression Language 3.0 API
+50 │ Active │  80 │ 1.2.4   │ mbassador
+51 │ Active │  80 │ 1.11.0  │ Apache Commons Codec
+52 │ Active │  80 │ 1.12.0  │ Apache Commons Compress
+53 │ Active │  80 │ 2.5.0   │ Apache Commons IO
+54 │ Active │  80 │ 3.5.0   │ Apache Commons Lang
+55 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_com_thedeanda_lorem_2.1_lorem-2.1.jar
+56 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_net_arnx_wmf2svg_0.9.8_wmf2svg-0.9.8.jar
+57 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_antlr_antlr-runtime_3.5.2_antlr-runtime-3.5.2.jar
+58 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_antlr_stringtemplate_3.2.1_stringtemplate-3.2.1.jar
+59 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_apache_avalon_framework_avalon-framework-api_4.3.1_avalon-framework-api-4.3.1.jar
+60 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_apache_avalon_framework_avalon-framework-impl_4.3.1_avalon-framework-impl-4.3.1.jar
+61 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_apache_httpcomponents_httpclient_4.5.6_httpclient-4.5.6.jar
+62 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_apache_httpcomponents_httpcore_4.4.10_httpcore-4.4.10.jar
+63 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_org_apache_xmlgraphics_xmlgraphics-commons_2.3_xmlgraphics-commons-2.3.jar
+64 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_xalan_serializer_2.7.2_serializer-2.7.2.jar
+65 │ Active │  80 │ 0       │ wrap_file__home_jharrop_.m2_repository_xalan_xalan_2.7.2_xalan-2.7.2.jar
+```
+
+Now let's try the sample project:
+
+```
+karaf@root()> bundle:install mvn:org.docx4j/docx4j-OSGi-HelloWorld/6.1.3-SNAPSHOT
+Bundle ID: 67
+karaf@root()> bundle:start 67
+Hello world.
+<w:p xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:cppr="http://schemas.microsoft.com/office/2006/coverPageProps" xmlns:odx="http://opendope.org/xpaths" xmlns:c14="http://schemas.microsoft.com/office/drawing/2007/8/2/chart" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:odgm="http://opendope.org/SmartArt/DataHierarchy" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11" xmlns:pvml="urn:schemas-microsoft-com:office:powerpoint" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:comp="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:xvml="urn:schemas-microsoft-com:office:excel" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:oda="http://opendope.org/answers" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:odc="http://opendope.org/conditions" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:odi="http://opendope.org/components" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:odq="http://opendope.org/questions" xmlns:wetp="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"/>
+it worked.
+```
 
 
-Java 9 or 10 with Eclipse
--------------------------
+Open Questions
+--------------
 
-Use Oxygen.3a Release (4.7.3a) or later.
+The sample project's jar bundles docx4j-OSGi and its dependencies.  Karaf is able to use the bundled docx4j-OSGi.jar, but not the other jars?  (For the other jars we need feature.xml - why?) 
 
-Make sure the Maven configuration is enabled.
+Is Karaf OK with versions with 3 dots eg 1.2.3.4?  I've avoided using jackson-databind 2.7.9.4 and mbassador 1.2.4.2 for this reason.
 
-In Eclipse, Ctrl-Alt-P, or right-click on the project, Maven, then select the appropriate profile.
-This will pull in the JAXB jars.
-
-If errors show up, check your build path:
-- check you have Java 1.6 or later system library
-- check that for source folders, you don't have excluded ** for pptx4j or xlsx4j (if you do, select excluded then click remove)
-
-
-
-Where to get help?
-------------------
-
-http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
-
-Please post to one or the other, not both
-
-
-Legal Information
------------------
-
-docx4j is published under the Apache License version 2.0. For the license
-text, please see the following files in the legals directory:
-- LICENSE
-- NOTICE
-Legal information on libraries used by docx4j can be found in the 
-"legals/NOTICE" file.

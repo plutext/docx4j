@@ -87,18 +87,18 @@ public class Context {
 		log.info("java.version="+System.getProperty("java.version"));
 		
 		// This stuff is just debugging diagnostics
-		try {
-			searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
-			if (Thread.currentThread().getContextClassLoader()==null) {
-				log.warn("ContextClassLoader is null for current thread");
-				// Happens with IKVM 
-			} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
-				searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
-			}
-		} catch ( java.security.AccessControlException e) {
-			// Google AppEngine throws this, at com.google.apphosting.runtime.security.CustomSecurityManager.checkPermission
-			log.warn("Caught/ignored " + e.getMessage());
-		}
+//		try {
+//			searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
+//			if (Thread.currentThread().getContextClassLoader()==null) {
+//				log.warn("ContextClassLoader is null for current thread");
+//				// Happens with IKVM 
+//			} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+//				searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
+//			}
+//		} catch ( java.security.AccessControlException e) {
+//			// Google AppEngine throws this, at com.google.apphosting.runtime.security.CustomSecurityManager.checkPermission
+//			log.warn("Caught/ignored " + e.getMessage());
+//		}
 		
 		// Diagnostics regarding JAXB implementation
 		InputStream jaxbPropsIS=null;
