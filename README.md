@@ -67,7 +67,7 @@ Start karaf:
 bin/karaf start
 ```
 
-Download feature.xml then add its file URL as a repo:
+Download [feature.xml](https://github.com/plutext/docx4j/blob/VERSION_6_1_0_OSGi/feature.xml) then add its file URL as a repo:
 
 ```
 karaf@root()> feature:repo-add file:///home/jharrop/git/docx4j/feature.xml                                                                                                                                     
