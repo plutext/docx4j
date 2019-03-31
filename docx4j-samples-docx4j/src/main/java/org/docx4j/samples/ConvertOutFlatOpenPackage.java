@@ -46,11 +46,12 @@ public class ConvertOutFlatOpenPackage extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
+			
 		}
 		
 		// Do we want to save output? 
-		boolean save = true;
+		boolean save = false;
 		// If so, whereto?
 		outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertOutFlatOpenPackage.xml";
 		

@@ -82,7 +82,7 @@ public class VariablePrepare {
 		// and in any case probably should be replaced with a TraversalUtil
 		// approach (which wouldn't involve marshal/unmarshall, and 
 		// so should be more efficient).
-
+		
         if(log.isInfoEnabled()) {
             log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
         }
@@ -242,7 +242,7 @@ public class VariablePrepare {
 
 		boolean save=true;
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateDirtyExample.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/../docx4j-samples-docx4j/sample-docs/unmarshallFromTemplateDirtyExample.docx";
 		
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
