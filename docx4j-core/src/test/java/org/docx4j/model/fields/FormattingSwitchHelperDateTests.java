@@ -268,8 +268,9 @@ public class FormattingSwitchHelperDateTests {
 		
 		String instr = fieldname + " foo " + triple.format;
 		String result = getFormat(instr, triple.val);
-		System.out.println(result);
-		assertTrue(result.equals(expectedResult));
+//		System.out.println(result);
+		//assertTrue(result.equals(expectedResult));
+		org.junit.Assert.assertEquals(expectedResult, result);
 	}
 	
 	private String getFormat(String instr, String val) throws TransformerException, Docx4JException {
