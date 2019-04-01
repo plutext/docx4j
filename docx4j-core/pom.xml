@@ -114,37 +114,7 @@
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
 			<version>1.0.2</version>
 		</dependency>
-
-	<!-- To use MOXy, uncomment the following 2 dependencies. 
-		Dependency version 2.4.1 had some issues,
-		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
-		details.  	
-		
-		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
-		needs javax.mail
-		
-		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
-		so stick with 2.5.2 (since all our other deps still support Java 6)
- 		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>6.0.0</version>
-		</dependency> 
-
-				<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
-		</dependency>
-		
-		-->
-		
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>org.eclipse.persistence.moxy</artifactId>
-			<version>2.5.2</version>
-		</dependency>
-		
+				
 		
 		<!--  events -->
 		<dependency>

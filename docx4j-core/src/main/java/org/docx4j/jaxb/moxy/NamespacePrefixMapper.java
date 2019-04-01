@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2018, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -18,17 +18,21 @@
 
  */
 
-package org.docx4j.jaxb;
+package org.docx4j.jaxb.moxy;
 
-
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
+import org.docx4j.jaxb.NamespacePrefixMapperInterface;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 
 /**
+ * NamespacePrefixMapper used by MOXy.
+ * 
  * @author jharrop
- * @since 6.1.0
+ *
  */
-public class NamespacePrefixMapperMOXy 
-extends org.eclipse.persistence.oxm.NamespacePrefixMapper implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
-	
+public class NamespacePrefixMapper implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
+
 	private String mcIgnorable;
 	public void setMcIgnorable(String mcIgnorable) {
 		this.mcIgnorable = mcIgnorable;
@@ -131,6 +135,18 @@ extends org.eclipse.persistence.oxm.NamespacePrefixMapper implements NamespacePr
     public String[] getPreDeclaredNamespaceUris() {
     	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable);
     }
+
+	@Override
+	public String[] getPreDeclaredNamespaceUris2() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getContextualNamespaceDecls() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
     /**
      * Similar to {@link #getPreDeclaredNamespaceUris()} but allows the

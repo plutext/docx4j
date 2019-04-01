@@ -18,9 +18,18 @@
 
  */
 
-package org.docx4j.jaxb;
+package org.docx4j.jaxb.moxy;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
+import org.docx4j.jaxb.NamespacePrefixMapperInterface;
+
+/**
+ * NamespacePrefixMapper used by MOXy.
+ * 
+ * @author jharrop
+ *
+ */
+public class NamespacePrefixMapperRelationshipsPart  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
 //	private String mcIgnorable;
 	public void setMcIgnorable(String mcIgnorable) {
@@ -105,6 +114,24 @@ public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.mar
     	
     	return suggestion;
     }
+
+	@Override
+	public String[] getPreDeclaredNamespaceUris() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getPreDeclaredNamespaceUris2() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getContextualNamespaceDecls() {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
     /**
      * Returns a list of namespace URIs that should be declared

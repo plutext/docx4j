@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2019, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -18,9 +18,12 @@
 
  */
 
-package org.docx4j.jaxb;
+package org.docx4j.jaxb.ri;
 
-
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
+import org.docx4j.jaxb.NamespacePrefixMapperInterface;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 
 public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper 
 	implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {

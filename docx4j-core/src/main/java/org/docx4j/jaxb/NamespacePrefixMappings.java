@@ -87,7 +87,7 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
      *      If this method returns "" when requirePrefix=true, the return
      *      value will be ignored and the system will generate one.
      */
-    protected static String getPreferredPrefixStatic(String namespaceUri, String suggestion, boolean requirePrefix) {    
+    public static String getPreferredPrefixStatic(String namespaceUri, String suggestion, boolean requirePrefix) {    
     	
     	if (namespaceUri.equals(Namespaces.NS_WORD12)) {
     		return "w";

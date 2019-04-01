@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2018, Plutext Pty Ltd.
+ *  Copyright 2007-2019, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -18,14 +18,14 @@
 
  */
 
-package org.docx4j.jaxb;
+package org.docx4j.jaxb.ri;
 
-/**
- * @author jharrop
- * @since 6.1.0
- */
-public class NamespacePrefixMapperRelationshipsPartMOXy 
-	extends org.eclipse.persistence.oxm.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
+import org.docx4j.jaxb.NamespacePrefixMapperInterface;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.NamespacePrefixMappings;
+
+public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
 //	private String mcIgnorable;
 	public void setMcIgnorable(String mcIgnorable) {
