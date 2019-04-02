@@ -206,7 +206,7 @@ public abstract class Part extends Base {
 		if (pack==null) {
 			log.error("Package field null for this Part " + this.getClass().getName() );
 		} else if (log.isDebugEnabled() ) {
-			log.debug(pack.name());
+			log.debug("package name: " + pack.name());
 		}
 		return pack;
 	}
