@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.jaxb.moxy;
+package org.docx4j.jaxb.generic;
 
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperInterface;
@@ -26,7 +26,12 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 
 /**
- * NamespacePrefixMapper used by MOXy.
+ * NamespacePrefixMapper, which could be used by MOXy
+ * (relying on org.eclipse.persistence.internal.oxm.record.namespaces.NamespacePrefixMapperWrapper)
+ * 
+ * But instead (to avoid additional reflection), we use org.docx4j.jaxb.moxy.NamespacePrefixMapper
+ * 
+ * So this class isn't currently used.
  * 
  * @author jharrop
  *

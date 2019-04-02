@@ -10,8 +10,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.docx4j.jaxb.moxy.NamespacePrefixMapper;
-import org.docx4j.jaxb.moxy.NamespacePrefixMapperRelationshipsPart;
+import org.docx4j.jaxb.generic.NamespacePrefixMapper;
+import org.docx4j.jaxb.generic.NamespacePrefixMapperRelationshipsPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -44,12 +44,15 @@ public class NamespacePrefixMapperUtils {
 		if (testContext==null) {
 			throw new JAXBException("Couldn't create context for org.docx4j.relationships.  Everything is broken!");
 		}
-		
 		if (testContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 			log.info("Using MOXy NamespacePrefixMapper");
-			// rely on org.eclipse.persistence.internal.oxm.record.namespaces.NamespacePrefixMapperWrapper
-			prefixMapper = new NamespacePrefixMapper();
-			return prefixMapper;
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.moxy.NamespacePrefixMapper");
+				prefixMapper = c.newInstance();
+				return prefixMapper;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
+			}
 		}
 		
 		Marshaller m=testContext.createMarshaller();		
@@ -90,9 +93,13 @@ public class NamespacePrefixMapperUtils {
 
 		if (testContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 			log.info("Using MOXy NamespacePrefixMapper");
-			// rely on org.eclipse.persistence.internal.oxm.record.namespaces.NamespacePrefixMapperWrapper
-			prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
-			return prefixMapperRels;
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.moxy.NamespacePrefixMapperRelationshipsPart");
+				prefixMapperRels = c.newInstance();
+				return prefixMapperRels;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
+			}
 		}
 		
 		Marshaller m=testContext.createMarshaller();
