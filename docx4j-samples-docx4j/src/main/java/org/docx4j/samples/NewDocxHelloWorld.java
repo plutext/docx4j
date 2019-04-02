@@ -22,10 +22,13 @@
 package org.docx4j.samples;
 
 import org.docx4j.Docx4J;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.ProtectDocument;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.CTCompat;
+import org.docx4j.wml.CTCompatSetting;
 import org.docx4j.wml.STDocProtect;
 
 /**
@@ -46,6 +49,11 @@ public class NewDocxHelloWorld extends AbstractSample {
 //		ProtectDocument protection = new ProtectDocument(wordMLPackage);
 //		protection.restrictEditing(STDocProtect.READ_ONLY, "foobaa");
 		
+		// Optionally, set compatibilityMode to 15 to avoid Word 365/2016 saying "Compatibility Mode" 
+		DocumentSettingsPart dsp = mdp.getDocumentSettingsPart(true);
+		CTCompat compat = Context.getWmlObjectFactory().createCTCompat(); 
+		dsp.getContents().setCompat(compat);
+	    compat.setCompatSetting("compatibilityMode", "http://schemas.microsoft.com/office/word", "15");
 		
 		String filename = System.getProperty("user.dir") + "/OUT_hello.docx";
 		Docx4J.save(wordMLPackage, new java.io.File(filename), Docx4J.FLAG_SAVE_ZIP_FILE); 

@@ -1352,6 +1352,10 @@ public class OpenDoPEHandler {
 //				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
 				xpathObj = xpathsMap.get(repeatId);
 				
+				if (xpathObj==null) {
+					log.warn("couldn't find repeat " + repeatId);					
+				}
+				
 				thisXPath = xpathObj.getDataBinding().getXpath();
 
 			} else if (map.containsKey(BINDING_CONTENTTYPE)
@@ -1361,6 +1365,10 @@ public class OpenDoPEHandler {
 //				xpathObj = XPathsPart.getXPathById(xPaths, map.get(BINDING_ROLE_XPATH) );
 				xpathObj = xpathsMap.get(map.get(BINDING_ROLE_XPATH));
 
+				if (xpathObj==null) {
+					log.warn("couldn't find xpath " + map.get(BINDING_ROLE_XPATH) );					
+				}
+				
 				thisXPath = xpathObj.getDataBinding().getXpath();
 				
 			} else {

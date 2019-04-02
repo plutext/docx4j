@@ -397,7 +397,7 @@ public class TraversalUtil {
                 if (graphic.getGraphicData() != null) {
                 	List<Object> handledGraphicData = handleGraphicData(graphic.getGraphicData());
                 	if (handledGraphicData==null) {
-                		log.info("handleGraphicData returned an empty list");
+//                		log.info("handleGraphicData returned an empty list");
                 		if (log.isDebugEnabled()) {
                 			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc, 
                 					"http://schemas.openxmlformats.org/drawingml/2006/main", "graphic", org.docx4j.dml.Graphic.class));
@@ -421,9 +421,17 @@ public class TraversalUtil {
                 log.debug("found a:graphic");
                 org.docx4j.dml.Graphic graphic = inline.getGraphic();
                 if (graphic.getGraphicData() != null) {
-                    artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
+                	List<Object> handledGraphicData = handleGraphicData(graphic.getGraphicData());
+                	if (handledGraphicData==null) {
+//                		log.info("handleGraphicData returned an empty list");
+                		if (log.isDebugEnabled()) {
+                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc, 
+                					"http://schemas.openxmlformats.org/drawingml/2006/main", "graphic", org.docx4j.dml.Graphic.class));
+                		}
+                	} else {
+                		artificialList.addAll(handledGraphicData);
+                	}
                 }
-                return artificialList;
             }
             if (!artificialList.isEmpty())
                 return artificialList;

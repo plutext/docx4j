@@ -8,18 +8,23 @@ import javax.xml.bind.JAXBElement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.vml.CTFill;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBackground;
 import org.docx4j.wml.ObjectFactory;
 
 /*
  * 
- * Add w:document/w:background;  note that this is only visible in Windows Explorer file preview, or
+ * Add w:document/w:background;  this should be visible in Word 2016, 2013, 2010; haven't tested 2007.
+ * In Word Online (as of April 2019), you only see it in "reading view" (which is not editable).
+ * 
+ * Without the <w:displayBackgroundShape/> setting, this would only be visible in Windows Explorer file preview, or
  * Word's "Web layout" and "Full screen reading" document views (ie not Print Layout, Outline,
  * or Draft).  Checking Word options > Display > Printing options > Print background colors and images
  * makes no difference to what you see in Print Layout, but it does change what you see in Print Preview.
  * 
- * This is different to a watermark, which is set via the headers (see WatermarkPicture sample for that),
+ * This creates a "tiled" background from your image.  It is different to a watermark, which is set via the headers (see WatermarkPicture sample for that),
  * which is probably what you want.
  * 
  * From [MS-OI29500]:
@@ -66,7 +71,11 @@ public class BackgroundImage {
     			createBackground(
     					imagePartBG.getRelLast().getId())); 
 
-    	wordMLPackage.getMainDocumentPart().addParagraphOfText("To see your background, go to 'Web layout' or 'Full screen reading' document view!");
+    	wordMLPackage.getMainDocumentPart().addParagraphOfText("You should be able to see your background; if not, go to 'Web layout' or 'Full screen reading' document view!");
+    	
+    	// <w:displayBackgroundShape/>
+    	DocumentSettingsPart dsp = wordMLPackage.getMainDocumentPart().getDocumentSettingsPart(true);
+    	dsp.getContents().setDisplayBackgroundShape(new BooleanDefaultTrue());
     	
         File f = new File(DOCX_OUT);
         wordMLPackage.save(f);

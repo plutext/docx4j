@@ -4,16 +4,20 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
 import org.docx4j.TraversalUtil.CallbackImpl;
-import org.docx4j.XmlUtils;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.STFldCharType;
-import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 	
 public class ComplexFieldLocator extends CallbackImpl {
+	
+	private static Logger log = LoggerFactory.getLogger(ComplexFieldLocator.class);
 	
 	/**
 	 * A list of paragraphs containing field begins.
@@ -79,34 +83,7 @@ public class ComplexFieldLocator extends CallbackImpl {
 			pStack.push((P)parent);
 		}
 
-		// Same as superclass:
-				List children = getChildren(parent);
-				if (children != null) {
-		
-					for (Object o : children) {
-						
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
-						// value; this is ok, provided the results of the Callback
-						// won't be marshalled
-						o = XmlUtils.unwrap(o);
-						
-						// workaround for broken getParent (since 3.0.0)
-						if (o instanceof Child) {
-							if (parent instanceof SdtBlock) {
-								((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
-							} else {
-								((Child)o).setParent(parent);
-							}
-						}
-						
-						this.apply(o);
-		
-						if (this.shouldTraverse(o)) {
-							walkJAXBElements(o);
-						}
-		
-					}
-				}
+		super.walkJAXBElements(parent);
 		
 		if (parent instanceof P) {
 			pStack.pop();

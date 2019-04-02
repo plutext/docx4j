@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -542,18 +543,36 @@ public class FormattingSwitchHelper {
 								fillerBeforeDecimalPointCount++;
 							}
 							
-						} else if ((ch=='%') // Java special characters
-									||(ch=='\u2030') //  ‰
-									||(ch=='E')  
-									||(ch=='\u00A4') // ¤
-									) {
+						} else if (ch == '%') { // Java special characters
+
+							boolean specialHandlingOfPercentEnabled = Docx4jProperties.getProperty("docx4j.Fields.Numbers.JavaStylePercentHandling", false);
+
+							if (specialHandlingOfPercentEnabled) {
+								// do not escape them by quoting
+								buffer.append(ch);
+							} else {
+								// escape them by quoting
+								buffer.append('\'');
+								buffer.append(ch);
+								buffer.append('\'');
+							}
+
+							if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') {
+								encounteredNonFiller = true;
+							}
+
+						} else if ((ch == '\u2030') // ‰ per mille
+								|| (ch == 'E') || (ch == '\u00A4') // ¤ currency sign
+						) {
+
 							// escape them by quoting
 							buffer.append('\'');
 							buffer.append(ch);
 							buffer.append('\'');
-							
-							if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') 
+
+							if (fillerBeforeDecimalPoint != '\0' || fillerAfterDecimalPoint != '\0') {
 								encounteredNonFiller = true;
+							}
 							
 						} else  
 							if (ch=='+') {
