@@ -26,13 +26,18 @@ public class NamespacePrefixMapperUtils {
 	 * so that people can build docx4j without needing both JAXB
 	 * implementations.
 	 * 
+	 * (These days the MOXy ones are there as well)
+	 * 
 	 * But if that jar is on their classpath, testing for either
 	 * of these classes will always succeed.
 	 * 
 	 * So, we have to test for something else.  The following will do:
 	 * 
-	 * com.sun.xml.bind.marshaller.MinimumEscapeHandler
-	 * com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler
+	 *   com.sun.xml.bind.marshaller.MinimumEscapeHandler
+	 *   com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler
+	 * 
+	 * We did that in v2.6 of 26 August 2010, then it was
+	 * removed for some reason some time before v2.8.
 	 */
 	
 	private static JAXBContext testContext;
