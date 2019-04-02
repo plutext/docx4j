@@ -20,6 +20,7 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -536,7 +537,17 @@ implements XPathEnabled<E> {
 				}
 				
 				if (is.markSupported() ) {
-					is.reset();
+					
+					try {
+						is.reset();
+					} catch (IOException ioe) {
+						log.error(ioe.getLocalizedMessage());
+						log.warn("problem in " + this.getPartName() ); 					
+						log.warn(ue.getMessage(), ue);
+						log.warn(".. and mark not supported");
+						log.warn(ioe.getLocalizedMessage());
+						throw ue;
+					}
 					// when reading from zip, we use a ByteArrayInputStream, which does support mark.
 					log.info("encountered unexpected content in " + this.getPartName() + "; pre-processing");
 									
