@@ -33,6 +33,12 @@
 			<version>${revision}</version>
 		</dependency>
 	
+<!-- 
+https://github.com/eclipse-ee4j/jaxb-ri
+
+Not in https://wiki.eclipse.org/Eclipse_GlassFish_5.1_Components_Release_Tracker
+
+ -->
 
             <!-- Need 2.4.0 which has module-info making NamespacePrefixMapper visible -->
 			<dependency>
