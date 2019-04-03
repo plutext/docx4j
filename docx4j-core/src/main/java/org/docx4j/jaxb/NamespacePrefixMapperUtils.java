@@ -54,6 +54,16 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
+		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapper");
+				prefixMapper = c.newInstance();
+				return prefixMapper;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
+			}
+		}
 		
 		Marshaller m=testContext.createMarshaller();		
 		return tryUsingRI(m);			
@@ -99,6 +109,16 @@ public class NamespacePrefixMapperUtils {
 				return prefixMapperRels;
 			} catch (Exception e) {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
+			}
+		}
+		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapperRelationshipsPart");
+				prefixMapper = c.newInstance();
+				return prefixMapper;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
 			}
 		}
 		
