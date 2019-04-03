@@ -217,12 +217,12 @@
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-serializer</artifactId>
-		<version>11.7.3-SNAPSHOT</version>
+		<version>8.7.3-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-interpretive</artifactId>
-		<version>11.7.3-SNAPSHOT</version>
+		<version>8.7.3-SNAPSHOT</version>
 	</dependency>
 		
 <!-- 	<dependency>
