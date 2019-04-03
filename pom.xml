@@ -13,7 +13,7 @@
 	
 	<version>${revision}</version>
 	<properties>
-		<revision>11.0.0-SNAPSHOT</revision>
+		<revision>8.0.0-SNAPSHOT</revision>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
@@ -29,6 +29,8 @@
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
         <module>docx4j-diffx</module>
+        <module>docx4j-JAXB-MOXy</module>
+        <module>docx4j-JAXB-ReferenceImpl</module>
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
@@ -74,7 +76,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<release>11</release>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 			<plugin>
