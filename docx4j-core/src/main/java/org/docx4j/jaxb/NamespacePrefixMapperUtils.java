@@ -54,6 +54,16 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
+		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapper");
+				prefixMapper = c.newInstance();
+				return prefixMapper;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
+			}
+		}
 		
 		Marshaller m=testContext.createMarshaller();		
 		return tryUsingRI(m);			
@@ -101,6 +111,16 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
+		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapperRelationshipsPart");
+				prefixMapper = c.newInstance();
+				return prefixMapper;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
+			}
+		}
 		
 		Marshaller m=testContext.createMarshaller();
 		
@@ -140,8 +160,36 @@ public class NamespacePrefixMapperUtils {
 		log.debug("attempting to setProperty on marshaller " + marshaller.getClass().getName() );
 		
 		try {
-			marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-					namespacePrefixMapper ); 
+			if (Context.getJaxbImplementation() == JAXBImplementation.ECLIPSELINK_MOXy) {
+				
+				marshaller.setProperty("eclipselink.namespace-prefix-mapper", 
+						namespacePrefixMapper ); 				
+				log.debug("setProperty: eclipselink.namespace-prefix-mapper");
+			
+			} else if ( Context.getJaxbImplementation() == JAXBImplementation.REFERENCE 
+					|| Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP ) {
+			
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						namespacePrefixMapper ); 
+			
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.debug("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+//				System.out.println("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+				
+			} else if ( Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE ) {
+
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				log.debug("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", namespacePrefixMapper);
+//				System.out.println("setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+			} else {
+
+				log.warn("Which NamespacePrefixMapper to use?");
+				// We could use our generic (which eg MOXy could handle),
+				// or could try the RI (which MOXy and IBM can handle)
+				
+			}
 			
 		} catch (javax.xml.bind.PropertyException e) {
 			

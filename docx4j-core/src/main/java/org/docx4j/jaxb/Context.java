@@ -184,6 +184,9 @@ public class Context {
 				}
 				log.info("Using " + jaxbImplementation);
 				
+			} else if (tempContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+				jaxbImplementation = JAXBImplementation.ORACLE_JRE;
+				log.info("Using Java 6+ JAXB implementation");
 			} else {
 				log.warn("Using unexpected JAXB: " + tempContext.getClass().getName());
 			}
