@@ -29,6 +29,9 @@
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
         <module>docx4j-diffx</module>
+        <module>docx4j-JAXB-MOXy</module>
+        <module>docx4j-JAXB-ReferenceImpl</module>
+        <!-- <module>docx4j-JAXB-Internal</module> Can't readily build this with Java 11; only good for 9 or 10 -->
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
