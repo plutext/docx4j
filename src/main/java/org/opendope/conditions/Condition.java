@@ -255,7 +255,13 @@ public class Condition implements Evaluable {
 		int firstBracket = xpath.indexOf("(");
 		int lastBracket = xpath.indexOf(")");
 		
-		return xpath.substring(firstBracket+1, lastBracket);
+		try {
+			return xpath.substring(firstBracket+1, lastBracket);
+		} catch (java.lang.StringIndexOutOfBoundsException e) {
+			log.error(xpath + ".substring(" + firstBracket+1 +", " + lastBracket + ")");
+			throw e;
+			
+		}
 	}
 	
 	@XmlTransient

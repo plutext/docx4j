@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.w14.CTSdtCheckbox;
@@ -339,7 +340,12 @@ public class SdtPr
     	
     	for (Object o : getRPrOrAliasOrLock()) {
     		if ( o instanceof Tag ) {
-    			log.debug("found tag");
+    			
+    			if (Docx4jProperties.getProperty("docx4j.wml.SdtPr.Tag.LengthExceeds64Warning", true)
+    					&& ((Tag)o).getVal().length()>64) {
+    				log.warn("w:tag too long for Word 2007/2010: " + ((Tag)o).getVal());
+    			}
+    			
     			return (Tag)o;
     		} 
     	}
