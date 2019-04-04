@@ -21,7 +21,6 @@
 
 package org.docx4j.wml; 
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -29,7 +28,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -38,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 
 //import org.docx4j.XmlUtils;
 //import org.docx4j.jaxb.Context;
+//import org.docx4j.Docx4jProperties;
+
 import org.docx4j.w14.CTSdtCheckbox;
 import org.docx4j.w15.CTSdtAppearance;
 import org.docx4j.w15.CTSdtRepeatedSection;
@@ -352,7 +352,12 @@ public class SdtPr
     	
     	for (Object o : getRPrOrAliasOrLock()) {
     		if ( o instanceof Tag ) {
-    			log.debug("found tag");
+    			
+//    			if (Docx4jProperties.getProperty("docx4j.wml.SdtPr.Tag.LengthExceeds64Warning", true)
+//    					&& ((Tag)o).getVal().length()>64) {
+//    				log.warn("w:tag too long for Word 2007/2010: " + ((Tag)o).getVal());
+//    			}
+    			
     			return (Tag)o;
     		} 
     	}

@@ -1374,6 +1374,13 @@ public class OpenDoPEHandler {
 			} else {
 
 				log.warn("couldn't find binding or bindingrole!");
+				// Not so useful until we fix https://github.com/plutext/docx4j/issues/351
+				// (sdt ids change)
+//				if (log.isDebugEnabled()) {
+//					log.debug(XmlUtils.marshaltoString(sdtPr, true, true));							
+//				}
+//				System.err.println(XmlUtils.marshaltoString(sdt, true, true));
+				
 				// not all sdt's need have a binding;
 				// they could be present in the docx for other purposes
 				return;
