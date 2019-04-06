@@ -1,11 +1,10 @@
-package org.merlin.io;
+package org.docx4j.org.merlin.io;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Various stream-related utility methods.
+ * An incremental data source that writes data to an OutputStream.
  *
  * @author Copyright (c) 2002 Merlin Hughes <merlin@merlin.org>
  *
@@ -24,20 +23,8 @@ import java.io.OutputStream;
  * limitations under the License.
  *
  */
-public class Streams {
-  private static final int DEFAULT_BUFFER_SIZE = 8192;
-  
-  private Streams () {
-  }
-
-  public static void io (InputStream in, OutputStream out) throws IOException {
-    io (in, out, DEFAULT_BUFFER_SIZE);
-  }
-  
-  public static void io (InputStream in, OutputStream out, int bufferSize) throws IOException {
-    byte[] buffer = new byte[bufferSize];
-    int amount;
-    while ((amount = in.read (buffer)) >= 0)
-      out.write (buffer, 0, amount);
-  }
+public interface OutputEngine {
+  public void initialize (OutputStream out) throws IOException;
+  public void execute () throws IOException;
+  public void finish () throws IOException;
 }

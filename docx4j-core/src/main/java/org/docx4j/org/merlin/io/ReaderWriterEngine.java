@@ -1,4 +1,4 @@
-package org.merlin.io;
+package org.docx4j.org.merlin.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
