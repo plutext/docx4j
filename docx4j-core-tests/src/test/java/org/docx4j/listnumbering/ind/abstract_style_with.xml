@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?mso-application progid="Word.Document"?>
+<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">
+    <pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">
+        <pkg:xmlData>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+            </Relationships>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="256">
+        <pkg:xmlData>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+                <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+            </Relationships>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">
+        <pkg:xmlData>
+            <w:document xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+                <w:body>
+                    <w:p>
+                        <w:pPr>
+                            <w:pStyle w:val="Heading1"/>
+                        </w:pPr>
+                        <w:r>
+                            <w:t>Hello</w:t>
+                        </w:r>
+                    </w:p>
+                    <w:p>
+                        <w:pPr>
+                            <w:pStyle w:val="ListParagraph"/>
+                            <w:numPr>
+                                <w:ilvl w:val="1"/>
+                                <w:numId w:val="1"/>
+                            </w:numPr>
+                        </w:pPr>
+                        <w:r>
+                            <w:t>Indented</w:t>
+                        </w:r>
+                    </w:p>
+                    <w:sectPr>
+                        <w:pgSz w:w="12240" w:h="15840"/>
+                        <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+                        <w:cols w:space="708"/>
+                        <w:docGrid w:linePitch="360"/>
+                    </w:sectPr>
+                </w:body>
+            </w:document>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/numbering.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml">
+        <pkg:xmlData>
+            <w:numbering xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+                <w:abstractNum w:abstractNumId="0">
+                    <w:nsid w:val="66D4268B"/>
+                    <w:multiLevelType w:val="multilevel"/>
+                    <w:tmpl w:val="1F4ACEFE"/>
+                    <w:lvl w:ilvl="0">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="decimal"/>
+                        <w:lvlText w:val="%1)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pStyle w:val="Heading1"/>
+                        <w:pPr>
+                            <w:ind w:left="2880"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="1">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerLetter"/>
+                        <w:lvlText w:val="%2)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="720" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="2">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerRoman"/>
+                        <w:lvlText w:val="%3)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="1080" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="3">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="decimal"/>
+                        <w:lvlText w:val="(%4)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="1440" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="4">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerLetter"/>
+                        <w:lvlText w:val="(%5)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="1800" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="5">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerRoman"/>
+                        <w:lvlText w:val="(%6)"/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="2160" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="6">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="decimal"/>
+                        <w:lvlText w:val="%7."/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="2520" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="7">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerLetter"/>
+                        <w:lvlText w:val="%8."/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="2880" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                    <w:lvl w:ilvl="8">
+                        <w:start w:val="1"/>
+                        <w:numFmt w:val="lowerRoman"/>
+                        <w:lvlText w:val="%9."/>
+                        <w:lvlJc w:val="left"/>
+                        <w:pPr>
+                            <w:ind w:left="3240" w:hanging="360"/>
+                        </w:pPr>
+                        <w:rPr>
+                            <w:rFonts w:hint="default"/>
+                        </w:rPr>
+                    </w:lvl>
+                </w:abstractNum>
+                <w:num w:numId="1">
+                    <w:abstractNumId w:val="0"/>
+                </w:num>
+            </w:numbering>
+        </pkg:xmlData>
+    </pkg:part>
+    <pkg:part pkg:name="/word/styles.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml">
+        <pkg:xmlData>
+            <w:styles xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                <w:docDefaults>
+                    <w:rPrDefault>
+                        <w:rPr>
+                            <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi"/>
+                            <w:sz w:val="22"/>
+                            <w:szCs w:val="22"/>
+                            <w:lang w:val="en-US" w:eastAsia="en-US" w:bidi="ar-SA"/>
+                        </w:rPr>
+                    </w:rPrDefault>
+                    <w:pPrDefault>
+                        <w:pPr>
+                            <w:spacing w:after="200" w:line="276" w:lineRule="auto"/>
+                        </w:pPr>
+                    </w:pPrDefault>
+                </w:docDefaults>
+                <w:latentStyles w:defLockedState="0" w:defUIPriority="99" w:defSemiHidden="1" w:defUnhideWhenUsed="1" w:defQFormat="0" w:count="267">
+                    <w:lsdException w:name="Normal" w:semiHidden="0" w:uiPriority="0" w:unhideWhenUsed="0" w:qFormat="1"/>
+                    <w:lsdException w:name="heading 1" w:semiHidden="0" w:uiPriority="9" w:unhideWhenUsed="0" w:qFormat="1"/>
+                    <w:lsdException w:name="heading 2" w:uiPriority="9" w:qFormat="1"/>
+                    <w:lsdException w:name="heading 3" w:uiPriority="9" w:qFormat="1"/>
+                </w:latentStyles>
+                <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+                    <w:name w:val="Normal"/>
+                    <w:qFormat/>
+                </w:style>
+                <w:style w:type="paragraph" w:styleId="Heading1">
+                    <w:name w:val="heading 1"/>
+                    <w:basedOn w:val="Normal"/>
+                    <w:next w:val="Normal"/>
+                    <w:link w:val="Heading1Char"/>
+                    <w:uiPriority w:val="9"/>
+                    <w:qFormat/>
+                    <w:pPr>
+                        <w:ind w:left="11"/>
+                        <w:keepNext/>
+                        <w:keepLines/>
+                        <w:numPr>
+                            <w:numId w:val="1"/>
+                        </w:numPr>
+                        <w:spacing w:before="480" w:after="0"/>
+                        <w:outlineLvl w:val="0"/>
+                    </w:pPr>
+                    <w:rPr>
+                        <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                        <w:b/>
+                        <w:bCs/>
+                        <w:color w:val="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+                        <w:sz w:val="28"/>
+                        <w:szCs w:val="28"/>
+                    </w:rPr>
+                </w:style>
+                <w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">
+                    <w:name w:val="Default Paragraph Font"/>
+                    <w:uiPriority w:val="1"/>
+                    <w:semiHidden/>
+                    <w:unhideWhenUsed/>
+                </w:style>
+                <w:style w:type="table" w:default="1" w:styleId="TableNormal">
+                    <w:name w:val="Normal Table"/>
+                    <w:uiPriority w:val="99"/>
+                    <w:semiHidden/>
+                    <w:unhideWhenUsed/>
+                    <w:qFormat/>
+                    <w:tblPr>
+                        <w:tblInd w:w="0" w:type="dxa"/>
+                        <w:tblCellMar>
+                            <w:top w:w="0" w:type="dxa"/>
+                            <w:left w:w="108" w:type="dxa"/>
+                            <w:bottom w:w="0" w:type="dxa"/>
+                            <w:right w:w="108" w:type="dxa"/>
+                        </w:tblCellMar>
+                    </w:tblPr>
+                </w:style>
+                <w:style w:type="numbering" w:default="1" w:styleId="NoList">
+                    <w:name w:val="No List"/>
+                    <w:uiPriority w:val="99"/>
+                    <w:semiHidden/>
+                    <w:unhideWhenUsed/>
+                </w:style>
+                <w:style w:type="paragraph" w:styleId="ListParagraph">
+                    <w:name w:val="List Paragraph"/>
+                    <w:basedOn w:val="Normal"/>
+                    <w:uiPriority w:val="34"/>
+                    <w:qFormat/>
+                    <w:pPr>
+                        <w:ind w:left="720"/>
+                        <w:contextualSpacing/>
+                    </w:pPr>
+                </w:style>
+                <w:style w:type="character" w:customStyle="1" w:styleId="Heading1Char">
+                    <w:name w:val="Heading 1 Char"/>
+                    <w:basedOn w:val="DefaultParagraphFont"/>
+                    <w:link w:val="Heading1"/>
+                    <w:uiPriority w:val="9"/>
+                    <w:rPr>
+                        <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                        <w:b/>
+                        <w:bCs/>
+                        <w:color w:val="365F91" w:themeColor="accent1" w:themeShade="BF"/>
+                        <w:sz w:val="28"/>
+                        <w:szCs w:val="28"/>
+                    </w:rPr>
+                </w:style>
+            </w:styles>
+        </pkg:xmlData>
+    </pkg:part>
+</pkg:package>

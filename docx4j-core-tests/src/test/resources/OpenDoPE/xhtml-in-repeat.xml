@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<yourxml>
+  <title>types of fruit</title>
+  <fruits>
+    <fruit>
+      &lt;p &gt;The first is: &lt;b&gt;Apple&lt;/b&gt;  &lt;/p&gt;
+    </fruit>
+    <fruit>
+      &lt;p &gt;The second is: &lt;b&gt;Pear&lt;/b&gt;  &lt;/p&gt;
+    </fruit>
+    <fruit>
+      &lt;p &gt;The third is: &lt;b&gt;Banana&lt;/b&gt;  &lt;/p&gt;
+    </fruit>
+  </fruits>
+</yourxml>

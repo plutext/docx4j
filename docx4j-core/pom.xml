@@ -21,7 +21,6 @@
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
 		<testOutputDirectory>bin-testOutput</testOutputDirectory>
 			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
@@ -58,35 +57,12 @@
 		</plugins>
         
 		<resources>
-			<!-- be sure to get xml,xlst resources in various src trees -->
-			<!-- should now all be in src/main/resources 
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.properties</include>
-				</includes>
-			</resource>
-			 -->
-			<resource>
-				<directory>src/test/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>	
 			<resource>
 				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
+				<filtering>false</filtering>
+				<!--  beware, a couple of our resources are UTF-16, but with filtering=true,
+				      Maven will break them when it copies them. -->
 			</resource>
-			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
-				</excludes> </resource> -->
 		</resources>
 	</build>
 	
@@ -216,13 +192,13 @@
 
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
-		<artifactId>xalan-serializer</artifactId>
-		<version>8.7.3-SNAPSHOT</version>
+		<artifactId>xalan-metainf</artifactId>
+		<version>8.0.2-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-interpretive</artifactId>
-		<version>8.7.3-SNAPSHOT</version>
+		<version>8.0.2-SNAPSHOT</version>
 	</dependency>
 		
 <!-- 	<dependency>

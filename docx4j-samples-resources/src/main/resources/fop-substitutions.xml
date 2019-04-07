@@ -1,0 +1,44 @@
+<!--  
+	For the purposes of docx4j's PDF output, 
+	this will be embedded in your fop-config,
+	assuming your docx4j.properties contains:
+	
+	    docx4j.fonts.fop.util.FopConfigUtil.substitutions=fop-substitutions.xml
+	    
+	From http://xmlgraphics.apache.org/fop/trunk/fonts.html
+		
+		When a <substitutions/> section is defined in the configuration, 
+		FOP will re-map any font-family references found in your FO input 
+		to a given substitution font.
+
+		If a <substitution/> is declared, it is mandatory that both a and child element 
+		is declared with a font-family attribute.
+		
+		Both font-weight and font-style are optional attributes, if they are provided 
+		then a value of 'normal' is assumed.
+		
+		For example you could make all FO font-family references to 'Arial' with weights 
+		between 700 and 900 reference the normal 'Arial Black' font.
+		
+   Avoid using both this and docx4j's fontMapper FontMappings for the same fonts!		
+-->    
+<substitutions>
+      <substitution>
+        <from font-family="Arial" font-weight="700..900"/>
+        <to font-family="Arial Black"/>
+      </substitution>
+      <substitution>
+        <from font-family="FrutigerLight"/>
+        <to font-family="Times" font-weight="bold" font-style="italic"/>
+      </substitution>
+      <substitution>
+        <from font-family="ZapfDingbats" font-style="normal" font-weight="700"/>
+        <to font-family="Calibri" font-weight="bold" font-style="italic"/>
+      </substitution>
+      <!-- 
+      <substitution>
+        <from font-family="Calibri" font-style="normal" font-weight="400"/>
+        <to font-family="Times New Roman" font-weight="400" font-style="normal"/>
+      </substitution>
+       -->
+</substitutions>

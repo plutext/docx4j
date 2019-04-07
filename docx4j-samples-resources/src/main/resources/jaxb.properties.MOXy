@@ -1,0 +1,9 @@
+# To use MOXy as your JAXB implementation
+# 1. in pom.xml, uncomment the org.eclipse.persistence.moxy dependency, and the EclipseLink Repo
+# 2. run ant JAXB-use-MOXy
+
+# To switch back to the Oracle / reference implementation
+# 1. run ant JAXB-switch-from-MOXy-to-Oracle
+# 2. in pom.xml, comment those things again
+
+javax.xml.bind.context.factory=org.eclipse.persistence.jaxb.JAXBContextFactory

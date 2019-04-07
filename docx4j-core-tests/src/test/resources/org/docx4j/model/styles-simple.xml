@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+	mc:Ignorable="w14">
+	<w:docDefaults>
+		<w:rPrDefault>
+			<w:rPr>
+				<w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia"
+					w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi" />
+				<w:sz w:val="22" />
+				<w:szCs w:val="22" />
+				<w:lang w:val="en-US" w:eastAsia="ko-KR" w:bidi="ar-SA" />
+			</w:rPr>
+		</w:rPrDefault>
+		<w:pPrDefault>
+			<w:pPr>
+				<w:spacing w:after="200" w:line="276" w:lineRule="auto" />
+			</w:pPr>
+		</w:pPrDefault>
+	</w:docDefaults>
+
+	<w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+		<w:name w:val="Normal" />
+		<w:qFormat />
+	</w:style>
+	
+	<w:style w:type="paragraph" w:styleId="Heading1">
+		<w:name w:val="heading 1" />
+		<w:basedOn w:val="Normal" />
+		<w:next w:val="Normal" />
+		<w:link w:val="Heading1Char" />
+		<w:uiPriority w:val="9" />
+		<w:qFormat />
+		<w:rsid w:val="00717BBC" />
+		<w:pPr>
+			<w:keepNext />
+			<w:keepLines />
+			<w:spacing w:before="480" w:after="0" />
+			<w:outlineLvl w:val="0" />
+		</w:pPr>
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia"
+				w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:b />
+			<w:bCs />
+			<w:color w:val="365F91" w:themeColor="accent1" w:themeShade="BF" />
+			<w:sz w:val="28" />
+			<w:szCs w:val="28" />
+		</w:rPr>
+	</w:style>
+	
+	<w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">
+		<w:name w:val="Default Paragraph Font" />
+		<w:uiPriority w:val="1" />
+		<w:semiHidden />
+		<w:unhideWhenUsed />
+	</w:style>
+	<w:style w:type="table" w:default="1" w:styleId="TableNormal">
+		<w:name w:val="Normal Table" />
+		<w:uiPriority w:val="99" />
+		<w:semiHidden />
+		<w:unhideWhenUsed />
+		<w:tblPr>
+			<w:tblInd w:w="0" w:type="dxa" />
+			<w:tblCellMar>
+				<w:top w:w="0" w:type="dxa" />
+				<w:left w:w="108" w:type="dxa" />
+				<w:bottom w:w="0" w:type="dxa" />
+				<w:right w:w="108" w:type="dxa" />
+			</w:tblCellMar>
+		</w:tblPr>
+	</w:style>
+	<w:style w:type="numbering" w:default="1" w:styleId="NoList">
+		<w:name w:val="No List" />
+		<w:uiPriority w:val="99" />
+		<w:semiHidden />
+		<w:unhideWhenUsed />
+	</w:style>
+	<w:style w:type="character" w:customStyle="1" w:styleId="Heading1Char">
+		<w:name w:val="Heading 1 Char" />
+		<w:basedOn w:val="DefaultParagraphFont" />
+		<w:link w:val="Heading1" />
+		<w:uiPriority w:val="9" />
+		<w:rsid w:val="00717BBC" />
+		<w:rPr>
+			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia"
+				w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
+			<w:b />
+			<w:bCs />
+			<w:color w:val="365F91" w:themeColor="accent1" w:themeShade="BF" />
+			<w:sz w:val="28" />
+			<w:szCs w:val="28" />
+		</w:rPr>
+	</w:style>
+</w:styles>

@@ -13,20 +13,13 @@
 	<name>docx4j-diffx</name>
 	
 	<description>
-		docx4j is a library which helps you to work with the Office Open
-		XML file format as used in docx
-		documents, pptx presentations, and xlsx spreadsheets.
+		differencing of docx files
 	</description>
 
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
-		<testOutputDirectory>bin-testOutput</testOutputDirectory>
-			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
-			     You need to run mvn test from the command line to recompile, then Eclipse can run 
-			     the new code.  -->
 		<plugins>
 
 			<plugin>
@@ -62,13 +55,6 @@
 					<include>**/*.properties</include>
 				</includes>
 			</resource>
-			<resource>
-				<directory>src/test/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>	
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>

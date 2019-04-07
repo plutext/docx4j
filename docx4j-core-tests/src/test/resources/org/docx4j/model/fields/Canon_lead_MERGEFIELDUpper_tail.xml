@@ -1,0 +1,38 @@
+  <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" >
+      <w:pPr>
+        <w:jc w:val="left"/>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Dear </w:t>
+      </w:r>
+      <w:r>
+        <w:fldChar w:fldCharType="begin"/>
+      </w:r>
+      <w:r>
+        <w:instrText xml:space="preserve"> MERGEFIELD  CLIENTNAME  \* Upper </w:instrText>
+      </w:r>
+      <w:r>
+        <w:fldChar w:fldCharType="separate"/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:t>«CLIENTNAME»</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:fldChar w:fldCharType="end"/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:t>,</w:t>
+      </w:r>
+    </w:p>
