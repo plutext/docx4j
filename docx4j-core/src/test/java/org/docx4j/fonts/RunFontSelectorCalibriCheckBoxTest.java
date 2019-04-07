@@ -3,6 +3,7 @@ package org.docx4j.fonts;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.Map.Entry;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.Theme;
@@ -25,12 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
-public class RunFontSelectorCalibriCheckBox {
+public class RunFontSelectorCalibriCheckBoxTest {
 	
 	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
 	
-	static String[] expectedFont = { "MS Gothic"};
-	
+	final static String FONT_WORD_2016_USES = "Segoe UI Symbol";
+		
 	@Test
 	public  void testFont() throws Exception {
 		
@@ -61,9 +62,20 @@ public class RunFontSelectorCalibriCheckBox {
 
 
 		Mapper fontMapper = wordMLPackage.getFontMapper();
-		PhysicalFont font = PhysicalFonts.get("Noto Sans Regular"); 
+//		PhysicalFont font = PhysicalFonts.get("noto sans symbols regular"); // Glyph 10065 (0x2751) not available in font Noto Sans Symbols Regular
+		PhysicalFont font = PhysicalFonts.get("dejavu sans");
+		if (font==null) {
+			System.out.println("Missing PhysicalFont.");
+		}
 		
-		fontMapper.put("Calibri", font);
+		//fontMapper.put("Calibri", font);
+		fontMapper.put(FONT_WORD_2016_USES, font); 
+		// static String[] expectedFont = { "MS Gothic"}; // Word sometime prior to 2016? 
+		 String[] expectedFont = { fontMapper.get(FONT_WORD_2016_USES).getName() }; 
+		
+//		for(Entry<String, PhysicalFont> entry : PhysicalFonts.getPhysicalFonts().entrySet() ) {
+//			System.out.println(entry.getKey());
+//		}
 		
 		if (save) {
 			wordMLPackage.save(new File(System.getProperty("user.dir") + "/OUT_RunFontSelectorTests.docx"));
