@@ -115,8 +115,8 @@ public class NamespacePrefixMapperUtils {
 			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
 			try {
 				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapperRelationshipsPart");
-				prefixMapper = c.newInstance();
-				return prefixMapper;
+				prefixMapperRels = c.newInstance();
+				return prefixMapperRels;
 			} catch (Exception e) {
 				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
 			}
