@@ -44,10 +44,16 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-Internal</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		
+<!-- 
+		<dependency>
+            <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${revision}</version>
 		</dependency>
-<!-- 
 		
 		<dependency>
             <groupId>org.docx4j</groupId>

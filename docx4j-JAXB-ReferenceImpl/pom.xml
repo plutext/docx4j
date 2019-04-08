@@ -9,7 +9,7 @@
   </parent>
   
 	<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-	<packaging>jar</packaging>
+	<packaging>${packaging.type}</packaging>
 	<name>docx4j-JAXB-ReferenceImpl</name>
 
 	<description>
@@ -22,6 +22,25 @@
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
+			
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                    	<Manifest-Version>2.0</Manifest-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Export-Package>
+                            org.docx4j.jaxb.ri
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>				
+			
 		</plugins>
 	</build>
 
@@ -33,13 +52,14 @@
 			<version>${revision}</version>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
 			<version>2.3.1</version>
 		</dependency>
+		
 		<dependency>
-
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 			<version>2.3.2</version>
@@ -50,7 +70,15 @@
 			<artifactId>istack-commons-runtime</artifactId>
 			<version>3.0.8</version>
 		</dependency>
-
+ -->
+ 
+ <dependency>
+  <groupId>org.apache.servicemix.bundles</groupId>
+  <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+  <version>2.2.11_1</version>
+  <type>bundle</type>
+</dependency>
+ 
 	</dependencies>
 
 </project>

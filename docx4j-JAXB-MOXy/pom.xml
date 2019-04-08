@@ -9,7 +9,7 @@
   </parent>
   
 	<artifactId>docx4j-JAXB-MOXy</artifactId>
-	<packaging>jar</packaging>
+	<packaging>${packaging.type}</packaging>
 	<name>docx4j-JAXB-MOXy</name>
 
 	<description>
@@ -22,6 +22,25 @@
 		<plugin>
 		    <artifactId>maven-resources-plugin</artifactId>
 		</plugin>	
+		
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                    	<Manifest-Version>2.0</Manifest-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Export-Package>
+                            org.docx4j.jaxb.moxy
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>				
+		
 	</plugins>
 </build>
 
