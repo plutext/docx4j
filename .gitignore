@@ -1,0 +1,11 @@
+.settings/
+bin/
+target/
+target/
+bin/
+/dist/
+/bin-testOutput/
+.directory
+.idea
+.project
+.classpath
