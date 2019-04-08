@@ -9,3 +9,4 @@ bin/
 .idea
 .project
 .classpath
+.flattened-pom.xml
