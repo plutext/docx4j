@@ -70,9 +70,34 @@
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
-      </plugins>
-    </pluginManagement>
-    
+
+    <plugin>
+     <groupId>org.eclipse.m2e</groupId>
+     <artifactId>lifecycle-mapping</artifactId>
+     <version>1.0.0</version>
+     <configuration>
+       <lifecycleMappingMetadata>
+         <pluginExecutions>
+           <pluginExecution>
+             <pluginExecutionFilter>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>flatten-maven-plugin</artifactId>
+               <versionRange>[1.0.0,)</versionRange>
+               <goals>
+                 <goal>flatten</goal>
+                 <goal>clean</goal>
+               </goals>
+             </pluginExecutionFilter>
+             <action>
+               <ignore/>
+             </action>
+           </pluginExecution>
+         </pluginExecutions>
+       </lifecycleMappingMetadata>
+     </configuration>
+    </plugin>
+  </plugins>
+</pluginManagement>    
     	
 		<plugins>
 			<plugin>
