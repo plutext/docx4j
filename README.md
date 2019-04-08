@@ -20,16 +20,49 @@ It uses JAXB to create the Java representation.
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
+docx4j-8.0.0
+------------
+
+This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
+dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
+which docx4j 6.x uses.
+
+docx4j v8 is a multi-module Maven project.
+
+To use docx4j v8, add the dep corresponding to the JAXB implementation you wish to use
+
+* docx4j-JAXB-Internal (shipped in Oracle and OpenJDK v8)
+* docx4j-JAXB-ReferenceImpl (you may need to respect the endorsed dir mechanism for the RI jars)
+* docx4j-JAXB-MOXy
+
+You should use one and only one of docx4j-JAXB-* 
+
+
+docx4j for Java 9 and later
+---------------------------
+
+is in preparation, will be based on this branch, and will require Java 11 (or possibly only 9); we're currently waiting on https://github.com/eclipse-ee4j/jaxb-ri to release a Java 11 friendly JAXB 2.4.0 to Maven Central.
+
+
 How do I build docx4j?
 ----------------------
 
 Get it from GitHub, at https://github.com/plutext/docx4j
+
+```
+mvn clean
+mvn install
+```
+
+Some of the tests might fail on Windows.  For now, you could skip them: `mvn install -DskipTests`  
+
 For more details, see http://www.docx4java.org/blog/2015/06/docx4j-from-github-in-eclipse-5-years-on/
 
 If you are working with the source code, please join the developer
 mailing list:
 
         docx4j-dev-subscribe@docx4java.org
+
 
 Where do I get a binary?
 ------------------------
@@ -46,21 +79,6 @@ and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-p
 And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
 
 You'll probably want the Helper AddIn to generate code:  http://www.docx4java.org/blog/2016/05/docx4j-helper-word-addin-new-version-v3-3-0/
-
-
-Java 9 or 10 with Eclipse
--------------------------
-
-Use Oxygen.3a Release (4.7.3a) or later.
-
-Make sure the Maven configuration is enabled.
-
-In Eclipse, Ctrl-Alt-P, or right-click on the project, Maven, then select the appropriate profile.
-This will pull in the JAXB jars.
-
-If errors show up, check your build path:
-- check you have Java 1.6 or later system library
-- check that for source folders, you don't have excluded ** for pptx4j or xlsx4j (if you do, select excluded then click remove)
 
 
 
