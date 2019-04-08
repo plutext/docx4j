@@ -63,7 +63,8 @@ bin/karaf start
 Download feature.xml then add its file URL as a repo:
 
 ```
-karaf@root()> feature:repo-add file:///home/jharrop/git/docx4j/feature.xml                                                                                                                                     
+karaf@root()> feature:repo-add file:///home/jharrop/git/docx4j-8.0.0/docx4j-core/feature.xml
+                                   
 Adding feature url file:///home/jharrop/git/docx4j/feature.xml
 ```
 
@@ -120,4 +121,49 @@ Hello world.
 it worked.
 ```
 
+Run it in ServiceMix 7.0.1
+--------------------------
+
+For this, I used docx4j-JAXB-ReferenceImpl.  I made it depend on (instead of some other jaxb-impl):
+
+```
+<dependency>
+  <groupId>org.apache.servicemix.bundles</groupId>
+  <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+  <version>2.2.11_1</version>
+  <type>bundle</type>
+</dependency>
+```
+
+and rebuilt it.  Following that, it works:
+
+ ```____                  _          __  __ _      
+/ ___|  ___ _ ____   _(_) ___ ___|  \/  (_)_  __
+\___ \ / _ \ '__\ \ / / |/ __/ _ \ |\/| | \ \/ /
+ ___) |  __/ |   \ V /| | (_|  __/ |  | | |>  < 
+|____/ \___|_|    \_/ |_|\___\___|_|  |_|_/_/\_\
+
+  Apache ServiceMix (7.0.1)
+
+Hit '<tab>' for a list of available commands
+and '[cmd] --help' for help on a specific command.
+Hit '<ctrl-d>' or 'system:shutdown' to shutdown ServiceMix.
+
+karaf@root>feature:repo-add file:///home/jharrop/git/docx4j-8.0.0/docx4j-core/feature.xml
+Adding feature url file:///home/jharrop/git/docx4j-8.0.0/docx4j-core/feature.xml
+karaf@root>feature:install docx4j-deps/8.0
+karaf@root>bundle:install mvn:org.docx4j/docx4j-OSGi-HelloWorld/8.0.0-SNAPSHOT
+Bundle ID: 246
+karaf@root>bundle:start 246
+Hello world.
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#noProviders for further details.
+NamespacePrefixMapper: org.docx4j.jaxb.ri.NamespacePrefixMapper
+<w:p xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:cppr="http://schemas.microsoft.com/office/2006/coverPageProps" xmlns:odx="http://opendope.org/xpaths" xmlns:c14="http://schemas.microsoft.com/office/drawing/2007/8/2/chart" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:odgm="http://opendope.org/SmartArt/DataHierarchy" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11" xmlns:pvml="urn:schemas-microsoft-com:office:powerpoint" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:comp="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:xvml="urn:schemas-microsoft-com:office:excel" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:oda="http://opendope.org/answers" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:odc="http://opendope.org/conditions" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:odi="http://opendope.org/components" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:odq="http://opendope.org/questions" xmlns:wetp="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"/>
+it worked.
+karaf@root>
+```
+
+  
 
