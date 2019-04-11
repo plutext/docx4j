@@ -217,7 +217,9 @@ public class ListNumberingDefinition {
 							// is encountered in the document
 							StartOverride startOverride = overrideNode.getStartOverride();
 							if (startOverride != null
-									&& startOverride.getVal() != null) {
+									&& startOverride.getVal() != null
+									&& this.levels.size() > 0
+									&& this.levels.get(overrideLevelId) != null) {
 								
 								if (this.levels.get(overrideLevelId)==null) {
 									throw new RuntimeException(overrideLevelId + " level missing for abstractListDefinition " + abstractListDefinition.getID());
