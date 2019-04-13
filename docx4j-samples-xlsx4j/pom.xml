@@ -49,7 +49,7 @@
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-core</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 	</dependencies>

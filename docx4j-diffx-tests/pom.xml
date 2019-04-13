@@ -52,12 +52,12 @@
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-diffx</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-Internal</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 			<scope>test</scope>            
 		</dependency>
 	

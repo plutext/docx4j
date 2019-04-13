@@ -39,33 +39,33 @@
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-core</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-Internal</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		
 <!-- 
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-MOXy</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
  -->
  
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-samples-resources</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
  
 	</dependencies>

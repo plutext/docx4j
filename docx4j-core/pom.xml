@@ -194,17 +194,17 @@
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-openxml-objects</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-openxml-objects-pml</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-openxml-objects-sml</artifactId>
-			<version>${revision}</version>
+			<version>${project.version}</version>
 		</dependency>
         
 		<dependency>
