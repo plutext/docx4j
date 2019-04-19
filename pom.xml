@@ -119,39 +119,40 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
-<!-- 			
-	     <plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-enforcer-plugin</artifactId>
-	        <version>3.0.0-M2</version> 
-	        <executions>
-	          <execution>
-	            <id>enforce-bytecode-version</id>
-	            <goals>
-	              <goal>enforce</goal>
-	            </goals>
-	            <configuration>
-	              <rules>
-	                <enforceBytecodeVersion>
-	                  <maxJdkVersion>1.9</maxJdkVersion>
-	                  <excludes>
-	                    <exclude>org.mindrot:jbcrypt</exclude>
-	                  </excludes>
-	                </enforceBytecodeVersion>
-	              </rules>
-	              <fail>true</fail>
-	            </configuration>
-	          </execution>
-	        </executions>
-	        <dependencies>
-	          <dependency>
-	            <groupId>org.codehaus.mojo</groupId>
-	            <artifactId>extra-enforcer-rules</artifactId>
-	            <version>1.0-beta-9</version>
-	          </dependency>
-	        </dependencies>
-	      </plugin>
-	       -->
+			
+			<!--  you can run this with: mvn validate
+			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules -->
+		     <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-enforcer-plugin</artifactId>
+		        <version>3.0.0-M2</version> 
+		        <executions>
+		          <execution>
+		            <id>enforce-bytecode-version</id>
+		            <goals>
+		              <goal>enforce</goal>
+		            </goals>
+		            <configuration>
+		              <rules>
+		                <enforceBytecodeVersion>
+		                  <maxJdkVersion>1.8</maxJdkVersion>
+		                  <excludes>
+		                    <exclude>org.mindrot:jbcrypt</exclude>
+		                  </excludes>
+		                </enforceBytecodeVersion>
+		              </rules>
+		              <fail>true</fail>
+		            </configuration>
+		          </execution>
+		        </executions>
+		        <dependencies>
+		          <dependency>
+		            <groupId>org.codehaus.mojo</groupId>
+		            <artifactId>extra-enforcer-rules</artifactId>
+		            <version>1.0-beta-9</version>
+		          </dependency>
+		        </dependencies> 
+		      </plugin>
 	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
