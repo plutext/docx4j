@@ -228,14 +228,6 @@
 		    <artifactId>jcl-over-slf4j</artifactId>
 		    <version>1.7.25</version>
 		</dependency>		
-
-		<!--  .. default to log4j2 implementation, 
-                 UNLESS creating shaded jar for Android.--> 
-		 <dependency>
-		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-slf4j18-impl</artifactId>
-		  <version>2.11.2</version>
-		</dependency>
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -315,12 +307,12 @@
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-metainf</artifactId>
-		<version>8.0.2-SNAPSHOT</version>
+		<version>8.0.1-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-interpretive</artifactId>
-		<version>8.0.2-SNAPSHOT</version>
+		<version>8.0.1-SNAPSHOT</version>
 	</dependency>
 		
 <!-- 	<dependency>
