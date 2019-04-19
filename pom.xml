@@ -29,14 +29,19 @@
         <module>docx4j-openxml-objects-pml</module>
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
+        
         <module>docx4j-JAXB-Internal</module> 
         <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
         <module>docx4j-diffx</module>
-        <module>docx4j-diffx-tests</module>
+        
+        <module>docx4j-export-fo</module>        
         <module>docx4j-JAXB-MOXy</module>
         <module>docx4j-JAXB-ReferenceImpl</module>
+        
         <module>docx4j-samples-resources</module>
         <module>docx4j-samples-docx4j</module>
+        <module>docx4j-samples-docx-diffx</module>
+        <module>docx4j-samples-docx-export-fo</module>
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
