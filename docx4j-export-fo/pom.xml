@@ -128,14 +128,6 @@
 		<version>2.3</version>
 		<exclusions>
 			<exclusion>
-				<artifactId>avalon-framework-api</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>avalon-framework-impl</artifactId>
-				<groupId>org.apache.avalon.framework</groupId>
-			</exclusion>
-			<exclusion>
 				<groupId>xml-apis</groupId>
 				<artifactId>xml-apis</artifactId>
 			</exclusion>
@@ -150,17 +142,6 @@
 		</exclusions>
 	</dependency>
 
-	<!-- these two are to correct issues in fop dependency -->
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-api</artifactId>
-		<version>4.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-impl</artifactId>
-		<version>4.3.1</version>
-	</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
