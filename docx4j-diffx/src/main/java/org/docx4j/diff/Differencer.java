@@ -347,45 +347,6 @@ public class Differencer {
 			inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 			inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 			
-			/*
-			 * With JDK 1.5, you need to supply a stax jar, or you
-			 * will get:
-			 * 
-			 * javax.xml.stream.FactoryConfigurationError: Provider com.bea.xml.stream.MXParserFactory not found
-				at javax.xml.stream.FactoryFinder.newInstance(FactoryFinder.java:72)
-				at javax.xml.stream.FactoryFinder.find(FactoryFinder.java:176)
-				at javax.xml.stream.FactoryFinder.find(FactoryFinder.java:92)
-				at javax.xml.stream.XMLInputFactory.newInstance(XMLInputFactory.java:136) 
-				
-			 * This is not necessary if you use Java 6. 
-			 * 
-			 * From http://java.sun.com/webservices/docs/1.6/tutorial/doc/SJSXP4.html
-			 * 
-			 * The XMLInputFactory class lets you configure implementation instances of XML 
-			 * stream reader processors created by the factory. New instances of the abstract 
-			 * class XMLInputFactory are created by calling the newInstance() method on the 
-			 * class. The static method XMLInputFactory.newInstance() is then used to create 
-			 * a new factory instance.
-
-				Deriving from JAXP, the XMLInputFactory.newInstance() method determines the 
-				specific XMLInputFactory implementation class to load by using the following 
-				lookup procedure:
-				
-				   1. Use the javax.xml.stream.XMLInputFactory system property.
-				   
-				   2. Use the lib/xml.stream.properties file in the JRE directory.
-				   
-				   3. Use the Services API, if available, to determine the classname 
-				   by looking in the META-INF/services/javax.xml.stream.XMLInputFactory 
-				   files in jars available to the JRE.
-				   
-				   4. Use the platform default XMLInputFactory instance.
-			 * 
-			 */
-			
-			
-			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
-			
 			/* 2014 09 09
 			 * 
 			 * For unknown reasons, diffx may write:
