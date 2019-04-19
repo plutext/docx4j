@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" comparisonMethod="maven" xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 https://mojo.codehaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
+    <ignoreVersions>
+        <ignoreVersion type="regex">.*[aA]lpha.*</ignoreVersion>
+        <ignoreVersion type="regex">.*[bB]eta.*</ignoreVersion>
+        <ignoreVersion type="regex">.*[b][0-9\.-]*</ignoreVersion>
+        <ignoreVersion type="regex">.*[rR][cC][0-9\.-]*</ignoreVersion>
+    </ignoreVersions>
+    
+    <rules>
+
+<!-- stringtemplate 4 is ok for JDK 6, but causes tests to fail -->
+<rule groupId="org.antlr" artifactId="stringtemplate" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">4.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>
+    
+    
+<!--  these deps latest currently OK 
+
+<rule groupId="org.slf4j" artifactId="jcl-over-slf4j" comparisonMethod="maven">
+.......................... 1.7.21 -> 1.7.25
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+<rule groupId="org.slf4j" artifactId="slf4j-api" comparisonMethod="maven">
+............................... 1.7.21 -> 1.7.25
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+<rule groupId="org.slf4j" artifactId="slf4j-log4j12" comparisonMethod="maven">
+........................... 1.7.21 -> 1.7.25
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+    
+<rule groupId="org.apache.httpcomponents" artifactId="httpclient" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>  
+    
+<rule groupId="org.apache.xmlgraphics" artifactId="xmlgraphics-commons" comparisonMethod="maven">
+.............. 2.1 -> 2.3
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="com.thedeanda" artifactId="lorem" comparisonMethod="maven">
+..................................... 2.0 -> 2.1
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+<rule groupId="commons-codec" artifactId="commons-codec" comparisonMethod="maven">
+........................... 1.10 -> 1.11
+      <ignoreVersions>
+        <ignoreVersion type="regex">1\.1.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+     -->  
+     </rules>
+</ruleset>
