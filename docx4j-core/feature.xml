@@ -42,6 +42,11 @@
 
 	    <bundle>wrap:mvn:org.plutext/jaxb-svg11/1.0.2</bundle>
 	    
+<!-- 	    
+	    <bundle>mvn:org.eclipse.persistence/org.eclipse.persistence.asm/2.7.4</bundle>
+	    <bundle>wrap:mvn:org.eclipse.persistence/org.eclipse.persistence.core/2.7.4</bundle>
+	    <bundle>wrap:mvn:org.eclipse.persistence/org.eclipse.persistence.moxy/2.7.4</bundle>
+	  -->   
 	</feature>
 
 
@@ -68,6 +73,12 @@
 [INFO]    |  +- com.google.errorprone:error_prone_annotations:jar:2.2.0:compile
 [INFO]    |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
 [INFO]    |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17:compile
+
+
+]    \- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.7.4:compile
+[INFO]       \- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.7.4:compile
+[INFO]          \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.7.4:compile
+
  -->
 
 </features>
