@@ -10,8 +10,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.docx4j.jaxb.generic.NamespacePrefixMapper;
-import org.docx4j.jaxb.generic.NamespacePrefixMapperRelationshipsPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -28,7 +26,6 @@ public class NamespacePrefixMapperUtils {
 	private static boolean haveTried = false;
 	
 	public static Object getPrefixMapper() throws JAXBException {
-		
 		
 		if (prefixMapper!=null) return prefixMapper;
 		
@@ -64,7 +61,6 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
 			}
 		}
-		
 		Marshaller m=testContext.createMarshaller();		
 		return tryUsingRI(m);			
 
@@ -76,6 +72,13 @@ public class NamespacePrefixMapperUtils {
 		try {
 			Class c = Class.forName("org.docx4j.jaxb.ri.NamespacePrefixMapper");
 			prefixMapper = c.newInstance();
+			
+			// Weird javax.xml.bind.PropertyException: property "com.sun.xml.bind.namespacePrefixMapper" 
+			// must be an instance of type com.sun.xml.bind.marshaller.NamespacePrefixMapper, 
+			// not org.docx4j.jaxb.ri.NamespacePrefixMapper
+	        // at com.sun.xml.bind.v2.runtime.MarshallerImpl.setProperty(MarshallerImpl.java:502)
+			// with ServiceMix 5.4.1 and org.apache.servicemix.bundles.jaxb-impl 2.2.11_1
+			// Recommend you upgrade to ServiceMix 7.0.1, which works
 			
 			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", prefixMapper );
 			// Try RI suitable one
@@ -118,7 +121,7 @@ public class NamespacePrefixMapperUtils {
 				prefixMapperRels = c.newInstance();
 				return prefixMapperRels;
 			} catch (Exception e) {
-				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
+				throw new JAXBException("Can't create internal NamespacePrefixMapperRelationshipsPart", e);
 			}
 		}
 		
@@ -156,6 +159,10 @@ public class NamespacePrefixMapperUtils {
 	 * @throws JAXBException
 	 */
 	public static void setProperty(Marshaller marshaller, Object namespacePrefixMapper) throws JAXBException {
+		
+		if (namespacePrefixMapper==null) {
+			throw new JAXBException("namespacePrefixMapper is null");
+		}
 		
 		log.debug("attempting to setProperty on marshaller " + marshaller.getClass().getName() );
 		
