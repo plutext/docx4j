@@ -52,9 +52,18 @@
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>${project.version}</Bundle-Version>
+                        <!--  include this?                        
+                        <Import-Package>
+							org.docx4j.jaxb,
+                        	com.sun.xml.internal.bind
+                        </Import-Package> 
+                        -->
                         <Export-Package>
                             org.docx4j.jaxb.suninternal
                         </Export-Package>
+                        <!--  ?                        
+                        <_runsystempackages>com.sun.xml.internal.bind</_runsystempackages>
+                        -->
                     </instructions>
                 </configuration>
             </plugin>				
