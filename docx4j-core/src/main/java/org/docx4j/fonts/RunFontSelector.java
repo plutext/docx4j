@@ -846,11 +846,31 @@ public class RunFontSelector {
         	    			try {
         						if (GlyphCheck.hasChar(hAnsi, c)) {
         							vis.fontAction(hAnsi);        	    		
-        						} else if (GlyphCheck.hasChar("MS Gothic", c)) {
-        							// Word does this for Calibri 0x2751 (checkbox) 
-        							vis.fontAction("MS Gothic");        	    		
         						} else {
-                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\u2000' && c<='\u2EFF'?");        							
+        							
+        							// Note: what follows is based on what Word 2016
+        							// does for Calibri 0x2751 (checkbox) 
+    								// but TODO explore what it does for the entire range c>='\u2000' && c<='\u2EFF'
+        							
+        							// Microsoft Word 2016 uses Segoe UI Symbol
+        							// (earlier versions used MS Gothic?)
+        							
+        							final String FONT_WORD_2016_USES = "Segoe UI Symbol";
+                	    			Mapper fontMapper = wordMLPackage.getFontMapper();
+                	    			PhysicalFont gothicSubs = fontMapper.get(FONT_WORD_2016_USES);
+                	    			// You'll need to map a suitable font.
+                	    			// Glyph 10065 (0x2751) not available in font Noto Sans Regular
+                	    			// What we want is a dingbat font
+                	    			// It doesn't seem to be in Noto Sans Symbols,
+                	    			// but it is in DejaVu Sans.
+                	    			// Google eg: "Lower right shadowed white square" font
+                	    			// It is in Segoe UI Symbol, Wing Dings
+        							
+        							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
+	        							vis.fontAction(FONT_WORD_2016_USES);        	    		
+	        						} else {
+	                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\u2000' && c<='\u2EFF'?");        							
+	        						}
         						}
         						
         					} catch (ExecutionException e) {
@@ -1019,8 +1039,9 @@ public class RunFontSelector {
 		if (log.isDebugEnabled()) {
 	    	try {
 				if (!GlyphCheck.hasChar(fontName, c)) {
-					Throwable t = new Throwable();
-					log.debug("FIXME", t);
+//					Throwable t = new Throwable();
+//					log.debug("FIXME", t);
+					log.debug(fontName + " missing " + c);
 				}
 			} catch (ExecutionException e) {
 				log.error(e.getMessage(), e);
@@ -1057,7 +1078,7 @@ public class RunFontSelector {
 //			Throwable t = new Throwable();
 //			log.debug("Call stack", t);
 //		}		
-
+		
 		PhysicalFont pf = wordMLPackage.getFontMapper().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
