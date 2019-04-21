@@ -1,10 +1,8 @@
 .settings/
 bin/
 target/
-target/
-bin/
 /dist/
-/bin-testOutput/
+bin-testOutput/
 .directory
 .idea
 .project
