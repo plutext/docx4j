@@ -1052,8 +1052,7 @@ public class RunFontSelector {
 	
 	private String getCssProperty(String fontName) {
 		
-		if (
-				log.isDebugEnabled() && 
+		if (log.isDebugEnabled() && 
 				fontName==null) {
 			Throwable t = new Throwable();
 			t.printStackTrace();
@@ -1064,7 +1063,8 @@ public class RunFontSelector {
 		if (font!=null) {					
 			return Property.composeCss(CSS_NAME, "'" + font + "'");
 		} else {
-			log.warn("No mapping from " + font);
+			// We don't have this font, so don't specify it in our CSS
+			log.info("No physical font for " + fontName);
 			return Property.CSS_NULL;
 		}
 		
