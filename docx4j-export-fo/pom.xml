@@ -98,7 +98,7 @@
 	
 		<dependency>
 			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j</artifactId>
+			<artifactId>docx4j-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	
