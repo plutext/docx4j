@@ -31,9 +31,9 @@ public class AddGloxToDocx {
 	 */
 	public static void main(String[] args) throws Exception {
 
-//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
-//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
-		String inputfilepath = System.getProperty("user.dir") + "/RectTimeline2.glox";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Hier2Level.glox";
+//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/extracted/SmartArt-BasicChevronProcess.pptx.glox";
+//		String inputfilepath = System.getProperty("user.dir") + "/RectTimeline2.glox";
 
 
 		// Make a basic docx

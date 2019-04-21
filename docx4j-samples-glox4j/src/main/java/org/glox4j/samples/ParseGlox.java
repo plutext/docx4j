@@ -14,8 +14,8 @@ public class ParseGlox  {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Picture Organization Chart.glox";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Hier2Level.glox";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Picture Organization Chart.glox";
 		
 		GloxPackage gloxPackage = GloxPackage.load(new java.io.File(inputfilepath));
 		

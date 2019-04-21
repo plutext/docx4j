@@ -50,7 +50,8 @@ public class ExtractGloxFromExemplar {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/CirclePictureHierarchy.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Hier2Level.glox";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/extracted/CirclePictureHierarchy.docx";
 		String outputdir = inputfilepath.substring(0, inputfilepath.lastIndexOf("/")+1);
 		String outputfilename = inputfilepath.substring(inputfilepath.lastIndexOf("/"))+ ".glox";
 		
