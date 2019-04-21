@@ -109,7 +109,7 @@ public class Patcher {
 				
 				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
-				if (a.getSourcePartName().equals("/")) {
+				if (a.getSourcePartName().getName().equals("/")) {
 					newRP = otherPackage.getRelationshipsPart(true);
 //					otherPackage.setRelationships(newRP);
 //					newRP.setSourceP(otherPackage);					
@@ -169,7 +169,7 @@ public class Patcher {
 				
 				RelationshipsPart newRP = null; //FlatOpcXmlImporter.createRelationshipsPart(a.getPart());
 				
-				if (a.getSourcePartName().equals("/")) {
+				if (a.getSourcePartName().getName().equals("/")) {
 					newRP = otherPackage.getRelationshipsPart(true);
 //					otherPackage.setRelationships(newRP);
 //					newRP.setSourceP(otherPackage);

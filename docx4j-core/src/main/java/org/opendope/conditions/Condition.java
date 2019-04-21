@@ -357,7 +357,7 @@ public class Condition implements Evaluable {
 			String preExisting = XmlUtils.marshaltoString(preExistingSanity);
 			String newC = XmlUtils.marshaltoString(newCondition);
 			
-			if (preExistingSanity.equals(newC)) {
+			if (preExisting.equals(newC)) {
 				log.debug("Duplicate identical Condition being added: " + newCondition.getId());
 			} else {
 				log.error("Duplicate Condition " + newCondition.getId() + ": "

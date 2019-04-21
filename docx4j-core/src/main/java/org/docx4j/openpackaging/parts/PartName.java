@@ -279,7 +279,7 @@ public final class PartName implements Comparable<PartName> {
 	 */
 	private static void throwExceptionIfPartNameHaveInvalidSegments(URI partUri)
 			throws InvalidFormatException {
-		if (partUri == null || "".equals(partUri)) {
+		if (partUri == null || "".equals(partUri.toASCIIString())) {
 			throw new IllegalArgumentException("partUri");
 		}
 

@@ -269,7 +269,7 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     		} else {
     			if (typeface.trim().length()==0) {
     				
-    				if (type.toString().equals(STTheme.MINOR_EAST_ASIA) ) {
+    				if (type.equals(STTheme.MINOR_EAST_ASIA) ) {
     					
     					if (!reportedEmptyMINOR_EAST_ASIA) {
     	        			log.info("Empty typeface in font for " + type.toString() ); 
