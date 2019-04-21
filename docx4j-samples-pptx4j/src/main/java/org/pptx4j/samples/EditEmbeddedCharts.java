@@ -48,7 +48,7 @@ public class EditEmbeddedCharts
 	public static void main(String[] args) throws Docx4JException {
 		
 		// Input file
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-chart.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-chart.pptx";
 		
 		// The names of the parts which will be edited
 		// Alter these to match what is in your input pptx

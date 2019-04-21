@@ -43,11 +43,11 @@ public class RenderAsSvgInHtml  {
 
 	public static void main(String[] args) throws Exception {
 	
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/lines.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-basic.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/lines.pptx";
 
     	// Where to save images
-    	SvgExporter.setImageDirPath(System.getProperty("user.dir") + "/sample-docs/pptx/");
+    	SvgExporter.setImageDirPath(System.getProperty("user.dir") + "/sample-docs/");
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		

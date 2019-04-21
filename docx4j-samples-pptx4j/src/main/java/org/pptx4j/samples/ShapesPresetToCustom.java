@@ -32,7 +32,7 @@ public class ShapesPresetToCustom {
 		
 		
 		// A pptx containing all shapes, created using the AutoShapes sample
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/AutoShapes.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoShapes.pptx";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));

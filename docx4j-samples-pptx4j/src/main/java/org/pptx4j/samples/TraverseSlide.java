@@ -72,7 +72,7 @@ public class TraverseSlide {
 		 */
 
 		String inputfilepath = System.getProperty("user.dir")
-			+ "/sample-docs/pptx/pptx-basic.xml";
+			+ "/sample-docs/pptx-basic.xml";
 
 		PresentationMLPackage pMLPackage = 
 			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));

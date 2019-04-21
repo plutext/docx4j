@@ -36,7 +36,7 @@ public class TemplateReplaceSimple {
 	public static void main(String[] args) throws Docx4JException, Pptx4jException, JAXBException, IOException {
 		
 		// Input file
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/image.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/image.pptx";
 
 		// String replacements
 		HashMap<String, String> mappings = new HashMap<String, String>();

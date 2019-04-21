@@ -57,7 +57,7 @@ public class AutoShapes  {
 	public static void main(String[] args) throws Exception {
 
 		// Where will we save our new .ppxt?
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/AutoShapes.pptx";
+		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoShapes.pptx";
 		
 		// Create skeletal package
 		PresentationMLPackage presentationMLPackage = PresentationMLPackage.createPackage(); 

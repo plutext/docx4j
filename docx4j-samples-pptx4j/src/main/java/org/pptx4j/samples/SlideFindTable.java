@@ -50,7 +50,7 @@ public class SlideFindTable  {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/table.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table.pptx";
 
 		PresentationMLPackage pMLPackage = 
 			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
