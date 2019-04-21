@@ -261,13 +261,8 @@
 			    <artifactId>flatten-maven-plugin</artifactId>
 			    <version>1.0.0</version>
 			    <configuration>
-			        <updatePomFile>true</updatePomFile>
-			        <pomElements>
-			            <name />
-			            <description />
-			            <url />
-			            <scm />
-			        </pomElements>                  
+			        <!--  <updatePomFile>true</updatePomFile>-->
+			        <flattenMode>oss</flattenMode>           
 			    </configuration>
 			    <executions>
 			        <execution>
