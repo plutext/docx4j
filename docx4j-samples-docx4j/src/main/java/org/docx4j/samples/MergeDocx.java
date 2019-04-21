@@ -32,7 +32,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  */
 public class MergeDocx extends AbstractSample {
 
-	final static String BASE_DIR = System.getProperty("user.dir") + "/sample-docs/word/";
+	final static String BASE_DIR = System.getProperty("user.dir") + "/sample-docs/";
 
 	final static String[] sourceDocxNames = { "tables.docx", "Images.docx"};  
 

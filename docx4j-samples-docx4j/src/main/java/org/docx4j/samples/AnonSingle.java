@@ -13,7 +13,7 @@ public class AnonSingle {
 
 	public static void main(String[] args) throws Docx4JException {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docxv2.docx";
 
 		String outputfilepath = System.getProperty("user.dir")
 				+ "/OUT_Anon.docx";

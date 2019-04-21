@@ -54,7 +54,7 @@ public class DisplayMainDocumentPartXml extends AbstractSample {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
 				inputfilepath = System.getProperty("user.dir")
-						+ "/sample-docs/word/sample-docx.xml";
+						+ "/sample-docs/sample-docx.xml";
 			}
 			
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));

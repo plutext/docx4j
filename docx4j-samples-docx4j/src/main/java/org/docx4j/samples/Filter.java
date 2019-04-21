@@ -31,8 +31,8 @@ public class Filter {
 
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
 		
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		

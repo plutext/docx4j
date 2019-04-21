@@ -47,8 +47,8 @@ public class AltChunkAddOfTypeDocx {
 		
 		boolean ADD_TO_HEADER = false;
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
-		String chunkPath = System.getProperty("user.dir") + "/sample-docs/word/chunk.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		String chunkPath = System.getProperty("user.dir") + "/sample-docs/chunk.docx";
 		
 		boolean save = true;
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_AltChunkAddOfTypeDocx.docx";

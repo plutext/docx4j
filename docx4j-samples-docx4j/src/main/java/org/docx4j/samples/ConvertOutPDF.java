@@ -69,7 +69,7 @@ public class ConvertOutPDF extends AbstractSample {
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
 		
     	// URL of converter instance; 
 		//Docx4jProperties.setProperty("com.plutext.converter.URL", 

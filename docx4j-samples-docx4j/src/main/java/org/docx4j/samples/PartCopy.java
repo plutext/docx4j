@@ -38,7 +38,7 @@ public class PartCopy {
 	public static void main(String[] args) throws Exception {
 		
 		// Source package		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/chart.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/chart.docx";
 		// Contains (see PartsList sample):
         // Part /word/charts/chart1.xml [org.docx4j.openpackaging.parts.DrawingML.Chart] http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart containing JaxbElement:org.docx4j.dml.chart.CTChartSpace
         //    Part /word/embeddings/Microsoft_Excel_Worksheet1.xlsx [org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart] http://schemas.openxmlformats.org/officeDocument/2006/relationships/package

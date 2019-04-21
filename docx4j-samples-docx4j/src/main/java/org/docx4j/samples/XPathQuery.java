@@ -46,7 +46,7 @@ public class XPathQuery {
 		// Without Saxon, you are restricted to XPath 1.0
 		boolean USE_SAXON = false; // set this to true; add Saxon to your classpath, and uncomment below 
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 				
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();

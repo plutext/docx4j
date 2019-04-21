@@ -74,7 +74,7 @@ public class ContentControlsApplyBindingsIncrementalSave {
 		
 		// Convenient to read from .xml file,
 		// so it is easy to manually edit it (ie without having to unzip etc etc) 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/picture-bind.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/picture-bind.docx";
 
 
 		// Load the Package

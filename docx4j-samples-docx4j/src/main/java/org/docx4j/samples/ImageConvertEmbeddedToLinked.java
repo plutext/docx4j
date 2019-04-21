@@ -59,7 +59,7 @@ public class ImageConvertEmbeddedToLinked {
 		
 		String BASE_DIR = System.getProperty("user.dir");
 
-		String inputfilepath = BASE_DIR + "/sample-docs/word/sample-docx.docx";
+		String inputfilepath = BASE_DIR + "/sample-docs/sample-docx.docx";
 		
 		boolean saveImages = true;
 		boolean saveResultingDoc = true;

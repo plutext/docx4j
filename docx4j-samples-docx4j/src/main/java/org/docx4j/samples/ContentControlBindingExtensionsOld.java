@@ -79,9 +79,9 @@ public class ContentControlBindingExtensionsOld {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_Saxon_XPath2.docx";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_Saxon_XPath2.docx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
 		
 		// Without Saxon, you are restricted to XPath 1.0
 		boolean USE_SAXON = true; // set this to true; add Saxon to your classpath, and uncomment below 

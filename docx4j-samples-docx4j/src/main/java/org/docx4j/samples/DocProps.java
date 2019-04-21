@@ -46,7 +46,7 @@ public class DocProps extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/docProps.docx";		
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
 		}
 				
 		boolean save = false;

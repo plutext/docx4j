@@ -68,7 +68,7 @@ public class PageCounter extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.docx";
 		}
 		System.out.println(inputfilepath);	    	
 		

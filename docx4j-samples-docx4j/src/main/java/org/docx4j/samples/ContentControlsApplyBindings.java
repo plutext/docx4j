@@ -72,7 +72,7 @@ public class ContentControlsApplyBindings {
 		
 		// Convenient to read from .xml file,
 		// so it is easy to manually edit it (ie without having to unzip etc etc) 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/binding-simple.docx";
 
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_ContentControlsApplyBindings.docx";
 

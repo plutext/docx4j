@@ -44,7 +44,7 @@ public class ConvertInFlatOpenPackage extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 		}
 							
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertInFlatOpenPackage.docx";

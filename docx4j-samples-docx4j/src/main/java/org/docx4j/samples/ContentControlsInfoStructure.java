@@ -68,7 +68,7 @@ public class ContentControlsInfoStructure extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
 
 		}
 		

@@ -43,7 +43,7 @@ public class TemplateAttach extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/Normal.dotm";	    	
+	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/Normal.dotm";	    	
 		}
 		
     	String outputfilepath = System.getProperty("user.dir") + "/OUT_TemplateAttach.docx";	    	

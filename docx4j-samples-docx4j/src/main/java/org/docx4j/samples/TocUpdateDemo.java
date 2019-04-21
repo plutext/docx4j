@@ -33,7 +33,7 @@ public class TocUpdateDemo  {
 
     public static void main(String[] args) throws Exception{
     	
-		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/toc.docx";
+		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/toc.docx";
 		
 		// Load input_template.docx
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
