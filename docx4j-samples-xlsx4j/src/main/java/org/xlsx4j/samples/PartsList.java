@@ -56,7 +56,7 @@ public class PartsList {
 	public static void main(String[] args) throws Exception {
 		
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pivot.xlsm";
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml

@@ -37,10 +37,10 @@ public class XlsxRoundTrip {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pivot.xlsm";
 		
 		boolean save = true;
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot-rtt.xlsm";
+		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pivot-rtt.xlsm";
 				
 		// Open a document from the file system
 		// 1. Load the Package
