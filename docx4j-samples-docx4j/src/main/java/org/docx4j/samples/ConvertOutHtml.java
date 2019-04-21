@@ -30,6 +30,12 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.html.SdtToListSdtTagHandler;
 import org.docx4j.convert.out.html.SdtWriter;
+import org.docx4j.fonts.BestMatchingMapper;
+import org.docx4j.fonts.IdentityPlusMapper;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.model.fields.FieldUpdater;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -135,6 +141,32 @@ public class ConvertOutHtml extends AbstractSample {
     	} else {
     		htmlSettings.getFeatures().remove(ConversionFeatures.PP_HTML_COLLECT_LISTS);
     	}
+    	
+		// Refresh the values of DOCPROPERTY fields 
+		FieldUpdater updater = null;
+//		updater = new FieldUpdater(wordMLPackage);
+//		updater.update(true);
+		
+		// Set up font mapper (optional)
+		// We don't add CSS for a font which isn't physically present.
+		// TODO: consider web fonts?
+//		Mapper fontMapper = new IdentityPlusMapper(); // better for Windows
+		Mapper fontMapper = new BestMatchingMapper(); // better for Linux
+		wordMLPackage.setFontMapper(fontMapper);
+		
+		// .. example of mapping font Times New Roman which doesn't have certain Arabic glyphs
+		// eg Glyph "ي" (0x64a, afii57450) not available in font "TimesNewRomanPS-ItalicMT".
+		// eg Glyph "ج" (0x62c, afii57420) not available in font "TimesNewRomanPS-ItalicMT".
+		// to a font which does
+		PhysicalFont font 
+				= PhysicalFonts.get("Arial Unicode MS"); 
+			// make sure this is in your regex (if any)!!!
+//		if (font!=null) {
+//			fontMapper.put("Times New Roman", font);
+//			fontMapper.put("Arial", font);
+//		}
+//		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
+    	
 		
 		// output to an OutputStream.		
 		OutputStream os; 
