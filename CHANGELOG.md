@@ -2,6 +2,39 @@ CHANGELOG
 =========
 
 
+Version 8.0.0 
+=============
+
+Release date
+------------
+
+21 April 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 8.0.0 
+---------------------------------
+
+Minimum supported Java version is 8.0
+
+docx4j 8 should be easier to deploy in complex environments such as OSGi, JBoss EAP etc.
+
+docx4j is now a Maven multi-module project.  To use it via Maven, add just one of docx4j-JAXB-Internal, docx4j-JAXB-MOXy,
+or docx4j-JAXB-ReferenceImpl dependencies. 
+
+Various dependencies were updated (some of which require Java 1.8)
+
+OpenDoPE support for XPath 2.0, 3.0 (requires Saxon)
+
+Uses repackaged and mavenized Xalan; see https://github.com/plutext/xalan-j/tree/Plutext_Java8_Repackaged_Docx4j
+
+
+
 Version 6.1.2 minor release 
 =============
 

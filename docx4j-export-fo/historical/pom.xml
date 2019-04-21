@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+ <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-export-fo</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-export-fo</name>
+  	
+	<description>
+		export docx to PDF via XSL FO, using Apache FOP
+	</description>
+	  
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
+					to execute the unit tests of an application -->
+				<version>2.6</version>
+				<configuration>
+					<excludes>
+						<exclude>**/samples/*.java</exclude>
+						<exclude>**/AbstractNumberingTest.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<excludes>
+						<!--  the below are prob not necessary, now that we are building from bin-mvn, and so avoiding stuff Eclipse puts into bin dir -->
+						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources add unwanted 1 MB to jar. -->
+						<exclude>src/test/resources/**/*</exclude>
+						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
+					</excludes>
+				</configuration>
+			</plugin>
+			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
+				out if your build is failing because you don't have enough. -->
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+					<maxmemory>512m</maxmemory>
+					<!-- 18 MB without the exclusion; still 15MB with -->
+					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+			        <additionalparam>-Xdoclint:none</additionalparam> <!-- for Java 8 -->					
+				 </configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+		</plugins>
+        
+		<resources>
+			<!-- be sure to get xml,xlst resources in various src trees -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<!-- 
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>docx4j.properties</include>
+				</includes>
+			</resource>
+			 -->
+			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
+				</excludes> </resource> -->
+		</resources>
+	</build>
+	
+		<dependencies>
+	
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
+			<version>1.0.1</version>
+		</dependency>
+		
+<!--
+	<dependency>
+		<groupId>org.apache.xmlgraphics</groupId>
+		<artifactId>xmlgraphics-commons</artifactId>
+		<version>2.3</version>
+		<exclusions>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>		
+		</exclusions>
+	</dependency>
+        -->
+    
+	<dependency>
+		<groupId>org.apache.xmlgraphics</groupId>
+		<artifactId>fop</artifactId>
+		<version>2.3</version>
+		<exclusions>
+			<exclusion>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis-ext</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+
+
+<!--	Uncomment for the PDF conversion via HTML or iText, which
+		may be found in docx4j-extras.
+
+		If you are planning to use that, you'll also want to uncomment
+		the BaseFont stuff in PhysicalFonts.
+
+ 		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext-unsigned</artifactId>
+			<version>2.0.8</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>bouncycastle</artifactId>
+					<groupId>bcmail-jdk14</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bouncycastle</artifactId>
+					<groupId>bcprov-jdk14</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	-->
+
+
+<!-- Uncomment for the PDF conversion via HTML, which
+		may be found in docx4j-extras.
+
+		<dependency>
+			<groupId>pdf-renderer</groupId>
+			<artifactId>pdf-renderer</artifactId>
+			<version>0.2009.0324</version>
+		</dependency>
+		<dependency>
+			<groupId>xhtmlrenderer</groupId>
+			<artifactId>minium</artifactId>
+			<version>0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>xhtmlrenderer</groupId>
+			<artifactId>core-renderer</artifactId>
+			<version>R8pre2</version>
+		</dependency>
+ -->
+
+	</dependencies>
+</project>
