@@ -150,51 +150,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-<!--	Uncomment for the PDF conversion via HTML or iText, which
-		may be found in docx4j-extras.
-
-		If you are planning to use that, you'll also want to uncomment
-		the BaseFont stuff in PhysicalFonts.
-
- 		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext-unsigned</artifactId>
-			<version>2.0.8</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>bouncycastle</artifactId>
-					<groupId>bcmail-jdk14</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>bouncycastle</artifactId>
-					<groupId>bcprov-jdk14</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-	-->
-
-
-<!-- Uncomment for the PDF conversion via HTML, which
-		may be found in docx4j-extras.
-
-		<dependency>
-			<groupId>pdf-renderer</groupId>
-			<artifactId>pdf-renderer</artifactId>
-			<version>0.2009.0324</version>
-		</dependency>
-		<dependency>
-			<groupId>xhtmlrenderer</groupId>
-			<artifactId>minium</artifactId>
-			<version>0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>xhtmlrenderer</groupId>
-			<artifactId>core-renderer</artifactId>
-			<version>R8pre2</version>
-		</dependency>
- -->
-
 	</dependencies>
+	
 </project>
