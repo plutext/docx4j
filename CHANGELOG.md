@@ -8,7 +8,7 @@ Version 8.0.0
 Release date
 ------------
 
-(unreleased)
+21 April 2019
 
 
 Contributors to this release
@@ -22,16 +22,16 @@ Notable Changes in Version 8.0.0
 
 Minimum supported Java version is 8.0
 
-The following dependencies were updated:
-  com.fasterxml.jackson.core:jackson-core ............... 2.7.9 -> 2.9.8 
-  com.fasterxml.jackson.core:jackson-databind ......... 2.7.9.4 -> 2.9.8 [JDK 1.7]
-  com.google.guava:guava ............................ 20.0 -> 27.0.1-jre [JDK 1.8]
-  commons-io:commons-io ..................................... 2.5 -> 2.6 [JDK 1.7]
-  net.engio:mbassador ................................. 1.2.4.2 -> 1.3.2 [JDK 1.7]
-  org.apache.commons:commons-compress ..................... 1.12 -> 1.18 [JDK 1.7]
-  org.apache.commons:commons-lang3 ........................ 3.5 -> 3.8.1 [JDK 1.7]
+docx4j 8 should be easier to deploy in complex environments such as OSGi, JBoss EAP etc.
+
+docx4j is now a Maven multi-module project.  To use it via Maven, add just one of docx4j-JAXB-Internal, docx4j-JAXB-MOXy,
+or docx4j-JAXB-ReferenceImpl dependencies. 
+
+Various dependencies were updated (some of which require Java 1.8)
 
 OpenDoPE support for XPath 2.0, 3.0 (requires Saxon)
+
+Uses repackaged and mavenized Xalan; see https://github.com/plutext/xalan-j/tree/Plutext_Java8_Repackaged_Docx4j
 
 
 
