@@ -177,13 +177,24 @@
             </plugin>				
  			
 		</plugins>
-        
+
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>false</filtering>
-				<!--  beware, a couple of our resources are UTF-16, but with filtering=true,
-				      Maven will break them when it copies them. -->
+				<!-- beware, a couple of our resources are UTF-16, but with filtering=true, 
+					Maven will break them when it copies them. -->
+	
+				<excludes>
+					<exclude>docx4j_version.properties</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>docx4j_version.properties</include>
+				</includes>
 			</resource>
 		</resources>
 	</build>
