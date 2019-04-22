@@ -8,7 +8,7 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerException;
 
-import org.apache.xpath.XPathAPI;
+import org.docx4j.org.apache.xpath.XPathAPI;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.RunFontSelector;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
