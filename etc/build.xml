@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="docx4j">
+<project basedir=".." default="release" name="docx4j">
 	
 	<!-- Please note: docx4j releases are built with maven (mvn install).
 	
 	     This ant file is used as follows:
 	     
-			ant release   # Create a zip file with deps, from maven artifacts
+	        ant release  -buildfile etc/build.xml   # Create zip files with deps, from maven artifacts
 	       
-			ant dist.NET  # Build docx4j .NET DLL files	        
+			ant dist.NET -buildfile etc/build.xml  # Build docx4j .NET DLL files	        
 	     
 	     --> 
 	
     <property environment="env"/>
     <property name="junit.output.dir" value="junit"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 	
 	<property name="version" value="8.0.0"/>
-	<property name="importxhtml-version" value="6.1.0"/>
+	<property name="importxhtml-version" value="8.0.0"/>
 	
     <property name="release.dir" value="docx4j-community-${version}"/>
+    <property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
+    <property name="releaseReferenceImpl.dir" value="docx4j-JAXB-ReferenceImpl-${version}"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
@@ -32,186 +34,99 @@
     <property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 	
 	<!-- 
-	
-		org.docx4j:docx4j:jar:3.3.0
+		org.docx4j:docx4j-core:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects-pml:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects-sml:jar:8.0.0
 		+- org.plutext:jaxb-svg11:jar:1.0.2
-		+- net.engio:mbassador:jar:1.2.4.2
-		
-		+- org.slf4j:slf4j-api:jar:1.7.21
-		+- org.slf4j:jcl-over-slf4j:jar:1.7.21
-		+- org.slf4j:slf4j-log4j12:jar:1.7.21		
-		+- log4j:log4j:jar:1.2.17
-		
-		+- org.apache.commons:commons-lang3:jar:3.4
-		+- commons-codec:commons-codec:jar:1.10
-		+- commons-io:commons-io:jar:2.4
-		
-		+- org.apache.httpcomponents:httpclient:jar:4.5.2
-		|  +- org.apache.httpcomponents:httpcore:jar:4.4.4
-		|  \- commons-logging:commons-logging:jar:1.2
-		+- com.fasterxml.jackson.core:jackson-core:jar:2.7.3
-		+- com.fasterxml.jackson.core:jackson-databind:jar:2.7.3
-		|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.7.0
-		
-		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.1
-		+- org.apache.avalon.framework:avalon-framework-api:jar:4.3.1
-		+- org.apache.avalon.framework:avalon-framework-impl:jar:4.3.1
-		
-		+- xalan:xalan:jar:2.7.2
-		|  \- xalan:serializer:jar:2.7.2
-		
+		+- net.engio:mbassador:jar:1.3.2
+		+- org.slf4j:jcl-over-slf4j:jar:1.7.26
+		+- org.apache.commons:commons-lang3:jar:3.9
+		+- org.apache.commons:commons-compress:jar:1.18
+		+- commons-codec:commons-codec:jar:1.12
+		+- commons-io:commons-io:jar:2.6
+		+- org.apache.httpcomponents:httpclient:jar:4.5.8
+		|  \- org.apache.httpcomponents:httpcore:jar:4.4.11
+		+- com.fasterxml.jackson.core:jackson-core:jar:2.9.8
+		+- com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
+		|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0
+		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.3
+		+- org.docx4j.org.apache:xalan-metainf:jar:8.0.0
+		+- org.docx4j.org.apache:xalan-interpretive:jar:8.0.0
+		|  \- org.docx4j.org.apache:xalan-serializer:jar:8.0.0
 		+- net.arnx:wmf2svg:jar:0.9.8
-		
 		+- org.antlr:antlr-runtime:jar:3.5.2
 		+- org.antlr:stringtemplate:jar:3.2.1
 		|  \- antlr:antlr:jar:2.7.7
-		
-		+- com.google.guava:guava:jar:19.0
-		
-		+- com.thedeanda:lorem:jar:2.0
-		
-		
-		\- junit:junit:jar:4.12:test
-		   \- org.hamcrest:hamcrest-core:jar:1.3:test
-
-		Optional:
-		 
-		+- org.docx4j:docx4j-MOXy-JAXBContext:jar:3.3.5
-		
-		+- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.5.2
-		|  +- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.5.2
-		|  |  \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.5.2
-		|  \- org.eclipse.persistence:org.eclipse.persistence.antlr:jar:2.5.2
-		
-		+- javax.mail:mail:jar:1.4.7
-		|  \- javax.activation:activation:jar:1.1		 
+		+- com.google.guava:guava:jar:27.0.1-jre
+		|  +- com.google.guava:failureaccess:jar:1.0.1
+		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
+		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
+		|  +- org.checkerframework:checker-qual:jar:2.5.2
+		|  +- com.google.errorprone:error_prone_annotations:jar:2.2.0
+		|  +- com.google.j2objc:j2objc-annotations:jar:1.1
+		|  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17
+		+- com.thedeanda:lorem:jar:2.1
+		+- org.slf4j:slf4j-api:jar:1.7.26
 	 -->
-	 
-	 
-    <path id="Maven Dependencies.libraryclasspath">
+    <path id="MavenDeps">
     
-        
-        <!-- TODO put these in optional
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
-        <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
-     -->
-    
-    	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB 
-    	
-    	<pathelement location="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/3.3.5/docx4j-MOXy-JAXBContext-3.3.5.jar"/>
-    	
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.2/org.eclipse.persistence.asm-2.5.2.jar"/>
-        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.2/org.eclipse.persistence.antlr-2.5.2.jar"/>
-        
-        <pathelement location="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar"/>
-        <pathelement location="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
-        
-        -->
-        <!--  end MOXy -->
-           
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
-
-        <pathelement location="${m2Repository}/net/engio/mbassador/1.2.4.2/mbassador-1.2.4.2.jar"/>
-
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
-        
-        <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.25/jcl-over-slf4j-1.7.25.jar"/>
-         -->
-         
-        <!-- 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar"/>
-        <pathelement location="${m2Repository}/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
-         -->
-        <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>  -->
-        
-                
-        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.5/commons-lang3-3.5.jar"/>
-        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.12/commons-compress-1.12.jar"/>
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.11/commons-codec-1.11.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/2.5/commons-io-2.5.jar"/>
-
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.6/httpclient-4.5.6.jar"/>
-        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.10/httpcore-4.4.10.jar"/>
-
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.7.9/jackson-core-2.7.9.jar"/>
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.7.9.4/jackson-databind-2.7.9.4.jar"/>
-        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
- 
+        <pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.26/jcl-over-slf4j-1.7.26.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.18/commons-compress-1.18.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.6/commons-io-2.6.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar"/>
+        <pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
-        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
-        
-    	<!-- Xalan 2.7.1 and dependencies: see further below -->
+
+        <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/8.0.0/xalan-interpretive-8.0.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/8.0.0/xalan-serializer-8.0.0.jar"/>
 
         <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.8/wmf2svg-0.9.8.jar"/>
 
-
         <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar"/>
-        <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
-        <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/> 
-
-        <pathelement location="${m2Repository}/com/google/guava/guava/20.0/guava-20.0.jar"/>
+        <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
+        <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
+        
+        <pathelement location="${m2Repository}/com/google/guava/guava/27.0.1-jre/guava-27.0.1-jre.jar"/>
+        <pathelement location="${m2Repository}/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"/>
+        <pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
+        <pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+        <pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"/>
+        <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.2.0/error_prone_annotations-2.2.0.jar"/>
+        <pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
+        <pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
+        
         <pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
-
-<!--     	
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
+        
         <pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
         <pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
-         -->
-
-<!--
-        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.0/jaxb-runtime-2.3.0.jar"/>
-        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/2.3.0/jaxb-core-2.3.0.jar"/>
-        <pathelement location="${m2Repository}/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar"/>
-        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.0/txw2-2.3.0.jar"/>
-        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.5/istack-commons-runtime-3.0.5.jar"/>
-        <pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.7.8/stax-ex-1.7.8.jar"/>
-        <pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.13/FastInfoset-1.2.13.jar"/>
-        <pathelement location="${m2Repository}/javax/activation/activation/1.1.1/activation-1.1.1.jar"/>
-    	
-    	-->
-    	
-<!-- Uncomment to use the vfs stuff in docx4j-extras
-
-        <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>
-        <pathelement location="${m2Repository}/org/apache/commons/commons-vfs-patched/1.9.1/commons-vfs-patched-1.9.1.jar"/>
--->
-
-<!-- Uncomment for load/save via JCR, which
-		may be found in docx4j-extras.		
-        <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
-        
-        (but you'd be better off using CMIS)
-		-->
  
     </path>
     
-    <path id="docx4j.classpath">
-        <pathelement location="bin"/>
-        <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>    
-        <path refid="Maven Dependencies.libraryclasspath"/>
-    </path>
-
-    <path id="dist.classpath">
-        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
-        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
-        <path refid="docx4j.classpath"/>
-    </path>
     
     <!--  for release only; build docx4j-export-fo first! -->
     <path id="docx4j-export-fo.classpath">
 
-        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/6.1.0/docx4j-export-fo-6.1.0.jar"/>
+        <pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/8.0.0/docx4j-export-fo-8.0.0.jar"/>
+    	
         <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
-        
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
+    	<pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
+
+    	<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.10/batik-css-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.10/batik-dom-1.10.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
+
+    	<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.10/batik-util-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.10/batik-constants-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.10/batik-i18n-1.10.jar"/>
@@ -225,122 +140,30 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.10/batik-svggen-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.10/batik-extension-1.10.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.10/batik-ext-1.10.jar"/>
-
+    	
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
+    	
     	<!-- https://github.com/apache/fop/blob/fop-2_3/fop-core/pom.xml#L100 -->
         <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.7/fontbox-2.0.7.jar"/>
         
 	</path>    
 
-    <path id="junit.classpath">
-        <path refid="docx4j.classpath"/>
-        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>
-    </path>
-	
-	<path id="jre.libs" description="Java runtime libraries">
-	  <pathelement location="${java.home}\lib" />
-	 </path>	
-	
-    <target name="init">
-        <mkdir dir="bin"/>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
-            <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
-            <fileset dir="src/xlsx4j/java" excludes="**/*.launch, **/*.java"/>
-            <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
-            <!-- 
-            <fileset dir="src/samples/_resources" />
-             -->
-        </copy>
-    </target>
-	
-    <target name="clean">
-        <delete dir="bin"/>
-        <delete dir="${dist}"/>
-    </target>
-    <target depends="build-project" name="build"/>
-   
-    <target name="build-project" depends="init" >
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <echo message="${ant.java.version}"/>
-        
-        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" 
-        	target="${target}"  encoding="utf-8">
-            <src path="${src.main.java.dir}"/>
-            <src path="src/diffx"/>
-            <src path="src/glox4j/java"/>
-            <src path="src/pptx4j/java"/>
-            <src path="src/xlsx4j/java"/>
-            <!-- 
-            <src path="src/samples/docx4j"/>
-             -->
-            <!-- <classpath refid="docx4j.classpath"/> -->
-            <!--  build with earlier than
+    <target name="release" depends="release-main,release-JAXB-ReferenceImpl,release-JAXB-MOXy" />
 
-					java version "1.6.0_19" (and possibly later)
-					Java(TM) SE Runtime Environment (build 1.6.0_19-b04)
-					Java HotSpot(TM) 64-Bit Server VM (build 16.2-b04, mixed mode)
-
-				 requires  Xalan 2.7.1, so -->
-			<classpath refid="dist.classpath"/>				 
-        </javac>
-        
-        <!--  Force ant to compile package-info.java.
-              Without these, you'll get JAXB "unexpected element" errors.
-        	  This is necessary because of a dubious change in ant behaviour, 
-              starting with 1.7.1 (see javac task doc, and ant bug 43114).  
-              
-			  "In Ant 1.7.1 the package-info.java will only be compiled if:
-				
-				   1. If a package-info.class file exists and is older than the package-info.java file.
-				   2. If the directory for the package-info.class file does not exist.
-				   3. If the directory for the package-info.class file exists, and has an older modification 
-				   time than the the package-info.java file. In this case <javac> will touch the corresponding 
-				   .class directory on successful compilation."              
-              -->
-        <sleep seconds="2"/> <!--  wait a little, so our modifications times are newer -->
-        <touch><fileset dir="${src.main.java.dir}" includes="**/package-info.java" /></touch>        
-        <touch><fileset dir="src/pptx4j/java" includes="**/package-info.java" /></touch>        
-        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="${src.main.java.dir}"/>
-            <src path="src/pptx4j/java"/>
-            <src path="src/xlsx4j/java"/>
-        	<include name="**/package-info.java"/>
-            <classpath refid="docx4j.classpath"/>
-        </javac>
-
-        <echo message="Join the docx4j developers mailing list by emailing docx4j-dev-subscribe@docx4java.org" />
-        
-    </target>
- 
- 
- <!-- ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist -->
-    <target name="dist"  depends="clean, build-project" >
-				
-        <mkdir dir="${dist}"/>
-				
-		<jar destfile="${dist}/docx4j-${version}.jar" basedir="./bin"/>		
-		
-		<!-- copy all the jar files! -->
-		<copy todir="${dist}" flatten="true">
-			<!-- requires Ant 1.7.0 -->
-			<path>
-			    <path refid="dist.classpath"/>
-			</path>
-		</copy>		
-    	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
-    </target>
-    
-    
-    
-    <target name="release"  >
+    <target name="release-main"  >
     
         <delete dir="${release.dir}"/>
         <mkdir dir="${release.dir}"/>
         
         <!-- docx4j itself, as built by maven -->
-		<copy file="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar" todir="${release.dir}"/>        
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects/${version}/docx4j-openxml-objects-${version}.jar" todir="${release.dir}"/>  
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar" todir="${release.dir}"/>  
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar" todir="${release.dir}"/>  
+		<copy file="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar" todir="${release.dir}"/>
+    	<!-- include this for convenience; Java 8 -->
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-Internal/${version}/docx4j-JAXB-Internal-${version}.jar" todir="${release.dir}"/>  
+    	
 		<copy file="CHANGELOG.md" todir="${release.dir}"/>        
     
     	<!-- dependencies -->
@@ -348,10 +171,9 @@
 		<copy includeemptydirs="false" todir="${release.dir}/dependencies" flatten="true">
 			<!-- requires Ant 1.7.0 -->
 			<path>
-			    <path refid="dist.classpath"/>
+			    <path refid="MavenDeps"/>
 			</path>
 		</copy>		
-    	 <delete file="${release.dir}/dependencies/JAXBNamespacePrefixMapper-2.2.4.jar" />			
     
     	<!-- documentation -->
         <mkdir dir="${release.dir}/documentation"/>
@@ -382,31 +204,72 @@
 			</path>
 		</copy>		
 
-    	<!-- MOXy -->
-        <mkdir dir="${release.dir}/optional/MOXy"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-MOXy-JAXBContext/6.0.0/docx4j-MOXy-JAXBContext-6.0.0.jar" todir="${release.dir}/optional/MOXy"/>
-		        
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.5.2/org.eclipse.persistence.moxy-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.5.2/org.eclipse.persistence.core-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.5.2/org.eclipse.persistence.asm-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/2.5.2/org.eclipse.persistence.antlr-2.5.2.jar" todir="${release.dir}/optional/MOXy"/>
-        
-        <copy file="${m2Repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar" todir="${release.dir}/optional/MOXy"/>
-        <copy file="${m2Repository}/javax/activation/activation/1.1/activation-1.1.jar" todir="${release.dir}/optional/MOXy"/>
+    	<!-- diffx -->
+        <mkdir dir="${release.dir}/optional/diffx"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>  
 
     	<!-- resources -->
         <mkdir dir="${release.dir}/resources"/>
-        <copy file="src/samples/_resources/docx4j.properties" todir="${release.dir}/resources"/>
-        <copy file="src/samples/_resources/log4j.xml" todir="${release.dir}/resources"/>
+        <copy file="docx4j-samples-resources/src/main/resources/docx4j.properties" todir="${release.dir}/resources"/>
+        <copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${release.dir}/resources"/>
+        <copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${release.dir}/resources"/>
         
         <!--  zip it up -->
     	<zip destfile="docx4j-community-${version}.zip" basedir="${release.dir}"/>
-    
+
+    	<delete dir="${release.dir}"/>    
     </target>
-    
-    
-    
-    
+        
+    <target name="release-JAXB-MOXy"  >
+    	    	
+	    <delete dir="${releaseMOXy.dir}"/>
+	    <mkdir dir="${releaseMOXy.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-MOXy/${version}/docx4j-JAXB-MOXy-${version}.jar" todir="${releaseMOXy.dir}"/>  
+
+    	
+    	<!-- dependencies -->
+        <mkdir dir="${releaseMOXy.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
+			<path>
+		    	<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.4/org.eclipse.persistence.moxy-2.7.4.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.7.4/org.eclipse.persistence.core-2.7.4.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.7.4/org.eclipse.persistence.asm-2.7.4.jar"/>
+			</path>
+		</copy>		
+
+        <!--  zip it up -->
+    	<zip destfile="docx4j-JAXB-MOXy-${version}.zip" basedir="${releaseMOXy.dir}"/>
+
+	    <delete dir="${releaseMOXy.dir}"/>    	
+    </target>
+    	
+    <!-- docx4j-JAXB-ReferenceImpl  releaseReferenceImpl.dir -->
+    <target name="release-JAXB-ReferenceImpl"  >
+    	    	
+	    <delete dir="${releaseReferenceImpl.dir}"/>
+	    <mkdir dir="${releaseReferenceImpl.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-ReferenceImpl/${version}/docx4j-JAXB-ReferenceImpl-${version}.jar" todir="${releaseReferenceImpl.dir}"/>  
+    	
+    	<!-- dependencies -->
+        <mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
+			<path>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar"/>
+		        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar"/>
+		        <pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar"/>
+		        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+			</path>
+		</copy>		
+
+        <!--  zip it up -->
+    	<zip destfile="docx4j-JAXB-ReferenceImpl-${version}.zip" basedir="${releaseReferenceImpl.dir}"/>
+
+	    <delete dir="${releaseReferenceImpl.dir}"/>    	
+    </target>
+	
     <target name="checkForIKVM">
         <condition property="IKVMAvailable">
             <and>
@@ -492,120 +355,7 @@
             <arg value="-target:library" />
             <arg line="${docx4j-jars}" />
         </exec>    
-        
-        
             
     </target>
-
-	<!--
-		These targets are no longer used:     
-	      <target name="JAXB-use-MOXy" >
-	      <target name="JAXB-switch-from-MOXy-to-Oracle" >
-	      
-	    Instead, use of MOXy is controlled by presence/absence of docx4j-MOXy-JAXBContext.jar
-	 -->
-	
-	<!--  build just diffx; the usual targets build diffx as part of docx4j -->
-    <target name="build-diffx" depends="init" >
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="src/diffx"/>
-            <classpath refid="docx4j.classpath"/>
-        </javac>
-    </target>
-
-    <target name="diffxjar"  depends="clean, build-diffx" >							
-		<jar destfile="diffx.jar" basedir="./bin"/>									
-    </target>	
-
-	
-	<target name="javadoc">
-	
-        <delete dir="javadoc"/>
-        <mkdir dir="javadoc"/>
-	
-		
-        <javadoc access="public" author="false" 
-         destdir="javadoc" 
-         doctitle="docx4j ${version}" 
-         nodeprecated="false" 
-         nodeprecatedlist="false" 
-         noindex="false" 
-         nonavbar="false" 
-         notree="false" 
-         source="1.6" 
-        sourcepath="src/main/java:src/pptx4j/java:src/xlsx4j/java:src/glox4j/java:src/diffx" 
-        splitindex="true" use="true" version="false"
-        maxmemory="512m">
-                    <classpath refid="docx4j.classpath"/>
-        </javadoc>
-		
-<!-- 		
-      <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
-      <bottom>
-        <![CDATA[<i>Copyright 2007-2008 Plutext Pty Ltd.</i>]]>
-      </bottom>
-      <group>
-        <title>dml - DrawingML</title>
-        <package name="org.docx4j.dml*"/>
-      </group>
-      <group>
-        <title>wml - WordprocessingML</title>
-        <package name="org.docx4j.wml*"/>
-      </group>
-       -->		
-	
-	</target>
-	
-    <target name="test" depends="dist">
-
-	    <path id="tests.classpath">
-	    	<pathelement location="${dist}/docx4j.jar" />
-	        <path refid="Maven Dependencies.libraryclasspath"/>
-	        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
-	        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
-	        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
-	        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>	    	
-	    </path>    	
-        
-    	<!--  Make jar containing tests only  -->
-        <delete file="docx4j-tests-only.jar"/>
-        <delete dir="testing"/>
-        <mkdir dir="testing"/>
-        <javac debug="off" destdir="testing" source="${source}" target="${target}">
-            <src path="src/test/java"/>
-            <classpath refid="tests.classpath"/>
-        </javac>
-        <copy includeemptydirs="false" todir="testing">
-            <fileset dir="src/test/resources">
-                <include name="**/*"/> 
-            </fileset>
-        </copy>
-	   	 <jar destfile="docx4j-tests-only.jar">
-	   	    <fileset dir="./testing" />
-	   	  </jar>    	
-
-	    <path id="testsplus.classpath">
-	    	<pathelement location="docx4j-tests-only.jar" />
-	        <path refid="tests.classpath"/>
-	    </path>
-    	
-        <delete dir="${junit.output.dir}"/>
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="on" haltonfailure="on">
-            <formatter type="xml"/>
-        	  <batchtest fork="yes" todir="${junit.output.dir}">
-        	  	<resources>
-        	  		<zipfileset src="docx4j-tests-only.jar" includes="**/*Test.class"/>
-        	  	</resources> 
-        	 </batchtest>
-        	
-            <classpath refid="testsplus.classpath"/>
-        </junit>
-        <delete dir="testing"/>
-        	
-    </target>
-	
    
 </project>
