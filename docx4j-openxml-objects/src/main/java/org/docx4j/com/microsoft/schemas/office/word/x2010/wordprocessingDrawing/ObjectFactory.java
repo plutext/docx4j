@@ -24,10 +24,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _SizeRelH_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "sizeRelH");
-    private final static QName _PctPosVOffset_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "pctPosVOffset");
-    private final static QName _SizeRelV_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "sizeRelV");
     private final static QName _PctPosHOffset_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "pctPosHOffset");
+    private final static QName _PctPosVOffset_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "pctPosVOffset");
+    private final static QName _SizeRelH_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "sizeRelH");
+    private final static QName _SizeRelV_QNAME = new QName("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", "sizeRelV");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing
@@ -53,12 +53,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTSizeRelH }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", name = "sizeRelH")
-    public JAXBElement<CTSizeRelH> createSizeRelH(CTSizeRelH value) {
-        return new JAXBElement<CTSizeRelH>(_SizeRelH_QNAME, CTSizeRelH.class, null, value);
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", name = "pctPosHOffset")
+    public JAXBElement<Integer> createPctPosHOffset(Integer value) {
+        return new JAXBElement<Integer>(_PctPosHOffset_QNAME, Integer.class, null, value);
     }
 
     /**
@@ -71,21 +71,21 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTSizeRelH }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", name = "sizeRelH")
+    public JAXBElement<CTSizeRelH> createSizeRelH(CTSizeRelH value) {
+        return new JAXBElement<CTSizeRelH>(_SizeRelH_QNAME, CTSizeRelH.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTSizeRelV }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", name = "sizeRelV")
     public JAXBElement<CTSizeRelV> createSizeRelV(CTSizeRelV value) {
         return new JAXBElement<CTSizeRelV>(_SizeRelV_QNAME, CTSizeRelV.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing", name = "pctPosHOffset")
-    public JAXBElement<Integer> createPctPosHOffset(Integer value) {
-        return new JAXBElement<Integer>(_PctPosHOffset_QNAME, Integer.class, null, value);
     }
 
 }
