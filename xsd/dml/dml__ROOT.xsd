@@ -10,8 +10,17 @@
 	
 	<!--   
 	
+	    drawingml/2006/main
+	    
+	
 		This file ought to generate all dml, including (as from 2010 09 06) dml-spreadsheetDrawing.xsd
-		If you regenerate, make sure you implement changeset 1129
+		
+		If you regenerate, make sure you diffs from 053f6655ab35bae6eed9f81d466c6b0feaacfd71 to 3aeba7044a0bb5437591292c6c2e2ac25a36bb83
+		
+		git diff 053f6655ab35bae6eed9f81d466c6b0feaacfd71 3aeba7044a0bb5437591292c6c2e2ac25a36bb83 src/main/java/org/docx4j/dml
+		 
+	20190429: 		 
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer dml__ROOT.xsd -d tmp  -no-header -target 2.0
 		 
 	
 	sh ~/jaxb-ri-20071219/bin/xjc.sh dml__ROOT.xsd -d  ~/workspace/docx4j/src/main/java -no-header -target 2.0 
@@ -52,6 +61,27 @@
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
+  
+  <!--  remember, use "include" for same namespace;
+                  use "import"  for different one.
+                  
+        Imports should go into a different java package:
+                  
+        $ grep jaxb:package *
+                
+			dml-chartDrawing.xsd:                           <jaxb:package name="org.docx4j.dml.chartDrawing"/>
+			dml-chart.xsd:                          <jaxb:package name="org.docx4j.dml.chart"/>
+			dml-compatibility.xsd:                          <jaxb:package name="org.docx4j.dml.compatibility"/>
+			dml-diagramDefinition.xsd:                              <jaxb:package name="org.docx4j.dml.diagram"/>
+			dml-diagramDrawing.xsd:                         <jaxb:package name="org.docx4j.dml.diagram2008"/>
+			dml-lockedCanvas.xsd:                           <jaxb:package name="org.docx4j.dml.lockedCanvas"/>
+			dml-picture.xsd:                                <jaxb:package name="org.docx4j.dml.picture"/>
+			dml__ROOT.xsd:                          <jaxb:package name="org.docx4j.dml"/>
+			dml-spreadsheetDrawing.xsd:                             <jaxb:package name="org.docx4j.dml.spreadsheetdrawing"/>
+			dml-wordprocessingDrawing.xsd:                          <jaxb:package name="org.docx4j.dml.wordprocessingDrawing"/>
+			wordprocessingDrawing_import_Main.xsd:                          <jaxb:package name="org.docx4j.dml"/>
+                     
+   -->
   
   	<xsd:include schemaLocation="dml-baseStylesheet.xsd" />
 	<xsd:include schemaLocation="dml-baseTypes.xsd" />
@@ -122,6 +152,35 @@
 
 	<xsd:import schemaLocation="../odrawxml/oartwordshape.xsd"
 		namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" />
-    
 		
+<xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" schemaLocation="../odrawxml/oartwordcanvas.xsd"/> 
+<!--  2019 04 29 -->
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/diagram" schemaLocation="../odrawxml/oartdrawingdiagram2010.xsd"/> 
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/chartDrawing" schemaLocation="../odrawxml/chartDrawing2010.xsd"/> 
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="../odrawxml/oart14docprop.xsd"/> 
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/picture" schemaLocation="../odrawxml/oartdrawingpicture2010.xsd"/> 
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2012/chart" schemaLocation="../odrawxml/oartdrawingchart2012.xsd"/> 
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2012/chartStyle" schemaLocation="../odrawxml/oartdrawingchartyle2012.xsd"/>  
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2012/main" schemaLocation="../odrawxml/oartdrawingmain2012.xsd"/> 
+
+<xsd:import  namespace="http://schemas.microsoft.com/ink/2010/main" schemaLocation="../odrawxml/ink2010.xsd"/>  
+
+<xsd:import namespace="http://schemas.microsoft.com/office/thememl/2012/main" schemaLocation="../odrawxml/oartthememain2012.xsd"/>  
+
+
+
+<xsd:import namespace="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" schemaLocation="../odrawxml/oartworddrawing2012.xsd"/>  
+
+<xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" schemaLocation="../odrawxml/oartwordgroup.xsd"/> 
+
+ 
+<xsd:import namespace="http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing" schemaLocation="../odrawxml/spreadsheetDrawing2010.xsd"/> 
+    
+<!--  included via WordML: <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordml" schemaLocation="../odrawxml/oartwordcontentpart.xsd"/>
+
+Already have this...
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2008/diagram" schemaLocation="../odrawxml/oartdrawingdiagram2008.xsd"/>
+
+ 
+     -->
 </xsd:schema>

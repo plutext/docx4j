@@ -1,11 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/drawing/2008/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:oxsd="http://oxsdSchemaUri" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram">
-  <xsd:import schemaLocation="orel.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
-  <xsd:import schemaLocation="igxelementpropertyset.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
-  <xsd:import schemaLocation="oartspstyle.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartdocprop.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oarte2o.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oarttx.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2008/diagram"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+	
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd"/>
+  <xsd:import schemaLocation="../dml/dml-diagramElementPropertySet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
+  <xsd:import schemaLocation="../dml/dml-shapeStyle.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <!-- <xsd:import schemaLocation="../dml-e2o.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/> -->
+  <xsd:import schemaLocation="../dml/dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  
+  
   <xsd:complexType name="CT_ShapeNonVisual">
     <xsd:sequence>
       <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>

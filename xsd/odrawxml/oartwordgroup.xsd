@@ -1,12 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:oxsd="http://oxsdSchemaUri" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
-  <xsd:import schemaLocation="oartspproperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartdocprop.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartstylesheet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oarte2o.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+	xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+	xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+  
+  <xsd:import schemaLocation="../dml/dml-picture.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/picture"/>
+
+  <xsd:import schemaLocation="../dml/dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-shapeProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-baseStylesheet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  
+	
+<!--   <xsd:import schemaLocation="oarte2o.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>  -->
+  
   <xsd:import schemaLocation="oartwordshape.xsd" namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"/>
-  <xsd:import schemaLocation="picturee2o.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/picture"/>
-  <xsd:import schemaLocation="oartwordcontentpart.xsd" namespace="http://schemas.microsoft.com/office/word/2010/wordml"/>
+    
+  <xsd:import schemaLocation="../wml/w14_word_2010_wordml.xsd" namespace="http://schemas.microsoft.com/office/word/2010/wordml"/>
+  
   <xsd:complexType name="CT_GraphicFrame">
     <xsd:sequence>
       <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
@@ -26,7 +63,9 @@
         <xsd:element name="grpSp" type="CT_WordprocessingGroup"/>
         <xsd:element name="graphicFrame" type="CT_GraphicFrame"/>
         <xsd:element ref="pic:pic"/>
-        <xsd:element ref="w14:contentPart"/>
+        <!-- not in v2 or v11 of [MS-DOCX] <xsd:element ref="w14:contentPart"/>
+        What to replace with???
+         -->
       </xsd:choice>
       <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>

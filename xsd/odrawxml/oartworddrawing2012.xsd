@@ -1,7 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" elementFormDefault="qualified" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:oxsd="http://oxsdSchemaUri" xmlns="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+	
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+  
   <xsd:complexType name="CT_WebVideoPr">
     <xsd:attribute name="embeddedHtml" type="xsd:string" use="optional" default=""/>
     <xsd:attribute name="h" type="xsd:unsignedInt" use="optional" default="0"/>

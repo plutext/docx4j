@@ -1,8 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/thememl/2012/main" elementFormDefault="qualified" xmlns="http://schemas.microsoft.com/office/thememl/2012/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:oxsd="http://oxsdSchemaUri" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasestylesheet.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/thememl/2012/main"
+	elementFormDefault="qualified"
+	xmlns="http://schemas.microsoft.com/office/thememl/2012/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.thememl.x2012.main"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+	
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseStylesheet.xsd"/>
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd"/>
+		
   <xsd:complexType name="CT_ThemeFamily">
     <xsd:sequence>
       <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
