@@ -32,25 +32,25 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PresetMaterialType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="legacyMatte"/>
- *     &lt;enumeration value="legacyPlastic"/>
- *     &lt;enumeration value="legacyMetal"/>
- *     &lt;enumeration value="legacyWireframe"/>
- *     &lt;enumeration value="matte"/>
- *     &lt;enumeration value="plastic"/>
- *     &lt;enumeration value="metal"/>
- *     &lt;enumeration value="warmMatte"/>
- *     &lt;enumeration value="translucentPowder"/>
- *     &lt;enumeration value="powder"/>
- *     &lt;enumeration value="dkEdge"/>
- *     &lt;enumeration value="softEdge"/>
- *     &lt;enumeration value="clear"/>
- *     &lt;enumeration value="flat"/>
- *     &lt;enumeration value="softmetal"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PresetMaterialType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="legacyMatte"/&gt;
+ *     &lt;enumeration value="legacyPlastic"/&gt;
+ *     &lt;enumeration value="legacyMetal"/&gt;
+ *     &lt;enumeration value="legacyWireframe"/&gt;
+ *     &lt;enumeration value="matte"/&gt;
+ *     &lt;enumeration value="plastic"/&gt;
+ *     &lt;enumeration value="metal"/&gt;
+ *     &lt;enumeration value="warmMatte"/&gt;
+ *     &lt;enumeration value="translucentPowder"/&gt;
+ *     &lt;enumeration value="powder"/&gt;
+ *     &lt;enumeration value="dkEdge"/&gt;
+ *     &lt;enumeration value="softEdge"/&gt;
+ *     &lt;enumeration value="clear"/&gt;
+ *     &lt;enumeration value="flat"/&gt;
+ *     &lt;enumeration value="softmetal"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

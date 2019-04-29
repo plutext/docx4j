@@ -21,10 +21,9 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -34,10 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-// import org.docx4j.XmlUtils;
-import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
-import org.docx4j.dml.picture.Pic;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -46,16 +42,16 @@ import org.docx4j.dml.picture.Pic;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GraphicalObjectData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;any maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GraphicalObjectData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;any maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -64,27 +60,17 @@ import org.docx4j.dml.picture.Pic;
 @XmlType(name = "CT_GraphicalObjectData", propOrder = {
     "any"
 })
-public class GraphicData {
-
-	private static Object unwrap(Object o) {
-		
-		if (o==null) return null;
-		
-		if (o instanceof javax.xml.bind.JAXBElement) {
-// 			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
-// 			log.debug("name: " + ((JAXBElement)o).getName() );
-			return ((JAXBElement)o).getValue();
-		} else {
-			return o;
-		}
-	}
+public class GraphicData implements Child
+{
 
     @XmlAnyElement(lax = true)
-    protected List<Object> any = new ArrayListDml<Object>(this);
-    @XmlAttribute
+    protected List<Object> any;
+    @XmlAttribute(name = "uri")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "token")
     protected String uri;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the any property.
@@ -110,48 +96,11 @@ public class GraphicData {
      */
     public List<Object> getAny() {
         if (any == null) {
-            any = new ArrayListDml<Object>(this);
+            any = new ArrayList<Object>();
         }
         return this.any;
     }
 
-    @XmlTransient
-    public org.docx4j.dml.picture.Pic getPic() {
-
-		for (Object o : getAny() ) {
-			
-			if (o instanceof Pic) return (Pic)o;
-
-			if (o instanceof JAXBElement
-					&& ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {
-				
-					return (Pic)((JAXBElement)o).getValue();
-			}
-		}
-    	return null;    	
-    }
-
-    @XmlTransient
-    public CTWordprocessingShape getWordprocessingShape() {
-    	
-    	/*
-          <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-            <wps:wsp>
-       	 */
-
-		for (Object o : getAny() ) {
-			
-			if (o instanceof CTWordprocessingShape) return (CTWordprocessingShape)o;
-
-			if (o instanceof JAXBElement
-					&& (unwrap(o) instanceof  CTWordprocessingShape)) {
-				
-					return (CTWordprocessingShape)((JAXBElement)o).getValue();
-			}
-		}
-    	return null;    	
-    }
-    
     /**
      * Gets the value of the uri property.
      * 
@@ -174,6 +123,32 @@ public class GraphicData {
      */
     public void setUri(String value) {
         this.uri = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -32,21 +32,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_BlackWhiteMode">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="clr"/>
- *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="gray"/>
- *     &lt;enumeration value="ltGray"/>
- *     &lt;enumeration value="invGray"/>
- *     &lt;enumeration value="grayWhite"/>
- *     &lt;enumeration value="blackGray"/>
- *     &lt;enumeration value="blackWhite"/>
- *     &lt;enumeration value="black"/>
- *     &lt;enumeration value="white"/>
- *     &lt;enumeration value="hidden"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_BlackWhiteMode"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="clr"/&gt;
+ *     &lt;enumeration value="auto"/&gt;
+ *     &lt;enumeration value="gray"/&gt;
+ *     &lt;enumeration value="ltGray"/&gt;
+ *     &lt;enumeration value="invGray"/&gt;
+ *     &lt;enumeration value="grayWhite"/&gt;
+ *     &lt;enumeration value="blackGray"/&gt;
+ *     &lt;enumeration value="blackWhite"/&gt;
+ *     &lt;enumeration value="black"/&gt;
+ *     &lt;enumeration value="white"/&gt;
+ *     &lt;enumeration value="hidden"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

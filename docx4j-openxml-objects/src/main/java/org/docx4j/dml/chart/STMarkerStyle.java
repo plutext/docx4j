@@ -32,21 +32,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_MarkerStyle">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="circle"/>
- *     &lt;enumeration value="dash"/>
- *     &lt;enumeration value="diamond"/>
- *     &lt;enumeration value="dot"/>
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="picture"/>
- *     &lt;enumeration value="plus"/>
- *     &lt;enumeration value="square"/>
- *     &lt;enumeration value="star"/>
- *     &lt;enumeration value="triangle"/>
- *     &lt;enumeration value="x"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_MarkerStyle"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="circle"/&gt;
+ *     &lt;enumeration value="dash"/&gt;
+ *     &lt;enumeration value="diamond"/&gt;
+ *     &lt;enumeration value="dot"/&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="picture"/&gt;
+ *     &lt;enumeration value="plus"/&gt;
+ *     &lt;enumeration value="square"/&gt;
+ *     &lt;enumeration value="star"/&gt;
+ *     &lt;enumeration value="triangle"/&gt;
+ *     &lt;enumeration value="x"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,19 +37,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TwoCellAnchor">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="from" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Marker"/>
- *         &lt;element name="to" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Marker"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}EG_ObjectChoices"/>
- *         &lt;element name="clientData" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_AnchorClientData"/>
- *       &lt;/sequence>
- *       &lt;attribute name="editAs" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_EditAs" default="twoCell" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TwoCellAnchor"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="from" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Marker"/&gt;
+ *         &lt;element name="to" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Marker"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}EG_ObjectChoices"/&gt;
+ *         &lt;element name="clientData" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_AnchorClientData"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="editAs" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_EditAs" default="twoCell" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -62,7 +65,8 @@ import javax.xml.bind.annotation.XmlType;
     "pic",
     "clientData"
 })
-public class CTTwoCellAnchor {
+public class CTTwoCellAnchor implements Child
+{
 
     @XmlElement(required = true)
     protected CTMarker from;
@@ -75,8 +79,10 @@ public class CTTwoCellAnchor {
     protected CTPicture pic;
     @XmlElement(required = true)
     protected CTAnchorClientData clientData;
-    @XmlAttribute
+    @XmlAttribute(name = "editAs")
     protected STEditAs editAs;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the from property.
@@ -296,6 +302,32 @@ public class CTTwoCellAnchor {
      */
     public void setEditAs(STEditAs value) {
         this.editAs = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

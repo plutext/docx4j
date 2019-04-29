@@ -32,37 +32,37 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_LightRigType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="legacyFlat1"/>
- *     &lt;enumeration value="legacyFlat2"/>
- *     &lt;enumeration value="legacyFlat3"/>
- *     &lt;enumeration value="legacyFlat4"/>
- *     &lt;enumeration value="legacyNormal1"/>
- *     &lt;enumeration value="legacyNormal2"/>
- *     &lt;enumeration value="legacyNormal3"/>
- *     &lt;enumeration value="legacyNormal4"/>
- *     &lt;enumeration value="legacyHarsh1"/>
- *     &lt;enumeration value="legacyHarsh2"/>
- *     &lt;enumeration value="legacyHarsh3"/>
- *     &lt;enumeration value="legacyHarsh4"/>
- *     &lt;enumeration value="threePt"/>
- *     &lt;enumeration value="balanced"/>
- *     &lt;enumeration value="soft"/>
- *     &lt;enumeration value="harsh"/>
- *     &lt;enumeration value="flood"/>
- *     &lt;enumeration value="contrasting"/>
- *     &lt;enumeration value="morning"/>
- *     &lt;enumeration value="sunrise"/>
- *     &lt;enumeration value="sunset"/>
- *     &lt;enumeration value="chilly"/>
- *     &lt;enumeration value="freezing"/>
- *     &lt;enumeration value="flat"/>
- *     &lt;enumeration value="twoPt"/>
- *     &lt;enumeration value="glow"/>
- *     &lt;enumeration value="brightRoom"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_LightRigType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="legacyFlat1"/&gt;
+ *     &lt;enumeration value="legacyFlat2"/&gt;
+ *     &lt;enumeration value="legacyFlat3"/&gt;
+ *     &lt;enumeration value="legacyFlat4"/&gt;
+ *     &lt;enumeration value="legacyNormal1"/&gt;
+ *     &lt;enumeration value="legacyNormal2"/&gt;
+ *     &lt;enumeration value="legacyNormal3"/&gt;
+ *     &lt;enumeration value="legacyNormal4"/&gt;
+ *     &lt;enumeration value="legacyHarsh1"/&gt;
+ *     &lt;enumeration value="legacyHarsh2"/&gt;
+ *     &lt;enumeration value="legacyHarsh3"/&gt;
+ *     &lt;enumeration value="legacyHarsh4"/&gt;
+ *     &lt;enumeration value="threePt"/&gt;
+ *     &lt;enumeration value="balanced"/&gt;
+ *     &lt;enumeration value="soft"/&gt;
+ *     &lt;enumeration value="harsh"/&gt;
+ *     &lt;enumeration value="flood"/&gt;
+ *     &lt;enumeration value="contrasting"/&gt;
+ *     &lt;enumeration value="morning"/&gt;
+ *     &lt;enumeration value="sunrise"/&gt;
+ *     &lt;enumeration value="sunset"/&gt;
+ *     &lt;enumeration value="chilly"/&gt;
+ *     &lt;enumeration value="freezing"/&gt;
+ *     &lt;enumeration value="flat"/&gt;
+ *     &lt;enumeration value="twoPt"/&gt;
+ *     &lt;enumeration value="glow"/&gt;
+ *     &lt;enumeration value="brightRoom"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -21,11 +21,14 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,38 +37,38 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TextBodyProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="prstTxWarp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PresetTextShape" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextAutofit" minOccurs="0"/>
- *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_Text3D" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="rot" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Angle" />
- *       &lt;attribute name="spcFirstLastPara" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="vertOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVertOverflowType" />
- *       &lt;attribute name="horzOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextHorzOverflowType" />
- *       &lt;attribute name="vert" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVerticalType" />
- *       &lt;attribute name="wrap" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextWrappingType" />
- *       &lt;attribute name="lIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" />
- *       &lt;attribute name="tIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" />
- *       &lt;attribute name="rIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" />
- *       &lt;attribute name="bIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" />
- *       &lt;attribute name="numCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextColumnCount" />
- *       &lt;attribute name="spcCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate32" />
- *       &lt;attribute name="rtlCol" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="fromWordArt" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="anchor" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAnchoringType" />
- *       &lt;attribute name="anchorCtr" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="forceAA" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="upright" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="compatLnSpc" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TextBodyProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="prstTxWarp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PresetTextShape" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextAutofit" minOccurs="0"/&gt;
+ *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_Text3D" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="rot" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Angle" /&gt;
+ *       &lt;attribute name="spcFirstLastPara" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="vertOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVertOverflowType" /&gt;
+ *       &lt;attribute name="horzOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextHorzOverflowType" /&gt;
+ *       &lt;attribute name="vert" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVerticalType" /&gt;
+ *       &lt;attribute name="wrap" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextWrappingType" /&gt;
+ *       &lt;attribute name="lIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" /&gt;
+ *       &lt;attribute name="tIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" /&gt;
+ *       &lt;attribute name="rIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" /&gt;
+ *       &lt;attribute name="bIns" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" /&gt;
+ *       &lt;attribute name="numCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextColumnCount" /&gt;
+ *       &lt;attribute name="spcCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate32" /&gt;
+ *       &lt;attribute name="rtlCol" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="fromWordArt" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="anchor" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAnchoringType" /&gt;
+ *       &lt;attribute name="anchorCtr" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="forceAA" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="upright" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="compatLnSpc" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -81,7 +84,8 @@ import javax.xml.bind.annotation.XmlType;
     "flatTx",
     "extLst"
 })
-public class CTTextBodyProperties {
+public class CTTextBodyProperties implements Child
+{
 
     protected CTPresetTextShape prstTxWarp;
     protected CTTextNoAutofit noAutofit;
@@ -93,44 +97,46 @@ public class CTTextBodyProperties {
     protected CTShape3D sp3D;
     protected CTFlatText flatTx;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "rot")
     protected Integer rot;
-    @XmlAttribute
+    @XmlAttribute(name = "spcFirstLastPara")
     protected Boolean spcFirstLastPara;
-    @XmlAttribute
+    @XmlAttribute(name = "vertOverflow")
     protected STTextVertOverflowType vertOverflow;
-    @XmlAttribute
+    @XmlAttribute(name = "horzOverflow")
     protected STTextHorzOverflowType horzOverflow;
-    @XmlAttribute
+    @XmlAttribute(name = "vert")
     protected STTextVerticalType vert;
-    @XmlAttribute
+    @XmlAttribute(name = "wrap")
     protected STTextWrappingType wrap;
-    @XmlAttribute
+    @XmlAttribute(name = "lIns")
     protected Integer lIns;
-    @XmlAttribute
+    @XmlAttribute(name = "tIns")
     protected Integer tIns;
-    @XmlAttribute
+    @XmlAttribute(name = "rIns")
     protected Integer rIns;
-    @XmlAttribute
+    @XmlAttribute(name = "bIns")
     protected Integer bIns;
-    @XmlAttribute
+    @XmlAttribute(name = "numCol")
     protected Integer numCol;
-    @XmlAttribute
+    @XmlAttribute(name = "spcCol")
     protected Integer spcCol;
-    @XmlAttribute
+    @XmlAttribute(name = "rtlCol")
     protected Boolean rtlCol;
-    @XmlAttribute
+    @XmlAttribute(name = "fromWordArt")
     protected Boolean fromWordArt;
-    @XmlAttribute
+    @XmlAttribute(name = "anchor")
     protected STTextAnchoringType anchor;
-    @XmlAttribute
+    @XmlAttribute(name = "anchorCtr")
     protected Boolean anchorCtr;
-    @XmlAttribute
+    @XmlAttribute(name = "forceAA")
     protected Boolean forceAA;
-    @XmlAttribute
+    @XmlAttribute(name = "upright")
     protected Boolean upright;
-    @XmlAttribute
+    @XmlAttribute(name = "compatLnSpc")
     protected Boolean compatLnSpc;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the prstTxWarp property.
@@ -782,6 +788,32 @@ public class CTTextBodyProperties {
      */
     public void setCompatLnSpc(Boolean value) {
         this.compatLnSpc = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

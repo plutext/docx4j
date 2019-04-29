@@ -32,51 +32,51 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TextShapeType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="textNoShape"/>
- *     &lt;enumeration value="textPlain"/>
- *     &lt;enumeration value="textStop"/>
- *     &lt;enumeration value="textTriangle"/>
- *     &lt;enumeration value="textTriangleInverted"/>
- *     &lt;enumeration value="textChevron"/>
- *     &lt;enumeration value="textChevronInverted"/>
- *     &lt;enumeration value="textRingInside"/>
- *     &lt;enumeration value="textRingOutside"/>
- *     &lt;enumeration value="textArchUp"/>
- *     &lt;enumeration value="textArchDown"/>
- *     &lt;enumeration value="textCircle"/>
- *     &lt;enumeration value="textButton"/>
- *     &lt;enumeration value="textArchUpPour"/>
- *     &lt;enumeration value="textArchDownPour"/>
- *     &lt;enumeration value="textCirclePour"/>
- *     &lt;enumeration value="textButtonPour"/>
- *     &lt;enumeration value="textCurveUp"/>
- *     &lt;enumeration value="textCurveDown"/>
- *     &lt;enumeration value="textCanUp"/>
- *     &lt;enumeration value="textCanDown"/>
- *     &lt;enumeration value="textWave1"/>
- *     &lt;enumeration value="textWave2"/>
- *     &lt;enumeration value="textDoubleWave1"/>
- *     &lt;enumeration value="textWave4"/>
- *     &lt;enumeration value="textInflate"/>
- *     &lt;enumeration value="textDeflate"/>
- *     &lt;enumeration value="textInflateBottom"/>
- *     &lt;enumeration value="textDeflateBottom"/>
- *     &lt;enumeration value="textInflateTop"/>
- *     &lt;enumeration value="textDeflateTop"/>
- *     &lt;enumeration value="textDeflateInflate"/>
- *     &lt;enumeration value="textDeflateInflateDeflate"/>
- *     &lt;enumeration value="textFadeRight"/>
- *     &lt;enumeration value="textFadeLeft"/>
- *     &lt;enumeration value="textFadeUp"/>
- *     &lt;enumeration value="textFadeDown"/>
- *     &lt;enumeration value="textSlantUp"/>
- *     &lt;enumeration value="textSlantDown"/>
- *     &lt;enumeration value="textCascadeUp"/>
- *     &lt;enumeration value="textCascadeDown"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TextShapeType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="textNoShape"/&gt;
+ *     &lt;enumeration value="textPlain"/&gt;
+ *     &lt;enumeration value="textStop"/&gt;
+ *     &lt;enumeration value="textTriangle"/&gt;
+ *     &lt;enumeration value="textTriangleInverted"/&gt;
+ *     &lt;enumeration value="textChevron"/&gt;
+ *     &lt;enumeration value="textChevronInverted"/&gt;
+ *     &lt;enumeration value="textRingInside"/&gt;
+ *     &lt;enumeration value="textRingOutside"/&gt;
+ *     &lt;enumeration value="textArchUp"/&gt;
+ *     &lt;enumeration value="textArchDown"/&gt;
+ *     &lt;enumeration value="textCircle"/&gt;
+ *     &lt;enumeration value="textButton"/&gt;
+ *     &lt;enumeration value="textArchUpPour"/&gt;
+ *     &lt;enumeration value="textArchDownPour"/&gt;
+ *     &lt;enumeration value="textCirclePour"/&gt;
+ *     &lt;enumeration value="textButtonPour"/&gt;
+ *     &lt;enumeration value="textCurveUp"/&gt;
+ *     &lt;enumeration value="textCurveDown"/&gt;
+ *     &lt;enumeration value="textCanUp"/&gt;
+ *     &lt;enumeration value="textCanDown"/&gt;
+ *     &lt;enumeration value="textWave1"/&gt;
+ *     &lt;enumeration value="textWave2"/&gt;
+ *     &lt;enumeration value="textDoubleWave1"/&gt;
+ *     &lt;enumeration value="textWave4"/&gt;
+ *     &lt;enumeration value="textInflate"/&gt;
+ *     &lt;enumeration value="textDeflate"/&gt;
+ *     &lt;enumeration value="textInflateBottom"/&gt;
+ *     &lt;enumeration value="textDeflateBottom"/&gt;
+ *     &lt;enumeration value="textInflateTop"/&gt;
+ *     &lt;enumeration value="textDeflateTop"/&gt;
+ *     &lt;enumeration value="textDeflateInflate"/&gt;
+ *     &lt;enumeration value="textDeflateInflateDeflate"/&gt;
+ *     &lt;enumeration value="textFadeRight"/&gt;
+ *     &lt;enumeration value="textFadeLeft"/&gt;
+ *     &lt;enumeration value="textFadeUp"/&gt;
+ *     &lt;enumeration value="textFadeDown"/&gt;
+ *     &lt;enumeration value="textSlantUp"/&gt;
+ *     &lt;enumeration value="textSlantDown"/&gt;
+ *     &lt;enumeration value="textCascadeUp"/&gt;
+ *     &lt;enumeration value="textCascadeDown"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

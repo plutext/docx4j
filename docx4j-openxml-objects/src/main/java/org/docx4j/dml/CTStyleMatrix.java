@@ -21,11 +21,14 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,19 +37,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_StyleMatrix">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="fillStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_FillStyleList"/>
- *         &lt;element name="lnStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineStyleList"/>
- *         &lt;element name="effectStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EffectStyleList"/>
- *         &lt;element name="bgFillStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BackgroundFillStyleList"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_StyleMatrix"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="fillStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_FillStyleList"/&gt;
+ *         &lt;element name="lnStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineStyleList"/&gt;
+ *         &lt;element name="effectStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EffectStyleList"/&gt;
+ *         &lt;element name="bgFillStyleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BackgroundFillStyleList"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -58,7 +61,8 @@ import javax.xml.bind.annotation.XmlType;
     "effectStyleLst",
     "bgFillStyleLst"
 })
-public class CTStyleMatrix {
+public class CTStyleMatrix implements Child
+{
 
     @XmlElement(required = true)
     protected CTFillStyleList fillStyleLst;
@@ -68,8 +72,10 @@ public class CTStyleMatrix {
     protected CTEffectStyleList effectStyleLst;
     @XmlElement(required = true)
     protected CTBackgroundFillStyleList bgFillStyleLst;
-    @XmlAttribute
+    @XmlAttribute(name = "name")
     protected String name;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the fillStyleLst property.
@@ -193,6 +199,32 @@ public class CTStyleMatrix {
      */
     public void setName(String value) {
         this.name = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

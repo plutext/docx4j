@@ -32,19 +32,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_DLblPos">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="bestFit"/>
- *     &lt;enumeration value="b"/>
- *     &lt;enumeration value="ctr"/>
- *     &lt;enumeration value="inBase"/>
- *     &lt;enumeration value="inEnd"/>
- *     &lt;enumeration value="l"/>
- *     &lt;enumeration value="outEnd"/>
- *     &lt;enumeration value="r"/>
- *     &lt;enumeration value="t"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_DLblPos"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="bestFit"/&gt;
+ *     &lt;enumeration value="b"/&gt;
+ *     &lt;enumeration value="ctr"/&gt;
+ *     &lt;enumeration value="inBase"/&gt;
+ *     &lt;enumeration value="inEnd"/&gt;
+ *     &lt;enumeration value="l"/&gt;
+ *     &lt;enumeration value="outEnd"/&gt;
+ *     &lt;enumeration value="r"/&gt;
+ *     &lt;enumeration value="t"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

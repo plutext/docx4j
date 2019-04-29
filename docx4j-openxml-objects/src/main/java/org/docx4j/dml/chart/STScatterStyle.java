@@ -32,16 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ScatterStyle">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="line"/>
- *     &lt;enumeration value="lineMarker"/>
- *     &lt;enumeration value="marker"/>
- *     &lt;enumeration value="smooth"/>
- *     &lt;enumeration value="smoothMarker"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_ScatterStyle"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="line"/&gt;
+ *     &lt;enumeration value="lineMarker"/&gt;
+ *     &lt;enumeration value="marker"/&gt;
+ *     &lt;enumeration value="smooth"/&gt;
+ *     &lt;enumeration value="smoothMarker"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

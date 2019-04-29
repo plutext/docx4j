@@ -21,9 +21,12 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -32,18 +35,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_PrintSettings">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="headerFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_HeaderFooter" minOccurs="0"/>
- *         &lt;element name="pageMargins" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PageMargins" minOccurs="0"/>
- *         &lt;element name="pageSetup" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PageSetup" minOccurs="0"/>
- *         &lt;element name="legacyDrawingHF" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RelId" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_PrintSettings"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="headerFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_HeaderFooter" minOccurs="0"/&gt;
+ *         &lt;element name="pageMargins" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PageMargins" minOccurs="0"/&gt;
+ *         &lt;element name="pageSetup" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PageSetup" minOccurs="0"/&gt;
+ *         &lt;element name="legacyDrawingHF" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RelId" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -55,12 +58,15 @@ import javax.xml.bind.annotation.XmlType;
     "pageSetup",
     "legacyDrawingHF"
 })
-public class CTPrintSettings {
+public class CTPrintSettings implements Child
+{
 
     protected CTHeaderFooter headerFooter;
     protected CTPageMargins pageMargins;
     protected CTPageSetup pageSetup;
     protected CTRelId legacyDrawingHF;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the headerFooter property.
@@ -156,6 +162,32 @@ public class CTPrintSettings {
      */
     public void setLegacyDrawingHF(CTRelId value) {
         this.legacyDrawingHF = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

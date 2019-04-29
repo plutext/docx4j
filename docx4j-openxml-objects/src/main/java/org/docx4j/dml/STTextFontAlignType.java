@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TextFontAlignType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="t"/>
- *     &lt;enumeration value="ctr"/>
- *     &lt;enumeration value="base"/>
- *     &lt;enumeration value="b"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TextFontAlignType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="auto"/&gt;
+ *     &lt;enumeration value="t"/&gt;
+ *     &lt;enumeration value="ctr"/&gt;
+ *     &lt;enumeration value="base"/&gt;
+ *     &lt;enumeration value="b"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

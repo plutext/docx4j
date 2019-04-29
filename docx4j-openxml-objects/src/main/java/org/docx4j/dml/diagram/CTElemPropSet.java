@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeStyle;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,44 +37,44 @@ import org.docx4j.dml.CTShapeStyle;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_ElemPropSet">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="presLayoutVars" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutVariablePropertySet" minOccurs="0"/>
- *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="presAssocID" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" />
- *       &lt;attribute name="presName" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="presStyleLbl" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="presStyleIdx" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="presStyleCnt" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="loTypeId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="loCatId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="qsTypeId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="qsCatId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="csTypeId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="csCatId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="coherent3DOff" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="phldrT" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="phldr" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="custAng" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custFlipVert" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="custFlipHor" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="custSzX" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custSzY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custT" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="custLinFactX" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custLinFactY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custRadScaleRad" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="custRadScaleInc" type="{http://www.w3.org/2001/XMLSchema}int" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_ElemPropSet"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="presLayoutVars" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutVariablePropertySet" minOccurs="0"/&gt;
+ *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="presAssocID" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" /&gt;
+ *       &lt;attribute name="presName" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="presStyleLbl" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="presStyleIdx" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="presStyleCnt" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="loTypeId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="loCatId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="qsTypeId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="qsCatId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="csTypeId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="csCatId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="coherent3DOff" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="phldrT" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="phldr" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="custAng" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custFlipVert" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="custFlipHor" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="custSzX" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custSzY" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custT" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="custLinFactX" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custLinFactY" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custRadScaleRad" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="custRadScaleInc" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -81,66 +84,69 @@ import org.docx4j.dml.CTShapeStyle;
     "presLayoutVars",
     "style"
 })
-public class CTElemPropSet {
+public class CTElemPropSet implements Child
+{
 
     protected CTLayoutVariablePropertySet presLayoutVars;
     protected CTShapeStyle style;
-    @XmlAttribute
+    @XmlAttribute(name = "presAssocID")
     protected String presAssocID;
-    @XmlAttribute
+    @XmlAttribute(name = "presName")
     protected String presName;
-    @XmlAttribute
+    @XmlAttribute(name = "presStyleLbl")
     protected String presStyleLbl;
-    @XmlAttribute
+    @XmlAttribute(name = "presStyleIdx")
     protected Integer presStyleIdx;
-    @XmlAttribute
+    @XmlAttribute(name = "presStyleCnt")
     protected Integer presStyleCnt;
-    @XmlAttribute
+    @XmlAttribute(name = "loTypeId")
     protected String loTypeId;
-    @XmlAttribute
+    @XmlAttribute(name = "loCatId")
     protected String loCatId;
-    @XmlAttribute
+    @XmlAttribute(name = "qsTypeId")
     protected String qsTypeId;
-    @XmlAttribute
+    @XmlAttribute(name = "qsCatId")
     protected String qsCatId;
-    @XmlAttribute
+    @XmlAttribute(name = "csTypeId")
     protected String csTypeId;
-    @XmlAttribute
+    @XmlAttribute(name = "csCatId")
     protected String csCatId;
-    @XmlAttribute
+    @XmlAttribute(name = "coherent3DOff")
     protected Boolean coherent3DOff;
-    @XmlAttribute
+    @XmlAttribute(name = "phldrT")
     protected String phldrT;
-    @XmlAttribute
+    @XmlAttribute(name = "phldr")
     protected Boolean phldr;
-    @XmlAttribute
+    @XmlAttribute(name = "custAng")
     protected Integer custAng;
-    @XmlAttribute
+    @XmlAttribute(name = "custFlipVert")
     protected Boolean custFlipVert;
-    @XmlAttribute
+    @XmlAttribute(name = "custFlipHor")
     protected Boolean custFlipHor;
-    @XmlAttribute
+    @XmlAttribute(name = "custSzX")
     protected Integer custSzX;
-    @XmlAttribute
+    @XmlAttribute(name = "custSzY")
     protected Integer custSzY;
-    @XmlAttribute
+    @XmlAttribute(name = "custScaleX")
     protected Integer custScaleX;
-    @XmlAttribute
+    @XmlAttribute(name = "custScaleY")
     protected Integer custScaleY;
-    @XmlAttribute
+    @XmlAttribute(name = "custT")
     protected Boolean custT;
-    @XmlAttribute
+    @XmlAttribute(name = "custLinFactX")
     protected Integer custLinFactX;
-    @XmlAttribute
+    @XmlAttribute(name = "custLinFactY")
     protected Integer custLinFactY;
-    @XmlAttribute
+    @XmlAttribute(name = "custLinFactNeighborX")
     protected Integer custLinFactNeighborX;
-    @XmlAttribute
+    @XmlAttribute(name = "custLinFactNeighborY")
     protected Integer custLinFactNeighborY;
-    @XmlAttribute
+    @XmlAttribute(name = "custRadScaleRad")
     protected Integer custRadScaleRad;
-    @XmlAttribute
+    @XmlAttribute(name = "custRadScaleInc")
     protected Integer custRadScaleInc;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the presLayoutVars property.
@@ -860,6 +866,32 @@ public class CTElemPropSet {
      */
     public void setCustRadScaleInc(Integer value) {
         this.custRadScaleInc = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

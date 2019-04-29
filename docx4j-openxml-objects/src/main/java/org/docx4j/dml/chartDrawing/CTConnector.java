@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.chartDrawing;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,19 +39,19 @@ import org.docx4j.dml.CTShapeStyle;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Connector">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="nvCxnSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/chartDrawing}CT_ConnectorNonVisual"/>
- *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties"/>
- *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="macro" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="fPublished" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Connector"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="nvCxnSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/chartDrawing}CT_ConnectorNonVisual"/&gt;
+ *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties"/&gt;
+ *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="macro" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="fPublished" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -59,17 +62,20 @@ import org.docx4j.dml.CTShapeStyle;
     "spPr",
     "style"
 })
-public class CTConnector {
+public class CTConnector implements Child
+{
 
     @XmlElement(required = true)
     protected CTConnectorNonVisual nvCxnSpPr;
     @XmlElement(required = true)
     protected CTShapeProperties spPr;
     protected CTShapeStyle style;
-    @XmlAttribute
+    @XmlAttribute(name = "macro")
     protected String macro;
-    @XmlAttribute
+    @XmlAttribute(name = "fPublished")
     protected Boolean fPublished;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the nvCxnSpPr property.
@@ -193,6 +199,32 @@ public class CTConnector {
      */
     public void setFPublished(Boolean value) {
         this.fPublished = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -21,10 +21,13 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,38 +36,41 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_PageMargins">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="l" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *       &lt;attribute name="r" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *       &lt;attribute name="t" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *       &lt;attribute name="b" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *       &lt;attribute name="header" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *       &lt;attribute name="footer" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_PageMargins"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attribute name="l" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="r" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="t" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="b" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="header" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="footer" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_PageMargins")
-public class CTPageMargins {
+public class CTPageMargins implements Child
+{
 
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "l", required = true)
     protected double l;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "r", required = true)
     protected double r;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "t", required = true)
     protected double t;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "b", required = true)
     protected double b;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "header", required = true)
     protected double header;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "footer", required = true)
     protected double footer;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the l property.
@@ -160,6 +166,32 @@ public class CTPageMargins {
      */
     public void setFooter(double value) {
         this.footer = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -21,14 +21,17 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTGroupShapeProperties;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -37,23 +40,23 @@ import org.docx4j.dml.CTGroupShapeProperties;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GroupShape">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="nvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GroupShapeNonVisual"/>
- *         &lt;element name="grpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GroupShapeProperties"/>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="sp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Shape"/>
- *           &lt;element name="grpSp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GroupShape"/>
- *           &lt;element name="graphicFrame" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GraphicalObjectFrame"/>
- *           &lt;element name="cxnSp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Connector"/>
- *           &lt;element name="pic" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Picture"/>
- *         &lt;/choice>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GroupShape"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="nvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GroupShapeNonVisual"/&gt;
+ *         &lt;element name="grpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GroupShapeProperties"/&gt;
+ *         &lt;choice maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;element name="sp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Shape"/&gt;
+ *           &lt;element name="grpSp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GroupShape"/&gt;
+ *           &lt;element name="graphicFrame" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GraphicalObjectFrame"/&gt;
+ *           &lt;element name="cxnSp" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Connector"/&gt;
+ *           &lt;element name="pic" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_Picture"/&gt;
+ *         &lt;/choice&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -64,20 +67,23 @@ import org.docx4j.dml.CTGroupShapeProperties;
     "grpSpPr",
     "spOrGrpSpOrGraphicFrame"
 })
-public class CTGroupShape {
+public class CTGroupShape implements Child
+{
 
     @XmlElement(required = true)
     protected CTGroupShapeNonVisual nvGrpSpPr;
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
-        @XmlElement(name = "pic", type = CTPicture.class),
         @XmlElement(name = "sp", type = CTShape.class),
+        @XmlElement(name = "grpSp", type = CTGroupShape.class),
         @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
         @XmlElement(name = "cxnSp", type = CTConnector.class),
-        @XmlElement(name = "grpSp", type = CTGroupShape.class)
+        @XmlElement(name = "pic", type = CTPicture.class)
     })
-    protected List<Object> spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
+    protected List<Object> spOrGrpSpOrGraphicFrame;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the nvGrpSpPr property.
@@ -145,19 +151,45 @@ public class CTGroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTPicture }
      * {@link CTShape }
+     * {@link CTGroupShape }
      * {@link CTGraphicalObjectFrame }
      * {@link CTConnector }
-     * {@link CTGroupShape }
+     * {@link CTPicture }
      * 
      * 
      */
     public List<Object> getSpOrGrpSpOrGraphicFrame() {
         if (spOrGrpSpOrGraphicFrame == null) {
-            spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
+            spOrGrpSpOrGraphicFrame = new ArrayList<Object>();
         }
         return this.spOrGrpSpOrGraphicFrame;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

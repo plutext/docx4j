@@ -21,12 +21,15 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,15 +38,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Path2DCubicBezierTo">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="pt" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_AdjPoint2D" maxOccurs="3" minOccurs="3"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Path2DCubicBezierTo"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="pt" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_AdjPoint2D" maxOccurs="3" minOccurs="3"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -52,10 +55,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_Path2DCubicBezierTo", propOrder = {
     "pt"
 })
-public class CTPath2DCubicBezierTo {
+public class CTPath2DCubicBezierTo implements Child
+{
 
     @XmlElement(required = true)
-    protected List<CTAdjPoint2D> pt = new ArrayListDml<CTAdjPoint2D>(this);
+    protected List<CTAdjPoint2D> pt;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the pt property.
@@ -81,9 +87,35 @@ public class CTPath2DCubicBezierTo {
      */
     public List<CTAdjPoint2D> getPt() {
         if (pt == null) {
-            pt = new ArrayListDml<CTAdjPoint2D>(this);
+            pt = new ArrayList<CTAdjPoint2D>();
         }
         return this.pt;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

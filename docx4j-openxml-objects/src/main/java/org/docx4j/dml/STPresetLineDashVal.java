@@ -32,21 +32,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PresetLineDashVal">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="solid"/>
- *     &lt;enumeration value="dot"/>
- *     &lt;enumeration value="dash"/>
- *     &lt;enumeration value="lgDash"/>
- *     &lt;enumeration value="dashDot"/>
- *     &lt;enumeration value="lgDashDot"/>
- *     &lt;enumeration value="lgDashDotDot"/>
- *     &lt;enumeration value="sysDash"/>
- *     &lt;enumeration value="sysDot"/>
- *     &lt;enumeration value="sysDashDot"/>
- *     &lt;enumeration value="sysDashDotDot"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PresetLineDashVal"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="solid"/&gt;
+ *     &lt;enumeration value="dot"/&gt;
+ *     &lt;enumeration value="dash"/&gt;
+ *     &lt;enumeration value="lgDash"/&gt;
+ *     &lt;enumeration value="dashDot"/&gt;
+ *     &lt;enumeration value="lgDashDot"/&gt;
+ *     &lt;enumeration value="lgDashDotDot"/&gt;
+ *     &lt;enumeration value="sysDash"/&gt;
+ *     &lt;enumeration value="sysDot"/&gt;
+ *     &lt;enumeration value="sysDashDot"/&gt;
+ *     &lt;enumeration value="sysDashDotDot"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

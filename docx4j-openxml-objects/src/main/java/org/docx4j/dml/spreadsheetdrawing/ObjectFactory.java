@@ -44,6 +44,8 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
+    private final static QName _From_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing", "from");
+    private final static QName _To_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing", "to");
     private final static QName _WsDr_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing", "wsDr");
 
     /**
@@ -59,6 +61,102 @@ public class ObjectFactory {
      */
     public CTMarker createCTMarker() {
         return new CTMarker();
+    }
+
+    /**
+     * Create an instance of {@link CTDrawing }
+     * 
+     */
+    public CTDrawing createCTDrawing() {
+        return new CTDrawing();
+    }
+
+    /**
+     * Create an instance of {@link CTAnchorClientData }
+     * 
+     */
+    public CTAnchorClientData createCTAnchorClientData() {
+        return new CTAnchorClientData();
+    }
+
+    /**
+     * Create an instance of {@link CTShapeNonVisual }
+     * 
+     */
+    public CTShapeNonVisual createCTShapeNonVisual() {
+        return new CTShapeNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTShape }
+     * 
+     */
+    public CTShape createCTShape() {
+        return new CTShape();
+    }
+
+    /**
+     * Create an instance of {@link CTConnectorNonVisual }
+     * 
+     */
+    public CTConnectorNonVisual createCTConnectorNonVisual() {
+        return new CTConnectorNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTConnector }
+     * 
+     */
+    public CTConnector createCTConnector() {
+        return new CTConnector();
+    }
+
+    /**
+     * Create an instance of {@link CTPictureNonVisual }
+     * 
+     */
+    public CTPictureNonVisual createCTPictureNonVisual() {
+        return new CTPictureNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTPicture }
+     * 
+     */
+    public CTPicture createCTPicture() {
+        return new CTPicture();
+    }
+
+    /**
+     * Create an instance of {@link CTGraphicalObjectFrameNonVisual }
+     * 
+     */
+    public CTGraphicalObjectFrameNonVisual createCTGraphicalObjectFrameNonVisual() {
+        return new CTGraphicalObjectFrameNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTGraphicalObjectFrame }
+     * 
+     */
+    public CTGraphicalObjectFrame createCTGraphicalObjectFrame() {
+        return new CTGraphicalObjectFrame();
+    }
+
+    /**
+     * Create an instance of {@link CTGroupShapeNonVisual }
+     * 
+     */
+    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
+        return new CTGroupShapeNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTGroupShape }
+     * 
+     */
+    public CTGroupShape createCTGroupShape() {
+        return new CTGroupShape();
     }
 
     /**
@@ -78,78 +176,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTGraphicalObjectFrame }
-     * 
-     */
-    public CTGraphicalObjectFrame createCTGraphicalObjectFrame() {
-        return new CTGraphicalObjectFrame();
-    }
-
-    /**
-     * Create an instance of {@link CTPictureNonVisual }
-     * 
-     */
-    public CTPictureNonVisual createCTPictureNonVisual() {
-        return new CTPictureNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTShapeNonVisual }
-     * 
-     */
-    public CTShapeNonVisual createCTShapeNonVisual() {
-        return new CTShapeNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTGraphicalObjectFrameNonVisual }
-     * 
-     */
-    public CTGraphicalObjectFrameNonVisual createCTGraphicalObjectFrameNonVisual() {
-        return new CTGraphicalObjectFrameNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTConnectorNonVisual }
-     * 
-     */
-    public CTConnectorNonVisual createCTConnectorNonVisual() {
-        return new CTConnectorNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTGroupShape }
-     * 
-     */
-    public CTGroupShape createCTGroupShape() {
-        return new CTGroupShape();
-    }
-
-    /**
-     * Create an instance of {@link CTAnchorClientData }
-     * 
-     */
-    public CTAnchorClientData createCTAnchorClientData() {
-        return new CTAnchorClientData();
-    }
-
-    /**
-     * Create an instance of {@link CTShape }
-     * 
-     */
-    public CTShape createCTShape() {
-        return new CTShape();
-    }
-
-    /**
-     * Create an instance of {@link CTPicture }
-     * 
-     */
-    public CTPicture createCTPicture() {
-        return new CTPicture();
-    }
-
-    /**
      * Create an instance of {@link CTAbsoluteAnchor }
      * 
      */
@@ -158,27 +184,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTGroupShapeNonVisual }
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTMarker }{@code >}}
      * 
      */
-    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
-        return new CTGroupShapeNonVisual();
+    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing", name = "from")
+    public JAXBElement<CTMarker> createFrom(CTMarker value) {
+        return new JAXBElement<CTMarker>(_From_QNAME, CTMarker.class, null, value);
     }
 
     /**
-     * Create an instance of {@link CTDrawing }
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTMarker }{@code >}}
      * 
      */
-    public CTDrawing createCTDrawing() {
-        return new CTDrawing();
-    }
-
-    /**
-     * Create an instance of {@link CTConnector }
-     * 
-     */
-    public CTConnector createCTConnector() {
-        return new CTConnector();
+    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing", name = "to")
+    public JAXBElement<CTMarker> createTo(CTMarker value) {
+        return new JAXBElement<CTMarker>(_To_QNAME, CTMarker.class, null, value);
     }
 
     /**

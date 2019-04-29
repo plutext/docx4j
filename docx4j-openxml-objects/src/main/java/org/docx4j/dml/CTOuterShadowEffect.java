@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,24 +36,24 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_OuterShadowEffect">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice"/>
- *       &lt;/sequence>
- *       &lt;attribute name="blurRad" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate" default="0" />
- *       &lt;attribute name="dist" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate" default="0" />
- *       &lt;attribute name="dir" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedAngle" default="0" />
- *       &lt;attribute name="sx" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100000" />
- *       &lt;attribute name="sy" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100000" />
- *       &lt;attribute name="kx" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_FixedAngle" default="0" />
- *       &lt;attribute name="ky" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_FixedAngle" default="0" />
- *       &lt;attribute name="algn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_RectAlignment" default="b" />
- *       &lt;attribute name="rotWithShape" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_OuterShadowEffect"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="blurRad" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate" default="0" /&gt;
+ *       &lt;attribute name="dist" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveCoordinate" default="0" /&gt;
+ *       &lt;attribute name="dir" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedAngle" default="0" /&gt;
+ *       &lt;attribute name="sx" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100000" /&gt;
+ *       &lt;attribute name="sy" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100000" /&gt;
+ *       &lt;attribute name="kx" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_FixedAngle" default="0" /&gt;
+ *       &lt;attribute name="ky" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_FixedAngle" default="0" /&gt;
+ *       &lt;attribute name="algn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_RectAlignment" default="b" /&gt;
+ *       &lt;attribute name="rotWithShape" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -64,7 +67,8 @@ import javax.xml.bind.annotation.XmlType;
     "schemeClr",
     "prstClr"
 })
-public class CTOuterShadowEffect {
+public class CTOuterShadowEffect implements Child
+{
 
     protected CTScRgbColor scrgbClr;
     protected CTSRgbColor srgbClr;
@@ -72,24 +76,26 @@ public class CTOuterShadowEffect {
     protected CTSystemColor sysClr;
     protected CTSchemeColor schemeClr;
     protected CTPresetColor prstClr;
-    @XmlAttribute
+    @XmlAttribute(name = "blurRad")
     protected Long blurRad;
-    @XmlAttribute
+    @XmlAttribute(name = "dist")
     protected Long dist;
-    @XmlAttribute
+    @XmlAttribute(name = "dir")
     protected Integer dir;
-    @XmlAttribute
+    @XmlAttribute(name = "sx")
     protected Integer sx;
-    @XmlAttribute
+    @XmlAttribute(name = "sy")
     protected Integer sy;
-    @XmlAttribute
+    @XmlAttribute(name = "kx")
     protected Integer kx;
-    @XmlAttribute
+    @XmlAttribute(name = "ky")
     protected Integer ky;
-    @XmlAttribute
+    @XmlAttribute(name = "algn")
     protected STRectAlignment algn;
-    @XmlAttribute
+    @XmlAttribute(name = "rotWithShape")
     protected Boolean rotWithShape;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the scrgbClr property.
@@ -485,6 +491,32 @@ public class CTOuterShadowEffect {
      */
     public void setRotWithShape(Boolean value) {
         this.rotWithShape = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,20 +37,20 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Constraint">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintAttributes"/>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintRefAttributes"/>
- *       &lt;attribute name="op" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_BoolOperator" default="none" />
- *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}double" default="0" />
- *       &lt;attribute name="fact" type="{http://www.w3.org/2001/XMLSchema}double" default="1" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Constraint"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintAttributes"/&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintRefAttributes"/&gt;
+ *       &lt;attribute name="op" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_BoolOperator" default="none" /&gt;
+ *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}double" default="0" /&gt;
+ *       &lt;attribute name="fact" type="{http://www.w3.org/2001/XMLSchema}double" default="1" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,31 +59,34 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlType(name = "CT_Constraint", propOrder = {
     "extLst"
 })
-public class CTConstraint {
+public class CTConstraint implements Child
+{
 
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "op")
     protected STBoolOperator op;
-    @XmlAttribute
+    @XmlAttribute(name = "val")
     protected Double val;
-    @XmlAttribute
+    @XmlAttribute(name = "fact")
     protected Double fact;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "type", required = true)
     protected STConstraintType type;
     @XmlAttribute(name = "for")
     protected STConstraintRelationship _for;
-    @XmlAttribute
+    @XmlAttribute(name = "forName")
     protected String forName;
-    @XmlAttribute
+    @XmlAttribute(name = "ptType")
     protected STElementType ptType;
-    @XmlAttribute
+    @XmlAttribute(name = "refType")
     protected STConstraintType refType;
-    @XmlAttribute
+    @XmlAttribute(name = "refFor")
     protected STConstraintRelationship refFor;
-    @XmlAttribute
+    @XmlAttribute(name = "refForName")
     protected String refForName;
-    @XmlAttribute
+    @XmlAttribute(name = "refPtType")
     protected STElementType refPtType;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -408,6 +414,32 @@ public class CTConstraint {
      */
     public void setRefPtType(STElementType value) {
         this.refPtType = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

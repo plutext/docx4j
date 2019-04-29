@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_SplitType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="cust"/>
- *     &lt;enumeration value="percent"/>
- *     &lt;enumeration value="pos"/>
- *     &lt;enumeration value="val"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_SplitType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="auto"/&gt;
+ *     &lt;enumeration value="cust"/&gt;
+ *     &lt;enumeration value="percent"/&gt;
+ *     &lt;enumeration value="pos"/&gt;
+ *     &lt;enumeration value="val"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

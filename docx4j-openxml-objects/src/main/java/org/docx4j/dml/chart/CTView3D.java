@@ -21,9 +21,12 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -32,21 +35,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_View3D">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="rotX" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RotX" minOccurs="0"/>
- *         &lt;element name="hPercent" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_HPercent" minOccurs="0"/>
- *         &lt;element name="rotY" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RotY" minOccurs="0"/>
- *         &lt;element name="depthPercent" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DepthPercent" minOccurs="0"/>
- *         &lt;element name="rAngAx" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="perspective" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Perspective" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_View3D"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="rotX" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RotX" minOccurs="0"/&gt;
+ *         &lt;element name="hPercent" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_HPercent" minOccurs="0"/&gt;
+ *         &lt;element name="rotY" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RotY" minOccurs="0"/&gt;
+ *         &lt;element name="depthPercent" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DepthPercent" minOccurs="0"/&gt;
+ *         &lt;element name="rAngAx" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="perspective" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Perspective" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -61,7 +64,8 @@ import javax.xml.bind.annotation.XmlType;
     "perspective",
     "extLst"
 })
-public class CTView3D {
+public class CTView3D implements Child
+{
 
     protected CTRotX rotX;
     protected CTHPercent hPercent;
@@ -70,6 +74,8 @@ public class CTView3D {
     protected CTBoolean rAngAx;
     protected CTPerspective perspective;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the rotX property.
@@ -237,6 +243,32 @@ public class CTView3D {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

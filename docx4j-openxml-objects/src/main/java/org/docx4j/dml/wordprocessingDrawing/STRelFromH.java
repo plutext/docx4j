@@ -32,18 +32,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_RelFromH">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="margin"/>
- *     &lt;enumeration value="page"/>
- *     &lt;enumeration value="column"/>
- *     &lt;enumeration value="character"/>
- *     &lt;enumeration value="leftMargin"/>
- *     &lt;enumeration value="rightMargin"/>
- *     &lt;enumeration value="insideMargin"/>
- *     &lt;enumeration value="outsideMargin"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_RelFromH"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="margin"/&gt;
+ *     &lt;enumeration value="page"/&gt;
+ *     &lt;enumeration value="column"/&gt;
+ *     &lt;enumeration value="character"/&gt;
+ *     &lt;enumeration value="leftMargin"/&gt;
+ *     &lt;enumeration value="rightMargin"/&gt;
+ *     &lt;enumeration value="insideMargin"/&gt;
+ *     &lt;enumeration value="outsideMargin"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -21,12 +21,15 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,31 +38,31 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TableStyle">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tblBg" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableBackgroundStyle" minOccurs="0"/>
- *         &lt;element name="wholeTbl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="band1H" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="band2H" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="band1V" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="band2V" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="lastCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="firstCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="lastRow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="seCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="swCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="firstRow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="neCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="nwCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="styleId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Guid" />
- *       &lt;attribute name="styleName" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TableStyle"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tblBg" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableBackgroundStyle" minOccurs="0"/&gt;
+ *         &lt;element name="wholeTbl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="band1H" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="band2H" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="band1V" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="band2V" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="lastCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="firstCol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="lastRow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="seCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="swCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="firstRow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="neCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="nwCell" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TablePartStyle" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="styleId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Guid" /&gt;
+ *       &lt;attribute name="styleName" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -82,7 +85,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "nwCell",
     "extLst"
 })
-public class CTTableStyle {
+public class CTTableStyle implements Child
+{
 
     protected CTTableBackgroundStyle tblBg;
     protected CTTablePartStyle wholeTbl;
@@ -99,11 +103,13 @@ public class CTTableStyle {
     protected CTTablePartStyle neCell;
     protected CTTablePartStyle nwCell;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "styleId", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String styleId;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "styleName", required = true)
     protected String styleName;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tblBg property.
@@ -511,6 +517,32 @@ public class CTTableStyle {
      */
     public void setStyleName(String value) {
         this.styleName = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

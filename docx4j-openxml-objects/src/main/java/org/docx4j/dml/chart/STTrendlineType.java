@@ -32,16 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TrendlineType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="exp"/>
- *     &lt;enumeration value="linear"/>
- *     &lt;enumeration value="log"/>
- *     &lt;enumeration value="movingAvg"/>
- *     &lt;enumeration value="poly"/>
- *     &lt;enumeration value="power"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TrendlineType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="exp"/&gt;
+ *     &lt;enumeration value="linear"/&gt;
+ *     &lt;enumeration value="log"/&gt;
+ *     &lt;enumeration value="movingAvg"/&gt;
+ *     &lt;enumeration value="poly"/&gt;
+ *     &lt;enumeration value="power"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

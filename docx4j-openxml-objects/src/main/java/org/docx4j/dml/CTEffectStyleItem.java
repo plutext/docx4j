@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,17 +36,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_EffectStyleItem">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties"/>
- *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/>
- *         &lt;element name="sp3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Shape3D" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_EffectStyleItem"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties"/&gt;
+ *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/&gt;
+ *         &lt;element name="sp3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Shape3D" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -55,7 +58,8 @@ import javax.xml.bind.annotation.XmlType;
     "scene3D",
     "sp3D"
 })
-public class CTEffectStyleItem {
+public class CTEffectStyleItem implements Child
+{
 
     protected CTEffectList effectLst;
     protected CTEffectContainer effectDag;
@@ -63,6 +67,8 @@ public class CTEffectStyleItem {
     protected CTScene3D scene3D;
     @XmlElement(name = "sp3d")
     protected CTShape3D sp3D;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the effectLst property.
@@ -158,6 +164,32 @@ public class CTEffectStyleItem {
      */
     public void setSp3D(CTShape3D value) {
         this.sp3D = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

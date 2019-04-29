@@ -32,18 +32,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_LightRigDirection">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="tl"/>
- *     &lt;enumeration value="t"/>
- *     &lt;enumeration value="tr"/>
- *     &lt;enumeration value="l"/>
- *     &lt;enumeration value="r"/>
- *     &lt;enumeration value="bl"/>
- *     &lt;enumeration value="b"/>
- *     &lt;enumeration value="br"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_LightRigDirection"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="tl"/&gt;
+ *     &lt;enumeration value="t"/&gt;
+ *     &lt;enumeration value="tr"/&gt;
+ *     &lt;enumeration value="l"/&gt;
+ *     &lt;enumeration value="r"/&gt;
+ *     &lt;enumeration value="bl"/&gt;
+ *     &lt;enumeration value="b"/&gt;
+ *     &lt;enumeration value="br"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

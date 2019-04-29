@@ -22,13 +22,17 @@
 package org.docx4j.dml.wordprocessingDrawing;
 
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.*;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.Graphic;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -37,23 +41,23 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Inline">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/>
- *         &lt;element name="effectExtent" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_EffectExtent" minOccurs="0"/>
- *         &lt;element name="docPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
- *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties" minOccurs="0"/>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/>
- *       &lt;/sequence>
- *       &lt;attribute name="distT" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distB" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distL" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *       &lt;attribute name="distR" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Inline"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/&gt;
+ *         &lt;element name="effectExtent" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}CT_EffectExtent" minOccurs="0"/&gt;
+ *         &lt;element name="docPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/&gt;
+ *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties" minOccurs="0"/&gt;
+ *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="distT" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distB" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distL" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *       &lt;attribute name="distR" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -66,7 +70,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "cNvGraphicFramePr",
     "graphic"
 })
-public class Inline implements Child {
+public class Inline implements Child
+{
 
     @XmlElement(required = true)
     protected CTPositiveSize2D extent;
@@ -76,16 +81,17 @@ public class Inline implements Child {
     protected CTNonVisualGraphicFrameProperties cNvGraphicFramePr;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", required = true)
     protected Graphic graphic;
-    @XmlAttribute
+    @XmlAttribute(name = "distT")
     protected Long distT;
-    @XmlAttribute
+    @XmlAttribute(name = "distB")
     protected Long distB;
-    @XmlAttribute
+    @XmlAttribute(name = "distL")
     protected Long distL;
-    @XmlAttribute
+    @XmlAttribute(name = "distR")
     protected Long distR;
     @XmlTransient
     private Object parent;
+
     /**
      * Gets the value of the extent property.
      * 
@@ -301,9 +307,10 @@ public class Inline implements Child {
     public void setDistR(Long value) {
         this.distR = value;
     }
+
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
-     *
+     * 
      * @return
      *     The parent object.
      */
@@ -317,7 +324,7 @@ public class Inline implements Child {
 
     /**
      * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     *
+     * 
      * @param parent
      *     The parent object in the object tree.
      * @param unmarshaller
@@ -326,4 +333,5 @@ public class Inline implements Child {
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
     }
+
 }

@@ -21,12 +21,15 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,24 +38,24 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Cxn">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="modelId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" />
- *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_CxnType" default="parOf" />
- *       &lt;attribute name="srcId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" />
- *       &lt;attribute name="destId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" />
- *       &lt;attribute name="srcOrd" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *       &lt;attribute name="destOrd" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *       &lt;attribute name="parTransId" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" default="0" />
- *       &lt;attribute name="sibTransId" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" default="0" />
- *       &lt;attribute name="presId" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Cxn"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="modelId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" /&gt;
+ *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_CxnType" default="parOf" /&gt;
+ *       &lt;attribute name="srcId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" /&gt;
+ *       &lt;attribute name="destId" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" /&gt;
+ *       &lt;attribute name="srcOrd" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
+ *       &lt;attribute name="destOrd" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
+ *       &lt;attribute name="parTransId" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" default="0" /&gt;
+ *       &lt;attribute name="sibTransId" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ModelId" default="0" /&gt;
+ *       &lt;attribute name="presId" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -61,29 +64,32 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlType(name = "CT_Cxn", propOrder = {
     "extLst"
 })
-public class CTCxn {
+public class CTCxn implements Child
+{
 
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "modelId", required = true)
     protected String modelId;
-    @XmlAttribute
+    @XmlAttribute(name = "type")
     protected STCxnType type;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "srcId", required = true)
     protected String srcId;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "destId", required = true)
     protected String destId;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "srcOrd", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long srcOrd;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "destOrd", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long destOrd;
-    @XmlAttribute
+    @XmlAttribute(name = "parTransId")
     protected String parTransId;
-    @XmlAttribute
+    @XmlAttribute(name = "sibTransId")
     protected String sibTransId;
-    @XmlAttribute
+    @XmlAttribute(name = "presId")
     protected String presId;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -323,6 +329,32 @@ public class CTCxn {
      */
     public void setPresId(String value) {
         this.presId = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

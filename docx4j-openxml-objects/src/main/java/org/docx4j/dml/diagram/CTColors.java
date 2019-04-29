@@ -21,13 +21,15 @@
 
 package org.docx4j.dml.diagram;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTHslColor;
 import org.docx4j.dml.CTPresetColor;
@@ -35,6 +37,7 @@ import org.docx4j.dml.CTSRgbColor;
 import org.docx4j.dml.CTScRgbColor;
 import org.docx4j.dml.CTSchemeColor;
 import org.docx4j.dml.CTSystemColor;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -43,17 +46,17 @@ import org.docx4j.dml.CTSystemColor;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Colors">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="meth" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ClrAppMethod" default="span" />
- *       &lt;attribute name="hueDir" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_HueDir" default="cw" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Colors"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="meth" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ClrAppMethod" default="span" /&gt;
+ *       &lt;attribute name="hueDir" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_HueDir" default="cw" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -62,21 +65,24 @@ import org.docx4j.dml.CTSystemColor;
 @XmlType(name = "CT_Colors", propOrder = {
     "egColorChoice"
 })
-public class CTColors {
+public class CTColors implements Child
+{
 
     @XmlElements({
-        @XmlElement(name = "srgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSRgbColor.class),
-        @XmlElement(name = "prstClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTPresetColor.class),
         @XmlElement(name = "scrgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTScRgbColor.class),
-        @XmlElement(name = "sysClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSystemColor.class),
+        @XmlElement(name = "srgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSRgbColor.class),
         @XmlElement(name = "hslClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTHslColor.class),
-        @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class)
+        @XmlElement(name = "sysClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSystemColor.class),
+        @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class),
+        @XmlElement(name = "prstClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTPresetColor.class)
     })
-    protected List<Object> egColorChoice = new ArrayListDml<Object>(this);
-    @XmlAttribute
+    protected List<Object> egColorChoice;
+    @XmlAttribute(name = "meth")
     protected STClrAppMethod meth;
-    @XmlAttribute
+    @XmlAttribute(name = "hueDir")
     protected STHueDir hueDir;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the egColorChoice property.
@@ -96,18 +102,18 @@ public class CTColors {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTSRgbColor }
-     * {@link CTPresetColor }
      * {@link CTScRgbColor }
-     * {@link CTSystemColor }
+     * {@link CTSRgbColor }
      * {@link CTHslColor }
+     * {@link CTSystemColor }
      * {@link CTSchemeColor }
+     * {@link CTPresetColor }
      * 
      * 
      */
     public List<Object> getEGColorChoice() {
         if (egColorChoice == null) {
-            egColorChoice = new ArrayListDml<Object>(this);
+            egColorChoice = new ArrayList<Object>();
         }
         return this.egColorChoice;
     }
@@ -166,6 +172,32 @@ public class CTColors {
      */
     public void setHueDir(STHueDir value) {
         this.hueDir = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

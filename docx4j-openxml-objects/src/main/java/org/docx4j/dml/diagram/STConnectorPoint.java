@@ -32,21 +32,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ConnectorPoint">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="bCtr"/>
- *     &lt;enumeration value="ctr"/>
- *     &lt;enumeration value="midL"/>
- *     &lt;enumeration value="midR"/>
- *     &lt;enumeration value="tCtr"/>
- *     &lt;enumeration value="bL"/>
- *     &lt;enumeration value="bR"/>
- *     &lt;enumeration value="tL"/>
- *     &lt;enumeration value="tR"/>
- *     &lt;enumeration value="radial"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_ConnectorPoint"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="auto"/&gt;
+ *     &lt;enumeration value="bCtr"/&gt;
+ *     &lt;enumeration value="ctr"/&gt;
+ *     &lt;enumeration value="midL"/&gt;
+ *     &lt;enumeration value="midR"/&gt;
+ *     &lt;enumeration value="tCtr"/&gt;
+ *     &lt;enumeration value="bL"/&gt;
+ *     &lt;enumeration value="bR"/&gt;
+ *     &lt;enumeration value="tL"/&gt;
+ *     &lt;enumeration value="tR"/&gt;
+ *     &lt;enumeration value="radial"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

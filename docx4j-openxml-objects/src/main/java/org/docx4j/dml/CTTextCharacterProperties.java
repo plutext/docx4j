@@ -21,11 +21,14 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,46 +37,46 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TextCharacterProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="ln" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties" minOccurs="0"/>
- *         &lt;element name="highlight" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Color" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextUnderlineLine" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextUnderlineFill" minOccurs="0"/>
- *         &lt;element name="latin" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/>
- *         &lt;element name="ea" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/>
- *         &lt;element name="cs" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/>
- *         &lt;element name="sym" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/>
- *         &lt;element name="hlinkClick" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Hyperlink" minOccurs="0"/>
- *         &lt;element name="hlinkMouseOver" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Hyperlink" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="kumimoji" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="lang" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextLanguageID" />
- *       &lt;attribute name="altLang" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextLanguageID" />
- *       &lt;attribute name="sz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextFontSize" />
- *       &lt;attribute name="b" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="i" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="u" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextUnderlineType" />
- *       &lt;attribute name="strike" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextStrikeType" />
- *       &lt;attribute name="kern" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextNonNegativePoint" />
- *       &lt;attribute name="cap" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextCapsType" />
- *       &lt;attribute name="spc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextPoint" />
- *       &lt;attribute name="normalizeH" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="baseline" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" />
- *       &lt;attribute name="noProof" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="dirty" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="err" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="smtClean" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="smtId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="0" />
- *       &lt;attribute name="bmk" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TextCharacterProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="ln" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties" minOccurs="0"/&gt;
+ *         &lt;element name="highlight" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Color" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextUnderlineLine" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextUnderlineFill" minOccurs="0"/&gt;
+ *         &lt;element name="latin" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/&gt;
+ *         &lt;element name="ea" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/&gt;
+ *         &lt;element name="cs" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/&gt;
+ *         &lt;element name="sym" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont" minOccurs="0"/&gt;
+ *         &lt;element name="hlinkClick" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Hyperlink" minOccurs="0"/&gt;
+ *         &lt;element name="hlinkMouseOver" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Hyperlink" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="kumimoji" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="lang" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextLanguageID" /&gt;
+ *       &lt;attribute name="altLang" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextLanguageID" /&gt;
+ *       &lt;attribute name="sz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextFontSize" /&gt;
+ *       &lt;attribute name="b" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="i" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="u" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextUnderlineType" /&gt;
+ *       &lt;attribute name="strike" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextStrikeType" /&gt;
+ *       &lt;attribute name="kern" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextNonNegativePoint" /&gt;
+ *       &lt;attribute name="cap" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextCapsType" /&gt;
+ *       &lt;attribute name="spc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextPoint" /&gt;
+ *       &lt;attribute name="normalizeH" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="baseline" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" /&gt;
+ *       &lt;attribute name="noProof" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="dirty" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="err" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="smtClean" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="smtId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="0" /&gt;
+ *       &lt;attribute name="bmk" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -102,7 +105,8 @@ import javax.xml.bind.annotation.XmlType;
     "hlinkMouseOver",
     "extLst"
 })
-public class CTTextCharacterProperties {
+public class CTTextCharacterProperties implements Child
+{
 
     protected CTLineProperties ln;
     protected CTNoFillProperties noFill;
@@ -125,45 +129,47 @@ public class CTTextCharacterProperties {
     protected CTHyperlink hlinkClick;
     protected CTHyperlink hlinkMouseOver;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "kumimoji")
     protected Boolean kumimoji;
-    @XmlAttribute
+    @XmlAttribute(name = "lang")
     protected String lang;
-    @XmlAttribute
+    @XmlAttribute(name = "altLang")
     protected String altLang;
-    @XmlAttribute
+    @XmlAttribute(name = "sz")
     protected Integer sz;
-    @XmlAttribute
+    @XmlAttribute(name = "b")
     protected Boolean b;
-    @XmlAttribute
+    @XmlAttribute(name = "i")
     protected Boolean i;
-    @XmlAttribute
+    @XmlAttribute(name = "u")
     protected STTextUnderlineType u;
-    @XmlAttribute
+    @XmlAttribute(name = "strike")
     protected STTextStrikeType strike;
-    @XmlAttribute
+    @XmlAttribute(name = "kern")
     protected Integer kern;
-    @XmlAttribute
+    @XmlAttribute(name = "cap")
     protected STTextCapsType cap;
-    @XmlAttribute
+    @XmlAttribute(name = "spc")
     protected Integer spc;
-    @XmlAttribute
+    @XmlAttribute(name = "normalizeH")
     protected Boolean normalizeH;
-    @XmlAttribute
+    @XmlAttribute(name = "baseline")
     protected Integer baseline;
-    @XmlAttribute
+    @XmlAttribute(name = "noProof")
     protected Boolean noProof;
-    @XmlAttribute
+    @XmlAttribute(name = "dirty")
     protected Boolean dirty;
-    @XmlAttribute
+    @XmlAttribute(name = "err")
     protected Boolean err;
-    @XmlAttribute
+    @XmlAttribute(name = "smtClean")
     protected Boolean smtClean;
-    @XmlAttribute
+    @XmlAttribute(name = "smtId")
     @XmlSchemaType(name = "unsignedInt")
     protected Long smtId;
-    @XmlAttribute
+    @XmlAttribute(name = "bmk")
     protected String bmk;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the ln property.
@@ -1139,6 +1145,32 @@ public class CTTextCharacterProperties {
      */
     public void setBmk(String value) {
         this.bmk = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

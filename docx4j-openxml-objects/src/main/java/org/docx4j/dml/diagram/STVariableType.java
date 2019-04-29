@@ -32,20 +32,20 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_VariableType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="orgChart"/>
- *     &lt;enumeration value="chMax"/>
- *     &lt;enumeration value="chPref"/>
- *     &lt;enumeration value="bulEnabled"/>
- *     &lt;enumeration value="dir"/>
- *     &lt;enumeration value="hierBranch"/>
- *     &lt;enumeration value="animOne"/>
- *     &lt;enumeration value="animLvl"/>
- *     &lt;enumeration value="resizeHandles"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_VariableType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="orgChart"/&gt;
+ *     &lt;enumeration value="chMax"/&gt;
+ *     &lt;enumeration value="chPref"/&gt;
+ *     &lt;enumeration value="bulEnabled"/&gt;
+ *     &lt;enumeration value="dir"/&gt;
+ *     &lt;enumeration value="hierBranch"/&gt;
+ *     &lt;enumeration value="animOne"/&gt;
+ *     &lt;enumeration value="animLvl"/&gt;
+ *     &lt;enumeration value="resizeHandles"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

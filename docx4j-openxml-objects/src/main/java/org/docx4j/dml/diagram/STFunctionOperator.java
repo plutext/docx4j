@@ -32,16 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_FunctionOperator">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="equ"/>
- *     &lt;enumeration value="neq"/>
- *     &lt;enumeration value="gt"/>
- *     &lt;enumeration value="lt"/>
- *     &lt;enumeration value="gte"/>
- *     &lt;enumeration value="lte"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_FunctionOperator"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="equ"/&gt;
+ *     &lt;enumeration value="neq"/&gt;
+ *     &lt;enumeration value="gt"/&gt;
+ *     &lt;enumeration value="lt"/&gt;
+ *     &lt;enumeration value="gte"/&gt;
+ *     &lt;enumeration value="lte"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

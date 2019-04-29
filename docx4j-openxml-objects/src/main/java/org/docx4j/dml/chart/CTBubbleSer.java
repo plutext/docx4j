@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.chart;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,25 +39,25 @@ import org.docx4j.dml.CTShapeProperties;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_BubbleSer">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}EG_SerShared"/>
- *         &lt;element name="invertIfNegative" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="dPt" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DPt" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="dLbls" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DLbls" minOccurs="0"/>
- *         &lt;element name="trendline" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Trendline" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="errBars" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ErrBars" maxOccurs="2" minOccurs="0"/>
- *         &lt;element name="xVal" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_AxDataSource" minOccurs="0"/>
- *         &lt;element name="yVal" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_NumDataSource" minOccurs="0"/>
- *         &lt;element name="bubbleSize" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_NumDataSource" minOccurs="0"/>
- *         &lt;element name="bubble3D" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_BubbleSer"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}EG_SerShared"/&gt;
+ *         &lt;element name="invertIfNegative" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="dPt" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DPt" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="dLbls" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DLbls" minOccurs="0"/&gt;
+ *         &lt;element name="trendline" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Trendline" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="errBars" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ErrBars" maxOccurs="2" minOccurs="0"/&gt;
+ *         &lt;element name="xVal" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_AxDataSource" minOccurs="0"/&gt;
+ *         &lt;element name="yVal" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_NumDataSource" minOccurs="0"/&gt;
+ *         &lt;element name="bubbleSize" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_NumDataSource" minOccurs="0"/&gt;
+ *         &lt;element name="bubble3D" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -76,7 +79,8 @@ import org.docx4j.dml.CTShapeProperties;
     "bubble3D",
     "extLst"
 })
-public class CTBubbleSer implements SerContentXY {
+public class CTBubbleSer implements Child
+{
 
     @XmlElement(required = true)
     protected CTUnsignedInt idx;
@@ -85,15 +89,17 @@ public class CTBubbleSer implements SerContentXY {
     protected CTSerTx tx;
     protected CTShapeProperties spPr;
     protected CTBoolean invertIfNegative;
-    protected List<CTDPt> dPt = new ArrayListDml<CTDPt>(this);
+    protected List<CTDPt> dPt;
     protected CTDLbls dLbls;
-    protected List<CTTrendline> trendline = new ArrayListDml<CTTrendline>(this);
-    protected List<CTErrBars> errBars = new ArrayListDml<CTErrBars>(this);
+    protected List<CTTrendline> trendline;
+    protected List<CTErrBars> errBars;
     protected CTAxDataSource xVal;
     protected CTNumDataSource yVal;
     protected CTNumDataSource bubbleSize;
     protected CTBoolean bubble3D;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the idx property.
@@ -239,7 +245,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTDPt> getDPt() {
         if (dPt == null) {
-            dPt = new ArrayListDml<CTDPt>(this);
+            dPt = new ArrayList<CTDPt>();
         }
         return this.dPt;
     }
@@ -292,7 +298,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTTrendline> getTrendline() {
         if (trendline == null) {
-            trendline = new ArrayListDml<CTTrendline>(this);
+            trendline = new ArrayList<CTTrendline>();
         }
         return this.trendline;
     }
@@ -321,7 +327,7 @@ public class CTBubbleSer implements SerContentXY {
      */
     public List<CTErrBars> getErrBars() {
         if (errBars == null) {
-            errBars = new ArrayListDml<CTErrBars>(this);
+            errBars = new ArrayList<CTErrBars>();
         }
         return this.errBars;
     }
@@ -444,6 +450,32 @@ public class CTBubbleSer implements SerContentXY {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

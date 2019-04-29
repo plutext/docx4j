@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTTransform2D;
 import org.docx4j.dml.Graphic;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,19 +39,19 @@ import org.docx4j.dml.Graphic;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GraphicalObjectFrame">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="nvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GraphicalObjectFrameNonVisual"/>
- *         &lt;element name="xfrm" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Transform2D"/>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/>
- *       &lt;/sequence>
- *       &lt;attribute name="macro" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="fPublished" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GraphicalObjectFrame"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="nvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}CT_GraphicalObjectFrameNonVisual"/&gt;
+ *         &lt;element name="xfrm" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Transform2D"/&gt;
+ *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="macro" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="fPublished" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -59,7 +62,8 @@ import org.docx4j.dml.Graphic;
     "xfrm",
     "graphic"
 })
-public class CTGraphicalObjectFrame {
+public class CTGraphicalObjectFrame implements Child
+{
 
     @XmlElement(required = true)
     protected CTGraphicalObjectFrameNonVisual nvGraphicFramePr;
@@ -67,10 +71,12 @@ public class CTGraphicalObjectFrame {
     protected CTTransform2D xfrm;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", required = true)
     protected Graphic graphic;
-    @XmlAttribute
+    @XmlAttribute(name = "macro")
     protected String macro;
-    @XmlAttribute
+    @XmlAttribute(name = "fPublished")
     protected Boolean fPublished;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the nvGraphicFramePr property.
@@ -194,6 +200,32 @@ public class CTGraphicalObjectFrame {
      */
     public void setFPublished(Boolean value) {
         this.fPublished = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,31 +36,31 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TableCellProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="lnL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="lnR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="lnT" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="lnB" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="lnTlToBr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="lnBlToTr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/>
- *         &lt;element name="cell3D" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Cell3D" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="marL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="91440" />
- *       &lt;attribute name="marR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="91440" />
- *       &lt;attribute name="marT" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="45720" />
- *       &lt;attribute name="marB" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="45720" />
- *       &lt;attribute name="vert" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVerticalType" default="horz" />
- *       &lt;attribute name="anchor" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAnchoringType" default="t" />
- *       &lt;attribute name="anchorCtr" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="horzOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextHorzOverflowType" default="clip" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TableCellProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="lnL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="lnR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="lnT" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="lnB" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="lnTlToBr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="lnBlToTr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_LineProperties" minOccurs="0"/&gt;
+ *         &lt;element name="cell3D" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Cell3D" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="marL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="91440" /&gt;
+ *       &lt;attribute name="marR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="91440" /&gt;
+ *       &lt;attribute name="marT" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="45720" /&gt;
+ *       &lt;attribute name="marB" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" default="45720" /&gt;
+ *       &lt;attribute name="vert" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextVerticalType" default="horz" /&gt;
+ *       &lt;attribute name="anchor" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAnchoringType" default="t" /&gt;
+ *       &lt;attribute name="anchorCtr" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="horzOverflow" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextHorzOverflowType" default="clip" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -79,7 +82,8 @@ import javax.xml.bind.annotation.XmlType;
     "grpFill",
     "extLst"
 })
-public class CTTableCellProperties {
+public class CTTableCellProperties implements Child
+{
 
     protected CTLineProperties lnL;
     protected CTLineProperties lnR;
@@ -95,22 +99,24 @@ public class CTTableCellProperties {
     protected CTPatternFillProperties pattFill;
     protected CTGroupFillProperties grpFill;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "marL")
     protected Integer marL;
-    @XmlAttribute
+    @XmlAttribute(name = "marR")
     protected Integer marR;
-    @XmlAttribute
+    @XmlAttribute(name = "marT")
     protected Integer marT;
-    @XmlAttribute
+    @XmlAttribute(name = "marB")
     protected Integer marB;
-    @XmlAttribute
+    @XmlAttribute(name = "vert")
     protected STTextVerticalType vert;
-    @XmlAttribute
+    @XmlAttribute(name = "anchor")
     protected STTextAnchoringType anchor;
-    @XmlAttribute
+    @XmlAttribute(name = "anchorCtr")
     protected Boolean anchorCtr;
-    @XmlAttribute
+    @XmlAttribute(name = "horzOverflow")
     protected STTextHorzOverflowType horzOverflow;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the lnL property.
@@ -670,6 +676,32 @@ public class CTTableCellProperties {
      */
     public void setHorzOverflow(STTextHorzOverflowType value) {
         this.horzOverflow = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

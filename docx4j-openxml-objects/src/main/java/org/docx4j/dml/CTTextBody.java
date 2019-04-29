@@ -21,12 +21,15 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,17 +38,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TextBody">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="bodyPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBodyProperties"/>
- *         &lt;element name="lstStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/>
- *         &lt;element name="p" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextParagraph" maxOccurs="unbounded"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TextBody"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="bodyPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBodyProperties"/&gt;
+ *         &lt;element name="lstStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/&gt;
+ *         &lt;element name="p" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextParagraph" maxOccurs="unbounded"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,13 +59,16 @@ import javax.xml.bind.annotation.XmlType;
     "lstStyle",
     "p"
 })
-public class CTTextBody {
+public class CTTextBody implements Child
+{
 
     @XmlElement(required = true)
     protected CTTextBodyProperties bodyPr;
     protected CTTextListStyle lstStyle;
     @XmlElement(required = true)
-    protected List<CTTextParagraph> p = new ArrayListDml<CTTextParagraph>(this);
+    protected List<CTTextParagraph> p;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the bodyPr property.
@@ -136,9 +142,35 @@ public class CTTextBody {
      */
     public List<CTTextParagraph> getP() {
         if (p == null) {
-            p = new ArrayListDml<CTTextParagraph>(this);
+            p = new ArrayList<CTTextParagraph>();
         }
         return this.p;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

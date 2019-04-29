@@ -21,13 +21,16 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,15 +39,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_ColorMRU">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice" maxOccurs="10" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_ColorMRU"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_ColorChoice" maxOccurs="10" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -53,17 +56,20 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_ColorMRU", propOrder = {
     "egColorChoice"
 })
-public class CTColorMRU {
+public class CTColorMRU implements Child
+{
 
     @XmlElements({
-        @XmlElement(name = "sysClr", type = CTSystemColor.class),
+        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
         @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
         @XmlElement(name = "hslClr", type = CTHslColor.class),
-        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
-        @XmlElement(name = "prstClr", type = CTPresetColor.class),
-        @XmlElement(name = "schemeClr", type = CTSchemeColor.class)
+        @XmlElement(name = "sysClr", type = CTSystemColor.class),
+        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
+        @XmlElement(name = "prstClr", type = CTPresetColor.class)
     })
-    protected List<Object> egColorChoice = new ArrayListDml<Object>(this);
+    protected List<Object> egColorChoice;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the egColorChoice property.
@@ -83,20 +89,46 @@ public class CTColorMRU {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTSystemColor }
+     * {@link CTScRgbColor }
      * {@link CTSRgbColor }
      * {@link CTHslColor }
-     * {@link CTScRgbColor }
-     * {@link CTPresetColor }
+     * {@link CTSystemColor }
      * {@link CTSchemeColor }
+     * {@link CTPresetColor }
      * 
      * 
      */
     public List<Object> getEGColorChoice() {
         if (egColorChoice == null) {
-            egColorChoice = new ArrayListDml<Object>(this);
+            egColorChoice = new ArrayList<Object>();
         }
         return this.egColorChoice;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

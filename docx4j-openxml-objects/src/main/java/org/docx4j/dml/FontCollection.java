@@ -21,13 +21,16 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,28 +39,28 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_FontCollection">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="latin" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/>
- *         &lt;element name="ea" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/>
- *         &lt;element name="cs" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/>
- *         &lt;element name="font" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_FontCollection"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="latin" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/&gt;
+ *         &lt;element name="ea" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/&gt;
+ *         &lt;element name="cs" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextFont"/&gt;
+ *         &lt;element name="font" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -70,7 +73,8 @@ import javax.xml.bind.annotation.XmlType;
     "font",
     "extLst"
 })
-public class FontCollection {
+public class FontCollection implements Child
+{
 
     @XmlElement(required = true)
     protected TextFont latin;
@@ -78,8 +82,10 @@ public class FontCollection {
     protected TextFont ea;
     @XmlElement(required = true)
     protected TextFont cs;
-    protected List<FontCollection.Font> font = new ArrayListDml<FontCollection.Font>(this);
+    protected List<FontCollection.Font> font;
     protected CTOfficeArtExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the latin property.
@@ -177,7 +183,7 @@ public class FontCollection {
      */
     public List<FontCollection.Font> getFont() {
         if (font == null) {
-            font = new ArrayListDml<FontCollection.Font>(this);
+            font = new ArrayList<FontCollection.Font>();
         }
         return this.font;
     }
@@ -206,6 +212,32 @@ public class FontCollection {
         this.extLst = value;
     }
 
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -213,26 +245,29 @@ public class FontCollection {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *       &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Font {
+    public static class Font implements Child
+    {
 
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "script", required = true)
         protected String script;
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "typeface", required = true)
         protected String typeface;
+        @XmlTransient
+        private Object parent;
 
         /**
          * Gets the value of the script property.
@@ -280,6 +315,32 @@ public class FontCollection {
          */
         public void setTypeface(String value) {
             this.typeface = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
         }
 
     }

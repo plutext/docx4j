@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.diagram;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,17 +39,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Choose">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="if" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_When" maxOccurs="unbounded"/>
- *         &lt;element name="else" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Otherwise" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Choose"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="if" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_When" maxOccurs="unbounded"/&gt;
+ *         &lt;element name="else" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Otherwise" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,14 +59,17 @@ import javax.xml.bind.annotation.XmlType;
     "_if",
     "_else"
 })
-public class CTChoose {
+public class CTChoose implements Child
+{
 
     @XmlElement(name = "if", required = true)
-    protected List<CTWhen> _if = new ArrayListDml<CTWhen>(this);
+    protected List<CTWhen> _if;
     @XmlElement(name = "else")
     protected CTOtherwise _else;
-    @XmlAttribute
+    @XmlAttribute(name = "name")
     protected String name;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the if property.
@@ -89,7 +95,7 @@ public class CTChoose {
      */
     public List<CTWhen> getIf() {
         if (_if == null) {
-            _if = new ArrayListDml<CTWhen>(this);
+            _if = new ArrayList<CTWhen>();
         }
         return this._if;
     }
@@ -144,6 +150,32 @@ public class CTChoose {
      */
     public void setName(String value) {
         this.name = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

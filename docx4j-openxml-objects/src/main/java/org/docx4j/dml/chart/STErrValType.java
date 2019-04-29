@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ErrValType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cust"/>
- *     &lt;enumeration value="fixedVal"/>
- *     &lt;enumeration value="percentage"/>
- *     &lt;enumeration value="stdDev"/>
- *     &lt;enumeration value="stdErr"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_ErrValType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="cust"/&gt;
+ *     &lt;enumeration value="fixedVal"/&gt;
+ *     &lt;enumeration value="percentage"/&gt;
+ *     &lt;enumeration value="stdDev"/&gt;
+ *     &lt;enumeration value="stdErr"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

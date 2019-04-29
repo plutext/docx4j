@@ -32,51 +32,51 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TextAutonumberScheme">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="alphaLcParenBoth"/>
- *     &lt;enumeration value="alphaUcParenBoth"/>
- *     &lt;enumeration value="alphaLcParenR"/>
- *     &lt;enumeration value="alphaUcParenR"/>
- *     &lt;enumeration value="alphaLcPeriod"/>
- *     &lt;enumeration value="alphaUcPeriod"/>
- *     &lt;enumeration value="arabicParenBoth"/>
- *     &lt;enumeration value="arabicParenR"/>
- *     &lt;enumeration value="arabicPeriod"/>
- *     &lt;enumeration value="arabicPlain"/>
- *     &lt;enumeration value="romanLcParenBoth"/>
- *     &lt;enumeration value="romanUcParenBoth"/>
- *     &lt;enumeration value="romanLcParenR"/>
- *     &lt;enumeration value="romanUcParenR"/>
- *     &lt;enumeration value="romanLcPeriod"/>
- *     &lt;enumeration value="romanUcPeriod"/>
- *     &lt;enumeration value="circleNumDbPlain"/>
- *     &lt;enumeration value="circleNumWdBlackPlain"/>
- *     &lt;enumeration value="circleNumWdWhitePlain"/>
- *     &lt;enumeration value="arabicDbPeriod"/>
- *     &lt;enumeration value="arabicDbPlain"/>
- *     &lt;enumeration value="ea1ChsPeriod"/>
- *     &lt;enumeration value="ea1ChsPlain"/>
- *     &lt;enumeration value="ea1ChtPeriod"/>
- *     &lt;enumeration value="ea1ChtPlain"/>
- *     &lt;enumeration value="ea1JpnChsDbPeriod"/>
- *     &lt;enumeration value="ea1JpnKorPlain"/>
- *     &lt;enumeration value="ea1JpnKorPeriod"/>
- *     &lt;enumeration value="arabic1Minus"/>
- *     &lt;enumeration value="arabic2Minus"/>
- *     &lt;enumeration value="hebrew2Minus"/>
- *     &lt;enumeration value="thaiAlphaPeriod"/>
- *     &lt;enumeration value="thaiAlphaParenR"/>
- *     &lt;enumeration value="thaiAlphaParenBoth"/>
- *     &lt;enumeration value="thaiNumPeriod"/>
- *     &lt;enumeration value="thaiNumParenR"/>
- *     &lt;enumeration value="thaiNumParenBoth"/>
- *     &lt;enumeration value="hindiAlphaPeriod"/>
- *     &lt;enumeration value="hindiNumPeriod"/>
- *     &lt;enumeration value="hindiNumParenR"/>
- *     &lt;enumeration value="hindiAlpha1Period"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TextAutonumberScheme"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="alphaLcParenBoth"/&gt;
+ *     &lt;enumeration value="alphaUcParenBoth"/&gt;
+ *     &lt;enumeration value="alphaLcParenR"/&gt;
+ *     &lt;enumeration value="alphaUcParenR"/&gt;
+ *     &lt;enumeration value="alphaLcPeriod"/&gt;
+ *     &lt;enumeration value="alphaUcPeriod"/&gt;
+ *     &lt;enumeration value="arabicParenBoth"/&gt;
+ *     &lt;enumeration value="arabicParenR"/&gt;
+ *     &lt;enumeration value="arabicPeriod"/&gt;
+ *     &lt;enumeration value="arabicPlain"/&gt;
+ *     &lt;enumeration value="romanLcParenBoth"/&gt;
+ *     &lt;enumeration value="romanUcParenBoth"/&gt;
+ *     &lt;enumeration value="romanLcParenR"/&gt;
+ *     &lt;enumeration value="romanUcParenR"/&gt;
+ *     &lt;enumeration value="romanLcPeriod"/&gt;
+ *     &lt;enumeration value="romanUcPeriod"/&gt;
+ *     &lt;enumeration value="circleNumDbPlain"/&gt;
+ *     &lt;enumeration value="circleNumWdBlackPlain"/&gt;
+ *     &lt;enumeration value="circleNumWdWhitePlain"/&gt;
+ *     &lt;enumeration value="arabicDbPeriod"/&gt;
+ *     &lt;enumeration value="arabicDbPlain"/&gt;
+ *     &lt;enumeration value="ea1ChsPeriod"/&gt;
+ *     &lt;enumeration value="ea1ChsPlain"/&gt;
+ *     &lt;enumeration value="ea1ChtPeriod"/&gt;
+ *     &lt;enumeration value="ea1ChtPlain"/&gt;
+ *     &lt;enumeration value="ea1JpnChsDbPeriod"/&gt;
+ *     &lt;enumeration value="ea1JpnKorPlain"/&gt;
+ *     &lt;enumeration value="ea1JpnKorPeriod"/&gt;
+ *     &lt;enumeration value="arabic1Minus"/&gt;
+ *     &lt;enumeration value="arabic2Minus"/&gt;
+ *     &lt;enumeration value="hebrew2Minus"/&gt;
+ *     &lt;enumeration value="thaiAlphaPeriod"/&gt;
+ *     &lt;enumeration value="thaiAlphaParenR"/&gt;
+ *     &lt;enumeration value="thaiAlphaParenBoth"/&gt;
+ *     &lt;enumeration value="thaiNumPeriod"/&gt;
+ *     &lt;enumeration value="thaiNumParenR"/&gt;
+ *     &lt;enumeration value="thaiNumParenBoth"/&gt;
+ *     &lt;enumeration value="hindiAlphaPeriod"/&gt;
+ *     &lt;enumeration value="hindiNumPeriod"/&gt;
+ *     &lt;enumeration value="hindiNumParenR"/&gt;
+ *     &lt;enumeration value="hindiAlpha1Period"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

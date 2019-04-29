@@ -32,14 +32,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_AnimationChartOnlyBuildType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="series"/>
- *     &lt;enumeration value="category"/>
- *     &lt;enumeration value="seriesEl"/>
- *     &lt;enumeration value="categoryEl"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_AnimationChartOnlyBuildType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="series"/&gt;
+ *     &lt;enumeration value="category"/&gt;
+ *     &lt;enumeration value="seriesEl"/&gt;
+ *     &lt;enumeration value="categoryEl"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

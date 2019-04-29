@@ -32,14 +32,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_GrowDirection">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="tL"/>
- *     &lt;enumeration value="tR"/>
- *     &lt;enumeration value="bL"/>
- *     &lt;enumeration value="bR"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_GrowDirection"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="tL"/&gt;
+ *     &lt;enumeration value="tR"/&gt;
+ *     &lt;enumeration value="bL"/&gt;
+ *     &lt;enumeration value="bR"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

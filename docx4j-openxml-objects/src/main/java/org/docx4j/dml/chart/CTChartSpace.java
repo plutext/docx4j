@@ -21,14 +21,16 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTColorMapping;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -37,28 +39,28 @@ import org.docx4j.dml.CTTextBody;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_ChartSpace">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="date1904" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="lang" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TextLanguageID" minOccurs="0"/>
- *         &lt;element name="roundedCorners" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Style" minOccurs="0"/>
- *         &lt;element name="clrMapOvr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorMapping" minOccurs="0"/>
- *         &lt;element name="pivotSource" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PivotSource" minOccurs="0"/>
- *         &lt;element name="protection" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Protection" minOccurs="0"/>
- *         &lt;element name="chart" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Chart"/>
- *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties" minOccurs="0"/>
- *         &lt;element name="txPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBody" minOccurs="0"/>
- *         &lt;element name="externalData" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExternalData" minOccurs="0"/>
- *         &lt;element name="printSettings" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PrintSettings" minOccurs="0"/>
- *         &lt;element name="userShapes" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RelId" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_ChartSpace"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="date1904" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="lang" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TextLanguageID" minOccurs="0"/&gt;
+ *         &lt;element name="roundedCorners" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Style" minOccurs="0"/&gt;
+ *         &lt;element name="clrMapOvr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorMapping" minOccurs="0"/&gt;
+ *         &lt;element name="pivotSource" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PivotSource" minOccurs="0"/&gt;
+ *         &lt;element name="protection" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Protection" minOccurs="0"/&gt;
+ *         &lt;element name="chart" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Chart"/&gt;
+ *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties" minOccurs="0"/&gt;
+ *         &lt;element name="txPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBody" minOccurs="0"/&gt;
+ *         &lt;element name="externalData" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExternalData" minOccurs="0"/&gt;
+ *         &lt;element name="printSettings" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_PrintSettings" minOccurs="0"/&gt;
+ *         &lt;element name="userShapes" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_RelId" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -80,8 +82,8 @@ import org.docx4j.dml.CTTextBody;
     "userShapes",
     "extLst"
 })
-@XmlRootElement(name = "chartSpace")
-public class CTChartSpace {
+public class CTChartSpace implements Child
+{
 
     protected CTBoolean date1904;
     protected CTTextLanguageID lang;
@@ -98,6 +100,8 @@ public class CTChartSpace {
     protected CTPrintSettings printSettings;
     protected CTRelId userShapes;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the date1904 property.
@@ -433,6 +437,32 @@ public class CTChartSpace {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

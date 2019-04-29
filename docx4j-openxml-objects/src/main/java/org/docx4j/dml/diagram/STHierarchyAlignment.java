@@ -32,26 +32,26 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_HierarchyAlignment">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="tL"/>
- *     &lt;enumeration value="tR"/>
- *     &lt;enumeration value="tCtrCh"/>
- *     &lt;enumeration value="tCtrDes"/>
- *     &lt;enumeration value="bL"/>
- *     &lt;enumeration value="bR"/>
- *     &lt;enumeration value="bCtrCh"/>
- *     &lt;enumeration value="bCtrDes"/>
- *     &lt;enumeration value="lT"/>
- *     &lt;enumeration value="lB"/>
- *     &lt;enumeration value="lCtrCh"/>
- *     &lt;enumeration value="lCtrDes"/>
- *     &lt;enumeration value="rT"/>
- *     &lt;enumeration value="rB"/>
- *     &lt;enumeration value="rCtrCh"/>
- *     &lt;enumeration value="rCtrDes"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_HierarchyAlignment"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="tL"/&gt;
+ *     &lt;enumeration value="tR"/&gt;
+ *     &lt;enumeration value="tCtrCh"/&gt;
+ *     &lt;enumeration value="tCtrDes"/&gt;
+ *     &lt;enumeration value="bL"/&gt;
+ *     &lt;enumeration value="bR"/&gt;
+ *     &lt;enumeration value="bCtrCh"/&gt;
+ *     &lt;enumeration value="bCtrDes"/&gt;
+ *     &lt;enumeration value="lT"/&gt;
+ *     &lt;enumeration value="lB"/&gt;
+ *     &lt;enumeration value="lCtrCh"/&gt;
+ *     &lt;enumeration value="lCtrDes"/&gt;
+ *     &lt;enumeration value="rT"/&gt;
+ *     &lt;enumeration value="rB"/&gt;
+ *     &lt;enumeration value="rCtrCh"/&gt;
+ *     &lt;enumeration value="rCtrDes"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

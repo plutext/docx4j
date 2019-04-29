@@ -24,15 +24,23 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Style_QNAME = new QName("http://schemas.microsoft.com/office/drawing/2007/8/2/chart", "style");
     private final static QName _PivotOptions_QNAME = new QName("http://schemas.microsoft.com/office/drawing/2007/8/2/chart", "pivotOptions");
     private final static QName _InvertSolidFillFmt_QNAME = new QName("http://schemas.microsoft.com/office/drawing/2007/8/2/chart", "invertSolidFillFmt");
+    private final static QName _Style_QNAME = new QName("http://schemas.microsoft.com/office/drawing/2007/8/2/chart", "style");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.dml.chart.x2007
      * 
      */
     public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link CTPivotOptions }
+     * 
+     */
+    public CTPivotOptions createCTPivotOptions() {
+        return new CTPivotOptions();
     }
 
     /**
@@ -52,22 +60,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTPivotOptions }
-     * 
-     */
-    public CTPivotOptions createCTPivotOptions() {
-        return new CTPivotOptions();
-    }
-
-    /**
-     * Create an instance of {@link CTBooleanFalse }
-     * 
-     */
-    public CTBooleanFalse createCTBooleanFalse() {
-        return new CTBooleanFalse();
-    }
-
-    /**
      * Create an instance of {@link CTBooleanTrue }
      * 
      */
@@ -76,12 +68,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTStyle }{@code >}}
+     * Create an instance of {@link CTBooleanFalse }
      * 
      */
-    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2007/8/2/chart", name = "style")
-    public JAXBElement<CTStyle> createStyle(CTStyle value) {
-        return new JAXBElement<CTStyle>(_Style_QNAME, CTStyle.class, null, value);
+    public CTBooleanFalse createCTBooleanFalse() {
+        return new CTBooleanFalse();
     }
 
     /**
@@ -100,6 +91,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2007/8/2/chart", name = "invertSolidFillFmt")
     public JAXBElement<CTInvertSolidFillFmt> createInvertSolidFillFmt(CTInvertSolidFillFmt value) {
         return new JAXBElement<CTInvertSolidFillFmt>(_InvertSolidFillFmt_QNAME, CTInvertSolidFillFmt.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStyle }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2007/8/2/chart", name = "style")
+    public JAXBElement<CTStyle> createStyle(CTStyle value) {
+        return new JAXBElement<CTStyle>(_Style_QNAME, CTStyle.class, null, value);
     }
 
 }

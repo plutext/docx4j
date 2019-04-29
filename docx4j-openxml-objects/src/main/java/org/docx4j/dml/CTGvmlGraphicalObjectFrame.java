@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,18 +36,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GvmlGraphicalObjectFrame">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="nvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGraphicFrameNonVisual"/>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/>
- *         &lt;element name="xfrm" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Transform2D"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GvmlGraphicalObjectFrame"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="nvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGraphicFrameNonVisual"/&gt;
+ *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/&gt;
+ *         &lt;element name="xfrm" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Transform2D"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,7 +59,8 @@ import javax.xml.bind.annotation.XmlType;
     "xfrm",
     "extLst"
 })
-public class CTGvmlGraphicalObjectFrame {
+public class CTGvmlGraphicalObjectFrame implements Child
+{
 
     @XmlElement(required = true)
     protected CTGvmlGraphicFrameNonVisual nvGraphicFramePr;
@@ -65,6 +69,8 @@ public class CTGvmlGraphicalObjectFrame {
     @XmlElement(required = true)
     protected CTTransform2D xfrm;
     protected CTOfficeArtExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the nvGraphicFramePr property.
@@ -160,6 +166,32 @@ public class CTGvmlGraphicalObjectFrame {
      */
     public void setExtLst(CTOfficeArtExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

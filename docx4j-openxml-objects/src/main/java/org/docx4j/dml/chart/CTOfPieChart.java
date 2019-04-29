@@ -21,12 +21,15 @@
 
 package org.docx4j.dml.chart;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,23 +38,23 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_OfPieChart">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="ofPieType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_OfPieType"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}EG_PieChartShared"/>
- *         &lt;element name="gapWidth" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_GapAmount" minOccurs="0"/>
- *         &lt;element name="splitType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_SplitType" minOccurs="0"/>
- *         &lt;element name="splitPos" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/>
- *         &lt;element name="custSplit" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_CustSplit" minOccurs="0"/>
- *         &lt;element name="secondPieSize" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_SecondPieSize" minOccurs="0"/>
- *         &lt;element name="serLines" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ChartLines" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_OfPieChart"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="ofPieType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_OfPieType"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}EG_PieChartShared"/&gt;
+ *         &lt;element name="gapWidth" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_GapAmount" minOccurs="0"/&gt;
+ *         &lt;element name="splitType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_SplitType" minOccurs="0"/&gt;
+ *         &lt;element name="splitPos" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/&gt;
+ *         &lt;element name="custSplit" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_CustSplit" minOccurs="0"/&gt;
+ *         &lt;element name="secondPieSize" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_SecondPieSize" minOccurs="0"/&gt;
+ *         &lt;element name="serLines" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ChartLines" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -70,20 +73,23 @@ import javax.xml.bind.annotation.XmlType;
     "serLines",
     "extLst"
 })
-public class CTOfPieChart implements ListSer {
+public class CTOfPieChart implements Child
+{
 
     @XmlElement(required = true)
     protected CTOfPieType ofPieType;
     protected CTBoolean varyColors;
-    protected List<CTPieSer> ser = new ArrayListDml<CTPieSer>(this);
+    protected List<CTPieSer> ser;
     protected CTDLbls dLbls;
     protected CTGapAmount gapWidth;
     protected CTSplitType splitType;
     protected CTDouble splitPos;
     protected CTCustSplit custSplit;
     protected CTSecondPieSize secondPieSize;
-    protected List<CTChartLines> serLines  = new ArrayListDml<CTChartLines>(this);
+    protected List<CTChartLines> serLines;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the ofPieType property.
@@ -157,7 +163,7 @@ public class CTOfPieChart implements ListSer {
      */
     public List<CTPieSer> getSer() {
         if (ser == null) {
-            ser = new ArrayListDml<CTPieSer>(this);
+            ser = new ArrayList<CTPieSer>();
         }
         return this.ser;
     }
@@ -330,7 +336,7 @@ public class CTOfPieChart implements ListSer {
      */
     public List<CTChartLines> getSerLines() {
         if (serLines == null) {
-            serLines = new ArrayListDml<CTChartLines>(this);
+            serLines = new ArrayList<CTChartLines>();
         }
         return this.serLines;
     }
@@ -357,6 +363,32 @@ public class CTOfPieChart implements ListSer {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

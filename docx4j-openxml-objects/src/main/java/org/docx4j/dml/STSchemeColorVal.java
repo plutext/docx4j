@@ -32,27 +32,27 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_SchemeColorVal">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="bg1"/>
- *     &lt;enumeration value="tx1"/>
- *     &lt;enumeration value="bg2"/>
- *     &lt;enumeration value="tx2"/>
- *     &lt;enumeration value="accent1"/>
- *     &lt;enumeration value="accent2"/>
- *     &lt;enumeration value="accent3"/>
- *     &lt;enumeration value="accent4"/>
- *     &lt;enumeration value="accent5"/>
- *     &lt;enumeration value="accent6"/>
- *     &lt;enumeration value="hlink"/>
- *     &lt;enumeration value="folHlink"/>
- *     &lt;enumeration value="phClr"/>
- *     &lt;enumeration value="dk1"/>
- *     &lt;enumeration value="lt1"/>
- *     &lt;enumeration value="dk2"/>
- *     &lt;enumeration value="lt2"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_SchemeColorVal"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="bg1"/&gt;
+ *     &lt;enumeration value="tx1"/&gt;
+ *     &lt;enumeration value="bg2"/&gt;
+ *     &lt;enumeration value="tx2"/&gt;
+ *     &lt;enumeration value="accent1"/&gt;
+ *     &lt;enumeration value="accent2"/&gt;
+ *     &lt;enumeration value="accent3"/&gt;
+ *     &lt;enumeration value="accent4"/&gt;
+ *     &lt;enumeration value="accent5"/&gt;
+ *     &lt;enumeration value="accent6"/&gt;
+ *     &lt;enumeration value="hlink"/&gt;
+ *     &lt;enumeration value="folHlink"/&gt;
+ *     &lt;enumeration value="phClr"/&gt;
+ *     &lt;enumeration value="dk1"/&gt;
+ *     &lt;enumeration value="lt1"/&gt;
+ *     &lt;enumeration value="dk2"/&gt;
+ *     &lt;enumeration value="lt2"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

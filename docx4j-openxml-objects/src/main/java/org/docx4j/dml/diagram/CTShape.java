@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,50 +37,53 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Shape">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="adjLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AdjLst" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="rot" type="{http://www.w3.org/2001/XMLSchema}double" default="0" />
- *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_LayoutShapeType" default="none" />
- *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}blip"/>
- *       &lt;attribute name="zOrderOff" type="{http://www.w3.org/2001/XMLSchema}int" default="0" />
- *       &lt;attribute name="hideGeom" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="lkTxEntry" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="blipPhldr" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Shape"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="adjLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AdjLst" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="rot" type="{http://www.w3.org/2001/XMLSchema}double" default="0" /&gt;
+ *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_LayoutShapeType" default="none" /&gt;
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}blip"/&gt;
+ *       &lt;attribute name="zOrderOff" type="{http://www.w3.org/2001/XMLSchema}int" default="0" /&gt;
+ *       &lt;attribute name="hideGeom" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="lkTxEntry" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="blipPhldr" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram", name = "CT_Shape", propOrder = {
+@XmlType(name = "CT_Shape", propOrder = {
     "adjLst",
     "extLst"
 })
-public class CTShape {
+public class CTShape implements Child
+{
 
     protected CTAdjLst adjLst;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "rot")
     protected Double rot;
-    @XmlAttribute
+    @XmlAttribute(name = "type")
     protected String type;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    @XmlAttribute(name = "blip", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String blip;
-    @XmlAttribute
+    @XmlAttribute(name = "zOrderOff")
     protected Integer zOrderOff;
-    @XmlAttribute
+    @XmlAttribute(name = "hideGeom")
     protected Boolean hideGeom;
-    @XmlAttribute
+    @XmlAttribute(name = "lkTxEntry")
     protected Boolean lkTxEntry;
-    @XmlAttribute
+    @XmlAttribute(name = "blipPhldr")
     protected Boolean blipPhldr;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the adjLst property.
@@ -323,6 +329,32 @@ public class CTShape {
      */
     public void setBlipPhldr(Boolean value) {
         this.blipPhldr = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

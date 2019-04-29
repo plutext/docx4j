@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_BlendMode">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="over"/>
- *     &lt;enumeration value="mult"/>
- *     &lt;enumeration value="screen"/>
- *     &lt;enumeration value="darken"/>
- *     &lt;enumeration value="lighten"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_BlendMode"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="over"/&gt;
+ *     &lt;enumeration value="mult"/&gt;
+ *     &lt;enumeration value="screen"/&gt;
+ *     &lt;enumeration value="darken"/&gt;
+ *     &lt;enumeration value="lighten"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

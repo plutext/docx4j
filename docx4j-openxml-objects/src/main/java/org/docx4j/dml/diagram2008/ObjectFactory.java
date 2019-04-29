@@ -35,11 +35,35 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTDrawing }
+     * 
+     */
+    public CTDrawing createCTDrawing() {
+        return new CTDrawing();
+    }
+
+    /**
+     * Create an instance of {@link CTDataModelExtBlock }
+     * 
+     */
+    public CTDataModelExtBlock createCTDataModelExtBlock() {
+        return new CTDataModelExtBlock();
+    }
+
+    /**
      * Create an instance of {@link CTShapeNonVisual }
      * 
      */
     public CTShapeNonVisual createCTShapeNonVisual() {
         return new CTShapeNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTShape }
+     * 
+     */
+    public CTShape createCTShape() {
+        return new CTShape();
     }
 
     /**
@@ -56,30 +80,6 @@ public class ObjectFactory {
      */
     public CTGroupShape createCTGroupShape() {
         return new CTGroupShape();
-    }
-
-    /**
-     * Create an instance of {@link CTShape }
-     * 
-     */
-    public CTShape createCTShape() {
-        return new CTShape();
-    }
-
-    /**
-     * Create an instance of {@link CTDataModelExtBlock }
-     * 
-     */
-    public CTDataModelExtBlock createCTDataModelExtBlock() {
-        return new CTDataModelExtBlock();
-    }
-
-    /**
-     * Create an instance of {@link CTDrawing }
-     * 
-     */
-    public CTDrawing createCTDrawing() {
-        return new CTDrawing();
     }
 
     /**

@@ -32,20 +32,20 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ElementType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="all"/>
- *     &lt;enumeration value="doc"/>
- *     &lt;enumeration value="node"/>
- *     &lt;enumeration value="norm"/>
- *     &lt;enumeration value="nonNorm"/>
- *     &lt;enumeration value="asst"/>
- *     &lt;enumeration value="nonAsst"/>
- *     &lt;enumeration value="parTrans"/>
- *     &lt;enumeration value="pres"/>
- *     &lt;enumeration value="sibTrans"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_ElementType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="all"/&gt;
+ *     &lt;enumeration value="doc"/&gt;
+ *     &lt;enumeration value="node"/&gt;
+ *     &lt;enumeration value="norm"/&gt;
+ *     &lt;enumeration value="nonNorm"/&gt;
+ *     &lt;enumeration value="asst"/&gt;
+ *     &lt;enumeration value="nonAsst"/&gt;
+ *     &lt;enumeration value="parTrans"/&gt;
+ *     &lt;enumeration value="pres"/&gt;
+ *     &lt;enumeration value="sibTrans"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

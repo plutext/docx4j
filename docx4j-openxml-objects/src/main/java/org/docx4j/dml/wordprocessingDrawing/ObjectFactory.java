@@ -55,14 +55,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTWrapNone }
-     * 
-     */
-    public CTWrapNone createCTWrapNone() {
-        return new CTWrapNone();
-    }
-
-    /**
      * Create an instance of {@link Inline }
      * 
      */
@@ -71,51 +63,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTWrapThrough }
+     * Create an instance of {@link Anchor }
      * 
      */
-    public CTWrapThrough createCTWrapThrough() {
-        return new CTWrapThrough();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapTight }
-     * 
-     */
-    public CTWrapTight createCTWrapTight() {
-        return new CTWrapTight();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapPath }
-     * 
-     */
-    public CTWrapPath createCTWrapPath() {
-        return new CTWrapPath();
-    }
-
-    /**
-     * Create an instance of {@link CTPosV }
-     * 
-     */
-    public CTPosV createCTPosV() {
-        return new CTPosV();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapTopBottom }
-     * 
-     */
-    public CTWrapTopBottom createCTWrapTopBottom() {
-        return new CTWrapTopBottom();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapSquare }
-     * 
-     */
-    public CTWrapSquare createCTWrapSquare() {
-        return new CTWrapSquare();
+    public Anchor createAnchor() {
+        return new Anchor();
     }
 
     /**
@@ -127,6 +79,54 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTWrapPath }
+     * 
+     */
+    public CTWrapPath createCTWrapPath() {
+        return new CTWrapPath();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapNone }
+     * 
+     */
+    public CTWrapNone createCTWrapNone() {
+        return new CTWrapNone();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapSquare }
+     * 
+     */
+    public CTWrapSquare createCTWrapSquare() {
+        return new CTWrapSquare();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapTight }
+     * 
+     */
+    public CTWrapTight createCTWrapTight() {
+        return new CTWrapTight();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapThrough }
+     * 
+     */
+    public CTWrapThrough createCTWrapThrough() {
+        return new CTWrapThrough();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapTopBottom }
+     * 
+     */
+    public CTWrapTopBottom createCTWrapTopBottom() {
+        return new CTWrapTopBottom();
+    }
+
+    /**
      * Create an instance of {@link CTPosH }
      * 
      */
@@ -135,11 +135,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Anchor }
+     * Create an instance of {@link CTPosV }
      * 
      */
-    public Anchor createAnchor() {
-        return new Anchor();
+    public CTPosV createCTPosV() {
+        return new CTPosV();
     }
 
     /**

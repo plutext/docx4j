@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_CompoundLine">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="sng"/>
- *     &lt;enumeration value="dbl"/>
- *     &lt;enumeration value="thickThin"/>
- *     &lt;enumeration value="thinThick"/>
- *     &lt;enumeration value="tri"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_CompoundLine"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="sng"/&gt;
+ *     &lt;enumeration value="dbl"/&gt;
+ *     &lt;enumeration value="thickThin"/&gt;
+ *     &lt;enumeration value="thinThick"/&gt;
+ *     &lt;enumeration value="tri"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -32,13 +32,13 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_AnimationDgmOnlyBuildType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="one"/>
- *     &lt;enumeration value="lvlOne"/>
- *     &lt;enumeration value="lvlAtOnce"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_AnimationDgmOnlyBuildType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="one"/&gt;
+ *     &lt;enumeration value="lvlOne"/&gt;
+ *     &lt;enumeration value="lvlAtOnce"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

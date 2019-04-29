@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,21 +36,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TableCell">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="txBody" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBody" minOccurs="0"/>
- *         &lt;element name="tcPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableCellProperties" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="rowSpan" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
- *       &lt;attribute name="gridSpan" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
- *       &lt;attribute name="hMerge" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="vMerge" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TableCell"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="txBody" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBody" minOccurs="0"/&gt;
+ *         &lt;element name="tcPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableCellProperties" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="rowSpan" type="{http://www.w3.org/2001/XMLSchema}int" default="1" /&gt;
+ *       &lt;attribute name="gridSpan" type="{http://www.w3.org/2001/XMLSchema}int" default="1" /&gt;
+ *       &lt;attribute name="hMerge" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="vMerge" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -58,19 +61,22 @@ import javax.xml.bind.annotation.XmlType;
     "tcPr",
     "extLst"
 })
-public class CTTableCell {
+public class CTTableCell implements Child
+{
 
     protected CTTextBody txBody;
     protected CTTableCellProperties tcPr;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "rowSpan")
     protected Integer rowSpan;
-    @XmlAttribute
+    @XmlAttribute(name = "gridSpan")
     protected Integer gridSpan;
-    @XmlAttribute
+    @XmlAttribute(name = "hMerge")
     protected Boolean hMerge;
-    @XmlAttribute
+    @XmlAttribute(name = "vMerge")
     protected Boolean vMerge;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the txBody property.
@@ -254,6 +260,32 @@ public class CTTableCell {
      */
     public void setVMerge(Boolean value) {
         this.vMerge = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

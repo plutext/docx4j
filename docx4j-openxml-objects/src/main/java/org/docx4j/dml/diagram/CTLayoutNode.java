@@ -21,15 +21,18 @@
 
 package org.docx4j.dml.diagram;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -38,28 +41,28 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_LayoutNode">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded" minOccurs="0">
- *         &lt;element name="alg" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Algorithm" minOccurs="0"/>
- *         &lt;element name="shape" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Shape" minOccurs="0"/>
- *         &lt;element name="presOf" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_PresentationOf" minOccurs="0"/>
- *         &lt;element name="constrLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Constraints" minOccurs="0"/>
- *         &lt;element name="ruleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Rules" minOccurs="0"/>
- *         &lt;element name="varLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutVariablePropertySet" minOccurs="0"/>
- *         &lt;element name="forEach" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ForEach"/>
- *         &lt;element name="layoutNode" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutNode"/>
- *         &lt;element name="choose" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Choose"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/choice>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *       &lt;attribute name="styleLbl" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *       &lt;attribute name="chOrder" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ChildOrderType" default="b" />
- *       &lt;attribute name="moveWith" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_LayoutNode"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice maxOccurs="unbounded" minOccurs="0"&gt;
+ *         &lt;element name="alg" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Algorithm" minOccurs="0"/&gt;
+ *         &lt;element name="shape" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Shape" minOccurs="0"/&gt;
+ *         &lt;element name="presOf" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_PresentationOf" minOccurs="0"/&gt;
+ *         &lt;element name="constrLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Constraints" minOccurs="0"/&gt;
+ *         &lt;element name="ruleLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Rules" minOccurs="0"/&gt;
+ *         &lt;element name="varLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutVariablePropertySet" minOccurs="0"/&gt;
+ *         &lt;element name="forEach" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ForEach"/&gt;
+ *         &lt;element name="layoutNode" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_LayoutNode"/&gt;
+ *         &lt;element name="choose" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Choose"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *       &lt;attribute name="styleLbl" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *       &lt;attribute name="chOrder" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}ST_ChildOrderType" default="b" /&gt;
+ *       &lt;attribute name="moveWith" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -68,29 +71,32 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlType(name = "CT_LayoutNode", propOrder = {
     "algOrShapeOrPresOf"
 })
-public class CTLayoutNode {
+public class CTLayoutNode implements Child
+{
 
     @XmlElements({
-        @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
+        @XmlElement(name = "alg", type = CTAlgorithm.class),
+        @XmlElement(name = "shape", type = CTShape.class),
+        @XmlElement(name = "presOf", type = CTPresentationOf.class),
+        @XmlElement(name = "constrLst", type = CTConstraints.class),
         @XmlElement(name = "ruleLst", type = CTRules.class),
         @XmlElement(name = "varLst", type = CTLayoutVariablePropertySet.class),
         @XmlElement(name = "forEach", type = CTForEach.class),
-        @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class),
+        @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
         @XmlElement(name = "choose", type = CTChoose.class),
-        @XmlElement(name = "constrLst", type = CTConstraints.class),
-        @XmlElement(name = "presOf", type = CTPresentationOf.class),
-        @XmlElement(name = "shape", type = CTShape.class),
-        @XmlElement(name = "alg", type = CTAlgorithm.class)
+        @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class)
     })
-    protected List<Object> algOrShapeOrPresOf = new ArrayListDml<Object>(this);
-    @XmlAttribute
+    protected List<Object> algOrShapeOrPresOf;
+    @XmlAttribute(name = "name")
     protected String name;
-    @XmlAttribute
+    @XmlAttribute(name = "styleLbl")
     protected String styleLbl;
-    @XmlAttribute
+    @XmlAttribute(name = "chOrder")
     protected STChildOrderType chOrder;
-    @XmlAttribute
+    @XmlAttribute(name = "moveWith")
     protected String moveWith;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the algOrShapeOrPresOf property.
@@ -110,22 +116,22 @@ public class CTLayoutNode {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTLayoutNode }
+     * {@link CTAlgorithm }
+     * {@link CTShape }
+     * {@link CTPresentationOf }
+     * {@link CTConstraints }
      * {@link CTRules }
      * {@link CTLayoutVariablePropertySet }
      * {@link CTForEach }
-     * {@link CTOfficeArtExtensionList }
+     * {@link CTLayoutNode }
      * {@link CTChoose }
-     * {@link CTConstraints }
-     * {@link CTPresentationOf }
-     * {@link CTShape }
-     * {@link CTAlgorithm }
+     * {@link CTOfficeArtExtensionList }
      * 
      * 
      */
     public List<Object> getAlgOrShapeOrPresOf() {
         if (algOrShapeOrPresOf == null) {
-            algOrShapeOrPresOf = new ArrayListDml<Object>(this);
+            algOrShapeOrPresOf = new ArrayList<Object>();
         }
         return this.algOrShapeOrPresOf;
     }
@@ -240,6 +246,32 @@ public class CTLayoutNode {
      */
     public void setMoveWith(String value) {
         this.moveWith = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

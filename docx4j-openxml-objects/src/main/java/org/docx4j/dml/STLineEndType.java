@@ -32,16 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_LineEndType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="triangle"/>
- *     &lt;enumeration value="stealth"/>
- *     &lt;enumeration value="diamond"/>
- *     &lt;enumeration value="oval"/>
- *     &lt;enumeration value="arrow"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_LineEndType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="triangle"/&gt;
+ *     &lt;enumeration value="stealth"/&gt;
+ *     &lt;enumeration value="diamond"/&gt;
+ *     &lt;enumeration value="oval"/&gt;
+ *     &lt;enumeration value="arrow"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

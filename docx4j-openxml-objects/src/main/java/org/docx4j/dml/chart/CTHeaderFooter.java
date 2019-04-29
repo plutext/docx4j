@@ -21,10 +21,13 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,23 +36,23 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_HeaderFooter">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="oddHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *         &lt;element name="oddFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *         &lt;element name="evenHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *         &lt;element name="evenFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *         &lt;element name="firstHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *         &lt;element name="firstFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="alignWithMargins" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="differentOddEven" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="differentFirst" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_HeaderFooter"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="oddHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *         &lt;element name="oddFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *         &lt;element name="evenHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *         &lt;element name="evenFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *         &lt;element name="firstHeader" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *         &lt;element name="firstFooter" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}ST_Xstring" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="alignWithMargins" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="differentOddEven" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="differentFirst" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -63,7 +66,8 @@ import javax.xml.bind.annotation.XmlType;
     "firstHeader",
     "firstFooter"
 })
-public class CTHeaderFooter {
+public class CTHeaderFooter implements Child
+{
 
     protected String oddHeader;
     protected String oddFooter;
@@ -71,12 +75,14 @@ public class CTHeaderFooter {
     protected String evenFooter;
     protected String firstHeader;
     protected String firstFooter;
-    @XmlAttribute
+    @XmlAttribute(name = "alignWithMargins")
     protected Boolean alignWithMargins;
-    @XmlAttribute
+    @XmlAttribute(name = "differentOddEven")
     protected Boolean differentOddEven;
-    @XmlAttribute
+    @XmlAttribute(name = "differentFirst")
     protected Boolean differentFirst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the oddHeader property.
@@ -304,6 +310,32 @@ public class CTHeaderFooter {
      */
     public void setDifferentFirst(Boolean value) {
         this.differentFirst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

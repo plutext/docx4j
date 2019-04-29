@@ -21,9 +21,12 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -32,18 +35,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Marker">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="col" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_ColID"/>
- *         &lt;element name="colOff" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate"/>
- *         &lt;element name="row" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_RowID"/>
- *         &lt;element name="rowOff" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Marker"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="col" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_ColID"/&gt;
+ *         &lt;element name="colOff" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate"/&gt;
+ *         &lt;element name="row" type="{http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing}ST_RowID"/&gt;
+ *         &lt;element name="rowOff" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -55,12 +58,15 @@ import javax.xml.bind.annotation.XmlType;
     "row",
     "rowOff"
 })
-public class CTMarker {
+public class CTMarker implements Child
+{
 
     protected int col;
     protected long colOff;
     protected int row;
     protected long rowOff;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the col property.
@@ -124,6 +130,32 @@ public class CTMarker {
      */
     public void setRowOff(long value) {
         this.rowOff = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

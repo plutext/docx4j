@@ -32,23 +32,23 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_AxisType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="self"/>
- *     &lt;enumeration value="ch"/>
- *     &lt;enumeration value="des"/>
- *     &lt;enumeration value="desOrSelf"/>
- *     &lt;enumeration value="par"/>
- *     &lt;enumeration value="ancst"/>
- *     &lt;enumeration value="ancstOrSelf"/>
- *     &lt;enumeration value="followSib"/>
- *     &lt;enumeration value="precedSib"/>
- *     &lt;enumeration value="follow"/>
- *     &lt;enumeration value="preced"/>
- *     &lt;enumeration value="root"/>
- *     &lt;enumeration value="none"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_AxisType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="self"/&gt;
+ *     &lt;enumeration value="ch"/&gt;
+ *     &lt;enumeration value="des"/&gt;
+ *     &lt;enumeration value="desOrSelf"/&gt;
+ *     &lt;enumeration value="par"/&gt;
+ *     &lt;enumeration value="ancst"/&gt;
+ *     &lt;enumeration value="ancstOrSelf"/&gt;
+ *     &lt;enumeration value="followSib"/&gt;
+ *     &lt;enumeration value="precedSib"/&gt;
+ *     &lt;enumeration value="follow"/&gt;
+ *     &lt;enumeration value="preced"/&gt;
+ *     &lt;enumeration value="root"/&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

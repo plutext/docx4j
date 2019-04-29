@@ -21,16 +21,18 @@
 
 package org.docx4j.dml.diagram;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTScene3D;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -39,22 +41,22 @@ import org.docx4j.dml.CTScene3D;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_StyleDefinition">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="title" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDName" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="desc" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDDescription" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="catLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDCategories" minOccurs="0"/>
- *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/>
- *         &lt;element name="styleLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_StyleLabel" maxOccurs="unbounded"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="uniqueId" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
- *       &lt;attribute name="minVer" type="{http://www.w3.org/2001/XMLSchema}string" default="http://schemas.openxmlformats.org/drawingml/2006/diagram" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_StyleDefinition"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="title" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDName" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="desc" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDDescription" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="catLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_SDCategories" minOccurs="0"/&gt;
+ *         &lt;element name="scene3d" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Scene3D" minOccurs="0"/&gt;
+ *         &lt;element name="styleLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_StyleLabel" maxOccurs="unbounded"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="uniqueId" type="{http://www.w3.org/2001/XMLSchema}string" default="" /&gt;
+ *       &lt;attribute name="minVer" type="{http://www.w3.org/2001/XMLSchema}string" default="http://schemas.openxmlformats.org/drawingml/2006/diagram" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -68,21 +70,23 @@ import org.docx4j.dml.CTScene3D;
     "styleLbl",
     "extLst"
 })
-@XmlRootElement(name = "styleDef")
-public class CTStyleDefinition {
+public class CTStyleDefinition implements Child
+{
 
-    protected List<CTSDName> title = new ArrayListDml<CTSDName>(this);
-    protected List<CTSDDescription> desc = new ArrayListDml<CTSDDescription>(this);
+    protected List<CTSDName> title;
+    protected List<CTSDDescription> desc;
     protected CTSDCategories catLst;
     @XmlElement(name = "scene3d")
     protected CTScene3D scene3D;
     @XmlElement(required = true)
-    protected List<CTStyleLabel> styleLbl  = new ArrayListDml<CTStyleLabel>(this);
+    protected List<CTStyleLabel> styleLbl;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "uniqueId")
     protected String uniqueId;
-    @XmlAttribute
+    @XmlAttribute(name = "minVer")
     protected String minVer;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the title property.
@@ -108,7 +112,7 @@ public class CTStyleDefinition {
      */
     public List<CTSDName> getTitle() {
         if (title == null) {
-            title = new ArrayListDml<CTSDName>(this);
+            title = new ArrayList<CTSDName>();
         }
         return this.title;
     }
@@ -137,7 +141,7 @@ public class CTStyleDefinition {
      */
     public List<CTSDDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayListDml<CTSDDescription>(this);
+            desc = new ArrayList<CTSDDescription>();
         }
         return this.desc;
     }
@@ -214,7 +218,7 @@ public class CTStyleDefinition {
      */
     public List<CTStyleLabel> getStyleLbl() {
         if (styleLbl == null) {
-            styleLbl = new ArrayListDml<CTStyleLabel>(this);
+            styleLbl = new ArrayList<CTStyleLabel>();
         }
         return this.styleLbl;
     }
@@ -297,6 +301,32 @@ public class CTStyleDefinition {
      */
     public void setMinVer(String value) {
         this.minVer = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

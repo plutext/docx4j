@@ -21,9 +21,12 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -32,23 +35,23 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_LayoutVariablePropertySet">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="orgChart" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_OrgChart" minOccurs="0"/>
- *         &lt;element name="chMax" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ChildMax" minOccurs="0"/>
- *         &lt;element name="chPref" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ChildPref" minOccurs="0"/>
- *         &lt;element name="bulletEnabled" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_BulletEnabled" minOccurs="0"/>
- *         &lt;element name="dir" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Direction" minOccurs="0"/>
- *         &lt;element name="hierBranch" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_HierBranchStyle" minOccurs="0"/>
- *         &lt;element name="animOne" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AnimOne" minOccurs="0"/>
- *         &lt;element name="animLvl" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AnimLvl" minOccurs="0"/>
- *         &lt;element name="resizeHandles" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ResizeHandles" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_LayoutVariablePropertySet"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="orgChart" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_OrgChart" minOccurs="0"/&gt;
+ *         &lt;element name="chMax" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ChildMax" minOccurs="0"/&gt;
+ *         &lt;element name="chPref" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ChildPref" minOccurs="0"/&gt;
+ *         &lt;element name="bulletEnabled" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_BulletEnabled" minOccurs="0"/&gt;
+ *         &lt;element name="dir" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_Direction" minOccurs="0"/&gt;
+ *         &lt;element name="hierBranch" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_HierBranchStyle" minOccurs="0"/&gt;
+ *         &lt;element name="animOne" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AnimOne" minOccurs="0"/&gt;
+ *         &lt;element name="animLvl" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_AnimLvl" minOccurs="0"/&gt;
+ *         &lt;element name="resizeHandles" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_ResizeHandles" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -65,7 +68,8 @@ import javax.xml.bind.annotation.XmlType;
     "animLvl",
     "resizeHandles"
 })
-public class CTLayoutVariablePropertySet {
+public class CTLayoutVariablePropertySet implements Child
+{
 
     protected CTOrgChart orgChart;
     protected CTChildMax chMax;
@@ -76,6 +80,8 @@ public class CTLayoutVariablePropertySet {
     protected CTAnimOne animOne;
     protected CTAnimLvl animLvl;
     protected CTResizeHandles resizeHandles;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the orgChart property.
@@ -291,6 +297,32 @@ public class CTLayoutVariablePropertySet {
      */
     public void setResizeHandles(CTResizeHandles value) {
         this.resizeHandles = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

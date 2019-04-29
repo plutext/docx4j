@@ -21,12 +21,15 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -35,17 +38,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TableRow">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableCell" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="h" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TableRow"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TableCell" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="h" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -55,12 +58,15 @@ import javax.xml.bind.annotation.XmlType;
     "tc",
     "extLst"
 })
-public class CTTableRow {
+public class CTTableRow implements Child
+{
 
-    protected List<CTTableCell> tc = new ArrayListDml<CTTableCell>(this);
+    protected List<CTTableCell> tc;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "h", required = true)
     protected long h;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tc property.
@@ -86,7 +92,7 @@ public class CTTableRow {
      */
     public List<CTTableCell> getTc() {
         if (tc == null) {
-            tc = new ArrayListDml<CTTableCell>(this);
+            tc = new ArrayList<CTTableCell>();
         }
         return this.tc;
     }
@@ -129,6 +135,32 @@ public class CTTableRow {
      */
     public void setH(long value) {
         this.h = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

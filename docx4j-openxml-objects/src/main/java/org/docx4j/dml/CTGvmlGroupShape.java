@@ -21,13 +21,16 @@
 
 package org.docx4j.dml;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,25 +39,25 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GvmlGroupShape">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="nvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGroupShapeNonVisual"/>
- *         &lt;element name="grpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GroupShapeProperties"/>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="txSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlTextShape"/>
- *           &lt;element name="sp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlShape"/>
- *           &lt;element name="cxnSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlConnector"/>
- *           &lt;element name="pic" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlPicture"/>
- *           &lt;element name="graphicFrame" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGraphicalObjectFrame"/>
- *           &lt;element name="grpSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGroupShape"/>
- *         &lt;/choice>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GvmlGroupShape"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="nvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGroupShapeNonVisual"/&gt;
+ *         &lt;element name="grpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GroupShapeProperties"/&gt;
+ *         &lt;choice maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;element name="txSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlTextShape"/&gt;
+ *           &lt;element name="sp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlShape"/&gt;
+ *           &lt;element name="cxnSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlConnector"/&gt;
+ *           &lt;element name="pic" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlPicture"/&gt;
+ *           &lt;element name="graphicFrame" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGraphicalObjectFrame"/&gt;
+ *           &lt;element name="grpSp" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GvmlGroupShape"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -66,22 +69,25 @@ import javax.xml.bind.annotation.XmlType;
     "txSpOrSpOrCxnSp",
     "extLst"
 })
-public class CTGvmlGroupShape {
+public class CTGvmlGroupShape implements Child
+{
 
     @XmlElement(required = true)
     protected CTGvmlGroupShapeNonVisual nvGrpSpPr;
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
+        @XmlElement(name = "txSp", type = CTGvmlTextShape.class),
         @XmlElement(name = "sp", type = CTGvmlShape.class),
-        @XmlElement(name = "grpSp", type = CTGvmlGroupShape.class),
         @XmlElement(name = "cxnSp", type = CTGvmlConnector.class),
-        @XmlElement(name = "graphicFrame", type = CTGvmlGraphicalObjectFrame.class),
         @XmlElement(name = "pic", type = CTGvmlPicture.class),
-        @XmlElement(name = "txSp", type = CTGvmlTextShape.class)
+        @XmlElement(name = "graphicFrame", type = CTGvmlGraphicalObjectFrame.class),
+        @XmlElement(name = "grpSp", type = CTGvmlGroupShape.class)
     })
-    protected List<Object> txSpOrSpOrCxnSp = new ArrayListDml<Object>(this);
+    protected List<Object> txSpOrSpOrCxnSp;
     protected CTOfficeArtExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the nvGrpSpPr property.
@@ -149,18 +155,18 @@ public class CTGvmlGroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTGvmlShape }
-     * {@link CTGvmlGroupShape }
-     * {@link CTGvmlConnector }
-     * {@link CTGvmlGraphicalObjectFrame }
-     * {@link CTGvmlPicture }
      * {@link CTGvmlTextShape }
+     * {@link CTGvmlShape }
+     * {@link CTGvmlConnector }
+     * {@link CTGvmlPicture }
+     * {@link CTGvmlGraphicalObjectFrame }
+     * {@link CTGvmlGroupShape }
      * 
      * 
      */
     public List<Object> getTxSpOrSpOrCxnSp() {
         if (txSpOrSpOrCxnSp == null) {
-            txSpOrSpOrCxnSp = new ArrayListDml<Object>(this);
+            txSpOrSpOrCxnSp = new ArrayList<Object>();
         }
         return this.txSpOrSpOrCxnSp;
     }
@@ -187,6 +193,32 @@ public class CTGvmlGroupShape {
      */
     public void setExtLst(CTOfficeArtExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

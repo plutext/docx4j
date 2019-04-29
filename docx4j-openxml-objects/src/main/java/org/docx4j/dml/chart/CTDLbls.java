@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.chart;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,20 +39,20 @@ import org.docx4j.dml.CTTextBody;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_DLbls">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="dLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DLbl" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;choice>
- *           &lt;element name="delete" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean"/>
- *           &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}Group_DLbls"/>
- *         &lt;/choice>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_DLbls"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="dLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_DLbl" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;choice&gt;
+ *           &lt;element name="delete" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean"/&gt;
+ *           &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/chart}Group_DLbls"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -73,9 +76,10 @@ import org.docx4j.dml.CTTextBody;
     "leaderLines",
     "extLst"
 })
-public class CTDLbls {
+public class CTDLbls implements Child
+{
 
-    protected List<CTDLbl> dLbl = new ArrayListDml<CTDLbl>(this);
+    protected List<CTDLbl> dLbl;
     protected CTBoolean delete;
     protected CTNumFmt numFmt;
     protected CTShapeProperties spPr;
@@ -91,6 +95,8 @@ public class CTDLbls {
     protected CTBoolean showLeaderLines;
     protected CTChartLines leaderLines;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the dLbl property.
@@ -116,7 +122,7 @@ public class CTDLbls {
      */
     public List<CTDLbl> getDLbl() {
         if (dLbl == null) {
-            dLbl = new ArrayListDml<CTDLbl>(this);
+            dLbl = new ArrayList<CTDLbl>();
         }
         return this.dLbl;
     }
@@ -479,6 +485,32 @@ public class CTDLbls {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

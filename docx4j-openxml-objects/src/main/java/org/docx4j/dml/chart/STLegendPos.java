@@ -32,15 +32,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_LegendPos">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="b"/>
- *     &lt;enumeration value="tr"/>
- *     &lt;enumeration value="l"/>
- *     &lt;enumeration value="r"/>
- *     &lt;enumeration value="t"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_LegendPos"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="b"/&gt;
+ *     &lt;enumeration value="tr"/&gt;
+ *     &lt;enumeration value="l"/&gt;
+ *     &lt;enumeration value="r"/&gt;
+ *     &lt;enumeration value="t"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -21,13 +21,16 @@
 
 package org.docx4j.dml.diagram;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -36,16 +39,16 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_PresentationOf">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_IteratorAttributes"/>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_PresentationOf"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_IteratorAttributes"/&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,21 +57,24 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlType(name = "CT_PresentationOf", propOrder = {
     "extLst"
 })
-public class CTPresentationOf {
+public class CTPresentationOf implements Child
+{
 
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
-    protected List<STAxisType> axis = new ArrayListDml<STAxisType>(this);
-    @XmlAttribute
-    protected List<STElementType> ptType = new ArrayListDml<STElementType>(this);
-    @XmlAttribute
-    protected List<Boolean> hideLastTrans = new ArrayListDml<Boolean>(this);
-    @XmlAttribute
-    protected List<Integer> st = new ArrayListDml<Integer>(this);
-    @XmlAttribute
-    protected List<Long> cnt = new ArrayListDml<Long>(this);
-    @XmlAttribute
-    protected List<Integer> step = new ArrayListDml<Integer>(this);
+    @XmlAttribute(name = "axis")
+    protected List<STAxisType> axis;
+    @XmlAttribute(name = "ptType")
+    protected List<STElementType> ptType;
+    @XmlAttribute(name = "hideLastTrans")
+    protected List<Boolean> hideLastTrans;
+    @XmlAttribute(name = "st")
+    protected List<Integer> st;
+    @XmlAttribute(name = "cnt")
+    protected List<Long> cnt;
+    @XmlAttribute(name = "step")
+    protected List<Integer> step;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -118,7 +124,7 @@ public class CTPresentationOf {
      */
     public List<STAxisType> getAxis() {
         if (axis == null) {
-            axis = new ArrayListDml<STAxisType>(this);
+            axis = new ArrayList<STAxisType>();
         }
         return this.axis;
     }
@@ -147,7 +153,7 @@ public class CTPresentationOf {
      */
     public List<STElementType> getPtType() {
         if (ptType == null) {
-            ptType = new ArrayListDml<STElementType>(this);
+            ptType = new ArrayList<STElementType>();
         }
         return this.ptType;
     }
@@ -176,7 +182,7 @@ public class CTPresentationOf {
      */
     public List<Boolean> getHideLastTrans() {
         if (hideLastTrans == null) {
-            hideLastTrans = new ArrayListDml<Boolean>(this);
+            hideLastTrans = new ArrayList<Boolean>();
         }
         return this.hideLastTrans;
     }
@@ -205,7 +211,7 @@ public class CTPresentationOf {
      */
     public List<Integer> getSt() {
         if (st == null) {
-            st = new ArrayListDml<Integer>(this);
+            st = new ArrayList<Integer>();
         }
         return this.st;
     }
@@ -234,7 +240,7 @@ public class CTPresentationOf {
      */
     public List<Long> getCnt() {
         if (cnt == null) {
-            cnt = new ArrayListDml<Long>(this);
+            cnt = new ArrayList<Long>();
         }
         return this.cnt;
     }
@@ -263,9 +269,35 @@ public class CTPresentationOf {
      */
     public List<Integer> getStep() {
         if (step == null) {
-            step = new ArrayListDml<Integer>(this);
+            step = new ArrayList<Integer>();
         }
         return this.step;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

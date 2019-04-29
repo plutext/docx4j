@@ -32,28 +32,28 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TextUnderlineType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="words"/>
- *     &lt;enumeration value="sng"/>
- *     &lt;enumeration value="dbl"/>
- *     &lt;enumeration value="heavy"/>
- *     &lt;enumeration value="dotted"/>
- *     &lt;enumeration value="dottedHeavy"/>
- *     &lt;enumeration value="dash"/>
- *     &lt;enumeration value="dashHeavy"/>
- *     &lt;enumeration value="dashLong"/>
- *     &lt;enumeration value="dashLongHeavy"/>
- *     &lt;enumeration value="dotDash"/>
- *     &lt;enumeration value="dotDashHeavy"/>
- *     &lt;enumeration value="dotDotDash"/>
- *     &lt;enumeration value="dotDotDashHeavy"/>
- *     &lt;enumeration value="wavy"/>
- *     &lt;enumeration value="wavyHeavy"/>
- *     &lt;enumeration value="wavyDbl"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TextUnderlineType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="words"/&gt;
+ *     &lt;enumeration value="sng"/&gt;
+ *     &lt;enumeration value="dbl"/&gt;
+ *     &lt;enumeration value="heavy"/&gt;
+ *     &lt;enumeration value="dotted"/&gt;
+ *     &lt;enumeration value="dottedHeavy"/&gt;
+ *     &lt;enumeration value="dash"/&gt;
+ *     &lt;enumeration value="dashHeavy"/&gt;
+ *     &lt;enumeration value="dashLong"/&gt;
+ *     &lt;enumeration value="dashLongHeavy"/&gt;
+ *     &lt;enumeration value="dotDash"/&gt;
+ *     &lt;enumeration value="dotDashHeavy"/&gt;
+ *     &lt;enumeration value="dotDotDash"/&gt;
+ *     &lt;enumeration value="dotDotDashHeavy"/&gt;
+ *     &lt;enumeration value="wavy"/&gt;
+ *     &lt;enumeration value="wavyHeavy"/&gt;
+ *     &lt;enumeration value="wavyDbl"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

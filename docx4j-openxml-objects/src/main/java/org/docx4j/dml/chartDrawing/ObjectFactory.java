@@ -50,11 +50,35 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTDrawing }
+     * 
+     */
+    public CTDrawing createCTDrawing() {
+        return new CTDrawing();
+    }
+
+    /**
      * Create an instance of {@link CTShapeNonVisual }
      * 
      */
     public CTShapeNonVisual createCTShapeNonVisual() {
         return new CTShapeNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTShape }
+     * 
+     */
+    public CTShape createCTShape() {
+        return new CTShape();
+    }
+
+    /**
+     * Create an instance of {@link CTConnectorNonVisual }
+     * 
+     */
+    public CTConnectorNonVisual createCTConnectorNonVisual() {
+        return new CTConnectorNonVisual();
     }
 
     /**
@@ -74,59 +98,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTGroupShape }
-     * 
-     */
-    public CTGroupShape createCTGroupShape() {
-        return new CTGroupShape();
-    }
-
-    /**
      * Create an instance of {@link CTPicture }
      * 
      */
     public CTPicture createCTPicture() {
         return new CTPicture();
-    }
-
-    /**
-     * Create an instance of {@link CTGroupShapeNonVisual }
-     * 
-     */
-    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
-        return new CTGroupShapeNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTShape }
-     * 
-     */
-    public CTShape createCTShape() {
-        return new CTShape();
-    }
-
-    /**
-     * Create an instance of {@link CTDrawing }
-     * 
-     */
-    public CTDrawing createCTDrawing() {
-        return new CTDrawing();
-    }
-
-    /**
-     * Create an instance of {@link CTRelSizeAnchor }
-     * 
-     */
-    public CTRelSizeAnchor createCTRelSizeAnchor() {
-        return new CTRelSizeAnchor();
-    }
-
-    /**
-     * Create an instance of {@link CTMarker }
-     * 
-     */
-    public CTMarker createCTMarker() {
-        return new CTMarker();
     }
 
     /**
@@ -138,11 +114,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTConnectorNonVisual }
+     * Create an instance of {@link CTGraphicFrame }
      * 
      */
-    public CTConnectorNonVisual createCTConnectorNonVisual() {
-        return new CTConnectorNonVisual();
+    public CTGraphicFrame createCTGraphicFrame() {
+        return new CTGraphicFrame();
+    }
+
+    /**
+     * Create an instance of {@link CTGroupShapeNonVisual }
+     * 
+     */
+    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
+        return new CTGroupShapeNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTGroupShape }
+     * 
+     */
+    public CTGroupShape createCTGroupShape() {
+        return new CTGroupShape();
+    }
+
+    /**
+     * Create an instance of {@link CTMarker }
+     * 
+     */
+    public CTMarker createCTMarker() {
+        return new CTMarker();
+    }
+
+    /**
+     * Create an instance of {@link CTRelSizeAnchor }
+     * 
+     */
+    public CTRelSizeAnchor createCTRelSizeAnchor() {
+        return new CTRelSizeAnchor();
     }
 
     /**
@@ -151,14 +159,6 @@ public class ObjectFactory {
      */
     public CTAbsSizeAnchor createCTAbsSizeAnchor() {
         return new CTAbsSizeAnchor();
-    }
-
-    /**
-     * Create an instance of {@link CTGraphicFrame }
-     * 
-     */
-    public CTGraphicFrame createCTGraphicFrame() {
-        return new CTGraphicFrame();
     }
 
 }

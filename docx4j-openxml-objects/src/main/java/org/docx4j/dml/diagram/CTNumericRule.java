@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,19 +37,19 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_NumericRule">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintAttributes"/>
- *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" />
- *       &lt;attribute name="fact" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" />
- *       &lt;attribute name="max" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_NumericRule"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/drawingml/2006/diagram}AG_ConstraintAttributes"/&gt;
+ *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" /&gt;
+ *       &lt;attribute name="fact" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" /&gt;
+ *       &lt;attribute name="max" type="{http://www.w3.org/2001/XMLSchema}double" default="NaN" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -55,23 +58,26 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 @XmlType(name = "CT_NumericRule", propOrder = {
     "extLst"
 })
-public class CTNumericRule {
+public class CTNumericRule implements Child
+{
 
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "val")
     protected Double val;
-    @XmlAttribute
+    @XmlAttribute(name = "fact")
     protected Double fact;
-    @XmlAttribute
+    @XmlAttribute(name = "max")
     protected Double max;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "type", required = true)
     protected STConstraintType type;
     @XmlAttribute(name = "for")
     protected STConstraintRelationship _for;
-    @XmlAttribute
+    @XmlAttribute(name = "forName")
     protected String forName;
-    @XmlAttribute
+    @XmlAttribute(name = "ptType")
     protected STElementType ptType;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -107,7 +113,7 @@ public class CTNumericRule {
      */
     public double getVal() {
         if (val == null) {
-            return Double.NaN;
+            return java.lang.Double.NaN;
         } else {
             return val;
         }
@@ -135,7 +141,7 @@ public class CTNumericRule {
      */
     public double getFact() {
         if (fact == null) {
-            return Double.NaN;
+            return java.lang.Double.NaN;
         } else {
             return fact;
         }
@@ -163,7 +169,7 @@ public class CTNumericRule {
      */
     public double getMax() {
         if (max == null) {
-            return Double.NaN;
+            return java.lang.Double.NaN;
         } else {
             return max;
         }
@@ -287,6 +293,32 @@ public class CTNumericRule {
      */
     public void setPtType(STElementType value) {
         this.ptType = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -21,14 +21,17 @@
 
 package org.docx4j.dml.wordprocessingDrawing;
 
-import org.docx4j.dml.ArrayListDml;
+import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTPoint2D;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -37,17 +40,17 @@ import org.docx4j.dml.CTPoint2D;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_WrapPath">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="start" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D"/>
- *         &lt;element name="lineTo" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D" maxOccurs="unbounded" minOccurs="2"/>
- *       &lt;/sequence>
- *       &lt;attribute name="edited" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_WrapPath"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="start" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D"/&gt;
+ *         &lt;element name="lineTo" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_Point2D" maxOccurs="unbounded" minOccurs="2"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="edited" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -57,14 +60,17 @@ import org.docx4j.dml.CTPoint2D;
     "start",
     "lineTo"
 })
-public class CTWrapPath {
+public class CTWrapPath implements Child
+{
 
     @XmlElement(required = true)
     protected CTPoint2D start;
     @XmlElement(required = true)
-    protected List<CTPoint2D> lineTo = new ArrayListDml<CTPoint2D>(this);
-    @XmlAttribute
+    protected List<CTPoint2D> lineTo;
+    @XmlAttribute(name = "edited")
     protected Boolean edited;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the start property.
@@ -114,7 +120,7 @@ public class CTWrapPath {
      */
     public List<CTPoint2D> getLineTo() {
         if (lineTo == null) {
-            lineTo = new ArrayListDml<CTPoint2D>(this);
+            lineTo = new ArrayList<CTPoint2D>();
         }
         return this.lineTo;
     }
@@ -141,6 +147,32 @@ public class CTWrapPath {
      */
     public void setEdited(Boolean value) {
         this.edited = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

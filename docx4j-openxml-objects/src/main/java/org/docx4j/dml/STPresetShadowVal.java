@@ -32,30 +32,30 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PresetShadowVal">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="shdw1"/>
- *     &lt;enumeration value="shdw2"/>
- *     &lt;enumeration value="shdw3"/>
- *     &lt;enumeration value="shdw4"/>
- *     &lt;enumeration value="shdw5"/>
- *     &lt;enumeration value="shdw6"/>
- *     &lt;enumeration value="shdw7"/>
- *     &lt;enumeration value="shdw8"/>
- *     &lt;enumeration value="shdw9"/>
- *     &lt;enumeration value="shdw10"/>
- *     &lt;enumeration value="shdw11"/>
- *     &lt;enumeration value="shdw12"/>
- *     &lt;enumeration value="shdw13"/>
- *     &lt;enumeration value="shdw14"/>
- *     &lt;enumeration value="shdw15"/>
- *     &lt;enumeration value="shdw16"/>
- *     &lt;enumeration value="shdw17"/>
- *     &lt;enumeration value="shdw18"/>
- *     &lt;enumeration value="shdw19"/>
- *     &lt;enumeration value="shdw20"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PresetShadowVal"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="shdw1"/&gt;
+ *     &lt;enumeration value="shdw2"/&gt;
+ *     &lt;enumeration value="shdw3"/&gt;
+ *     &lt;enumeration value="shdw4"/&gt;
+ *     &lt;enumeration value="shdw5"/&gt;
+ *     &lt;enumeration value="shdw6"/&gt;
+ *     &lt;enumeration value="shdw7"/&gt;
+ *     &lt;enumeration value="shdw8"/&gt;
+ *     &lt;enumeration value="shdw9"/&gt;
+ *     &lt;enumeration value="shdw10"/&gt;
+ *     &lt;enumeration value="shdw11"/&gt;
+ *     &lt;enumeration value="shdw12"/&gt;
+ *     &lt;enumeration value="shdw13"/&gt;
+ *     &lt;enumeration value="shdw14"/&gt;
+ *     &lt;enumeration value="shdw15"/&gt;
+ *     &lt;enumeration value="shdw16"/&gt;
+ *     &lt;enumeration value="shdw17"/&gt;
+ *     &lt;enumeration value="shdw18"/&gt;
+ *     &lt;enumeration value="shdw19"/&gt;
+ *     &lt;enumeration value="shdw20"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -32,16 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_Shape">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="cone"/>
- *     &lt;enumeration value="coneToMax"/>
- *     &lt;enumeration value="box"/>
- *     &lt;enumeration value="cylinder"/>
- *     &lt;enumeration value="pyramid"/>
- *     &lt;enumeration value="pyramidToMax"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_Shape"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="cone"/&gt;
+ *     &lt;enumeration value="coneToMax"/&gt;
+ *     &lt;enumeration value="box"/&gt;
+ *     &lt;enumeration value="cylinder"/&gt;
+ *     &lt;enumeration value="pyramid"/&gt;
+ *     &lt;enumeration value="pyramidToMax"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

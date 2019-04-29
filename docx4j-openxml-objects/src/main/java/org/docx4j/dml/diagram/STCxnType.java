@@ -32,14 +32,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_CxnType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="parOf"/>
- *     &lt;enumeration value="presOf"/>
- *     &lt;enumeration value="presParOf"/>
- *     &lt;enumeration value="unknownRelationship"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_CxnType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="parOf"/&gt;
+ *     &lt;enumeration value="presOf"/&gt;
+ *     &lt;enumeration value="presParOf"/&gt;
+ *     &lt;enumeration value="unknownRelationship"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

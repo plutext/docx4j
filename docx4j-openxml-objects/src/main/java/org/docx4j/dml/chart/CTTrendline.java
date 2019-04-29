@@ -21,11 +21,14 @@
 
 package org.docx4j.dml.chart;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -34,26 +37,26 @@ import org.docx4j.dml.CTShapeProperties;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Trendline">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties" minOccurs="0"/>
- *         &lt;element name="trendlineType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TrendlineType"/>
- *         &lt;element name="order" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Order" minOccurs="0"/>
- *         &lt;element name="period" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Period" minOccurs="0"/>
- *         &lt;element name="forward" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/>
- *         &lt;element name="backward" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/>
- *         &lt;element name="intercept" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/>
- *         &lt;element name="dispRSqr" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="dispEq" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/>
- *         &lt;element name="trendlineLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TrendlineLbl" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_Trendline"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties" minOccurs="0"/&gt;
+ *         &lt;element name="trendlineType" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TrendlineType"/&gt;
+ *         &lt;element name="order" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Order" minOccurs="0"/&gt;
+ *         &lt;element name="period" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Period" minOccurs="0"/&gt;
+ *         &lt;element name="forward" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/&gt;
+ *         &lt;element name="backward" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/&gt;
+ *         &lt;element name="intercept" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Double" minOccurs="0"/&gt;
+ *         &lt;element name="dispRSqr" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="dispEq" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_Boolean" minOccurs="0"/&gt;
+ *         &lt;element name="trendlineLbl" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_TrendlineLbl" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/chart}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -73,7 +76,8 @@ import org.docx4j.dml.CTShapeProperties;
     "trendlineLbl",
     "extLst"
 })
-public class CTTrendline {
+public class CTTrendline implements Child
+{
 
     protected String name;
     protected CTShapeProperties spPr;
@@ -88,6 +92,8 @@ public class CTTrendline {
     protected CTBoolean dispEq;
     protected CTTrendlineLbl trendlineLbl;
     protected CTExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the name property.
@@ -375,6 +381,32 @@ public class CTTrendline {
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

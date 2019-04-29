@@ -21,10 +21,13 @@
 
 package org.docx4j.dml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -33,35 +36,35 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TextParagraphProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="lnSpc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/>
- *         &lt;element name="spcBef" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/>
- *         &lt;element name="spcAft" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletColor" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletSize" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletTypeface" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBullet" minOccurs="0"/>
- *         &lt;element name="tabLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextTabStopList" minOccurs="0"/>
- *         &lt;element name="defRPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextCharacterProperties" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="marL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextMargin" />
- *       &lt;attribute name="marR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextMargin" />
- *       &lt;attribute name="lvl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextIndentLevelType" />
- *       &lt;attribute name="indent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextIndent" />
- *       &lt;attribute name="algn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAlignType" />
- *       &lt;attribute name="defTabSz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" />
- *       &lt;attribute name="rtl" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="eaLnBrk" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="fontAlgn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextFontAlignType" />
- *       &lt;attribute name="latinLnBrk" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="hangingPunct" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TextParagraphProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="lnSpc" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/&gt;
+ *         &lt;element name="spcBef" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/&gt;
+ *         &lt;element name="spcAft" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextSpacing" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletColor" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletSize" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBulletTypeface" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_TextBullet" minOccurs="0"/&gt;
+ *         &lt;element name="tabLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextTabStopList" minOccurs="0"/&gt;
+ *         &lt;element name="defRPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextCharacterProperties" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="marL" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextMargin" /&gt;
+ *       &lt;attribute name="marR" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextMargin" /&gt;
+ *       &lt;attribute name="lvl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextIndentLevelType" /&gt;
+ *       &lt;attribute name="indent" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextIndent" /&gt;
+ *       &lt;attribute name="algn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextAlignType" /&gt;
+ *       &lt;attribute name="defTabSz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Coordinate32" /&gt;
+ *       &lt;attribute name="rtl" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="eaLnBrk" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="fontAlgn" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextFontAlignType" /&gt;
+ *       &lt;attribute name="latinLnBrk" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="hangingPunct" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -86,7 +89,8 @@ import javax.xml.bind.annotation.XmlType;
     "defRPr",
     "extLst"
 })
-public class CTTextParagraphProperties {
+public class CTTextParagraphProperties implements Child
+{
 
     protected CTTextSpacing lnSpc;
     protected CTTextSpacing spcBef;
@@ -105,28 +109,30 @@ public class CTTextParagraphProperties {
     protected CTTextTabStopList tabLst;
     protected CTTextCharacterProperties defRPr;
     protected CTOfficeArtExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "marL")
     protected Integer marL;
-    @XmlAttribute
+    @XmlAttribute(name = "marR")
     protected Integer marR;
-    @XmlAttribute
+    @XmlAttribute(name = "lvl")
     protected Integer lvl;
-    @XmlAttribute
+    @XmlAttribute(name = "indent")
     protected Integer indent;
-    @XmlAttribute
+    @XmlAttribute(name = "algn")
     protected STTextAlignType algn;
-    @XmlAttribute
+    @XmlAttribute(name = "defTabSz")
     protected Integer defTabSz;
-    @XmlAttribute
+    @XmlAttribute(name = "rtl")
     protected Boolean rtl;
-    @XmlAttribute
+    @XmlAttribute(name = "eaLnBrk")
     protected Boolean eaLnBrk;
-    @XmlAttribute
+    @XmlAttribute(name = "fontAlgn")
     protected STTextFontAlignType fontAlgn;
-    @XmlAttribute
+    @XmlAttribute(name = "latinLnBrk")
     protected Boolean latinLnBrk;
-    @XmlAttribute
+    @XmlAttribute(name = "hangingPunct")
     protected Boolean hangingPunct;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the lnSpc property.
@@ -798,6 +804,32 @@ public class CTTextParagraphProperties {
      */
     public void setHangingPunct(Boolean value) {
         this.hangingPunct = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

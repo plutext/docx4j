@@ -32,19 +32,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_BuiltInUnit">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="hundreds"/>
- *     &lt;enumeration value="thousands"/>
- *     &lt;enumeration value="tenThousands"/>
- *     &lt;enumeration value="hundredThousands"/>
- *     &lt;enumeration value="millions"/>
- *     &lt;enumeration value="tenMillions"/>
- *     &lt;enumeration value="hundredMillions"/>
- *     &lt;enumeration value="billions"/>
- *     &lt;enumeration value="trillions"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_BuiltInUnit"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="hundreds"/&gt;
+ *     &lt;enumeration value="thousands"/&gt;
+ *     &lt;enumeration value="tenThousands"/&gt;
+ *     &lt;enumeration value="hundredThousands"/&gt;
+ *     &lt;enumeration value="millions"/&gt;
+ *     &lt;enumeration value="tenMillions"/&gt;
+ *     &lt;enumeration value="hundredMillions"/&gt;
+ *     &lt;enumeration value="billions"/&gt;
+ *     &lt;enumeration value="trillions"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

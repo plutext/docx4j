@@ -21,14 +21,16 @@
 
 package org.docx4j.dml.diagram;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBackgroundFormatting;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTWholeE2OFormatting;
+import org.opendope.SmartArt.dataHierarchy.Child;
 
 
 /**
@@ -37,19 +39,19 @@ import org.docx4j.dml.CTWholeE2OFormatting;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_DataModel">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="ptLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_PtList"/>
- *         &lt;element name="cxnLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_CxnList" minOccurs="0"/>
- *         &lt;element name="bg" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BackgroundFormatting" minOccurs="0"/>
- *         &lt;element name="whole" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_WholeE2oFormatting" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_DataModel"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="ptLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_PtList"/&gt;
+ *         &lt;element name="cxnLst" type="{http://schemas.openxmlformats.org/drawingml/2006/diagram}CT_CxnList" minOccurs="0"/&gt;
+ *         &lt;element name="bg" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BackgroundFormatting" minOccurs="0"/&gt;
+ *         &lt;element name="whole" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_WholeE2oFormatting" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -62,8 +64,8 @@ import org.docx4j.dml.CTWholeE2OFormatting;
     "whole",
     "extLst"
 })
-@XmlRootElement(name = "dataModel")
-public class CTDataModel {
+public class CTDataModel implements Child
+{
 
     @XmlElement(required = true)
     protected CTPtList ptLst;
@@ -71,6 +73,8 @@ public class CTDataModel {
     protected CTBackgroundFormatting bg;
     protected CTWholeE2OFormatting whole;
     protected CTOfficeArtExtensionList extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the ptLst property.
@@ -190,6 +194,32 @@ public class CTDataModel {
      */
     public void setExtLst(CTOfficeArtExtensionList value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }
