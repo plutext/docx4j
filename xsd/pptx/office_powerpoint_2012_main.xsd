@@ -16,6 +16,14 @@ PowerPoint (.pptx) Extensions to the Office Open XML File Format
 Copyright © 2013 Microsoft Corporation.
 Release: July 30, 2013 -->
 
+   <!--
+   
+		// Extensions don't work with xjc 2.3.0? https://stackoverflow.com/questions/28145306/how-to-use-jaxb-extensions-on-xjc-command-line?rq=1
+   
+   		sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer office_powerpoint_2012_main.xsd -d tmp  -no-header -target 2.0
+
+   -->
+
 	<xsd:annotation>
 		<xsd:appinfo>
 			<xsd:appinfo>
@@ -23,14 +31,22 @@ Release: July 30, 2013 -->
 				</jaxb:globalBindings>
 			</xsd:appinfo>
 			<jaxb:schemaBindings>
-				<jaxb:package name="org.pptx4j.powerpoint.main2012"/>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main"/>
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
 	</xsd:annotation>	  
 	
-  <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
+  
+  <!-- 
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   -->
+
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="../pml/dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+
+   
   <xsd:complexType name="CT_PresetTransition">
     <xsd:attribute name="prst" type="xsd:string"/>
     <xsd:attribute name="invX" type="xsd:boolean" use="optional" default="false"/>
