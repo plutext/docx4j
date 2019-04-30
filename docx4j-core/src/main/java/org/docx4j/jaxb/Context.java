@@ -126,8 +126,21 @@ public class Context {
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.answers:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
+					"org.docx4j.com.microsoft.schemas.ink.x2010.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.chartDrawing:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
+					"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingGroup:" +
 					"org.docx4j.w15symex:org.docx4j.w16cid:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,
