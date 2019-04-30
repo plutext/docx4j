@@ -30,14 +30,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLParaBuildType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="allAtOnce"/>
- *     &lt;enumeration value="p"/>
- *     &lt;enumeration value="cust"/>
- *     &lt;enumeration value="whole"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLParaBuildType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="allAtOnce"/&gt;
+ *     &lt;enumeration value="p"/&gt;
+ *     &lt;enumeration value="cust"/&gt;
+ *     &lt;enumeration value="whole"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

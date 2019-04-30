@@ -30,21 +30,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLTriggerEvent">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="onBegin"/>
- *     &lt;enumeration value="onEnd"/>
- *     &lt;enumeration value="begin"/>
- *     &lt;enumeration value="end"/>
- *     &lt;enumeration value="onClick"/>
- *     &lt;enumeration value="onDblClick"/>
- *     &lt;enumeration value="onMouseOver"/>
- *     &lt;enumeration value="onMouseOut"/>
- *     &lt;enumeration value="onNext"/>
- *     &lt;enumeration value="onPrev"/>
- *     &lt;enumeration value="onStopAudio"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLTriggerEvent"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="onBegin"/&gt;
+ *     &lt;enumeration value="onEnd"/&gt;
+ *     &lt;enumeration value="begin"/&gt;
+ *     &lt;enumeration value="end"/&gt;
+ *     &lt;enumeration value="onClick"/&gt;
+ *     &lt;enumeration value="onDblClick"/&gt;
+ *     &lt;enumeration value="onMouseOver"/&gt;
+ *     &lt;enumeration value="onMouseOut"/&gt;
+ *     &lt;enumeration value="onNext"/&gt;
+ *     &lt;enumeration value="onPrev"/&gt;
+ *     &lt;enumeration value="onStopAudio"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

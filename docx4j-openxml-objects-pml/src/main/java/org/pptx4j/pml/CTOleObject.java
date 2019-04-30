@@ -19,10 +19,14 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -31,19 +35,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_OleObject">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="embed" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OleObjectEmbed"/>
- *         &lt;element name="link" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OleObjectLink"/>
- *         &lt;element name="pic" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Picture"/>
- *       &lt;/choice>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_Ole"/>
- *       &lt;attribute name="progId" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_OleObject"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="embed" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OleObjectEmbed"/&gt;
+ *         &lt;element name="link" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OleObjectLink"/&gt;
+ *         &lt;element name="pic" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Picture"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_Ole"/&gt;
+ *       &lt;attribute name="progId" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,7 +58,8 @@ import javax.xml.bind.annotation.XmlType;
     "link",
     "pic"
 })
-public class CTOleObject {
+public class CTOleObject implements Child
+{
 
     protected CTOleObjectEmbed embed;
     protected CTOleObjectLink link;
@@ -71,18 +76,9 @@ public class CTOleObject {
     protected Integer imgW;
     @XmlAttribute(name = "imgH")
     protected Integer imgH;
-    
-    // @since 3.0.1
-    // TODO investigate why missing, and add to xsd if nec
-    @XmlAttribute(name = "spid")
-    protected String spid;
-    public String getSpid() {
-        return spid;
-    }
-    public void setSpid(String value) {
-        this.spid = value;
-    }
-    
+    @XmlTransient
+    private Object parent;
+
     /**
      * Gets the value of the embed property.
      * 
@@ -305,6 +301,32 @@ public class CTOleObject {
      */
     public void setImgH(Integer value) {
         this.imgH = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

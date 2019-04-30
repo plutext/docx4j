@@ -30,15 +30,15 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLBehaviorAdditiveType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="base"/>
- *     &lt;enumeration value="sum"/>
- *     &lt;enumeration value="repl"/>
- *     &lt;enumeration value="mult"/>
- *     &lt;enumeration value="none"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLBehaviorAdditiveType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="base"/&gt;
+ *     &lt;enumeration value="sum"/&gt;
+ *     &lt;enumeration value="repl"/&gt;
+ *     &lt;enumeration value="mult"/&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,19 +36,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_CommonSlideViewProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonViewProperties"/>
- *         &lt;element name="guideLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_GuideList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="snapToGrid" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="snapToObjects" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="showGuides" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_CommonSlideViewProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonViewProperties"/&gt;
+ *         &lt;element name="guideLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_GuideList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="snapToGrid" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="snapToObjects" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="showGuides" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,7 +58,8 @@ import javax.xml.bind.annotation.XmlType;
     "cViewPr",
     "guideLst"
 })
-public class CTCommonSlideViewProperties {
+public class CTCommonSlideViewProperties implements Child
+{
 
     @XmlElement(required = true)
     protected CTCommonViewProperties cViewPr;
@@ -65,6 +70,8 @@ public class CTCommonSlideViewProperties {
     protected Boolean snapToObjects;
     @XmlAttribute(name = "showGuides")
     protected Boolean showGuides;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cViewPr property.
@@ -196,6 +203,32 @@ public class CTCommonSlideViewProperties {
      */
     public void setShowGuides(Boolean value) {
         this.showGuides = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

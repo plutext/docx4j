@@ -30,18 +30,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ViewType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="sldView"/>
- *     &lt;enumeration value="sldMasterView"/>
- *     &lt;enumeration value="notesView"/>
- *     &lt;enumeration value="handoutView"/>
- *     &lt;enumeration value="notesMasterView"/>
- *     &lt;enumeration value="outlineView"/>
- *     &lt;enumeration value="sldSorterView"/>
- *     &lt;enumeration value="sldThumbnailView"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_ViewType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="sldView"/&gt;
+ *     &lt;enumeration value="sldMasterView"/&gt;
+ *     &lt;enumeration value="notesView"/&gt;
+ *     &lt;enumeration value="handoutView"/&gt;
+ *     &lt;enumeration value="notesMasterView"/&gt;
+ *     &lt;enumeration value="outlineView"/&gt;
+ *     &lt;enumeration value="sldSorterView"/&gt;
+ *     &lt;enumeration value="sldThumbnailView"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

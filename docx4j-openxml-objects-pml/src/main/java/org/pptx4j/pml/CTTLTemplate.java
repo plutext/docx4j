@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,16 +37,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLTemplate">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList"/>
- *       &lt;/sequence>
- *       &lt;attribute name="lvl" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="0" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLTemplate"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="lvl" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="0" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -51,13 +55,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_TLTemplate", propOrder = {
     "tnLst"
 })
-public class CTTLTemplate {
+public class CTTLTemplate implements Child
+{
 
     @XmlElement(required = true)
     protected CTTimeNodeList tnLst;
     @XmlAttribute(name = "lvl")
     @XmlSchemaType(name = "unsignedInt")
     protected Long lvl;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tnLst property.
@@ -109,6 +116,32 @@ public class CTTLTemplate {
      */
     public void setLvl(Long value) {
         this.lvl = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

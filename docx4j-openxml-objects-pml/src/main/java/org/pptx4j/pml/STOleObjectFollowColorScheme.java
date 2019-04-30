@@ -30,13 +30,13 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_OleObjectFollowColorScheme">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="full"/>
- *     &lt;enumeration value="textAndBackground"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_OleObjectFollowColorScheme"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="none"/&gt;
+ *     &lt;enumeration value="full"/&gt;
+ *     &lt;enumeration value="textAndBackground"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

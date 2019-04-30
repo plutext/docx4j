@@ -30,13 +30,13 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLTimeNodeMasterRelation">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="sameClick"/>
- *     &lt;enumeration value="lastClick"/>
- *     &lt;enumeration value="nextClick"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLTimeNodeMasterRelation"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="sameClick"/&gt;
+ *     &lt;enumeration value="lastClick"/&gt;
+ *     &lt;enumeration value="nextClick"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

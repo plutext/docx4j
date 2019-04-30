@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,22 +36,22 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_NormalViewProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="restoredLeft" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewPortion"/>
- *         &lt;element name="restoredTop" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewPortion"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="showOutlineIcons" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="snapVertSplitter" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="vertBarState" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SplitterBarState" default="restored" />
- *       &lt;attribute name="horzBarState" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SplitterBarState" default="restored" />
- *       &lt;attribute name="preferSingleView" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_NormalViewProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="restoredLeft" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewPortion"/&gt;
+ *         &lt;element name="restoredTop" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewPortion"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="showOutlineIcons" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="snapVertSplitter" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="vertBarState" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SplitterBarState" default="restored" /&gt;
+ *       &lt;attribute name="horzBarState" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SplitterBarState" default="restored" /&gt;
+ *       &lt;attribute name="preferSingleView" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -58,7 +62,8 @@ import javax.xml.bind.annotation.XmlType;
     "restoredTop",
     "extLst"
 })
-public class CTNormalViewProperties {
+public class CTNormalViewProperties implements Child
+{
 
     @XmlElement(required = true)
     protected CTNormalViewPortion restoredLeft;
@@ -75,6 +80,8 @@ public class CTNormalViewProperties {
     protected STSplitterBarState horzBarState;
     @XmlAttribute(name = "preferSingleView")
     protected Boolean preferSingleView;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the restoredLeft property.
@@ -286,6 +293,32 @@ public class CTNormalViewProperties {
      */
     public void setPreferSingleView(Boolean value) {
         this.preferSingleView = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

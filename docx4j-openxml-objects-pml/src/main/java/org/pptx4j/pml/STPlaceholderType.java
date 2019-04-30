@@ -30,26 +30,26 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PlaceholderType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="title"/>
- *     &lt;enumeration value="body"/>
- *     &lt;enumeration value="ctrTitle"/>
- *     &lt;enumeration value="subTitle"/>
- *     &lt;enumeration value="dt"/>
- *     &lt;enumeration value="sldNum"/>
- *     &lt;enumeration value="ftr"/>
- *     &lt;enumeration value="hdr"/>
- *     &lt;enumeration value="obj"/>
- *     &lt;enumeration value="chart"/>
- *     &lt;enumeration value="tbl"/>
- *     &lt;enumeration value="clipArt"/>
- *     &lt;enumeration value="dgm"/>
- *     &lt;enumeration value="media"/>
- *     &lt;enumeration value="sldImg"/>
- *     &lt;enumeration value="pic"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PlaceholderType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="title"/&gt;
+ *     &lt;enumeration value="body"/&gt;
+ *     &lt;enumeration value="ctrTitle"/&gt;
+ *     &lt;enumeration value="subTitle"/&gt;
+ *     &lt;enumeration value="dt"/&gt;
+ *     &lt;enumeration value="sldNum"/&gt;
+ *     &lt;enumeration value="ftr"/&gt;
+ *     &lt;enumeration value="hdr"/&gt;
+ *     &lt;enumeration value="obj"/&gt;
+ *     &lt;enumeration value="chart"/&gt;
+ *     &lt;enumeration value="tbl"/&gt;
+ *     &lt;enumeration value="clipArt"/&gt;
+ *     &lt;enumeration value="dgm"/&gt;
+ *     &lt;enumeration value="media"/&gt;
+ *     &lt;enumeration value="sldImg"/&gt;
+ *     &lt;enumeration value="pic"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

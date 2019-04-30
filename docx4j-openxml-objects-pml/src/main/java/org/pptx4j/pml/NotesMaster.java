@@ -19,13 +19,17 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTColorMapping;
 import org.docx4j.dml.CTTextListStyle;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -34,19 +38,19 @@ import org.docx4j.dml.CTTextListStyle;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cSld" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonSlideData"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/presentationml/2006/main}EG_TopLevelSlide"/>
- *         &lt;element name="hf" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HeaderFooter" minOccurs="0"/>
- *         &lt;element name="notesStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cSld" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonSlideData"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/presentationml/2006/main}EG_TopLevelSlide"/&gt;
+ *         &lt;element name="hf" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HeaderFooter" minOccurs="0"/&gt;
+ *         &lt;element name="notesStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -60,7 +64,8 @@ import org.docx4j.dml.CTTextListStyle;
     "extLst"
 })
 @XmlRootElement(name = "notesMaster")
-public class NotesMaster {
+public class NotesMaster implements Child
+{
 
     @XmlElement(required = true)
     protected CommonSlideData cSld;
@@ -69,6 +74,8 @@ public class NotesMaster {
     protected CTHeaderFooter hf;
     protected CTTextListStyle notesStyle;
     protected CTExtensionListModify extLst;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cSld property.
@@ -188,6 +195,32 @@ public class NotesMaster {
      */
     public void setExtLst(CTExtensionListModify value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

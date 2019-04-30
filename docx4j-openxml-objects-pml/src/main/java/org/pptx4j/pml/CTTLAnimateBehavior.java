@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,21 +36,21 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLAnimateBehavior">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cBhvr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonBehaviorData"/>
- *         &lt;element name="tavLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeAnimateValueList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="by" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="from" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="to" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="calcmode" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLAnimateBehaviorCalcMode" />
- *       &lt;attribute name="valueType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLAnimateBehaviorValueType" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLAnimateBehavior"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cBhvr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonBehaviorData"/&gt;
+ *         &lt;element name="tavLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeAnimateValueList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="by" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="from" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="to" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="calcmode" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLAnimateBehaviorCalcMode" /&gt;
+ *       &lt;attribute name="valueType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLAnimateBehaviorValueType" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,7 +60,8 @@ import javax.xml.bind.annotation.XmlType;
     "cBhvr",
     "tavLst"
 })
-public class CTTLAnimateBehavior {
+public class CTTLAnimateBehavior implements Child
+{
 
     @XmlElement(required = true)
     protected CTTLCommonBehaviorData cBhvr;
@@ -71,6 +76,8 @@ public class CTTLAnimateBehavior {
     protected STTLAnimateBehaviorCalcMode calcmode;
     @XmlAttribute(name = "valueType")
     protected STTLAnimateBehaviorValueType valueType;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cBhvr property.
@@ -238,6 +245,32 @@ public class CTTLAnimateBehavior {
      */
     public void setValueType(STTLAnimateBehaviorValueType value) {
         this.valueType = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

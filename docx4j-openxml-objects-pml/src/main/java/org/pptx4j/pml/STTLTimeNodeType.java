@@ -30,19 +30,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLTimeNodeType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="clickEffect"/>
- *     &lt;enumeration value="withEffect"/>
- *     &lt;enumeration value="afterEffect"/>
- *     &lt;enumeration value="mainSeq"/>
- *     &lt;enumeration value="interactiveSeq"/>
- *     &lt;enumeration value="clickPar"/>
- *     &lt;enumeration value="withGroup"/>
- *     &lt;enumeration value="afterGroup"/>
- *     &lt;enumeration value="tmRoot"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLTimeNodeType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="clickEffect"/&gt;
+ *     &lt;enumeration value="withEffect"/&gt;
+ *     &lt;enumeration value="afterEffect"/&gt;
+ *     &lt;enumeration value="mainSeq"/&gt;
+ *     &lt;enumeration value="interactiveSeq"/&gt;
+ *     &lt;enumeration value="clickPar"/&gt;
+ *     &lt;enumeration value="withGroup"/&gt;
+ *     &lt;enumeration value="afterGroup"/&gt;
+ *     &lt;enumeration value="tmRoot"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

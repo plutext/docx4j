@@ -19,10 +19,14 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -31,18 +35,18 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLIterateData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="tmAbs" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateIntervalTime"/>
- *         &lt;element name="tmPct" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateIntervalPercentage"/>
- *       &lt;/choice>
- *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_IterateType" default="el" />
- *       &lt;attribute name="backwards" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLIterateData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="tmAbs" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateIntervalTime"/&gt;
+ *         &lt;element name="tmPct" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateIntervalPercentage"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_IterateType" default="el" /&gt;
+ *       &lt;attribute name="backwards" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -52,7 +56,8 @@ import javax.xml.bind.annotation.XmlType;
     "tmAbs",
     "tmPct"
 })
-public class CTTLIterateData {
+public class CTTLIterateData implements Child
+{
 
     protected CTTLIterateIntervalTime tmAbs;
     protected CTTLIterateIntervalPercentage tmPct;
@@ -60,6 +65,8 @@ public class CTTLIterateData {
     protected STIterateType type;
     @XmlAttribute(name = "backwards")
     protected Boolean backwards;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tmAbs property.
@@ -163,6 +170,32 @@ public class CTTLIterateData {
      */
     public void setBackwards(Boolean value) {
         this.backwards = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

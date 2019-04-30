@@ -30,14 +30,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TLTimeNodeFillType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="remove"/>
- *     &lt;enumeration value="freeze"/>
- *     &lt;enumeration value="hold"/>
- *     &lt;enumeration value="transition"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TLTimeNodeFillType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="remove"/&gt;
+ *     &lt;enumeration value="freeze"/&gt;
+ *     &lt;enumeration value="hold"/&gt;
+ *     &lt;enumeration value="transition"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTPositiveSize2D;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,24 +37,24 @@ import org.docx4j.dml.CTPositiveSize2D;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence minOccurs="0">
- *         &lt;element name="normalViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewProperties" minOccurs="0"/>
- *         &lt;element name="slideViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideViewProperties" minOccurs="0"/>
- *         &lt;element name="outlineViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OutlineViewProperties" minOccurs="0"/>
- *         &lt;element name="notesTextViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesTextViewProperties" minOccurs="0"/>
- *         &lt;element name="sorterViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideSorterViewProperties" minOccurs="0"/>
- *         &lt;element name="notesViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesViewProperties" minOccurs="0"/>
- *         &lt;element name="gridSpacing" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="lastView" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_ViewType" default="sldView" />
- *       &lt;attribute name="showComments" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence minOccurs="0"&gt;
+ *         &lt;element name="normalViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NormalViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="slideViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="outlineViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OutlineViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="notesTextViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesTextViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="sorterViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideSorterViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="notesViewPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesViewProperties" minOccurs="0"/&gt;
+ *         &lt;element name="gridSpacing" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="lastView" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_ViewType" default="sldView" /&gt;
+ *       &lt;attribute name="showComments" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -67,7 +71,8 @@ import org.docx4j.dml.CTPositiveSize2D;
     "extLst"
 })
 @XmlRootElement(name = "viewPr")
-public class ViewPr {
+public class ViewPr implements Child
+{
 
     protected CTNormalViewProperties normalViewPr;
     protected CTSlideViewProperties slideViewPr;
@@ -81,6 +86,8 @@ public class ViewPr {
     protected STViewType lastView;
     @XmlAttribute(name = "showComments")
     protected Boolean showComments;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the normalViewPr property.
@@ -328,6 +335,32 @@ public class ViewPr {
      */
     public void setShowComments(Boolean value) {
         this.showComments = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

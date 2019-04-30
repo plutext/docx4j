@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,17 +37,17 @@ import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GraphicalObjectFrameNonVisual">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
- *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties"/>
- *         &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_GraphicalObjectFrameNonVisual"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/&gt;
+ *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties"/&gt;
+ *         &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,7 +58,8 @@ import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
     "cNvGraphicFramePr",
     "nvPr"
 })
-public class CTGraphicalObjectFrameNonVisual {
+public class CTGraphicalObjectFrameNonVisual implements Child
+{
 
     @XmlElement(required = true)
     protected CTNonVisualDrawingProps cNvPr;
@@ -62,6 +67,8 @@ public class CTGraphicalObjectFrameNonVisual {
     protected CTNonVisualGraphicFrameProperties cNvGraphicFramePr;
     @XmlElement(required = true)
     protected NvPr nvPr;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cNvPr property.
@@ -133,6 +140,32 @@ public class CTGraphicalObjectFrameNonVisual {
      */
     public void setNvPr(NvPr value) {
         this.nvPr = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

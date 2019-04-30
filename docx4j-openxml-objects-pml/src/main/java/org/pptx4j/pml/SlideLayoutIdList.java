@@ -21,10 +21,14 @@ package org.pptx4j.pml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,27 +37,27 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_SlideLayoutIdList">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="sldLayoutId" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *                 &lt;/sequence>
- *                 &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideLayoutId" />
- *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_SlideLayoutIdList"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="sldLayoutId" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideLayoutId" /&gt;
+ *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -62,9 +66,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_SlideLayoutIdList", propOrder = {
     "sldLayoutId"
 })
-public class SlideLayoutIdList {
+public class SlideLayoutIdList implements Child
+{
 
     protected List<SlideLayoutIdList.SldLayoutId> sldLayoutId;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the sldLayoutId property.
@@ -95,6 +102,32 @@ public class SlideLayoutIdList {
         return this.sldLayoutId;
     }
 
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -102,17 +135,17 @@ public class SlideLayoutIdList {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
-     *       &lt;/sequence>
-     *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideLayoutId" />
-     *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+     *       &lt;/sequence&gt;
+     *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideLayoutId" /&gt;
+     *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -121,13 +154,16 @@ public class SlideLayoutIdList {
     @XmlType(name = "", propOrder = {
         "extLst"
     })
-    public static class SldLayoutId {
+    public static class SldLayoutId implements Child
+    {
 
         protected CTExtensionList extLst;
         @XmlAttribute(name = "id")
         protected Long id;
         @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
         protected String rid;
+        @XmlTransient
+        private Object parent;
 
         /**
          * Gets the value of the extLst property.
@@ -199,6 +235,32 @@ public class SlideLayoutIdList {
          */
         public void setRid(String value) {
             this.rid = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
         }
 
     }

@@ -19,10 +19,14 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -31,19 +35,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLTimeCondition">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice minOccurs="0">
- *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/>
- *         &lt;element name="tn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTriggerTimeNodeID"/>
- *         &lt;element name="rtn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTriggerRuntimeNode"/>
- *       &lt;/choice>
- *       &lt;attribute name="evt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTriggerEvent" />
- *       &lt;attribute name="delay" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLTimeCondition"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice minOccurs="0"&gt;
+ *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/&gt;
+ *         &lt;element name="tn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTriggerTimeNodeID"/&gt;
+ *         &lt;element name="rtn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTriggerRuntimeNode"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="evt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTriggerEvent" /&gt;
+ *       &lt;attribute name="delay" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,7 +58,8 @@ import javax.xml.bind.annotation.XmlType;
     "tn",
     "rtn"
 })
-public class CTTLTimeCondition {
+public class CTTLTimeCondition implements Child
+{
 
     protected CTTLTimeTargetElement tgtEl;
     protected CTTLTriggerTimeNodeID tn;
@@ -63,6 +68,8 @@ public class CTTLTimeCondition {
     protected STTLTriggerEvent evt;
     @XmlAttribute(name = "delay")
     protected String delay;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tgtEl property.
@@ -182,6 +189,32 @@ public class CTTLTimeCondition {
      */
     public void setDelay(String value) {
         this.delay = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

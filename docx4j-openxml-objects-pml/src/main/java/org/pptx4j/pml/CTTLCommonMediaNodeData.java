@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,20 +37,20 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLCommonMediaNodeData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cTn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonTimeNodeData"/>
- *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/>
- *       &lt;/sequence>
- *       &lt;attribute name="vol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="50" />
- *       &lt;attribute name="mute" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="numSld" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" />
- *       &lt;attribute name="showWhenStopped" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLCommonMediaNodeData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cTn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonTimeNodeData"/&gt;
+ *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="vol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="50" /&gt;
+ *       &lt;attribute name="mute" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="numSld" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" /&gt;
+ *       &lt;attribute name="showWhenStopped" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -56,7 +60,8 @@ import javax.xml.bind.annotation.XmlType;
     "cTn",
     "tgtEl"
 })
-public class CTTLCommonMediaNodeData {
+public class CTTLCommonMediaNodeData implements Child
+{
 
     @XmlElement(required = true)
     protected CTTLCommonTimeNodeData cTn;
@@ -71,6 +76,8 @@ public class CTTLCommonMediaNodeData {
     protected Long numSld;
     @XmlAttribute(name = "showWhenStopped")
     protected Boolean showWhenStopped;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cTn property.
@@ -230,6 +237,32 @@ public class CTTLCommonMediaNodeData {
      */
     public void setShowWhenStopped(Boolean value) {
         this.showWhenStopped = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

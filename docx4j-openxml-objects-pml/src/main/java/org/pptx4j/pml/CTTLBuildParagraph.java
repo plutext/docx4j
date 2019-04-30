@@ -19,13 +19,17 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -34,22 +38,22 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLBuildParagraph">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="tmplLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTemplateList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_TLBuild"/>
- *       &lt;attribute name="build" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLParaBuildType" default="whole" />
- *       &lt;attribute name="bldLvl" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" />
- *       &lt;attribute name="animBg" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="autoUpdateAnimBg" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="rev" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="advAuto" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" default="indefinite" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLBuildParagraph"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="tmplLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTemplateList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_TLBuild"/&gt;
+ *       &lt;attribute name="build" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLParaBuildType" default="whole" /&gt;
+ *       &lt;attribute name="bldLvl" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" /&gt;
+ *       &lt;attribute name="animBg" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="autoUpdateAnimBg" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="rev" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="advAuto" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" default="indefinite" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -58,7 +62,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlType(name = "CT_TLBuildParagraph", propOrder = {
     "tmplLst"
 })
-public class CTTLBuildParagraph {
+public class CTTLBuildParagraph implements Child
+{
 
     protected CTTLTemplateList tmplLst;
     @XmlAttribute(name = "build")
@@ -82,6 +87,8 @@ public class CTTLBuildParagraph {
     protected long grpId;
     @XmlAttribute(name = "uiExpand")
     protected Boolean uiExpand;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the tmplLst property.
@@ -341,6 +348,32 @@ public class CTTLBuildParagraph {
      */
     public void setUiExpand(Boolean value) {
         this.uiExpand = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

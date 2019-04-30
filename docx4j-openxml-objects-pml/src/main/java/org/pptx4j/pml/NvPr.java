@@ -19,16 +19,20 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTAudioCD;
 import org.docx4j.dml.CTAudioFile;
 import org.docx4j.dml.CTEmbeddedWAVAudioFile;
 import org.docx4j.dml.CTQuickTimeFile;
 import org.docx4j.dml.CTVideoFile;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -37,20 +41,20 @@ import org.docx4j.dml.CTVideoFile;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_ApplicationNonVisualDrawingProps">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="ph" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Placeholder" minOccurs="0"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_Media" minOccurs="0"/>
- *         &lt;element name="custDataLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomerDataList" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="isPhoto" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="userDrawn" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_ApplicationNonVisualDrawingProps"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="ph" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Placeholder" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_Media" minOccurs="0"/&gt;
+ *         &lt;element name="custDataLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomerDataList" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="isPhoto" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="userDrawn" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -66,7 +70,8 @@ import org.docx4j.dml.CTVideoFile;
     "custDataLst",
     "extLst"
 })
-public class NvPr {
+public class NvPr implements Child
+{
 
     protected CTPlaceholder ph;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main")
@@ -85,6 +90,8 @@ public class NvPr {
     protected Boolean isPhoto;
     @XmlAttribute(name = "userDrawn")
     protected Boolean userDrawn;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the ph property.
@@ -332,6 +339,32 @@ public class NvPr {
      */
     public void setUserDrawn(Boolean value) {
         this.userDrawn = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

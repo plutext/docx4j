@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,42 +36,42 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_SlideTransition">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;choice minOccurs="0">
- *           &lt;element name="blinds" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/>
- *           &lt;element name="checker" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/>
- *           &lt;element name="circle" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="dissolve" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="comb" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/>
- *           &lt;element name="cover" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EightDirectionTransition"/>
- *           &lt;element name="cut" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OptionalBlackTransition"/>
- *           &lt;element name="diamond" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="fade" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OptionalBlackTransition"/>
- *           &lt;element name="newsflash" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="plus" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="pull" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EightDirectionTransition"/>
- *           &lt;element name="push" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SideDirectionTransition"/>
- *           &lt;element name="random" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="randomBar" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/>
- *           &lt;element name="split" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SplitTransition"/>
- *           &lt;element name="strips" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CornerDirectionTransition"/>
- *           &lt;element name="wedge" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *           &lt;element name="wheel" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_WheelTransition"/>
- *           &lt;element name="wipe" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SideDirectionTransition"/>
- *           &lt;element name="zoom" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_InOutTransition"/>
- *         &lt;/choice>
- *         &lt;element name="sndAc" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TransitionSoundAction" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TransitionSpeed" default="fast" />
- *       &lt;attribute name="advClick" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="advTm" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_SlideTransition"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;choice minOccurs="0"&gt;
+ *           &lt;element name="blinds" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/&gt;
+ *           &lt;element name="checker" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/&gt;
+ *           &lt;element name="circle" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="dissolve" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="comb" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/&gt;
+ *           &lt;element name="cover" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EightDirectionTransition"/&gt;
+ *           &lt;element name="cut" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OptionalBlackTransition"/&gt;
+ *           &lt;element name="diamond" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="fade" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OptionalBlackTransition"/&gt;
+ *           &lt;element name="newsflash" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="plus" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="pull" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EightDirectionTransition"/&gt;
+ *           &lt;element name="push" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SideDirectionTransition"/&gt;
+ *           &lt;element name="random" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="randomBar" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_OrientationTransition"/&gt;
+ *           &lt;element name="split" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SplitTransition"/&gt;
+ *           &lt;element name="strips" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CornerDirectionTransition"/&gt;
+ *           &lt;element name="wedge" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *           &lt;element name="wheel" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_WheelTransition"/&gt;
+ *           &lt;element name="wipe" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SideDirectionTransition"/&gt;
+ *           &lt;element name="zoom" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_InOutTransition"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element name="sndAc" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TransitionSoundAction" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TransitionSpeed" default="fast" /&gt;
+ *       &lt;attribute name="advClick" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="advTm" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -98,7 +102,8 @@ import javax.xml.bind.annotation.XmlType;
     "sndAc",
     "extLst"
 })
-public class CTSlideTransition {
+public class CTSlideTransition implements Child
+{
 
     protected CTOrientationTransition blinds;
     protected CTOrientationTransition checker;
@@ -130,6 +135,8 @@ public class CTSlideTransition {
     @XmlAttribute(name = "advTm")
     @XmlSchemaType(name = "unsignedInt")
     protected Long advTm;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the blinds property.
@@ -761,6 +768,32 @@ public class CTSlideTransition {
      */
     public void setAdvTm(Long value) {
         this.advTm = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

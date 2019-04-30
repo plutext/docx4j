@@ -30,46 +30,46 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_SlideLayoutType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="title"/>
- *     &lt;enumeration value="tx"/>
- *     &lt;enumeration value="twoColTx"/>
- *     &lt;enumeration value="tbl"/>
- *     &lt;enumeration value="txAndChart"/>
- *     &lt;enumeration value="chartAndTx"/>
- *     &lt;enumeration value="dgm"/>
- *     &lt;enumeration value="chart"/>
- *     &lt;enumeration value="txAndClipArt"/>
- *     &lt;enumeration value="clipArtAndTx"/>
- *     &lt;enumeration value="titleOnly"/>
- *     &lt;enumeration value="blank"/>
- *     &lt;enumeration value="txAndObj"/>
- *     &lt;enumeration value="objAndTx"/>
- *     &lt;enumeration value="objOnly"/>
- *     &lt;enumeration value="obj"/>
- *     &lt;enumeration value="txAndMedia"/>
- *     &lt;enumeration value="mediaAndTx"/>
- *     &lt;enumeration value="objOverTx"/>
- *     &lt;enumeration value="txOverObj"/>
- *     &lt;enumeration value="txAndTwoObj"/>
- *     &lt;enumeration value="twoObjAndTx"/>
- *     &lt;enumeration value="twoObjOverTx"/>
- *     &lt;enumeration value="fourObj"/>
- *     &lt;enumeration value="vertTx"/>
- *     &lt;enumeration value="clipArtAndVertTx"/>
- *     &lt;enumeration value="vertTitleAndTx"/>
- *     &lt;enumeration value="vertTitleAndTxOverChart"/>
- *     &lt;enumeration value="twoObj"/>
- *     &lt;enumeration value="objAndTwoObj"/>
- *     &lt;enumeration value="twoObjAndObj"/>
- *     &lt;enumeration value="cust"/>
- *     &lt;enumeration value="secHead"/>
- *     &lt;enumeration value="twoTxTwoObj"/>
- *     &lt;enumeration value="objTx"/>
- *     &lt;enumeration value="picTx"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_SlideLayoutType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="title"/&gt;
+ *     &lt;enumeration value="tx"/&gt;
+ *     &lt;enumeration value="twoColTx"/&gt;
+ *     &lt;enumeration value="tbl"/&gt;
+ *     &lt;enumeration value="txAndChart"/&gt;
+ *     &lt;enumeration value="chartAndTx"/&gt;
+ *     &lt;enumeration value="dgm"/&gt;
+ *     &lt;enumeration value="chart"/&gt;
+ *     &lt;enumeration value="txAndClipArt"/&gt;
+ *     &lt;enumeration value="clipArtAndTx"/&gt;
+ *     &lt;enumeration value="titleOnly"/&gt;
+ *     &lt;enumeration value="blank"/&gt;
+ *     &lt;enumeration value="txAndObj"/&gt;
+ *     &lt;enumeration value="objAndTx"/&gt;
+ *     &lt;enumeration value="objOnly"/&gt;
+ *     &lt;enumeration value="obj"/&gt;
+ *     &lt;enumeration value="txAndMedia"/&gt;
+ *     &lt;enumeration value="mediaAndTx"/&gt;
+ *     &lt;enumeration value="objOverTx"/&gt;
+ *     &lt;enumeration value="txOverObj"/&gt;
+ *     &lt;enumeration value="txAndTwoObj"/&gt;
+ *     &lt;enumeration value="twoObjAndTx"/&gt;
+ *     &lt;enumeration value="twoObjOverTx"/&gt;
+ *     &lt;enumeration value="fourObj"/&gt;
+ *     &lt;enumeration value="vertTx"/&gt;
+ *     &lt;enumeration value="clipArtAndVertTx"/&gt;
+ *     &lt;enumeration value="vertTitleAndTx"/&gt;
+ *     &lt;enumeration value="vertTitleAndTxOverChart"/&gt;
+ *     &lt;enumeration value="twoObj"/&gt;
+ *     &lt;enumeration value="objAndTwoObj"/&gt;
+ *     &lt;enumeration value="twoObjAndObj"/&gt;
+ *     &lt;enumeration value="cust"/&gt;
+ *     &lt;enumeration value="secHead"/&gt;
+ *     &lt;enumeration value="twoTxTwoObj"/&gt;
+ *     &lt;enumeration value="objTx"/&gt;
+ *     &lt;enumeration value="picTx"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

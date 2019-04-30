@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTEmbeddedWAVAudioFile;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,16 +37,16 @@ import org.docx4j.dml.CTEmbeddedWAVAudioFile;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TransitionStartSoundAction">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="snd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EmbeddedWAVAudioFile"/>
- *       &lt;/sequence>
- *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TransitionStartSoundAction"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="snd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EmbeddedWAVAudioFile"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -51,12 +55,15 @@ import org.docx4j.dml.CTEmbeddedWAVAudioFile;
 @XmlType(name = "CT_TransitionStartSoundAction", propOrder = {
     "snd"
 })
-public class CTTransitionStartSoundAction {
+public class CTTransitionStartSoundAction implements Child
+{
 
     @XmlElement(required = true)
     protected CTEmbeddedWAVAudioFile snd;
     @XmlAttribute(name = "loop")
     protected Boolean loop;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the snd property.
@@ -108,6 +115,32 @@ public class CTTransitionStartSoundAction {
      */
     public void setLoop(Boolean value) {
         this.loop = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

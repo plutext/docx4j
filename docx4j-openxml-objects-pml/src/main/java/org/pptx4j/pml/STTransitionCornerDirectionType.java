@@ -30,14 +30,14 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_TransitionCornerDirectionType">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="lu"/>
- *     &lt;enumeration value="ru"/>
- *     &lt;enumeration value="ld"/>
- *     &lt;enumeration value="rd"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_TransitionCornerDirectionType"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="lu"/&gt;
+ *     &lt;enumeration value="ru"/&gt;
+ *     &lt;enumeration value="ld"/&gt;
+ *     &lt;enumeration value="rd"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

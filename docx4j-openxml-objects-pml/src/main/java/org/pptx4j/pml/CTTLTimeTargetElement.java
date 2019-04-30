@@ -19,10 +19,14 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTEmbeddedWAVAudioFile;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -31,18 +35,18 @@ import org.docx4j.dml.CTEmbeddedWAVAudioFile;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLTimeTargetElement">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="sldTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *         &lt;element name="sndTgt" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EmbeddedWAVAudioFile"/>
- *         &lt;element name="spTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLShapeTargetElement"/>
- *         &lt;element name="inkTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSubShapeId"/>
- *       &lt;/choice>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLTimeTargetElement"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="sldTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *         &lt;element name="sndTgt" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_EmbeddedWAVAudioFile"/&gt;
+ *         &lt;element name="spTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLShapeTargetElement"/&gt;
+ *         &lt;element name="inkTgt" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSubShapeId"/&gt;
+ *       &lt;/choice&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -54,12 +58,15 @@ import org.docx4j.dml.CTEmbeddedWAVAudioFile;
     "spTgt",
     "inkTgt"
 })
-public class CTTLTimeTargetElement {
+public class CTTLTimeTargetElement implements Child
+{
 
     protected CTEmpty sldTgt;
     protected CTEmbeddedWAVAudioFile sndTgt;
     protected CTTLShapeTargetElement spTgt;
     protected CTTLSubShapeId inkTgt;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the sldTgt property.
@@ -155,6 +162,32 @@ public class CTTLTimeTargetElement {
      */
     public void setInkTgt(CTTLSubShapeId value) {
         this.inkTgt = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

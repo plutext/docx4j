@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,43 +36,43 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLCommonTimeNodeData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="stCondLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeConditionList" minOccurs="0"/>
- *         &lt;element name="endCondLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeConditionList" minOccurs="0"/>
- *         &lt;element name="endSync" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeCondition" minOccurs="0"/>
- *         &lt;element name="iterate" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateData" minOccurs="0"/>
- *         &lt;element name="childTnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList" minOccurs="0"/>
- *         &lt;element name="subTnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeID" />
- *       &lt;attribute name="presetID" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="presetClass" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodePresetClassType" />
- *       &lt;attribute name="presetSubtype" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="dur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" />
- *       &lt;attribute name="repeatCount" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" default="1000" />
- *       &lt;attribute name="repeatDur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" />
- *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100" />
- *       &lt;attribute name="accel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" />
- *       &lt;attribute name="decel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" />
- *       &lt;attribute name="autoRev" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="restart" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeRestartType" />
- *       &lt;attribute name="fill" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeFillType" />
- *       &lt;attribute name="syncBehavior" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeSyncType" />
- *       &lt;attribute name="tmFilter" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="evtFilter" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="display" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="masterRel" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeMasterRelation" />
- *       &lt;attribute name="bldLvl" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="grpId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *       &lt;attribute name="afterEffect" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="nodeType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeType" />
- *       &lt;attribute name="nodePh" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLCommonTimeNodeData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="stCondLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeConditionList" minOccurs="0"/&gt;
+ *         &lt;element name="endCondLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeConditionList" minOccurs="0"/&gt;
+ *         &lt;element name="endSync" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeCondition" minOccurs="0"/&gt;
+ *         &lt;element name="iterate" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLIterateData" minOccurs="0"/&gt;
+ *         &lt;element name="childTnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList" minOccurs="0"/&gt;
+ *         &lt;element name="subTnLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TimeNodeList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeID" /&gt;
+ *       &lt;attribute name="presetID" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="presetClass" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodePresetClassType" /&gt;
+ *       &lt;attribute name="presetSubtype" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="dur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" /&gt;
+ *       &lt;attribute name="repeatCount" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" default="1000" /&gt;
+ *       &lt;attribute name="repeatDur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" /&gt;
+ *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100" /&gt;
+ *       &lt;attribute name="accel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" /&gt;
+ *       &lt;attribute name="decel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" /&gt;
+ *       &lt;attribute name="autoRev" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="restart" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeRestartType" /&gt;
+ *       &lt;attribute name="fill" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeFillType" /&gt;
+ *       &lt;attribute name="syncBehavior" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeSyncType" /&gt;
+ *       &lt;attribute name="tmFilter" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="evtFilter" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="display" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="masterRel" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeMasterRelation" /&gt;
+ *       &lt;attribute name="bldLvl" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="grpId" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
+ *       &lt;attribute name="afterEffect" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="nodeType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTimeNodeType" /&gt;
+ *       &lt;attribute name="nodePh" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -82,7 +86,8 @@ import javax.xml.bind.annotation.XmlType;
     "childTnLst",
     "subTnLst"
 })
-public class CTTLCommonTimeNodeData {
+public class CTTLCommonTimeNodeData implements Child
+{
 
     protected CTTLTimeConditionList stCondLst;
     protected CTTLTimeConditionList endCondLst;
@@ -137,6 +142,8 @@ public class CTTLCommonTimeNodeData {
     protected STTLTimeNodeType nodeType;
     @XmlAttribute(name = "nodePh")
     protected Boolean nodePh;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the stCondLst property.
@@ -852,6 +859,32 @@ public class CTTLCommonTimeNodeData {
      */
     public void setNodePh(Boolean value) {
         this.nodePh = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

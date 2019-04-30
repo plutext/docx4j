@@ -19,12 +19,16 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -33,18 +37,18 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_SlideSyncProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="serverSldId" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="serverSldModifiedTime" use="required" type="{http://www.w3.org/2001/XMLSchema}dateTime" />
- *       &lt;attribute name="clientInsertedTime" use="required" type="{http://www.w3.org/2001/XMLSchema}dateTime" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_SlideSyncProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="serverSldId" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="serverSldModifiedTime" use="required" type="{http://www.w3.org/2001/XMLSchema}dateTime" /&gt;
+ *       &lt;attribute name="clientInsertedTime" use="required" type="{http://www.w3.org/2001/XMLSchema}dateTime" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -53,7 +57,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @XmlType(name = "CT_SlideSyncProperties", propOrder = {
     "extLst"
 })
-public class CTSlideSyncProperties {
+public class CTSlideSyncProperties implements Child
+{
 
     protected CTExtensionList extLst;
     @XmlAttribute(name = "serverSldId", required = true)
@@ -64,6 +69,8 @@ public class CTSlideSyncProperties {
     @XmlAttribute(name = "clientInsertedTime", required = true)
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar clientInsertedTime;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -159,6 +166,32 @@ public class CTSlideSyncProperties {
      */
     public void setClientInsertedTime(XMLGregorianCalendar value) {
         this.clientInsertedTime = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

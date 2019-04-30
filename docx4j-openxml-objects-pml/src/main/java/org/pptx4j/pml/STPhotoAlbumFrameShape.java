@@ -30,17 +30,17 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PhotoAlbumFrameShape">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="frameStyle1"/>
- *     &lt;enumeration value="frameStyle2"/>
- *     &lt;enumeration value="frameStyle3"/>
- *     &lt;enumeration value="frameStyle4"/>
- *     &lt;enumeration value="frameStyle5"/>
- *     &lt;enumeration value="frameStyle6"/>
- *     &lt;enumeration value="frameStyle7"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PhotoAlbumFrameShape"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="frameStyle1"/&gt;
+ *     &lt;enumeration value="frameStyle2"/&gt;
+ *     &lt;enumeration value="frameStyle3"/&gt;
+ *     &lt;enumeration value="frameStyle4"/&gt;
+ *     &lt;enumeration value="frameStyle5"/&gt;
+ *     &lt;enumeration value="frameStyle6"/&gt;
+ *     &lt;enumeration value="frameStyle7"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

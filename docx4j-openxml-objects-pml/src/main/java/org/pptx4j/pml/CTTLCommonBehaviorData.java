@@ -19,11 +19,15 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -32,25 +36,25 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLCommonBehaviorData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="cTn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonTimeNodeData"/>
- *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/>
- *         &lt;element name="attrNameLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLBehaviorAttributeNameList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="additive" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorAdditiveType" />
- *       &lt;attribute name="accumulate" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorAccumulateType" />
- *       &lt;attribute name="xfrmType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorTransformType" />
- *       &lt;attribute name="from" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="to" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="by" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="rctx" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="override" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorOverrideType" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLCommonBehaviorData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="cTn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonTimeNodeData"/&gt;
+ *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/&gt;
+ *         &lt;element name="attrNameLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLBehaviorAttributeNameList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="additive" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorAdditiveType" /&gt;
+ *       &lt;attribute name="accumulate" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorAccumulateType" /&gt;
+ *       &lt;attribute name="xfrmType" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorTransformType" /&gt;
+ *       &lt;attribute name="from" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="to" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="by" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="rctx" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="override" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLBehaviorOverrideType" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -61,7 +65,8 @@ import javax.xml.bind.annotation.XmlType;
     "tgtEl",
     "attrNameLst"
 })
-public class CTTLCommonBehaviorData {
+public class CTTLCommonBehaviorData implements Child
+{
 
     @XmlElement(required = true)
     protected CTTLCommonTimeNodeData cTn;
@@ -84,6 +89,8 @@ public class CTTLCommonBehaviorData {
     protected String rctx;
     @XmlAttribute(name = "override")
     protected STTLBehaviorOverrideType override;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the cTn property.
@@ -347,6 +354,32 @@ public class CTTLCommonBehaviorData {
      */
     public void setOverride(STTLBehaviorOverrideType value) {
         this.override = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

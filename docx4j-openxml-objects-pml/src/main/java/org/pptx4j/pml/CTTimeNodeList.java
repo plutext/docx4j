@@ -21,11 +21,15 @@ package org.pptx4j.pml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -34,27 +38,27 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TimeNodeList">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded">
- *         &lt;element name="par" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeParallel"/>
- *         &lt;element name="seq" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeSequence"/>
- *         &lt;element name="excl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeExclusive"/>
- *         &lt;element name="anim" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateBehavior"/>
- *         &lt;element name="animClr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateColorBehavior"/>
- *         &lt;element name="animEffect" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateEffectBehavior"/>
- *         &lt;element name="animMotion" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateMotionBehavior"/>
- *         &lt;element name="animRot" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateRotationBehavior"/>
- *         &lt;element name="animScale" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateScaleBehavior"/>
- *         &lt;element name="cmd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommandBehavior"/>
- *         &lt;element name="set" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSetBehavior"/>
- *         &lt;element name="audio" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLMediaNodeAudio"/>
- *         &lt;element name="video" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLMediaNodeVideo"/>
- *       &lt;/choice>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TimeNodeList"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice maxOccurs="unbounded"&gt;
+ *         &lt;element name="par" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeParallel"/&gt;
+ *         &lt;element name="seq" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeSequence"/&gt;
+ *         &lt;element name="excl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeNodeExclusive"/&gt;
+ *         &lt;element name="anim" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateBehavior"/&gt;
+ *         &lt;element name="animClr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateColorBehavior"/&gt;
+ *         &lt;element name="animEffect" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateEffectBehavior"/&gt;
+ *         &lt;element name="animMotion" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateMotionBehavior"/&gt;
+ *         &lt;element name="animRot" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateRotationBehavior"/&gt;
+ *         &lt;element name="animScale" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLAnimateScaleBehavior"/&gt;
+ *         &lt;element name="cmd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommandBehavior"/&gt;
+ *         &lt;element name="set" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSetBehavior"/&gt;
+ *         &lt;element name="audio" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLMediaNodeAudio"/&gt;
+ *         &lt;element name="video" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLMediaNodeVideo"/&gt;
+ *       &lt;/choice&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -63,7 +67,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_TimeNodeList", propOrder = {
     "parOrSeqOrExcl"
 })
-public class CTTimeNodeList {
+public class CTTimeNodeList implements Child
+{
 
     @XmlElements({
         @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
@@ -81,6 +86,8 @@ public class CTTimeNodeList {
         @XmlElement(name = "video", type = CTTLMediaNodeVideo.class)
     })
     protected List<Object> parOrSeqOrExcl;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the parOrSeqOrExcl property.
@@ -121,6 +128,32 @@ public class CTTimeNodeList {
             parOrSeqOrExcl = new ArrayList<Object>();
         }
         return this.parOrSeqOrExcl;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

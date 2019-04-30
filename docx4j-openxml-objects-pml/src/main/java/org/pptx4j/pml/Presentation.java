@@ -21,17 +21,21 @@ package org.pptx4j.pml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.sharedtypes.STConformanceClass;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -40,95 +44,95 @@ import org.docx4j.sharedtypes.STConformanceClass;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="sldMasterIdLst" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *                           &lt;/sequence>
- *                           &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
- *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="notesMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesMasterIdList" minOccurs="0"/>
- *         &lt;element name="handoutMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HandoutMasterIdList" minOccurs="0"/>
- *         &lt;element name="sldIdLst" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *                           &lt;/sequence>
- *                           &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
- *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="sldSz" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
- *                 &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
- *                 &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="notesSz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/>
- *         &lt;element name="smartTags" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SmartTags" minOccurs="0"/>
- *         &lt;element name="embeddedFontLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EmbeddedFontList" minOccurs="0"/>
- *         &lt;element name="custShowLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomShowList" minOccurs="0"/>
- *         &lt;element name="photoAlbum" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_PhotoAlbum" minOccurs="0"/>
- *         &lt;element name="custDataLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomerDataList" minOccurs="0"/>
- *         &lt;element name="kinsoku" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Kinsoku" minOccurs="0"/>
- *         &lt;element name="defaultTextStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/>
- *         &lt;element name="modifyVerifier" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ModifyVerifier" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="serverZoom" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="50" />
- *       &lt;attribute name="firstSlideNum" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
- *       &lt;attribute name="showSpecialPlsOnTitleSld" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="rtl" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="removePersonalInfoOnSave" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="compatMode" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="strictFirstAndLastChars" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="embedTrueTypeFonts" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="saveSubsetFonts" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="autoCompressPictures" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="bookmarkIdSeed" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_BookmarkIdSeed" default="1" />
- *       &lt;attribute name="conformance" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_ConformanceClass" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="sldMasterIdLst" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                           &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" /&gt;
+ *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="notesMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesMasterIdList" minOccurs="0"/&gt;
+ *         &lt;element name="handoutMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HandoutMasterIdList" minOccurs="0"/&gt;
+ *         &lt;element name="sldIdLst" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                           &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" /&gt;
+ *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="sldSz" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" /&gt;
+ *                 &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" /&gt;
+ *                 &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="notesSz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/&gt;
+ *         &lt;element name="smartTags" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SmartTags" minOccurs="0"/&gt;
+ *         &lt;element name="embeddedFontLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EmbeddedFontList" minOccurs="0"/&gt;
+ *         &lt;element name="custShowLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomShowList" minOccurs="0"/&gt;
+ *         &lt;element name="photoAlbum" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_PhotoAlbum" minOccurs="0"/&gt;
+ *         &lt;element name="custDataLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CustomerDataList" minOccurs="0"/&gt;
+ *         &lt;element name="kinsoku" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Kinsoku" minOccurs="0"/&gt;
+ *         &lt;element name="defaultTextStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/&gt;
+ *         &lt;element name="modifyVerifier" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ModifyVerifier" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="serverZoom" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="50" /&gt;
+ *       &lt;attribute name="firstSlideNum" type="{http://www.w3.org/2001/XMLSchema}int" default="1" /&gt;
+ *       &lt;attribute name="showSpecialPlsOnTitleSld" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="rtl" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="removePersonalInfoOnSave" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="compatMode" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="strictFirstAndLastChars" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="embedTrueTypeFonts" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="saveSubsetFonts" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *       &lt;attribute name="autoCompressPictures" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="bookmarkIdSeed" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_BookmarkIdSeed" default="1" /&gt;
+ *       &lt;attribute name="conformance" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_ConformanceClass" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -152,7 +156,8 @@ import org.docx4j.sharedtypes.STConformanceClass;
     "extLst"
 })
 @XmlRootElement(name = "presentation")
-public class Presentation {
+public class Presentation implements Child
+{
 
     protected Presentation.SldMasterIdLst sldMasterIdLst;
     protected CTNotesMasterIdList notesMasterIdLst;
@@ -194,6 +199,8 @@ public class Presentation {
     protected Long bookmarkIdSeed;
     @XmlAttribute(name = "conformance")
     protected STConformanceClass conformance;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the sldMasterIdLst property.
@@ -887,6 +894,32 @@ public class Presentation {
         this.conformance = value;
     }
 
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -894,27 +927,27 @@ public class Presentation {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;sequence>
-     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
-     *                 &lt;/sequence>
-     *                 &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
-     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0"&gt;
+     *           &lt;complexType&gt;
+     *             &lt;complexContent&gt;
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                 &lt;sequence&gt;
+     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+     *                 &lt;/sequence&gt;
+     *                 &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" /&gt;
+     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+     *               &lt;/restriction&gt;
+     *             &lt;/complexContent&gt;
+     *           &lt;/complexType&gt;
+     *         &lt;/element&gt;
+     *       &lt;/sequence&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -923,9 +956,12 @@ public class Presentation {
     @XmlType(name = "", propOrder = {
         "sldId"
     })
-    public static class SldIdLst {
+    public static class SldIdLst implements Child
+    {
 
         protected List<Presentation.SldIdLst.SldId> sldId;
+        @XmlTransient
+        private Object parent;
 
         /**
          * Gets the value of the sldId property.
@@ -956,6 +992,32 @@ public class Presentation {
             return this.sldId;
         }
 
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
 
         /**
          * <p>Java class for anonymous complex type.
@@ -963,17 +1025,17 @@ public class Presentation {
          * <p>The following schema fragment specifies the expected content contained within this class.
          * 
          * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;sequence>
-         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
-         *       &lt;/sequence>
-         *       &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
-         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
+         * &lt;complexType&gt;
+         *   &lt;complexContent&gt;
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *       &lt;sequence&gt;
+         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+         *       &lt;/sequence&gt;
+         *       &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" /&gt;
+         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+         *     &lt;/restriction&gt;
+         *   &lt;/complexContent&gt;
+         * &lt;/complexType&gt;
          * </pre>
          * 
          * 
@@ -982,13 +1044,16 @@ public class Presentation {
         @XmlType(name = "", propOrder = {
             "extLst"
         })
-        public static class SldId {
+        public static class SldId implements Child
+        {
 
             protected CTExtensionList extLst;
             @XmlAttribute(name = "id", required = true)
             protected long id;
             @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
             protected String rid;
+            @XmlTransient
+            private Object parent;
 
             /**
              * Gets the value of the extLst property.
@@ -1054,6 +1119,32 @@ public class Presentation {
                 this.rid = value;
             }
 
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
         }
 
     }
@@ -1065,27 +1156,27 @@ public class Presentation {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;sequence>
-     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
-     *                 &lt;/sequence>
-     *                 &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
-     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0"&gt;
+     *           &lt;complexType&gt;
+     *             &lt;complexContent&gt;
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                 &lt;sequence&gt;
+     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+     *                 &lt;/sequence&gt;
+     *                 &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" /&gt;
+     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+     *               &lt;/restriction&gt;
+     *             &lt;/complexContent&gt;
+     *           &lt;/complexType&gt;
+     *         &lt;/element&gt;
+     *       &lt;/sequence&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -1094,9 +1185,12 @@ public class Presentation {
     @XmlType(name = "", propOrder = {
         "sldMasterId"
     })
-    public static class SldMasterIdLst {
+    public static class SldMasterIdLst implements Child
+    {
 
         protected List<Presentation.SldMasterIdLst.SldMasterId> sldMasterId;
+        @XmlTransient
+        private Object parent;
 
         /**
          * Gets the value of the sldMasterId property.
@@ -1127,6 +1221,32 @@ public class Presentation {
             return this.sldMasterId;
         }
 
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
 
         /**
          * <p>Java class for anonymous complex type.
@@ -1134,17 +1254,17 @@ public class Presentation {
          * <p>The following schema fragment specifies the expected content contained within this class.
          * 
          * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;sequence>
-         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
-         *       &lt;/sequence>
-         *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
-         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
+         * &lt;complexType&gt;
+         *   &lt;complexContent&gt;
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *       &lt;sequence&gt;
+         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+         *       &lt;/sequence&gt;
+         *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" /&gt;
+         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/&gt;
+         *     &lt;/restriction&gt;
+         *   &lt;/complexContent&gt;
+         * &lt;/complexType&gt;
          * </pre>
          * 
          * 
@@ -1153,13 +1273,16 @@ public class Presentation {
         @XmlType(name = "", propOrder = {
             "extLst"
         })
-        public static class SldMasterId {
+        public static class SldMasterId implements Child
+        {
 
             protected CTExtensionList extLst;
             @XmlAttribute(name = "id")
             protected Long id;
             @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
             protected String rid;
+            @XmlTransient
+            private Object parent;
 
             /**
              * Gets the value of the extLst property.
@@ -1233,6 +1356,32 @@ public class Presentation {
                 this.rid = value;
             }
 
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
         }
 
     }
@@ -1244,22 +1393,23 @@ public class Presentation {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
-     *       &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
-     *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" /&gt;
+     *       &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" /&gt;
+     *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class SldSz {
+    public static class SldSz implements Child
+    {
 
         @XmlAttribute(name = "cx", required = true)
         protected int cx;
@@ -1268,6 +1418,8 @@ public class Presentation {
         @XmlAttribute(name = "type")
         @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
         protected String type;
+        @XmlTransient
+        private Object parent;
 
         /**
          * Gets the value of the cx property.
@@ -1327,6 +1479,32 @@ public class Presentation {
          */
         public void setType(String value) {
             this.type = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
         }
 
     }

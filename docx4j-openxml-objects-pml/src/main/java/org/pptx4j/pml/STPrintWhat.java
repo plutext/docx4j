@@ -30,19 +30,19 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_PrintWhat">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
- *     &lt;enumeration value="slides"/>
- *     &lt;enumeration value="handouts1"/>
- *     &lt;enumeration value="handouts2"/>
- *     &lt;enumeration value="handouts3"/>
- *     &lt;enumeration value="handouts4"/>
- *     &lt;enumeration value="handouts6"/>
- *     &lt;enumeration value="handouts9"/>
- *     &lt;enumeration value="notes"/>
- *     &lt;enumeration value="outline"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="ST_PrintWhat"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
+ *     &lt;enumeration value="slides"/&gt;
+ *     &lt;enumeration value="handouts1"/&gt;
+ *     &lt;enumeration value="handouts2"/&gt;
+ *     &lt;enumeration value="handouts3"/&gt;
+ *     &lt;enumeration value="handouts4"/&gt;
+ *     &lt;enumeration value="handouts6"/&gt;
+ *     &lt;enumeration value="handouts9"/&gt;
+ *     &lt;enumeration value="notes"/&gt;
+ *     &lt;enumeration value="outline"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  * 
  */

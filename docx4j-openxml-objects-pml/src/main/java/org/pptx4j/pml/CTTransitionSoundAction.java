@@ -19,9 +19,13 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -30,16 +34,16 @@ import javax.xml.bind.annotation.XmlType;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TransitionSoundAction">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="stSnd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TransitionStartSoundAction"/>
- *         &lt;element name="endSnd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *       &lt;/choice>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TransitionSoundAction"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="stSnd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TransitionStartSoundAction"/&gt;
+ *         &lt;element name="endSnd" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *       &lt;/choice&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -49,10 +53,13 @@ import javax.xml.bind.annotation.XmlType;
     "stSnd",
     "endSnd"
 })
-public class CTTransitionSoundAction {
+public class CTTransitionSoundAction implements Child
+{
 
     protected CTTransitionStartSoundAction stSnd;
     protected CTEmpty endSnd;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the stSnd property.
@@ -100,6 +107,32 @@ public class CTTransitionSoundAction {
      */
     public void setEndSnd(CTEmpty value) {
         this.endSnd = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -19,13 +19,17 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.dml.CTAnimationElementChoice;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -34,20 +38,20 @@ import org.docx4j.dml.CTAnimationElementChoice;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TLShapeTargetElement">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice minOccurs="0">
- *         &lt;element name="bg" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/>
- *         &lt;element name="subSp" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSubShapeId"/>
- *         &lt;element name="oleChartEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLOleChartTargetElement"/>
- *         &lt;element name="txEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTextTargetElement"/>
- *         &lt;element name="graphicEl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_AnimationElementChoice"/>
- *       &lt;/choice>
- *       &lt;attribute name="spid" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_ShapeID" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_TLShapeTargetElement"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice minOccurs="0"&gt;
+ *         &lt;element name="bg" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Empty"/&gt;
+ *         &lt;element name="subSp" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLSubShapeId"/&gt;
+ *         &lt;element name="oleChartEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLOleChartTargetElement"/&gt;
+ *         &lt;element name="txEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTextTargetElement"/&gt;
+ *         &lt;element name="graphicEl" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_AnimationElementChoice"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="spid" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_ShapeID" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -60,7 +64,8 @@ import org.docx4j.dml.CTAnimationElementChoice;
     "txEl",
     "graphicEl"
 })
-public class CTTLShapeTargetElement {
+public class CTTLShapeTargetElement implements Child
+{
 
     protected CTEmpty bg;
     protected CTTLSubShapeId subSp;
@@ -70,6 +75,8 @@ public class CTTLShapeTargetElement {
     @XmlAttribute(name = "spid", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String spid;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the bg property.
@@ -213,6 +220,32 @@ public class CTTLShapeTargetElement {
      */
     public void setSpid(String value) {
         this.spid = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

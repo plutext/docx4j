@@ -19,10 +19,12 @@
  */
 package org.pptx4j.pml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBlipFillProperties;
 import org.docx4j.dml.CTEffectContainer;
@@ -33,6 +35,8 @@ import org.docx4j.dml.CTNoFillProperties;
 import org.docx4j.dml.CTPatternFillProperties;
 import org.docx4j.dml.CTSolidColorFillProperties;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 
 /**
  * <p>Java class for CT_BackgroundProperties complex type.
@@ -40,18 +44,18 @@ import org.docx4j.dml.CTSolidColorFillProperties;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_BackgroundProperties">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties" minOccurs="0"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="shadeToTitle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_BackgroundProperties"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_FillProperties"/&gt;
+ *         &lt;group ref="{http://schemas.openxmlformats.org/drawingml/2006/main}EG_EffectProperties" minOccurs="0"/&gt;
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="shadeToTitle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -68,7 +72,8 @@ import org.docx4j.dml.CTSolidColorFillProperties;
     "effectDag",
     "extLst"
 })
-public class CTBackgroundProperties {
+public class CTBackgroundProperties implements Child
+{
 
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main")
     protected CTNoFillProperties noFill;
@@ -89,6 +94,8 @@ public class CTBackgroundProperties {
     protected CTExtensionList extLst;
     @XmlAttribute(name = "shadeToTitle")
     protected Boolean shadeToTitle;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the noFill property.
@@ -332,6 +339,32 @@ public class CTBackgroundProperties {
      */
     public void setShadeToTitle(Boolean value) {
         this.shadeToTitle = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }
