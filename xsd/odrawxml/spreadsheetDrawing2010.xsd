@@ -27,7 +27,7 @@
                 </jaxb:globalBindings>
             </xsd:appinfo>
             <jaxb:schemaBindings>
-                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing"/>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.excel.x2010.spreadsheetDrawing"/>
             </jaxb:schemaBindings>
         </xsd:appinfo>
   </xsd:annotation>

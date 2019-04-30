@@ -1,5 +1,5 @@
 
-package org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing;
+package org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -39,7 +39,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_GraphicFrame", namespace = "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup", propOrder = {
+@XmlType(name = "CT_GraphicFrame", propOrder = {
     "cNvPr",
     "cNvFrPr",
     "xfrm",

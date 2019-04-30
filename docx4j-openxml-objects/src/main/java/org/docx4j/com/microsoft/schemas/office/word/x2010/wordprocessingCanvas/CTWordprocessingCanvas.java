@@ -10,9 +10,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup.CTGraphicFrame;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup.CTWordprocessingGroup;
 import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
-import org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing.CTGraphicFrame;
-import org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing.CTWordprocessingGroup;
 import org.docx4j.dml.CTBackgroundFormatting;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTWholeE2OFormatting;

@@ -31,7 +31,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_WebVideoPr", namespace = "http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing")
+@XmlType(name = "CT_WebVideoPr")
 public class CTWebVideoPr implements Child
 {
 
