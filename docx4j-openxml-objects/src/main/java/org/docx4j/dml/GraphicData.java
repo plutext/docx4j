@@ -21,8 +21,9 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,8 +34,11 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opendope.SmartArt.dataHierarchy.Child;
 
+//import org.docx4j.XmlUtils;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
+import org.docx4j.dml.picture.Pic;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 /**
  * <p>Java class for CT_GraphicalObjectData complex type.
@@ -63,8 +67,22 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class GraphicData implements Child
 {
 
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
+	private static Object unwrap(Object o) {
+		
+		if (o==null) return null;
+		
+		if (o instanceof javax.xml.bind.JAXBElement) {
+// 			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+// 			log.debug("name: " + ((JAXBElement)o).getName() );
+			return ((JAXBElement)o).getValue();
+		} else {
+			return o;
+		}
+	}
+	
+	@XmlAnyElement(lax = true)
+    protected List<Object> any = new ArrayListDml<Object>(this);
+
     @XmlAttribute(name = "uri")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "token")
@@ -96,10 +114,47 @@ public class GraphicData implements Child
      */
     public List<Object> getAny() {
         if (any == null) {
-            any = new ArrayList<Object>();
+            any = new ArrayListDml<Object>(this);
         }
         return this.any;
     }
+    
+    @XmlTransient
+    public org.docx4j.dml.picture.Pic getPic() {
+
+		for (Object o : getAny() ) {
+			
+			if (o instanceof Pic) return (Pic)o;
+
+			if (o instanceof JAXBElement
+					&& ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {
+				
+					return (Pic)((JAXBElement)o).getValue();
+			}
+		}
+    	return null;    	
+    }
+
+    @XmlTransient
+    public CTWordprocessingShape getWordprocessingShape() {
+    	
+    	/*
+          <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+            <wps:wsp>
+       	 */
+
+		for (Object o : getAny() ) {
+			
+			if (o instanceof CTWordprocessingShape) return (CTWordprocessingShape)o;
+
+			if (o instanceof JAXBElement
+					&& (unwrap(o) instanceof  CTWordprocessingShape)) {
+				
+					return (CTWordprocessingShape)((JAXBElement)o).getValue();
+			}
+		}
+    	return null;    	
+    }        
 
     /**
      * Gets the value of the uri property.

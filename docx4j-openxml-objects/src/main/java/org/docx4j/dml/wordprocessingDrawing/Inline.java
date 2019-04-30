@@ -32,7 +32,7 @@ import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.Graphic;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

@@ -21,14 +21,14 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,7 +57,7 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTGeomGuideList implements Child
 {
 
-    protected List<CTGeomGuide> gd;
+    protected List<CTGeomGuide> gd = new ArrayListDml<CTGeomGuide>(this);
     @XmlTransient
     private Object parent;
 
@@ -85,7 +85,7 @@ public class CTGeomGuideList implements Child
      */
     public List<CTGeomGuide> getGd() {
         if (gd == null) {
-            gd = new ArrayList<CTGeomGuide>();
+            gd = new ArrayListDml<CTGeomGuide>(this);
         }
         return this.gd;
     }

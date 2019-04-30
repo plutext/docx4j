@@ -21,14 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,7 +57,8 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTConstraints implements Child
 {
 
-    protected List<CTConstraint> constr;
+    protected List<CTConstraint> constr = new ArrayListDml<CTConstraint>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -85,7 +86,7 @@ public class CTConstraints implements Child
      */
     public List<CTConstraint> getConstr() {
         if (constr == null) {
-            constr = new ArrayList<CTConstraint>();
+            constr = new ArrayListDml<CTConstraint>(this);
         }
         return this.constr;
     }

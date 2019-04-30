@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -37,7 +37,7 @@ import org.docx4j.dml.CTSRgbColor;
 import org.docx4j.dml.CTScRgbColor;
 import org.docx4j.dml.CTSchemeColor;
 import org.docx4j.dml.CTSystemColor;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -76,7 +76,7 @@ public class CTColors implements Child
         @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class),
         @XmlElement(name = "prstClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTPresetColor.class)
     })
-    protected List<Object> egColorChoice;
+    protected List<Object> egColorChoice = new ArrayListDml<Object>(this);
     @XmlAttribute(name = "meth")
     protected STClrAppMethod meth;
     @XmlAttribute(name = "hueDir")
@@ -113,7 +113,7 @@ public class CTColors implements Child
      */
     public List<Object> getEGColorChoice() {
         if (egColorChoice == null) {
-            egColorChoice = new ArrayList<Object>();
+            egColorChoice = new ArrayListDml<Object>(this);
         }
         return this.egColorChoice;
     }

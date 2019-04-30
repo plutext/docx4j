@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -81,7 +81,8 @@ public class CTOtherwise implements Child
         @XmlElement(name = "choose", type = CTChoose.class),
         @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class)
     })
-    protected List<Object> algOrShapeOrPresOf;
+    protected List<Object> algOrShapeOrPresOf = new ArrayListDml<Object>(this);
+
     @XmlAttribute(name = "name")
     protected String name;
     @XmlTransient
@@ -119,7 +120,7 @@ public class CTOtherwise implements Child
      */
     public List<Object> getAlgOrShapeOrPresOf() {
         if (algOrShapeOrPresOf == null) {
-            algOrShapeOrPresOf = new ArrayList<Object>();
+            algOrShapeOrPresOf = new ArrayListDml<Object>(this);
         }
         return this.algOrShapeOrPresOf;
     }

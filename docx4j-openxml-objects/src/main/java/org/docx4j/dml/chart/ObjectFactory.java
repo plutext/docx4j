@@ -46,7 +46,7 @@ import org.docx4j.dml.chartDrawing.CTDrawing;
 public class ObjectFactory {
 
     private final static QName _ChartSpace_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/chart", "chartSpace");
-    private final static QName _UserShapes_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/chart", "userShapes");
+    public final static QName _UserShapes_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/chart", "userShapes");
     private final static QName _Chart_QNAME = new QName("http://schemas.openxmlformats.org/drawingml/2006/chart", "chart");
 
     /**

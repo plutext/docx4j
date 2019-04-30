@@ -21,14 +21,14 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,7 +57,8 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTPath2DList implements Child
 {
 
-    protected List<CTPath2D> path;
+    protected List<CTPath2D> path = new ArrayListDml<CTPath2D>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -85,7 +86,7 @@ public class CTPath2DList implements Child
      */
     public List<CTPath2D> getPath() {
         if (path == null) {
-            path = new ArrayList<CTPath2D>();
+            path = new ArrayListDml<CTPath2D>(this);
         }
         return this.path;
     }

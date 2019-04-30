@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -95,7 +95,8 @@ public class CTEffectContainer implements Child
         @XmlElement(name = "tint", type = CTTintEffect.class),
         @XmlElement(name = "xfrm", type = CTTransformEffect.class)
     })
-    protected List<Object> egEffect;
+    protected List<Object> egEffect = new ArrayListDml<Object>(this);
+
     @XmlAttribute(name = "type")
     protected STEffectContainerType type;
     @XmlAttribute(name = "name")
@@ -158,7 +159,7 @@ public class CTEffectContainer implements Child
      */
     public List<Object> getEGEffect() {
         if (egEffect == null) {
-            egEffect = new ArrayList<Object>();
+            egEffect = new ArrayListDml<Object>(this);
         }
         return this.egEffect;
     }

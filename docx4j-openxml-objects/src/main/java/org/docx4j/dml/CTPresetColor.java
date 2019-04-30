@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -92,7 +92,8 @@ public class CTPresetColor implements Child
         @XmlElementRef(name = "satMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "satOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egColorTransform;
+    protected List<JAXBElement<?>> egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
+
     @XmlAttribute(name = "val")
     protected STPresetColorVal val;
     @XmlTransient
@@ -149,7 +150,7 @@ public class CTPresetColor implements Child
      */
     public List<JAXBElement<?>> getEGColorTransform() {
         if (egColorTransform == null) {
-            egColorTransform = new ArrayList<JAXBElement<?>>();
+            egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
         }
         return this.egColorTransform;
     }

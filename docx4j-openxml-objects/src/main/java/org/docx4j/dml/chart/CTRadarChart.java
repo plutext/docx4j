@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -71,10 +71,10 @@ public class CTRadarChart implements Child
     @XmlElement(required = true)
     protected CTRadarStyle radarStyle;
     protected CTBoolean varyColors;
-    protected List<CTRadarSer> ser;
+    protected List<CTRadarSer> ser = new ArrayListDml<CTRadarSer>(this);
     protected CTDLbls dLbls;
     @XmlElement(required = true)
-    protected List<CTUnsignedInt> axId;
+    protected List<CTUnsignedInt> axId = new ArrayListDml<CTUnsignedInt>(this);
     protected CTExtensionList extLst;
     @XmlTransient
     private Object parent;
@@ -151,7 +151,7 @@ public class CTRadarChart implements Child
      */
     public List<CTRadarSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTRadarSer>();
+            ser = new ArrayListDml<CTRadarSer>(this);
         }
         return this.ser;
     }
@@ -204,7 +204,7 @@ public class CTRadarChart implements Child
      */
     public List<CTUnsignedInt> getAxId() {
         if (axId == null) {
-            axId = new ArrayList<CTUnsignedInt>();
+            axId = new ArrayListDml<CTUnsignedInt>(this);
         }
         return this.axId;
     }

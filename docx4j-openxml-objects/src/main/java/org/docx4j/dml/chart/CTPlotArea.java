@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -111,14 +111,16 @@ public class CTPlotArea implements Child
         @XmlElement(name = "surface3DChart", type = CTSurface3DChart.class),
         @XmlElement(name = "bubbleChart", type = CTBubbleChart.class)
     })
-    protected List<Object> areaChartOrArea3DChartOrLineChart;
+    protected List<Object> areaChartOrArea3DChartOrLineChart  = new ArrayListDml<Object>(this);
+
     @XmlElements({
         @XmlElement(name = "valAx", type = CTValAx.class),
         @XmlElement(name = "catAx", type = CTCatAx.class),
         @XmlElement(name = "dateAx", type = CTDateAx.class),
         @XmlElement(name = "serAx", type = CTSerAx.class)
     })
-    protected List<Object> valAxOrCatAxOrDateAx;
+    protected List<Object> valAxOrCatAxOrDateAx = new ArrayListDml<Object>(this);
+
     protected CTDTable dTable;
     protected CTShapeProperties spPr;
     protected CTExtensionList extLst;
@@ -188,7 +190,7 @@ public class CTPlotArea implements Child
      */
     public List<Object> getAreaChartOrArea3DChartOrLineChart() {
         if (areaChartOrArea3DChartOrLineChart == null) {
-            areaChartOrArea3DChartOrLineChart = new ArrayList<Object>();
+            areaChartOrArea3DChartOrLineChart = new ArrayListDml<Object>(this);
         }
         return this.areaChartOrArea3DChartOrLineChart;
     }
@@ -220,7 +222,7 @@ public class CTPlotArea implements Child
      */
     public List<Object> getValAxOrCatAxOrDateAx() {
         if (valAxOrCatAxOrDateAx == null) {
-            valAxOrCatAxOrDateAx = new ArrayList<Object>();
+            valAxOrCatAxOrDateAx = new ArrayListDml<Object>(this);
         }
         return this.valAxOrCatAxOrDateAx;
     }

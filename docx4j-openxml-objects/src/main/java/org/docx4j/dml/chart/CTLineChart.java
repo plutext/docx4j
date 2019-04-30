@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -77,7 +77,7 @@ public class CTLineChart implements Child
     @XmlElement(required = true)
     protected CTGrouping grouping;
     protected CTBoolean varyColors;
-    protected List<CTLineSer> ser;
+    protected List<CTLineSer> ser = new ArrayListDml<CTLineSer>(this);
     protected CTDLbls dLbls;
     protected CTChartLines dropLines;
     protected CTChartLines hiLowLines;
@@ -85,7 +85,7 @@ public class CTLineChart implements Child
     protected CTBoolean marker;
     protected CTBoolean smooth;
     @XmlElement(required = true)
-    protected List<CTUnsignedInt> axId;
+    protected List<CTUnsignedInt> axId = new ArrayListDml<CTUnsignedInt>(this);
     protected CTExtensionList extLst;
     @XmlTransient
     private Object parent;
@@ -162,7 +162,7 @@ public class CTLineChart implements Child
      */
     public List<CTLineSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTLineSer>();
+            ser = new ArrayListDml<CTLineSer>(this);
         }
         return this.ser;
     }
@@ -335,7 +335,7 @@ public class CTLineChart implements Child
      */
     public List<CTUnsignedInt> getAxId() {
         if (axId == null) {
-            axId = new ArrayList<CTUnsignedInt>();
+            axId = new ArrayListDml<CTUnsignedInt>(this);
         }
         return this.axId;
     }

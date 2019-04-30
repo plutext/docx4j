@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -61,7 +61,7 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTTableRow implements Child
 {
 
-    protected List<CTTableCell> tc;
+    protected List<CTTableCell> tc = new ArrayListDml<CTTableCell>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "h", required = true)
     protected long h;
@@ -92,7 +92,7 @@ public class CTTableRow implements Child
      */
     public List<CTTableCell> getTc() {
         if (tc == null) {
-            tc = new ArrayList<CTTableCell>();
+            tc = new ArrayListDml<CTTableCell>(this);
         }
         return this.tc;
     }

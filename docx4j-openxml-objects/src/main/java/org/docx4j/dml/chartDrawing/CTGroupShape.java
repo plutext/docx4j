@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chartDrawing;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTGroupShapeProperties;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -81,7 +81,8 @@ public class CTGroupShape implements Child
         @XmlElement(name = "cxnSp", type = CTConnector.class),
         @XmlElement(name = "pic", type = CTPicture.class)
     })
-    protected List<Object> spOrGrpSpOrGraphicFrame;
+    protected List<Object> spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -161,7 +162,7 @@ public class CTGroupShape implements Child
      */
     public List<Object> getSpOrGrpSpOrGraphicFrame() {
         if (spOrGrpSpOrGraphicFrame == null) {
-            spOrGrpSpOrGraphicFrame = new ArrayList<Object>();
+            spOrGrpSpOrGraphicFrame = new ArrayListDml<Object>(this);
         }
         return this.spOrGrpSpOrGraphicFrame;
     }

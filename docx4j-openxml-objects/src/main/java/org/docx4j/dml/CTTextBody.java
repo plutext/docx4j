@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -66,7 +66,8 @@ public class CTTextBody implements Child
     protected CTTextBodyProperties bodyPr;
     protected CTTextListStyle lstStyle;
     @XmlElement(required = true)
-    protected List<CTTextParagraph> p;
+    protected List<CTTextParagraph> p = new ArrayListDml<CTTextParagraph>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -142,7 +143,7 @@ public class CTTextBody implements Child
      */
     public List<CTTextParagraph> getP() {
         if (p == null) {
-            p = new ArrayList<CTTextParagraph>();
+            p = new ArrayListDml<CTTextParagraph>(this);
         }
         return this.p;
     }

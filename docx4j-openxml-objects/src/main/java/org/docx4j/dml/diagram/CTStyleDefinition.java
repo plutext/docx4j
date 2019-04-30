@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTScene3D;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -73,13 +73,13 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTStyleDefinition implements Child
 {
 
-    protected List<CTSDName> title;
-    protected List<CTSDDescription> desc;
+    protected List<CTSDName> title = new ArrayListDml<CTSDName>(this);
+    protected List<CTSDDescription> desc = new ArrayListDml<CTSDDescription>(this);
     protected CTSDCategories catLst;
     @XmlElement(name = "scene3d")
     protected CTScene3D scene3D;
     @XmlElement(required = true)
-    protected List<CTStyleLabel> styleLbl;
+    protected List<CTStyleLabel> styleLbl  = new ArrayListDml<CTStyleLabel>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "uniqueId")
     protected String uniqueId;
@@ -112,7 +112,7 @@ public class CTStyleDefinition implements Child
      */
     public List<CTSDName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTSDName>();
+            title = new ArrayListDml<CTSDName>(this);
         }
         return this.title;
     }
@@ -141,7 +141,7 @@ public class CTStyleDefinition implements Child
      */
     public List<CTSDDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTSDDescription>();
+            desc = new ArrayListDml<CTSDDescription>(this);
         }
         return this.desc;
     }
@@ -218,7 +218,7 @@ public class CTStyleDefinition implements Child
      */
     public List<CTStyleLabel> getStyleLbl() {
         if (styleLbl == null) {
-            styleLbl = new ArrayList<CTStyleLabel>();
+            styleLbl = new ArrayListDml<CTStyleLabel>(this);
         }
         return this.styleLbl;
     }

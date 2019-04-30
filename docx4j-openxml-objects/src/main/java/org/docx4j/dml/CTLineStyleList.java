@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -59,7 +59,8 @@ public class CTLineStyleList implements Child
 {
 
     @XmlElement(required = true)
-    protected List<CTLineProperties> ln;
+    protected List<CTLineProperties> ln = new ArrayListDml<CTLineProperties>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -87,7 +88,7 @@ public class CTLineStyleList implements Child
      */
     public List<CTLineProperties> getLn() {
         if (ln == null) {
-            ln = new ArrayList<CTLineProperties>();
+            ln = new ArrayListDml<CTLineProperties>(this);
         }
         return this.ln;
     }

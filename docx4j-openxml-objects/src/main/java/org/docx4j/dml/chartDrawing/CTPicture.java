@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBlipFillProperties;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

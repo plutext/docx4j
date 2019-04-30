@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -101,7 +101,7 @@ public class CTBlip implements Child
         @XmlElement(name = "lum", type = CTLuminanceEffect.class),
         @XmlElement(name = "tint", type = CTTintEffect.class)
     })
-    protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor;
+    protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayListDml<Object>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "cstate")
     protected STBlipCompression cstate;
@@ -152,7 +152,7 @@ public class CTBlip implements Child
      */
     public List<Object> getAlphaBiLevelOrAlphaCeilingOrAlphaFloor() {
         if (alphaBiLevelOrAlphaCeilingOrAlphaFloor == null) {
-            alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayList<Object>();
+            alphaBiLevelOrAlphaCeilingOrAlphaFloor = new ArrayListDml<Object>(this);
         }
         return this.alphaBiLevelOrAlphaCeilingOrAlphaFloor;
     }

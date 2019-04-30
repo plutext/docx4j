@@ -32,7 +32,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTScene3D;
 import org.docx4j.dml.CTShape3D;
 import org.docx4j.dml.CTShapeStyle;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

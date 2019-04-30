@@ -21,14 +21,14 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,7 +57,7 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTOfficeArtExtensionList implements Child
 {
 
-    protected List<CTOfficeArtExtension> ext;
+    protected List<CTOfficeArtExtension> ext = new ArrayListDml<CTOfficeArtExtension>(this);
     @XmlTransient
     private Object parent;
 
@@ -85,7 +85,7 @@ public class CTOfficeArtExtensionList implements Child
      */
     public List<CTOfficeArtExtension> getExt() {
         if (ext == null) {
-            ext = new ArrayList<CTOfficeArtExtension>();
+            ext = new ArrayListDml<CTOfficeArtExtension>(this);
         }
         return this.ext;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -71,9 +71,9 @@ public class CTDiagramDefinitionHeader implements Child
 {
 
     @XmlElement(required = true)
-    protected List<CTName> title;
+    protected List<CTName> title = new ArrayListDml<CTName>(this);
     @XmlElement(required = true)
-    protected List<CTDescription> desc;
+    protected List<CTDescription> desc = new ArrayListDml<CTDescription>(this);
     protected CTCategories catLst;
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "uniqueId", required = true)
@@ -111,7 +111,7 @@ public class CTDiagramDefinitionHeader implements Child
      */
     public List<CTName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTName>();
+            title = new ArrayListDml<CTName>(this);
         }
         return this.title;
     }
@@ -140,7 +140,7 @@ public class CTDiagramDefinitionHeader implements Child
      */
     public List<CTDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTDescription>();
+            desc = new ArrayListDml<CTDescription>(this);
         }
         return this.desc;
     }

@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -69,10 +69,10 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTColorTransform implements Child
 {
 
-    protected List<CTCTName> title;
-    protected List<CTCTDescription> desc;
+    protected List<CTCTName> title = new ArrayListDml<CTCTName>(this);
+    protected List<CTCTDescription> desc = new ArrayListDml<CTCTDescription>(this);
     protected CTCTCategories catLst;
-    protected List<CTCTStyleLabel> styleLbl;
+    protected List<CTCTStyleLabel> styleLbl = new ArrayListDml<CTCTStyleLabel>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "uniqueId")
     protected String uniqueId;
@@ -105,7 +105,7 @@ public class CTColorTransform implements Child
      */
     public List<CTCTName> getTitle() {
         if (title == null) {
-            title = new ArrayList<CTCTName>();
+            title = new ArrayListDml<CTCTName>(this);
         }
         return this.title;
     }
@@ -134,7 +134,7 @@ public class CTColorTransform implements Child
      */
     public List<CTCTDescription> getDesc() {
         if (desc == null) {
-            desc = new ArrayList<CTCTDescription>();
+            desc = new ArrayListDml<CTCTDescription>(this);
         }
         return this.desc;
     }
@@ -187,7 +187,7 @@ public class CTColorTransform implements Child
      */
     public List<CTCTStyleLabel> getStyleLbl() {
         if (styleLbl == null) {
-            styleLbl = new ArrayList<CTCTStyleLabel>();
+            styleLbl = new ArrayListDml<CTCTStyleLabel>(this);
         }
         return this.styleLbl;
     }

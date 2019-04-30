@@ -21,14 +21,14 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -62,7 +62,7 @@ public class CTMultiLvlStrData implements Child
 {
 
     protected CTUnsignedInt ptCount;
-    protected List<CTLvl> lvl;
+    protected List<CTLvl> lvl = new ArrayListDml<CTLvl>(this);
     protected CTExtensionList extLst;
     @XmlTransient
     private Object parent;
@@ -115,7 +115,7 @@ public class CTMultiLvlStrData implements Child
      */
     public List<CTLvl> getLvl() {
         if (lvl == null) {
-            lvl = new ArrayList<CTLvl>();
+            lvl = new ArrayListDml<CTLvl>(this);
         }
         return this.lvl;
     }

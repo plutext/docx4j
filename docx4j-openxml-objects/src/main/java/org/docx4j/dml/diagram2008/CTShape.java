@@ -13,7 +13,7 @@ import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
 import org.docx4j.dml.CTTextBody;
 import org.docx4j.dml.CTTransform2D;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

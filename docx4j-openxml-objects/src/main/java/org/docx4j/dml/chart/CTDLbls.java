@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -79,7 +79,7 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTDLbls implements Child
 {
 
-    protected List<CTDLbl> dLbl;
+    protected List<CTDLbl> dLbl = new ArrayListDml<CTDLbl>(this);
     protected CTBoolean delete;
     protected CTNumFmt numFmt;
     protected CTShapeProperties spPr;
@@ -122,7 +122,7 @@ public class CTDLbls implements Child
      */
     public List<CTDLbl> getDLbl() {
         if (dLbl == null) {
-            dLbl = new ArrayList<CTDLbl>();
+            dLbl = new ArrayListDml<CTDLbl>(this);
         }
         return this.dLbl;
     }

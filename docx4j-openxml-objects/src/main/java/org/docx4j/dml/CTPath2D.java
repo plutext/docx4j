@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -78,7 +78,8 @@ public class CTPath2D implements Child
         @XmlElement(name = "quadBezTo", type = CTPath2DQuadBezierTo.class),
         @XmlElement(name = "cubicBezTo", type = CTPath2DCubicBezierTo.class)
     })
-    protected List<Object> closeOrMoveToOrLnTo;
+    protected List<Object> closeOrMoveToOrLnTo = new ArrayListDml<Object>(this);
+
     @XmlAttribute(name = "w")
     protected Long w;
     @XmlAttribute(name = "h")
@@ -121,7 +122,7 @@ public class CTPath2D implements Child
      */
     public List<Object> getCloseOrMoveToOrLnTo() {
         if (closeOrMoveToOrLnTo == null) {
-            closeOrMoveToOrLnTo = new ArrayList<Object>();
+            closeOrMoveToOrLnTo = new ArrayListDml<Object>(this);
         }
         return this.closeOrMoveToOrLnTo;
     }

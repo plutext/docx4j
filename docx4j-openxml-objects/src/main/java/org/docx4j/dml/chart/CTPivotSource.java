@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -66,7 +66,7 @@ public class CTPivotSource implements Child
     protected String name;
     @XmlElement(required = true)
     protected CTUnsignedInt fmtId;
-    protected List<CTExtensionList> extLst;
+    protected List<CTExtensionList> extLst  = new ArrayListDml<CTExtensionList>(this);
     @XmlTransient
     private Object parent;
 
@@ -142,7 +142,7 @@ public class CTPivotSource implements Child
      */
     public List<CTExtensionList> getExtLst() {
         if (extLst == null) {
-            extLst = new ArrayList<CTExtensionList>();
+            extLst = new ArrayListDml<CTExtensionList>(this);
         }
         return this.extLst;
     }

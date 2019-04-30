@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -61,7 +61,8 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTTableStyleList implements Child
 {
 
-    protected List<CTTableStyle> tblStyle;
+    protected List<CTTableStyle> tblStyle = new ArrayListDml<CTTableStyle>(this);
+
     @XmlAttribute(name = "def", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String def;
@@ -92,7 +93,7 @@ public class CTTableStyleList implements Child
      */
     public List<CTTableStyle> getTblStyle() {
         if (tblStyle == null) {
-            tblStyle = new ArrayList<CTTableStyle>();
+            tblStyle = new ArrayListDml<CTTableStyle>(this);
         }
         return this.tblStyle;
     }

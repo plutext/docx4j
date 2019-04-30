@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -63,7 +63,7 @@ public class CTChoose implements Child
 {
 
     @XmlElement(name = "if", required = true)
-    protected List<CTWhen> _if;
+    protected List<CTWhen> _if = new ArrayListDml<CTWhen>(this);
     @XmlElement(name = "else")
     protected CTOtherwise _else;
     @XmlAttribute(name = "name")
@@ -95,7 +95,7 @@ public class CTChoose implements Child
      */
     public List<CTWhen> getIf() {
         if (_if == null) {
-            _if = new ArrayList<CTWhen>();
+            _if = new ArrayListDml<CTWhen>(this);
         }
         return this._if;
     }

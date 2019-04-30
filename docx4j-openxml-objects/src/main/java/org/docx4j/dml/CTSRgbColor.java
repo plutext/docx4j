@@ -21,7 +21,7 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -94,10 +94,10 @@ public class CTSRgbColor implements Child
         @XmlElementRef(name = "inv", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "gamma", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egColorTransform;
+    protected List<JAXBElement<?>> egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
+
     @XmlAttribute(name = "val", required = true)
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] val;
+    protected String val;
     @XmlTransient
     private Object parent;
 
@@ -152,7 +152,7 @@ public class CTSRgbColor implements Child
      */
     public List<JAXBElement<?>> getEGColorTransform() {
         if (egColorTransform == null) {
-            egColorTransform = new ArrayList<JAXBElement<?>>();
+            egColorTransform = new ArrayListDml<JAXBElement<?>>(this);
         }
         return this.egColorTransform;
     }
@@ -165,7 +165,7 @@ public class CTSRgbColor implements Child
      *     {@link String }
      *     
      */
-    public byte[] getVal() {
+    public String getVal() {
         return val;
     }
 
@@ -177,7 +177,7 @@ public class CTSRgbColor implements Child
      *     {@link String }
      *     
      */
-    public void setVal(byte[] value) {
+    public void setVal(String value) {
         this.val = value;
     }
 

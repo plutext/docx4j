@@ -21,14 +21,14 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -57,7 +57,8 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTCategories implements Child
 {
 
-    protected List<CTCategory> cat;
+    protected List<CTCategory> cat = new ArrayListDml<CTCategory>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -85,7 +86,7 @@ public class CTCategories implements Child
      */
     public List<CTCategory> getCat() {
         if (cat == null) {
-            cat = new ArrayList<CTCategory>();
+            cat = new ArrayListDml<CTCategory>(this);
         }
         return this.cat;
     }

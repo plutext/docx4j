@@ -21,14 +21,14 @@
 
 package org.docx4j.dml.chart;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -64,7 +64,7 @@ public class CTPieChart implements Child
 {
 
     protected CTBoolean varyColors;
-    protected List<CTPieSer> ser;
+    protected List<CTPieSer> ser  = new ArrayListDml<CTPieSer>(this);
     protected CTDLbls dLbls;
     protected CTFirstSliceAng firstSliceAng;
     protected CTExtensionList extLst;
@@ -119,7 +119,7 @@ public class CTPieChart implements Child
      */
     public List<CTPieSer> getSer() {
         if (ser == null) {
-            ser = new ArrayList<CTPieSer>();
+            ser = new ArrayListDml<CTPieSer>(this);
         }
         return this.ser;
     }

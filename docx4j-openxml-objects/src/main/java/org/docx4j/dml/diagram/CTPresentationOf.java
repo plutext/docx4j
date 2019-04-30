@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -62,17 +62,21 @@ public class CTPresentationOf implements Child
 
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "axis")
-    protected List<STAxisType> axis;
+    protected List<STAxisType> axis = new ArrayListDml<STAxisType>(this);
     @XmlAttribute(name = "ptType")
-    protected List<STElementType> ptType;
+    protected List<STElementType> ptType = new ArrayListDml<STElementType>(this);
+
     @XmlAttribute(name = "hideLastTrans")
-    protected List<Boolean> hideLastTrans;
+    protected List<Boolean> hideLastTrans = new ArrayListDml<Boolean>(this);
+
     @XmlAttribute(name = "st")
-    protected List<Integer> st;
+    protected List<Integer> st = new ArrayListDml<Integer>(this);
     @XmlAttribute(name = "cnt")
-    protected List<Long> cnt;
+    protected List<Long> cnt = new ArrayListDml<Long>(this);
+
     @XmlAttribute(name = "step")
-    protected List<Integer> step;
+    protected List<Integer> step = new ArrayListDml<Integer>(this);
+
     @XmlTransient
     private Object parent;
 
@@ -124,7 +128,7 @@ public class CTPresentationOf implements Child
      */
     public List<STAxisType> getAxis() {
         if (axis == null) {
-            axis = new ArrayList<STAxisType>();
+            axis = new ArrayListDml<STAxisType>(this);
         }
         return this.axis;
     }
@@ -153,7 +157,7 @@ public class CTPresentationOf implements Child
      */
     public List<STElementType> getPtType() {
         if (ptType == null) {
-            ptType = new ArrayList<STElementType>();
+            ptType = new ArrayListDml<STElementType>(this);
         }
         return this.ptType;
     }
@@ -182,7 +186,7 @@ public class CTPresentationOf implements Child
      */
     public List<Boolean> getHideLastTrans() {
         if (hideLastTrans == null) {
-            hideLastTrans = new ArrayList<Boolean>();
+            hideLastTrans = new ArrayListDml<Boolean>(this);
         }
         return this.hideLastTrans;
     }
@@ -211,7 +215,7 @@ public class CTPresentationOf implements Child
      */
     public List<Integer> getSt() {
         if (st == null) {
-            st = new ArrayList<Integer>();
+            st = new ArrayListDml<Integer>(this);
         }
         return this.st;
     }
@@ -240,7 +244,7 @@ public class CTPresentationOf implements Child
      */
     public List<Long> getCnt() {
         if (cnt == null) {
-            cnt = new ArrayList<Long>();
+            cnt = new ArrayListDml<Long>(this);
         }
         return this.cnt;
     }
@@ -269,7 +273,7 @@ public class CTPresentationOf implements Child
      */
     public List<Integer> getStep() {
         if (step == null) {
-            step = new ArrayList<Integer>();
+            step = new ArrayListDml<Integer>(this);
         }
         return this.step;
     }

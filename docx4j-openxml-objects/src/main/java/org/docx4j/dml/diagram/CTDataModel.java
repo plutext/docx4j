@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBackgroundFormatting;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTWholeE2OFormatting;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

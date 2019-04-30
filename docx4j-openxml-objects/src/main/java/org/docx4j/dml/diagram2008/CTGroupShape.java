@@ -1,7 +1,7 @@
 
 package org.docx4j.dml.diagram2008;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTGroupShapeProperties;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -58,7 +58,7 @@ public class CTGroupShape implements Child
         @XmlElement(name = "sp", type = CTShape.class),
         @XmlElement(name = "grpSp", type = CTGroupShape.class)
     })
-    protected List<Object> spOrGrpSp;
+    protected List<Object> spOrGrpSp = new ArrayListDml<Object>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlTransient
     private Object parent;
@@ -136,7 +136,7 @@ public class CTGroupShape implements Child
      */
     public List<Object> getSpOrGrpSp() {
         if (spOrGrpSp == null) {
-            spOrGrpSp = new ArrayList<Object>();
+            spOrGrpSp = new ArrayListDml<Object>(this);
         }
         return this.spOrGrpSp;
     }

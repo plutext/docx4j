@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.wordprocessingDrawing;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTPoint2D;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -66,7 +66,8 @@ public class CTWrapPath implements Child
     @XmlElement(required = true)
     protected CTPoint2D start;
     @XmlElement(required = true)
-    protected List<CTPoint2D> lineTo;
+    protected List<CTPoint2D> lineTo = new ArrayListDml<CTPoint2D>(this);
+
     @XmlAttribute(name = "edited")
     protected Boolean edited;
     @XmlTransient
@@ -120,7 +121,7 @@ public class CTWrapPath implements Child
      */
     public List<CTPoint2D> getLineTo() {
         if (lineTo == null) {
-            lineTo = new ArrayList<CTPoint2D>();
+            lineTo = new ArrayListDml<CTPoint2D>(this);
         }
         return this.lineTo;
     }

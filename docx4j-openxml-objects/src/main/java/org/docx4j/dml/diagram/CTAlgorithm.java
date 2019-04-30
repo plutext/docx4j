@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.diagram;
 
-import java.util.ArrayList;
+import org.docx4j.dml.ArrayListDml;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -64,7 +64,7 @@ import org.opendope.SmartArt.dataHierarchy.Child;
 public class CTAlgorithm implements Child
 {
 
-    protected List<CTParameter> param;
+    protected List<CTParameter> param = new ArrayListDml<CTParameter>(this);
     protected CTOfficeArtExtensionList extLst;
     @XmlAttribute(name = "type", required = true)
     protected STAlgorithmType type;
@@ -98,7 +98,7 @@ public class CTAlgorithm implements Child
      */
     public List<CTParameter> getParam() {
         if (param == null) {
-            param = new ArrayList<CTParameter>();
+            param = new ArrayListDml<CTParameter>(this);
         }
         return this.param;
     }
