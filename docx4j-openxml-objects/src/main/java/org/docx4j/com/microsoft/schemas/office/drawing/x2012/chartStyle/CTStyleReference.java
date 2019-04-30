@@ -16,7 +16,7 @@ import org.docx4j.dml.CTSRgbColor;
 import org.docx4j.dml.CTScRgbColor;
 import org.docx4j.dml.CTSchemeColor;
 import org.docx4j.dml.CTSystemColor;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

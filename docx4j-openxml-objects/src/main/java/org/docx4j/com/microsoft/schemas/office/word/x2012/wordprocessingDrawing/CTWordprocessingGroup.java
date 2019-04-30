@@ -16,7 +16,7 @@ import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGroupDrawingShapeProps;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.picture.Pic;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

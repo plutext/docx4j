@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

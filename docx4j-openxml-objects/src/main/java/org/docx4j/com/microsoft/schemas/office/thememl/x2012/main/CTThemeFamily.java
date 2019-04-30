@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.dml.CTOfficeArtExtensionList;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

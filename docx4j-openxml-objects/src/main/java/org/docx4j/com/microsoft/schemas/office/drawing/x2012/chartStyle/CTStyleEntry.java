@@ -14,7 +14,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBodyProperties;
 import org.docx4j.dml.CTTextCharacterProperties;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

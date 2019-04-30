@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTTransform2D;
 import org.docx4j.dml.STBlackWhiteMode;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

@@ -12,7 +12,7 @@ import org.docx4j.dml.chart.CTBoolean;
 import org.docx4j.dml.chart.CTDLbl;
 import org.docx4j.dml.chart.CTMarker;
 import org.docx4j.dml.chart.CTUnsignedInt;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

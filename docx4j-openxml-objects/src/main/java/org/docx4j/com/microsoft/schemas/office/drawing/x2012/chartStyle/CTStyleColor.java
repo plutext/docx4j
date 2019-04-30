@@ -23,7 +23,7 @@ import org.docx4j.dml.CTPercentage;
 import org.docx4j.dml.CTPositiveFixedAngle;
 import org.docx4j.dml.CTPositiveFixedPercentage;
 import org.docx4j.dml.CTPositivePercentage;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

@@ -18,7 +18,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 import org.docx4j.dml.CTWholeE2OFormatting;
 import org.docx4j.dml.picture.Pic;
 import org.docx4j.w14.CTWordContentPart;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
