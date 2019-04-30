@@ -79,6 +79,17 @@ public class CTOleObject implements Child
     @XmlTransient
     private Object parent;
 
+    // @since 3.0.1
+    // TODO investigate why missing, and add to xsd if nec
+    @XmlAttribute(name = "spid")
+    protected String spid;
+    public String getSpid() {
+        return spid;
+    }
+    public void setSpid(String value) {
+        this.spid = value;
+    }    
+    
     /**
      * Gets the value of the embed property.
      * 
