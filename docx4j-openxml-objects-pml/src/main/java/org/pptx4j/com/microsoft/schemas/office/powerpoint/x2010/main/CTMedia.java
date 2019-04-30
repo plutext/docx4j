@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.pptx4j.pml.CTExtensionList;
-import org.pptx4j.pml.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

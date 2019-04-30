@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.com.microsoft.schemas.office.drawing.x2010.main.CTNonVisualInkContentPartProperties;
 import org.docx4j.dml.CTNonVisualDrawingProps;
-import org.pptx4j.pml.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.pptx4j.pml.NvPr;
 
 
