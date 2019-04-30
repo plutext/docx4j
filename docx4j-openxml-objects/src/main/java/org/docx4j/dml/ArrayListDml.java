@@ -3,7 +3,9 @@ package org.docx4j.dml;
 
 import java.util.ArrayList;
 
-//import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBElement;
+
+import org.jvnet.jaxb2_commons.ppp.Child;
 //import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,49 +27,44 @@ public class ArrayListDml<E> extends ArrayList<E> {
 		throw new RuntimeException();		
 	}
 	
-	
-	
 	private Object parent = null;
-
-// https://github.com/plutext/docx4j/issues/338
-// Need to add child interface to dml objects before the below is useful.	
 	
-//	@Override
-//	public boolean add(E e) {
-//		
-//		if (parent==null) {
-//			
-//			log.warn("null parent. how?");
-//			if (log.isDebugEnabled()) {
-//				log.debug("Null parent", new Throwable());
-//			}
-//			
-//		} 
-//		
-//		if (e instanceof JAXBElement /* workaround */) {
-//			
-//			setParent( ((JAXBElement)e).getValue() );
-//			
-//		} else {
-//			
-//			setParent(e);
-//		}
-//		
-//    	
-//		return super.add(e);
-//    }
-//	
-//	private void setParent(Object o) {
-//
-//		if (parent!=null) {
-//			
-//			if (o instanceof Child) {
-//				((Child)o).setParent(parent);
-//			} else {
-//				log.warn(o.getClass().getName() + " does not implement Child");
-//			}
-//		}
-//	}
+	@Override
+	public boolean add(E e) {
+		
+		if (parent==null) {
+			
+			log.warn("null parent. how?");
+			if (log.isDebugEnabled()) {
+				log.debug("Null parent", new Throwable());
+			}
+			
+		} 
+		
+		if (e instanceof JAXBElement /* workaround */) {
+			
+			setParent( ((JAXBElement)e).getValue() );
+			
+		} else {
+			
+			setParent(e);
+		}
+		
+    	
+		return super.add(e);
+    }
+	
+	private void setParent(Object o) {
+
+		if (parent!=null) {
+			
+			if (o instanceof Child) {
+				((Child)o).setParent(parent);
+			} else {
+				log.warn(o.getClass().getName() + " does not implement Child");
+			}
+		}
+	}
 	
 
 }
