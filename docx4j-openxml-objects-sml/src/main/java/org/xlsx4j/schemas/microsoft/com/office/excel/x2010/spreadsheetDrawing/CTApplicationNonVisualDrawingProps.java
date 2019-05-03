@@ -1,5 +1,5 @@
 
-package org.docx4j.com.microsoft.schemas.office.excel.x2010.spreadsheetDrawing;
+package org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.opendope.SmartArt.dataHierarchy.Child;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**

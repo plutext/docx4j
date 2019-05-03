@@ -1,5 +1,5 @@
 
-package org.docx4j.com.microsoft.schemas.office.excel.x2010.spreadsheetDrawing;
+package org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
