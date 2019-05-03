@@ -131,7 +131,7 @@ public class Context {
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.main:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle:" +
-					"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" +
+//					"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" // see instead existing org.docx4j.dml.diagram2008
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
@@ -139,8 +139,8 @@ public class Context {
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
+					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
-					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingGroup:" +
 					"org.docx4j.w15symex:org.docx4j.w16cid:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11", classLoader,

@@ -13,7 +13,8 @@
     
     <!-- 
     
-        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+        2019 0429: Not used; we already have this in ../dml/dml-diagramDrawing.xsd
+        <jaxb:package name="org.docx4j.dml.diagram2008"/>
     
      -->
     
