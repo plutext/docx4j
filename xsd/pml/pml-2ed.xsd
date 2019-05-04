@@ -29,6 +29,10 @@ WHICH VERSION?
 USAGE INSTRUCTIONS
 	  
   To generate java classes, you need xjc.
+  
+	20190429: 		 
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer pml-2ed.xsd -d tmp  -no-header -target 2.0
+  
 			
  	 sh ~/jaxb-ri-20071219/bin/xjc.sh pml-2ed.xsd -d ~/workspace/docx4j/src/pptx4j/java -no-header -target 2.0
 	 	   
@@ -3942,6 +3946,9 @@ PRINCIPLES:
 						<xsd:documentation>Content Part</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
+				<!--  added docx4j 8.1.0 -->
+				<xsd:element ref="mc:AlternateContent" />
+				
 			</xsd:choice>
 			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>

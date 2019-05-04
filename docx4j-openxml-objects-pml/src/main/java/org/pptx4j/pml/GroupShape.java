@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTGroupShapeProperties;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTNonVisualGroupDrawingShapeProps;
+import org.docx4j.mce.AlternateContent;
 
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -96,7 +97,8 @@ public class GroupShape implements Child
         @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
         @XmlElement(name = "cxnSp", type = CxnSp.class),
         @XmlElement(name = "pic", type = Pic.class),
-        @XmlElement(name = "contentPart", type = CTRel.class)
+        @XmlElement(name = "contentPart", type = CTRel.class),
+        @XmlElement(name = "AlternateContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006", type = AlternateContent.class)
     })
     protected List<Object> spOrGrpSpOrGraphicFrame;
     protected CTExtensionListModify extLst;
@@ -175,6 +177,7 @@ public class GroupShape implements Child
      * {@link CxnSp }
      * {@link Pic }
      * {@link CTRel }
+     * {@link AlternateContent }
      * 
      * 
      */
