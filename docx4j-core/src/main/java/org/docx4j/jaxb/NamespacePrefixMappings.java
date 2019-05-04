@@ -51,8 +51,8 @@ import org.w3c.dom.Node;
  */
 public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org.apache.xml.utils.PrefixResolver {
 
-/* TODO: check what we have here against https://github.com/OfficeDev/Open-XML-SDK/blob/vNext/DocumentFormat.OpenXml/src/Framework/NamespaceIdMap.cs
- */
+/* Refer https://github.com/OfficeDev/Open-XML-SDK/blob/master/src/DocumentFormat.OpenXml/Framework/NamespaceIdMap.cs
+ * (copied in our xsd dir) for canonical mappings. */
 
     /**
      * Returns a preferred prefix for the given namespace URI.
@@ -156,7 +156,30 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2008/diagram")) {
     		return "dsp";
 		}  
-    	
+		
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/chartDrawing")) {
+			return "cdr14";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/diagram")) {
+			return "dgm14";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/main")) {
+			return "a14";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2010/picture")) {
+			return "pic14";
+		}
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2012/chart")) {
+			return "c15";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2012/chartStyle")) {
+			return "cs";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2012/main")) {
+			return "a15";
+		}
+		    	
     	if (namespaceUri.equals("urn:schemas-microsoft-com:office:office")) {
     		return "o";
     	}
@@ -176,18 +199,19 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordml")) {
     		return "w14";
     	}
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")) {
+    		return "wp14";
+    	}
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas")) {
     		return "wpc";
     	}
 
-    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing")) {
-    		return "wp14";
-    	}
 
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingGroup")) {
     		return "wpg";
     	}
+    	
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2010/wordprocessingInk")) {
     		return "wpi";
@@ -200,6 +224,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2012/wordml")) {
     		return "w15";
     	}
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing")) {
+    		return "wp15";
+    	}
     	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2016/wordml/cid")) {
     		return "w16cid";
@@ -209,6 +236,14 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     		return "w16se";
     	}
 
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2010/main")) {
+    		return "p14";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2012/main")) {
+    		return "p15";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11")) {
     		return "wetp";
     	}
@@ -232,8 +267,16 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     		return "pvml";
     	}
 
+    	if (namespaceUri.equals("http://schemas.microsoft.com/ink/2010/main")) {
+    		return "msink";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/math")) {
     		return "m";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/thememl/2012/main")) {
+    		return "thm15";
     	}
     	
     	if (namespaceUri.equals("http://www.w3.org/2001/XMLSchema-instance")) {
@@ -291,6 +334,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing")) {
     		return "xdr";
 		}  
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing")) {
+    		return "xdr14";
+    	}
 //		if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")) {
 //    		return "?";
 //		}  
@@ -414,6 +460,22 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (prefix.equals("dsp"))
 			return "http://schemas.microsoft.com/office/drawing/2008/diagram";
+		
+		if (prefix.equals("cdr14"))
+			return "http://schemas.microsoft.com/office/drawing/2010/chartDrawing";
+		if (prefix.equals("dgm14"))
+			return "http://schemas.microsoft.com/office/drawing/2010/diagram";
+		if (prefix.equals("a14"))
+			return "http://schemas.microsoft.com/office/drawing/2010/main";
+		if (prefix.equals("pic14"))
+			return "http://schemas.microsoft.com/office/drawing/2010/picture";
+
+		if (prefix.equals("c15"))
+			return "http://schemas.microsoft.com/office/drawing/2012/chart";
+		if (prefix.equals("cs"))
+			return "http://schemas.microsoft.com/office/drawing/2012/chartStyle";
+		if (prefix.equals("a15"))
+			return "http://schemas.microsoft.com/office/drawing/2012/main";		
 
 		if (prefix.equals("o"))
 			return "urn:schemas-microsoft-com:office:office";
@@ -429,12 +491,12 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (prefix.equals("w14"))
 			return "http://schemas.microsoft.com/office/word/2010/wordml";
+				
+		if (prefix.equals("wp14"))
+			return "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
 		
 		if (prefix.equals("wpc"))
 			return "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas";
-		
-		if (prefix.equals("wp14"))
-			return "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
 		
 		if (prefix.equals("wpg"))
 			return "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup";
@@ -447,12 +509,21 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		
 		if (prefix.equals("w15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordml";
+		
+		if (prefix.equals("wp15"))
+			return "http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing";
 				
 		if (prefix.equals("w16cid"))
 				return "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 
 		if (prefix.equals("w16se"))
 			return "http://schemas.microsoft.com/office/word/2015/wordml/symex";
+				
+		if (prefix.equals("p14"))
+			return "http://schemas.microsoft.com/office/powerpoint/2010/main";
+
+		if (prefix.equals("p15"))
+			return "http://schemas.microsoft.com/office/powerpoint/2012/main";
 		
 		if (prefix.equals("wetp"))
     		return "http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11";
@@ -467,7 +538,8 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "urn:schemas-microsoft-com:office:word";
 		
 		if (prefix.equals("xvml"))
-			return "urn:schemas-microsoft-com:office:excel";	
+			return "urn:schemas-microsoft-com:office:excel";
+		
 		if (prefix.equals("pvml"))
 			return "urn:schemas-microsoft-com:office:powerpoint" ;	
 		
@@ -495,7 +567,15 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (prefix.equals("xdr"))
 			return "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";	
 		
+		if (prefix.equals("xdr14"))
+			return "http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing";
 		
+		if (prefix.equals("msink"))
+			return "http://schemas.microsoft.com/ink/2010/main";
+
+		if (prefix.equals("thm15"))
+			return "http://schemas.microsoft.com/office/thememl/2012/main";
+
 		
 		// OpenDoPE
 		if (prefix.equals("odx"))
