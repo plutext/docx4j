@@ -43,6 +43,12 @@
 			<artifactId>docx4j-JAXB-Internal</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-docx-anon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 <!-- 
 		<dependency>

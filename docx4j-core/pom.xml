@@ -377,21 +377,7 @@
 		    <artifactId>stringtemplate</artifactId>
 		    <version>3.2.1</version>
 		</dependency>
-		
-		<!--  since 3.1.1 -->
-		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
-		    <version>27.0.1-jre</version>
-		</dependency>	
-		
-		<!--  for anon functionality; since 3.3.1 -->
-		<dependency>
-		    <groupId>com.thedeanda</groupId>
-		    <artifactId>lorem</artifactId>
-		    <version>2.1</version>
-		</dependency>		
-		
+						
 <!-- Uncomment for load/save via JCR, which
 		may be found in docx4j-extras.
 		<dependency>
