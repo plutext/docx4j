@@ -33,11 +33,14 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.com.google.common.collect.BiMap;
+import org.docx4j.com.google.common.collect.HashBiMap;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.model.styles.BrokenStyleRemediator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -54,9 +57,6 @@ import org.docx4j.wml.Styles;
 import org.docx4j.wml.Styles.LatentStyles.LsdException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 
 public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
@@ -328,7 +328,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     
     private Style getDefaultStyle(String type) {
     	
-		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
+		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {	
 			if( s.isDefault() && s.getType().equals(type)) {
 				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
 				return s;
@@ -581,8 +581,13 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     
 //	public static void main(String[] args) throws Exception {
 //		
-//		StyleDefinitionsPart sdp = new StyleDefinitionsPart ();		
-//		sdp.initKnownStyles();
-//    
+//		StyleDefinitionsPart sdp = WordprocessingMLPackage.createPackage().getMainDocumentPart().getStyleDefinitionsPart();
+//		sdp.refreshNameIdBiMaps();
+//		for (String s : sdp.styleNameToId.keySet()) {
+//			System.out.println(s + " to " + sdp.styleNameToId.get(s));
+//		}
+//		for (String s : sdp.styleIdToName.keySet()) {
+//			System.out.println(s + " to " + sdp.styleIdToName.get(s));
+//		}    
 //	}    
 }
