@@ -1,0 +1,13 @@
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/office/powerpoint/2015/main" xmlns="http://schemas.microsoft.com/office/powerpoint/2015/main" xmlns:p16="http://schemas.microsoft.com/office/powerpoint/2015/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes">
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+         
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+   <xsd:complexType name="CT_DesignElement">
+     <xsd:attribute name="val" type="xsd:boolean"/>
+   </xsd:complexType>
+   <xsd:element name="designElem" type="CT_DesignElement"/>
+ </xsd:schema>
