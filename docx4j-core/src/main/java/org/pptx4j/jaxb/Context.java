@@ -101,6 +101,17 @@ public class Context {
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201606.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2013.main.command:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201509.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201510.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2015.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2016.sectionzoom:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2016.slidezoom:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2016.summaryzoom:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201710.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201703.main:" +
+					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201804.main:" +
 					"org.docx4j.mce", 
 					classLoader, ProviderProperties.getProviderProperties() );
 			

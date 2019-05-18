@@ -135,6 +135,25 @@ public class Context {
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
+					"org.docx4j.org.w3.x1998.math.mathML:" +
+					"org.docx4j.org.w3.x2003.inkML:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2013.main.command:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart.ac:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201612.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.ink:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201703.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.decorative:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.model3d:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.hyperlinkcolor:" +
+					"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + /* nb that is generated from drawing, but maybe we need to copy this and ink to pptx4j context */
 					"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
