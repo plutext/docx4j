@@ -44,7 +44,7 @@ Release: July 30, 2013 -->
    -->
 
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
-		schemaLocation="../pml/dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+		schemaLocation="../dml/dml__ROOT.xsd" />
 
    
   <xsd:complexType name="CT_PresetTransition">

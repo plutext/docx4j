@@ -32,7 +32,7 @@ Release: July 30, 2013 -->
 	
   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
-		schemaLocation="dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+		schemaLocation="../dml/dml__ROOT.xsd" />
 	<xsd:import id="s"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
