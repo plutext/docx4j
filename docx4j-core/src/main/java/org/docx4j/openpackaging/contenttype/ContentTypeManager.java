@@ -81,6 +81,7 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.InkmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -487,6 +488,9 @@ public class ContentTypeManager  {
 
 		} else if (contentType.equals(ContentTypes.WEB_EXTENSION_WEBEXTENSION)) {
 			return new WebExtensionPart(new PartName(partName));
+			
+		} else if (contentType.equals(ContentTypes.INK_ML)) {
+			return new InkmlPart(new PartName(partName));
 			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| contentType.equals(ContentTypes.IMAGE_SVG)				

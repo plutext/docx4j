@@ -427,5 +427,9 @@ public class ContentTypes {
 	
 	public static final String XML = "text/xml";
 	
+	/**
+	 * @since 8.1.0
+	 */
+	public final static String INK_ML = "application/inkml+xml";
 	
 }
