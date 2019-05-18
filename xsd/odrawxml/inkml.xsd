@@ -107,6 +107,8 @@
 			<xsd:enumeration value="mm/rad"/>
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	
 	<xsd:simpleType name="userUnits.type">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -778,4 +780,86 @@
 		<xsd:attribute name="encoding" type="xsd:string"/>
 		<xsd:attribute name="href" type="xsd:anyURI" use="optional"/>
 	</xsd:complexType>
+
+   <!-- Added:
+    
+		lengthUnit: An ST_StandardLengthUnits attribute<159> that specifies length unit used in ink actions. 
+		This attribute is defined based on the length attribute of Units in [InkML] section 6.4.
+		
+		timeUnit: An ST_StandardTimeUnits attribute<160> that specifies time unit used in ink actions. 
+		This attribute is defined based on the time attribute of Units in [InkML] section 6.4.   
+   
+    -->
+	
+	<xsd:simpleType name="ST_StandardLengthUnits">
+		<xsd:restriction base="xsd:string">
+			<!-- meters -->
+			<xsd:enumeration value="m"/>
+			<!-- centimeters -->
+			<xsd:enumeration value="cm"/>
+			<!-- millimeters -->
+			<xsd:enumeration value="mm"/>
+			<!-- inches -->
+			<xsd:enumeration value="in"/>
+			<!-- points (1pt = 1/72 in) -->
+			<xsd:enumeration value="pt"/>
+			<!-- picas (1pc = 1/22 pt) -->
+			<xsd:enumeration value="pc"/>
+			<!-- ems, the width of a letter "M" in a notional normal size -->
+			<xsd:enumeration value="em"/>
+			<!-- exs, the height of a letter "x" in a notional normal size -->
+			<xsd:enumeration value="ex"/>
+			<!-- definition of '1/length' units and '1/time' units-->
+			<xsd:enumeration value="1/m"/>
+			<xsd:enumeration value="1/cm"/>
+			<xsd:enumeration value="1/mm"/>
+			<xsd:enumeration value="1/in"/>
+			<xsd:enumeration value="1/pt"/>
+			<xsd:enumeration value="1/pc"/>
+			<xsd:enumeration value="1/em"/>
+			<xsd:enumeration value="1/ex"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="ST_StandardTimeUnits">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard Units
+				http://www.w3.org/TR/InkML/#units
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- seconds -->
+			<xsd:enumeration value="s"/>
+			<!-- milliseconds -->
+			<xsd:enumeration value="ms"/>
+			<xsd:enumeration value="1/s"/>
+			<xsd:enumeration value="1/ms"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+<!-- 	
+	transform: A CT_Matrix ([InkML] section 6.1.4) element<137> that specifies the transformation applied to the data.
+	
+	inkml:trace: A CT_Trace ([InkML] section 3.2.1) element<138> that specifies an ink stroke data trace captured by the digitizer.
+	
+	inkml:traceView: A CT_TraceView ([InkML] section 3.3.2) element<139> that specifies traces by reference.
+ -->
+
+	<xsd:complexType name="CT_Matrix">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#affineElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="inkml:decimalTable.type">
+				<xsd:attribute ref="xml:id" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
+	<xsd:element name="trace" type="inkml:trace.type" />
+	<xsd:element name="traceView" type="inkml:traceView.type" />
+	<xsd:element name="definitions" type="inkml:definitions.type" />
+ 	
 </xsd:schema>

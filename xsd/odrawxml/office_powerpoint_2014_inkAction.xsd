@@ -1,10 +1,35 @@
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/powerpoint/2014/inkAction" elementFormDefault="qualified" xmlns="http://schemas.microsoft.com/office/powerpoint/2014/inkAction" xmlns:iact="http://schemas.microsoft.com/office/powerpoint/2014/inkAction" xmlns:inkml="http://www.w3.org/2003/InkML" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2014/inkAction"
+	elementFormDefault="qualified"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2014/inkAction"
+	xmlns:iact="http://schemas.microsoft.com/office/powerpoint/2014/inkAction"
+	xmlns:inkml="http://www.w3.org/2003/InkML"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	    
     <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
          on 20190518
          This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
-    
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+   
    <xsd:import id="inkml" namespace="http://www.w3.org/2003/InkML" schemaLocation="inkml.xsd"/>
+	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="../wml/xml.xsd"/>
+    
+   
    <xsd:simpleType name="ST_DataNameReserved">
      <xsd:restriction base="xsd:string">
        <xsd:enumeration value="stroke"/>
@@ -60,12 +85,14 @@
    <xsd:complexType name="CT_ActionData">
      <xsd:sequence>
        <xsd:element name="transform" type="inkml:CT_Matrix" minOccurs="0" maxOccurs="1"/>
+	   <!--  there is no inkml:CT_Matrix, and it is possible I have defined it wrong.
+	         To be reviewed when sample XML comes to light -->
        <xsd:choice minOccurs="0" maxOccurs="unbounded">
          <xsd:element ref="inkml:trace"/>
          <xsd:element ref="inkml:traceView"/>
        </xsd:choice>
      </xsd:sequence>
-     <xsd:attribute ref="xml:id" use="optional" default=""/>
+     <xsd:attribute ref="xml:id" use="optional" />
      <xsd:attribute name="name" type="ST_DataName" use="optional" default="stroke"/>
      <xsd:attribute name="ref" type="xsd:anyURI" use="optional" default=""/>
    </xsd:complexType>
@@ -73,7 +100,7 @@
      <xsd:sequence>
        <xsd:element name="actionData" type="CT_ActionData" minOccurs="1" maxOccurs="unbounded"/>
      </xsd:sequence>
-     <xsd:attribute ref="xml:id" use="optional" default=""/>
+     <xsd:attribute ref="xml:id" use="optional" />
      <xsd:attribute name="name" type="ST_DataName" use="optional" default="stroke"/>
    </xsd:complexType>
    <xsd:complexType name="CT_ActionProperty">
@@ -88,7 +115,7 @@
          <xsd:element name="actionDataGroup" type="CT_ActionDataGroup"/>
        </xsd:choice>
      </xsd:sequence>
-     <xsd:attribute ref="xml:id" use="optional" default=""/>
+     <xsd:attribute ref="xml:id" use="optional" />
      <xsd:attribute name="type" type="ST_ActionType" use="required"/>
      <xsd:attribute name="startTime" type="xsd:decimal" use="required"/>
    </xsd:complexType>
@@ -96,7 +123,7 @@
      <xsd:sequence>
        <xsd:element name="action" type="CT_Action" minOccurs="1" maxOccurs="unbounded"/>
      </xsd:sequence>
-     <xsd:attribute ref="xml:id" use="optional" default=""/>
+     <xsd:attribute ref="xml:id" use="optional" />
      <xsd:attribute name="type" type="ST_ActionType" use="required"/>
      <xsd:attribute name="startTime" type="xsd:decimal" use="required"/>
    </xsd:complexType>
@@ -108,9 +135,10 @@
          <xsd:element name="action" type="CT_Action"/>
        </xsd:choice>
      </xsd:sequence>
-     <xsd:attribute ref="xml:id" use="optional" default=""/>
+     <xsd:attribute ref="xml:id" use="optional" />
      <xsd:attribute name="lengthUnit" type="inkml:ST_StandardLengthUnits" use="required"/>
      <xsd:attribute name="timeUnit" type="inkml:ST_StandardTimeUnits" use="required"/>
    </xsd:complexType>
    <xsd:element name="actions" type="CT_Actions"/>
+   
  </xsd:schema>

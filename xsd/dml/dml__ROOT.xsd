@@ -101,7 +101,7 @@
 		
 	<xsd:include schemaLocation="dml-diagramDataModel.xsd" />
 	<xsd:include schemaLocation="dml-diagramElementPropertySet.xsd" />
-	<xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
+	<xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />\\
 	<xsd:include schemaLocation="dml-diagramTypes.xsd" />
 	<xsd:include schemaLocation="dml-documentProperties.xsd" />
 	 -->
@@ -167,8 +167,6 @@
 
 <xsd:import namespace="http://schemas.microsoft.com/office/thememl/2012/main" schemaLocation="../odrawxml/oartthememain2012.xsd"/>  
 
-
-
 <xsd:import namespace="http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing" schemaLocation="../odrawxml/oartworddrawing2012.xsd"/>  
 
 <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" schemaLocation="../odrawxml/oartwordgroup.xsd"/> 
@@ -177,10 +175,28 @@
 <xsd:import namespace="http://schemas.microsoft.com/office/excel/2010/spreadsheetDrawing" schemaLocation="../odrawxml/spreadsheetDrawing2010.xsd"/> 
     
 <!--  included via WordML: <xsd:import namespace="http://schemas.microsoft.com/office/word/2010/wordml" schemaLocation="../odrawxml/oartwordcontentpart.xsd"/>
-
-Already have this...
-<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2008/diagram" schemaLocation="../odrawxml/oartdrawingdiagram2008.xsd"/>
-
- 
      -->
+          
+<!--  2019 05 18 -->
+
+<xsd:import schemaLocation="../odrawxml/office_drawing_2013_main_command.xsd"    namespace="http://schemas.microsoft.com/office/drawing/2013/main/command" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2014_chart_ac.xsd"        namespace="http://schemas.microsoft.com/office/drawing/2014/chart/ac" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2014_chartex.xsd"         namespace="http://schemas.microsoft.com/office/drawing/2014/chartex" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2014_chart.xsd"           namespace="http://schemas.microsoft.com/office/drawing/2014/chart" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2014_main.xsd"            namespace="http://schemas.microsoft.com/office/drawing/2014/main" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2016_11_diagram.xsd"      namespace="http://schemas.microsoft.com/office/drawing/2016/11/diagram" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2016_11_main.xsd"         namespace="http://schemas.microsoft.com/office/drawing/2016/11/main" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2016_12_diagram.xsd"      namespace="http://schemas.microsoft.com/office/drawing/2016/12/diagram" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2016_ink.xsd"             namespace="http://schemas.microsoft.com/office/drawing/2016/ink" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2016_SVG_main.xsd"        namespace="http://schemas.microsoft.com/office/drawing/2016/SVG/main" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2017_03_chart_.xsd"       namespace="http://schemas.microsoft.com/office/drawing/2017/03/chart" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2017_decorative.xsd"      namespace="http://schemas.microsoft.com/office/drawing/2017/decorative" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2017_model3d.xsd"         namespace="http://schemas.microsoft.com/office/drawing/2017/model3d" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2018_animation_model3d.xsd" namespace="http://schemas.microsoft.com/office/drawing/2018/animation/model3d" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2018_animation.xsd"       namespace="http://schemas.microsoft.com/office/drawing/2018/animation" />
+<xsd:import schemaLocation="../odrawxml/office_drawing_2018_hyperlinkcolor.xsd"  namespace="http://schemas.microsoft.com/office/drawing/2018/hyperlinkcolor" />
+<xsd:import schemaLocation="../odrawxml/office_powerpoint_2014_inkAction.xsd"    namespace="http://schemas.microsoft.com/office/powerpoint/2014/inkAction" />
+   
+   
+     
 </xsd:schema>
