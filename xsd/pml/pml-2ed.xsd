@@ -27,6 +27,8 @@ WHICH VERSION?
 	This XSD still points at the 1ed dml XSDs
 	
 USAGE INSTRUCTIONS
+
+	2019 05: build pptx__ROOT instead
 	  
   To generate java classes, you need xjc.
   
@@ -74,7 +76,7 @@ PRINCIPLES:
 	
 -->
 	   
-	   
+<!-- 	   
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
     </xsd:documentation>
@@ -88,13 +90,14 @@ PRINCIPLES:
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
-
+ -->
+ 
 	<xsd:import id="s"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
 
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
-		schemaLocation="dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+		schemaLocation="../dml/dml__ROOT.xsd" />
 		
 	<xsd:import 
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -102,7 +105,7 @@ PRINCIPLES:
 		
 	<xsd:import 
 		namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		schemaLocation="../mce.xsd" />
+		schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd" />
 		
 	<xsd:simpleType name="ST_TransitionSideDirectionType">
 		<xsd:annotation>
