@@ -1,0 +1,29 @@
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
+         on 20190518
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+    
+   <xsd:simpleType name="ST_ExtendedBrushPropertyName">
+     <xsd:restriction base="xsd:string">
+       <xsd:enumeration value="inkEffects"/>
+       <xsd:enumeration value="anchorX"/>
+       <xsd:enumeration value="anchorY"/>
+       <xsd:enumeration value="scaleFactor"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_InkEffectsType">
+     <xsd:restriction base="xsd:string">
+       <xsd:enumeration value="none"/>
+       <xsd:enumeration value="pencil"/>
+       <xsd:enumeration value="rainbow"/>
+       <xsd:enumeration value="galaxy"/>
+       <xsd:enumeration value="gold"/>
+       <xsd:enumeration value="silver"/>
+       <xsd:enumeration value="lava"/>
+       <xsd:enumeration value="ocean"/>
+       <xsd:enumeration value="rosegold"/>
+       <xsd:enumeration value="bronze"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+ </xsd:schema>

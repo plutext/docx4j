@@ -1,0 +1,13 @@
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/drawing/2016/SVG/main" elementFormDefault="qualified" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/office/drawing/2016/SVG/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+    
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
+         on 20190518
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+    
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
+   <xsd:complexType name="CT_SVGBlip">
+     <xsd:attributeGroup ref="a:AG_Blob"/>
+   </xsd:complexType>
+   <xsd:element name="svgBlip" type="CT_SVGBlip"/>
+ </xsd:schema>
