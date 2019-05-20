@@ -383,7 +383,94 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     	if (namespaceUri.equals("urn:schemas-microsoft-com:mac:vml")) {
     		return "mv";
     	}
-    	
+
+		// some of the below are invented since nothing is prescribed in [MS-ODRAWML] or NamespaceIdMap    	
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2013/main/command")) {
+			return "a13cmd"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2014/chart/ac")) {
+			return "c16ac";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2014/chartex")) {
+			return "cx";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2014/chart")) {
+			return "c16";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2014/main")) {
+			return "a16";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/11/diagram")) {
+			return "dgm1611"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/11/main")) {
+			return "a1611"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/12/diagram")) {
+			return "dgm1612"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/ink")) {
+			return "ink16"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/SVG/main")) {
+			return "a16svg"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2017/03/chart")) {
+			return "c173"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2017/decorative")) {
+			return "adec"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2017/model3d")) {
+			return "am3d";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2018/animation/model3d")) {
+			return "anam3d"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2018/animation")) {
+			return "an18"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2018/hyperlinkcolor")) {
+			return "a18hc"; // made up
+			
+		// [MS-PPTX]			
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2014/inkAction")) {
+			return "iact";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2013/main/command")) {
+			return "p13cmd"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2015/09/main")) {
+			return "p159";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2015/10/main")) {
+			return "p1510";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2015/main")) {
+			return "p16";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2016/sectionzoom")) {
+			return "psez";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2016/slidezoom")) {
+			return "pslz";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2016/summaryzoom")) {
+			return "psuz";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2017/10/main")) {
+			return "p1710";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2017/3/main")) {
+			return "p173";
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2018/4/main")) {
+			return "p184"; // made up
+		}
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2016/6/main")) {
+			return "p166";
+		}    	
     	
     	return suggestion;
     }
@@ -617,6 +704,67 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (prefix.equals("mv"))
 			return "urn:schemas-microsoft-com:mac:vml";
+		
+		// some of the below are invented since nothing is prescribed in [MS-ODRAWML] or NamespaceIdMap
+		// See inverse above to identify which
+		if (prefix.equals("a13cmd"))
+			return "http://schemas.microsoft.com/office/drawing/2013/main/command";
+		if (prefix.equals("c16ac"))
+			return "http://schemas.microsoft.com/office/drawing/2014/chart/ac";
+		if (prefix.equals("cx"))
+			return "http://schemas.microsoft.com/office/drawing/2014/chartex";
+		if (prefix.equals("c16"))
+			return "http://schemas.microsoft.com/office/drawing/2014/chart";
+		if (prefix.equals("a16"))
+			return "http://schemas.microsoft.com/office/drawing/2014/main";
+		if (prefix.equals("dgm1611"))
+			return "http://schemas.microsoft.com/office/drawing/2016/11/diagram";
+		if (prefix.equals("a1611"))
+			return "http://schemas.microsoft.com/office/drawing/2016/11/main";
+		if (prefix.equals("dgm1612"))
+			return "http://schemas.microsoft.com/office/drawing/2016/12/diagram";
+		if (prefix.equals("ink16"))
+			return "http://schemas.microsoft.com/office/drawing/2016/ink";
+		if (prefix.equals("a16svg"))
+			return "http://schemas.microsoft.com/office/drawing/2016/SVG/main";
+		if (prefix.equals("c173"))
+			return "http://schemas.microsoft.com/office/drawing/2017/03/chart";
+		if (prefix.equals("adec"))
+			return "http://schemas.microsoft.com/office/drawing/2017/decorative";
+		if (prefix.equals("am3d"))
+			return "http://schemas.microsoft.com/office/drawing/2017/model3d";
+		if (prefix.equals("anam3d"))
+			return "http://schemas.microsoft.com/office/drawing/2018/animation/model3d";
+		if (prefix.equals("an18"))
+			return "http://schemas.microsoft.com/office/drawing/2018/animation";
+		if (prefix.equals("a18hc"))
+			return "http://schemas.microsoft.com/office/drawing/2018/hyperlinkcolor";
+		
+		// [MS-PPTX]
+		if (prefix.equals("iact"))
+			return "http://schemas.microsoft.com/office/powerpoint/2014/inkAction";
+		if (prefix.equals("p13cmd"))
+			return "http://schemas.microsoft.com/office/powerpoint/2013/main/command";
+		if (prefix.equals("p159"))
+			return "http://schemas.microsoft.com/office/powerpoint/2015/09/main";
+		if (prefix.equals("p1510"))
+			return "http://schemas.microsoft.com/office/powerpoint/2015/10/main";
+		if (prefix.equals("p16"))
+			return "http://schemas.microsoft.com/office/powerpoint/2015/main";
+		if (prefix.equals("psez"))
+			return "http://schemas.microsoft.com/office/powerpoint/2016/sectionzoom";
+		if (prefix.equals("pslz"))
+			return "http://schemas.microsoft.com/office/powerpoint/2016/slidezoom";
+		if (prefix.equals("psuz"))
+			return "http://schemas.microsoft.com/office/powerpoint/2016/summaryzoom";
+		if (prefix.equals("p1710"))
+			return "http://schemas.microsoft.com/office/powerpoint/2017/10/main";
+		if (prefix.equals("p173"))
+			return "http://schemas.microsoft.com/office/powerpoint/2017/3/main";
+		if (prefix.equals("p184"))
+			return "http://schemas.microsoft.com/office/powerpoint/2018/4/main";
+		if (prefix.equals("p166"))
+			return "http://schemas.microsoft.com/office/powerpoint/2016/6/main";
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
