@@ -385,6 +385,7 @@ public class Save {
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
+						throw new RuntimeException("Part " + resolvedPartUri + " not found!");
 					} else {
 						log.debug(part.getClass().getName() );
 					}
