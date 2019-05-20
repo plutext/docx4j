@@ -6,13 +6,12 @@ package org.docx4j.fonts;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
+import org.docx4j.com.google.common.cache.CacheBuilder;
+import org.docx4j.com.google.common.cache.CacheLoader;
+import org.docx4j.com.google.common.cache.LoadingCache;
 import org.docx4j.fonts.fop.fonts.Typeface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 /**
  * Check whether a PhysicalFont contains glyph sought.
@@ -65,20 +64,5 @@ public class GlyphCheck {
 		
 		return hasChar(pf, c);
 	}
-	
-//	public static void main(String[] args) throws Exception {
-//
-//		PhysicalFonts.discoverPhysicalFonts();
-//		
-//		PhysicalFont physicalFont = PhysicalFonts.get("Times New Roman");
-//		
-//		if (physicalFont==null) {
-//			System.out.println("missing TNR!");
-//		} else {
-//			System.out.println(
-//					GlyphCheck.hasChar(physicalFont, 'ě'));
-//		}
-//		
-//	}
 	
 }
