@@ -92,11 +92,7 @@ public class ResourceUtils {
         }
         
         if (url == null) {
-        	if (filename.contains("jaxb.properties")){
-        		log.debug("Not using MOXy, since no resource: " + filename);        		
-        	} else {
-        		log.warn("Couldn't get resource: " + filename);
-        	}
+        	log.warn("Couldn't get resource: " + filename);
         	throw new IOException(filename + " not found via classloader.");
         }
         
@@ -106,12 +102,12 @@ public class ResourceUtils {
         return is;
     }
 	
-    public static void main(String[] args)
-            throws Exception {
-
-    	InputStream is = getResource("org/docx4j/convert/out/html/docx2xhtml.xslt");
-    	System.out.println(is.available());
-    	
-    }
+//    public static void main(String[] args)
+//            throws Exception {
+//
+//    	InputStream is = getResource("org/docx4j/convert/out/html/docx2xhtml.xslt");
+//    	System.out.println(is.available());
+//    	
+//    }
 
 }

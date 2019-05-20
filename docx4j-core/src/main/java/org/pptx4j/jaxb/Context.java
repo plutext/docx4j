@@ -20,17 +20,11 @@
 package org.pptx4j.jaxb;
 
 
-import java.io.File;
-import java.io.InputStream;
-
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
+import org.docx4j.jaxb.ProviderProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
-import org.docx4j.jaxb.ProviderProperties;
-import org.docx4j.utils.ResourceUtils;
 
 public class Context {
 	
@@ -59,38 +53,6 @@ public class Context {
 			// Happens with IKVM 
 		} else if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
 			org.docx4j.jaxb.Context.searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
-		}
-		
-		Object namespacePrefixMapper;
-		try {
-			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
-			try {
-				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
-				if (f.exists() ) {
-					log.info("MOXy JAXB implementation intended..");
-				} else { 
-					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
-					log.info("MOXy JAXB implementation intended..");
-				}
-			} catch (Exception e2) {
-				log.warn(e2.getMessage());
-				try {
-					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
-					log.info("MOXy JAXB implementation intended..");
-				} catch (Exception e3) {
-					log.warn(e3.getMessage());
-					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-						// Java 6
-						log.info("Using Java 6/7 JAXB implementation");
-					} else {
-						log.info("Using JAXB Reference Implementation");			
-					}
-				}
-			}
-		} catch (JAXBException e) {
-			log.error("PANIC! No suitable JAXB implementation available");
-			log.error(e.getMessage(), e);
-			e.printStackTrace();
 		}
 		
 		try {	
@@ -138,3 +100,5 @@ public class Context {
 		
 	}
 }
+
+
