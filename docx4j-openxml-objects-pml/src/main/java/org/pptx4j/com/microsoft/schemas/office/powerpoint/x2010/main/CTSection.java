@@ -64,6 +64,11 @@ public class CTSection implements Child
      *     
      */
     public CTSectionSlideIdList getSldIdLst() {
+    	
+		if (sldIdLst==null) {
+			sldIdLst = new CTSectionSlideIdList();
+		}
+    	
         return sldIdLst;
     }
 
