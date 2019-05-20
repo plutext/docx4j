@@ -84,7 +84,7 @@ public class ContentControlBindingExtensionsOld {
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
 		
 		// Without Saxon, you are restricted to XPath 1.0
-		boolean USE_SAXON = true; // set this to true; add Saxon to your classpath, and uncomment below 
+//		boolean USE_SAXON = true; // set this to true; add Saxon to your classpath, and uncomment below 
 //		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
 //		        new net.sf.saxon.xpath.XPathFactoryImpl());		
 		
@@ -115,9 +115,9 @@ public class ContentControlBindingExtensionsOld {
 		long endTime = System.currentTimeMillis();
 		timingSummary.append("Component processing: " + (endTime-startTime));
 		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);	
+//		System.out.println(
+//				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//				);	
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(filepathprefix + "_components_done.docx");
@@ -130,23 +130,27 @@ public class ContentControlBindingExtensionsOld {
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nOpenDoPEHandler: " + (endTime-startTime));
 		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);		
+//		System.out.println(
+//				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//				);		
+		saver = new SaveToZipFile(wordMLPackage);
+		saver.save(filepathprefix + "_preprocessed.docx");
+		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
 		
-		
+
 		startTime = System.currentTimeMillis();
 		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
 		odi.process(wordMLPackage);
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nOpenDoPEIntegrity: " + (endTime-startTime));
 		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-				);		
+//		System.out.println(
+//				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//				);		
 		saver = new SaveToZipFile(wordMLPackage);
-		saver.save(filepathprefix + "_preprocessed.docx");
-		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
+		saver.save(filepathprefix + "_integrity.docx");
+		System.out.println("Saved: " + filepathprefix + "_integrity.docx");
+
 		
 		// Apply the bindings
 		BindingHandler.setHyperlinkStyle("Hyperlink");						
@@ -159,8 +163,8 @@ public class ContentControlBindingExtensionsOld {
 		
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
-		String bound = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
-		System.out.println( bound);
+//		String bound = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
+//		System.out.println( bound);
 		saver.save(filepathprefix + "_bound.docx");
 		System.out.println("Saved: " + filepathprefix + "_bound.docx");
 				
@@ -171,10 +175,10 @@ public class ContentControlBindingExtensionsOld {
 
 		endTime = System.currentTimeMillis();
 		timingSummary.append("\nOpenDoPEIntegrityAfterBinding: " + (endTime-startTime));
-		String odiabMarshalled = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
-		System.out.println( odiabMarshalled
-				);
-		saver.save(filepathprefix + "_bound.docx");
+//		String odiabMarshalled = XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true);
+//		System.out.println( odiabMarshalled
+//				);
+		saver.save(filepathprefix + "_intAftrB.docx");
 		System.out.println("Saved: " + filepathprefix + "_intAftrB.docx");
 
 		
