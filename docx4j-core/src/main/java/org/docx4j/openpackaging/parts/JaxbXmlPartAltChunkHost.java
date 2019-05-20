@@ -59,12 +59,16 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		// TODO Auto-generated constructor stub
 	}
 
-
+	@Override
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes)  throws Docx4JException {
+		return addAltChunk(type, bytes, -1); 
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#addAltChunkOfTypeHTML(byte[])
 	 */
 	@Override
-	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes)  throws Docx4JException {
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes, int index)  throws Docx4JException {
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
@@ -77,7 +81,11 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
 		ac.setId(altChunkRel.getId() ); 
 		if (this instanceof ContentAccessor) {
-		 ((ContentAccessor)this).getContent().add(ac); 
+			if (index<0) {
+				((ContentAccessor)this).getContent().add(ac);
+			} else {
+				((ContentAccessor)this).getContent().add(index, ac);				
+			}
 		} else {
 			throw new Docx4JException(this.getClass().getName() + " doesn't implement ContentAccessor");
 		}
@@ -85,11 +93,16 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		return afiPart;
 	}
 
+	@Override
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is)   throws Docx4JException {
+		return addAltChunk(type, is, -1); 
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#addAltChunkOfTypeHTML(java.io.InputStream)
 	 */
 	@Override
-	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is)   throws Docx4JException {
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is, int index)   throws Docx4JException {
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
@@ -102,7 +115,11 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
 		ac.setId(altChunkRel.getId() ); 
 		if (this instanceof ContentAccessor) {
-		 ((ContentAccessor)this).getContent().add(ac); 
+			if (index<0) {
+				((ContentAccessor)this).getContent().add(ac);
+			} else {
+				((ContentAccessor)this).getContent().add(index, ac);				
+			}
 		} else {
 			throw new Docx4JException(this.getClass().getName() + " doesn't implement ContentAccessor");
 		}
@@ -110,12 +127,19 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		return afiPart;
 	}
 
+	@Override
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes,
+			ContentAccessor attachmentPoint)   throws Docx4JException {
+		return addAltChunk(type, bytes, attachmentPoint, -1); 
+
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#addAltChunkOfTypeHTML(byte[], org.docx4j.wml.ContentAccessor)
 	 */
 	@Override
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, byte[] bytes,
-			ContentAccessor attachmentPoint)   throws Docx4JException {
+			ContentAccessor attachmentPoint, int index)   throws Docx4JException {
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
@@ -127,17 +151,27 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		// .. the bit in document body 
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
 		ac.setId(altChunkRel.getId() ); 
-		attachmentPoint.getContent().add(ac);
+		if (index<0) {
+			attachmentPoint.getContent().add(ac);
+		} else {
+			attachmentPoint.getContent().add(index, ac);				
+		}
 					
 		return afiPart;
 	}
 
+	@Override
+	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is,
+			ContentAccessor attachmentPoint) throws Docx4JException {
+		return addAltChunk(type, is, attachmentPoint, -1); 
+	} 
+	
 	/* (non-Javadoc)
 	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#addAltChunkOfTypeHTML(java.io.InputStream, org.docx4j.wml.ContentAccessor)
 	 */
 	@Override
 	public AlternativeFormatInputPart addAltChunk(AltChunkType type, InputStream is,
-			ContentAccessor attachmentPoint) throws Docx4JException {
+			ContentAccessor attachmentPoint, int index) throws Docx4JException {
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(type); 
 		Relationship altChunkRel = this.addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
@@ -149,7 +183,11 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		// .. the bit in document body 
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
 		ac.setId(altChunkRel.getId() ); 
-		attachmentPoint.getContent().add(ac);
+		if (index<0) {
+			attachmentPoint.getContent().add(ac);
+		} else {
+			attachmentPoint.getContent().add(index, ac);				
+		}
 					
 		return afiPart;
 	}
