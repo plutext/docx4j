@@ -80,12 +80,16 @@
 	<logger name="org.docx4j.model.table" level="INFO" />
 
 	<logger name="org.docx4j.openpackaging" level="WARN" />
+	
+	<logger name="org.docx4j.openpackaging.URIHelper" level="WARN" />
 
 	<logger name="org.docx4j.openpackaging.io3" level="ERROR" />
 
 	<logger name="org.docx4j.openpackaging.packages" level="WARN" />
 
 	<logger name="org.docx4j.openpackaging.parts" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.parts.relationships" level="WARN" />
 
 	<logger name="org.docx4j.openpackaging.parts.Parts" level="INFO" />
 
@@ -114,15 +118,12 @@
 	<logger name="org.docx4j.model.datastorage" level="WARN" />
 
 	<logger
-		name="org.docx4j.model.datastorage.OpenDoPEHandlerComponents"
-		level="WARN" />
+		name="org.docx4j.model.datastorage.OpenDoPEHandlerComponents" level="WARN" />
 
 	<logger
-		name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart"
-		level="WARN" />
+		name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart" level="WARN" />
 
-	<logger name="org.docx4j.openpackaging.parts.XmlPart"
-		level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.XmlPart" level="WARN" />
 
 	<logger name="org.opendope.conditions.Xpathref" level="WARN" />
 
@@ -132,8 +133,7 @@
 	<!-- Enterprise edition loggers -->
 	<logger name="com.plutext.merge" level="INFO" />
 
-	<logger name="com.plutext.merge.CustomXmlPartHandler"
-		level="WARN" />
+	<logger name="com.plutext.merge.CustomXmlPartHandler" level="WARN" />
 
 	<logger name="com.plutext.merge.altchunk" level="WARN" />
 
