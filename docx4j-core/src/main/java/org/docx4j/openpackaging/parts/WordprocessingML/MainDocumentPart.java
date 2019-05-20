@@ -253,6 +253,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		FontAndStyleFinder finder = new FontAndStyleFinder(runFontSelector, fontsDiscovered, null);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();	
+		finder.defaultTableStyle = this.getStyleDefinitionsPart().getDefaultTableStyle();
 		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
 		new TraversalUtil(bodyChildren, finder);
@@ -396,10 +397,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		FontAndStyleFinder finder = new FontAndStyleFinder(null, null, stylesInUse);
 		finder.defaultCharacterStyle = this.getStyleDefinitionsPart().getDefaultCharacterStyle();
 		finder.defaultParagraphStyle = this.getStyleDefinitionsPart().getDefaultParagraphStyle();
+		finder.defaultTableStyle = this.getStyleDefinitionsPart().getDefaultTableStyle();
+		
 		finder.styleDefinitionsPart = this.getStyleDefinitionsPart();
 		
 		new TraversalUtil(bodyChildren, finder);
-		finder.finish();
 		
 		// Styles in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
@@ -437,6 +439,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			Comments comments = this.getCommentsPart().getJaxbElement();
 			finder.walkJAXBElements(comments);
 		}
+
+		finder.finish();
 		
 		return stylesInUse;
 	}
@@ -466,10 +470,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     	
         Style defaultParagraphStyle;
         Style defaultCharacterStyle;
-    	String defaultTableStyle = "TableNormal";
+        Style defaultTableStyle;
     	
     	private boolean defaultParagraphStyleUsed = false;
     	private boolean defaultCharacterStyleUsed = false;
+    	private boolean defaultTableStyleUsed = false;
     	
     	private PPr pPr; 
     	private RPr rPr;
@@ -488,6 +493,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     			if ((defaultCharacterStyleUsed) && (defaultCharacterStyle != null)) {
     				stylesInUse.add(defaultCharacterStyle.getStyleId());
     			}
+    			if ((defaultTableStyleUsed) && (defaultTableStyle != null)) {
+    				stylesInUse.add(defaultTableStyle.getStyleId());
+    			}
+    			
     		}
     	}
 
@@ -543,15 +552,25 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				}
 				
 			} else if (o instanceof org.docx4j.wml.Tbl ) {
+				
 				// The table could have a table style;
 				// Tables created in Word 2007 default to table style "TableGrid",
 				// which is based on "TableNormal".
 				org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)o;
-				if (stylesInUse !=null && tbl.getTblPr()!=null 
-						&& tbl.getTblPr().getTblStyle()!=null) {
-//					log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
-					stylesInUse.add(tbl.getTblPr().getTblStyle().getVal() );
-				}
+				
+				if (stylesInUse != null) { //do the styles
+					boolean customTblStyle = false;
+					if (tbl.getTblPr() != null) {
+						if (tbl.getTblPr().getTblStyle() != null) {
+							// Note this tbl style
+							// log.debug("put style " + tbl.getTblPr().getTblStyle().getVal());
+							customTblStyle = true;
+							stylesInUse.add(tbl.getTblPr().getTblStyle().getVal());
+						}
+					}
+					defaultTableStyleUsed = defaultTableStyleUsed || (!customTblStyle);
+				}				
+				
 				// There is no such thing as a tr or a tc style,
 				// so we don't need to look for them,
 				// but since a tc can contain w:p or nested table,
