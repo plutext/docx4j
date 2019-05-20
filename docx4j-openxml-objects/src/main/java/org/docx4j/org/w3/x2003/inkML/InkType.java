@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -47,6 +48,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "ink.type", propOrder = {
     "definitionsOrContextOrTrace"
 })
+@XmlRootElement(name = "ink")
 public class InkType implements Child
 {
 

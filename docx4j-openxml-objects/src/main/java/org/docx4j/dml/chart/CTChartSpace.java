@@ -25,6 +25,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTColorMapping;
@@ -82,9 +83,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "userShapes",
     "extLst"
 })
+@XmlRootElement(name = "chartSpace")
 public class CTChartSpace implements Child
 {
-
     protected CTBoolean date1904;
     protected CTTextLanguageID lang;
     protected CTBoolean roundedCorners;
