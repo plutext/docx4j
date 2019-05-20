@@ -22,7 +22,9 @@ package org.docx4j.openpackaging.parts.PresentationML;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -36,8 +38,14 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.Pptx4jException;
+import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSection;
+import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSectionList;
+import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSectionSlideIdListEntry;
+import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main.CTExtendedGuideList;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.SlideSizesWellKnown;
+import org.pptx4j.pml.CTExtension;
+import org.pptx4j.pml.CTExtensionList;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
 import org.pptx4j.pml.Presentation.SldIdLst.SldId;
@@ -560,5 +568,201 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		return sldIds.size(); 
 
 	}
+
+	/**
+	 * get p:ext containing specified class
+	 * @param extLst
+	 * @param containingClass
+	 * @return
+	 * @since 8.1.0
+	 */
+	public CTExtension getExtContaining(Class containingClass) {
+
+        CTExtensionList extLst = getJaxbElement().getExtLst();
+        if (extLst==null) return null;
+		
+		for (CTExtension ext : extLst.getExt()) {
+			
+			if (ext.getAny()!=null) {
+				
+				Object o = ext.getAny();
+//				System.out.println(o.getClass().getName());
+				if (o instanceof JAXBElement) {
+					Object o2 = XmlUtils.unwrap(o);
+//					System.out.println(o2.getClass().getName());
+					if (o2.getClass().getName().equals(containingClass.getName())) {
+						return ext;
+					}
+				}
+			}
+		}
+		return null;
+	}
 	
+	/**
+	 * remove the p:ext containing specified class
+	 * @param containingClass
+	 * @return
+	 * @since 8.1.0
+	 */
+	public boolean removeExt(Class containingClass) {
+		
+    	CTExtension ext = getExtContaining(containingClass);
+    	if (ext!=null) {
+            return getJaxbElement().getExtLst().getExt().remove(ext);
+    	}
+        return false;
+	}
+	
+    private static final String EXT_URI_FOR_SECTION_LST = "{521415D9-36F7-43E2-AB2F-B90AF26B5E84}"; 	
+	
+	/**
+	 * @since 8.1.0
+	 */
+	public CTSectionList getSectionList(boolean createIfAbsent) {
+
+		CTExtension ext = getExtContaining(CTSectionList.class);
+		
+		if (ext==null) {
+			
+			if (createIfAbsent) {
+				
+		        CTExtensionList extLst = getExtensionList(true);
+				
+				ext = new CTExtension();
+				ext.setUri(EXT_URI_FOR_SECTION_LST);// Powerpoint 2016 doesn't show it if you use something else!
+				
+				extLst.getExt().add(ext);
+				
+			} else {			
+				return null;
+			}
+		}
+		if (ext.getAny()!=null) {
+			
+			Object o = ext.getAny();
+			return (CTSectionList)XmlUtils.unwrap(o);
+		}
+		
+		if (createIfAbsent) {
+			
+			CTSectionList ctSectionList = new CTSectionList();
+			ext.setAny(ctSectionList);
+			return ctSectionList;
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * @since 8.1.0
+	 */
+	public CTExtendedGuideList getExtendedGuideList(boolean createIfAbsent) {
+
+		CTExtension ext = getExtContaining(CTExtendedGuideList.class);
+		
+		if (ext==null) {
+			
+			if (createIfAbsent) {
+				
+		        CTExtensionList extLst = getExtensionList(true);
+				
+				ext = new CTExtension();
+				String newUUID = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
+				ext.setUri(newUUID);
+				
+				extLst.getExt().add(ext);
+				
+			} else {			
+				return null;
+			}
+		}
+		if (ext.getAny()!=null) {
+			
+			Object o = ext.getAny();
+			return (CTExtendedGuideList)XmlUtils.unwrap(o);
+		}
+		
+		if (createIfAbsent) {
+			
+			CTExtendedGuideList ctExtendedGuideList = new CTExtendedGuideList();
+			ext.setAny(ctExtendedGuideList);
+			return ctExtendedGuideList;
+		}
+		return null;
+		
+		
+	}
+
+	/**
+	 * @since 8.1.0
+	 */
+	public CTExtensionList getExtensionList(boolean createIfAbsent) {
+		
+        CTExtensionList extLst = getJaxbElement().getExtLst();
+        if (extLst==null) {
+			if (createIfAbsent) {
+	        	extLst = new CTExtensionList(); 
+	        	getJaxbElement().setExtLst(extLst);
+	        	return extLst;
+			} else {
+				return null;
+			}
+        }
+			
+		return extLst;
+	}
+	
+	/**
+	 * @since 8.1.0
+	 */
+	public CTSection getSection(SlidePart sp) {
+		
+		Relationship r = sp.getSourceRelationships().get(0);
+		SldId sldId = getSldIdByRelId(r.getId());
+
+		// Now use the id to find the section
+		CTExtension ext = getExtContaining(CTSectionList.class);
+		if (ext==null) {
+			log.debug("Couldn't find ext containing sectionLst");
+			return null;
+		}
+		if (ext.getAny()!=null) {
+			
+			Object o = ext.getAny();
+			CTSectionList sectLst = (CTSectionList)XmlUtils.unwrap(o);
+			
+			return getSection(sectLst, sldId.getId());
+		}
+		return null;
+		
+	}
+
+	/**
+	 * @since 8.1.0
+	 */
+	private CTSection getSection(CTSectionList sectLst, long sldId) {
+		
+		for (CTSection p14Section : sectLst.getSection()) {
+			if (p14Section.getSldIdLst()==null) continue;
+			for (CTSectionSlideIdListEntry p14SldId : p14Section.getSldIdLst().getSldId()) {
+				if(p14SldId.getId()== sldId) return p14Section;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Get a SdlId from SldIdLst by its relId
+	 * @param relId
+	 * @return
+	 * @since 8.1.0
+	 */
+	public SldId getSldIdByRelId(String relId) {
+
+		for( SldId sldId : this.getJaxbElement().getSldIdLst().getSldId() ) {
+			if (sldId.getRid().equals(relId)) return sldId;
+		}
+		return null;
+	}
 }
