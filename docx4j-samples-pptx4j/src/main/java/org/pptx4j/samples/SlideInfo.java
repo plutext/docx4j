@@ -44,7 +44,7 @@ public class SlideInfo {
 			
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table.pptx";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
