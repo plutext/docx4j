@@ -117,7 +117,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		org.docx4j.relationships.ObjectFactory factory =
 			new org.docx4j.relationships.ObjectFactory();
 		
-		jaxbElement = factory.createRelationships();		
+		jaxbElement = factory.createRelationships();
+		
+		if (log.isDebugEnabled() ) {
+			log.debug("Constructed rp for " + sourceP.getPartName().getName()  );
+		}
 	}
 
 		
@@ -126,8 +130,13 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @throws InvalidFormatException
 	 */
 	public RelationshipsPart() throws InvalidFormatException {
-		super(new PartName("/blagh")); // 
+		super(new PartName("/blagh"));  
 		init();
+		
+		if (log.isDebugEnabled() ) {
+			log.debug("Constructed rp (no-arg) for " + sourceP.getPartName().getName()  );
+		}
+		
 	}
 	
 	/**
@@ -142,6 +151,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	private RelationshipsPart(PartName partname) throws InvalidFormatException {
 		super(partname);
 		init();
+		
+		if (log.isDebugEnabled() ) {
+			log.debug("Constructed rp using partname " + partname.getName()  );
+		}
+		
 	}
 
 	
@@ -961,6 +975,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}
 		
 		resetIdAllocator();
+		
+		// @since 8.1.0, so we can get from a Rel to source part.
+		if (this instanceof RelationshipsPart) {
+			((Relationships)jaxbElement).setParent(this); 			
+		}
 		    	
 		return jaxbElement;
     	
@@ -984,6 +1003,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}
 		
 		resetIdAllocator();
+		
+		// @since 8.1.0, so we can get from a Rel to source part.
+		if (this instanceof RelationshipsPart) {
+			((Relationships)jaxbElement).setParent(this); 			
+		}
+		
 		return jaxbElement;
 		
 	}

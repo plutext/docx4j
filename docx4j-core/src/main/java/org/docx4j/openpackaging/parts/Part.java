@@ -241,7 +241,9 @@ public abstract class Part extends Base {
 	
 	
 	/**
-	 * Rename this part.  Useful when merging documents, if you need to 
+	 * Rename this part; updates source rels and parts collection.  
+	 * 
+	 * Useful when merging documents, if you need to 
 	 * take action to avoid name collisions.
 	 * 
 	 * @param newName
@@ -254,19 +256,30 @@ public abstract class Part extends Base {
 		// Remove this part
 		this.getPackage().getParts().remove(this.getPartName() );
 		
-		// Update the source relationship
-		// Work out new target
-		URI tobeRelativized = newName.getURI();
-		URI relativizeAgainst = this.getOwningRelationshipPart().getSourceURI();
-		log.debug("Relativising target " + tobeRelativized 
-				+ " against source " + relativizeAgainst);
-		String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
-		if (relativizeAgainst.getPath().equals("/")
-				&& result.startsWith("/")) {
-			result = result.substring(1);
-		}
-		log.debug("Result " + result);
 		for (Relationship rel : sourceRelationships) {
+//			System.out.println("Altering source rel: " + rel.getTarget());
+			
+			// Update the source relationship
+			// Work out new target
+			URI tobeRelativized = newName.getURI();
+			
+			// get the source part from the source rel			
+			Relationships thisRels = (Relationships)rel.getParent();
+			RelationshipsPart thisRelsPart = (RelationshipsPart)thisRels.getParent();
+			if (thisRelsPart==null) {
+				log.error("Couldn't determine rels part from rels object");
+			}
+			URI relativizeAgainst = thisRelsPart.getSourceURI();			
+			
+			log.debug("Relativising target " + tobeRelativized 
+					+ " against source " + relativizeAgainst);
+			String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
+			if (relativizeAgainst.getPath().equals("/")
+					&& result.startsWith("/")) {
+				result = result.substring(1);
+			}
+			log.debug("Result " + result);
+			
 			rel.setTarget(result);
 		}
 
