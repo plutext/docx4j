@@ -532,7 +532,10 @@ public class XmlUtils {
 	
 
 	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
-		log.debug("Unmarshalling '" + str + "'");	
+		if (log.isDebugEnabled()) {
+			log.debug("Unmarshalling '" + str + "'");
+//			log.debug("using context '" + jc.getClass().getName() + "'"); // which JAXB implementation?
+		}
 		// Uncomment the following if you are being screwed by a byte order marker
 		str = str.trim().replaceFirst("^([\\W]+)<","<");
 		Unmarshaller u = jc.createUnmarshaller();						
