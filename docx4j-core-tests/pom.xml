@@ -49,6 +49,18 @@
 			<scope>test</scope>            
 		</dependency>
 	
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-samples-resources</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+ 	
 		
 		</dependencies>
 
