@@ -63,19 +63,53 @@ import java.util.List;
  */
 public class VariablePrepare {
 	
-	private static Logger log = LoggerFactory.getLogger(VariablePrepare.class);			
+	private static Logger log = LoggerFactory.getLogger(VariablePrepare.class);	
+	
+	public static final int FLAG_NONE = 0;
+	public static final int FLAG_REMOVE_PROOF_ERRORS = 1;
+	public static final int FLAG_REMOVE_CONTENT_CONTROLS = 2;
+	public static final int FLAG_REMOVE_RSIDS = 4;
+	public static final int FLAG_REMOVE_BOOKMARKS = 8;
 	
 	/**
 	 * @param wmlPackage
 	 * @throws Exception
 	 */
 	public static void prepare(WordprocessingMLPackage wmlPackage) throws Exception {
+
+		prepare(wmlPackage, FLAG_NONE);
+	}
+	
+	/**
+	 * @param wmlPackage
+	 * @throws Exception
+	 * @since 8.1.0
+	 */
+	public static void prepare(WordprocessingMLPackage wmlPackage, int flags) throws Exception {
 	
 		// Apply the filter
 		WordprocessingMLPackage.FilterSettings filterSettings = new WordprocessingMLPackage.FilterSettings();
-		filterSettings.setRemoveProofErrors(true);
-		filterSettings.setRemoveContentControls(true);
-		filterSettings.setRemoveRsids(true);
+		
+		if (flags == FLAG_NONE) {
+			// do everything
+			flags = (FLAG_REMOVE_PROOF_ERRORS |
+					FLAG_REMOVE_CONTENT_CONTROLS |
+					FLAG_REMOVE_RSIDS |
+					FLAG_REMOVE_BOOKMARKS);
+		}
+
+		if ((flags & FLAG_REMOVE_PROOF_ERRORS) == FLAG_REMOVE_PROOF_ERRORS) {	
+			filterSettings.setRemoveProofErrors(true);		
+		}		
+		if ((flags & FLAG_REMOVE_CONTENT_CONTROLS) == FLAG_REMOVE_CONTENT_CONTROLS) {	
+			filterSettings.setRemoveContentControls(true);			
+		}
+		if ((flags & FLAG_REMOVE_RSIDS) == FLAG_REMOVE_RSIDS) {	
+			filterSettings.setRemoveRsids(true);			
+		}
+		if ((flags & FLAG_REMOVE_BOOKMARKS) == FLAG_REMOVE_BOOKMARKS) {	
+			filterSettings.setRemoveBookmarks(true);			
+		}
 		wmlPackage.filter(filterSettings);
 		// Note the filter is deprecated, since its questionable whether this
 		// is important enough to live in WordprocessingMLPackage,
