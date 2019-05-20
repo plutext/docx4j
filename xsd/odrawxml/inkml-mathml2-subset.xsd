@@ -2,7 +2,22 @@
 <xs:schema	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 				xmlns="http://www.w3.org/1998/Math/MathML"
 				targetNamespace="http://www.w3.org/1998/Math/MathML"
-				elementFormDefault="qualified">
+				elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.org.w3.x1998.math.mathML"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>	  
+				
 	<xs:annotation>
 		<xs:documentation>
 			This is an XML Schema for the MathML subset used by InkML.

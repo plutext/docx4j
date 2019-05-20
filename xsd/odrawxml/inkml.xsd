@@ -3,7 +3,22 @@
 				targetNamespace="http://www.w3.org/2003/InkML"
 				elementFormDefault="qualified"
 				xmlns:inkml="http://www.w3.org/2003/InkML"
-				xmlns:mathml="http://www.w3.org/1998/Math/MathML">
+				xmlns:mathml="http://www.w3.org/1998/Math/MathML"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.org.w3.x2003.inkML"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+				
 	<xsd:annotation>
 		<xsd:documentation>
 			InkML 1.0 schema (20110106)
