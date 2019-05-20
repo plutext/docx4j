@@ -134,7 +134,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		init();
 		
 		if (log.isDebugEnabled() ) {
-			log.debug("Constructed rp (no-arg) for " + sourceP.getPartName().getName()  );
+			log.debug("Constructed rp (no-arg)"   );
 		}
 		
 	}
