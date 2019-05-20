@@ -869,7 +869,7 @@ public class RunFontSelector {
         							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
 	        							vis.fontAction(FONT_WORD_2016_USES);        	    		
 	        						} else {
-	                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\u2000' && c<='\u2EFF'?");        							
+	                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\\u2000' && c<='\\u2EFF'?");        							
 	        						}
         						}
         						
