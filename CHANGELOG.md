@@ -2,6 +2,50 @@ CHANGELOG
 =========
 
 
+Version 8.1.0 
+=============
+
+Release date
+------------
+
+21 May 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 8.1.0 
+---------------------------------
+
+Update [MS-PPTX] and [MS-ODRAWXML] content models with latest schemas.
+
+Implement child in dml
+
+Re-packaged subset of Guava to shave 2.4MB off deps size 
+
+StyleTree handles default table style (used by MergeDocx)
+
+docx4j
+------
+
+Support adding altChunk at specified index
+
+VariablePrepare: make settings configurable
+
+Move anon out of core to a dedicated Maven module
+
+pptx4j
+------
+
+support mc:AlternateContent in slide shape tree
+
+Implement child in pml
+
+
+
 Version 8.0.0 
 =============
 

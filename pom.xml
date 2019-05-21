@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.0.0-SNAPSHOT</revision>
+		<revision>8.1.0-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -46,6 +46,7 @@
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
+        
         <module>docx4j-bundle</module>        
     </modules>
 	
