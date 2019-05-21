@@ -8,3 +8,4 @@ bin-testOutput/
 .project
 .classpath
 .flattened-pom.xml
+tmp/
