@@ -46,6 +46,7 @@
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
+        <module>docx4j-bundle</module>        
     </modules>
 	
 	<description>
