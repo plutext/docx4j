@@ -27,20 +27,21 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
 import org.docx4j.com.google.common.annotations.GwtIncompatible;
 import org.docx4j.com.google.common.base.Ascii;
 import org.docx4j.com.google.common.base.Equivalence;
 import org.docx4j.com.google.common.base.MoreObjects;
+import org.docx4j.com.google.common.base.Strings;
 import org.docx4j.com.google.common.base.Supplier;
 import org.docx4j.com.google.common.base.Suppliers;
 import org.docx4j.com.google.common.base.Ticker;
 import org.docx4j.com.google.common.cache.AbstractCache.SimpleStatsCounter;
 import org.docx4j.com.google.common.cache.AbstractCache.StatsCounter;
 import org.docx4j.com.google.common.cache.LocalCache.Strength;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A builder of {@link LoadingCache} and {@link Cache} instances having any combination of the
@@ -155,6 +156,9 @@ import org.docx4j.com.google.common.cache.LocalCache.Strength;
  */
 @GwtCompatible(emulated = true)
 public final class CacheBuilder<K, V> {
+
+	private static Logger log = LoggerFactory.getLogger(CacheBuilder.class);
+	
   private static final int DEFAULT_INITIAL_CAPACITY = 16;
   private static final int DEFAULT_CONCURRENCY_LEVEL = 4;
 
@@ -222,8 +226,6 @@ public final class CacheBuilder<K, V> {
           return 0;
         }
       };
-
-  private static final Logger logger = Logger.getLogger(CacheBuilder.class.getName());
 
   static final int UNSET_INT = -1;
 
@@ -953,7 +955,7 @@ public final class CacheBuilder<K, V> {
         checkState(maximumWeight != UNSET_INT, "weigher requires maximumWeight");
       } else {
         if (maximumWeight == UNSET_INT) {
-          logger.log(Level.WARNING, "ignoring weigher specified without maximumWeight");
+          log.warn( "ignoring weigher specified without maximumWeight");
         }
       }
     }

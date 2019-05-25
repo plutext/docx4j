@@ -55,8 +55,6 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
@@ -85,6 +83,8 @@ import org.docx4j.com.google.common.util.concurrent.ListenableFuture;
 import org.docx4j.com.google.common.util.concurrent.SettableFuture;
 import org.docx4j.com.google.common.util.concurrent.UncheckedExecutionException;
 import org.docx4j.com.google.common.util.concurrent.Uninterruptibles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The concurrent hash map implementation built by {@link CacheBuilder}.
@@ -100,6 +100,8 @@ import org.docx4j.com.google.common.util.concurrent.Uninterruptibles;
 @GwtCompatible(emulated = true)
 class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> {
 
+	private static Logger log = LoggerFactory.getLogger(LocalCache.class);
+	
   /*
    * The basic strategy is to subdivide the table among Segments, each of which itself is a
    * concurrently readable hash table. The map supports non-blocking reads and concurrent writes
@@ -158,8 +160,6 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
   static final int DRAIN_MAX = 16;
 
   // Fields
-
-  static final Logger logger = Logger.getLogger(LocalCache.class.getName());
 
   /**
    * Mask value for indexing into segments. The upper bits of a key's hash code are used to choose
@@ -1807,7 +1807,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
       try {
         removalListener.onRemoval(notification);
       } catch (Throwable e) {
-        logger.log(Level.WARNING, "Exception thrown by removal listener", e);
+        log.warn( "Exception thrown by removal listener", e);
       }
     }
   }
@@ -2290,7 +2290,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
               try {
                 getAndRecordStats(key, hash, loadingValueReference, loadingFuture);
               } catch (Throwable t) {
-                logger.log(Level.WARNING, "Exception thrown during refresh", t);
+                log.warn( "Exception thrown during refresh", t);
                 loadingValueReference.setException(t);
               }
             }
