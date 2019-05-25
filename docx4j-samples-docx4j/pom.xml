@@ -5,7 +5,7 @@
   <parent>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
-	<version>8.1.1-SNAPSHOT</version>
+	<version>11.1.0-SNAPSHOT</version>
   </parent>
   
 	<artifactId>docx4j-samples-docx4j</artifactId>
@@ -40,7 +40,7 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-Internal</artifactId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -53,12 +53,6 @@
 <!-- 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<dependency>
-            <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-MOXy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -69,7 +63,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>1.3.0-alpha4</version>
 		</dependency>
 		<!--  1.3.0-alpha4 does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
 		

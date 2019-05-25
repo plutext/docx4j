@@ -5,7 +5,7 @@
   <parent>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
-	<version>8.1.1-SNAPSHOT</version>
+	<version>11.1.0-SNAPSHOT</version>
   </parent>
   
 	<artifactId>docx4j-samples-pptx4j</artifactId>
@@ -50,16 +50,11 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-Internal</artifactId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
 <!-- 
-		<dependency>
-            <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		
 		<dependency>
             <groupId>org.docx4j</groupId>

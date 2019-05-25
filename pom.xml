@@ -10,14 +10,15 @@
 
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
-	<version>8.1.1-SNAPSHOT</version>
+	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.1.0-SNAPSHOT</revision>
+		<revision>11.1.0-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
+	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
 	</properties>
 
     <packaging>pom</packaging>
@@ -30,16 +31,16 @@
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
         
-        <module>docx4j-JAXB-Internal</module> 
+        <!-- <module>docx4j-JAXB-Internal</module> --> 
+        <module>docx4j-JAXB-ReferenceImpl</module>
+        <module>docx4j-samples-resources</module>
         <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
         <module>docx4j-diffx</module>
         <module>docx4j-docx-anon</module>
         
         <module>docx4j-export-fo</module>        
         <module>docx4j-JAXB-MOXy</module>
-        <module>docx4j-JAXB-ReferenceImpl</module>
         
-        <module>docx4j-samples-resources</module>
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-docx-diffx</module>
         <module>docx4j-samples-docx-export-fo</module>
@@ -139,8 +140,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<release>11</release>				
 				</configuration>
 			</plugin>
 			<plugin>
@@ -149,7 +149,11 @@
 			</plugin>
 			
 			<!--  you can run this with: mvn validate
-			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules -->
+			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules 
+			      
+			      2019 05 25 should work with Java 11: https://github.com/mojohaus/extra-enforcer-rules/pull/63
+			      but it doesn't.
+			      
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-enforcer-plugin</artifactId>
@@ -163,7 +167,7 @@
 		            <configuration>
 		              <rules>
 		                <enforceBytecodeVersion>
-		                  <maxJdkVersion>1.8</maxJdkVersion>
+		                  <maxJdkVersion>11</maxJdkVersion>
 		                  <excludes>
 		                    <exclude>org.mindrot:jbcrypt</exclude>
 		                  </excludes>
@@ -182,6 +186,7 @@
 		        </dependencies> 
 		      </plugin>
 	       			
+-->	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
 				<!-- The Source Plugin creates a jar archive of the source files of the
@@ -195,15 +200,17 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
-				out if your build is failing because you don't have enough -->
+			<!-- hiccups on org.slf4j since it is a multi-release jar
+				 broken in Java 11, fixed in Java 12
+				 https://bugs.openjdk.java.net/browse/JDK-8222309
+			 
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
+				<version>3.1.0</version> 
 				<configuration>
 					<maxmemory>512m</maxmemory>
-			        <additionalparam>-Xdoclint:none</additionalparam> 
-				 </configuration>
+					<additionalJOption>-Xdoclint:none</additionalJOption> 
+				</configuration>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -213,6 +220,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			 -->
 <!-- 			
 		<plugin>
             <groupId>org.basepom.maven</groupId>
@@ -290,10 +298,24 @@
 	
 	<dependencies>
 
+<!--  built locally 
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.4.0-SNAPSHOT</version> 
+		</dependency>
+-->
+
+<dependency>
+  <groupId>jakarta.xml.bind</groupId>
+  <artifactId>jakarta.xml.bind-api</artifactId>
+  <version>2.3.2</version>
+</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.26</version>
+			<version>1.8.0-beta4</version> <!--  was beta 2 -->
 		</dependency>
 		
 		<dependency>
