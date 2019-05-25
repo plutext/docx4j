@@ -18,8 +18,8 @@ import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater
 import static org.docx4j.com.google.common.base.Preconditions.checkNotNull;
 import static org.docx4j.com.google.common.base.Throwables.throwIfUnchecked;
 
-import com.google.common.util.concurrent.internal.InternalFutureFailureAccess;
-import com.google.common.util.concurrent.internal.InternalFutures;
+import org.docx4j.com.google.common.util.concurrent.internal.InternalFutureFailureAccess;
+import org.docx4j.com.google.common.util.concurrent.internal.InternalFutures;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.ForOverride;
 import java.security.AccessController;
