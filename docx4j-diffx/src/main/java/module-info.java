@@ -1,8 +1,8 @@
-module docx4j_diffx {
+module org.docx4j.docx4j_diffx {
 
 	requires org.slf4j;
-	requires docx4j_core;
-	requires docx4j_openxml_objects;
+	requires org.docx4j.core;
+//	requires docx4j_openxml_objects;
     
     exports com.topologi.diffx;
     exports com.topologi.diffx.algorithm;

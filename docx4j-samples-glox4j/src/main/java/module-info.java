@@ -1,7 +1,7 @@
-module docx4j_samples_glox4j {
+module org.docx4j.samples_glox4j {
 
 	requires org.slf4j;
-	requires docx4j_core;
-	requires docx4j_openxml_objects;
+	requires org.docx4j.core;
+	requires org.docx4j.openxml_objects;
     
 }

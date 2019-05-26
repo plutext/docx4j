@@ -2,10 +2,10 @@
  * @author jharrop
  *
  */
-module docx4j_JAXB_MOXy {
+module org.docx4j.JAXB_MOXy {
 	
 	requires org.slf4j;
-	requires docx4j_core;
+	requires org.docx4j.core;
 
 	requires org.eclipse.persistence.moxy;
 	requires org.eclipse.persistence.core;

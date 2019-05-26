@@ -1,8 +1,8 @@
-module docx4j_openxml_objects_pml {
+module org.docx4j.openxml_objects_pml {
 	
-    requires transitive java.xml.bind;
+    requires java.xml.bind;
 	requires org.slf4j;
-	requires docx4j_openxml_objects;
+	requires org.docx4j.openxml_objects;
     
     exports org.pptx4j.pml;
     exports org.pptx4j.com.microsoft.schemas.office.powerpoint.x201606.main;

@@ -1,4 +1,4 @@
-module docx4j_openxml_objects {
+module org.docx4j.openxml_objects {
 
     requires java.xml.bind;
 	requires org.slf4j;

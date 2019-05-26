@@ -1,4 +1,4 @@
-module docx4j_core {
+module org.docx4j.core {
 	
     requires com.fasterxml.jackson.databind;
     requires java.xml.crypto;
@@ -9,9 +9,9 @@ module docx4j_core {
     requires org.apache.commons.lang3;
     requires wmf2svg;
     
-	requires transitive docx4j_openxml_objects;
-	requires transitive docx4j_openxml_objects_pml;
-	requires transitive docx4j_openxml_objects_sml;
+	requires transitive org.docx4j.openxml_objects;
+	requires transitive org.docx4j.openxml_objects_pml;
+	requires transitive org.docx4j.openxml_objects_sml;
     
 	requires transitive jakarta.activation;
 	
