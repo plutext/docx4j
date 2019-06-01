@@ -18,8 +18,9 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.0.0"/>
+	<property name="version" value="8.1.0"/>
 	<property name="importxhtml-version" value="8.0.0"/>
+	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
 	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
@@ -62,12 +63,15 @@
 		+- org.antlr:antlr-runtime:jar:3.5.2
 		+- org.antlr:stringtemplate:jar:3.2.1
 		|  \- antlr:antlr:jar:2.7.7
-		+- com.google.guava:guava:jar:27.0.1-jre
-		|  +- com.google.guava:failureaccess:jar:1.0.1
-		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
-		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
+    
+		+- com.google.guava:guava:jar:27.0.1-jre NOT REQUIRED    
+    
 		|  +- org.checkerframework:checker-qual:jar:2.5.2
 		|  +- com.google.errorprone:error_prone_annotations:jar:2.2.0
+		|  +- com.google.guava:failureaccess:jar:1.0.1
+    
+		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
+		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
 		|  +- com.google.j2objc:j2objc-annotations:jar:1.1
 		|  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17
 		+- com.thedeanda:lorem:jar:2.1
@@ -99,14 +103,9 @@
 		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
 		<pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
 
-		<pathelement location="${m2Repository}/com/google/guava/guava/27.0.1-jre/guava-27.0.1-jre.jar"/>
 		<pathelement location="${m2Repository}/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"/>
-		<pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
-		<pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
 		<pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"/>
 		<pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.2.0/error_prone_annotations-2.2.0.jar"/>
-		<pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
-		<pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
 
 		<pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
 		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
@@ -115,12 +114,20 @@
 		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
 
 	</path>
+<!--
+		<pathelement location="${m2Repository}/com/google/guava/guava/27.0.1-jre/guava-27.0.1-jre.jar"/>
 
+		<pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
+		<pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+		<pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
+		<pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
+    
+    -->
 
 	<!--  for release only; build docx4j-export-fo first! -->
 	<path id="docx4j-export-fo.classpath">
 
-		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/8.0.0/docx4j-export-fo-8.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/8.1.0/docx4j-export-fo-8.1.0.jar"/>
 
 		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
 
@@ -200,7 +207,7 @@
 		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="../docx4j-ImportXHTML/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
 		<!-- export-fo -->
 		<mkdir dir="${release.dir}/optional/export-fo"/>
