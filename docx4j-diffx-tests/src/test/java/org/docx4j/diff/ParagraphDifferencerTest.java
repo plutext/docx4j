@@ -29,7 +29,7 @@ import org.junit.Test;
 
 public class ParagraphDifferencerTest {
 	
-	final static String BASE_DIR = "src/test/java/org/docx4j/diff/";
+	final static String BASE_DIR = "src/test/resources/org/docx4j/diff/";
 
 	final static String[] testparagraphs = { "t2R", "t2RR", "t3L", "t3R", "t4"}; // "t1L", "t1R", 
 	

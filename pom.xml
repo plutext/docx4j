@@ -36,6 +36,7 @@
         <module>docx4j-samples-resources</module>
         <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
         <module>docx4j-diffx</module>
+        <module>docx4j-diffx-tests</module>
         <module>docx4j-docx-anon</module>
         
         <module>docx4j-export-fo</module>        
