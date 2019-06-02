@@ -20,28 +20,19 @@ It uses JAXB to create the Java representation.
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
-docx4j-8.0.0
+docx4j-11.1.0
 ------------
 
-This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
-dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
-which docx4j 6.x uses.
+11.1.0 is our first JPMS modularised release (ie the jars contain module-info.class entries).
 
-docx4j v8 is a multi-module Maven project.
+To use docx4j v11., add the dep corresponding to the JAXB implementation you wish to use
 
-To use docx4j v8, add the dep corresponding to the JAXB implementation you wish to use
-
-* docx4j-JAXB-Internal (shipped in Oracle and OpenJDK v8)
 * docx4j-JAXB-ReferenceImpl (you may need to respect the endorsed dir mechanism for the RI jars)
 * docx4j-JAXB-MOXy
 
 You should use one and only one of docx4j-JAXB-* 
 
-
-docx4j for Java 9 and later
----------------------------
-
-is in preparation, will be based on this branch, and will require Java 11 (or possibly only 9); we're currently waiting on https://github.com/eclipse-ee4j/jaxb-ri to release a Java 11 friendly JAXB 2.4.0 to Maven Central.
+See CHANGELOG.md for our module names.
 
 
 How do I build docx4j?
