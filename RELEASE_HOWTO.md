@@ -64,6 +64,16 @@ git commit / push upstream
 
 -------------
 
+Note for Java 11:  Maven Central requires Javadoc.
+
+But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
+				 
+So we have to build with Java 12:- 
+
+$ sudo archlinux-java set java-12-adoptopenjdk
+
+-------------
+
 Start up the Git Bash session and go to your project directory.
 
 Windows users, you need to start up an SSH agent to provide your passkey when needed by the release process.

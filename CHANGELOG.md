@@ -2,6 +2,53 @@ CHANGELOG
 =========
 
 
+Version 11.1.0 
+==============
+
+Release date
+------------
+
+2 June 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 11.1.0 
+---------------------------------
+
+11.1.0 is our first JPMS modularised release, so the jars contain module-info.class entries.
+
+The module names correspond to our Maven modules: 
+
+	org.docx4j.openxml_objects 
+	org.docx4j.openxml_objects_pml 
+	org.docx4j.openxml_objects_sml 
+	
+	org.docx4j.core 
+	
+	org.docx4j.JAXB_MOXy 
+	org.docx4j.JAXB_ReferenceImpl 
+
+We require named modules:
+
+    docx4j_xalan_serializer
+    docx4j_xalan_interpretive
+	org.slf4j
+	
+(Other dependencies generally aren't JPMS-ready, so they go on the classpath in the "unnamed" module.)	
+
+11.1.0 is compiled with Java 12, targeting Java 11.
+
+jackson-databind dep bumped to 2.9.9.
+
+In other respects this release is the same as v8.1.0.
+
+
+
 Version 8.1.0 
 =============
 
