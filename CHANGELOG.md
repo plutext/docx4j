@@ -45,7 +45,9 @@ We require named modules:
 
 jackson-databind dep bumped to 2.9.9.
 
-In other respects this release is the same as v8.1.0.
+In other respects this release is the same as v8.1.0, except that docx4j-export-fo 
+is temporarily omitted since Maven compiler doesn't like FOP 2.3's avalon dependency.  
+When FOP 2.4 is released, we should be able to include it again.
 
 
 
