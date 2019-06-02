@@ -139,7 +139,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.8.1</version>
 				<configuration>
 					<release>11</release>				
 				</configuration>
@@ -154,6 +154,8 @@
 			      
 			      2019 05 25 should work with Java 11: https://github.com/mojohaus/extra-enforcer-rules/pull/63
 			      but it doesn't.
+			      
+			      Seems to work with Java 12 though -->
 			      
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
@@ -187,7 +189,6 @@
 		        </dependencies> 
 		      </plugin>
 	       			
--->	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
 				<!-- The Source Plugin creates a jar archive of the source files of the
@@ -204,7 +205,7 @@
 			<!-- hiccups on org.slf4j since it is a multi-release jar
 				 broken in Java 11, fixed in Java 12
 				 https://bugs.openjdk.java.net/browse/JDK-8222309
-			 
+			 -->			 
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.1.0</version> 
@@ -221,7 +222,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			 -->
 <!-- 			
 		<plugin>
             <groupId>org.basepom.maven</groupId>
@@ -257,17 +257,7 @@
             </configuration>
         </plugin>
  -->
- 
- 			<!--  mvn versions:display-dependency-updates -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
-				</configuration>
-			</plugin> 
-			
+ 			
 			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>flatten-maven-plugin</artifactId>
