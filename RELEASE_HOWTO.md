@@ -205,6 +205,11 @@ If you need to start again for any reason, delete the tag it added:
 and change the version back in your pom (and commit)
 and delete release.properties
 
+Easiest is to discard all changes, and if necessary revert and commit any commits it made.
+
+You'll still need to delete any tag as per above.
+
+
 -----------
 
 You can't do:
@@ -269,9 +274,12 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Repeat above for -ImportXHTML and export-FO
+Revert and commit (most recent first) the 2 commits which change the version number in all the poms, 
+then manually update the version number in parent pom.
 
-Run ant release (requires docx4j, -ImportXHTML and export-FO to be in maven)
+Repeat above for -ImportXHTML 
+
+Run ant release (requires docx4j, -ImportXHTML  to be in maven)
  
 
 ----
