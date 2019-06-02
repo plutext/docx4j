@@ -57,6 +57,7 @@ module org.docx4j.core {
     exports org.docx4j.fonts;
     exports org.docx4j.fonts.fop;
     exports org.docx4j.fonts.fop.apps;
+    exports org.docx4j.fonts.fop.configuration;
     exports org.docx4j.fonts.fop.fonts;
     exports org.docx4j.fonts.fop.fonts.apps;
     exports org.docx4j.fonts.fop.fonts.autodetect;
