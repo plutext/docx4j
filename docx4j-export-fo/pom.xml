@@ -19,23 +19,8 @@
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
-		<testOutputDirectory>bin-testOutput</testOutputDirectory>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
-					to execute the unit tests of an application -->
-				<version>2.6</version>
-				<configuration>
-					<excludes>
-						<exclude>**/samples/*.java</exclude>
-						<exclude>**/AbstractNumberingTest.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -48,26 +33,6 @@
 						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
 					</excludes>
 				</configuration>
-			</plugin>
-			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
-				out if your build is failing because you don't have enough. -->
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<configuration>
-					<maxmemory>512m</maxmemory>
-					<!-- 18 MB without the exclusion; still 15MB with -->
-					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
-			        <additionalparam>-Xdoclint:none</additionalparam> <!-- for Java 8 -->					
-				 </configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			
  			<!--  mvn versions:display-dependency-updates --> 
@@ -164,7 +129,22 @@
 			<exclusion>
 				<groupId>xalan</groupId>
 				<artifactId>serializer</artifactId>
-			</exclusion>			
+			</exclusion>
+<!-- We need these until FOP 2.4 			
+			<exclusion>
+				<groupId>org.apache.avalon.framework</groupId>
+				<artifactId>avalon-framework-impl</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.apache.avalon.framework</groupId>
+				<artifactId>avalon-framework-api</artifactId>
+			</exclusion>
+		 -->	
+			<!--  avoid package org.w3c.dom is accessible from more than one module: batik.ext, java.xml -->			
+			<exclusion>
+				<groupId>org.apache.xmlgraphics</groupId>
+				<artifactId>batik-ext</artifactId>
+			</exclusion>
 		</exclusions>
 	</dependency>
 
