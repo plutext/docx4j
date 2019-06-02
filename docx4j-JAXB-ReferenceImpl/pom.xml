@@ -47,6 +47,16 @@
                 </configuration>
             </plugin>				
 			
+ 			<!--  mvn versions:display-dependency-updates --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
+			</plugin> 
+			
 		</plugins>
 	</build>
 
@@ -62,7 +72,12 @@
 		  <groupId>org.glassfish.jaxb</groupId>
 		  <artifactId>jaxb-runtime</artifactId>
 		  <version>2.3.2</version>
-		</dependency>		
+		</dependency>	
+		<!--  2.3.2 should be good:  https://github.com/eclipse-ee4j/jaxb-ri/issues/1168 
+		
+		See also https://javaee.github.io/jaxb-v2/doc/user-guide/release-documentation.html#deployment-jaxb-on-jpms
+		
+		-->	
 		
 <!--  
 
