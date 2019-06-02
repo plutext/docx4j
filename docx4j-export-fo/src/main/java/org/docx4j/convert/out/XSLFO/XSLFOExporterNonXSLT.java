@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.avalon.framework.configuration.Configuration;
+//Have to wait for FOP 2.4
+//import org.docx4j.fonts.fop.configuration.Configuration;
 import org.docx4j.Docx4J;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
