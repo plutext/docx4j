@@ -18,7 +18,6 @@
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
-	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
 	</properties>
 
     <packaging>pom</packaging>
