@@ -46,12 +46,12 @@ public class MainDocumentPartFilterOuputStream extends FilterOutputStream {
 
 		int bodyEnd = pos + 8;
 		String bodyString = text.substring(0, bodyEnd);
-		out.write(bodyString.getBytes());
+		out.write(bodyString.getBytes("UTF-8"));
 		
 		String comment = "<!-- " + Version.getPoweredBy(isNewPkg) + " -->"; 
-		out.write(comment.getBytes());
+		out.write(comment.getBytes("UTF-8"));
 
-		out.write(text.substring(bodyEnd).getBytes());
+		out.write(text.substring(bodyEnd).getBytes("UTF-8"));
 
 		commentWritten = true;
 		
