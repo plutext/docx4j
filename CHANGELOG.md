@@ -2,6 +2,37 @@ CHANGELOG
 =========
 
 
+Version 8.1.1 
+=============
+
+Release date
+------------
+
+[  ] June 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 8.1.1 
+---------------------------------
+
+Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
+
+
+xlsx4j
+------
+
+Bugfix: Correct jcSML spreadsheetDrawing package name
+
+Support mc:alternateContent in Workbook part (ie instead of dropping it)
+
+
+
+
 Version 8.1.0 
 =============
 

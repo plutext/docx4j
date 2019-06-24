@@ -471,7 +471,11 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/powerpoint/2016/6/main")) {
 			return "p166";
 		}    	
-    	
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main")) {
+			return "x15";
+		}    	
+				
     	return suggestion;
     }
     
@@ -765,6 +769,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/powerpoint/2018/4/main";
 		if (prefix.equals("p166"))
 			return "http://schemas.microsoft.com/office/powerpoint/2016/6/main";
+		
+		if (prefix.equals("x15"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main";
+		
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);

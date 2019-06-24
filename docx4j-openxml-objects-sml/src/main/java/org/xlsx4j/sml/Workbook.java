@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.docx4j.mce.AlternateContent;
 import org.docx4j.sharedtypes.STConformanceClass;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -46,6 +47,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="fileVersion" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_FileVersion" minOccurs="0"/>
  *         &lt;element name="fileSharing" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_FileSharing" minOccurs="0"/>
  *         &lt;element name="workbookPr" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_WorkbookPr" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent"/&gt;
  *         &lt;element name="workbookProtection" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_WorkbookProtection" minOccurs="0"/>
  *         &lt;element name="bookViews" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_BookViews" minOccurs="0"/>
  *         &lt;element name="sheets" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_Sheets"/>
@@ -64,6 +66,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="conformance" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_ConformanceClass" />
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable"/&gt;
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -76,6 +79,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "fileVersion",
     "fileSharing",
     "workbookPr",
+    "alternateContent",
     "workbookProtection",
     "bookViews",
     "sheets",
@@ -100,6 +104,8 @@ public class Workbook implements Child
     protected FileVersion fileVersion;
     protected CTFileSharing fileSharing;
     protected WorkbookPr workbookPr;
+    @XmlElement(name = "AlternateContent", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006", required = true)
+    protected AlternateContent alternateContent;    
     protected CTWorkbookProtection workbookProtection;
     protected BookViews bookViews;
     @XmlElement(required = true)
@@ -119,6 +125,8 @@ public class Workbook implements Child
     protected CTExtensionList extLst;
     @XmlAttribute(name = "conformance")
     protected STConformanceClass conformance;
+    @XmlAttribute(name = "Ignorable", namespace = "http://schemas.openxmlformats.org/markup-compatibility/2006")
+    protected String ignorable;
     @XmlTransient
     private Object parent;
 
@@ -194,6 +202,30 @@ public class Workbook implements Child
         this.workbookPr = value;
     }
 
+    /**
+     * Gets the value of the alternateContent property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link AlternateContent }
+     *     
+     */
+    public AlternateContent getAlternateContent() {
+        return alternateContent;
+    }
+
+    /**
+     * Sets the value of the alternateContent property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link AlternateContent }
+     *     
+     */
+    public void setAlternateContent(AlternateContent value) {
+        this.alternateContent = value;
+    }
+    
     /**
      * Gets the value of the workbookProtection property.
      * 
@@ -607,6 +639,30 @@ public class Workbook implements Child
         this.conformance = value;
     }
 
+    /**
+     * Gets the value of the ignorable property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getIgnorable() {
+        return ignorable;
+    }
+
+    /**
+     * Sets the value of the ignorable property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setIgnorable(String value) {
+        this.ignorable = value;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
