@@ -70,7 +70,7 @@ import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOuputStream;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOutputStream;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.utils.XMLStreamWriterWrapper;
@@ -844,7 +844,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						boolean isNew = (this.getPackage()==null) ? true : this.getPackage().isNew(); // handle edge cases eg unit test where there is no package 
 						
 						filteredOS = 
-								new MainDocumentPartFilterOuputStream(
+								new MainDocumentPartFilterOutputStream(
 										buffered, 
 										isNew); // BufferedOutputStream helps a lot here
 						
@@ -853,7 +853,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						buffered.flush(); // Critical for Sun/Oracle JAXB in 1.8.0_181, otherwise there is content loss at the end of the part 
 						
 //					} else {
-//						filteredOS = new MainDocumentPartFilterOuputStream(os, this.getPackage().isNew());
+//						filteredOS = new MainDocumentPartFilterOutputStream(os, this.getPackage().isNew());
 //							// Avoid BufferedOutputStream, especially where Sun/Oracle JAXB is writing to a ByteArrayOutputStream
 //							// which can prevent content from appearing
 //						marshaller.marshal(jaxbElement, filteredOS);
