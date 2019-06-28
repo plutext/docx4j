@@ -22,6 +22,8 @@ Notable Changes in Version 8.1.1
 
 Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
 
+Support for embedded True Type Fonts. (Up until now, we only supported obfuscated embeddings)
+
 
 xlsx4j
 ------

@@ -85,6 +85,7 @@ import org.docx4j.openpackaging.parts.InkmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.TrueTypeFontPart;
 import org.docx4j.openpackaging.parts.VMLPart;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.FontDataPart;
@@ -362,6 +363,8 @@ public class ContentTypeManager  {
 			return CreateCustomXmlDataStoragePropertiesPartObject(partName );			
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
 			return CreateObfuscatedFontPartObject(partName );
+		} else if (contentType.equals(ContentTypes.TRUETYPE_FONT)) {
+			return  new TrueTypeFontPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)
 				|| contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));

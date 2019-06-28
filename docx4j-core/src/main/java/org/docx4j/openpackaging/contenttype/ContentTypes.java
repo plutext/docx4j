@@ -93,6 +93,9 @@ public class ContentTypes {
 	
 	public final static String OFFICEDOCUMENT_FONT =
 		"application/vnd.openxmlformats-officedocument.obfuscatedFont";
+
+	public final static String TRUETYPE_FONT =
+			"application/x-font-ttf";
 	
 	public final static String OFFICEDOCUMENT_VBA_PROJECT =
 		"application/vnd.ms-office.vbaProject";

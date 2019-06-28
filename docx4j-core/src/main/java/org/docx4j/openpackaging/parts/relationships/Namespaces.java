@@ -100,6 +100,9 @@ public class Namespaces {
 	// word/fontTable.xml
 	public final static String FONT_TABLE = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable";
+
+	public final static String FONT = 
+			"http://schemas.openxmlformats.org/officeDocument/2006/relationships/font";
 	
 	public final static String HEADER = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header";

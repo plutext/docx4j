@@ -32,7 +32,9 @@ import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.TrueTypeFontPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.FontRel;
@@ -115,10 +117,10 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 			FontRel embedBoldItalic = font.getEmbedBoldItalic();
 			FontRel embedItalic = font.getEmbedItalic();
 
-			PhysicalFont pfRegular = getObfuscatedFontFromRelationship(fontName, fontName, embedRegular);
-			PhysicalFont pfBold = getObfuscatedFontFromRelationship(fontName, fontName + "-bold", embedBold);
-			PhysicalFont pfItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-italic", embedItalic);
-			PhysicalFont pfBoldItalic = getObfuscatedFontFromRelationship(fontName, fontName + "-bold-italic", embedBoldItalic);
+			PhysicalFont pfRegular = getFontFromRelationship(fontName, fontName, embedRegular);
+			PhysicalFont pfBold = getFontFromRelationship(fontName, fontName + "-bold", embedBold);
+			PhysicalFont pfItalic = getFontFromRelationship(fontName, fontName + "-italic", embedItalic);
+			PhysicalFont pfBoldItalic = getFontFromRelationship(fontName, fontName + "-bold-italic", embedBoldItalic);
 			if (fontMapper != null) { // && pfRegular != null) {
 				fontMapper.registerRegularForm(fontName, pfRegular);
 				fontMapper.registerBoldForm(fontName, pfBold);
@@ -129,7 +131,7 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 		}
     }
     
-    private PhysicalFont getObfuscatedFontFromRelationship(String fontNameAsInFontTablePart, String fontFileName, FontRel fontRel) {
+    private PhysicalFont getFontFromRelationship(String fontNameAsInFontTablePart, String fontFileName, FontRel fontRel) {
     
     	if (fontRel == null) {
     		//log.debug("fontRel not found for '" + fontName + "'");
@@ -139,13 +141,26 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
     	String id = fontRel.getId();    	
     	String fontKey = fontRel.getFontKey();
     	    	 
-    	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
-    	if (obfuscatedFont != null) {
-    		return obfuscatedFont.deObfuscate(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
+    	Part p = this.getRelationshipsPart().getPart(id);
+    	
+    	if (p instanceof ObfuscatedFontPart) {
+    	
+	    	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
+	    	if (obfuscatedFont != null) {
+	    		return obfuscatedFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
+	    	} else {
+	    		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
+	    	}
+	    	
     	} else {
-    		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
+	    	TrueTypeFontPart truetypeFont = (TrueTypeFontPart)this.getRelationshipsPart().getPart(id);
+	    	if (truetypeFont != null) {
+	    		return truetypeFont.extract(fontNameAsInFontTablePart, fontFileName, fontKey, filenamePrefix);
+	    	} else {
+	    		log.error("Couldn't find TrueTypeFontPart with id: " + id);
+	    	}
     	}
-			return null;
+		return null;
     }
     
     
