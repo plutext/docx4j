@@ -2,18 +2,20 @@ CHANGELOG
 =========
 
 
-Version 8.1.1 
+Version 8.1.1 minor release 
 =============
 
 Release date
 ------------
 
-[  ] June 2019
+29 June 2019
 
 
 Contributors to this release
 ----------------------------
 
+ChilamYan 
+	
 Jason Harrop
 
 
