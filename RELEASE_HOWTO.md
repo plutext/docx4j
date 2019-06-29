@@ -45,6 +45,8 @@ Update CHANGELOG.md, README.md with release info.
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
 
+Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
+
 Update build.xml so it has the same version as pom.xml (but without  -SNAPSHOT) 
 
 Check everything is committed
@@ -263,6 +265,7 @@ Repeat above for -ImportXHTML and export-FO
 
 Run ant release (requires docx4j, -ImportXHTML and export-FO to be in maven)
  
+Swap sub-modules back to <version>${revision}</version> (ie revert Maven's 2 commits)
 
 ----
 
