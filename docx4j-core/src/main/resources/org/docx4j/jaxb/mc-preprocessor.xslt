@@ -140,7 +140,26 @@
            <xsl:attribute name="w:hanging"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template>  
   
-  
+  <!-- 
+        <w:pBdr>
+          <w:top w:sz="7" w:space="1.8" w:color="#333437" w:val="single"/>
+          <w:left w:sz="7" w:space="0" w:color="#000000" w:val="single"/>
+          <w:bottom w:sz="3" w:space="7.2" w:color="#323539" w:val="double"/>
+          <w:right w:sz="7" w:space="0" w:color="#000000" w:val="single"/>
+        </w:pBdr>  
+   -->
+  <xsl:template match="@w:space" >
+  	  <xsl:choose>
+  		<xsl:when test="local-name(..)='top' or local-name(..)='left' or local-name(..)='bottom' or local-name(..)='right'">
+		  	<xsl:attribute name="w:space"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  		</xsl:when>
+  		<xsl:otherwise>
+		    <xsl:copy-of select="."/>
+  		</xsl:otherwise>
+  	</xsl:choose> 
+  </xsl:template> 
+   
+   
   <!-- Workaround for Microsoft SQLServer Reporting Service (SSRS) 2012, which generates invalid docx, for example:
   
     <w:sectPr w:rsidRPr="" w:rsidDel="" w:rsidR="" w:rsidSect="">
