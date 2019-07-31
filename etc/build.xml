@@ -108,19 +108,19 @@
 		<pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
 		<pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
 
-		<pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
 		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
 
+<!--
 		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
 		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+		-->
 
 	</path>
 
 
-	<!--  for release only; build docx4j-export-fo first! -->
 	<path id="docx4j-export-fo.classpath">
 
-		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/8.0.0/docx4j-export-fo-8.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
 
 		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
 
@@ -215,6 +215,11 @@
 		<mkdir dir="${release.dir}/optional/diffx"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>
 
+		<!-- anon -->
+		<mkdir dir="${release.dir}/optional/docx-anon"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar" todir="${release.dir}/optional/docx-anon"/>
+		<copy file="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar" todir="${release.dir}/optional/docx-anon"/>
+				
 		<!-- resources -->
 		<mkdir dir="${release.dir}/resources"/>
 		<copy file="docx4j-samples-resources/src/main/resources/docx4j.properties" todir="${release.dir}/resources"/>
