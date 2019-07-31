@@ -2,6 +2,28 @@ CHANGELOG
 =========
 
 
+Version 8.1.2 minor release 
+=============
+
+Release date
+------------
+
+31 July 2019
+
+
+Contributors to this release
+----------------------------
+	
+Jason Harrop
+
+
+Notable Changes in Version 8.1.2 
+---------------------------------
+
+Bugfix: synchronize access to namespacePrefixMapper to avoid "namespacePrefixMapper is null" in multithreaded scenarios
+
+
+
 Version 8.1.1 minor release 
 =============
 
