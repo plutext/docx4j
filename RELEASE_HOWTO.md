@@ -261,9 +261,11 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Repeat above for -ImportXHTML and export-FO
+Repeat above for -ImportXHTML
 
-Run ant release (requires docx4j, -ImportXHTML and export-FO to be in maven)
+Run ant release (requires docx4j, -ImportXHTML to be in maven):
+
+ant release  -buildfile etc/build.xml
  
 Swap sub-modules back to <version>${revision}</version> (ie revert Maven's 2 commits)
 
