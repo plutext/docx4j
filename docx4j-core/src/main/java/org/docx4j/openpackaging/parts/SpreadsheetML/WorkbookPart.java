@@ -2,6 +2,7 @@ package org.docx4j.openpackaging.parts.SpreadsheetML;
 
 import java.util.List;
 
+import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
@@ -39,6 +40,19 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 		setRelationshipType(Namespaces.SPREADSHEETML_WORKBOOK);
 		
 	}
+	
+	@Override
+    protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
+
+		namespacePrefixMapper.setMcIgnorable(
+				this.getJaxbElement().getIgnorable() );
+	}
+
+	@Override
+	public String getMceIgnorable() {
+    	return this.getJaxbElement().getIgnorable();
+    }
+	
 	
 	public SharedStrings getSharedStrings() {
 		return sharedStrings;

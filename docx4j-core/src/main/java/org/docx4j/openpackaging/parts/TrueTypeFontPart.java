@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2019, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.openpackaging.parts.WordprocessingML;
+package org.docx4j.openpackaging.parts;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,16 +34,23 @@ import org.docx4j.fonts.fop.fonts.FontLoader;
 import org.docx4j.fonts.fop.fonts.FontResolver;
 import org.docx4j.fonts.fop.fonts.FontSetup;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.AbstractFontPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObfuscatedFontPart extends AbstractFontPart {
+/**
+ * An embedded TTF which is not obfuscated.
+ * 
+ * @author jharrop
+ * @since 8.1.1
+ */
+public class TrueTypeFontPart extends AbstractFontPart {
 
-	private static Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);		
+	private static Logger log = LoggerFactory.getLogger(TrueTypeFontPart.class);		
 	
-	public ObfuscatedFontPart(PartName partName) throws InvalidFormatException {
+
+	public TrueTypeFontPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();				
 	}
@@ -51,18 +58,12 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_FONT));
+				org.docx4j.openpackaging.contenttype.ContentTypes.TRUETYPE_FONT));
 
 		// Used when this Part is added to a rels
-		// TODO
-		//setRelationshipType(Namespaces.);
+		setRelationshipType(Namespaces.FONT);
 	}
 	
-	@Deprecated
-	public PhysicalFont deObfuscate(String fontNameAsInTablePart, String fontFileName, String fontKey, String filenamePrefix ) {
-		
-		return extract( fontNameAsInTablePart,  fontFileName,  fontKey,  filenamePrefix );
-	}
 	
 	/**
 	 * deObfuscate this font, and save it using fontName
@@ -85,37 +86,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		byte[] fontData = this.getBytes();
 		
 		log.debug("bytes: " + fontData.length);
-		
-		log.info("deObfuscating '" + fontFileName + "' with fontkey: " + fontKey);			
-		// INPUT: {1DF903E3-2F14-4575-8028-881FEBABF2AB}
-
-		// See http://openiso.org/Ecma/376/Part4/2.8.1
-		// for how to do this.
-		
-		
-		// First, strip {,}
-		String tmpString = fontKey.substring(1, fontKey.length()-1);
-		log.debug(tmpString);
-		
-		// Now strip -
-		String guidString = tmpString.replace(target, replacement);
-		log.debug(guidString);
-
-		
-		// Make the font key into a byte array
-		byte[] guidByteArray = new byte[16];
-		for (int i = 0; i < guidByteArray.length; i++) {
-			guidByteArray[i] = fromHexString(guidString.substring(i * 2,
-					(i * 2) + 2));
-		}
-		
-		// XOR the reverse of the guidByteArray with 
-		// the first and second 16 bytes 
-		for (int j = 0; j < 2; j++) {
-			for (int i = 0; i < 16; i++) {
-				fontData[(j * 16) + i] ^= guidByteArray[15 - i];  // Reverse happens here
-			}
-		}
+				
 		
 		// Save the result
 		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
@@ -182,54 +153,5 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		
 	}
 	
-	
-	public static byte fromHexString( String hexStr ){
-    	byte firstNibble  = Byte.parseByte(hexStr.substring(0,1),16); 
-    	byte secondNibble = Byte.parseByte(hexStr.substring(1,2),16);
-    	int finalByte = (secondNibble) | (firstNibble << 4 ); 
-    	return (byte) finalByte;
-	}
-	
-	
-	static java.lang.CharSequence target = (new String("-")).subSequence(0, 1);
-    static java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);
-	
-    protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
-    	
-    	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
-    	// (when it is invoked first; sometimes it isn't - note this is a static method)
-    	
-    	for(File f: getTmpFontDir().listFiles() ) {
-    		
-    	    if(f.getName().startsWith(filenamePrefix)) {
-    	        f.delete();
-    	    }
-    	}
-    	if (log.isWarnEnabled()) {
-    		int count = getTmpFontDir().listFiles().length;
-    		if (count>0) {
-	    		try {
-					log.warn(count + " files remain in " + getTmpFontDir().getCanonicalPath());
-				} catch (IOException e) {
-				}
-	    	}
-    	}
-    }
-	
-	@Override
-	protected void finalize() throws Throwable {
-		
-        try {
-        	if (getF()!=null) {
-	    		log.debug("Deleting  " + getF().getName());
-				getF().delete();
-        	}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			super.finalize();
-		}
-		
-	}
 	
 }

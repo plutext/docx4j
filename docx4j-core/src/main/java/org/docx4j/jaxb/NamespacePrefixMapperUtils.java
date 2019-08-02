@@ -25,7 +25,7 @@ public class NamespacePrefixMapperUtils {
 	
 	private static boolean haveTried = false;
 	
-	public static Object getPrefixMapper() throws JAXBException {
+	public static synchronized Object getPrefixMapper() throws JAXBException {
 		
 		if (prefixMapper!=null) return prefixMapper;
 		
@@ -91,7 +91,7 @@ public class NamespacePrefixMapperUtils {
 	}
 
 	
-	public static Object getPrefixMapperRelationshipsPart() throws JAXBException {
+	public static synchronized Object getPrefixMapperRelationshipsPart() throws JAXBException {
 
 		if (prefixMapperRels!=null) return prefixMapperRels;
 

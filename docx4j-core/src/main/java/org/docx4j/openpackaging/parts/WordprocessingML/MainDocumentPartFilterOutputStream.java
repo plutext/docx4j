@@ -12,11 +12,11 @@ import org.docx4j.Version;
  * @author jharrop
  * @since 6.1.0
  */
-public class MainDocumentPartFilterOuputStream extends FilterOutputStream {
+public class MainDocumentPartFilterOutputStream extends FilterOutputStream {
 	
 	boolean isNewPkg = true;	
 
-	public MainDocumentPartFilterOuputStream(OutputStream out, boolean isNewPkg) {
+	public MainDocumentPartFilterOutputStream(OutputStream out, boolean isNewPkg) {
 		super(out);
 		this.isNewPkg = isNewPkg;
 	}
@@ -46,12 +46,12 @@ public class MainDocumentPartFilterOuputStream extends FilterOutputStream {
 
 		int bodyEnd = pos + 8;
 		String bodyString = text.substring(0, bodyEnd);
-		out.write(bodyString.getBytes());
+		out.write(bodyString.getBytes("UTF-8"));
 		
 		String comment = "<!-- " + Version.getPoweredBy(isNewPkg) + " -->"; 
-		out.write(comment.getBytes());
+		out.write(comment.getBytes("UTF-8"));
 
-		out.write(text.substring(bodyEnd).getBytes());
+		out.write(text.substring(bodyEnd).getBytes("UTF-8"));
 
 		commentWritten = true;
 		

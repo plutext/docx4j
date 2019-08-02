@@ -277,10 +277,12 @@ Java 8 -->
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
 				<pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar"/>
+				<pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
 				<pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar"/>
 				<pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar"/>
 				<pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar"/>
 				<pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar"/>
+				<pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
 			</path>
 		</copy>
 

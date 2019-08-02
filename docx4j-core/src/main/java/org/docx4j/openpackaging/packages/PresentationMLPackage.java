@@ -315,8 +315,7 @@ public class PresentationMLPackage  extends OpcPackage {
 		}
 		
 		// All this for the 16 possible things defined in STPlaceholderType!
-		
-		Map<String, ShapeWrapper> globalPlaceHolders = new HashMap<String, ShapeWrapper>();
+		globalPlaceHolders = new HashMap<String, ShapeWrapper>();
 		
 		Iterator partIterator = this.getParts().getParts().entrySet().iterator();
 	    while (partIterator.hasNext()) {

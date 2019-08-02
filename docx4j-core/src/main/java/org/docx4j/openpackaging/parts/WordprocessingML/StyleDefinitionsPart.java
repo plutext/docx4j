@@ -285,10 +285,13 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	// doesn't set default, so use name
     	// (alternatively, could use id=style0)
     	if (defaultParagraphStyle==null) {
-    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
-    			if( s.getType().equals("paragraph")
-    					&& s.getName()!=null
-    					&& s.getName().getVal().equals("Default") ) {
+    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {
+				if (s.getType() == null) {
+					log.warn("style type missing");
+				} else if (s.getName() == null) {
+					log.warn("style name missing");
+				} else if (s.getType().equals("paragraph")
+						&& s.getName().getVal().equals("Default") ) {
     				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
     				defaultParagraphStyle=s;
     				break;
@@ -297,8 +300,14 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	}
     	// try using id=style0
     	if (defaultParagraphStyle==null) {
-    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
-    			if( s.getType().equals("paragraph")
+    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {
+    			
+    			
+				if (s.getType() == null) {
+					log.warn("style type missing");
+				} else if (s.getStyleId() == null) {
+					log.warn("style id missing");
+				} else if( s.getType().equals("paragraph")
     					&& s.getStyleId().equals("style0") ) {
     				log.debug("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
     				defaultParagraphStyle=s;

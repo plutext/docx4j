@@ -59,7 +59,7 @@ public class Context {
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 				
 			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
-					"org.docx4j.com.microsoft.schemas.office.excel.x2010.spreadsheetDrawing:" +	
+					"org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing:" +	
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader, ProviderProperties.getProviderProperties() );
 				

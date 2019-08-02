@@ -137,6 +137,7 @@ public class PartsAnalyzer {
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart						
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart
+						|| p instanceof org.docx4j.openpackaging.parts.TrueTypeFontPart  // unless the font name give something away
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart // unless the style names give something away
 						|| p.getPartName().getName().equals("/word/stylesWithEffects.xml")
 						|| p instanceof org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart) {

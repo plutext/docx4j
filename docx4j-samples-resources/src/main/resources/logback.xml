@@ -133,6 +133,10 @@
 	<!-- Enterprise edition loggers -->
 	<logger name="com.plutext.merge" level="INFO" />
 
+	<logger name="com.plutext.merge.BlockRange" level="INFO" />
+
+	<logger name="com.plutext.merge.HeaderFooterUtils" level="INFO" />
+
 	<logger name="com.plutext.merge.CustomXmlPartHandler" level="WARN" />
 
 	<logger name="com.plutext.merge.altchunk" level="WARN" />
