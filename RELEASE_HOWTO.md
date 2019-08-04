@@ -45,6 +45,8 @@ Update CHANGELOG.md, README.md with release info.
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
 
+Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
+
 Update build.xml so it has the same version as pom.xml (but without  -SNAPSHOT) 
 
 Check everything is committed
@@ -274,17 +276,23 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Revert and commit (most recent first) the 2 commits which change the version number in all the poms, 
+Revert and commit (most recent first) the 2 commits which change the version number in all the poms
+(Swap sub-modules back to <version>${revision}</version>)
 then manually update the version number in parent pom.
 
 Repeat above for -ImportXHTML 
 
 Run ant release (requires docx4j, -ImportXHTML  to be in maven)
- 
+
+ ant release  -buildfile etc/build.xml
 
 ----
 
-Put in /docx4j dir
+Put in /docx4j dir, for example
+
+	scp *1.2.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.2/
+
+
 Announce release in docx4j forum
 Update downloads.html (includes link to release announcement)
 Update news

@@ -2,6 +2,104 @@ CHANGELOG
 =========
 
 
+Version 11.1.2 
+==============
+
+Release date
+------------
+
+5 August 2019
+
+Overview 
+--------
+
+11.1.2 is a JPMS modularised release.  It incorporates changes made in 8.1.1 and 8.1.2 (ie changes since 11.1.0 was released)
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+ChilamYan
+
+
+Notable Changes in Version 11.1.2 
+---------------------------------
+
+Widen opens in pptx4j/xlsx4j module-info
+
+Bugfix: synchronize access to namespacePrefixMapper to avoid "namespacePrefixMapper is null" in multithreaded scenarios
+
+Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
+
+Support for embedded True Type Fonts. (Up until now, we only supported obfuscated embeddings)
+
+xlsx4j
+------
+
+Bugfix: Correct jcSML spreadsheetDrawing package name
+
+Support mc:alternateContent in Workbook part (ie instead of dropping it)
+
+
+
+Version 8.1.2 minor release 
+=============
+
+Release date
+------------
+
+31 July 2019
+
+
+Contributors to this release
+----------------------------
+	
+Jason Harrop
+
+
+Notable Changes in Version 8.1.2 
+---------------------------------
+
+Bugfix: synchronize access to namespacePrefixMapper to avoid "namespacePrefixMapper is null" in multithreaded scenarios
+
+
+
+Version 8.1.1 minor release 
+=============
+
+Release date
+------------
+
+29 June 2019
+
+
+Contributors to this release
+----------------------------
+
+ChilamYan 
+	
+Jason Harrop
+
+
+Notable Changes in Version 8.1.1 
+---------------------------------
+
+Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
+
+Support for embedded True Type Fonts. (Up until now, we only supported obfuscated embeddings)
+
+
+xlsx4j
+------
+
+Bugfix: Correct jcSML spreadsheetDrawing package name
+
+Support mc:alternateContent in Workbook part (ie instead of dropping it)
+
+
+
 Version 11.1.0 
 ==============
 
