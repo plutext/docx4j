@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.1.1-SNAPSHOT</revision>
+		<revision>11.1.2-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -213,7 +213,8 @@
 				<version>3.1.0</version> 
 				<configuration>
 					<maxmemory>512m</maxmemory>
-					<additionalJOption>-Xdoclint:none</additionalJOption> 
+					<additionalJOption>-Xdoclint:none</additionalJOption>
+					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable> 
 				</configuration>
 				<executions>
 					<execution>
