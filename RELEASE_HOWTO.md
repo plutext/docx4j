@@ -294,8 +294,8 @@ Put in /docx4j dir, for example
 
 
 Announce release in docx4j forum
-Update downloads.html (includes link to release announcement)
-Update news
+Update downloads.html
+Update news  (includes link to release announcement)
 
 ----
 
