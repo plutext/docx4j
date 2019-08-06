@@ -10,3 +10,4 @@ bin-testOutput/
 .flattened-pom.xml
 tmp/
 release-zips/
+patches/

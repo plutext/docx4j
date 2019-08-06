@@ -35,6 +35,15 @@ TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
  
 ---------- 
 
+Merge changes from 8 or 11 as appropriate.  If creating a patch (of changes in 11_1_2):
+
+    git diff master VERSION_11_1_2 > patchfile
+
+may need to run dos2unix on source file(s), then its
+
+    patch -p1 --dry-run  < patchfile
+
+
 Update CHANGELOG.md, README.md with release info.
 
     http://www.jukie.net/bart/blog/pimping-out-git-log
@@ -63,6 +72,16 @@ Run JarCheck on result of mvn install to check its compiled for 1.6 (run it on a
 
 git commit / push upstream
 (uses git-remote-https, if you want to force a particular network connection)
+
+-------------
+
+Note for Java 11:  Maven Central requires Javadoc.
+
+But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
+				 
+So we have to build with Java 12:- 
+
+$ sudo archlinux-java set java-12-adoptopenjdk
 
 -------------
 
@@ -197,6 +216,11 @@ If you need to start again for any reason, delete the tag it added:
 and change the version back in your pom (and commit)
 and delete release.properties
 
+Easiest is to discard all changes, and if necessary revert and commit any commits it made.
+
+You'll still need to delete any tag as per above.
+
+
 -----------
 
 You can't do:
@@ -261,20 +285,26 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Repeat above for -ImportXHTML
+Revert and commit (most recent first) the 2 commits which change the version number in all the poms
+(Swap sub-modules back to <version>${revision}</version>)
+then manually update the version number in parent pom.
 
-Run ant release (requires docx4j, -ImportXHTML to be in maven):
+Repeat above for -ImportXHTML 
 
-ant release  -buildfile etc/build.xml
- 
-Swap sub-modules back to <version>${revision}</version> (ie revert Maven's 2 commits)
+Run ant release (requires docx4j, -ImportXHTML  to be in maven)
+
+ ant release  -buildfile etc/build.xml
 
 ----
 
-Put in /docx4j dir
+Put in /docx4j dir, for example
+
+	scp *1.2.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.2/
+
+
 Announce release in docx4j forum
-Update downloads.html (includes link to release announcement)
-Update news
+Update downloads.html
+Update news  (includes link to release announcement)
 
 ----
 

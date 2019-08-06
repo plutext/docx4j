@@ -47,6 +47,16 @@
                 </configuration>
             </plugin>				
 			
+ 			<!--  mvn versions:display-dependency-updates --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
+			</plugin> 
+			
 		</plugins>
 	</build>
 

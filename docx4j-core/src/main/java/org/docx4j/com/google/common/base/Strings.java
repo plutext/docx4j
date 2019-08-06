@@ -14,14 +14,14 @@
 
 package org.docx4j.com.google.common.base;
 
-import static java.util.logging.Level.WARNING;
 import static org.docx4j.com.google.common.base.Preconditions.checkArgument;
 import static org.docx4j.com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.logging.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
 import org.docx4j.com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Static utility methods pertaining to {@code String} or {@code CharSequence} instances.
@@ -31,6 +31,9 @@ import org.docx4j.com.google.common.annotations.VisibleForTesting;
  */
 @GwtCompatible
 public final class Strings {
+	
+	private static Logger log = LoggerFactory.getLogger(Strings.class);
+	
   private Strings() {}
 
   /**
@@ -304,9 +307,8 @@ public final class Strings {
       // Default toString() behavior - see Object.toString()
       String objectToString =
           o.getClass().getName() + '@' + Integer.toHexString(System.identityHashCode(o));
-      // Logger is created inline with fixed name to avoid forcing Proguard to create another class.
-      Logger.getLogger("org.docx4j.com.google.common.base.Strings")
-          .log(WARNING, "Exception during lenientFormat for " + objectToString, e);
+      // TODO? Logger is created inline with fixed name to avoid forcing Proguard to create another class.
+      log.warn("Exception during lenientFormat for " + objectToString, e);
       return "<" + objectToString + " threw " + e.getClass().getName() + ">";
     }
   }

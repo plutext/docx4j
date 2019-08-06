@@ -17,11 +17,11 @@ package org.docx4j.com.google.common.base;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 import java.util.ServiceConfigurationError;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Methods factored out so that they can be emulated differently in GWT.
@@ -30,8 +30,9 @@ import org.docx4j.com.google.common.annotations.GwtCompatible;
  */
 @GwtCompatible(emulated = true)
 final class Platform {
-  private static final Logger logger = Logger.getLogger(Platform.class.getName());
 
+	private static Logger log = LoggerFactory.getLogger(Platform.class);
+	
   private Platform() {}
 
   /** Calls {@link System#nanoTime()}. */
@@ -59,7 +60,7 @@ final class Platform {
 
 
   private static void logPatternCompilerError(ServiceConfigurationError e) {
-    logger.log(Level.WARNING, "Error loading regex compiler, falling back to next option", e);
+    log.warn("Error loading regex compiler, falling back to next option", e);
   }
 
 }
