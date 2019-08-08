@@ -174,7 +174,7 @@ module org.docx4j.core {
     opens org.docx4j.openpackaging.contenttype to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.model.structure.jaxb  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
-    opens org.docx4j.model.datastorage  to java.xml.bind, com.sun.xml.bind; // for HistgramQNameTest
+    opens org.docx4j.model.datastorage;//  to java.xml.bind, com.sun.xml.bind; // for HistgramQNameTest
 
     // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
 	opens org.pptx4j.convert.out.svginhtml;
