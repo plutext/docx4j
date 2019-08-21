@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2019, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,12 +21,13 @@
 package org.pptx4j.samples;
 
 
-import java.io.File;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTRegularTextRun;
+import org.docx4j.dml.CTTextCharacterProperties;
+import org.docx4j.dml.CTTextParagraph;
 import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -36,6 +37,7 @@ import org.docx4j.openpackaging.parts.PresentationML.NotesMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.NotesSlidePart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.pml.CTNotesMasterIdList;
 import org.pptx4j.pml.CTNotesMasterIdListEntry;
@@ -46,8 +48,8 @@ import org.pptx4j.pml.Shape;
 
 
 /**
- * @author jharrop
- *
+ * Demonstrate adding a note to a slide; for this you add a NotesSlidePart to
+ * the SlidePart.
  */
 public class SlideNotes  {
 	
@@ -70,6 +72,12 @@ public class SlideNotes  {
 		SlideLayoutPart layoutPart = (SlideLayoutPart)presentationMLPackage.getParts().getParts().get(
 				new PartName("/ppt/slideLayouts/slideLayout1.xml"));
 		
+		// Forthcoming docx4j 8.1.3|11.1.3
+		//ThemePart themePart = pp.getThemePart();
+		// in the meantime
+		ThemePart themePart = (ThemePart)presentationMLPackage.getParts().get(new PartName("/ppt/theme/theme1.xml"));
+		
+		
 		// OK, now we can create a slide
 		SlidePart slidePart = new SlidePart(new PartName("/ppt/slides/slide1.xml"));
 		slidePart.setContents( SlidePart.createSld() );		
@@ -83,7 +91,7 @@ public class SlideNotes  {
 		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
 		
 		// Now add notes slide.
-		// 1. Notes master
+		// 1. Notes master (can be shared between NotesSlideParts)
 		NotesMasterPart nmp = new NotesMasterPart();
 		NotesMaster notesmaster = (NotesMaster)XmlUtils.unmarshalString(notesMasterXml, Context.jcPML);
 		nmp.setJaxbElement(notesmaster);
@@ -96,25 +104,24 @@ public class SlideNotes  {
 		 */
 		pp.getJaxbElement().setNotesMasterIdLst(createNotesMasterIdListPlusEntry(ppRelNmp.getId()));
 		
-		// .. NotesMasterPart typically has a rel to a theme 
-		// .. can we get away without it? 
-		// Nope .. read this in from a file
-		ThemePart themePart = new ThemePart(new PartName("/ppt/theme/theme2.xml"));
-			// TODO: read it from a string instead
-		themePart.unmarshal(
-				FileUtils.openInputStream(new File(System.getProperty("user.dir") + "/theme2.xml"))
-			);		
-		nmp.addTargetPart(themePart);
+		// .. NotesMasterPart has a rel to a theme 
+		// moreover, it needs to be an additional theme part (!), but it is ok for it to have the same contents
+		// so clone the existing theme
+		ThemePart themePart2 = new ThemePart(new PartName("/ppt/theme/theme2.xml"));
+		themePart2.setContents(XmlUtils.deepCopy(themePart.getContents(), Context.jcPML));
+		nmp.addTargetPart(themePart2, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
 		
-		// 2. Notes slide
+		// 2. Notes slide (replicate this for each slide you want to add a note to)
 		NotesSlidePart nsp = new NotesSlidePart();
 		Notes notes = (Notes)XmlUtils.unmarshalString(notesXML, Context.jcPML);
+		addNoteTextPara(notes, "here is my note");
 		nsp.setJaxbElement(notes);
+		
 		// .. connect it to the slide
 		slidePart.addTargetPart(nsp);
 		// .. it also has a rel to the slide
 		nsp.addTargetPart(slidePart);
-		// .. and the slide master
+		// .. and the note master
 		nsp.addTargetPart(nmp);
 		
 		
@@ -125,6 +132,31 @@ public class SlideNotes  {
 		System.out.println("\n\n done .. saved " + outputfilepath);
 		
 	}	
+	
+	private static void addNoteTextPara(Notes notes, String noteText) {
+		
+		org.docx4j.dml.ObjectFactory dmlObjectFactory = new org.docx4j.dml.ObjectFactory();
+
+		CTTextParagraph textparagraph = dmlObjectFactory.createCTTextParagraph(); 
+		    // Create object for endParaRPr
+		    CTRegularTextRun regulartextrun = dmlObjectFactory.createCTRegularTextRun(); 
+		    textparagraph.getEGTextRun().add( regulartextrun); 
+		        // Create object for rPr
+		        CTTextCharacterProperties textcharacterproperties = dmlObjectFactory.createCTTextCharacterProperties(); 
+		        regulartextrun.setRPr(textcharacterproperties); 
+		            textcharacterproperties.setLang( "en-AU"); 
+		            textcharacterproperties.setSmtId( Long.valueOf(0) );
+		        regulartextrun.setT( noteText ); 
+		    // Create object for endParaRPr
+		    CTTextCharacterProperties textcharacterproperties2 = dmlObjectFactory.createCTTextCharacterProperties(); 
+		    textparagraph.setEndParaRPr(textcharacterproperties2); 
+		        textcharacterproperties2.setLang( "en-US"); 
+		        textcharacterproperties2.setSmtId( Long.valueOf(0) );		
+		
+		        // Now 
+		        Shape notesPlaceholder = (Shape)notes.getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().get(1);
+		        notesPlaceholder.getTxBody().getP().add(textparagraph);
+	}
 	
 	private static CTNotesMasterIdList createNotesMasterIdListPlusEntry(String relId) {
 
@@ -207,13 +239,13 @@ public class SlideNotes  {
                         + "<p:txBody>"
                             + "<a:bodyPr/>"
                             + "<a:lstStyle/>"
-                            + "<a:p>"
-                                + "<a:r>"
-                                    + "<a:rPr lang=\"en-AU\" smtClean=\"0\"/>"
-                                    + "<a:t>My first note.</a:t>"
-                                +"</a:r>"
-                                + "<a:endParaRPr lang=\"en-US\"/>"
-                            +"</a:p>"
+//                            + "<a:p>"
+//                                + "<a:r>"
+//                                    + "<a:rPr lang=\"en-AU\" smtClean=\"0\"/>"
+//                                    + "<a:t>My first note.</a:t>"
+//                                +"</a:r>"
+//                                + "<a:endParaRPr lang=\"en-US\"/>"
+//                            +"</a:p>"
                         +"</p:txBody>"
                     +"</p:sp>"
                     + "<p:sp>"
