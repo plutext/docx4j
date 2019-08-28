@@ -2,6 +2,47 @@ CHANGELOG
 =========
 
 
+
+Version 11.1.3 minor release
+==============
+
+Release date
+------------
+
+28 August 2019
+
+Overview 
+--------
+
+11.1.3 is a JPMS modularised release.  
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 11.1.3 
+-------------------------
+
+improved diagnostics for XML factories
+
+handle newline chars in createParagraphOfText
+
+OpenDoPE: access resources in org.docx4j.model.datastorage (Widen opens in module-info)
+
+FieldUpdater patch (#343)
+
+pptx4j
+------
+
+Improve API for adding slide notes
+
+Bugfix: HandoutMasterPart part name must start with '/' 
+
+
+
 Version 11.1.2 
 ==============
 
