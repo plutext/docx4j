@@ -50,6 +50,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.Br;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Comments;
@@ -453,7 +454,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     private static class FontAndStyleFinder extends CallbackImpl {
 		
     	Set<String> fontsDiscovered;
-    	Set<String> stylesInUse;
+    	Set<String> stylesInUse; // by ID
     	
     	RunFontSelector runFontSelector;
     	
@@ -696,11 +697,30 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		org.docx4j.wml.P  para = factory.createP();
 
 		if (simpleText!=null) {
-			org.docx4j.wml.Text  t = factory.createText();
-			t.setValue(simpleText);
-	
+			
+			String[] splits = simpleText.replaceAll("\r", "").split("\n"); 
+			boolean afterNewline = false;
 			org.docx4j.wml.R  run = factory.createR();
-			run.getContent().add(t); // ContentAccessor		
+			for (String s : splits ) {
+
+				if (afterNewline) {
+					 Br br = factory.createBr();
+					 run.getContent().add(br);
+				}
+				
+				org.docx4j.wml.Text  t = factory.createText();
+				t.setValue(s);
+				
+				if (s.startsWith(" ")) {
+					t.setSpace("preserve");
+				} else if (s.endsWith(" ")) {
+					t.setSpace("preserve");
+				}
+				
+				run.getContent().add(t); // ContentAccessor					
+				
+				afterNewline = true;
+			}
 			
 			para.getContent().add(run); // ContentAccessor
 		}

@@ -70,18 +70,51 @@ public class StyleTree {
 	
 	
 	/**
-	 * Build a StyleTree for stylesInUse. 
+	 * Build a StyleTree for stylesInUse.
 	 * 
-	 * @param stylesInUse styles actually in use in the main document part, headers/footers, footnotes/endnotes 
-	 * @param allStyles styles defined in the style definitions part
+	 * @param stylesInUse styles actually in use in the main document part,
+	 *                    headers/footers, footnotes/endnotes
+	 * @param allStyles   styles defined in the style definitions part
 	 */
-	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, 
-			DocDefaults docDefaults, Style normal) {
-		
-		
-		// Set up Table style tree 
-		tableTree.setRootElement(new Node<AugmentedStyle>(tableTree, "table-root", null)); // a dummy root node
-        for (String styleId : stylesInUse ) {
+	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal) {
+
+		// Set up Table style tree
+		init(stylesInUse, allStyles, docDefaults, normal, null, null);
+
+	}
+
+	/**
+	 * Build a StyleTree for stylesInUse.
+	 * 
+	 * @param stylesInUse styles actually in use in the main document part,
+	 *                    headers/footers, footnotes/endnotes
+	 * @param allStyles   styles defined in the style definitions part
+	 * @since 11.1.3
+	 */
+	public StyleTree(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal,
+			Style defaultCharStyle, Style defaultTableStyle) {
+
+		init(stylesInUse, allStyles, docDefaults, normal, defaultCharStyle, defaultTableStyle);
+	}
+
+	/**
+	 * Build a StyleTree for stylesInUse.
+	 * 
+	 * @param stylesInUse styles actually in use in the main document part,
+	 *                    headers/footers, footnotes/endnotes
+	 * @param allStyles   styles defined in the style definitions part
+	 */
+	public void init(Set<String> stylesInUse, Map<String, Style> allStyles, DocDefaults docDefaults, Style normal,
+			Style defaultCharStyle, Style defaultTableStyle) {
+
+		// Set up Table style tree
+		if (defaultTableStyle == null) {
+			tableTree.setRootElement(new Node<AugmentedStyle>(tableTree, "table-root", null));
+		} else {
+			AugmentedStyle as = new AugmentedStyle(defaultTableStyle);
+			tableTree.setRootElement(new Node<AugmentedStyle>(tableTree, "table-root", as));
+		}
+		for (String styleId : stylesInUse) {
         	if (tableTree.get(styleId)==null) {
         		
             	Style style = allStyles.get(styleId);
@@ -140,9 +173,14 @@ public class StyleTree {
         	}
         }
         
-		// Set up Character style tree 
-		cTree.setRootElement(new Node<AugmentedStyle>(cTree, "c-root", null));
-        for (String styleId : stylesInUse ) {
+		// Set up Character style tree
+		if (defaultCharStyle == null) {
+			cTree.setRootElement(new Node<AugmentedStyle>(cTree, "c-root", null));
+		} else {
+			AugmentedStyle as = new AugmentedStyle(defaultCharStyle);
+			cTree.setRootElement(new Node<AugmentedStyle>(cTree, "c-root", as));
+		}
+		for (String styleId : stylesInUse) {
         	if (cTree.get(styleId)==null) {
         		
             	Style style = allStyles.get(styleId);
@@ -223,7 +261,7 @@ public class StyleTree {
 		
 	}
 	
-	
+/*	
 	public static void main(String[] args) throws Exception {
 
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/StyleResolution.xml";
@@ -283,6 +321,7 @@ public class StyleTree {
 	    }
 	    
 	}
+*/
 	
 	public static String getHtmlClassAttributeValue(Tree<AugmentedStyle> tree,
 			Node<AugmentedStyle> n) {

@@ -285,6 +285,9 @@ public abstract class Base {
 	public Relationship addTargetPart(Part targetpart, AddPartBehaviour mode, String proposedRelId
 			) throws InvalidFormatException {
 		
+		if (targetpart==null) {
+			throw new InvalidFormatException("Your targetpart is null.");			
+		}
 		if ( this.getPackage()==null ) {						
 			throw new InvalidFormatException("Package not set; if you are adding part2 to part1, make sure part1 is added first.");
 		}

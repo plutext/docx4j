@@ -28,9 +28,11 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.pml.CommonSlideData;
+import org.pptx4j.pml.Notes;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Sld;
 import org.slf4j.Logger;
@@ -308,7 +310,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 //		}
 //	}	
     
-    NotesSlidePart notes;
+    NotesSlidePart notesSlidePart;
     SlideLayoutPart layout;
     CommentsPart comments;
     
@@ -338,7 +340,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		}
 		
 		if (relationshipType.equals(Namespaces.PRESENTATIONML_NOTES_SLIDE)) {
-			notes = (NotesSlidePart)part;
+			notesSlidePart = (NotesSlidePart)part;
 			return true;			
 		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_SLIDE_LAYOUT)) {
 			layout = (SlideLayoutPart)part;
@@ -352,7 +354,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 	}
 	
 	public NotesSlidePart getNotesSlidePart() {
-		return notes;
+		return notesSlidePart;
 	}
 	public SlideLayoutPart getSlideLayoutPart() {
 		return layout;
@@ -365,5 +367,28 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		return comments;
 	}
 	
+	/**
+	 * @since 8.1.3, 11.1.3
+	 */
+	public NotesSlidePart createNotesSlidePart(NotesMasterPart nmp) throws InvalidFormatException, JAXBException {
+		
+		if (notesSlidePart==null) {
+
+			notesSlidePart= new NotesSlidePart();
+			Notes notes =  NotesSlidePart.createNotes();
+			notesSlidePart.setJaxbElement(notes);
+			
+			// .. connect it to the slide
+			this.addTargetPart(notesSlidePart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+			// .. it also has a rel to the slide
+			notesSlidePart.addTargetPart(this);
+		}
+		
+		if (nmp!=null && notesSlidePart.getNotesMasterPart()==null) {
+			// .. and the note master
+			notesSlidePart.addTargetPart(nmp);
+		}
+		return notesSlidePart;
+	}	
     
 }

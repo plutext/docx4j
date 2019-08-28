@@ -34,6 +34,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
@@ -46,13 +47,20 @@ import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.pml.CTExtension;
 import org.pptx4j.pml.CTExtensionList;
+import org.pptx4j.pml.CTNotesMasterIdList;
+import org.pptx4j.pml.CTNotesMasterIdListEntry;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
 import org.pptx4j.pml.Presentation.SldIdLst.SldId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 
 public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
+	
+	protected static Logger log = LoggerFactory.getLogger(MainPresentationPart.class);
 	
 	public MainPresentationPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -84,6 +92,10 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 
 	private CommentAuthorsPart commentAuthorsPart;
 	
+	private ThemePart themePart;
+	
+	private NotesMasterPart notesMasterPart; 
+	
 	public boolean setPartShortcut(Part part) {
 		
 		if (part == null ){
@@ -112,6 +124,12 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		if (relationshipType.equals(Namespaces.PRESENTATIONML_COMMENT_AUTHORS)) {
 			commentAuthorsPart = (CommentAuthorsPart)part;
 			return true;			
+		} else if (relationshipType.equals(Namespaces.THEME)) {
+			themePart = (ThemePart)part;
+			return true;			
+		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_NOTES_MASTER)) {
+			notesMasterPart = (NotesMasterPart)part;
+			return true;			
 		} else {	
 			return false;
 		}
@@ -124,6 +142,79 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	public CommentAuthorsPart getCommentAuthorsPart() {
 		return commentAuthorsPart;
 	}
+
+	/**
+	 * @since 8.1.3
+	 */
+	public ThemePart getThemePart() {
+		return themePart;
+	}
+	
+	/**
+	 * getNotesMasterPart creating if createIfAbsent flag allows
+	 * 
+	 * @throws Pptx4jException 
+	 * @since 8.1.3
+	 */
+	public NotesMasterPart getNotesMasterPart(boolean createIfAbsent) throws Pptx4jException {
+		
+		if (notesMasterPart==null && createIfAbsent) {
+					
+			Relationship ppRelNmp = null;
+			ThemePart themePart2 = null;
+			try {
+				notesMasterPart = new NotesMasterPart();
+				notesMasterPart.addDefaultContent();
+				// .. connect it to /ppt/presentation.xml
+				ppRelNmp = this.addTargetPart(notesMasterPart);
+				
+				/*
+				 *  <p:notesMasterIdLst>
+		                <p:notesMasterId r:id="rId3"/>
+		            </p:notesMasterIdLst>
+				 */
+				this.getJaxbElement().setNotesMasterIdLst(createNotesMasterIdListPlusEntry(ppRelNmp.getId()));
+				
+				// .. NotesMasterPart has a rel to a theme 
+				// moreover, it needs to be an additional theme part (!), but it is ok for it to have the same contents
+				// so clone the existing theme
+				themePart2 = new ThemePart(new PartName("/ppt/theme/theme2.xml"));
+				
+			} catch (Exception e) {
+				// Shouldn't happen
+				log.error(e.getMessage(), e);
+				return null;
+			}
+			
+			if (getThemePart()==null) {
+				throw new Pptx4jException("Missing theme part");
+			}
+			try {
+				themePart2.setContents(XmlUtils.deepCopy(getThemePart().getContents(), Context.jcPML));
+				notesMasterPart.addTargetPart(themePart2, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+			} catch (Docx4JException e) {
+				throw new Pptx4jException(e.getMessage(), e);
+			}
+			
+		}
+		
+		return notesMasterPart;
+		
+	}
+	
+	private CTNotesMasterIdList createNotesMasterIdListPlusEntry(String relId) {
+
+		org.pptx4j.pml.ObjectFactory pmlObjectFactory = new org.pptx4j.pml.ObjectFactory();
+
+		CTNotesMasterIdList notesmasteridlist = pmlObjectFactory.createCTNotesMasterIdList(); 
+		    // Create object for notesMasterId
+		    CTNotesMasterIdListEntry notesmasteridlistentry = pmlObjectFactory.createCTNotesMasterIdListEntry(); 
+		    notesmasteridlist.setNotesMasterId(notesmasteridlistentry); 
+		        notesmasteridlistentry.setId( relId); 
+
+		return notesmasteridlist;
+		}
+	
 	
 	/**
 	 * @since 2.7

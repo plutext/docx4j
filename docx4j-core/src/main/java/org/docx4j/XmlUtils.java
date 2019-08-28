@@ -185,6 +185,11 @@ public class XmlUtils {
 
 			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
+		} else if ("org.apache.xerces.jaxp.SAXParserFactoryImpl"
+						.equals(System.getProperty("javax.xml.parsers.SAXParserFactory"))) {
+		
+					log.info("xerces SAXParserFactory in use");			
+			
 		} else {
 			
 			// In this case suggest you add and use Xerces
@@ -231,6 +236,11 @@ public class XmlUtils {
 
 			log.info("setProperty com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			
+		} else if ("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"
+				.equals(System.getProperty("javax.xml.parsers.DocumentBuilderFactory"))) {
+			
+			log.info("xerces DocumentBuilderFactory in use");
+			
 		} else {
 
 			// In this case suggest you add and use Xerces
@@ -241,7 +251,6 @@ public class XmlUtils {
 			log.warn("default DocumentBuilderFactory property: " 
 					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" )
 					+ "\n Please consider using Xerces.");
-					
 		}
 		
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();

@@ -79,7 +79,11 @@ public class ResourceUtils {
 		if (url == null
 				&& System.getProperty("java.vendor").contains("Android")) {
 			url = loader.getResource("assets/" + filename);
-			if (url!=null) System.out.println("found " + filename + " in assets");
+			if (url!=null) {
+				if (log.isDebugEnabled() ) {
+					log.debug("found " + filename + " in assets");
+				}
+			}
 		}
 
         if (url == null) {
