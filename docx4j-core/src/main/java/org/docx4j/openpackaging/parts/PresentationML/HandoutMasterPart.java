@@ -35,7 +35,7 @@ public final class HandoutMasterPart extends JaxbPmlPart<HandoutMaster> {
 	}
 
 	public HandoutMasterPart() throws InvalidFormatException {
-		super(new PartName("ppt/handoutMasters/handoutMaster1.xml"));
+		super(new PartName("/ppt/handoutMasters/handoutMaster1.xml"));
 		init();
 	}
 	
