@@ -23,17 +23,26 @@ package org.docx4j.openpackaging.parts.PresentationML;
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTRegularTextRun;
+import org.docx4j.dml.CTTextCharacterProperties;
+import org.docx4j.dml.CTTextParagraph;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.pml.CommonSlideData;
 import org.pptx4j.pml.Notes;
 import org.pptx4j.pml.ObjectFactory;
+import org.pptx4j.pml.Shape;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
 public final class NotesSlidePart extends JaxbPmlPart<Notes> {  // p:notes
+
+	protected static Logger log = LoggerFactory.getLogger(NotesSlidePart.class);	
 	
 	private static final String COMMON_SLIDE_NOTES = 
 		"<p:notes xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"\n" + 
@@ -120,5 +129,71 @@ public final class NotesSlidePart extends JaxbPmlPart<Notes> {  // p:notes
 		
 		return notes;	 
 	}
+	
+	private NotesMasterPart notesMasterPart;
+	
+	public boolean setPartShortcut(Part part) {
+		
+		if (part == null ){
+			return false;
+		} else {
+			return setPartShortcut(part, part.getRelationshipType() );
+		}
+		
+	}	
+		
+	public boolean setPartShortcut(Part part, String relationshipType) {
+		
+		if (relationshipType==null) {
+			log.warn("trying to set part shortcut against a null relationship type.");
+			return false;
+		}
+		
+		if (relationshipType.equals(Namespaces.PRESENTATIONML_NOTES_MASTER)) {
+			notesMasterPart = (NotesMasterPart)part;
+			return true;			
+		} else {	
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * @since 8.1.3, 11.1.3
+	 */
+	public NotesMasterPart getNotesMasterPart() {
+		
+		return notesMasterPart;
+	}
+	
+	/**
+	 * @since 8.1.3, 11.1.3
+	 */	
+	public void addNoteTextPara(String noteText, String lang) {
+		
+		// eg  "en-AU"
+		
+		org.docx4j.dml.ObjectFactory dmlObjectFactory = new org.docx4j.dml.ObjectFactory();
 
+		CTTextParagraph textparagraph = dmlObjectFactory.createCTTextParagraph(); 
+		    // Create object for endParaRPr
+		    CTRegularTextRun regulartextrun = dmlObjectFactory.createCTRegularTextRun(); 
+		    textparagraph.getEGTextRun().add( regulartextrun); 
+		        // Create object for rPr
+		        CTTextCharacterProperties textcharacterproperties = dmlObjectFactory.createCTTextCharacterProperties(); 
+		        regulartextrun.setRPr(textcharacterproperties); 
+		            textcharacterproperties.setLang(lang); 
+		            textcharacterproperties.setSmtId( Long.valueOf(0) );
+		        regulartextrun.setT( noteText ); 
+		    // Create object for endParaRPr
+		    CTTextCharacterProperties textcharacterproperties2 = dmlObjectFactory.createCTTextCharacterProperties(); 
+		    textparagraph.setEndParaRPr(textcharacterproperties2); 
+		        textcharacterproperties2.setLang( lang); 
+		        textcharacterproperties2.setSmtId( Long.valueOf(0) );		
+		
+        // Now 
+        Shape notesPlaceholder = (Shape)this.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().get(0);
+        notesPlaceholder.getTxBody().getP().add(textparagraph);
+	}
+	
 }

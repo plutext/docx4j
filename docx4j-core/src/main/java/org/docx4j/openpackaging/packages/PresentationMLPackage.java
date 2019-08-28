@@ -267,6 +267,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * @throws InvalidFormatException
 	 * @throws JAXBException
 	 */
+	@Deprecated
 	public static NotesSlidePart createNotesSlidePart(Part sourcePart, PartName partName) throws Exception {
 
         String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
