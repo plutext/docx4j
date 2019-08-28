@@ -36,13 +36,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
 /**
- * As an optional step after binding, apply call user-defined XSLT to transform
+ * As an optional step after binding, apply user-defined XSLT to transform
  * this content control.
  * 
  * A template is attached to a content control (a repeat/condition/or normal bind),
  * using tag od:call=XYZ where XYZ is the template to call.
  * 
- * For example, by placing this on a repeat, a table tow could be coloured red if
+ * For example, by placing this on a repeat, a table row could be coloured red if
  * its contents met some condition. 
  * 
  * @author jharrop
