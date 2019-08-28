@@ -255,6 +255,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     	// OpenOffice conversion to docx
     	// doesn't necessarily contain a default character style
     	// so manufacture one
+    	// TODO 2019 rethink this: MergeDocx might specifically remove on purpose?
     	if (defaultCharacterStyle==null) {
     		try {
 				defaultCharacterStyle = (Style)XmlUtils.unmarshalString(DEFAULT_CHARACTER_STYLE_DEFAULT);

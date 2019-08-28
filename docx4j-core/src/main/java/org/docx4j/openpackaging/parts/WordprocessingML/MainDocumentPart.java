@@ -454,7 +454,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
     private static class FontAndStyleFinder extends CallbackImpl {
 		
     	Set<String> fontsDiscovered;
-    	Set<String> stylesInUse;
+    	Set<String> stylesInUse; // by ID
     	
     	RunFontSelector runFontSelector;
     	
