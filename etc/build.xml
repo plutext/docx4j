@@ -18,8 +18,9 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.1.2"/>
+	<property name="version" value="8.1.3"/>
 	<property name="importxhtml-version" value="8.0.0"/>
+	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
 	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
@@ -33,6 +34,19 @@
 
 	<property name="m2Repository" value="/home/jharrop/.m2/repository"/>
 
+	<!-- adjust these, they differ for docx4j 8 vs docx4j 11 -->
+	<!-- docx4j 11 settings
+		<property name="logback-version" value="1.3.0-alpha4"/>
+		
+		log4j-slf4j18-impl should be used with SLF4J 1.8.x releases or newer.
+		Applications that take advantage of the Java Module System should use SLF4J 1.8.x and log4j-slf4j18-impl.
+		
+		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
+	 -->
+	<!-- docx4j 8 settings: log4j-slf4j-impl should be used with SLF4J 1.7.x releases or older. --> 
+	<property name="logback-version" value="1.2.3"/>
+	<property name="log4j-slf4j-impl" value="log4j-slf4j-impl"/>
+	
 	<!--.NET properties -->
 	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
@@ -62,12 +76,15 @@
 		+- org.antlr:antlr-runtime:jar:3.5.2
 		+- org.antlr:stringtemplate:jar:3.2.1
 		|  \- antlr:antlr:jar:2.7.7
-		+- com.google.guava:guava:jar:27.0.1-jre
-		|  +- com.google.guava:failureaccess:jar:1.0.1
-		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
-		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
+		
+		+- com.google.guava:guava:jar:27.0.1-jre NOT REQUIRED
+
 		|  +- org.checkerframework:checker-qual:jar:2.5.2
 		|  +- com.google.errorprone:error_prone_annotations:jar:2.2.0
+		|  +- com.google.guava:failureaccess:jar:1.0.1
+		
+		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
+		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
 		|  +- com.google.j2objc:j2objc-annotations:jar:1.1
 		|  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17
 		+- com.thedeanda:lorem:jar:2.1
@@ -84,8 +101,8 @@
 		<pathelement location="${m2Repository}/commons-io/commons-io/2.6/commons-io-2.6.jar"/>
 		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
 		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.8/jackson-databind-2.9.8.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
 		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
 		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
 
@@ -99,17 +116,11 @@
 		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
 		<pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
 
-		<pathelement location="${m2Repository}/com/google/guava/guava/27.0.1-jre/guava-27.0.1-jre.jar"/>
-		<pathelement location="${m2Repository}/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar"/>
-		<pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
-		<pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
 		<pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"/>
 		<pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.2.0/error_prone_annotations-2.2.0.jar"/>
-		<pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
-		<pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
 
 		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
-
+		
 <!--
 		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
 		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
@@ -200,7 +211,7 @@
 		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="../docx4j-ImportXHTML/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
 		<!-- export-fo -->
 		<mkdir dir="${release.dir}/optional/export-fo"/>
@@ -307,7 +318,7 @@
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-slf4j-impl/2.11.2/log4j-slf4j-impl-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
@@ -319,8 +330,8 @@
 		<mkdir dir="${release.dir}/logging/logback"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/logback" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesDocx4j.dir}/logging/logback"/>
@@ -357,7 +368,7 @@
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-slf4j-impl/2.11.2/log4j-slf4j-impl-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
@@ -369,8 +380,8 @@
 		<mkdir dir="${release.dir}/logging/logback"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/logback" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesPptx4j.dir}/logging/logback"/>
@@ -408,7 +419,7 @@
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-slf4j-impl/2.11.2/log4j-slf4j-impl-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
@@ -420,8 +431,8 @@
 		<mkdir dir="${release.dir}/logging/logback"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/logback" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
-				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesXlsx4j.dir}/logging/logback"/>
