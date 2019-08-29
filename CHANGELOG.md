@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 8.1.3 minor release
+==============
+
+Release date
+------------
+
+29 August 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.3 
+-------------------------
+
+Port changes in 11.1.3 (as to which see below) back to 8.1.x 
+
+
 
 Version 11.1.3 minor release
 ==============
