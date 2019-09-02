@@ -62,6 +62,10 @@ public class SpaceBefore extends AbstractParagraphProperty {
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;	
 		short ignored = 1;
 		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
+		if (fVal==0f) {
+			this.setObject(BigInteger.ZERO);
+			return;
+		}
 
 		int twip;
 		
@@ -69,7 +73,20 @@ public class SpaceBefore extends AbstractParagraphProperty {
 		if (CSSPrimitiveValue.CSS_IN == type) {
 			twip = UnitsOfMeasurement.inchToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_MM == type) {
-			twip = UnitsOfMeasurement.mmToTwip(fVal);		
+			twip = UnitsOfMeasurement.mmToTwip(fVal);	
+		} else if (CSSPrimitiveValue.CSS_PT == type) {
+			twip = UnitsOfMeasurement.pointToTwip(fVal);	
+		} else if (CSSPrimitiveValue.CSS_EMS == type) {
+			// TODO: Don't hardcode 1em == 16px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(16.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_EXS == type) {
+			// TODO: Don't hardcode 1ex == 8px, but make it depend on the paragraph font.
+			twip = UnitsOfMeasurement.pxToTwip(8.0f * fVal);
+		} else if (CSSPrimitiveValue.CSS_PX == type) {
+			twip = UnitsOfMeasurement.pxToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
+			log.error("No support for unit: CSS_NUMBER ");
+			twip = 0;			
 		} else {
 			log.error("No support for unit " + type);
 			twip = 0;
