@@ -22,7 +22,6 @@ package org.docx4j.model.datastorage.migration;
 
 
 import org.docx4j.XmlUtils;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
@@ -44,15 +43,14 @@ import java.util.List;
  * There are at least 3 approaches for replacing variables in 
  * a docx.
  * 
- * 1. as shown in this example
+ * 1. text replacement on the document surface.
  * 2. using Merge Fields (see org.docx4j.model.fields.merge.MailMerger)
  * 3. binding content controls to an XML Part (via XPath)
  * 
  * Approach 3 is the recommended one when using docx4j. See the 
  * ContentControl* examples, Getting Started, and the subforum.
  * 
- * Approach 1, works in simple cases
- * only. 
+ * Approach 1, works in simple cases only. 
  * 
  * It won't work if your KEY is split across separate
  * runs in your docx (which often happens), or if you want 
@@ -272,27 +270,6 @@ public class VariablePrepare {
 //		
 //	}
 
-	public static void main(String[] args) throws Exception {
 
-		boolean save=true;
-		
-		String inputfilepath = System.getProperty("user.dir") + "/../docx4j-samples-docx4j/sample-docs/unmarshallFromTemplateDirtyExample.docx";
-		
-		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		
-		// Before .. note attributes w:rsidRDefault="00D15781" w:rsidR="00D15781"
-		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-		prepare(wmlPackage);
-		
-		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
-
-		// Save it
-		if (save) {
-			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
-			saver.save(System.getProperty("user.dir") + "/OUT_VariablePrepare.docx");
-			System.out.println("Saved");
-		} 
-	}
 
 }
