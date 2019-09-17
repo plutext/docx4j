@@ -46,6 +46,7 @@ public class BookmarksReplaceWithText {
 		
 		Map<DataFieldName, String> map = new HashMap<DataFieldName, String>();
 		map.put( new DataFieldName("bm1"), "whale shark");
+		map.put( new DataFieldName("bm2"), "dolphin");
 		
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
@@ -65,7 +66,7 @@ public class BookmarksReplaceWithText {
 		bti.replaceBookmarkContents(body.getContent(), map);
 		
 		// After
-		// System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
+		//System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
 		
 		// save the docx...
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_BookmarksTextInserter.docx"));
@@ -82,13 +83,13 @@ public class BookmarksReplaceWithText {
 			if (bm.getName()==null) continue;
 			String value = data.get(new DataFieldName(bm.getName()));
 			if (value==null) continue;
+			System.out.println(bm.getName() + ", " + value);
 				
 			try {
 				// Can't just remove the object from the parent,
 				// since in the parent, it may be wrapped in a JAXBElement
 				List<Object> theList = null;
 				if (bm.getParent() instanceof P) {
-					System.out.println("OK!");
 					theList = ((ContentAccessor)(bm.getParent())).getContent();
 				} else {
 					continue;
@@ -110,19 +111,22 @@ public class BookmarksReplaceWithText {
 							if (DELETE_BOOKMARK) {
 								rangeEnd=i;
 							} else {
-								rangeEnd=i-1;							
+								rangeEnd= i > rangeStart ? i-1 : i;	 // handle empty bookmark case						
 							}
 							break;
 						}
 					}
 					i++;
 				}
+				System.out.println(rangeStart + ", " + rangeEnd);
 				
-				if (rangeStart>0 && rangeEnd>rangeStart) {
+				if (rangeStart>0 && rangeEnd>=rangeStart) {
 					
 					// Delete the bookmark range
-					for (int j =rangeEnd; j>=rangeStart; j--) {
-						theList.remove(j);
+					if (rangeEnd>rangeStart) {
+						for (int j =rangeEnd; j>=rangeStart; j--) {
+							theList.remove(j);
+						}
 					}
 					
 					// now add a run
