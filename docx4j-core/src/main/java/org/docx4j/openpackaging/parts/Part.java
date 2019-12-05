@@ -253,6 +253,10 @@ public abstract class Part extends Base {
 		
 		log.info("Renaming part " + this.getPartName().getName() + " to " + newName.getName() );
 		
+		// Rename in the part store
+		// @since 8.1.4
+		this.getPackage().getSourcePartStore().rename(this.getPartName(), newName);
+		
 		// Remove this part
 		this.getPackage().getParts().remove(this.getPartName() );
 		

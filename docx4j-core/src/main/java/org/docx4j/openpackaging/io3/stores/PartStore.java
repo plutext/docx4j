@@ -27,6 +27,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 
 /**
@@ -72,6 +73,19 @@ public interface PartStore {
 	 * @throws Docx4JException
 	 */
 	public InputStream loadPart(String partName) throws Docx4JException;
+	
+	/**
+	 * 
+	 * Rename a part in the part store. Useful where a part is being renamed,
+	 * but its content has not been loaded.  (The existing approach is to 
+	 * manually force the content to be loaded)
+	 * 
+	 * @param oldName
+	 * @param newName
+	 * @since 8.1.4
+	 */
+	public void rename(PartName oldName, PartName newName);
+	
 	
 	/**
 	 * The size of this part in bytes.
