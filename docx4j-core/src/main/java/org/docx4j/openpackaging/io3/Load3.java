@@ -276,6 +276,8 @@ public class Load3 extends Load {
 				// a part, so start with a line break.
 			try {				
 				getPart(pkg, rp, r, ctm);
+			} catch (Docx4JException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
@@ -367,7 +369,7 @@ public class Load3 extends Load {
 			return;
 		}
 		
-		part = getRawPart(ctm, resolvedPartUri, r); // will throw exception if null
+		part = getRawPart(ctm, resolvedPartUri, r, rp); // will throw exception if null
 
 		// The source Part (or Package) might have a convenience
 		// method for this
@@ -452,7 +454,7 @@ public class Load3 extends Load {
 	 * @throws Docx4JException including if result is null
 	 */
 	public Part getRawPart(
-			ContentTypeManager ctm, String resolvedPartUri, Relationship rel)	
+			ContentTypeManager ctm, String resolvedPartUri, Relationship rel, RelationshipsPart rp /* for error logging */)	
 			throws Docx4JException {
 		
 		Part part = null;
@@ -621,7 +623,7 @@ public class Load3 extends Load {
 		}
 		
         if (part == null) {
-            throw new Docx4JException("cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + "=" + rel.getTarget());
+            throw new Docx4JException("For source " + rp.getSourceP().getPartName() +  ", cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + "=" + rel.getTarget());
         }
 		
 		return part;
