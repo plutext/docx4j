@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 8.1.4 minor release
+==============
+
+Release date
+------------
+
+23 December 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.4 
+-------------------------
+
+Dedicated part CommentsIdsPart for w16cid:commentsIds
+
+
 Version 8.1.3 minor release
 ==============
 

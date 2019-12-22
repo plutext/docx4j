@@ -127,6 +127,9 @@ public class Namespaces {
 
 	public final static String COMMENTS_EXTENDED = 
 			"http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
+
+	public final static String COMMENTS_IDS = 
+			"http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 	
 	public final static String OFFICE_2011_PEOPLE = 
 			"http://schemas.microsoft.com/office/2011/relationships/people";
