@@ -440,6 +440,20 @@ public class XsltFOFunctions {
 				
 			} else {
 			
+				/* don't do:
+				 * 
+	            ((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+	            ((Element)foBlockElement).setAttribute( "white-space-collapse", "false");
+
+	            Suggested at https://www.docx4java.org/forums/docx-java-f6/export-fo-preserve-whitespaces-t2762.html 
+	            because it causes unwanted formatting issues.  See https://stackoverflow.com/questions/57475550/unwanted-indent-after-line-wrap/57488818
+	            and https://github.com/plutext/docx4j/issues/369
+	            
+	            In any subsequent review of this, also consider https://www.docx4java.org/forums/pdf-output-f27/converting-docx-to-pdf-not-preserving-whitespace-t2752.html
+	            
+				 */
+	            
+				
 	//				log.info("Node we are importing: " + n.getClass().getName() );
 	//				foBlockElement.appendChild(
 	//						document.importNode(n, true) );
@@ -452,8 +466,6 @@ public class XsltFOFunctions {
 				 * 
 				 * So instead of importNode, use 
 				 */
-	            ((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
-	            ((Element)foBlockElement).setAttribute( "white-space-collapse", "false");
 	            XmlUtils.treeCopy( n,  foBlockElement );
 				
 			}
