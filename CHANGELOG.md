@@ -22,6 +22,16 @@ Changes in Version 8.1.4
 
 Dedicated part CommentsIdsPart for w16cid:commentsIds
 
+Enhance ArrayListWml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+export-FO: revert white-space-treatment="preserve"; white-space-collapse="false" because it causes unwanted formatting issues
+
+xlsx4j
+------
+
+Enhance ArrayListSml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+
 
 Version 8.1.3 minor release
 ==============
