@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir=".." default="release" name="docx4j">
+
+	<!-- Please note: docx4j releases are built with maven (mvn install).
+	
+	     This ant file is used as follows:
+	     
+	        ant release  -buildfile etc/build.xml   # Create zip files with deps, from maven artifacts
+	       
+			ant dist.NET -buildfile etc/build.xml  # Build docx4j .NET DLL files	        
+	     
+	     -->
+
+	<property environment="env"/>
+	<property name="junit.output.dir" value="junit"/>
+	<property name="debuglevel" value="source,lines,vars"/>
+	<property name="target" value="1.8"/>
+	<property name="source" value="1.8"/>
+	<property name="dist" value="./dist"/>
+
+	<property name="version" value="8.1.4"/>
+	<property name="importxhtml-version" value="8.0.0"/>
+	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
+
+	<property name="release.dir" value="docx4j-community-${version}"/>
+	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
+	<property name="releaseReferenceImpl.dir" value="docx4j-JAXB-ReferenceImpl-${version}"/>
+
+	<property name="releaseSamplesDocx4j.dir" value="docx4j-samples-docx4j-${version}"/>
+	<property name="releaseSamplesXlsx4j.dir" value="docx4j-samples-xlsx4j-${version}"/>
+	<property name="releaseSamplesPptx4j.dir" value="docx4j-samples-pptx4j-${version}"/>
+
+	<property name="src.main.java.dir" value="src/main/java"/>
+
+	<property name="m2Repository" value="/home/jharrop/.m2/repository"/>
+
+	<!-- adjust these, they differ for docx4j 8 vs docx4j 11 -->
+	<!-- docx4j 11 settings
+		<property name="logback-version" value="1.3.0-alpha4"/>
+		
+		log4j-slf4j18-impl should be used with SLF4J 1.8.x releases or newer.
+		Applications that take advantage of the Java Module System should use SLF4J 1.8.x and log4j-slf4j18-impl.
+		
+		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
+	 -->
+	<!-- docx4j 8 settings: log4j-slf4j-impl should be used with SLF4J 1.7.x releases or older. --> 
+	<property name="logback-version" value="1.2.3"/>
+	<property name="log4j-slf4j-impl" value="log4j-slf4j-impl"/>
+	
+	<!--.NET properties -->
+	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
+	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
+
+	<!-- 
+		org.docx4j:docx4j-core:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects-pml:jar:8.0.0
+		+- org.docx4j:docx4j-openxml-objects-sml:jar:8.0.0
+		+- org.plutext:jaxb-svg11:jar:1.0.2
+		+- net.engio:mbassador:jar:1.3.2
+		+- org.slf4j:jcl-over-slf4j:jar:1.7.26
+		+- org.apache.commons:commons-lang3:jar:3.9
+		+- org.apache.commons:commons-compress:jar:1.18
+		+- commons-codec:commons-codec:jar:1.12
+		+- commons-io:commons-io:jar:2.6
+		+- org.apache.httpcomponents:httpclient:jar:4.5.8
+		|  \- org.apache.httpcomponents:httpcore:jar:4.4.11
+		+- com.fasterxml.jackson.core:jackson-core:jar:2.9.8
+		+- com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
+		|  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0
+		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.3
+		+- org.docx4j.org.apache:xalan-metainf:jar:8.0.0
+		+- org.docx4j.org.apache:xalan-interpretive:jar:8.0.0
+		|  \- org.docx4j.org.apache:xalan-serializer:jar:8.0.0
+		+- net.arnx:wmf2svg:jar:0.9.8
+		+- org.antlr:antlr-runtime:jar:3.5.2
+		+- org.antlr:stringtemplate:jar:3.2.1
+		|  \- antlr:antlr:jar:2.7.7
+		
+		+- com.google.guava:guava:jar:27.0.1-jre NOT REQUIRED
+
+		|  +- org.checkerframework:checker-qual:jar:2.5.2
+		|  +- com.google.errorprone:error_prone_annotations:jar:2.2.0
+		|  +- com.google.guava:failureaccess:jar:1.0.1
+		
+		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
+		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
+		|  +- com.google.j2objc:j2objc-annotations:jar:1.1
+		|  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17
+		+- com.thedeanda:lorem:jar:2.1
+		+- org.slf4j:slf4j-api:jar:1.7.26
+	 -->
+	<path id="MavenDeps">
+
+		<pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
+		<pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
+		<pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.26/jcl-over-slf4j-1.7.26.jar"/>
+		<pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"/>
+		<pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.18/commons-compress-1.18.jar"/>
+		<pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
+		<pathelement location="${m2Repository}/commons-io/commons-io/2.6/commons-io-2.6.jar"/>
+		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
+		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
+
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/8.0.0/xalan-interpretive-8.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/8.0.0/xalan-serializer-8.0.0.jar"/>
+
+		<pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.8/wmf2svg-0.9.8.jar"/>
+
+		<pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar"/>
+		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
+		<pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
+
+		<pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"/>
+		<pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.2.0/error_prone_annotations-2.2.0.jar"/>
+
+		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
+		
+<!--
+		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
+		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+		-->
+
+	</path>
+
+
+	<path id="docx4j-export-fo.classpath">
+
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
+
+		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
+
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.10/batik-css-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.10/batik-dom-1.10.jar"/>
+
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.10/batik-util-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.10/batik-constants-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.10/batik-i18n-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.10/batik-bridge-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.10/batik-anim-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.10/batik-script-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.10/batik-xml-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.10/batik-awt-util-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.10/batik-gvt-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.10/batik-transcoder-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.10/batik-svggen-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.10/batik-extension-1.10.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.10/batik-ext-1.10.jar"/>
+
+		<pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
+		<pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
+
+		<!-- https://github.com/apache/fop/blob/fop-2_3/fop-core/pom.xml#L100 -->
+		<pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.7/fontbox-2.0.7.jar"/>
+
+	</path>
+
+	<target name="release" depends="release-main,release-JAXB-ReferenceImpl,release-JAXB-MOXy,release-samples" />
+	<target name="release-samples" depends="release-samples-docx4j,release-samples-pptx4j,release-samples-xlsx4j" />
+	
+	
+
+	<target name="release-main"  >
+
+		<delete dir="${release.dir}"/>
+		<mkdir dir="${release.dir}"/>
+
+		<!-- docx4j itself, as built by maven -->
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects/${version}/docx4j-openxml-objects-${version}.jar" todir="${release.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar" todir="${release.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar" todir="${release.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar" todir="${release.dir}"/>
+		<!-- include this for convenience; Java 8 -->
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-Internal/${version}/docx4j-JAXB-Internal-${version}.jar" todir="${release.dir}"/>
+
+		<copy file="CHANGELOG.md" todir="${release.dir}"/>
+
+		<!-- dependencies -->
+		<mkdir dir="${release.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${release.dir}/dependencies" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+				<path refid="MavenDeps"/>
+			</path>
+		</copy>
+
+		<!-- documentation -->
+		<mkdir dir="${release.dir}/documentation"/>
+		<copy file="docs/Docx4j_GettingStarted.pdf" todir="${release.dir}/documentation" />
+
+		<!-- legals -->
+		<mkdir dir="${release.dir}/legals"/>
+		<copy includeemptydirs="false" todir="${release.dir}/legals">
+			<fileset dir="legals" />
+		</copy>
+
+		<!-- optional -->
+		<mkdir dir="${release.dir}/optional"/>
+
+		<!-- ImportXHTML -->
+		<mkdir dir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+
+		<!-- export-fo -->
+		<mkdir dir="${release.dir}/optional/export-fo"/>
+		<copy todir="${release.dir}/optional/export-fo" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+				<path refid="docx4j-export-fo.classpath"/>
+			</path>
+		</copy>
+
+		<!-- diffx -->
+		<mkdir dir="${release.dir}/optional/diffx"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>
+
+		<!-- anon -->
+		<mkdir dir="${release.dir}/optional/docx-anon"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar" todir="${release.dir}/optional/docx-anon"/>
+		<copy file="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar" todir="${release.dir}/optional/docx-anon"/>
+				
+		<!-- resources -->
+		<mkdir dir="${release.dir}/resources"/>
+		<copy file="docx4j-samples-resources/src/main/resources/docx4j.properties" todir="${release.dir}/resources"/>
+		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${release.dir}/resources"/>
+		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${release.dir}/resources"/>
+
+		<!--  zip it up -->
+		<zip destfile="docx4j-community-${version}.zip" basedir="${release.dir}"/>
+
+		<delete dir="${release.dir}"/>
+	</target>
+
+	<target name="release-JAXB-MOXy"  >
+
+		<delete dir="${releaseMOXy.dir}"/>
+		<mkdir dir="${releaseMOXy.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-MOXy/${version}/docx4j-JAXB-MOXy-${version}.jar" todir="${releaseMOXy.dir}"/>
+
+
+		<!-- dependencies -->
+		<mkdir dir="${releaseMOXy.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.4/org.eclipse.persistence.moxy-2.7.4.jar"/>
+				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.7.4/org.eclipse.persistence.core-2.7.4.jar"/>
+				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.7.4/org.eclipse.persistence.asm-2.7.4.jar"/>
+			</path>
+		</copy>
+
+		<!--  zip it up -->
+		<zip destfile="docx4j-JAXB-MOXy-${version}.zip" basedir="${releaseMOXy.dir}"/>
+
+		<delete dir="${releaseMOXy.dir}"/>
+	</target>
+
+	<target name="release-JAXB-ReferenceImpl"  >
+
+		<delete dir="${releaseReferenceImpl.dir}"/>
+		<mkdir dir="${releaseReferenceImpl.dir}"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-ReferenceImpl/${version}/docx4j-JAXB-ReferenceImpl-${version}.jar" todir="${releaseReferenceImpl.dir}"/>
+
+		<!-- dependencies -->
+		<mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
+		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar"/>
+				<pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
+				<pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar"/>
+				<pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar"/>
+				<pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar"/>
+				<pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar"/>
+				<pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+			</path>
+		</copy>
+
+		<!--  zip it up -->
+		<zip destfile="docx4j-JAXB-ReferenceImpl-${version}.zip" basedir="${releaseReferenceImpl.dir}"/>
+
+		<delete dir="${releaseReferenceImpl.dir}"/>
+	</target>
+
+	<target name="release-samples-docx4j"  >
+
+		<delete dir="${releaseSamplesDocx4j.dir}"/>
+		<mkdir dir="${releaseSamplesDocx4j.dir}"/>
+
+		<copy file="docx4j-samples-docx4j/pom.xml" todir="${releaseSamplesDocx4j.dir}" />
+
+		<!-- src -->
+		<mkdir dir="${releaseSamplesDocx4j.dir}/src"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/src">
+			<fileset dir="docx4j-samples-docx4j/src" />
+		</copy>
+
+		<!-- sample-docs -->
+		<mkdir dir="${releaseSamplesDocx4j.dir}/sample-docs"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/sample-docs">
+			<fileset dir="docx4j-samples-docx4j/sample-docs" />
+		</copy>
+
+		<!-- logging -->
+		<mkdir dir="${release.dir}/logging"/>
+
+		<!-- log4j2 -->
+		<mkdir dir="${release.dir}/logging/log4j2"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/log4j2" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesDocx4j.dir}/logging/log4j2"/>
+		
+
+		<!-- logback -->
+		<mkdir dir="${release.dir}/logging/logback"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/logback" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesDocx4j.dir}/logging/logback"/>
+
+
+		<!--  zip it up  -->
+		<zip destfile="docx4j-samples-docx4j-${version}.zip" basedir="${releaseSamplesDocx4j.dir}"/>
+	    <delete dir="${releaseSamplesDocx4j.dir}"/>    	
+
+	</target>	
+	<target name="release-samples-pptx4j"  >
+
+		<delete dir="${releaseSamplesPptx4j.dir}"/>
+		<mkdir dir="${releaseSamplesPptx4j.dir}"/>
+
+		<copy file="docx4j-samples-pptx4j/pom.xml" todir="${releaseSamplesPptx4j.dir}" />
+
+		<!-- src -->
+		<mkdir dir="${releaseSamplesPptx4j.dir}/src"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/src">
+			<fileset dir="docx4j-samples-pptx4j/src" />
+		</copy>
+
+		<!-- sample-docs -->
+		<mkdir dir="${releaseSamplesPptx4j.dir}/sample-docs"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/sample-docs">
+			<fileset dir="docx4j-samples-pptx4j/sample-docs" />
+		</copy>
+
+		<!-- logging -->
+		<mkdir dir="${release.dir}/logging"/>
+
+		<!-- log4j2 -->
+		<mkdir dir="${release.dir}/logging/log4j2"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/log4j2" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesPptx4j.dir}/logging/log4j2"/>
+		
+
+		<!-- logback -->
+		<mkdir dir="${release.dir}/logging/logback"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/logback" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesPptx4j.dir}/logging/logback"/>
+
+
+		<!--  zip it up  -->
+		<zip destfile="docx4j-samples-pptx4j-${version}.zip" basedir="${releaseSamplesPptx4j.dir}"/>
+	    <delete dir="${releaseSamplesPptx4j.dir}"/>    	
+
+	</target>
+
+	<target name="release-samples-xlsx4j"  >
+
+		<delete dir="${releaseSamplesXlsx4j.dir}"/>
+		<mkdir dir="${releaseSamplesXlsx4j.dir}"/>
+
+		<copy file="docx4j-samples-xlsx4j/pom.xml" todir="${releaseSamplesXlsx4j.dir}" />
+
+		<!-- src -->
+		<mkdir dir="${releaseSamplesXlsx4j.dir}/src"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/src">
+			<fileset dir="docx4j-samples-xlsx4j/src" />
+		</copy>
+
+		<!-- sample-docs -->
+		<mkdir dir="${releaseSamplesXlsx4j.dir}/sample-docs"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/sample-docs">
+			<fileset dir="docx4j-samples-xlsx4j/sample-docs" />
+		</copy>
+
+		<!-- logging -->
+		<mkdir dir="${release.dir}/logging"/>
+
+		<!-- log4j2 -->
+		<mkdir dir="${release.dir}/logging/log4j2"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2"/>
+		
+
+		<!-- logback -->
+		<mkdir dir="${release.dir}/logging/logback"/>
+		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/logback" flatten="true">
+			<path>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-classic/${logback-version}/logback-classic-${logback-version}.jar"/>
+				<pathelement location="${m2Repository}/ch/qos/logback/logback-core/${logback-version}/logback-core-${logback-version}.jar"/>
+			</path>
+		</copy>
+		<copy file="docx4j-samples-resources/src/main/resources/logback.xml" todir="${releaseSamplesXlsx4j.dir}/logging/logback"/>
+
+
+		<!--  zip it up  -->
+		<zip destfile="docx4j-samples-xlsx4j-${version}.zip" basedir="${releaseSamplesXlsx4j.dir}"/>
+	    <delete dir="${releaseSamplesXlsx4j.dir}"/>    	
+
+	</target>
+	<target name="checkForIKVM">
+		<condition property="IKVMAvailable">
+			<and>
+				<os family="windows"/>
+				<available file="${ikvmc}" property="ignored" />
+			</and>
+		</condition>
+	</target>
+
+	<target name="dist.NET" depends="checkForIKVM" if="IKVMAvailable" description="Build docx4j .NET DLL files">
+		<echo>Building docx4j.DLL</echo>
+
+		<!--         
+		<fileset id="fileset" dir="${dist}">
+        	<include name="*"/>
+        </fileset>
+        <pathconvert refid="fileset" property="jars" pathsep=" "/>
+         -->
+
+		<!--  splitting fop out results in 2 jars:
+         
+			         8,885,248 docx4j-fop.dll
+			        16,741,888 docx4j.dll   
+			        
+			   and its natural to do that in docx4j 3.30 onwards (since export-fo is a separate project)   
+
+		        <pathconvert refid="FOP-stuff.classpath" property="fop-jars" pathsep=" "/>        
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j-fop.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-target:library" />
+		            <arg line="${fop-jars}" />
+		        </exec>    
+		         
+			    <path id="docx4j-main.classpath">
+			        <path refid="Maven Dependencies.libraryclasspath"/>
+			        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+			        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+					<pathelement location="${dist}/docx4j-${version}.jar" />
+			    </path>
+		        <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
+		                 
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-reference:dist/docx4j-fop.dll" />
+		            <arg value="-target:library" />
+		            <arg line="${docx4j-jars}" />
+		        </exec>
+		        
+		        It is also possible to split out Xalan (inc serializer);
+		        in that case docx4j.dll is 20mb, and xalan is 4mb
+		        
+         -->
+
+		<path id="docx4j-main.classpath">
+			<path refid="Maven Dependencies.libraryclasspath"/>
+			<pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+			<pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
+
+			<!-- Omit for 3.3.x 
+	    	<path refid="FOP-stuff.classpath"/>
+	    	 -->
+			<!--   	        
+			<pathelement location="${dist}/docx4j-${version}.jar" />
+			 -->
+			<!-- Use mvn docx4j build, since it is this which injects the version number -->
+			<pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>
+		</path>
+
+		<pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>
+
+		<exec executable="${ikvmc}">
+			<arg value="-out:${dist}/docx4j.dll" />
+			<arg value="-keyfile:Plutext.snk" />
+			<arg value="-version:${version}.84" />
+			<!--  must be of the form a.b.c.d -->
+			<arg value="-reference:dll/slf4j-api.dll" />
+			<!-- 
+            <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
+            -->
+			<arg value="-target:library" />
+			<arg line="${docx4j-jars}" />
+		</exec>
+
+	</target>
+
+</project>

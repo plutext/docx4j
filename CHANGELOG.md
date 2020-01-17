@@ -2,6 +2,545 @@ CHANGELOG
 =========
 
 
+Version 8.1.4 minor release
+==============
+
+Release date
+------------
+
+23 December 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.4 
+-------------------------
+
+Dedicated part CommentsIdsPart for w16cid:commentsIds
+
+Enhance ArrayListWml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+export-FO: revert white-space-treatment="preserve"; white-space-collapse="false" because it causes unwanted formatting issues
+
+xlsx4j
+------
+
+Enhance ArrayListSml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+
+
+Version 8.1.3 minor release
+==============
+
+Release date
+------------
+
+29 August 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.3 
+-------------------------
+
+Port changes in 11.1.3 (as to which see below) back to 8.1.x 
+
+
+
+Version 11.1.3 minor release
+==============
+
+Release date
+------------
+
+28 August 2019
+
+Overview 
+--------
+
+11.1.3 is a JPMS modularised release.  
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 11.1.3 
+-------------------------
+
+improved diagnostics for XML factories
+
+handle newline chars in createParagraphOfText
+
+OpenDoPE: access resources in org.docx4j.model.datastorage (Widen opens in module-info)
+
+FieldUpdater patch (#343)
+
+pptx4j
+------
+
+Improve API for adding slide notes
+
+Bugfix: HandoutMasterPart part name must start with '/' 
+
+
+
+Version 11.1.2 
+==============
+
+Release date
+------------
+
+5 August 2019
+
+Overview 
+--------
+
+11.1.2 is a JPMS modularised release.  It incorporates changes made in 8.1.1 and 8.1.2 (ie changes since 11.1.0 was released)
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+ChilamYan
+
+
+Notable Changes in Version 11.1.2 
+---------------------------------
+
+Widen opens in pptx4j/xlsx4j module-info
+
+Bugfix: synchronize access to namespacePrefixMapper to avoid "namespacePrefixMapper is null" in multithreaded scenarios
+
+Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
+
+Support for embedded True Type Fonts. (Up until now, we only supported obfuscated embeddings)
+
+xlsx4j
+------
+
+Bugfix: Correct jcSML spreadsheetDrawing package name
+
+Support mc:alternateContent in Workbook part (ie instead of dropping it)
+
+
+
+Version 8.1.2 minor release 
+=============
+
+Release date
+------------
+
+31 July 2019
+
+
+Contributors to this release
+----------------------------
+	
+Jason Harrop
+
+
+Notable Changes in Version 8.1.2 
+---------------------------------
+
+Bugfix: synchronize access to namespacePrefixMapper to avoid "namespacePrefixMapper is null" in multithreaded scenarios
+
+
+
+Version 8.1.1 minor release 
+=============
+
+Release date
+------------
+
+29 June 2019
+
+
+Contributors to this release
+----------------------------
+
+ChilamYan 
+	
+Jason Harrop
+
+
+Notable Changes in Version 8.1.1 
+---------------------------------
+
+Bugfix: specify UTF-8 in MainDocumentPartFilterOutputStream
+
+Support for embedded True Type Fonts. (Up until now, we only supported obfuscated embeddings)
+
+
+xlsx4j
+------
+
+Bugfix: Correct jcSML spreadsheetDrawing package name
+
+Support mc:alternateContent in Workbook part (ie instead of dropping it)
+
+
+
+Version 11.1.0 
+==============
+
+Release date
+------------
+
+2 June 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 11.1.0 
+---------------------------------
+
+11.1.0 is our first JPMS modularised release, so the jars contain module-info.class entries.
+
+The module names correspond to our Maven modules: 
+
+	org.docx4j.openxml_objects 
+	org.docx4j.openxml_objects_pml 
+	org.docx4j.openxml_objects_sml 
+	
+	org.docx4j.core 
+	
+	org.docx4j.JAXB_MOXy 
+	org.docx4j.JAXB_ReferenceImpl 
+
+We require named modules:
+
+    docx4j_xalan_serializer
+    docx4j_xalan_interpretive
+	org.slf4j
+	
+(Other dependencies generally aren't JPMS-ready, so they go on the classpath in the "unnamed" module.)	
+
+11.1.0 is compiled with Java 12, targeting Java 11.
+
+jackson-databind dep bumped to 2.9.9.
+
+In other respects this release is the same as v8.1.0, except that docx4j-export-fo 
+is temporarily omitted since Maven compiler doesn't like FOP 2.3's avalon dependency.  
+When FOP 2.4 is released, we should be able to include it again.
+
+
+
+Version 8.1.0 
+=============
+
+Release date
+------------
+
+21 May 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 8.1.0 
+---------------------------------
+
+Update [MS-PPTX] and [MS-ODRAWXML] content models with latest schemas.
+
+Implement child in dml
+
+Re-packaged subset of Guava to shave 2.4MB off deps size 
+
+StyleTree handles default table style (used by MergeDocx)
+
+docx4j
+------
+
+Support adding altChunk at specified index
+
+VariablePrepare: make settings configurable
+
+Move anon out of core to a dedicated Maven module
+
+pptx4j
+------
+
+support mc:AlternateContent in slide shape tree
+
+Implement child in pml
+
+
+
+Version 8.0.0 
+=============
+
+Release date
+------------
+
+21 April 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 8.0.0 
+---------------------------------
+
+Minimum supported Java version is 8.0
+
+docx4j 8 should be easier to deploy in complex environments such as OSGi, JBoss EAP etc.
+
+docx4j is now a Maven multi-module project.  To use it via Maven, add just one of docx4j-JAXB-Internal, docx4j-JAXB-MOXy,
+or docx4j-JAXB-ReferenceImpl dependencies. 
+
+Various dependencies were updated (some of which require Java 1.8)
+
+OpenDoPE support for XPath 2.0, 3.0 (requires Saxon)
+
+Uses repackaged and mavenized Xalan; see https://github.com/plutext/xalan-j/tree/Plutext_Java8_Repackaged_Docx4j
+
+
+
+Version 6.1.2 minor release 
+=============
+
+Release date
+------------
+
+27 February 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+rmanitz
+
+
+Notable Changes in Version 6.1.2 
+---------------------------------
+
+Fix for #340 Field handling NumberExtractor, handle group separator '.' (eg German) correctly.
+
+New property docx4j.Fields.Numbers.JavaStylePercentHandling which if set to true multiplies the value by hundred.  
+For example, formatting 0.33 with "\\# ##%" would yield 33%.
+
+Fix for #344 (NPE in TraversalUtil in graphicData)
+Fix for #346 (relating to Fields)
+
+xlsx4j
+------
+
+Convenience method to access ThemePart
+
+
+Version 6.1.1 
+=============
+
+Release date
+------------
+
+21 January 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 6.1.1 
+---------------------------------
+
+vml and mc lists are now of type ArrayListVml|Mce respecitvely, in which parent object is automatically set correctly
+(as is done for wml objects)
+
+TraversalUtil replaceChildren: support replacing in a bare List object.
+
+OpenDoPE removal handler: new option ALL_BUT_PLACEHOLDERS_CONTENT, 
+Ordinarily, if an SDT contains XML but no real content, that XML is also removed.  
+Choose this option if you want to keep placeholder XML (but remove the SDT).
+
+
+
+Version 6.1.0 
+=============
+
+Release date
+------------
+
+15 December 2018
+
+Contributors to this release
+----------------------------
+
+https://github.com/adolbin
+
+Jason Harrop
+
+https://github.com/Lood
+
+Mioara
+
+https://github.com/P2EQgf
+
+https://github.com/verkhovin
+
+
+
+Notable Changes in Version 6.1.0 
+---------------------------------
+
+IMPORTANT: Force namespaces used in mc:choice to be declared top-level. If 
+they aren't there, Word can't open the docx.
+
+mc:Ignorable: support attribute in footnotes/endnotes, numbering, styles 
+(already supported in main and headers/footers) 
+
+w14 namespace handling improvements: Don't drop these attributes in mc-preprocessor.xslt; 
+Support w14:EG_RPrOpenType elements
+
+PDF Converter now defaults to localhost endpoint to avoid information leakage.
+(controlled by docx4j property com.plutext.converter.URL)
+The localhost endpoint will only work if you download and install the converter there! 
+If you choose to use converter-eval.plutext.com, please only use it for light testing purposes.
+
+BookmarksIntegrity checking now part of docx4j proper; used before ToC updating
+
+AttachTemplate now part of docx4j proper; method cloneAs
+
+OpenDoPE finisher: optional step in which formatting can be applied
+(this is often neater than using conditional content controls just for formatting)
+
+OpenDoPE RemovalHandler: new Quantifier.ALL_BUT_PLACEHOLDERS (ie remove content controls, 
+but keep any placeholders inserted where there is empty content), ability to specify 
+Quantifier via docx4j.properties; also ability to substitute your own RemovalHandler.xslt.
+
+OpenDoPE: simplified component processing model [requires Enterprise]:
+ 1. components don't have to be at the top paragraph level of the content tree,
+ BUT:
+ 2. component processing is now done before condition/repeat processing
+ 3. component processing is not recursive anymore
+ 4. components typically use the "main" answer file
+component processing is OFF by default
+Enable it with property "docx4j.model.datastorage.OpenDoPEHandlerComponents.enabled"
+
+
+Version 6.0.1 
+=============
+
+Release date
+------------
+
+3 August 2018
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Notable Changes in Version 6.0.1 
+---------------------------------
+
+In many cases v6.0.0 release writes <?xml version="1.0" ?> omitting encoding "UTF-8".
+This release corrects that, and is recommended for this reason.
+
+
+Version 6.0.0 (NOT RECOMMENDED)
+=============
+
+Release date
+------------
+
+22 July 2018
+
+Contributors to this release
+----------------------------
+
+ewanmellor (NationalBI)
+
+Jason Harrop
+
+
+Notable Changes in Version 6.0.0 
+---------------------------------
+
+Docx4j 6.x will be the last series supporting Java 6.  
+(docx4j 7.x, when released, will require Java 7+) 
+
+New dependency commons-compress used for zip/unzip.  Most other
+deps updated to last version supporting Java 6.
+
+Support for Java 9 and 10 (see notes in README for use in Eclipse)
+- Maven profiles for java 9 and 10 
+- Maven pom now specifies source & target 1.6 (previously 1.5)
+
+Preserve mc:AlternateContent in a run. Previously, this would have caused mc-preprocessor 
+to be invoked, selecting one of the pieces of content.
+
+Object model for wps http://schemas.microsoft.com/office/word/2010/wordprocessingShape
+
+Content Control databinding (and OpenDoPE)
+- UpdateXmlFromDocumentSurface: Copy content control content back to the custom XML part, like Microsoft Word does for a content control
+ which has a w:databinding element
+- improvements to migration (from eg VariableReplace)
+- better support for binding standardised Answers format
+- various other improvement
+
+Write docx4j version as XML comment in MainDocument part.
+
+New properties docx4j.openpackaging.parts.MAX_BYTES.unzip.error and docx4j.openpackaging.parts.MAX_BYTES.unmarshal.error which can be 
+set to positive values to have docx4j throw a PartTooLarge exception 
+if a part is larger than the set value. 
+
+
+
+Version 3.3.7  minor release
+=============
+
+Release date
+------------
+
+25 March 2018
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Notable Changes in Version 3.3.7 
+---------------------------------
+
+OpenDoPE: handle w15:databinding; FlatOPC processing fixes; component handling fixes
+
+PDF Converter (commercial, not export-FO) defaults to https (port 443)
+
+IBM JAXB detection improvements
+
+various other fixes
+
+
+
 Version 3.3.6  minor release
 =============
 

@@ -1,0 +1,38 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2018/4/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2018/4/main"
+	xmlns:p184="http://schemas.microsoft.com/office/powerpoint/2018/4/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+         
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x201804.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+         
+         
+    <xsd:simpleType name="ST_ClassificationOutcomeType">
+       <xsd:restriction base="xsd:token">
+          <xsd:enumeration value="none"/>
+          <xsd:enumeration value="hdr"/>
+          <xsd:enumeration value="ftr"/>
+          <xsd:enumeration value="watermark"/>
+       </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:complexType name="CT_ClassificationOutcome">
+       <xsd:attribute name="val" type="ST_ClassificationOutcomeType"/>
+    </xsd:complexType>
+    <xsd:element name="classification" type="CT_ClassificationOutcome"/>
+ </xsd:schema>

@@ -1,0 +1,38 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2015/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2015/main"
+	xmlns:p16="http://schemas.microsoft.com/office/powerpoint/2015/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+
+         	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x2015.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+<!--          
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+    -->
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+    
+   <xsd:complexType name="CT_DesignElement">
+     <xsd:attribute name="val" type="xsd:boolean"/>
+   </xsd:complexType>
+   <xsd:element name="designElem" type="CT_DesignElement"/>
+ </xsd:schema>

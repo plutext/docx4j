@@ -45,7 +45,10 @@ That's because there is a name collision in:
   org.xlsx4j.sml.CTCalculatedMember
   org.xlsx4j.sml.CTPCDKPI	
 
-You can use 
+You can use (2019)
+
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer sml_root.xsd -d tmp  -no-header -target 2.0
+
 
 \Java\jaxb-ri-2.2.6\bin\xjc  sml_root.xsd -d tmp -no-header -target 2.0	
 	
@@ -57,6 +60,7 @@ or better, you can use ppp 1.2,
 	
 REVISION HISTORY
 
+2019 06 24 - added mce to workbook
 2013 01 20 - moved to ECMA 376 4ed; add parent pointer
 2013 01 20 - added @xml:space in shared strings
 2010 09 06 - First compiled and added to docx4j

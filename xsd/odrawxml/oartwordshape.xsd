@@ -1,19 +1,59 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
-xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:oxsd="http://oxsdSchemaUri" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:rel="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+	xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:w12="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:rel="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+
+<!--  drawmingml/2006/main 
 <xsd:import schemaLocation="oartspproperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
 <xsd:import schemaLocation="oartdocprop.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
 <xsd:import schemaLocation="oartstylesheet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+
 <xsd:import schemaLocation="orel.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
-<xsd:import schemaLocation="oartWordShapeTextbox.xsd" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>
+ -->
+ 
+<xsd:import schemaLocation="../wml/wml.xsd" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>
+
+<xsd:import schemaLocation="../dml/dml-baseTypes.xsd"
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+
+<!-- wrong
 <xsd:import schemaLocation="oartWordNonEcmaShapeTextbox.xsd" namespace="http://schemas.microsoft.com/office/word/2006/wordml"/>
+ -->
+ 
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>		
+ 
+ 
 <xsd:complexType name="CT_TextboxInfo">
   <xsd:sequence>
-    <xsd:element ref="w12:txbxContent" minOccurs="0" maxOccurs="1"/>
+<!-- wrong    <xsd:element ref="w12:txbxContent" minOccurs="0" maxOccurs="1"/>  -->
+    <xsd:element ref="w:txbxContent" minOccurs="0" maxOccurs="1"/>
     <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
   </xsd:sequence>
   <xsd:attribute name="id" type="xsd:unsignedShort" use="optional" default="0"/>
 </xsd:complexType>
+
 <xsd:complexType name="CT_LinkedTextboxInformation">
   <xsd:sequence>
     <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
@@ -21,6 +61,7 @@ xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:
   <xsd:attribute name="id" type="xsd:unsignedShort" use="required"/>
   <xsd:attribute name="seq" type="xsd:unsignedShort" use="required"/>
 </xsd:complexType>
+
 <xsd:complexType name="CT_WordprocessingShape">
   <xsd:sequence minOccurs="1" maxOccurs="1">
     <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="0" maxOccurs="1"/>
@@ -39,5 +80,6 @@ xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:
   </xsd:sequence>
   <xsd:attribute name="normalEastAsianFlow" type="xsd:boolean" use="optional" default="false"/>
 </xsd:complexType>
+
 <xsd:element name="wsp" type="CT_WordprocessingShape"/>
 </xsd:schema>

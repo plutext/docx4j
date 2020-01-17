@@ -1,0 +1,880 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+				targetNamespace="http://www.w3.org/2003/InkML"
+				elementFormDefault="qualified"
+				xmlns:inkml="http://www.w3.org/2003/InkML"
+				xmlns:mathml="http://www.w3.org/1998/Math/MathML"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.org.w3.x2003.inkML"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+				
+	<xsd:annotation>
+		<xsd:documentation>
+			InkML 1.0 schema (20110106)
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:annotation>
+		<xsd:documentation>
+			Copyright 2003-2011 W3C (MIT, ERCIM, Keio),
+			All Rights Reserved. Permission to use, copy,
+			modify and distribute the InkML schema and its
+			accompanying documentation for any purpose and
+			without fee is hereby granted in perpetuity,
+			provided that the above copyright notice and this
+			paragraph appear in all copies. The copyright
+			holders make no representation about the suitability
+			of the schema for any purpose. It is provided
+			"as is" without expressed or implied warranty.
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace" id="xml"/>
+	<!-- schemaLocation="http://www.w3.org/2001/xml.xsd" -->
+	<xsd:import namespace="http://www.w3.org/1998/Math/MathML" schemaLocation="inkml-mathml2-subset.xsd" id="mathml"/>
+	<!-- ===============================================================-->
+	<!-- misc type definitions -->
+	<xsd:simpleType name="booleanStr.type">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="F"/>
+			<xsd:enumeration value="T"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="standardUnits.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard Units
+				http://www.w3.org/TR/InkML/#units
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- meters -->
+			<xsd:enumeration value="m"/>
+			<!-- centimeters -->
+			<xsd:enumeration value="cm"/>
+			<!-- millimeters -->
+			<xsd:enumeration value="mm"/>
+			<!-- inches -->
+			<xsd:enumeration value="in"/>
+			<!-- points (1pt = 1/72 in) -->
+			<xsd:enumeration value="pt"/>
+			<!-- picas (1pc = 1/22 pt) -->
+			<xsd:enumeration value="pc"/>
+			<!-- ems, the width of a letter "M" in a notional normal size -->
+			<xsd:enumeration value="em"/>
+			<!-- exs, the height of a letter "x" in a notional normal size -->
+			<xsd:enumeration value="ex"/>
+			<!-- seconds -->
+			<xsd:enumeration value="s"/>
+			<!-- milliseconds -->
+			<xsd:enumeration value="ms"/>
+			<!-- kilograms -->
+			<xsd:enumeration value="kg"/>
+			<!-- grams -->
+			<xsd:enumeration value="g"/>
+			<!-- milligrams -->
+			<xsd:enumeration value="mg"/>
+			<!-- Newtons -->
+			<xsd:enumeration value="N"/>
+			<!-- degrees -->
+			<xsd:enumeration value="deg"/>
+			<!-- radians -->
+			<xsd:enumeration value="rad"/>
+			<!-- percentage, relative to max-min -->
+			<xsd:enumeration value="%"/>
+			<!-- quanta relative to a device resolution. This can correspond to pixels, force levels, clock ticks, etc. -->
+			<xsd:enumeration value="dev"/>
+			<!-- definition of '1/length' units and '1/time' units-->
+			<xsd:enumeration value="1/m"/>
+			<xsd:enumeration value="1/cm"/>
+			<xsd:enumeration value="1/mm"/>
+			<xsd:enumeration value="1/in"/>
+			<xsd:enumeration value="1/pt"/>
+			<xsd:enumeration value="1/pc"/>
+			<xsd:enumeration value="1/em"/>
+			<xsd:enumeration value="1/ex"/>
+			<xsd:enumeration value="1/s"/>
+			<xsd:enumeration value="1/ms"/>
+			<xsd:enumeration value="1/kg"/>
+			<xsd:enumeration value="1/g"/>
+			<xsd:enumeration value="1/mg"/>
+			<xsd:enumeration value="1/lb"/>
+			<xsd:enumeration value="1/N"/>
+			<xsd:enumeration value="1/deg"/>
+			<xsd:enumeration value="1/rad"/>
+			<xsd:enumeration value="1/dev"/>
+			<!-- other combined expressions of units -->
+			<!-- distance/time units for property like 'peakRate' of device for a channel -->
+			<xsd:enumeration value="m/s"/>
+			<xsd:enumeration value="cm/s"/>
+			<xsd:enumeration value="mm/s"/>
+			<!-- units for crossCoupling property which is expressed in the units of two channels, eg: mm/deg-->
+			<xsd:enumeration value="mm/deg"/>
+			<xsd:enumeration value="mm/rad"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	
+	<xsd:simpleType name="userUnits.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				User Units
+				http://www.w3.org/TR/InkML/#units
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="units.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Units
+				http://www.w3.org/TR/InkML/#units
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="inkml:standardUnits.type inkml:userUnits.type"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="standardChannelName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard channel names
+				http://www.w3.org/TR/InkML/#channel
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- Coordinate channels -->
+			<!-- X coordinate. This is the horizontal pen position on the writing surface, increasing to the right for +ve orientation.-->
+			<xsd:enumeration value="X"/>
+			<!-- Y coordinate. This is the vertical position on the writing surface, increasing downward for +ve orientation.-->
+			<xsd:enumeration value="Y"/>
+			<!-- Z coordinate. This is the height of pen above the writing suface, increasing upward for +ve orientation.-->
+			<xsd:enumeration value="Z"/>
+			<!-- Force/mass channel -->
+			<!-- pen tip force-->
+			<xsd:enumeration value="F"/>
+			<!-- State channels -->
+			<!-- tip switch state (touching/not touching the writing surface)-->
+			<xsd:enumeration value="S"/>
+			<!-- side button 1 state-->
+			<xsd:enumeration value="B1"/>
+			<!-- side button 2 state-->
+			<xsd:enumeration value="B2"/>
+			<!-- side button 3 state-->
+			<xsd:enumeration value="B3"/>
+			<!-- side button 4 state-->
+			<xsd:enumeration value="B4"/>
+			<!-- Orientation channels -->
+			<!-- tilt along the x-axis-->
+			<xsd:enumeration value="OTx"/>
+			<!-- tilt along the y-axis-->
+			<xsd:enumeration value="OTy"/>
+			<!-- azimuth angle of the pen (yaw)-->
+			<xsd:enumeration value="OA"/>
+			<!-- elevation angle of the pen (pitch)-->
+			<xsd:enumeration value="OE"/>
+			<!-- rotation (rotation about pen axis)-->
+			<xsd:enumeration value="OR"/>
+			<!-- Color channels -->
+			<!-- color value as an RGB octet triple (i.e. #000000 to #FFFFFF)-->
+			<xsd:enumeration value="C"/>
+			<!-- red color value-->
+			<xsd:enumeration value="CR"/>
+			<!-- green color value-->
+			<xsd:enumeration value="CG"/>
+			<!-- blue color value-->
+			<xsd:enumeration value="CB"/>
+			<!-- cyan color value-->
+			<xsd:enumeration value="CC"/>
+			<!-- magenta color value-->
+			<xsd:enumeration value="CM"/>
+			<!-- yellow color value-->
+			<xsd:enumeration value="CY"/>
+			<!-- black color value-->
+			<xsd:enumeration value="CK"/>
+			<!-- transparency -->
+			<xsd:enumeration value="A"/>
+			<!-- Width channel -->
+			<!-- stroke width (orthogonal to stroke)-->
+			<xsd:enumeration value="W"/>
+			<!-- Brush Width channel -->
+			<!-- meaning depends on brush tip shape -->
+			<xsd:enumeration value="BW"/>
+			<!-- Brush Height channel -->
+			<!-- meaning depends on brush tip shape -->
+			<xsd:enumeration value="BH"/>
+			<!-- Time channel -->
+			<!-- time (of the sample point)-->
+			<xsd:enumeration value="T"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="userChannelName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				User channel name
+				http://www.w3.org/TR/InkML/#user
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="channelName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Channel name
+				http://www.w3.org/TR/InkML/#channel
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="inkml:standardChannelName.type inkml:userChannelName.type"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="standardChannelPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard channel property name
+				http://www.w3.org/TR/InkML/#channelProperty
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- Threshold - e.g. for a binary channel, the threshold force at which the tip switch is activated -->
+			<xsd:enumeration value="threshold"/>
+			<!-- Resolution - the scale of the values recorded. This may be expressed as fractions of a unit, e.g. 1/1000 in (inches), 0.1 mm, 1 deg (degrees). It may also be expressed, more more popularly, in inverse units, e.g. "1000 points per inch" would be given as 1000 in units 1/in.-->
+			<xsd:enumeration value="resolution"/>
+			<!-- Quantization - the unit of smallest change in the reported values. If the value is reported as integer, this is assumed to be the same as the resolution. Note that if decimal values are recorded for resolution, the quantization of the data may be smaller than the "resolution"-->
+			<xsd:enumeration value="quantization"/>
+			<!-- Noise - the RMS value of noise typically observed on the channel. This is distinct from accuracy! It is an indication of the difference observed in the data from the device when the same path is traced out multiple times (e.g. by a robot)-->
+			<xsd:enumeration value="noise"/>
+			<!-- Accuracy - the typical accuracy of the data on the channel (e.g. "0.5 mm", "10 degrees" or "0.1 newton") This is the typical difference between the reported position and the actual position of the pen tip (or tilt ...)-->
+			<xsd:enumeration value="accuracy"/>
+			<!-- Cross-coupling - the distortion in the data from one channel due to changes in another channel. For example, the X and Y coordinates in an electromagnetic digitizer are influenced by the tilt of the pen. This would be specified by dX/dOTx = ... or max delta X vs. OTx = ... If the influencing channels are also recorded, and the cross-couplings are accurately specified, it may be possible to compensate for the cross-coupling by subtracting the influence, at the expense of higher noise. The cross-coupling is always expressed in the units of the two channels, e.g. if X mm and OTx is in degrees, then cross-coupling is in mm/deg.-->
+			<xsd:enumeration value="crossCoupling"/>
+			<!-- Skew - the temporal skew of this channel relative to the basic device latency, if any. For example, some devices actually sample X and Y at different points in time, so one might have a skew of -5 millisecond, and the other +5 millisecond.-->
+			<xsd:enumeration value="skew"/>
+			<!-- Minimum bandwidth (in Hz) - the minimum bandwidth of the channel, in Hz (not samples/second), i.e., the frequency of input motion up to which the signal is accurate to within 3dB.-->
+			<xsd:enumeration value="minBandwidth"/>
+			<!-- Peak rate - the maximum speed at which the device can accurately track motion-->
+			<xsd:enumeration value="peakRate"/>
+			<!-- Dynamic distortion, e.g., how velocity affects position accuracy. This is expressed in inverse seconds, e.g. 0.01 mm / mm / s. This kind of distortion is often cross channel, but this specification only allows a generic, channel-specific value.-->
+			<xsd:enumeration value="distortion"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="userChannelPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				User channel property name
+				http://www.w3.org/TR/InkML/#channelProperty
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="channelPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Channel property name
+				http://www.w3.org/TR/InkML/#channelProperty
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="inkml:standardChannelPropertyName.type inkml:userChannelPropertyName.type"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="standardBrushPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard brush property names
+				http://www.w3.org/TR/InkML/#brushPropertyElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- width of brush -->
+			<xsd:enumeration value="width"/>
+			<!-- height of brush -->
+			<xsd:enumeration value="height"/>
+			<!-- color of brush in RGB -->
+			<xsd:enumeration value="color"/>
+			<!-- transparency of brush 0-255: 0 is opaque -->
+			<xsd:enumeration value="transparency"/>
+			<!-- The type of pin tip: ellipse, rectangle, or drop. default is ellipse-->
+			<xsd:enumeration value="tip"/>
+			<!-- A value that defines how the colors of the pen and background interact.  The default value is 'copyPen', which indicates that the current pen color is used.-->
+			<xsd:enumeration value="rasterOp"/>
+			<!-- The drawn ink is antialiased.  Default is true -->
+			<xsd:enumeration value="antiAliased"/>
+			<!-- The ink is rendered as a series of curves versus as lines between pen sample points.  Default is false -->
+			<xsd:enumeration value="fitToCurve"/>
+			<!-- If true, pressure from the pen tip is ignored and the width of the ink remains the same regardless of the pressure of the pen on the tablet surface. -->
+			<!-- If false, the width of the ink gets wider with increased pressure of the pen on the tablet surface.  Default is false -->
+			<xsd:enumeration value="ignorePressure"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="userBrushPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				User brush property names
+				http://www.w3.org/TR/InkML/#brushPropertyElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="brushPropertyName.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Brush property names
+				http://www.w3.org/TR/InkML/#brushPropertyElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="inkml:standardBrushPropertyName.type inkml:userBrushPropertyName.type"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="brushRasterOp.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Brush raster operations
+				http://www.w3.org/TR/InkML/#brushPropertyElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="noOperation"/>
+			<xsd:enumeration value="copyPen"/>
+			<xsd:enumeration value="maskPen"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="brushTip.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				Brush tip shapes
+				http://www.w3.org/TR/InkML/#brushPropertyElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ellipse"/>
+			<xsd:enumeration value="rectangle"/>
+			<xsd:enumeration value="drop"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="rgb.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				RGB color
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="#[0-9a-fA-F]{6}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="brushPropertyValue.type">
+		<xsd:union memberTypes="inkml:brushRasterOp.type inkml:brushTip.type inkml:rgb.type xsd:decimal xsd:integer xsd:string"/>
+	</xsd:simpleType>
+	<xsd:complexType name="brushProperty.type">
+		<xsd:attribute name="name" type="inkml:brushPropertyName.type" use="required"/>
+		<xsd:attribute name="value" type="inkml:brushPropertyValue.type" use="required"/>
+		<xsd:attribute name="units" type="inkml:units.type" use="optional"/>
+	</xsd:complexType>
+	<xsd:simpleType name="integerList.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				A list of integers ':' delimited.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- xsd:integer [ ':' xsd:integer ]* -->
+			<xsd:pattern value="-?[0-9]+(\s*:\s*-?[0-9]+)*" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimalTableOrBooleanTable.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				A table of decimals or table of boolean values.  Columns in the tables are delimited by spaces, rows are delimited by commas.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="decimalTable.type">
+		<xsd:annotation>
+			<xsd:documentation>
+				A table of decimal values.  Columns in the tables are delimited by spaces, rows are delimited by commas.
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<!-- ===============================================================-->
+	<!-- root element declaration -->
+	<xsd:element name="ink" type="inkml:ink.type">
+	</xsd:element>
+	<xsd:complexType name="ink.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#inkElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice minOccurs="1" maxOccurs="unbounded">
+			<xsd:element name="definitions" type="inkml:definitions.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="context" type="inkml:context.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="trace" type="inkml:trace.type" minOccurs="1" maxOccurs="unbounded"/>
+			<xsd:element name="traceGroup" type="inkml:traceGroup.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="traceView" type="inkml:traceView.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="annotation" type="inkml:annotation.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="annotationXML" type="inkml:annotationXML.type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:choice>
+		<xsd:attribute name="documentID" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:complexType name="definitions.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#definitionsElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice maxOccurs="unbounded">
+			<xsd:element name="brush" type="inkml:brush.type"/>
+			<xsd:element name="canvas" type="inkml:canvas.type"/>
+			<xsd:element name="canvasTransform" type="inkml:canvasTransform.type"/>
+			<xsd:element name="context" type="inkml:context.type"/>
+			<xsd:element name="inkSource" type="inkml:inkSource.type"/>
+			<xsd:element name="mapping" type="inkml:mapping.type"/>
+			<xsd:element name="timestamp" type="inkml:timestamp.type"/>
+			<xsd:element name="trace" type="inkml:trace.type"/>
+			<xsd:element name="traceFormat" type="inkml:traceFormat.type"/>
+			<xsd:element name="traceGroup" type="inkml:traceGroup.type"/>
+			<xsd:element name="traceView" type="inkml:traceView.type"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="context.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#contextElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="canvas" type="inkml:canvas.type" minOccurs="0"/>
+			<xsd:element name="canvasTransform" type="inkml:canvasTransform.type" minOccurs="0"/>
+			<xsd:element name="traceFormat" type="inkml:traceFormat.type" minOccurs="0"/>
+			<xsd:element name="inkSource" type="inkml:inkSource.type" minOccurs="0"/>
+			<xsd:element name="brush" type="inkml:brush.type" minOccurs="0"/>
+			<xsd:element name="timestamp" type="inkml:timestamp.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="contextRef" type="xsd:anyURI"/>
+		<xsd:attribute name="canvasRef" type="xsd:anyURI"/>
+		<xsd:attribute name="canvasTransformRef" type="xsd:anyURI"/>
+		<xsd:attribute name="traceFormatRef" type="xsd:anyURI"/>
+		<xsd:attribute name="inkSourceRef" type="xsd:anyURI"/>
+		<xsd:attribute name="brushRef" type="xsd:anyURI"/>
+		<xsd:attribute name="timestampRef" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:complexType name="traceFormat.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#traceFormat</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="channel" type="inkml:channel.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="intermittentChannels" type="inkml:intermittentChannels.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id"/>
+	</xsd:complexType>
+	<xsd:complexType name="inkSource.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#inkSourceElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="traceFormat" type="inkml:traceFormat.type"/>
+			<xsd:element name="sampleRate" type="inkml:sampleRate.type" minOccurs="0"/>
+			<xsd:element name="latency" type="inkml:latency.type" minOccurs="0"/>
+			<xsd:element name="activeArea" type="inkml:activeArea.type" minOccurs="0"/>
+			<xsd:element name="sourceProperty" type="inkml:sourceProperty.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="channelProperties" type="inkml:channelProperties.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id" use="required"/>
+		<xsd:attribute name="manufacturer" type="xsd:string"/>
+		<xsd:attribute name="model" type="xsd:string"/>
+		<xsd:attribute name="serialNo" type="xsd:string"/>
+		<xsd:attribute name="specificationRef" type="xsd:anyURI"/>
+		<xsd:attribute name="description" type="xsd:string"/>
+	</xsd:complexType>
+	<xsd:complexType name="sampleRate.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#sampleRate</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="uniform" type="xsd:boolean" use="optional" default="true"/>
+		<xsd:attribute name="value" type="xsd:decimal" use="required"/>
+		<!-- unit of the 'value' attribute is 'samples/seconds' -->
+	</xsd:complexType>
+	<xsd:complexType name="latency.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#latency</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="value" type="xsd:decimal" use="required"/>
+		<!-- unit of the 'value' attribute is 'milliseconds' -->
+	</xsd:complexType>
+	<xsd:complexType name="activeArea.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#activeArea</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="size" type="xsd:string"/>
+		<xsd:attribute name="height" type="xsd:decimal"/>
+		<xsd:attribute name="width" type="xsd:decimal"/>
+		<xsd:attribute name="units" type="inkml:units.type"/>
+	</xsd:complexType>
+	<xsd:complexType name="sourceProperty.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#srcProperty</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="value" type="xsd:decimal" use="required"/>
+		<xsd:attribute name="units" type="inkml:units.type"/>
+	</xsd:complexType>
+	<xsd:complexType name="channelProperties.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#channelProperties</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="channelProperty" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>http://www.w3.org/TR/InkML/#channelProperty</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="channel" type="inkml:channelName.type" use="required"/>
+					<xsd:attribute name="name" type="inkml:channelPropertyName.type" use="required"/>
+					<xsd:attribute name="value" type="xsd:decimal" use="required"/>
+					<xsd:attribute name="units" type="inkml:units.type"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="intermittentChannels.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#intermittentChannels</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="channel" type="inkml:channel.type" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="channel.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#channel</xsd:documentation>
+		</xsd:annotation>
+		<xsd:all>
+			<xsd:element name="mapping" type="inkml:mapping.type" minOccurs="0"/>
+		</xsd:all>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="name" type="inkml:channelName.type" use="required"/>
+		<xsd:attribute name="type" use="optional" default="decimal">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="integer"/>
+					<xsd:enumeration value="decimal"/>
+					<xsd:enumeration value="double"/>
+					<xsd:enumeration value="boolean"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="default" use="optional" default="0">
+			<xsd:simpleType>
+				<xsd:union memberTypes="xsd:decimal inkml:booleanStr.type"/>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="min" type="xsd:decimal"/>
+		<xsd:attribute name="max" type="xsd:decimal"/>
+		<xsd:attribute name="orientation" use="optional" default="+ve">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="+ve"/>
+					<xsd:enumeration value="-ve"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="respectTo" type="xsd:anyURI" use="optional"/>
+		<xsd:attribute name="units" type="inkml:units.type"/>
+	</xsd:complexType>
+	<xsd:complexType name="canvas.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#canvasElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="traceFormat" type="inkml:traceFormat.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="traceFormatRef" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:complexType name="canvasTransform.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#canvasTransformElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="mapping" type="inkml:mapping.type"/>
+			<xsd:element name="mapping" type="inkml:mapping.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="invertible" type="xsd:boolean" use="optional" default="false"/>
+	</xsd:complexType>
+	<xsd:complexType name="timestamp.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#timestamp</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute ref="xml:id" use="required"/>
+		<xsd:attribute name="time" type="xsd:unsignedLong"/>
+		<xsd:attribute name="timestampRef" type="xsd:anyURI"/>
+		<xsd:attribute name="timeString" type="xsd:dateTime"/>
+		<xsd:attribute name="timeOffset" type="xsd:unsignedLong" use="optional" default="0"/>
+	</xsd:complexType>
+	<xsd:complexType name="mapping.type" mixed="true">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#mappingElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:sequence>
+				<xsd:sequence>
+					<xsd:element name="bind" type="inkml:bind.type" minOccurs="0" maxOccurs="unbounded"/>
+					<xsd:choice minOccurs="0">
+						<xsd:element name="table" type="inkml:table.type"/>
+						<xsd:element name="affine" type="inkml:affine.type"/>
+						<xsd:element ref="mathml:math"/>
+					</xsd:choice>
+				</xsd:sequence>
+				<xsd:sequence>
+					<xsd:element name="mapping" type="inkml:mapping.type" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:sequence>
+		</xsd:choice>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="type" default="unknown">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="identity"/>
+					<xsd:enumeration value="product"/>
+					<xsd:enumeration value="table"/>
+					<xsd:enumeration value="affine"/>
+					<xsd:enumeration value="mathml"/>
+					<xsd:enumeration value="unknown"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="mappingRef" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:complexType name="bind.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#bindElement</xsd:documentation>
+		</xsd:annotation>
+		<!-- Specifies source data values and/or channel to be considered in the mapping.  -->
+		<xsd:attribute name="source" type="xsd:string" use="optional"/>
+		<!-- Specifies target data values and/or channel to be considered in the mapping.-->
+		<xsd:attribute name="target" type="xsd:string" use="optional"/>
+		<!-- Specifies the assigned column within a lookup table either for source or target channels. -->
+		<!-- Required: for lookup table bindings -->
+		<xsd:attribute name="column" type="xsd:string" use="optional"/>
+		<!-- Specifies the variable within a formula that represents the current source data/channel. -->
+		<!-- Required: for mathml binding -->
+		<xsd:attribute name="variable" type="xsd:string" use="optional"/>
+	</xsd:complexType>
+	<xsd:complexType name="table.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#tableElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="inkml:decimalTableOrBooleanTable.type">
+				<xsd:attribute ref="xml:id" use="optional"/>
+				<xsd:attribute name="apply" use="optional" default="absolute">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="absolute"/>
+							<xsd:enumeration value="relative"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="interpolation" use="optional" default="linear">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="floor"/>
+							<xsd:enumeration value="middle"/>
+							<xsd:enumeration value="ceiling"/>
+							<xsd:enumeration value="linear"/>
+							<xsd:enumeration value="cubic"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="affine.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#affineElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="inkml:decimalTable.type">
+				<xsd:attribute ref="xml:id" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="brush.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#brushElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="brushProperty" type="inkml:brushProperty.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="annotation" type="inkml:annotation.type" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="annotationXML" type="inkml:annotationXML.type" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id" use="optional"/>
+		<xsd:attribute name="brushRef" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:complexType name="traceGroup.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#traceGroup</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence maxOccurs="unbounded">
+			<xsd:element name="trace" type="inkml:trace.type" minOccurs="0"/>
+			<xsd:element name="traceGroup" type="inkml:traceGroup.type" minOccurs="0"/>
+			<xsd:element name="traceView" type="inkml:traceView.type" minOccurs="0"/>
+			<xsd:element name="annotation" type="inkml:annotation.type" minOccurs="0"/>
+			<xsd:element name="annotationXML" type="inkml:annotationXML.type" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="contextRef" type="xsd:anyURI"/>
+		<xsd:attribute name="brushRef" type="xsd:anyURI"/>
+	</xsd:complexType>
+	<xsd:simpleType name="traceData.type">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:complexType name="trace.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#trace</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="inkml:traceData.type">
+				<xsd:attribute ref="xml:id"/>
+				<xsd:attribute name="type" use="optional" default="penDown">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="penDown"/>
+							<xsd:enumeration value="penUp"/>
+							<xsd:enumeration value="indeterminate"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="continuation" use="optional" default="begin">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="begin"/>
+							<xsd:enumeration value="end"/>
+							<xsd:enumeration value="middle"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:attribute>
+				<xsd:attribute name="priorRef" type="xsd:anyURI" use="optional"/>
+				<xsd:attribute name="contextRef" type="xsd:anyURI"/>
+				<xsd:attribute name="brushRef" type="xsd:anyURI"/>
+				<xsd:attribute name="duration" type="xsd:integer"/>
+				<xsd:attribute name="timeOffset" type="xsd:integer"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="annotation.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#annotationElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="type" type="xsd:string"/>
+				<xsd:attribute name="encoding" type="xsd:string"/>
+				<xsd:anyAttribute namespace="##any" processContents="skip"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="traceView.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#traceViewElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute ref="xml:id"/>
+		<xsd:attribute name="traceDataRef" type="xsd:anyURI"/>
+		<xsd:attribute name="from" type="inkml:integerList.type"/>
+		<xsd:attribute name="to" type="inkml:integerList.type"/>
+	</xsd:complexType>
+	<xsd:complexType name="annotationXML.type">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#annotationXMLElement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any namespace="##any" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="type" type="xsd:string"/>
+		<xsd:attribute name="encoding" type="xsd:string"/>
+		<xsd:attribute name="href" type="xsd:anyURI" use="optional"/>
+	</xsd:complexType>
+
+   <!-- Added:
+    
+		lengthUnit: An ST_StandardLengthUnits attribute<159> that specifies length unit used in ink actions. 
+		This attribute is defined based on the length attribute of Units in [InkML] section 6.4.
+		
+		timeUnit: An ST_StandardTimeUnits attribute<160> that specifies time unit used in ink actions. 
+		This attribute is defined based on the time attribute of Units in [InkML] section 6.4.   
+   
+    -->
+	
+	<xsd:simpleType name="ST_StandardLengthUnits">
+		<xsd:restriction base="xsd:string">
+			<!-- meters -->
+			<xsd:enumeration value="m"/>
+			<!-- centimeters -->
+			<xsd:enumeration value="cm"/>
+			<!-- millimeters -->
+			<xsd:enumeration value="mm"/>
+			<!-- inches -->
+			<xsd:enumeration value="in"/>
+			<!-- points (1pt = 1/72 in) -->
+			<xsd:enumeration value="pt"/>
+			<!-- picas (1pc = 1/22 pt) -->
+			<xsd:enumeration value="pc"/>
+			<!-- ems, the width of a letter "M" in a notional normal size -->
+			<xsd:enumeration value="em"/>
+			<!-- exs, the height of a letter "x" in a notional normal size -->
+			<xsd:enumeration value="ex"/>
+			<!-- definition of '1/length' units and '1/time' units-->
+			<xsd:enumeration value="1/m"/>
+			<xsd:enumeration value="1/cm"/>
+			<xsd:enumeration value="1/mm"/>
+			<xsd:enumeration value="1/in"/>
+			<xsd:enumeration value="1/pt"/>
+			<xsd:enumeration value="1/pc"/>
+			<xsd:enumeration value="1/em"/>
+			<xsd:enumeration value="1/ex"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="ST_StandardTimeUnits">
+		<xsd:annotation>
+			<xsd:documentation>
+				Standard Units
+				http://www.w3.org/TR/InkML/#units
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<!-- seconds -->
+			<xsd:enumeration value="s"/>
+			<!-- milliseconds -->
+			<xsd:enumeration value="ms"/>
+			<xsd:enumeration value="1/s"/>
+			<xsd:enumeration value="1/ms"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+<!-- 	
+	transform: A CT_Matrix ([InkML] section 6.1.4) element<137> that specifies the transformation applied to the data.
+	
+	inkml:trace: A CT_Trace ([InkML] section 3.2.1) element<138> that specifies an ink stroke data trace captured by the digitizer.
+	
+	inkml:traceView: A CT_TraceView ([InkML] section 3.3.2) element<139> that specifies traces by reference.
+ -->
+
+	<xsd:complexType name="CT_Matrix">
+		<xsd:annotation>
+			<xsd:documentation>http://www.w3.org/TR/InkML/#affineElement
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="inkml:decimalTable.type">
+				<xsd:attribute ref="xml:id" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
+	<xsd:element name="trace" type="inkml:trace.type" />
+	<xsd:element name="traceView" type="inkml:traceView.type" />
+	<xsd:element name="definitions" type="inkml:definitions.type" />
+ 	
+</xsd:schema>

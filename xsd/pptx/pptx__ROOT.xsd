@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!--   
+	
+		This file ought to generate all [MS-PPTX]
+		 
+	20190429: 		 
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer pptx__ROOT.xsd -d tmp  -no-header -target 2.0
+		 
+	cd to the directory containing the new sources
+	
+	Then add the copyright notice:
+	
+	 sed -s -i -f script *.java
+	
+	where script is
+	
+	# sed script to insert "header.txt" above the first line
+	1{h; r header.txt
+	  D; }
+	2{x; G; }
+	#- - -end of sed script- - - 
+	
+	and header.txt contains the copyright notice.	
+	
+	  -->
+	  
+  <!--  remember, use "include" for same namespace;
+                  use "import"  for different one.
+                  
+        Imports should go into a different java package:
+                  
+        $ grep jaxb:package *
+                
+   -->
+   
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.pml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+  
+  	<xsd:include schemaLocation="../pml/pml-2ed.xsd"/>
+  	
+
+<!-- 
+ 	<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="../odrawxml/oart14docprop.xsd"/>
+ -->
+
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
+
+
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+
+		
+	<xsd:import 
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd" />
+		
+	<xsd:import 
+		namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd" />
+		
+    <xsd:import namespace="http://schemas.microsoft.com/office/powerpoint/2010/main" schemaLocation="office_powerpoint_2010_main.xsd"/> <!--  was ms-pptx14.xsd -->
+   
+	<xsd:import schemaLocation="office_powerpoint_2010_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2010/main" />          
+	<xsd:import schemaLocation="office_powerpoint_2015_09_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2015/09/main" />
+	<xsd:import schemaLocation="ms-pptx166.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2016/6/main"/>
+	<xsd:import schemaLocation="office_powerpoint_2016_summaryzoom.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2016/summaryzoom"/>
+	<xsd:import schemaLocation="office_powerpoint_2018_4_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2018/4/main"/>
+	<xsd:import schemaLocation="office_powerpoint_2012_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2012/main" />
+	<xsd:import schemaLocation="office_powerpoint_2015_10_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2015/10/main" />
+	<xsd:import schemaLocation="office_powerpoint_2016_sectionzoom.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2016/sectionzoom"/>
+	<xsd:import schemaLocation="office_powerpoint_2017_10_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2017/10/main"/>
+	<xsd:import schemaLocation="office_powerpoint_2013_main_command.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2013/main/command" />
+	<xsd:import schemaLocation="office_powerpoint_2015_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2015/main" />
+	<xsd:import schemaLocation="office_powerpoint_2016_slidezoom.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2016/slidezoom"/>
+	<xsd:import schemaLocation="office_powerpoint_2017_3_main.xsd" namespace="http://schemas.microsoft.com/office/powerpoint/2017/3/main" /> 	
+ 	
+</xsd:schema>

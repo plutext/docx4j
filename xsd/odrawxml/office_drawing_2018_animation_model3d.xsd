@@ -1,0 +1,51 @@
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2018/animation/model3d"
+	xmlns="http://schemas.microsoft.com/office/drawing/2018/animation/model3d"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:aanim="http://schemas.microsoft.com/office/drawing/2018/animation"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	    	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	    
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
+         on 20190518
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+    
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+   
+   <!--  
+   <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2018/animation" schemaLocation="oartAnimationProps.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+    -->
+    
+<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2018/animation" schemaLocation="office_drawing_2018_animation.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+      
+   <xsd:simpleType name="ST_EmbeddedAnimationID">
+     <xsd:restriction base="xsd:unsignedInt"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_EmbeddedAnimation">
+     <xsd:sequence>
+       <xsd:element name="animPr" type="aanim:CT_AnimationProperties" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="animId" type="ST_EmbeddedAnimationID" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_PosterFrame">
+     <xsd:attribute name="animId" use="required" type="ST_EmbeddedAnimationID"/>
+     <xsd:attribute name="frame" type="a:ST_PositiveFixedPercentage" use="optional" default="0"/>
+   </xsd:complexType>
+   <xsd:element name="embedAnim" type="CT_EmbeddedAnimation"/>
+   <xsd:element name="posterFrame" type="CT_PosterFrame"/>
+ </xsd:schema>

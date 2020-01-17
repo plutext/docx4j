@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-  xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
-  xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
-  targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  elementFormDefault="qualified"
+	xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	elementFormDefault="qualified"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
 	
@@ -37,6 +38,10 @@
   <xsd:import 
     namespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
     schemaLocation="../dml/dml-spreadsheetDrawing.xsd"/>
+
+	<!-- since docx4j 8.1.1 -->
+	<xsd:import id="mce" namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		schemaLocation="../mce/markup-compatibility-2006-MINIMAL.xsd"/>
     
 	<xsd:complexType name="CT_Xstring_Whitespace">
 	    <xsd:annotation>
@@ -4202,6 +4207,30 @@
       <xsd:element name="fileVersion" type="CT_FileVersion" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="fileSharing" type="CT_FileSharing" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="workbookPr" type="CT_WorkbookPr" minOccurs="0" maxOccurs="1"/>
+      
+      <!-- 
+      
+		  <workbookPr/>
+		  <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+		    <mc:Choice Requires="x15">
+		      <x15ac:absPath url="X:\materna\" xmlns:x15ac="http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac"/>
+		    </mc:Choice>
+		  </mc:AlternateContent>
+		  <xr:revisionPtr revIDLastSave="0" documentId="8_{65A72AF2-7164-4011-8DAF-B5C3DB113568}" xr6:coauthVersionLast="43" xr6:coauthVersionMax="43" xr10:uidLastSave="{00000000-0000-0000-0000-000000000000}"/>
+		  <workbookProtection lockStructure="1"/>      
+		  
+		  Part can have: mc:Ignorable="x15 xr xr6 xr10 xr2"
+		  
+          xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" 
+          xmlns:xr6="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6" 
+          xmlns:xr10="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10" 
+          xmlns:xr2="http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"      
+       -->
+       
+		<!--  added docx4j 8.1.1 -->
+		<xsd:element ref="mc:AlternateContent" />
+       
+      
       <xsd:element name="workbookProtection" type="CT_WorkbookProtection" minOccurs="0"
         maxOccurs="1"/>
       <xsd:element name="bookViews" type="CT_BookViews" minOccurs="0" maxOccurs="1"/>
@@ -4224,6 +4253,7 @@
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
     <xsd:attribute name="conformance" type="s:ST_ConformanceClass"/>
+	<xsd:attribute ref="mc:Ignorable" use="optional" />    
   </xsd:complexType>
   <xsd:complexType name="CT_FileVersion">
 		<xsd:annotation>

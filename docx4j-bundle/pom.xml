@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-bundle</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-bundle</name>
+	
+	<description>
+		fat jar
+	</description>
+
+	
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <encoding>UTF-8</encoding>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+        </configuration>
+      </plugin>
+	<!--  mvn package 
+		
+		filters avoid "Invalid signature file digest for Manifest main attributes"
+		https://stackoverflow.com/a/6743609/1031689
+		-->	 
+			<plugin> 
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:junit</exclude>
+								</excludes>								
+							</artifactSet>
+			              <shadedArtifactAttached>true</shadedArtifactAttached>
+			              <shadedClassifierName>shaded</shadedClassifierName>
+			              <!-- 
+                          <relocations>
+                            <relocation>
+                              <pattern>org.apache.http</pattern>
+                              <shadedPattern>org.docx4j.apache.http</shadedPattern>
+                            </relocation>
+                            <relocation>
+                              <pattern>org.apache.commons.logging</pattern>
+                              <shadedPattern>org.docx4j.slf4j.apache.commons.logging</shadedPattern>
+                            </relocation>
+                          </relocations> --> 
+			              
+					    <filters>
+					        <filter>
+					            <artifact>*:*</artifact>
+					            <excludes>
+					                <exclude>META-INF/*.SF</exclude>
+					                <exclude>META-INF/*.DSA</exclude>
+					                <exclude>META-INF/*.RSA</exclude>
+					            </excludes>
+					        </filter>
+					    </filters>			              
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!--  don't deploy this jar to Maven Central -->			
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>3.0.0-M1</version>
+			  <configuration>
+			    <skip>true</skip>
+			  </configuration>
+			</plugin>			
+				
+	    </plugins>
+  </build>
+	
+	<dependencies>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>  <!-- ?? -->
+		</dependency>
+
+<!-- 	
+		<dependency>
+		  <groupId>ch.qos.logback</groupId>
+		  <artifactId>logback-classic</artifactId>
+		  <version>1.3.0-alpha4</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-samples-resources</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+	 -->
+        
+	</dependencies>
+	
+</project>

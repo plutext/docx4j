@@ -22,6 +22,8 @@
 	<xsd:import id="dml" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" 
 		schemaLocation="../dml/dml__ROOT.xsd" />
    
+	<xsd:include schemaLocation="../odrawxml/oartwordcontentpart.xsd"/> 
+   
    
   <!-- From [MS-DOCX] — v20121003
 Word Extensions to the Office Open XML (.docx) File Format
@@ -62,8 +64,8 @@ Release: October 8, 2012 -->
   
   
   <xsd:attributeGroup name="AG_Parids">
-    <xsd:attribute name="paraId" type="w:ST_LongHexNumber" use="optional" />
-    <xsd:attribute name="textId" type="w:ST_LongHexNumber" use="optional" />
+    <xsd:attribute name="paraId" type="w:ST_LongHexNumber"/>
+    <xsd:attribute name="textId" type="w:ST_LongHexNumber"/>
   </xsd:attributeGroup>
   
   <xsd:attribute name="anchorId" type="w:ST_LongHexNumber"/>
@@ -511,10 +513,39 @@ Release: October 8, 2012 -->
     <xsd:attribute name="contourW" type="a:ST_PositiveCoordinate" use="optional"/>
     <xsd:attribute name="prstMaterial" type="ST_PresetMaterialType" use="optional"/>
   </xsd:complexType>
+  
+	<!--  avoid xjc 2.2.11 collision with w14:shadow  -->
+	<xsd:element name="shadow" type="CT_Shadow">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<!-- <jaxb:class name="shadow14"/> -->
+				<jaxb:property name="shadow14"/>
+			</xsd:appinfo>
+			<xsd:documentation>Shadow</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+		
+<!-- 		
+  		<xsd:complexType>	
+		    <xsd:sequence>
+		      <xsd:group ref="EG_ColorChoice"/>
+		    </xsd:sequence>
+		    <xsd:attribute name="blurRad" use="optional" type="a:ST_PositiveCoordinate"/>
+		    <xsd:attribute name="dist" use="optional" type="a:ST_PositiveCoordinate"/>
+		    <xsd:attribute name="dir" use="optional" type="a:ST_PositiveFixedAngle"/>
+		    <xsd:attribute name="sx" use="optional" type="a:ST_Percentage"/>
+		    <xsd:attribute name="sy" use="optional" type="a:ST_Percentage"/>
+		    <xsd:attribute name="kx" use="optional" type="a:ST_FixedAngle"/>
+		    <xsd:attribute name="ky" use="optional" type="a:ST_FixedAngle"/>
+		    <xsd:attribute name="algn" use="optional" type="ST_RectAlignment"/>
+	    </xsd:complexType>
+	</xsd:element>
+   -->
+  
   <xsd:group name="EG_RPrTextEffects">
     <xsd:sequence>
       <xsd:element name="glow" minOccurs="0" type="CT_Glow"/>
-      <xsd:element name="shadow" minOccurs="0" type="CT_Shadow"/>
+      <xsd:element ref="shadow" minOccurs="0" />
       <xsd:element name="reflection" minOccurs="0" type="CT_Reflection"/>
       <xsd:element name="textOutline" minOccurs="0" type="CT_TextOutlineEffect"/>
       <xsd:element name="textFill" minOccurs="0" type="CT_FillTextEffect"/>

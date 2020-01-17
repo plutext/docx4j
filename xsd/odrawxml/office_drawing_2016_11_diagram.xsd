@@ -1,0 +1,59 @@
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2016/11/diagram"
+	xmlns="http://schemas.microsoft.com/office/drawing/2016/11/diagram"
+	xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:o="http://oxsdSchemaUri" elementFormDefault="qualified"
+	attributeFormDefault="unqualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
+         on 20190518
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.drawing.x201611.diagram"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+    
+<!--
+   <xsd:import schemaLocation="igxtypes.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
+   <xsd:import schemaLocation="oarttxbullet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+   -->
+
+   <xsd:import schemaLocation="../dml/dml-textBullet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+   
+   <xsd:simpleType name="ST_STorageType" o:cname="StoreType">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="sibTrans"/>
+       <xsd:enumeration value="parTrans"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_DiagramAutoBullet" o:cname="DiagramAutoBullet" o:cwrap="DiagramAutoBulletMethods">
+     <xsd:group ref="a:EG_TextBullet" minOccurs="1" maxOccurs="1"/>
+     <xsd:attribute name="prefix" type="xsd:string" o:cname="prefix" use="optional"/>
+     <xsd:attribute name="leadZeros" type="xsd:boolean" o:cname="leadZeros" use="optional"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_NumberDiagramInfo" o:cname="NumberDiagramInfo" o:cwrap="NumberDiagramInfoMethods">
+     <xsd:sequence>
+       <xsd:element name="buPr" type="CT_DiagramAutoBullet" minOccurs="1" maxOccurs="1" o:cname="bulletProps"/>
+     </xsd:sequence>
+     <xsd:attribute name="lvl" type="xsd:unsignedInt" o:cname="lvl" use="required"/>
+     <xsd:attribute name="ptType" type="ST_STorageType" o:cname="ptType" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_NumberDiagramInfoList" o:cname="NumberDiagramInfoList" o:cwrap="noTemplate">
+     <xsd:sequence>
+       <xsd:element name="autoBuNodeInfo" type="CT_NumberDiagramInfo" o:cname="autoBulletNodeInfo" minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="autoBuNodeInfoLst" type="CT_NumberDiagramInfoList"/>
+ </xsd:schema>

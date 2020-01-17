@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="docx4j">
+    <property environment="env"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+	<property name="dist" value="./dist"/>
+	
+	<property name="version" value="6.1.0"/>
+	
+    <property name="jar-name" value="docx4j-export-fo-${version}"/>
+    <property name="release.dir" value="docx4j-export-fo-${version}"/>
+
+    <property name="src.main.java.dir" value="src/main/java"/>
+	
+	<property name="m2Repository" value="../../.m2/repository"/>	
+	
+    <!--.NET properties -->
+    <property name="ikvm.dir" value="/Java/ikvm/ikvm-7.3.4830.0"/>
+    <property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
+	
+	<!-- 
+	
+		docx4j deps, plus:
+
+		 +- org.plutext:jaxb-xslfo:jar:1.0.1
+		 
+		 +- org.apache.xmlgraphics:fop:jar:2.3 and its deps
+		 
+	 -->
+	 
+    <path id="FOP-stuff.classpath">
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.10/batik-css-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.10/batik-dom-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.10/batik-util-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.10/batik-constants-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.10/batik-i18n-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.10/batik-bridge-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.10/batik-anim-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.10/batik-script-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.10/batik-xml-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.10/batik-awt-util-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.10/batik-gvt-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.10/batik-transcoder-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.10/batik-svggen-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.10/batik-extension-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.10/batik-ext-1.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.7/fontbox-2.0.7.jar"/>
+        
+	</path>
+	 
+    <path id="Maven Dependencies.libraryclasspath">
+    
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.5/commons-io-2.5.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
+
+    	<path refid="FOP-stuff.classpath"/>        
+
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
+                
+ 
+<!--    Uncomment for the PDF conversion via HTML or iText, which
+		may be found in docx4j-extras.
+		
+		If you are planning to use that, you'll also want to uncomment
+		the BaseFont stuff in PhysicalFonts. 	
+		
+        <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
+	    -->	    
+<!--    Uncomment for the PDF conversion via HTML, which
+		may be found in docx4j-extras. Note that core-renderer R8pre2 incompatible with iText SVN 	
+        <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2009.0324/pdf-renderer-0.2009.0324.jar"/>
+        <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
+        <pathelement location="${m2Repository}/xhtmlrenderer/core-renderer/R8pre2/core-renderer-R8pre2.jar"/>
+-->
+
+    </path>
+    
+    <path id="docx4j.classpath">
+        <pathelement location="${m2Repository}/org/docx4j/docx4j/6.1.0/docx4j-6.1.0.jar"/>
+        <path refid="Maven Dependencies.libraryclasspath"/>
+    </path>
+
+    <path id="dist.classpath">
+        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
+        <path refid="docx4j.classpath"/>
+    </path>
+
+    <path id="junit.classpath">
+        <path refid="docx4j.classpath"/>
+        <pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
+        <pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+    </path>
+	
+	<path id="jre.libs" description="Java runtime libraries">
+	  <pathelement location="${java.home}\lib" />
+	 </path>	
+	
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
+            <!-- 
+            <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
+            <fileset dir="src/samples/_resources" />
+             -->
+        </copy>
+    </target>
+	
+    <target name="clean">
+        <delete dir="bin"/>
+        <delete dir="${dist}"/>
+    </target>
+    <target depends="build-project" name="build"/>
+   
+    <target name="build-project" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <echo message="${ant.java.version}"/>
+        
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" 
+        	target="${target}"  encoding="utf-8">
+            <src path="${src.main.java.dir}"/>
+            <!-- <classpath refid="docx4j.classpath"/> -->
+            <!--  build with earlier than
+
+					java version "1.6.0_19" (and possibly later)
+					Java(TM) SE Runtime Environment (build 1.6.0_19-b04)
+					Java HotSpot(TM) 64-Bit Server VM (build 16.2-b04, mixed mode)
+
+				 requires  Xalan 2.7.1, so -->
+			<classpath refid="dist.classpath"/>				 
+        </javac>
+        
+        <!--  Force ant to compile package-info.java.
+              Without these, you'll get JAXB "unexpected element" errors.
+        	  This is necessary because of a dubious change in ant behaviour, 
+              starting with 1.7.1 (see javac task doc, and ant bug 43114).  
+              
+			  "In Ant 1.7.1 the package-info.java will only be compiled if:
+				
+				   1. If a package-info.class file exists and is older than the package-info.java file.
+				   2. If the directory for the package-info.class file does not exist.
+				   3. If the directory for the package-info.class file exists, and has an older modification 
+				   time than the the package-info.java file. In this case <javac> will touch the corresponding 
+				   .class directory on successful compilation."              
+              -->
+        <sleep seconds="2"/> <!--  wait a little, so our modifications times are newer -->
+        <touch><fileset dir="${src.main.java.dir}" includes="**/package-info.java" /></touch>        
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="${src.main.java.dir}"/>
+        	<include name="**/package-info.java"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+        
+    </target>
+ 
+ 
+ <!-- ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist -->
+    <target name="dist"  depends="clean, build-project" >
+				
+        <mkdir dir="${dist}"/>
+				
+		<jar destfile="${dist}/${jar-name}.jar" basedir="./bin"/>		
+		
+		<!-- copy all the jar files! -->
+		<copy todir="${dist}" flatten="true">
+			<!-- requires Ant 1.7.0 -->
+			<path>
+			    <path refid="dist.classpath"/>
+			</path>
+		</copy>		
+    </target>
+    
+    
+    
+    
+    <target name="checkForIKVM">
+        <condition property="IKVMAvailable">
+            <and>
+                <os family="windows"/>
+                <available file="${ikvmc}" property="ignored" />
+            </and>
+        </condition>
+    </target>
+
+    <target name="dist.NET" depends="checkForIKVM, dist" if="IKVMAvailable" description="Build docx4j .NET DLL files">
+        <echo>Building docx4j.DLL</echo>
+        
+<!--         
+		<fileset id="fileset" dir="${dist}">
+        	<include name="*"/>
+        </fileset>
+        <pathconvert refid="fileset" property="jars" pathsep=" "/>
+         -->
+         
+         <!--  splitting fop out results in 2 jars:
+         
+			         8,885,248 docx4j-fop.dll
+			        16,741,888 docx4j.dll   
+			        
+			   but seems more trouble than it is worth      
+
+		        <pathconvert refid="FOP-stuff.classpath" property="fop-jars" pathsep=" "/>        
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j-fop.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-target:library" />
+		            <arg line="${fop-jars}" />
+		        </exec>    
+		         
+			    <path id="docx4j-main.classpath">
+			        <path refid="Maven Dependencies.libraryclasspath"/>
+			        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+			        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+					<pathelement location="${dist}/docx4j-${version}.jar" />
+			    </path>
+		        <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
+		                 
+				<exec executable="${ikvmc}">
+		            <arg value="-out:${dist}/docx4j.dll" />
+		            <arg value="-keyfile:Plutext.snk" />
+		            <arg value="-version:2.9.9.3" />
+		            <arg value="-reference:dist/docx4j-fop.dll" />
+		            <arg value="-target:library" />
+		            <arg line="${docx4j-jars}" />
+		        </exec>
+		        
+		        It is also possible to split out Xalan (inc serializer);
+		        in that case docx4j.dll is 20mb, and xalan is 4mb
+		        
+         -->
+         
+	    <path id="docx4j-main.classpath">
+	        <path refid="Maven Dependencies.libraryclasspath"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+	    	<path refid="FOP-stuff.classpath"/>      
+	    	<!--   	        
+	        <pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>  
+			 -->
+			<pathelement location="${dist}/docx4j-${version}.jar" />
+	    </path>
+        <pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>        
+                 
+		<exec executable="${ikvmc}">
+            <arg value="-out:${dist}/docx4j.dll" />
+            <!--   For nuget, we don't snk; for Enterprise usage in GAC, we may
+             -->
+            <arg value="-keyfile:Plutext.snk" />
+            <arg value="-version:${version}.0" /> 
+            <arg value="-reference:dll/slf4j-api-1.7.5-snk.dll" />            
+            <!-- 
+            <arg value="-reference:dll/slf4j-NetCommonLogging.dll" />
+            -->            
+            <arg value="-target:library" />
+            <arg line="${docx4j-jars}" />
+        </exec>    
+        
+        
+            
+    </target>
+
+	<!--
+		These targets are no longer used:     
+	      <target name="JAXB-use-MOXy" >
+	      <target name="JAXB-switch-from-MOXy-to-Oracle" >
+	      
+	    Instead, use of MOXy is controlled by presence/absence of docx4j-MOXy-JAXBContext.jar
+	 -->
+	
+	<!--  build just diffx; the usual targets build diffx as part of docx4j -->
+    <target name="build-diffx" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src/diffx"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+    </target>
+
+    <target name="diffxjar"  depends="clean, build-diffx" >							
+		<jar destfile="diffx.jar" basedir="./bin"/>									
+    </target>	
+
+	
+	<target name="javadoc">
+	
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+	
+		
+        <javadoc access="public" author="false" 
+         destdir="javadoc" 
+         doctitle="docx4j ${version}" 
+         nodeprecated="false" 
+         nodeprecatedlist="false" 
+         noindex="false" 
+         nonavbar="false" 
+         notree="false" 
+         source="1.6" 
+        sourcepath="src/main/java:src/pptx4j/java:src/xlsx4j/java:src/glox4j/java:src/diffx" 
+        splitindex="true" use="true" version="false"
+        maxmemory="512m">
+                    <classpath refid="docx4j.classpath"/>
+        </javadoc>
+		
+<!-- 		
+      <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
+      <bottom>
+        <![CDATA[<i>Copyright 2007-2008 Plutext Pty Ltd.</i>]]>
+      </bottom>
+      <group>
+        <title>dml - DrawingML</title>
+        <package name="org.docx4j.dml*"/>
+      </group>
+      <group>
+        <title>wml - WordprocessingML</title>
+        <package name="org.docx4j.wml*"/>
+      </group>
+       -->		
+	
+	</target>
+	
+    <target name="test" depends="dist">
+
+	    <path id="tests.classpath">
+	    	<pathelement location="${dist}/docx4j.jar" />
+	        <path refid="Maven Dependencies.libraryclasspath"/>
+	        <pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+	        <pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
+	        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
+	        <pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>	    	
+	    </path>    	
+        
+    	<!--  Make jar containing tests only  -->
+        <delete file="docx4j-tests-only.jar"/>
+        <delete dir="testing"/>
+        <mkdir dir="testing"/>
+        <javac debug="off" destdir="testing" source="${source}" target="${target}">
+            <src path="src/test/java"/>
+            <classpath refid="tests.classpath"/>
+        </javac>
+        <copy includeemptydirs="false" todir="testing">
+            <fileset dir="src/test/resources">
+                <include name="**/*"/> 
+            </fileset>
+        </copy>
+	   	 <jar destfile="docx4j-tests-only.jar">
+	   	    <fileset dir="./testing" />
+	   	  </jar>    	
+
+	    <path id="testsplus.classpath">
+	    	<pathelement location="docx4j-tests-only.jar" />
+	        <path refid="tests.classpath"/>
+	    </path>
+    	
+        <delete dir="${junit.output.dir}"/>
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="on" haltonfailure="on">
+            <formatter type="xml"/>
+        	  <batchtest fork="yes" todir="${junit.output.dir}">
+        	  	<resources>
+        	  		<zipfileset src="docx4j-tests-only.jar" includes="**/*Test.class"/>
+        	  	</resources> 
+        	 </batchtest>
+        	
+            <classpath refid="testsplus.classpath"/>
+        </junit>
+        <delete dir="testing"/>
+        	
+    </target>
+	
+   
+</project>
