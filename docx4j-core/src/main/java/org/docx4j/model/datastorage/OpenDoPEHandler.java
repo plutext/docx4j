@@ -1228,7 +1228,7 @@ public class OpenDoPEHandler {
 		tag.setVal(emptyRepeatValue);
 	}
 
-	class DeepTraversor implements TraversalUtil.Callback {
+	class DeepTraversor extends CallbackImpl {
 
 		// private static Logger log = LoggerFactory.getLogger(DeepTraversor.class);
 
@@ -1255,36 +1255,6 @@ public class OpenDoPEHandler {
 			}
 
 			return null; // doesn't matter in this implementation
-		}
-
-		@Override
-		public void walkJAXBElements(Object parent) {
-
-			List<Object> children = getChildren(parent);
-			if (children != null) {
-
-				for (Object o : children) {
-
-					o = XmlUtils.unwrap(o);
-					this.apply(o);
-
-					if (this.shouldTraverse(o)) {
-						walkJAXBElements(o);
-					}
-
-				}
-			}
-		}
-
-		@Override
-		public List<Object> getChildren(Object o) {
-			// log.debug("getChildren for " + o.getClass().getName());
-			return TraversalUtil.getChildrenImpl(o);
-		}
-
-		@Override
-		public boolean shouldTraverse(Object o) {
-			return true;
 		}
 
 	}
