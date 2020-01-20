@@ -10,12 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Collection for P content; does 2 things above/beyond JAXB's default collection 
+ * Collection for P-level or run level content; does 2 things above/beyond JAXB's default collection 
  * type (arrayList):
  * 
  * 1.  Sanity check common user errors adding the wrong stuff
  * 
- * 2.  Sets parent correctly
+ * 2.  Sets parent correctly (ie the parent of an object in the list is the object which has this list as a field)  
  * 
  * See further http://stackoverflow.com/questions/7924079/what-is-the-default-list-implementation-in-jaxb2-and-how-do-i-change-it
  * 
