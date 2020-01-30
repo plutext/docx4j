@@ -22,18 +22,14 @@ package org.docx4j.convert.out.html;
 import java.util.List;
 
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriterModel;
-import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModelCell;
-import org.docx4j.wml.TblPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
