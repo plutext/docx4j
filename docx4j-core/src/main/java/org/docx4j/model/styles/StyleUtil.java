@@ -2794,12 +2794,17 @@ public class StyleUtil {
 	}
 
 	public static TblWidth apply(TblWidth source, TblWidth destination) {
-		//Type gets ignored
+		
 		if ((source != null) && (!isEmpty(source.getW()))) {
 			if (destination == null) 	
 				destination = Context.getWmlObjectFactory().createTblWidth();
 			
 			destination.setW(source.getW());
+			
+			// If @w:type is omitted, then its value shall be assumed to be dxa (twentieths of a point)
+			// http://webapp.docx4java.org/OnlineDemo/ecma376/WordML/tblW_2.html
+			destination.setType(source.getType());
+			
 		}
 		return destination;
 	}
