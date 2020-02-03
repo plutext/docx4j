@@ -522,12 +522,12 @@ public class FieldRef {
 	public void setResult(String val) {
 		
 		resultsSlot.getContent().clear();
-		StringTokenizer st = new StringTokenizer(val, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
+		String[] splitted = val.split("\\R");
 		
 		// our docfrag may contain several runs
 		boolean firsttoken = true;
-		while (st.hasMoreTokens()) {						
-			String line = (String) st.nextToken();
+		for (int i = 0; i < splitted.length; i++) {						
+			String line = splitted[i];
 			
 			if (firsttoken) {
 				firsttoken = false;
