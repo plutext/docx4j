@@ -228,6 +228,14 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
     		return "wp15";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2018/wordml")) {
+    		return "w16";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2018/wordml/cex")) {
+    		return "w16cex";
+    	}
+    	
     	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2016/wordml/cid")) {
     		return "w16cid";
     	}
@@ -603,7 +611,13 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		
 		if (prefix.equals("wp15"))
 			return "http://schemas.microsoft.com/office/word/2012/wordprocessingDrawing";
-				
+
+		if (prefix.equals("w16"))
+			return "http://schemas.microsoft.com/office/word/2018/wordml";
+		
+		if (prefix.equals("w16cex"))
+			return "http://schemas.microsoft.com/office/word/2018/wordml/cex";
+		
 		if (prefix.equals("w16cid"))
 				return "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 
