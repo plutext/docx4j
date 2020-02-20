@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -226,11 +227,11 @@ public class NamespacePrefixMapperUtils {
     	
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {
+
 			String prefix = (String) st.nextToken();
-			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
@@ -252,11 +253,11 @@ public class NamespacePrefixMapperUtils {
 
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {
-			String prefix = (String) st.nextToken();
-			
+
+			String prefix = (String) st.nextToken();						
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
