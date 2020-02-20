@@ -142,7 +142,7 @@ public class NamespacePrefixMapperUtils {
 			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", prefixMapperRels );
 			// Try RI suitable one
 			log.info("Using ri.NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
-			return prefixMapper;
+			return prefixMapperRels;
 		} catch (Exception e) {
 			//log.error("JAXB: Can't instantiate JAXB Reference Implementation", e);
 			throw new JAXBException("JAXB: Can't instantiate JAXB Reference Implementation", e);
