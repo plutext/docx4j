@@ -145,7 +145,7 @@
 
 	        <Logger name="org.docx4j.org.xhtmlrenderer" level="warn"/>
 	        
-	        <Logger name="org.pptx4j" level="debug"/>
+	        <Logger name="org.pptx4j" level="warn"/>
 
         
         <!--  OpenDoPE functionality loggers -->
