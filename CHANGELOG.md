@@ -2,6 +2,39 @@ CHANGELOG
 =========
 
 
+Version 8.1.5  namespaces required in documents created using recent Word updates
+==============
+
+Release date
+------------
+
+26 February 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+R Cambell (typo in NamespacePrefixMapperUtils.tryRIforRelationshipsPart)
+
+Wussup
+
+Changes in Version 8.1.5 
+-------------------------
+
+Add mappings for w16 and w16cid.  Fixes 381.
+
+JAXB: Remove dep on java-api 2.3.1, since that depends on javax.activation:javax.activation-api.  The 2.3.2 version which we want is jakarta.xml.bind:jakarta.xml.bind-api which depends on jakarta.activation
+
+NamespacePrefixMapperUtils.tryRIforRelationshipsPart: Fix typo
+
+MergeField: support multiple newline characters
+
+For more, please see https://github.com/plutext/docx4j/commits/master
+
+ 
+
 Version 8.1.4 minor release
 ==============
 
