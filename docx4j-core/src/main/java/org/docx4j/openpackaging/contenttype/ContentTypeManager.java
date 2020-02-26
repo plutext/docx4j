@@ -275,7 +275,7 @@ public class ContentTypeManager  {
 	public  Part getPart(String partName, Relationship rel) throws URISyntaxException, PartUnrecognisedException,
 	 InvalidFormatException {
 		
-		Part p;
+		Part p = null;
 
 		// look for an override
 		CTOverride overrideCT = (CTOverride) overrideContentType.get(new URI(partName));
@@ -284,9 +284,14 @@ public class ContentTypeManager  {
 			if (log.isDebugEnabled()) {
 				log.debug("Found content type '" + contentType + "' for " + partName);
 			}
-			 p = newPartForContentType(contentType, partName, rel);
-			 p.setContentType( new ContentType(contentType) );
-			 return p;
+			try {
+				p = newPartForContentType(contentType, partName, rel);
+			} catch (NoClassDefFoundError noClass) {
+				log.error(noClass.getMessage(), noClass);
+				throw noClass;
+			}
+			p.setContentType(new ContentType(contentType));
+			return p;
 		}		
 		
 		// if there is no override, get use the file extension
@@ -299,7 +304,12 @@ public class ContentTypeManager  {
 				log.debug("Found content type '" + contentType + "' for "
 								+ partName);
 			}
-			p = newPartForContentType(contentType, partName, rel);
+			try {
+				p = newPartForContentType(contentType, partName, rel);
+			} catch (NoClassDefFoundError noClass) {
+				log.error(noClass.getMessage(), noClass);
+				throw noClass;
+			}
 			p.setContentType(new ContentType(contentType));
 			return p;
 		}
@@ -312,7 +322,7 @@ public class ContentTypeManager  {
 	
 	public Part newPartForContentType(String contentType, String partName, Relationship rel)
 		throws InvalidFormatException, PartUnrecognisedException {
-				
+						
 		// TODO - a number of WordML parts aren't listed here!
 		if (rel!=null && rel.getType().equals(Namespaces.AF) ) {
 			// Could have just passed String relType
