@@ -16,7 +16,7 @@ Contributors to this release
 
 Jason Harrop
 
-R Cambell (typo in NamespacePrefixMapperUtils.tryRIforRelationshipsPart)
+R Cambell
 
 Wussup
 
