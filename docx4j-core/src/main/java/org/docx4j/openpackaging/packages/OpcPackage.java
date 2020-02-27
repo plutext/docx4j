@@ -944,13 +944,14 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		// Zip it up
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		SaveToZipFile saver = new SaveToZipFile(this);
+		Save saver = new Save(this);
+		
 		try {
 			saver.save(baos);
 			result = load(new ByteArrayInputStream(baos.toByteArray()));
 		} catch (Docx4JException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// Shouldn't happen
+			log.error(e.getMessage(), e);
 		}
 
 		return result;
