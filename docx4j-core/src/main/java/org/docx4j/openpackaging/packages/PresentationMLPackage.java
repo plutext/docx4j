@@ -21,6 +21,8 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io3.SaveSlides;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -51,9 +54,7 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.ResourceUtils;
-import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.Style;
-import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
@@ -365,65 +366,31 @@ public class PresentationMLPackage  extends OpcPackage {
 		throw new UnsupportedOperationException("reset of pptx package not implemented yet");
 	}
 	
-	public static void main(String[] args) throws Exception {
+	
+	/**
+	 * Create a PresentationMLPackage containing the specified slides only.
+	 * 
+	 * @return
+	 * @since 8.1.6
+	 */
+	public PresentationMLPackage partialClone(int[] slideNumbers) {
+		
+		OpcPackage result = null;
+		
+		// Zip it up
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		SaveSlides saver = new SaveSlides(this, slideNumbers);
+		
+		try {
+			saver.save(baos);
+			result = load(new ByteArrayInputStream(baos.toByteArray()));
+		} catch (Docx4JException e) {
+			// Shouldn't happen
+			log.error(e.getMessage(), e);
+		}
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
+		return (PresentationMLPackage)result;
 		
-		PresentationMLPackage presentationMLPackage = 
-			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
-
-		
-//		ThemePart tp = (ThemePart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/theme/theme1.xml"));
-//		FontScheme fontScheme = tp.getFontScheme();
-//		List<Style> styles = new ArrayList<Style>();
-//		
-//		// presentation.xml
-//		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/presentation.xml"));
-//		styles.addAll(
-//				TextStyles.generateWordStylesFromPresentationPart(
-//						pp.getJaxbElement().getDefaultTextStyle(),
-//						"", fontScheme));
-//
-//		// master
-//		SlideMasterPart master = (SlideMasterPart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/slideMasters/slideMaster1.xml"));
-//		styles.addAll(
-//				TextStyles.generateWordStylesForMaster(
-//						master.getJaxbElement().getTxStyles(), 
-//						1, fontScheme));
-		
-		Iterator partIterator = presentationMLPackage.getParts().getParts().entrySet().iterator();
-	    while (partIterator.hasNext()) {
-	    	
-	        Map.Entry pairs = (Map.Entry)partIterator.next();
-	        
-	        Part p = (Part)pairs.getValue();
-	        if (p instanceof SlidePart) {
-
-//	        	ResolvedLayout rl = ((SlidePart)p).getResolvedLayout();		        	
-//	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
-//	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
-	        	
-	        	System.out.println(
-	        			SvgExporter.svg(presentationMLPackage, (SlidePart)p)
-	        			);
-	        }
-	    }
-		
-		
-//		System.out.println(presentationMLPackage.getParts().getParts().size());
-//		Map<String, ShapeWrapper> index = ShapeWrapper.indexPlaceHolders(	presentationMLPackage.getParts().getParts());
-//		
-//		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/slides/slide1.xml"));
-//
-//		GroupShape shapeTree = slidePart.getEffectiveShapeTree( index );
-//		
-//		System.out.println( XmlUtils.marshaltoString(shapeTree, true, Context.jcPML));
-		
-		System.out.println("\n\n done .. \n\n");
-		
-	}	
+	}
+	
 }
