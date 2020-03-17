@@ -144,7 +144,6 @@ public class ObjectFactory {
     private final static QName _CTTrPrBaseHidden_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "hidden");
     private final static QName _SdtPrRPr_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "rPr");
     private final static QName _SdtPrAlias_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "alias");
-    private final static QName _SdtPrLable_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "label");
     private final static QName _SdtPrLock_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "lock");
     private final static QName _SdtPrPlaceholder_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "placeholder");
     private final static QName _SdtPrShowingPlcHdr_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "showingPlcHdr");
@@ -5727,15 +5726,6 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "alias", scope = SdtPr.class)
     public JAXBElement<SdtPr.Alias> createSdtPrAlias(SdtPr.Alias value) {
         return new JAXBElement<SdtPr.Alias>(_SdtPrAlias_QNAME, SdtPr.Alias.class, SdtPr.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link SdtPr.Label }{@code >}}
-     *
-     */
-    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "label", scope = SdtPr.class)
-    public JAXBElement<SdtPr.Label> createSdtPrLabel(SdtPr.Label value) {
-        return new JAXBElement<SdtPr.Label>(_SdtPrLable_QNAME, SdtPr.Label.class, SdtPr.class, value);
     }
 
     /**
