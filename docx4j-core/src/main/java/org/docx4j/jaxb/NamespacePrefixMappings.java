@@ -482,7 +482,21 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main")) {
 			return "x15";
-		}    	
+		}   
+		
+		// XLSX (2020 additions)
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2014/revision"))
+			return "xr";	
+		
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"))
+			return "xr2";	
+		
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision6"))
+			return "xr6";	
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"))
+			return "xr10";	
+		
 				
     	return suggestion;
     }
@@ -681,6 +695,18 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (prefix.equals("thm15"))
 			return "http://schemas.microsoft.com/office/thememl/2012/main";
 
+		// XLSX (2020 additions)
+		if (prefix.equals("xr"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2014/revision";	
+		
+		if (prefix.equals("xr2"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2015/revision2";	
+		
+		if (prefix.equals("xr6"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision6";	
+
+		if (prefix.equals("xr10"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision10";	
 		
 		// OpenDoPE
 		if (prefix.equals("odx"))
