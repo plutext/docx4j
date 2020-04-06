@@ -49,7 +49,6 @@ public class InkmlPart extends JaxbXmlPart<InkType> {
 	public InkmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
-		System.out.println("I'm n ink part!");
 	}
 
 	public InkmlPart() throws InvalidFormatException {
