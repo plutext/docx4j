@@ -1,6 +1,38 @@
 CHANGELOG
 =========
 
+Version 8.1.6  minor release
+==============
+
+Release date
+------------
+
+7 April 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.1.6 
+-------------------------
+
+Improve efficiency of package clone
+
+pptx4j
+------
+
+SaveSlides provides the ability to save selected slides only; partialClone can use this to make a clone of a PresentationMLPackage, but with just those slides
+
+xlsx4j
+------
+
+xlsx revision namespaces; fixes #389
+
+Support importing flat OPC XML representing a spreadsheet
+
+
 
 Version 8.1.5  namespaces required in documents created using recent Word updates
 ==============
