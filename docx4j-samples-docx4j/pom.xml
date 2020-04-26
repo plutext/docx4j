@@ -88,7 +88,18 @@
 			<artifactId>docx4j-samples-resources</artifactId>
 			<version>${project.version}</version>
 		</dependency>
- 
+		
+ 	<!-- If you want to use Saxon for XPath, uncomment this, and include
+ 	
+ 				XPathFactoryUtil.setxPathFactory(new net.sf.saxon.xpath.XPathFactoryImpl());
+ 	  
+	<dependency>
+	  <groupId>net.sf.saxon</groupId>
+	  <artifactId>Saxon-HE</artifactId>
+	  <version>9.9.0-2</version>
+	</dependency>
+	-->
+	
 <!-- Uncomment if javax.xml.stream is missing from your env (shouldn't be necessary in Java 8).  This provides that via META-INF/services.
      Or you can use: System.setProperty("javax.xml.stream.XMLInputFactory", "com.ctc.wstx.stax.WstxInputFactory");
        	
