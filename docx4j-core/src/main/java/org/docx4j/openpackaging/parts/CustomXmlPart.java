@@ -34,7 +34,7 @@ public interface CustomXmlPart {
 	 * XPathAPIObject instead retains its context as long as the object persists, 
 	 * reusing the DTMs. 
 	 * 
-	 * There was the question of whether to implement it here or just in CustomXmlDataStoragePart
+	 * There was the question of whether to declare it here or just implement it in CustomXmlDataStoragePart
 	 * (since this is mostly of value in binding the user's XML data file).  It is here since otherwise
 	 * BindingHandler would fail on DocPropsCoverPagePart and StandardisedAnswersPart (both of which 
 	 * extend JaxbCustomXmlDataStoragePart).
