@@ -189,21 +189,49 @@ public class Condition implements Evaluable {
 				
 				// clean it
 				String tmpPath = xpath.replace("][1]", "]"); // replace segment eg phase[1][1] to match map
+								
 				String path = extractPath(tmpPath);
 			
 				// can we re-assemble?
 				if (tmpPath.equals("count(" + path + ")>0")) {
 					// match!
+					log.debug("XPATH_CACHE >0 case handling " + path);
+				
+					// prior to 8.1.7 each segment must explicitly end with an index or it won't work
+					// ie a true may incorrectly evaluate to false :-(
+					// For correct behaviour prior to 8.1.7, use !=0 rather than >0
+					// or avoid OpenDoPEHandler.ENABLE_XPATH_CACHE
+					
+					String[] segments = path.split("/");
+					StringBuffer sb = new StringBuffer(); 
+				     for (int x=0; x<segments.length; x++) {
+				    	 if ("".equals(segments[x])) {
+				    	 } else if (segments[x].endsWith("]")) {
+				    		 sb.append(segments[x]);
+				    	 } else {
+				    		 sb.append(segments[x]+"[1]");			    		 
+				    	 }
+				    	 if (x<segments.length-1) {
+				    		 sb.append("/");				    		 
+				    	 }
+				     }
+//		    		 log.debug("Input:  " + path);
+		    		 path = sb.toString();			         
+//		    		 log.debug("Output: " + path);
+					
 					
 					Integer val = domToXPathMap.getCountMap().get(path);
 					if (val==null) {
-						// to be expected only if count is zero OR if there were a mixture of element names,
+						// to be if there were a mixture of element names,
 						// so we didn't count it for repeat purposes.
 						// So check the PREFIX_ALL_NODES entry.
 						val = domToXPathMap.getCountMap().get(DomToXPathMap.PREFIX_ALL_NODES + path);
+					} else if (  log.isDebugEnabled()) {
+						log.debug("countMap result " + val);
 					}
 					if (val==null /* still */) { 
 						if (  log.isDebugEnabled()) {
+							log.warn("log.isDebugEnabled()-specific code path; results may vary");
 							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
 							if (tmpCheck) {
 								String message ="FIXME.  Expected map entry facilitating manual eval of  " + path;
@@ -214,17 +242,17 @@ public class Condition implements Evaluable {
 							}
 							return tmpCheck;
 						} else {
-							return false;  // no entry, ,so count is zero
+							return false;  // no entry, so count is zero
 						}
 
 					} else {
-						boolean result = (val>0);
+						boolean result = (val!=null); // a value of zero means it is present, just that it has no children 
 					
 						if ( log.isDebugEnabled()) {
 							boolean tmpCheck = particle.evaluate(pkg, customXmlDataStorageParts, conditionsMap, xpathsMap);
 						
 							if (result==tmpCheck) {
-								System.out.println("Manual count calc worked");
+								log.debug("Manual count calc worked");
 							} else {
 								
 								String message ="PANIC! Manual count calc doesn't match XPath eval!\n"
