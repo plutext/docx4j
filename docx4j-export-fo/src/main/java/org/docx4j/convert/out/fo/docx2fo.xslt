@@ -627,7 +627,10 @@
 	</xsl:template>
 
 	<xsl:template match="w:noBreakHyphen">
-		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
+		<!-- There is no glyph for NON-BREAKING HYPHEN &#x2011; in many fonts, so 
+		     use an ordinary hyphen with a zero-width no-break space character &#xFEFF; 
+		     as suggested at http://www.sagehill.net/docbookxsl/PrintCustomEx.html#Hyphenation  -->
+		<xsl:text disable-output-escaping="yes">-&#xFEFF;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="w:br">
