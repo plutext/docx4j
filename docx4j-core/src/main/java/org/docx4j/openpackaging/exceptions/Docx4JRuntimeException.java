@@ -41,4 +41,13 @@ public class Docx4JRuntimeException extends RuntimeException {
 	public Docx4JRuntimeException(String msg) {
 		super(msg);
 	}
+	
+	public Docx4JRuntimeException(String msg, Exception e) {
+		super(msg, e);
+	}
+
+	public Docx4JRuntimeException(String msg, Throwable t) {
+		super(msg, t);
+	}
+	
 }
