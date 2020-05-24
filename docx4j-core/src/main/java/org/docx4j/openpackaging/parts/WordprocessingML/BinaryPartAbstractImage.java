@@ -247,6 +247,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static BinaryPartAbstractImage createImagePart(
 			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes) throws Exception {
+		
+		if (bytes==null) {
+			throw new Docx4JException("Can't create image from null byte array");
+		} else if  (bytes.length==0) {
+			throw new Docx4JException("Can't create image from empty byte array");
+		}
 				
 		// Whatever image type this is, we're going to need 
 		// to know its dimensions.
@@ -340,6 +346,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes, String mime, String ext) throws Exception {
 		
+		if (bytes==null) {
+			throw new Docx4JException("Can't create image from null byte array");
+		} else if  (bytes.length==0) {
+			throw new Docx4JException("Can't create image from empty byte array");
+		}
+		
 		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		
 		// Ensure the relationships part exists
@@ -385,6 +397,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static BinaryPartAbstractImage createImagePart(
 			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes, String mime) throws Exception {
+
+		if (bytes==null) {
+			throw new Docx4JException("Can't create image from null byte array");
+		} else if  (bytes.length==0) {
+			throw new Docx4JException("Can't create image from empty byte array");
+		}
 		
 		String ext = mimeToExt(mime);
 		if (mime==null || ext==null) {
