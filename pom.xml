@@ -203,6 +203,7 @@
 				<configuration>
 					<maxmemory>512m</maxmemory>
 			        <additionalparam>-Xdoclint:none</additionalparam> 
+                    <source>8</source>
 				 </configuration>
 				<executions>
 					<execution>
