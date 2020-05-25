@@ -1,6 +1,34 @@
 CHANGELOG
 =========
 
+Version 8.1.7  minor release (to align with 11.1.7)
+==============
+
+Release date
+------------
+
+25 May 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.1.7 
+-------------------------
+
+OpenDoPE: fix handling of count>0 when OpenDoPEHandler.ENABLE_XPATH_CACHE
+
+docx4j-export-fo
+------------
+
+Move to FOP 2.4
+
+Support VertAlign direct rPr formatting 
+
+
+
 Version 8.1.6  minor release
 ==============
 

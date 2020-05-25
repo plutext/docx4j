@@ -299,7 +299,7 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 
 Put in /docx4j dir, for example
 
-	scp *1.2.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.2/
+	scp *1.6.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.6/
 
 
 Announce release in docx4j forum
