@@ -14,7 +14,15 @@
 	
 	<description>docx4j-samples-docx4j</description>
 
-	
+	<properties>
+	 <!--  Avoid potential error: 
+	 
+			 MavenReportException: Error while generating Javadoc: 
+			[ERROR] Exit code: 1 - javadoc: error - The code being documented uses packages in the unnamed module, 
+			but the packages defined in http://www.docx4java.org/docx4j-JAXB-ReferenceImpl/apidocs/ are in named modules. -->
+	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
+	</properties>
+    
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
