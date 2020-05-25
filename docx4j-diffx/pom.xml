@@ -5,7 +5,7 @@
   <parent>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
-	<version>11.1.7</version>
+	<version>11.1.8-SNAPSHOT</version>
   </parent>
   
 	<artifactId>docx4j-diffx</artifactId>
