@@ -118,7 +118,7 @@ public class Docx4J {
 	 * If the docx4j-export-fo project is present, 
 	 * we'll use FO for PDF export.
 	 * 
-	 * Otherwise, we'll try to use Plutext's PDF Converter.
+	 * Otherwise, we'll try to use Plutext's now-retired PDF Converter.
 	 * 
 	 * @return
 	 * @since 3.3.0
@@ -751,6 +751,7 @@ public class Docx4J {
 		} else {
 			
 			// Configure this property to point to your own Converter instance.
+			// Since this converter is no longer available, this will only suit existing users
 			String URL = Docx4jProperties.getProperty("com.plutext.converter.URL", "http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();

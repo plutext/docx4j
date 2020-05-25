@@ -422,7 +422,12 @@ public class P implements Child, ContentAccessor
     }
 
     public void setParent(Object parent) {
-        this.parent = parent;
+
+    	if (parent instanceof org.docx4j.wml.SdtBlock) {
+    		throw new RuntimeException("Attempt to set incorrect parent value SdtBlock");
+    	}
+    	
+    	this.parent = parent;
     }
 
     /**
@@ -1115,6 +1120,7 @@ public class P implements Child, ContentAccessor
         }
 
         public void setParent(Object parent) {
+        	
             this.parent = parent;
         }
 

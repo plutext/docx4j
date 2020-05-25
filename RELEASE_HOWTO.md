@@ -35,6 +35,15 @@ TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
  
 ---------- 
 
+Merge changes from 8 or 11 as appropriate.  If creating a patch (of changes in 11_1_2):
+
+    git diff master VERSION_11_1_2 > patchfile
+
+may need to run dos2unix on source file(s), then its
+
+    patch -p1 --dry-run  < patchfile
+
+
 Update CHANGELOG.md, README.md with release info.
 
     http://www.jukie.net/bart/blog/pimping-out-git-log
@@ -290,7 +299,7 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 
 Put in /docx4j dir, for example
 
-	scp *1.2.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.2/
+	scp *1.6.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.6/
 
 
 Announce release in docx4j forum

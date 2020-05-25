@@ -285,12 +285,19 @@ java.lang.IllegalArgumentException:
 
   </xsl:template>
 
-  <xsl:template match="text()[not(ancestor::wp:*)]">
-  
-      <w:r>
-        <xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
-        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
-      </w:r>
+	<xsl:template match="text()[not(ancestor::wp:*)]">
+
+		<xsl:choose>
+			<xsl:when test="parent::w:instrText"><xsl:value-of select="." /></xsl:when>
+			<xsl:otherwise>
+				<w:r>
+					<xsl:apply-templates select="../../w:rPr"
+						mode="omitDeletions" />
+					<w:t xml:space="preserve"><xsl:value-of select="." /></w:t>
+				</w:r>
+
+			</xsl:otherwise>
+		</xsl:choose>
     
   </xsl:template>
 

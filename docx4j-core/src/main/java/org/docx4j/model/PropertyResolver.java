@@ -899,6 +899,9 @@ public class PropertyResolver {
 		}
 		//CTFitText fitText;
 		//CTVerticalAlignRun vertAlign;
+		if (rPrToApply.getVertAlign()!=null ) {
+			return true;			
+		}
 		//BooleanDefaultTrue rtl;
 		//BooleanDefaultTrue cs;
 		//CTEm em;

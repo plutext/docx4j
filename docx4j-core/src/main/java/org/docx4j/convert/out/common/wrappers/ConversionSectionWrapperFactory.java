@@ -92,18 +92,7 @@ public class ConversionSectionWrapperFactory {
 					// value; this is ok, provided the results of the Callback
 					// won't be marshalled
 					o = XmlUtils.unwrap(o);
-					
-					// workaround for broken getParent (since 3.0.0)
-					if (o instanceof Child) {
-						if (parent instanceof SdtBlock) {
-							((Child)o).setParent( ((SdtBlock)parent).getSdtContent().getContent() );
-								// Is that the right semantics for parent object?
-						// TODO: other corrections
-						} else {
-							((Child)o).setParent(parent);
-						}
-					}
-					
+										
 					this.apply(o);
 					
 					if (o instanceof SdtBlock) {

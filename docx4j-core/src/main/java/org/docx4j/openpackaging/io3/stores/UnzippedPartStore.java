@@ -32,9 +32,12 @@ import javax.xml.transform.stream.StreamResult;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.slf4j.Logger;
@@ -132,6 +135,20 @@ public class UnzippedPartStore implements PartStore {
 		}
 	}
 	
+	/**
+	 * @param oldName
+	 * @param newName
+	 * @since 8.1.4
+	 */
+	public void rename(PartName oldName, PartName newName) {
+		
+		log.info("Renaming part " + oldName.getName() + " to " + newName.getName() );
+
+		String filePath = dir.getPath() + dir.separator + oldName.getName();
+		File f = new File(filePath); 
+		f.renameTo(new File(dir.getPath() + dir.separator + newName.getName()) );
+		
+	}
 	
 	///// Save methods
 

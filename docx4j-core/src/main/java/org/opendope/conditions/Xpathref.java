@@ -84,6 +84,10 @@ public class Xpathref implements Evaluable {
 		//org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, id);	
 		org.opendope.xpaths.Xpaths.Xpath xpath = xpathsMap.get(id);
 		
+		if (log.isDebugEnabled()) {
+			log.debug("Evaluating " + xpath.getDataBinding().getXpath());
+		}
+		
 		String val = BindingHandler.xpathGetString(pkg,
 				customXmlDataStorageParts, xpath.getDataBinding()
 						.getStoreItemID(), xpath.getDataBinding()

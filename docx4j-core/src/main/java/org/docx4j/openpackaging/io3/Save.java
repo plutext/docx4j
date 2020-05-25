@@ -111,7 +111,7 @@ public class Save {
 	/**
 	 * This HashMap is intended to prevent loops.
 	 */
-	private HashMap<String, String> handled;
+	protected HashMap<String, String> handled;
 
 //	/* Save a Package as a Zip file in the file system */
 //	public boolean save(String filepath) throws Docx4JException  {

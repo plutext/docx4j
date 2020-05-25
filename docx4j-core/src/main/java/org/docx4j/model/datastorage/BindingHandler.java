@@ -329,6 +329,10 @@ public class BindingHandler {
 			
 			log.debug(xpath + " with " + prefixMappings);
 			
+			if (xpath.contains("preceding-sibling")) {
+				xpath = xpath.replace("][1]", "]"); // replace segment eg phase[1][1] to match map				
+			}
+			
 			try {
 				
 				if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {

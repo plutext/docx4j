@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2019, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,9 +21,10 @@
 package org.docx4j.samples;
 
 
+import java.io.File;
 import java.io.FileInputStream;
 
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
@@ -45,29 +46,45 @@ public class AltChunkAddOfTypeDocx {
 	
 	public static void main(String[] args) throws Exception {
 		
+		// Configure:
+		
+		boolean CREATE_HOST_DOCX = true;
+		/* if not, then use */ String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		
 		boolean ADD_TO_HEADER = false;
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-		String chunkPath = System.getProperty("user.dir") + "/sample-docs/chunk.docx";
+		String chunkPath = System.getProperty("user.dir") + "/wide.docx";
 		
 		boolean save = true;
 		String outputfilepath = System.getProperty("user.dir") + "/OUT_AltChunkAddOfTypeDocx.docx";
 		
 		
-		// Open a document from the file system
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		// Now do it...
+		
+		WordprocessingMLPackage hostDocxPkg = null;
+		if (CREATE_HOST_DOCX) {
+			hostDocxPkg = WordprocessingMLPackage.createPackage();			
+			hostDocxPkg.getMainDocumentPart().addParagraphOfText("before");
+		} else {
+			// Open a document from the file system
+			hostDocxPkg = WordprocessingMLPackage.load(new File(inputfilepath));
+		}
 				
+		
 		if (ADD_TO_HEADER) {
-			HeaderPart hp = wordMLPackage.getDocumentModel().getSections().get(0).getHeaderFooterPolicy().getDefaultHeader();
+			HeaderPart hp = hostDocxPkg.getDocumentModel().getSections().get(0).getHeaderFooterPolicy().getDefaultHeader();
 			hp.addAltChunk(AltChunkType.WordprocessingML, new FileInputStream(chunkPath) );
 		} else {
-			MainDocumentPart main = wordMLPackage.getMainDocumentPart();
+			MainDocumentPart main = hostDocxPkg.getMainDocumentPart();
 			main.addAltChunk(AltChunkType.WordprocessingML, new FileInputStream(chunkPath) );
+		}
+
+		if (CREATE_HOST_DOCX) {
+			hostDocxPkg.getMainDocumentPart().addParagraphOfText("after");
 		}
 		
 		if (save) {		
-			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-			saver.save(outputfilepath);
+			Docx4J.save(hostDocxPkg, new File(outputfilepath));
 			System.out.println("Saved " + outputfilepath);
 		}
 	}

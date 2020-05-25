@@ -10,10 +10,10 @@
 
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
-	<version>11.1.3</version>
+	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.1.3-SNAPSHOT</revision>
+		<revision>11.1.7-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -31,22 +31,17 @@
         <module>docx4j-core</module>
         
         <module>docx4j-JAXB-ReferenceImpl</module>
-        <module>docx4j-samples-resources</module>
         <module>docx4j-core-tests</module> <!--  needs a docx4j-JAXB  -->
         <module>docx4j-diffx</module>
-        <module>docx4j-diffx-tests</module>
         <module>docx4j-docx-anon</module>
         
-		<!--  we can't deploy export-fo to Maven Central until FOP 2.4 (sans avalon) is released, since
-			  avalon framework upsets maven compiler 
         <module>docx4j-export-fo</module>        
-        <module>docx4j-export-fo-tests</module>      
-        -->  
         <module>docx4j-JAXB-MOXy</module>
         
+        <module>docx4j-samples-resources</module>
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-docx-diffx</module>
-        <!-- <module>docx4j-samples-docx-export-fo</module> -->
+        <module>docx4j-samples-docx-export-fo</module>
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
@@ -83,7 +78,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-parent-11.1.3</tag>
+      <tag>VERSION_11_1_7</tag>
   </scm>
 	<inceptionYear>2007</inceptionYear>
 

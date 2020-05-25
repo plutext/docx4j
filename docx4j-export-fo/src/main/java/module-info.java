@@ -6,8 +6,6 @@ module org.docx4j.export_fo {
 	requires jaxb.xslfo;
 
 	requires fop;
-	requires avalon.framework.api;
-	requires avalon.framework.impl;
 		
 	exports org.docx4j.convert.out.fo;
 	exports org.docx4j.convert.out.fo.renderers;

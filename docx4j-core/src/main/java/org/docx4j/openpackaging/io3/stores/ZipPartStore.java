@@ -46,10 +46,12 @@ import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
@@ -245,6 +247,23 @@ public class ZipPartStore implements PartStore {
 
 		return partByteArrays.get(partName);
 	}
+
+	
+	/**
+	 * @param oldName
+	 * @param newName
+	 * @since 8.1.4
+	 */
+	public void rename(PartName oldName, PartName newName) {
+		
+		log.info("Renaming part " + oldName.getName() + " to " + newName.getName() );
+		
+		ByteArray partByteArray = partByteArrays.remove(oldName.getName().substring(1)); 
+		if (partByteArray==null) throw new Docx4JRuntimeException(oldName.getName().substring(1) + " not present in store");
+		partByteArrays.put( newName.getName().substring(1), partByteArray);
+		
+	}
+		
 	
 	///// Save methods
 

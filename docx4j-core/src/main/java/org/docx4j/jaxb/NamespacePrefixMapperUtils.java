@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -141,7 +142,7 @@ public class NamespacePrefixMapperUtils {
 			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", prefixMapperRels );
 			// Try RI suitable one
 			log.info("Using ri.NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
-			return prefixMapper;
+			return prefixMapperRels;
 		} catch (Exception e) {
 			//log.error("JAXB: Can't instantiate JAXB Reference Implementation", e);
 			throw new JAXBException("JAXB: Can't instantiate JAXB Reference Implementation", e);
@@ -230,7 +231,7 @@ public class NamespacePrefixMapperUtils {
 			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
@@ -256,7 +257,7 @@ public class NamespacePrefixMapperUtils {
 			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
@@ -284,7 +285,7 @@ public class NamespacePrefixMapperUtils {
 			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 	    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,

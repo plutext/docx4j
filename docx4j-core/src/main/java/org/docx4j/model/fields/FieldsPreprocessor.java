@@ -3,6 +3,7 @@ package org.docx4j.model.fields;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
@@ -223,7 +224,13 @@ public class FieldsPreprocessor {
 	
 	private boolean inParentResult() {
 		
-		FieldRef thisField = stack.pop();
+		FieldRef thisField = null;
+		try {
+			thisField = stack.pop();
+		} catch (NoSuchElementException e) {
+			throw new Docx4JRuntimeException("No FieldRef yet", e);
+		}
+		
 		try {
 			FieldRef parentField = stack.pop();
 			boolean inResult = parentField.haveSeenSeparate();

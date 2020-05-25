@@ -1,6 +1,166 @@
 CHANGELOG
 =========
 
+Version 11.1.7  
+==============
+
+Release date
+------------
+
+25 May 2020
+
+Changes in Version 11.1.7 
+-------------------------
+
+Incorporates changes from 8.1.4 to 8.1.7
+
+
+
+Version 8.1.7  minor release (to align with 11.1.7)
+==============
+
+Release date
+------------
+
+25 May 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.1.7 
+-------------------------
+
+OpenDoPE: fix handling of count>0 when OpenDoPEHandler.ENABLE_XPATH_CACHE
+
+docx4j-export-fo
+------------
+
+Move to FOP 2.4
+
+Support VertAlign direct rPr formatting 
+
+
+
+Version 8.1.6  minor release
+==============
+
+Release date
+------------
+
+7 April 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.1.6 
+-------------------------
+
+Improve efficiency of package clone
+
+pptx4j
+------
+
+SaveSlides provides the ability to save selected slides only; partialClone can use this to make a clone of a PresentationMLPackage, but with just those slides
+
+xlsx4j
+------
+
+xlsx revision namespaces; fixes #389
+
+Support importing flat OPC XML representing a spreadsheet
+
+
+
+Version 8.1.5  namespaces required in documents created using recent Word updates
+==============
+
+Release date
+------------
+
+26 February 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+R Cambell
+
+Wussup
+
+Changes in Version 8.1.5 
+-------------------------
+
+Add mappings for w16 and w16cid.  Fixes 381.
+
+JAXB: Remove dep on java-api 2.3.1, since that depends on javax.activation:javax.activation-api.  The 2.3.2 version which we want is jakarta.xml.bind:jakarta.xml.bind-api which depends on jakarta.activation
+
+NamespacePrefixMapperUtils.tryRIforRelationshipsPart: Fix typo
+
+MergeField: support multiple newline characters
+
+For more, please see https://github.com/plutext/docx4j/commits/master
+
+ 
+
+Version 8.1.4 minor release
+==============
+
+Release date
+------------
+
+23 December 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.4 
+-------------------------
+
+Dedicated part CommentsIdsPart for w16cid:commentsIds
+
+Enhance ArrayListWml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+export-FO: revert white-space-treatment="preserve"; white-space-collapse="false" because it causes unwanted formatting issues
+
+xlsx4j
+------
+
+Enhance ArrayListSml to handle parent in other methods; make JAXBElements transparent when matching objects 
+
+
+
+Version 8.1.3 minor release
+==============
+
+Release date
+------------
+
+29 August 2019
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.1.3 
+-------------------------
+
+Port changes in 11.1.3 (as to which see below) back to 8.1.x 
+
 
 
 Version 11.1.3 minor release

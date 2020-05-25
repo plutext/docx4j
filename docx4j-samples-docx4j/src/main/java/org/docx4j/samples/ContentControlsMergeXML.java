@@ -50,6 +50,11 @@ public class ContentControlsMergeXML {
 
 	public static void main(String[] args) throws Exception {
 			
+		// Without Saxon, you are restricted to XPath 1.0
+		boolean USE_SAXON = true; // set this to true; add Saxon to your classpath, and uncomment below 
+//		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
+//				new net.sf.saxon.xpath.XPathFactoryImpl());
+		
 		// the docx 'template'
 		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/databinding/binding-simple.docx";
 		

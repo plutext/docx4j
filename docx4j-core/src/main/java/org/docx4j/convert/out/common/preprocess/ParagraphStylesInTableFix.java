@@ -622,15 +622,6 @@ public class ParagraphStylesInTableFix {
 					
 					o = XmlUtils.unwrap(o);
 					
-					// workaround for broken getParent (since 3.0.0)
-					if (o instanceof Child) {
-						if (parent instanceof SdtBlock) {
-							((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
-						} else {
-							((Child)o).setParent(parent);
-						}
-					}
-					
 					this.apply(o);
 					
 					if (o instanceof Tbl) {

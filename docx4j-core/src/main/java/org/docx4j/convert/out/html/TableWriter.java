@@ -25,7 +25,6 @@ import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriterModel;
-import org.docx4j.convert.out.common.writer.AbstractTableWriterModelCell;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -97,7 +96,9 @@ public class TableWriter extends AbstractTableWriter {
 	}
 	
 	@Override
-	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, 
+			TransformState transformState, Element tableRoot) {
+		
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 			   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 			   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
@@ -133,8 +134,20 @@ public class TableWriter extends AbstractTableWriter {
 		
 		// table width
 		if (table.getTableWidth() > 0) {
-			HtmlCssHelper.appendStyle(tableRoot, 
-					Property.composeCss("width", UnitsOfMeasurement.twipToBest(table.getTableWidth())));
+			
+			if (/* handle % */ table.getEffectiveTableStyle().getTblPr() != null
+					&& table.getEffectiveTableStyle().getTblPr().getTblW() != null
+					&& "pct".equals(table.getEffectiveTableStyle().getTblPr().getTblW().getType() )) {
+				
+				HtmlCssHelper.appendStyle(tableRoot, 
+						Property.composeCss("width", 
+								table.getEffectiveTableStyle().getTblPr().getTblW().getW().intValue()/50 +"%" )); // fiftieths of a percent
+				
+			} else {
+			
+				String widthProp = Property.composeCss("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()));
+				HtmlCssHelper.appendStyle(tableRoot, widthProp );
+			}
 		}
 		
 		// Hebrew: columns appear in reverse order

@@ -113,6 +113,9 @@
 
 	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN" />
 
+	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN"/>
+	        
+	<logger name="org.pptx4j" level="WARN"/>
 
 	<!-- OpenDoPE functionality loggers -->
 	<logger name="org.docx4j.model.datastorage" level="WARN" />

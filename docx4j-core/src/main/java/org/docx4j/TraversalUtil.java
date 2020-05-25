@@ -159,7 +159,9 @@ public class TraversalUtil {
 										// When does this ever happen? Log at warn level to find out..
 										// I think it would only ever happen if there was foo.setBar(JAXBElement z)
 										if (log.isWarnEnabled()) {
-											log.warn("Unknown parent for " + o2.getClass().getName());
+											log.warn("Unknown parent for " + o2.getClass().getName()
+													+ "; setting to " + parent.getClass().getName()
+													);
 										}
 										((Child)o2).setParent(parent);
 										
@@ -205,8 +207,8 @@ public class TraversalUtil {
 											+ ((Child) o2).getParent().getClass()
 													.getName()
 									+ " not " + parent.getClass().getName() );	
-									//  eg Parent of org.docx4j.wml.P is currently org.docx4j.wml.Body not org.docx4j.wml.ArrayListWml
-									//  which is as it should be.
+									//  Parent of org.docx4j.wml.P is org.docx4j.wml.Body 
+									//  (org.docx4j.wml.ArrayListWml should never be the parent; that's an implementation detail)
 								}
 							} else {
 								log.info(o2.getClass().getName() + " not an instanceof Child!");

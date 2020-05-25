@@ -5,7 +5,7 @@
   <parent>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>
-	<version>11.1.3</version>
+	<version>${revision}</version>
   </parent>
   
 	<artifactId>docx4j-samples-xlsx4j</artifactId>
@@ -14,14 +14,6 @@
 	
 	<description>docx4j-samples-xlsx4j</description>
 
-	<properties>
-	 <!--  Avoid potential error: 
-	 
-			 MavenReportException: Error while generating Javadoc: 
-			[ERROR] Exit code: 1 - javadoc: error - The code being documented uses packages in the unnamed module, 
-			but the packages defined in http://www.docx4java.org/docx4j-JAXB-ReferenceImpl/apidocs/ are in named modules. -->
-	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
-	</properties>
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
@@ -63,6 +55,12 @@
 		</dependency>
 		
 <!-- 
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-MOXy</artifactId>

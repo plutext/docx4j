@@ -14,7 +14,7 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.1.3"/>
+	<property name="version" value="11.1.7"/>
 	<property name="importxhtml-version" value="8.0.0"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
@@ -29,13 +29,9 @@
 	<property name="m2Repository" value="/home/jharrop/.m2/repository"/>
 
 	<!-- adjust these, they differ for docx4j 8 vs docx4j 11 -->
-	<!-- docx4j 11 settings -->
-	<property name="logback-version" value="1.3.0-alpha4"/>
+	<!-- docx4j 11 settings --> 
+	<property name="logback-version" value="1.3.0-alpha5"/>
 	<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
-	<!-- docx4j 8 settings 
-	<property name="logback-version" value="1.2.3"/>
-	<property name="log4j-slf4j-impl" value="log4j-slf4j1-impl"/>
-	-->
 	
 	<!--.NET properties -->
 	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
@@ -116,51 +112,49 @@
 		
 		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
 		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+		-->
 
 	</path>
-<!--
-		<pathelement location="${m2Repository}/com/google/guava/guava/27.0.1-jre/guava-27.0.1-jre.jar"/>
 
-		<pathelement location="${m2Repository}/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"/>
-		<pathelement location="${m2Repository}/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
-		<pathelement location="${m2Repository}/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar"/>
-		<pathelement location="${m2Repository}/org/codehaus/mojo/animal-sniffer-annotations/1.17/animal-sniffer-annotations-1.17.jar"/>
-    
-    -->
 
-	<!--  for release only; build docx4j-export-fo first! -->
 	<path id="docx4j-export-fo.classpath">
 
-		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/8.1.0/docx4j-export-fo-8.1.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
 
 		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
 
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.3/fop-2.3.jar"/>
-
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.10/batik-svg-dom-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.10/batik-css-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.10/batik-dom-1.10.jar"/>
-
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.10/batik-parser-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.10/batik-util-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.10/batik-constants-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.10/batik-i18n-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.10/batik-bridge-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.10/batik-anim-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.10/batik-script-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.10/batik-xml-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.10/batik-awt-util-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.10/batik-gvt-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.10/batik-transcoder-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.10/batik-svggen-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.10/batik-extension-1.10.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.10/batik-ext-1.10.jar"/>
-
-		<pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
-		<pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
-
-		<!-- https://github.com/apache/fop/blob/fop-2_3/fop-core/pom.xml#L100 -->
-		<pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.7/fontbox-2.0.7.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/fop/2.4/fop-2.4.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/fop-util/2.4/fop-util-2.4.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/fop-events/2.4/fop-events-2.4.jar"/>
+		<!--
+        <pathelement location=".${m2Repository/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/ant/ant/1.8.2/ant-1.8.2.jar"/>
+        <pathelement location=".${m2Repository/org/apache/ant/ant-launcher/1.8.2/ant-launcher-1.8.2.jar"/>
+		-->
+		
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/fop-core/2.4/fop-core-2.4.jar"/>
+		
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-anim/1.12/batik-anim-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-css/1.12/batik-css-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-dom/1.12/batik-dom-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-ext/1.12/batik-ext-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-parser/1.12/batik-parser-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-svg-dom/1.12/batik-svg-dom-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-util/1.12/batik-util-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-constants/1.12/batik-constants-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-i18n/1.12/batik-i18n-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-awt-util/1.12/batik-awt-util-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-bridge/1.12/batik-bridge-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-script/1.12/batik-script-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-xml/1.12/batik-xml-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-extension/1.12/batik-extension-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-gvt/1.12/batik-gvt-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-transcoder/1.12/batik-transcoder-1.12.jar"/>
+        <pathelement location=".${m2Repository/org/apache/xmlgraphics/batik-svggen/1.12/batik-svggen-1.12.jar"/>
+        <!-- <pathelement location=".${m2Repository/javax/servlet/servlet-api/2.2/servlet-api-2.2.jar"/> -->
+        <pathelement location=".${m2Repository/org/apache/pdfbox/fontbox/2.0.16/fontbox-2.0.16.jar"/>
+        <pathelement location=".${m2Repository/javax/media/jai-core/1.1.3/jai-core-1.1.3.jar"/>
+        <pathelement location=".${m2Repository/com/sun/media/jai-codec/1.1.3/jai-codec-1.1.3.jar"/>
 
 	</path>
 
@@ -213,20 +207,20 @@ Java 8 -->
 		<copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
-		<!-- export-fo 
+		<!-- export-fo -->
 		<mkdir dir="${release.dir}/optional/export-fo"/>
 		<copy todir="${release.dir}/optional/export-fo" flatten="true">
+			<!-- requires Ant 1.7.0 -->
 			<path>
 				<path refid="docx4j-export-fo.classpath"/>
 			</path>
 		</copy>
-		-->
 
-		<!-- docx-anon -->
+		<!-- anon -->
 		<mkdir dir="${release.dir}/optional/docx-anon"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar" todir="${release.dir}/optional/docx-anon"/>
 		<copy file="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar" todir="${release.dir}/optional/docx-anon"/>
-		
+				
 		<!-- diffx -->
 		<mkdir dir="${release.dir}/optional/diffx"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-diffx/${version}/docx4j-diffx-${version}.jar" todir="${release.dir}/optional/diffx"/>
@@ -318,7 +312,7 @@ Java 8 -->
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
@@ -368,7 +362,7 @@ Java 8 -->
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
@@ -419,7 +413,7 @@ Java 8 -->
 		<mkdir dir="${release.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
 		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
 			</path>
