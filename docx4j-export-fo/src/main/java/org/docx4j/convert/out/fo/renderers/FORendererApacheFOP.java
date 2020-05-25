@@ -29,21 +29,15 @@ import java.util.List;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopConfParser;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
@@ -382,44 +376,10 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			log.debug("FOP 2.1 configured OK." );
 			
 		} catch (Exception e) {
-			log.error("Can't set up FOP 2.1; " + e.getMessage() );
-			log.error("Please verify you have fop 2.1, batik 1.8 and jaxb-xslfo jars on your classpath." );
+			log.error("Can't set up FOP 2.x; " + e.getMessage() );
 			log.error(e.getMessage(), e);
 			e.printStackTrace();
 			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
-			
-			// legacy FOP 1.0 or 1.1 config.
-			try {
-				log.error("Falling back to try FOP 1.1|1.0...");
-
-				Method method;
-				Class[] params = new Class[1];
-
-				// FopFactory fopFactory = FopFactory.newInstance();
-				method = FopFactory.class.getDeclaredMethod("newInstance", new Class[0] );
-				fopFactory = (FopFactory)method.invoke(null);
-				
-				// fopFactory.setUserConfig(userConfig);
-				params[0] = Configuration.class;				
-				method = FopFactory.class.getDeclaredMethod("setUserConfig", params );
-				
-				// There isn't a method which takes it as a string :-(
-				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-				
-				method.invoke(fopFactory, cfgBuilder.build(is) );
-
-				log.debug("Legacy FOP configured OK." );
-				
-			} catch (Exception e1) {
-				log.error("FOP not found; neither 2.1 nor earlier.  Can't convert FO to PDF." );
-				log.error(e.getMessage(), e);
-				e1.printStackTrace();
-				
-				// java.lang.IllegalAccessException: Class org.docx4j.fonts.fop.util.FopFactoryUtil 
-				// can not access a member of class org.apache.fop.apps.FopFactory 
-				// with modifiers "protected"
-				
-			} 
 		}
 		return fopFactory;
 	}
