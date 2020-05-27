@@ -285,7 +285,7 @@ public class NamespacePrefixMapperUtils {
 			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
-			if (uri==null) {
+			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
 				log.warn("No mapping for prefix '" + prefix + "'");
 			} else {
 	    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
