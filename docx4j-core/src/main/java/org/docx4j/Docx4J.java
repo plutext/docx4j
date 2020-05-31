@@ -725,8 +725,13 @@ public class Docx4J {
 			settings.setOpcPackage(wmlPackage);
 			exporter.export(settings, outputStream); 
 			
-//		} else if (pdfViaDocuments4jRemote()) {
-//			
+		} else if (pdfViaDocuments4jLocal()) {
+
+			Exporter<Documents4jConversionSettings> exporter = documents4jLocalExporterGetInstance();
+			Documents4jConversionSettings settings = new Documents4jConversionSettings();
+			settings.setOpcPackage(wmlPackage);
+			exporter.export(settings, outputStream); 
+			
 		} else if (pdfViaFO()) {
 			FOSettings settings = createFOSettings();
 			settings.setOpcPackage(wmlPackage);
