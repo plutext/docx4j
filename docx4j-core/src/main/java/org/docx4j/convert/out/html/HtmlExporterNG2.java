@@ -148,8 +148,8 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		if ((xslt != null) && (htmlSettings.getCustomXsltTemplates() == null)) {
 			htmlSettings.setCustomXsltTemplates(xslt);
 		}
-		if ((wmlPackage != null) && (htmlSettings.getWmlPackage() == null)) {
-			htmlSettings.setWmlPackage(wmlPackage);
+		if ((wmlPackage != null) && (htmlSettings.getOpcPackage() == null)) {
+			htmlSettings.setOpcPackage(wmlPackage);
 		}
 		Docx4J.toHTML(htmlSettings, outStream, Docx4J.FLAG_EXPORT_PREFER_XSL);
 

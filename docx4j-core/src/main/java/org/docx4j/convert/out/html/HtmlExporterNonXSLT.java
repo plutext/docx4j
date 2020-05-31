@@ -53,7 +53,7 @@ public class HtmlExporterNonXSLT {
 			ConversionImageHandler conversionImageHandler) {
 		
 		htmlSettings = new HTMLSettings();
-		htmlSettings.setWmlPackage(wordMLPackage);
+		htmlSettings.setOpcPackage(wordMLPackage);
 		htmlSettings.setImageHandler(conversionImageHandler);
 	}
 	
@@ -78,7 +78,7 @@ public class HtmlExporterNonXSLT {
 	}
 	
 	public String getCss() {
-		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)htmlSettings.getWmlPackage();
+		WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)htmlSettings.getOpcPackage();
 		StringBuilder buffer = new StringBuilder();
 		HtmlCssHelper.createCssForStyles(wmlPackage, 
 										 wmlPackage.getMainDocumentPart().getStyleTree(),

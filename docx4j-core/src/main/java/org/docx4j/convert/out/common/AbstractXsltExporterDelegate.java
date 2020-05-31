@@ -57,7 +57,7 @@ public abstract class AbstractXsltExporterDelegate<CS extends AbstractConversion
 	@Override
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
 		
-		StartEvent startEvent = new StartEvent( conversionSettings.getWmlPackage(), WellKnownProcessSteps.OUT_XsltExporterDelegate );
+		StartEvent startEvent = new StartEvent( conversionSettings.getOpcPackage(), WellKnownProcessSteps.OUT_XsltExporterDelegate );
 		startEvent.publish();		
 		
 		Document domDoc = getSourceDocument(conversionSettings, conversionContext);

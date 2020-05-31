@@ -87,13 +87,13 @@ public abstract class AbstractConversionContext {
 	protected void initializeSettings(AbstractConversionSettings settings, OpcPackage localOpcPackage) {
 		if (settings != null) {
 			this.settings=settings;
-			if ((localOpcPackage == null) && (settings.getWmlPackage() == null)) {
+			if ((localOpcPackage == null) && (settings.getOpcPackage() == null)) {
 				throw new IllegalArgumentException("The OpcPackage is missing in the settings.");
 			}
 			this.imageHandler = initializeImageHandler(settings, settings.getImageHandler());
 			this.hyperlinkHandler = initializeHyperlinkHandler(settings, settings.getHyperlinkHandler());
 			this.opcPackage = initializeOpcPackage(settings, 
-					(localOpcPackage != null ? localOpcPackage : settings.getWmlPackage())
+					(localOpcPackage != null ? localOpcPackage : settings.getOpcPackage())
 					);
 			this.xsltParameters = initializeXsltParameters(settings, settings.getSettings());
 		}
@@ -117,7 +117,7 @@ public abstract class AbstractConversionContext {
 			ret.putAll(settingParameters);
 			//remove from the parameters items that get duplicated in the context
 			ret.remove(AbstractConversionSettings.IMAGE_HANDLER);
-			ret.remove(AbstractConversionSettings.WML_PACKAGE);
+			ret.remove(AbstractConversionSettings.OPC_PACKAGE);
 	
 			//these are implicitly included in the ImageHandler
 			ret.remove(AbstractConversionSettings.IMAGE_INCLUDE_UUID);
