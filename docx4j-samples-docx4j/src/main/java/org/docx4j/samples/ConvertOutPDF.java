@@ -248,7 +248,7 @@ public class ConvertOutPDF extends AbstractSample {
 		if (saveFO) {
 			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
-		foSettings.setWmlPackage(wordMLPackage);
+		foSettings.setOpcPackage(wordMLPackage);
 		
 		// Document format: 
 		// The default implementation of the FORenderer that uses Apache Fop will output

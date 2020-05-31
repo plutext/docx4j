@@ -170,7 +170,7 @@ public class FOPAreaTreeHelper {
     	  // Currently FOP dependent!  But an Antenna House version ought to be feasible.
     	
         FOSettings foSettings = Docx4J.createFOSettings();
-        foSettings.setWmlPackage(hfPkg);
+        foSettings.setOpcPackage(hfPkg);
         foSettings.setApacheFopMime(MimeConstants.MIME_FOP_AREA_TREE);
         
         foSettings.setLayoutMasterSetCalculationInProgress(true); // avoid recursion

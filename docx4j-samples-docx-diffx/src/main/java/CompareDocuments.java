@@ -157,7 +157,7 @@ public class CompareDocuments {
 			if (saveFO) {
 				foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") +  "/OUT_CompareDocuments..fo"));
 			}
-			foSettings.setWmlPackage(newerPackage);
+			foSettings.setOpcPackage(newerPackage);
 			// Document format: 
 			// The default implementation of the FORenderer that uses Apache Fop will output
 			// a PDF document if nothing is passed via 

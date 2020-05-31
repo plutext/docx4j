@@ -61,7 +61,7 @@ public class FONonXSLT {
 				.load(new java.io.File(inputfilepath));
 		
 		FOSettings pdfSettings = new FOSettings();
-		pdfSettings.setWmlPackage(wmlPackage);
+		pdfSettings.setOpcPackage(wmlPackage);
 		
 		
 		XSLFOExporterNonXSLT withoutXSLT = new XSLFOExporterNonXSLT(wmlPackage, 

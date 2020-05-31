@@ -166,7 +166,7 @@ public class ConvertOutPDFviaXSLFO {
 		if (saveFO) {
 			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
-		foSettings.setWmlPackage(wordMLPackage);
+		foSettings.setOpcPackage(wordMLPackage);
 		
 	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings);
 	    // configure foUserAgent as desired

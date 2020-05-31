@@ -71,8 +71,8 @@ public class Conversion extends PdfConversion {
 	}
 	
 	protected void setupSettings(FOSettings settings, String mime) {
-		if ((wordMLPackage != null) && (settings.getWmlPackage() == null)) {
-			settings.setWmlPackage(wordMLPackage);
+		if ((wordMLPackage != null) && (settings.getOpcPackage() == null)) {
+			settings.setOpcPackage(wordMLPackage);
 		}
 		if ((saveFO != null) && (settings.getFoDumpFile() == null)) {
 			settings.setFoDumpFile(saveFO);

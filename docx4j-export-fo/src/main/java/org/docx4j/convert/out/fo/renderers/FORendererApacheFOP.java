@@ -145,7 +145,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			//1st pass in 2 pass
 			log.debug("1st pass in 2 pass");
 			
-			StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
+			StartEvent startEvent = new StartEvent( settings.getOpcPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
 			startEvent.publish();
 			
 			placeholderLookup = new FopPlaceholderLookup(pageNumberInformation);
@@ -174,7 +174,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			
 		}
 
-		StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
+		StartEvent startEvent = new StartEvent( settings.getOpcPackage(), WellKnownProcessSteps.FOP_RENDER_PASS1 );
 		startEvent.publish();
 		
 	    FOUserAgent foUserAgent = (FOUserAgent)settings.getSettings().get(FO_USER_AGENT);
@@ -197,7 +197,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		String ret = settings.getApacheFopConfiguration();
 		if (ret == null) {
 			
-			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getWmlPackage();
+			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getOpcPackage();
 			if (wmlPackage==null) throw new Docx4JException("No WmlPackage in FOSettings");
 			
 			ret = FopConfigUtil.createDefaultConfiguration(wmlPackage.getFontMapper(), 
