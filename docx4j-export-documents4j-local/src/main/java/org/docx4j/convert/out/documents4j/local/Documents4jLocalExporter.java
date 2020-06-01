@@ -72,12 +72,13 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	 * Configure the converter with default settings.
 	 */
 	public Documents4jLocalExporter() {
-
-       converter = LocalConverter.builder()
+		
+		setWordConversionScript();	       
+		converter = LocalConverter.builder()
                .baseFolder(tmpDir)
                .workerPool(20, 25, 2, TimeUnit.SECONDS)
                .processTimeout(30, TimeUnit.SECONDS)
-               .build();		
+               .build();		       
 	}
 	
     /**
@@ -101,11 +102,32 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
      */
 	public Documents4jLocalExporter(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, long timeout) {
 
-	       converter = LocalConverter.builder()
-	               .baseFolder(tmpDir)
-	               .workerPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS)
-	               .processTimeout(30, TimeUnit.SECONDS)
-	               .build();		
+		setWordConversionScript();	       
+		converter = LocalConverter.builder()
+               .baseFolder(tmpDir)
+               .workerPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS)
+               .processTimeout(30, TimeUnit.SECONDS)
+               .build();
+	       
+	}
+
+	private void setWordConversionScript() {
+
+		String script = System.getProperty("com.documents4j.conversion.msoffice.word_convert.vbs");
+		if (script==null) {
+			script = Docx4jProperties.getProperty("com.documents4j.conversion.msoffice.word_convert.vbs");
+			if (script==null) {
+				log.info("documents4j: using default Word conversion script" );
+			} else {
+				log.info("documents4j: using script: " + script + " from docx4j.properties");
+				// We need the property as a System property
+		        System.setProperty("com.documents4j.conversion.msoffice.word_convert.vbs", script);
+			}
+		} else {
+			log.info("documents4j: using script: " + script );							
+			// We need the property as a System property
+	        System.setProperty("com.documents4j.conversion.msoffice.word_convert.vbs", script); 
+		}		
 	}
 	
 	
@@ -182,7 +204,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	
 	public void export(File officeFile , OutputStream target, DocumentType documentType, DocumentType asDocumentType)
 			throws Docx4JException {
-	
+
        converter.convert(officeFile).as(documentType)
                .to(target).as(asDocumentType).execute();		
 	}
@@ -219,6 +241,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		return Docx4J.load(new ByteArrayInputStream(baos.toByteArray()));
 	}
 	
+	
 	/**
 	 * Update docx
 	 * 
@@ -230,7 +253,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	public void updateDocx(File officeFile , OutputStream target)
 			throws Docx4JException {
 		
-		export(officeFile, target, DocumentType.MS_WORD, DocumentType.MS_WORD);
+		export(officeFile, target, DocumentType.MS_WORD, DocumentType.DOCX);
 	}
 	
 	
