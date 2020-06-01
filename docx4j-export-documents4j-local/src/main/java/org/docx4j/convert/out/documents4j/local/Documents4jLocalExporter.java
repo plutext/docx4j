@@ -128,7 +128,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		if (pkg instanceof WordprocessingMLPackage) {
 
 			try {
-				file = File.createTempFile("", ".docx", tmpDir);
+				file = File.createTempFile("docx_", ".docx", tmpDir); //Prefix string "" too short: length must be at least 3
 			} catch (IOException e) {
 				throw new Docx4JException(e.getMessage(), e);
 			}
@@ -138,7 +138,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		} else if (pkg instanceof SpreadsheetMLPackage) {
 
 			try {
-				file = File.createTempFile("", ".xlsx", tmpDir);
+				file = File.createTempFile("xlsx_", ".xlsx", tmpDir);
 			} catch (IOException e) {
 				throw new Docx4JException(e.getMessage(), e);
 			}
