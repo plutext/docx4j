@@ -19,6 +19,8 @@
  **/
 package org.docx4j.convert.out.documents4j.local;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -116,7 +118,20 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		export(pkg, outputStream);
 	}
 
+	/**
+	 * Export as PDF
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	public void export(OpcPackage pkg , OutputStream outputStream)
+			throws Docx4JException {
+		
+		export(pkg, outputStream, DocumentType.PDF);
+	}
+	
+	public void export(OpcPackage pkg , OutputStream outputStream, DocumentType asDocumentType)
 			throws Docx4JException {
 
 		/* The LocalConverter communicates with a backing conversion software 
@@ -133,7 +148,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 				throw new Docx4JException(e.getMessage(), e);
 			}
 			Docx4J.save( (WordprocessingMLPackage)pkg, file);
-			export(file, outputStream, DocumentType.MS_WORD);
+			export(file, outputStream, DocumentType.MS_WORD, asDocumentType);
 			
 		} else if (pkg instanceof SpreadsheetMLPackage) {
 
@@ -143,7 +158,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 				throw new Docx4JException(e.getMessage(), e);
 			}
 			Docx4J.save( (WordprocessingMLPackage)pkg, file);
-			export(file, outputStream, DocumentType.MS_EXCEL);
+			export(file, outputStream, DocumentType.MS_EXCEL, asDocumentType);
 			
 		} else if (pkg instanceof PresentationMLPackage) {
 			// https://github.com/documents4j/documents4j/pull/29
@@ -151,12 +166,73 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		}
 	}
 
+	/**
+	 * Export as PDF
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
 	public void export(File officeFile , OutputStream target, DocumentType documentType)
+			throws Docx4JException {
+		
+		export(officeFile, target, documentType, DocumentType.PDF);
+	}
+	
+	public void export(File officeFile , OutputStream target, DocumentType documentType, DocumentType asDocumentType)
 			throws Docx4JException {
 	
        converter.convert(officeFile).as(documentType)
-               .to(target).as(DocumentType.PDF).execute();		
+               .to(target).as(asDocumentType).execute();		
 	}
+
+	
+	public void updateDocx(WordprocessingMLPackage pkg , OutputStream outputStream) 
+			throws Docx4JException {
+
+		File file = null;
+		try {
+			file = File.createTempFile("docx_", ".docx", tmpDir); //Prefix string "" too short: length must be at least 3
+		} catch (IOException e) {
+			throw new Docx4JException(e.getMessage(), e);
+		}
+		Docx4J.save( (WordprocessingMLPackage)pkg, file);
+		updateDocx(file, outputStream);
+	}
+	
+	public WordprocessingMLPackage updateDocx(WordprocessingMLPackage pkg) 
+			throws Docx4JException {
+
+		File file = null;
+		try {
+			file = File.createTempFile("docx_", ".docx", tmpDir); //Prefix string "" too short: length must be at least 3
+		} catch (IOException e) {
+			throw new Docx4JException(e.getMessage(), e);
+		}
+		Docx4J.save( (WordprocessingMLPackage)pkg, file);
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		
+		updateDocx(file, baos);
+		
+		return Docx4J.load(new ByteArrayInputStream(baos.toByteArray()));
+	}
+	
+	/**
+	 * Update docx
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
+	public void updateDocx(File officeFile , OutputStream target)
+			throws Docx4JException {
+		
+		export(officeFile, target, DocumentType.MS_WORD, DocumentType.MS_WORD);
+	}
+	
 	
     private static final String TEMP_DIR_DEFAULT = "temp_documents4j_local";
 	

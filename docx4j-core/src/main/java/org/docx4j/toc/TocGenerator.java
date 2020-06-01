@@ -73,6 +73,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * This class creates and populates a table of contents.
+ * 
+ * If you want page numbers, getting this right (without opening 
+ * the docx in Word to do so), is a challenge.
+ * 
+ * This class supports generating the page numbers using 
+ * export-fo (or the no-longer-available Converter).
+ * 
+ * If you are using docx4j-export-documents4j-local|remote,
+ * you can use that for ToC generation.  
+ *  
+ * @author jharrop
+ *
+ */
 public class TocGenerator {
 	
 	private static Logger log = LoggerFactory.getLogger(TocGenerator.class);	
@@ -229,7 +244,7 @@ public class TocGenerator {
 		new TraversalUtil(sublist, sf);
         sectPr = sf.firstSectPr;
         
-        sdt = createSdt();
+        sdt = TocSdtUtils.createSdt();
         body.getContent().add(index, sdt);
         return generateToc(  sdt,  instruction, leader, skipPageNumbering);
     }
@@ -251,10 +266,10 @@ public class TocGenerator {
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
         Body body =  wmlDocumentEl.getBody();
-
+        
         SdtContentBlock sdtContent = (SdtContentBlock)sdt.getSdtContent();
         if(sdtContent == null){
-            sdtContent = createSdtContent();
+            sdtContent = TocSdtUtils.createSdtContent();
             sdt.setSdtContent(sdtContent);
         }
         
@@ -330,7 +345,7 @@ public class TocGenerator {
 
         SdtContentBlock sdtContent = (SdtContentBlock)sdt.getSdtContent();
         if(sdtContent == null){
-            sdtContent = createSdtContent();
+            sdtContent = TocSdtUtils.createSdtContent();
             sdt.setSdtContent(sdtContent);
         }
                 
@@ -422,7 +437,7 @@ public class TocGenerator {
         	P p = new P();
         	p.getContent().addAll(toc.getTocInstruction());
             sdtContent.getContent().add(p);
-            sdtContent.getContent().add(toc.getLastParagraph());
+            sdtContent.getContent().add(TocSdtUtils.getLastParagraph());
         } else {
 	        // Prep: merge instruction into first tocEntry (avoiding an unwanted additional paragraph)
 	        P firstEntry = tocEntries.get(0).getEntryParagraph(tocStyles);
@@ -434,7 +449,7 @@ public class TocGenerator {
 	        }
 
 	        // Add last toc paragraph
-	        sdtContent.getContent().add(toc.getLastParagraph());
+	        sdtContent.getContent().add(TocSdtUtils.getLastParagraph());
 	        
 	        // Add page numbers
 	        if(!skipPageNumbering && sp.pageNumbers() ) {
@@ -693,8 +708,11 @@ public class TocGenerator {
     	if (Docx4J.pdfViaFO()) {
     		return getPageNumbersMapViaFOP();
     	} else {
-    		// recommended
-    		return getPageNumbersMapViaService();
+    		try {
+    			return getPageNumbersMapViaService();
+    		} catch (TocException e) {
+    			throw new TocException("Page number service not available; try using docx4j-export-documents4j-local|remote or docx4j-export-fo");
+    		}
     	}
     }
 
@@ -826,7 +844,7 @@ public class TocGenerator {
         long start = System.currentTimeMillis();
     	
         FOSettings foSettings = Docx4J.createFOSettings();
-        foSettings.setWmlPackage(wordMLPackage);
+        foSettings.setOpcPackage(wordMLPackage);
         String MIME_FOP_AREA_TREE   = "application/X-fop-areatree"; // org.apache.fop.apps.MimeConstants
         foSettings.setApacheFopMime(MIME_FOP_AREA_TREE);
         
@@ -872,38 +890,6 @@ public class TocGenerator {
 		}
 
     }
-
-
-    private SdtBlock createSdt(){
-
-    	org.docx4j.wml.ObjectFactory wmlObjectFactory = Context.getWmlObjectFactory();
-
-    	SdtBlock sdtBlock = wmlObjectFactory.createSdtBlock();
-
-    	SdtPr sdtpr = wmlObjectFactory.createSdtPr(); 
-    	    // Create object for docPartObj (wrapped in JAXBElement) 
-    	    CTSdtDocPart sdtdocpart = wmlObjectFactory.createCTSdtDocPart(); 
-    	    JAXBElement<org.docx4j.wml.CTSdtDocPart> sdtdocpartWrapped = wmlObjectFactory.createSdtPrDocPartObj(sdtdocpart); 
-    	    sdtpr.getRPrOrAliasOrLock().add( sdtdocpartWrapped); 
-    	        // Create object for docPartGallery
-    	        CTSdtDocPart.DocPartGallery sdtdocpartdocpartgallery = wmlObjectFactory.createCTSdtDocPartDocPartGallery(); 
-    	        sdtdocpart.setDocPartGallery(sdtdocpartdocpartgallery); 
-    	            sdtdocpartdocpartgallery.setVal( "Table of Contents"); 
-    	        // Create object for docPartUnique
-    	        BooleanDefaultTrue booleandefaulttrue = wmlObjectFactory.createBooleanDefaultTrue(); 
-    	        sdtdocpart.setDocPartUnique(booleandefaulttrue); 
-    	    // Create object for id
-	        sdtpr.setId();
-
-		sdtBlock.setSdtPr(sdtpr);
-		
-		return sdtBlock;
-    }
-
-    private static SdtContentBlock createSdtContent(){
-        return Context.getWmlObjectFactory().createSdtContentBlock(); 
-    }
-    
     
     // Note these are only used if the style is not defined in the docx,
     // nor in the default styles read by TocStyles.
