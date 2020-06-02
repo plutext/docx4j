@@ -721,32 +721,12 @@ public class TocGenerator {
 						+ documentServicesEndpoint + "\n" + e.getMessage(),e);
 		}
 		
-		/* OLD Converter 1.0-x
-			{
-				"_Toc403733674":"29",
-				"_Toc379907223":"38",
-				"_Toc379907204":"29",
-				"_Toc379907233":"49",
-				
-		Map<String,Integer> map = new HashMap<String,Integer>();
-		ObjectMapper mapper = new ObjectMapper();
-			
-		//convert JSON string to Map
-		try {
-			map = mapper.readValue(baos.toByteArray(), 
-			    new TypeReference<HashMap<String,Integer>>(){});
-		} catch (Exception e) {
-			throw new TocException("Error reading toc json; " + e.getMessage(),e);
-		}
-				
-		 */
 
-		/* NEW DocumentServices 2.0-x
+		/* DocumentServices 2.0-x
 		 * {"bookmarks":{"_Toc299924107":"68","_Toc318272803":"1"}}
 		 */
 		
 		byte[] json = baos.toByteArray();
-//		System.out.println(json);
 		
 		Map<String,Integer> map = new HashMap<String,Integer>();
 		ObjectMapper m = new ObjectMapper();
@@ -755,7 +735,6 @@ public class TocGenerator {
 		try {
 			rootNode = m.readTree(json);
 		} catch (Exception e) {
-//			System.err.println(json);
 			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
 		}
 		JsonNode bookmarksNode = rootNode.path("bookmarks");
@@ -763,7 +742,6 @@ public class TocGenerator {
 		Iterator<Map.Entry<String, JsonNode>> bookmarksValueObj = bookmarksNode.fields();
 		while (bookmarksValueObj.hasNext()) {
 			Map.Entry<String, JsonNode> entry = bookmarksValueObj.next();
-//			System.out.println(entry.getKey());
 			if (entry.getValue()==null) {
 				log.warn("Null page number computed for bookmark " + entry.getKey());
 			}
@@ -771,7 +749,6 @@ public class TocGenerator {
 		}		
 		
 		log.debug("page number map size " + map.size());
-//		System.out.println(map);
 			
 		return map;
 

@@ -19,6 +19,7 @@
  **/
 package org.docx4j.convert.out.documents4j.remote;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -47,23 +48,35 @@ import com.documents4j.api.IConverter;
 import com.documents4j.job.RemoteConverter;
 
 /**
- * Convert docx/xlsx to PDF using Documents4j, with Microsoft Word running on a 
- * remote server. 
+ * Import/update/export docx/xlsx using Documents4j, with Microsoft Word running
+ * on a remote server.
+ * 
+ * You can use this to export to PDF, or to update your ToC.  It can also import binary 
+ * .doc or RTF.   
+ * 
+ * The easiest way to set up documents4j on a remote server is to build it
+ * from https://github.com/documents4j/documents4j using maven, then in
+ * documents4j-server-standalone, create a shaded jar using profile shaded-jar.
+ * 
+ * Note: to update ToC, you'll need a custom script in documents4j on your remote
+ * server.   You can update the script documents4j provides, or you can create
+ * a new one, and in the server code, point to it using System.setProperty 
+ * com.documents4j.conversion.msoffice.word_convert.vbs
  * 
  * @author jharrop
  * @since 8.2.0
  */
-public class Documents4jRemoteExporter implements Exporter<Documents4jConversionSettings> {
+public class Documents4jRemoteServices implements Exporter<Documents4jConversionSettings> {
 
-	private static Logger log = LoggerFactory.getLogger(Documents4jRemoteExporter.class);		
+	private static Logger log = LoggerFactory.getLogger(Documents4jRemoteServices.class);		
 	
-	protected static Documents4jRemoteExporter instance = null;
+	protected static Documents4jRemoteServices instance = null;
 	
 	public static Exporter<Documents4jConversionSettings> getInstance() {
 		if (instance == null) {
-			synchronized(Documents4jRemoteExporter.class) {
+			synchronized(Documents4jRemoteServices.class) {
 				if (instance == null) {
-					instance = new Documents4jRemoteExporter();
+					instance = new Documents4jRemoteServices();
 				}
 			}
 		}
@@ -76,7 +89,7 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 	/**
 	 * Configure the converter with default settings.
 	 */
-	public Documents4jRemoteExporter() {
+	public Documents4jRemoteServices() {
 
        converter = RemoteConverter.builder()
                .baseFolder(tmpDir)
@@ -105,7 +118,7 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
      * @param timeout The timeout for a network request (in ms).
      * 
      */
-	public Documents4jRemoteExporter(int corePoolSize, int maximumPoolSize, long keepAliveTime, 
+	public Documents4jRemoteServices(int corePoolSize, int maximumPoolSize, long keepAliveTime, 
 			TimeUnit unit, long timeout) {
 
        converter = RemoteConverter.builder()
@@ -116,6 +129,10 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
                .build();
 	}
 	
+	/**
+	 * Export to outputStream as PDF.  Make sure you have setOpcPackage in conversionSettings.
+	 * That's the only value which matters to documents4j.
+	 */
 	@Override
 	public void export(Documents4jConversionSettings conversionSettings, OutputStream outputStream)
 			throws Docx4JException {
@@ -125,7 +142,27 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 		export(pkg, outputStream);
 	}
 
+	/**
+	 * Export WordprocessingMLPackage or SpreadsheetMLPackage as PDF
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	public void export(OpcPackage pkg , OutputStream outputStream)
+			throws Docx4JException {
+		
+		export(pkg, outputStream, DocumentType.PDF);
+	}
+	
+	/**
+	 * Export WordprocessingMLPackage or SpreadsheetMLPackage as specified com.documents4j.api.DocumentType
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
+	public void export(OpcPackage pkg , OutputStream outputStream, DocumentType asDocumentType)
 			throws Docx4JException {
 
 		if (pkg instanceof WordprocessingMLPackage) {
@@ -139,7 +176,7 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 			Docx4J.save( (WordprocessingMLPackage)pkg, baos);
 			
 			try {
-				export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_WORD);
+				export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_WORD, asDocumentType);
 			} catch (IOException e) {
 				throw new Docx4JException(e.getMessage(), e);
 			} 
@@ -158,7 +195,7 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 			pkg.save( baos);
 			
 			try {
-				export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_EXCEL);
+				export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_EXCEL, asDocumentType);
 			} catch (IOException e) {
 				throw new Docx4JException(e.getMessage(), e);
 			} 
@@ -196,6 +233,21 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 		
 	}
 
+//	/** A RemoteConverter should perform better when handed instances of 
+//	 * InputStream and OutputStream as source and target compared to files,
+//	 * so this method is to be preferred. 
+//	 * @param src
+//	 * @param target
+//	 * @param documentType
+//	 * @throws Docx4JException
+//	 */
+//	private void export(InputStream src, OutputStream target, DocumentType documentType)
+//			throws Docx4JException {
+//	
+//		export( src,  target,  documentType, DocumentType.PDF);
+//		
+//	}
+
 	/** A RemoteConverter should perform better when handed instances of 
 	 * InputStream and OutputStream as source and target compared to files,
 	 * so this method is to be preferred. 
@@ -204,20 +256,135 @@ public class Documents4jRemoteExporter implements Exporter<Documents4jConversion
 	 * @param documentType
 	 * @throws Docx4JException
 	 */
-	public void export(InputStream src, OutputStream target, DocumentType documentType)
+	private void export(InputStream src, OutputStream target, DocumentType documentType, DocumentType asDocumentType)
 			throws Docx4JException {
 	
        converter.convert(src).as(documentType)
-               .to(target).as(DocumentType.PDF).execute();
+               .to(target).as(asDocumentType).execute();
 		
 	}
 	
+	/**
+	 * Export docx or xlsx file as PDF
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
 	public void export(File officeFile , OutputStream target, DocumentType documentType)
 			throws Docx4JException {
-	
-       converter.convert(officeFile).as(documentType)
-               .to(target).as(DocumentType.PDF).execute();		
+		
+		export(officeFile, target, documentType, DocumentType.PDF);
 	}
+	
+	/**
+	 * Export docx or xlsx file as specified com.documents4j.api.DocumentType
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @param asDocumentType
+	 * @throws Docx4JException
+	 */
+	public void export(File officeFile , OutputStream target, DocumentType documentType, DocumentType asDocumentType)
+			throws Docx4JException {
+
+       converter.convert(officeFile).as(documentType)
+               .to(target).as(asDocumentType).execute();		
+	}
+	
+	/**
+	 * Run the script to update the docx (eg ToC). Requires a custom script on the server.
+	 * Documents4j writes a new docx file to outputStream.
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
+	public void updateDocx(WordprocessingMLPackage pkg , OutputStream outputStream) 
+			throws Docx4JException {
+
+		// update is actually the same as export; this is just a user friendly method name
+		
+		// Avoid creating a temp file; documents4j wants an inputstream
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		Docx4J.save( (WordprocessingMLPackage)pkg, baos);
+		
+		try {
+			// update is the same as export
+			export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_WORD, DocumentType.DOCX);
+			
+		} catch (IOException e) {
+			throw new Docx4JException(e.getMessage(), e);
+		} 
+		
+	}
+	
+	/**
+	 * Run the script to update the docx (eg ToC). Requires a custom script on the server.
+	 * Returns a new WordprocessingMLPackage.
+	 * 
+	 * @param pkg
+	 * @return
+	 * @throws Docx4JException
+	 */
+	public WordprocessingMLPackage updateDocx(WordprocessingMLPackage pkg) 
+			throws Docx4JException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		
+		updateDocx(pkg, baos);
+		
+		return Docx4J.load(new ByteArrayInputStream(baos.toByteArray()));
+	}
+	
+	
+	/**
+	 * Run the script to update the docx (eg ToC). Requires a custom script on the server.
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
+	public void updateDocx(File officeFile , OutputStream target)
+			throws Docx4JException {
+		
+		export(officeFile, target, DocumentType.MS_WORD, DocumentType.DOCX);
+	}
+	
+	/**
+	 * Import as a docx from one of the other file types supported by Word.
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
+	public void importAsDocx(File officeFile , OutputStream target)
+			throws Docx4JException {
+
+		// import is actually the same as export; this is just a user friendly method name
+		
+		export(officeFile, target, DocumentType.MS_WORD, DocumentType.DOCX);
+	}
+
+	/**
+	 * Import as a docx from one of the other file types supported by Word.
+	 * 
+	 * @param officeFile
+	 * @throws Docx4JException
+	 */
+	public WordprocessingMLPackage importAsDocx(File officeFile)
+			throws Docx4JException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		importAsDocx(officeFile, baos);
+		
+		return Docx4J.load(new ByteArrayInputStream(baos.toByteArray()));
+	}
+	
 	
 	private String getConverterUri() {
 		

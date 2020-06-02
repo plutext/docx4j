@@ -1,6 +1,6 @@
 package org.docx4j.samples.documents4j.local;
 
-import org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter;
+import org.docx4j.convert.out.documents4j.local.Documents4jLocalServices;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.toc.TocSdtUtils;
@@ -19,6 +19,14 @@ import org.docx4j.wml.SdtContentBlock;
  * Since Word does the heavy lifting, the full range of
  * switches in the ToC instruction can be used.
  * 
+ * For this to work, you'll need a conversion script
+ * which instructs Word to update ToC.
+ * 
+ * A sample override script (which updates ToC) is in docx4j-samples-resources.
+ * 
+ * To use it, set the docx4j.properties key: com.documents4j.conversion.msoffice.word_convert.vbs
+ * 
+ * or you can set it programmatically using System.setProperty
  */
 public class TocOperations  { 
 	
@@ -100,7 +108,7 @@ public class TocOperations  {
         
         
         // Now use documents4j to populate it
-		Documents4jLocalExporter exporter = new Documents4jLocalExporter();
+		Documents4jLocalServices exporter = new Documents4jLocalServices();
 		
 		WordprocessingMLPackage newPkg = exporter.updateDocx(wordMLPackage);
 		//System.out.println(newPkg.getMainDocumentPart().getXML());

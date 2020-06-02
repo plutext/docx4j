@@ -8,9 +8,9 @@
 	<version>${revision}</version>
   </parent>
   
-	<artifactId>docx4j-samples-export-documents4j-local</artifactId>
+	<artifactId>docx4j-samples-documents4j-local</artifactId>
 	<packaging>jar</packaging>
-	<name>docx4j-samples-export-documents4j-local</name>
+	<name>docx4j-samples-documents4j-local</name>
   	
 	<description>
 		example exporting docx and xlsx to PDF using documents4j to drive an instance of Microsoft Word running on the same Windows server as docx4j

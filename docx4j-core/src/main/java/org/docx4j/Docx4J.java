@@ -716,8 +716,6 @@ public class Docx4J {
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
 		
-		// TODO Think more about order/priority
-		
 		if (pdfViaDocuments4jRemote()) {
 			
 			Exporter<Documents4jConversionSettings> exporter = documents4jRemoteExporterGetInstance();

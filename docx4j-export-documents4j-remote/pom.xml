@@ -8,9 +8,9 @@
 	<version>${revision}</version>
   </parent>
   
-	<artifactId>docx4j-export-documents4j-remote</artifactId>
+	<artifactId>docx4j-documents4j-remote</artifactId>
 	<packaging>jar</packaging>
-	<name>docx4j-export-documents4j-remote</name>
+	<name>docx4j-documents4j-remote</name>
   	
 	<description>
 		export docx or xlsx to PDF using documents4j client to communicate with a remote documents4j server (which drives Microsoft Word).

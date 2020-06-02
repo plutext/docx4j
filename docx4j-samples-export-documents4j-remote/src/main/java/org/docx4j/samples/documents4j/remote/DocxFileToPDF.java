@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.docx4j.convert.out.documents4j.remote.Documents4jRemoteExporter;
+import org.docx4j.convert.out.documents4j.remote.Documents4jRemoteServices;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import com.documents4j.api.DocumentType;
@@ -26,7 +26,7 @@ public class DocxFileToPDF {
 		File output = new File(System.getProperty("user.dir")+"/result.pdf");
 		FileOutputStream fos = new FileOutputStream(output); 
 		
-		Documents4jRemoteExporter exporter = new Documents4jRemoteExporter();
+		Documents4jRemoteServices exporter = new Documents4jRemoteServices();
 		exporter.export(new File(System.getProperty("user.dir")+"/Hello.docx") , fos, DocumentType.MS_WORD); 
 		
 		fos.close();

@@ -269,7 +269,7 @@ public class ListsToContentControlsTest {
 		// Back to XHTML
 
 		HTMLSettings htmlSettings = Docx4J.createHTMLSettings();
-		htmlSettings.setWmlPackage(wordMLPackage);
+		htmlSettings.setOpcPackage(wordMLPackage);
 
 		// Sample sdt tag handler (tag handlers insert specific
 		// html depending on the contents of an sdt's tag).

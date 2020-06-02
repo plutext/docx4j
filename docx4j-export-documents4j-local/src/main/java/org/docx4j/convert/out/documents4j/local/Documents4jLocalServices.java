@@ -43,22 +43,32 @@ import com.documents4j.api.IConverter;
 import com.documents4j.job.LocalConverter;
 
 /**
- * Convert docx/xlsx to PDF using Documents4j, with Microsoft Word running locally. 
+ * Import/update/export docx/xlsx using Documents4j, with Microsoft Word running locally.
+ * 
+ * You can use this to export to PDF, or to update your ToC.  It can also import binary 
+ * .doc or RTF.   
+ * 
+ * You can customise your conversion script by specifying one in docx4j.properties,
+ * under key: com.documents4j.conversion.msoffice.word_convert.vbs
+ * 
+ * If you do not do that, the document4j's default script will be used
+ * (which doesn't update ToC).  A sample override script (which updates ToC) is in 
+ * docx4j-samples-resources. You'll need that script (or one like it) to update ToC.
  * 
  * @author jharrop
  * @since 8.2.0
  */
-public class Documents4jLocalExporter implements Exporter<Documents4jConversionSettings> {
+public class Documents4jLocalServices implements Exporter<Documents4jConversionSettings> {
 	
-	private static Logger log = LoggerFactory.getLogger(Documents4jLocalExporter.class);		
+	private static Logger log = LoggerFactory.getLogger(Documents4jLocalServices.class);		
 	
-	protected static Documents4jLocalExporter instance = null;
+	protected static Documents4jLocalServices instance = null;
 	
 	public static Exporter<Documents4jConversionSettings> getInstance() {
 		if (instance == null) {
-			synchronized(Documents4jLocalExporter.class) {
+			synchronized(Documents4jLocalServices.class) {
 				if (instance == null) {
-					instance = new Documents4jLocalExporter();
+					instance = new Documents4jLocalServices();
 				}
 			}
 		}
@@ -71,7 +81,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	/**
 	 * Configure the converter with default settings.
 	 */
-	public Documents4jLocalExporter() {
+	public Documents4jLocalServices() {
 		
 		setWordConversionScript();	       
 		converter = LocalConverter.builder()
@@ -100,7 +110,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
      * @param timeout The timeout for a network request (in ms).
      * 
      */
-	public Documents4jLocalExporter(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, long timeout) {
+	public Documents4jLocalServices(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, long timeout) {
 
 		setWordConversionScript();	       
 		converter = LocalConverter.builder()
@@ -131,6 +141,10 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	}
 	
 	
+	/**
+	 * Export to outputStream as PDF.  Make sure you have setOpcPackage in conversionSettings.
+	 * That's the only value which matters to documents4j.
+	 */
 	@Override
 	public void export(Documents4jConversionSettings conversionSettings, OutputStream outputStream)
 			throws Docx4JException {
@@ -141,7 +155,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	}
 
 	/**
-	 * Export as PDF
+	 * Export WordprocessingMLPackage or SpreadsheetMLPackage as PDF
 	 * 
 	 * @param pkg
 	 * @param outputStream
@@ -153,6 +167,13 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		export(pkg, outputStream, DocumentType.PDF);
 	}
 	
+	/**
+	 * Export WordprocessingMLPackage or SpreadsheetMLPackage as specified com.documents4j.api.DocumentType
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	public void export(OpcPackage pkg , OutputStream outputStream, DocumentType asDocumentType)
 			throws Docx4JException {
 
@@ -189,7 +210,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	}
 
 	/**
-	 * Export as PDF
+	 * Export docx or xlsx file as PDF
 	 * 
 	 * @param officeFile
 	 * @param target
@@ -202,6 +223,15 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		export(officeFile, target, documentType, DocumentType.PDF);
 	}
 	
+	/**
+	 * Export docx or xlsx file as specified com.documents4j.api.DocumentType
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @param asDocumentType
+	 * @throws Docx4JException
+	 */
 	public void export(File officeFile , OutputStream target, DocumentType documentType, DocumentType asDocumentType)
 			throws Docx4JException {
 
@@ -210,6 +240,14 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	}
 
 	
+	/**
+	 * Run the script to update the docx (eg ToC). See class Javadoc for how to configure your script.
+	 * Documents4j writes a new docx file to outputStream.
+	 * 
+	 * @param pkg
+	 * @param outputStream
+	 * @throws Docx4JException
+	 */
 	public void updateDocx(WordprocessingMLPackage pkg , OutputStream outputStream) 
 			throws Docx4JException {
 
@@ -223,6 +261,14 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		updateDocx(file, outputStream);
 	}
 	
+	/**
+	 * Run the script to update the docx (eg ToC). See class Javadoc for how to configure your script.
+	 * Returns a new WordprocessingMLPackage.
+	 * 
+	 * @param pkg
+	 * @return
+	 * @throws Docx4JException
+	 */
 	public WordprocessingMLPackage updateDocx(WordprocessingMLPackage pkg) 
 			throws Docx4JException {
 
@@ -243,7 +289,7 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 	
 	
 	/**
-	 * Update docx
+	 * Run the script to update the docx (eg ToC). See class Javadoc for how to configure your script.
 	 * 
 	 * @param officeFile
 	 * @param target
@@ -256,6 +302,34 @@ public class Documents4jLocalExporter implements Exporter<Documents4jConversionS
 		export(officeFile, target, DocumentType.MS_WORD, DocumentType.DOCX);
 	}
 	
+	/**
+	 * Import as a docx from one of the other file types supported by Word.
+	 * 
+	 * @param officeFile
+	 * @param target
+	 * @param documentType
+	 * @throws Docx4JException
+	 */
+	public void importAsDocx(File officeFile , OutputStream target)
+			throws Docx4JException {
+		
+		export(officeFile, target, DocumentType.MS_WORD, DocumentType.DOCX);
+	}
+
+	/**
+	 * Import as a docx from one of the other file types supported by Word.
+	 * 
+	 * @param officeFile
+	 * @throws Docx4JException
+	 */
+	public WordprocessingMLPackage importAsDocx(File officeFile)
+			throws Docx4JException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		importAsDocx(officeFile, baos);
+		
+		return Docx4J.load(new ByteArrayInputStream(baos.toByteArray()));
+	}
 	
     private static final String TEMP_DIR_DEFAULT = "temp_documents4j_local";
 	

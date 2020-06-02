@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.docx4j.Docx4J;
-import org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter;
+import org.docx4j.convert.out.documents4j.local.Documents4jLocalServices;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -28,7 +28,7 @@ public class WordMLToPDF {
 		File output = new File(System.getProperty("user.dir")+"/resultZ.pdf");
 		FileOutputStream fos = new FileOutputStream(output); 
 		
-		Documents4jLocalExporter exporter = new Documents4jLocalExporter();
+		Documents4jLocalServices exporter = new Documents4jLocalServices();
 		exporter.export(pkg, fos);
 		
 		// or equivalently,
