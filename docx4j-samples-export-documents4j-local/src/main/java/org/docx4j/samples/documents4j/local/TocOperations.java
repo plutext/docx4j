@@ -1,5 +1,8 @@
 package org.docx4j.samples.documents4j.local;
 
+import java.io.File;
+
+import org.docx4j.Docx4J;
 import org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -96,15 +99,17 @@ public class TocOperations  {
         
         sdtContent.getContent().add(TocSdtUtils.getLastParagraph());
         
-        documentPart.getContent().add(sdt);
+        documentPart.getContent().add(0, sdt); // 0 = add it at the beginning
         
         
         // Now use documents4j to populate it
 		Documents4jLocalExporter exporter = new Documents4jLocalExporter();
 		
 		WordprocessingMLPackage newPkg = exporter.updateDocx(wordMLPackage);
+		
 		//System.out.println(newPkg.getMainDocumentPart().getXML());
-                
+        Docx4J.save(newPkg, new File("OUT_TocOperations.docx") ); 
+        System.out.println("Done, docx saved.");
     }
 
     private static void fillPageWithContent(MainDocumentPart documentPart, String content){
