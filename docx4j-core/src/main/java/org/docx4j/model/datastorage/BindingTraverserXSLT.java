@@ -1082,6 +1082,75 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		
 	}
 
+	/**
+	 * @param wmlPackage
+	 * @param sourcePart
+	 * @param customXmlDataStorageParts
+	 * @param xpathsMap
+	 * @param odTag
+	 * @param sdtParent
+	 * @param contentChild
+	 * @param cx
+	 * @param cy
+	 * @return
+	 * @since 11.1.8
+	 */
+	public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,			
+			String odTag, 
+			String sdtParent,
+			String contentChild) {
+		
+		QueryString qs = new QueryString();
+		HashMap<String, String> map = qs.parseQueryString(odTag, true);
+		
+		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+		
+		log.debug("Looking for xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+		
+		Xpath xpath = null;
+		try {
+			//xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			xpath = xpathsMap.get(xpathId);
+
+		} catch (InputIntegrityException iie) {
+			throw new InputIntegrityException("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag,iie);
+			
+			// Could fallback to trying to use the databinding sdtPr, but would need to pass that in
+		}
+		if (xpath ==null) {
+			log.error("Couldn't find xpath with id: " + xpathId + " referenced from part " + sourcePart.getPartName().getName() + " at " + odTag);
+			throw new InputIntegrityException("Couldn't find xpath with id: " + xpathId );
+		}
+		String storeItemId = xpath.getDataBinding().getStoreItemID();
+		String xpathExp = xpath.getDataBinding().getXpath();
+		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+		
+		String width=map.get("width"); 
+		log.info("Image width: " + width);
+		
+		if (width.equals("auto")) {
+		
+			return xpathInjectImage( wmlPackage,
+					 sourcePart,
+					customXmlDataStorageParts,
+					storeItemId, xpathExp, prefixMappings, 
+					sdtParent,
+					contentChild,
+					"0", "0"); // let BPAI scale
+		} else {
+			return xpathInjectImage( wmlPackage,
+					 sourcePart,
+					customXmlDataStorageParts,
+					storeItemId, xpathExp, prefixMappings, 
+					sdtParent,
+					contentChild,
+					width, "0"); 			
+		}
+	}
+
 	
 	public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 			JaxbXmlPart sourcePart,
@@ -1127,7 +1196,13 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        	cxl = Long.parseLong(cx);
 	        	cyl = Long.parseLong(cy);
 	        } catch (Exception e) {}
-	        if (cxl==0 || cyl==0) {
+	        if (cxl>0 &&  cyl==0) {
+	        	
+				// This signature can scale the image to specified maxWidth		        
+		        inline = imagePart.createImageInline( filenameHint, altText, 
+		    			id1, id2, false, (int)cxl);
+		        
+	        } else if (cxl==0 || cyl==0) {
 	        	// Let BPAI work out size
 	        	log.debug("image size - from image");
 		        inline = imagePart.createImageInline( filenameHint, altText, 
@@ -1146,6 +1221,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
                 }
 		        inline = imagePart.createImageInline( filenameHint, altText, 
 		    			id1, id2, cxl, cyl, false);		        	
+
 	        }
 
 	        // In certain circumstances, save it immediately

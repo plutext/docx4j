@@ -104,21 +104,6 @@
 <!--  if it was @r:link, it is now embedded -->
   </xsl:template>
 
-<!-- 
-  <xsl:template match="a:blip" mode="picture3">
-	<xsl:param name="sdtPr" select="/.."/> 
-	<a:blip>
-		<xsl:attribute name="r:embed" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xsl:value-of select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImageRelId(
-								$wmlPackage,
-								$sourcePart,
-								$customXmlDataStorageParts,
-								string($sdtPr/w:dataBinding/@w:storeItemID),
-								string($sdtPr/w:dataBinding/@w:xpath),
-								string($sdtPr/w:dataBinding/@w:prefixMappings) )" /></xsl:attribute>
-	</a:blip>
-  </xsl:template>
-  -->
-
 <!-- docx4j 3.0.1.  Handle a rich text control which contains an image.
      Since this doesn't have a w:databinding, we can't just use mode="picture3"
      
@@ -160,6 +145,33 @@
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'w15:resultRepeatZero')">
 			     <xsl:copy-of select="."/>  		
 		</xsl:when>  
+
+		<!--  11.1.8 width=n|auto rich text cc containing w:drawing -->
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture') and contains(string(w:sdtPr/w:tag/@w:val), 'width=')">
+  		
+			<xsl:copy>
+			     <xsl:copy-of select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+	
+			     <w:sdtContent>
+			     <!--  Let BPAI work out size -->
+						<xsl:copy-of
+						select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
+									$wmlPackage,
+									$sourcePart,
+									$customXmlDataStorageParts,
+									$xPathsMap,
+									$tag,
+									$parent,
+									$child)" /> 
+			     </w:sdtContent>
+			     
+			</xsl:copy>
+				
+		</xsl:when>  		
 
 		<!--  3.0.1 rich text cc containing w:drawing -->
   		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:Handler=picture')">
