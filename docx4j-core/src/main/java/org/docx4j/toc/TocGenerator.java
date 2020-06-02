@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -41,7 +40,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.finders.SectPrFindFirst;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.bookmarks.BookmarksIntegrity;
 import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
 import org.docx4j.model.listnumbering.Emulator;
@@ -55,17 +53,13 @@ import org.docx4j.services.client.ConverterHttp;
 import org.docx4j.services.client.Format;
 import org.docx4j.toc.switches.SwitchProcessor;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.CTSdtDocPart;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
 import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
-import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
-import org.docx4j.wml.Style;
 import org.docx4j.wml.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,19 +127,10 @@ public class TocGenerator {
 	public TocGenerator(WordprocessingMLPackage wordMLPackage) throws TocException {
 		
 		this.wordMLPackage = wordMLPackage;
-		this.tocStyles = getTocStyles(wordMLPackage.getMainDocumentPart());
+		this.tocStyles = TocStyles.getTocStyles(wordMLPackage.getMainDocumentPart());
 	}
 	
 	private TocStyles tocStyles = null;	
-	private TocStyles getTocStyles(MainDocumentPart documentPart) throws TocException {
-//      Styles styles = null;
-      if (documentPart.getStyleDefinitionsPart()==null
-      		|| documentPart.getStyleDefinitionsPart().getJaxbElement()==null) {
-      	throw new TocException("No StyleDefinitions present in package");
-      }
-      return new TocStyles(documentPart.getStyleDefinitionsPart());
-		
-	}
 
     /**
      * Generate Table of Contents using default TOC instruction, adding it at the beginning of the document
@@ -275,47 +260,7 @@ public class TocGenerator {
         
         if (Toc.getTocHeadingText()!=null) {
         
-	        /* Is there already a style with *name* (not @styleId): 
-	         * 
-	         *   <w:style w:type="paragraph" w:styleId="CabealhodoSumrio">
-	    			<w:name w:val="TOC Heading"/>
-	    	 *
-	    	 * If not, fall back to default, or failing that, create it from the XML given here. 
-	    	 * 
-	    	 * NB: avoid basedOn since that points to Style ID, which is language dependent
-	    	 * (ie Heading 1 in English is something different in French, German etc) 
-	         */
-	        String TOC_HEADING_STYLE = tocStyles.getStyleIdForName(TocStyles.TOC_HEADING);
-	        if (TOC_HEADING_STYLE==null) {
-	        	log.warn("No definition found for TOC Heading style");
-	        
-	        	String HEADING1_STYLE= tocStyles.getStyleIdForName(TocStyles.HEADING_1);
-	        
-		        try {
-			        if (TOC_HEADING_STYLE==null) {
-			        	// We need to create it. 
-			        	if (HEADING1_STYLE==null) {
-			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Nothing);
-			        		style.getBasedOn().setVal(HEADING1_STYLE);
-			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-			        		
-			        	} else {
-			        		// There is a heading 1 style, so use a simple style based on that
-			        		Style style = (Style)XmlUtils.unmarshalString(XML_TOCHeading_BasedOn_Heading1);
-			        		style.getBasedOn().setVal(HEADING1_STYLE);
-			        		documentPart.getStyleDefinitionsPart().getContents().getStyle().add(style);
-			        	}
-			        	
-			        	// either way,
-			        	TOC_HEADING_STYLE = "TOCHeading";
-			        }
-				} catch (Exception e) {
-					throw new TocException(e.getMessage(), e);
-				}
-	        }
-	        
-	        // 1. Add Toc Heading (eg "Contents" in TOCHeading style)
-	        sdtContent.getContent().add(Toc.generateTocHeading(TOC_HEADING_STYLE));        
+        	TocSdtUtils.addTocHeading(documentPart, tocStyles, sdtContent);        
         }
         
         populateToc(  
@@ -325,6 +270,7 @@ public class TocGenerator {
         return sdt;
         
     }
+
 
     
     /**
@@ -891,42 +837,4 @@ public class TocGenerator {
 
     }
     
-    // Note these are only used if the style is not defined in the docx,
-    // nor in the default styles read by TocStyles.
-    private static String XML_TOCHeading_BasedOn_Nothing = "<w:style w:styleId=\"TOCHeading\" w:type=\"paragraph\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
-            + "<w:name w:val=\"TOC Heading\"/>"
-            // + "<w:basedOn w:val=\"Heading1\"/>"  // would be ok if provided already present, since 
-            + "<w:next w:val=\"Normal\"/>"
-            + "<w:uiPriority w:val=\"39\"/>"
-            + "<w:semiHidden/>"
-            + "<w:unhideWhenUsed/>"
-            + "<w:qFormat/>"
-            + "<w:pPr>"
-	            + "<w:keepNext/>"
-	            + "<w:keepLines/>"
-	            + "<w:spacing w:after=\"0\" w:before=\"480\"/>"
-                + "<w:outlineLvl w:val=\"9\"/>"
-            +"</w:pPr>"
-            + "<w:rPr>"
-	            + "<w:rFonts w:asciiTheme=\"majorHAnsi\" w:cstheme=\"majorBidi\" w:eastAsiaTheme=\"majorEastAsia\" w:hAnsiTheme=\"majorHAnsi\"/>"
-	            + "<w:b/>"
-	            + "<w:bCs/>"
-	            + "<w:color w:themeColor=\"accent1\" w:themeShade=\"BF\" w:val=\"365F91\"/>"
-	            + "<w:sz w:val=\"28\"/>"
-	            + "<w:szCs w:val=\"28\"/>"
-            +"</w:rPr>"
-        +"</w:style>";
-
-    private static String XML_TOCHeading_BasedOn_Heading1 = "<w:style w:styleId=\"TOCHeading\" w:type=\"paragraph\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
-            + "<w:name w:val=\"TOC Heading\"/>"
-            + "<w:basedOn w:val=\"Heading1\"/>" // we'll overwrite with the style id 
-            + "<w:next w:val=\"Normal\"/>"
-            + "<w:uiPriority w:val=\"39\"/>"
-            + "<w:semiHidden/>"
-            + "<w:unhideWhenUsed/>"
-            + "<w:qFormat/>"
-            + "<w:pPr>"
-                + "<w:outlineLvl w:val=\"9\"/>"
-            +"</w:pPr>"
-        +"</w:style>";    
 }

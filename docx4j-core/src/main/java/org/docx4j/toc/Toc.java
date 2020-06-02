@@ -53,7 +53,7 @@ public class Toc {
     private static final String DEFAULT_TOC_INSTRUCTION = "TOC \\o \"1-3\" \\h \\z \\u ";
     //private static final String TOC_HEADING_STYLE = "TOCHeading";
     
-    private static String DEFAULT_TOC_HEADING = "Contents";
+    protected static String DEFAULT_TOC_HEADING = "Contents";
     
 	/**
      * Use the provided text for the ToC heading.
@@ -162,38 +162,12 @@ public class Toc {
 //    	return generateTocHeading(headingStyleId, tocHeading);
 //    }
 
-    /**
-     * @return
-     */
+    @Deprecated
     public List<R> getTocInstruction() {
     	
     	return TocSdtUtils.getTocInstruction(tocInstruction);
     }
 
-    static P generateTocHeading(String headingStyleId) {
-    	return generateTocHeading( headingStyleId, DEFAULT_TOC_HEADING) ;
-    }
-    
-    private static P generateTocHeading(String headingStyleId, String tocHeading) {
-        // Create object for p
-        P p = wmlObjectFactory.createP();
-        // Create object for pPr
-        PPr ppr = wmlObjectFactory.createPPr();
-        p.setPPr(ppr);
-        // Create object for pStyle
-        PPrBase.PStyle pprbasepstyle = wmlObjectFactory.createPPrBasePStyle();
-        ppr.setPStyle(pprbasepstyle);
-        pprbasepstyle.setVal(headingStyleId);
-        // Create object for r
-        R r = wmlObjectFactory.createR();
-        p.getContent().add(r);
-        // Create object for t (wrapped in JAXBElement)
-        Text text = wmlObjectFactory.createText();
-        JAXBElement<Text> textWrapped = wmlObjectFactory.createRT(text);
-        r.getContent().add(textWrapped);
-        text.setValue(tocHeading);
-        return p;
-    }
 
 //    private P generateEmptyToc() {
 //        // Create object for p

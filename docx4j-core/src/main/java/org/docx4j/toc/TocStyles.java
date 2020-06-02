@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBException;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.Style;
@@ -61,6 +62,17 @@ public class TocStyles {
 		}
 		
 	}
+	
+	public static TocStyles getTocStyles(MainDocumentPart documentPart) throws TocException {
+//      Styles styles = null;
+      if (documentPart.getStyleDefinitionsPart()==null
+      		|| documentPart.getStyleDefinitionsPart().getJaxbElement()==null) {
+      	throw new TocException("No StyleDefinitions present in package");
+      }
+      return new TocStyles(documentPart.getStyleDefinitionsPart());
+		
+	}
+	
 	
 	// needed until 3.2.0, since that's when this was introduced into docx4j.
     private static java.io.InputStream getResourceViaProperty(String propName, String defaultPath) throws java.io.IOException
