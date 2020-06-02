@@ -20,45 +20,31 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.io.OutputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4J;
-import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.model.fields.FieldUpdater;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.services.client.ConversionException;
-import org.docx4j.services.client.ConversionRateLimitException;
 
 /**
  * Demo of PDF output.
  * 
- * From v3.3.0, PDF output is by default via Plutext's commercial PDF Converter.
+ * In docx4j 8.2.0, there are 2 main ways of getting PDF output:
  * 
- * In 6.1.0 or later, it defaults to a local instance you'd need to install.
- * 
- * There is an evaluation instance at:
- * 
- *  	https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert
- * 
- * but if you want to use it, you'll need to explicitly set that endpoint.
- *   
- * To specify your own instance, please set docx4j.properties property: 
- * 
- *      com.plutext.converter.URL=http://your.host:80/v1/00000000-0000-0000-0000-000000000000/convert
- * 
- * If you don't want to use Plutext's PDF Converter, you can still use XSL FO and Apache FOP;
- * just put docx4j-export-fo and its dependencies on your classpath and use Docx4J.toFO
- * as per the example below.
- * 
+ * 1.  If you have Microsoft Word available, locally or remotely, you 
+ *     can use it, via documents4j.  To do so, put docx4j-documents4j-local 
+ *     or docx4j-documents4j-remote on your classpath.  For more,
+ *     please see the sample projects docx4j-samples-documents4j-local 
+ *     or docx4j-samples-documents4j-remote 
+ *     
+ * 2.  If not, you can use XSL FO and Apache FOP; just put docx4j-export-fo 
+ *     and its dependencies on your classpath and configure the converter (see below) 
+ *     
  * @author jharrop
  */
 public class ConvertOutPDF extends AbstractSample {
@@ -138,44 +124,22 @@ public class ConvertOutPDF extends AbstractSample {
 		// All methods write to an output stream
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
-		
-		if (!Docx4J.pdfViaFO()) {
-			
-			// Since 3.3.0, Plutext's PDF Converter is used by default
-
-			System.out.println("Using Plutext's PDF Converter; add docx4j-export-fo if you don't want that");
-			
-			try {
-				Docx4J.toPDF(wordMLPackage, os);
-			} catch (Docx4JException e) {
-				if (e.getCause()!=null) {
-
-					if ( e.getCause() instanceof ConversionRateLimitException) {
-						// Possible if you send too many requests to converter-eval.plutext.com
-						// or a commercial SAAS endpoint.  Please install your own instance. 
-						System.err.println("API rate limit exceeded");
-						System.err.println("Maybe you sent too many requests to a third party instance? Please install your own instance. ");
+		if (Docx4J.pdfViaDocuments4jLocal() || 
+				Docx4J.pdfViaDocuments4jRemote() ) {
 					
-					} else if ( e.getCause() instanceof ConversionException) {
-					
-						ConversionException ce = (ConversionException)e.getCause();
-						ce.printStackTrace();
-					}
-				} else {
-					// What did we write?
-					IOUtils.closeQuietly(os);
-					System.out.println(
-							FileUtils.readFileToString(new File(outputfilepath)));
-					e.printStackTrace();
-					
-				}
-				return;
-			}
+			System.out.println("Using documents4j");
+			Docx4J.toPDF(wordMLPackage, os); 
 			System.out.println("Saved: " + outputfilepath);
-
 			return;
 		}
-
+		
+		if (!Docx4J.pdfViaFO() ) {
+			
+			System.out.println("No PDF converter configured!");
+			System.out.println("Please add docx4j-documents4j-local, or docx4j-documents4j-remote or docx4j-export-fo to your classpath.");
+			return;
+		}
+		
 		System.out.println("Attempting to use XSL FO");
 		
 		/**
