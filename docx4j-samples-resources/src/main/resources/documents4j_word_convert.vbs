@@ -39,6 +39,7 @@ Function ConvertFile( inputFile, outputFile, formatEnumeration )
                                                       True, _
                                                       False)
     ' Update the first of any TOC
+    ' This works for docx input, but not binary .doc or RTF
     wordDocument.TablesOfContents(1).UpdatePageNumbers
 
     If Err <> 0 Then
