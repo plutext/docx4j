@@ -1,6 +1,32 @@
 CHANGELOG
 =========
 
+
+Version 8.2.0  
+==============
+
+Release date
+------------
+
+2 June 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.2.0
+-------------------------
+
+New sub-projects to facilitate the use of documents4j
+to drive Microsoft Word (running locally or remotely),
+for PDF export, TOC update, and import of RTF, binary .doc
+and HTML.
+
+For examples, see docx4j-samples-documents4j-local 
+(or -remote).
+
+
 Version 8.1.7  minor release (to align with 11.1.7)
 ==============
 
