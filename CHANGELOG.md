@@ -1,6 +1,22 @@
 CHANGELOG
 =========
 
+
+Version 11.1.8  
+==============
+
+Release date
+------------
+
+10 June 2020
+
+Changes in Version 11.1.8 
+-------------------------
+
+OpenDoPE image injection: tag width=n|auto to specify max width (eg 10500) or let BPAI work out the scaling
+
+
+
 Version 11.1.7  
 ==============
 
