@@ -80,17 +80,9 @@
 		+- org.antlr:stringtemplate:jar:3.2.1
 		|  \- antlr:antlr:jar:2.7.7
 		
-		+- com.google.guava:guava:jar:27.0.1-jre NOT REQUIRED
-
-		|  +- org.checkerframework:checker-qual:jar:2.5.2
-		|  +- com.google.errorprone:error_prone_annotations:jar:2.2.0
-		|  +- com.google.guava:failureaccess:jar:1.0.1
+		+- org.checkerframework:checker-qual:jar:2.8.1:compile
+		\- com.google.errorprone:error_prone_annotations:jar:2.3.3:compile
 		
-		|  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
-		|  +- com.google.code.findbugs:jsr305:jar:3.0.2
-		|  +- com.google.j2objc:j2objc-annotations:jar:1.1
-		|  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17
-		+- com.thedeanda:lorem:jar:2.1
 		+- org.slf4j:slf4j-api:jar:1.7.26
 	 -->
 	<path id="MavenDeps">
@@ -119,8 +111,8 @@
 		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
 		<pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
 
-		<pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.5.2/checker-qual-2.5.2.jar"/>
-		<pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.2.0/error_prone_annotations-2.2.0.jar"/>
+        <pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar"/>
+        <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
 
 		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
 		
@@ -722,6 +714,7 @@
 		</condition>
 	</target>
 
+	
 	<target name="dist.NET" depends="checkForIKVM" if="IKVMAvailable" description="Build docx4j .NET DLL files">
 		<echo>Building docx4j.DLL</echo>
 
@@ -772,17 +765,18 @@
 
 		<path id="docx4j-main.classpath">
 			<path refid="Maven Dependencies.libraryclasspath"/>
-			<pathelement location="${m2Repository}/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
-			<pathelement location="${m2Repository}/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
-
-			<!-- Omit for 3.3.x 
-	    	<path refid="FOP-stuff.classpath"/>
-	    	 -->
-			<!--   	        
-			<pathelement location="${dist}/docx4j-${version}.jar" />
-			 -->
-			<!-- Use mvn docx4j build, since it is this which injects the version number -->
-			<pathelement location="${m2Repository}/org/docx4j/docx4j/${version}/docx4j-${version}.jar"/>
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-openxml-objects/${version}/docx4j-openxml-objects-${version}.jar"/>
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar"/>
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar"/>
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar"/>
+			
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-JAXB-Internal/${version}/docx4j-JAXB-Internal-${version}.jar"/>
+	        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
+	        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+			
+			<pathelement location="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar"/>
+			<pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
+		
 		</path>
 
 		<pathconvert refid="docx4j-main.classpath" property="docx4j-jars" pathsep=" "/>
