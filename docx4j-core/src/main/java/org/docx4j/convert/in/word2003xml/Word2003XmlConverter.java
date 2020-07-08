@@ -152,6 +152,7 @@ public class Word2003XmlConverter {
 			// This is currently just a proof of concept, but contributed improvements are welcome.
 		
 		Source source = new StreamSource(FileUtils.openInputStream(file));
+		// Beware that StreamSource(is) is vulnerable to XXE, but this is just demo code here
 		
 		Word2003XmlConverter conv = new Word2003XmlConverter(source);
 		

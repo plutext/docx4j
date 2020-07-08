@@ -34,7 +34,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stax.StAXSource;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
@@ -403,29 +403,38 @@ implements XPathEnabled<E> {
 						 */
 						String contents = IOUtils.toString(is, "UTF-8");  
 						IOUtils.closeQuietly(is);
-						is = new ByteArrayInputStream(contents.getBytes("UTF-8"));	
+						try (InputStream is2 = new ByteArrayInputStream(contents.getBytes("UTF-8"))) {
 						
-						if (contents.contains("AlternateContent")) {
-							// looks like we need to do the workaround
-							// 3.4.0: this needs to be refined, since we can now handle
-							// alternate content in w:r (so than in itself is ok)
-							log.debug("MOXy: yes, performing workaround");
-							// Get object with mc content resolved
-							// could do super.unmarshal(is);
-							// but better
-							try {
-								Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-								DOMResult result = new DOMResult();
-								XmlUtils.transform(new StreamSource(is), 
-										mcPreprocessorXslt, null, result);
-								doc = (org.w3c.dom.Document) result.getNode();
-							} catch (Exception e) {
-								throw new JAXBException("Preprocessing exception", e);
+							if (contents.contains("AlternateContent")) {
+								// looks like we need to do the workaround
+								// 3.4.0: this needs to be refined, since we can now handle
+								// alternate content in w:r (so than in itself is ok)
+								log.debug("MOXy: yes, performing workaround");
+								// Get object with mc content resolved
+								// could do super.unmarshal(is);
+								// but better
+								try {
+									Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+									DOMResult result = new DOMResult();
+									
+									// Guard against XXE
+							        XMLInputFactory xif = XMLInputFactory.newInstance();
+							        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+							        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+						        	XMLStreamReader xsr = xif.createXMLStreamReader(is2);
+									
+									XmlUtils.transform(new StAXSource(xsr), 
+											mcPreprocessorXslt, null, result);
+									doc = (org.w3c.dom.Document) result.getNode();
+								} catch (Exception e) {
+									throw new JAXBException("Preprocessing exception", e);
+								}
+								
+							} else {
+								// continue with a new is
+								log.debug("MOXy: no, looks ok");
 							}
-							
-						} else {
-							// continue with a new is
-							log.debug("MOXy: no, looks ok");
+						
 						}
 					}
 				

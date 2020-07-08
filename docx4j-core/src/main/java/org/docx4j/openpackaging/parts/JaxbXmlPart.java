@@ -51,7 +51,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stax.StAXSource;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
@@ -329,15 +329,25 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 
 			PartStore partStore = this.getPackage().getSourcePartStore();
 			String name = this.getPartName().getName();
-			InputStream is = partStore.loadPart( 
-					name.substring(1));
-			if (is==null) {
-				log.warn(name + " missing from part store");
-				throw new Docx4JException(name + " missing from part store");
-			} 
-			
-			XmlUtils.transform(new StreamSource(is), xslt, transformParameters, result);
-
+			try (InputStream is = partStore.loadPart( name.substring(1))) {
+				
+				if (is==null) {
+					log.warn(name + " missing from part store");
+					throw new Docx4JException(name + " missing from part store");
+				} 
+				
+				// Guard against XXE
+		        XMLInputFactory xif = XMLInputFactory.newInstance();
+		        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+		        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	        	XMLStreamReader xsr = xif.createXMLStreamReader(is);
+				XmlUtils.transform(new StAXSource(xsr), xslt, transformParameters, result);
+				
+			} catch (IOException e /* closing InputStream */ ) {
+				throw new Docx4JException(e.getMessage(), e);
+			} catch (XMLStreamException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			}			
 		} else {
 			org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();			
 			try {
@@ -1072,8 +1082,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					try {
 						Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 						is.reset();
+						xsr = xif.createXMLStreamReader(is);
 						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
-						XmlUtils.transform(new StreamSource(is), 
+						XmlUtils.transform(new StAXSource(xsr), 
 								mcPreprocessorXslt, null, result);
 						jaxbElement = (E) XmlUtils.unwrap(
 								result.getResult() );	

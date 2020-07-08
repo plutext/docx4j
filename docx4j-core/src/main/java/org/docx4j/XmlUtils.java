@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,12 +60,13 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.io.IOUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -499,8 +501,15 @@ public class XmlUtils {
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 					is.reset();
 					JAXBResult result = XmlUtils.prepareJAXBResult(jc);
-					XmlUtils.transform(new StreamSource(is), 
-							mcPreprocessorXslt, null, result);
+					
+					// StreamSource(is) is vulnerable to XXE, so use StAXSource
+					// (mcPreprocessorXslt could be suitable for an XSLT 3.0 streaming transformation?)
+					xsr = xif.createXMLStreamReader(is);
+					// or alternatively:
+					// DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
+					// Document document = db.parse(is);
+					
+					XmlUtils.transform(new StAXSource(xsr), mcPreprocessorXslt, null, result);
 					return //XmlUtils.unwrap(
 							result.getResult() ;	
 				} catch (Exception e) {
@@ -530,8 +539,21 @@ public class XmlUtils {
 	public static Object unmarshalString(String str, JAXBContext jc, Class declaredType) throws JAXBException {		
 		Unmarshaller u = jc.createUnmarshaller();						
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		Object o = u.unmarshal( new javax.xml.transform.stream.StreamSource(new java.io.StringReader(str)),
-				declaredType);
+		// StreamSource(Reader reader) is vulnerable to XXE
+//		Object o = u.unmarshal( new javax.xml.transform.stream.StreamSource(new java.io.StringReader(str)),
+//				declaredType);
+		
+		Object o;
+		try {
+			DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
+			try (InputStream is = IOUtils.toInputStream(str, "UTF-8")) {
+				Document document = db.parse(is);
+				o = u.unmarshal( document );
+			}
+		} catch (Exception e) {
+			throw new JAXBException(e);
+		}
+		
 		if (o instanceof JAXBElement) {
 			return ((JAXBElement)o).getValue();
 		} else {
@@ -552,13 +574,28 @@ public class XmlUtils {
 		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 		u.setEventHandler(eventHandler);
 		
+		Document document=null; 
 		try {
 			
-			return u.unmarshal( new javax.xml.transform.stream.StreamSource(
-					new java.io.StringReader(str)) );
+			// StreamSource(Reader reader) is vulnerable to XXE
+			// so use a dom doc instead.  
+			// Here it has come from a string, so it hopefully isn't huge.
+			// And at least we can re-use it in the McPreprocessor case
+			// (compare XMLStreamReader, which we'd have to recreate 
+			//  xif.createXMLStreamReader(is) )
+			
+			DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
+			try (InputStream is = IOUtils.toInputStream(str, "UTF-8")) {
+				document = db.parse(is);
+			}
+			return u.unmarshal( document );
+			
+		} catch (IOException e) {
+			throw new UnmarshalException(e);
 			
 		} catch (UnmarshalException ue) {
 			
+			// Old code
 			if (ue.getLinkedException()!=null 
 					&& ue.getLinkedException().getMessage().contains("entity")) {
 				
@@ -567,8 +604,17 @@ public class XmlUtils {
 					Message: The entity "xxe" was referenced, but not declared.
 						at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
 						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.StAXStreamConnector.bridge(Unknown Source)
+						
+					Note: com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallerImpl.unmarshal0 doesn't configure
+					com.sun.org.apache.xerces.internal.parsers not to read DTD,
+					so SAXParseException will only occur if an entity is not declared.
+					 
 					 */
-				log.error(ue.getMessage(), ue);
+				if (ue.getMessage()==null) {
+					log.error("entity parse exception", ue);					
+				} else {
+					log.error(ue.getMessage(), ue);
+				}
 				throw ue;
 			}
 			
@@ -579,13 +625,16 @@ public class XmlUtils {
 				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 				JAXBResult result = XmlUtils.prepareJAXBResult(jc);
 				XmlUtils.transform(
-						new StreamSource(new java.io.StringReader(str)), 
+						document,
 						mcPreprocessorXslt, null, result);
 				return result.getResult();	
 			} catch (Exception e) {
 				throw new JAXBException("Preprocessing exception", e);
 			}
 										
+		} catch (SAXException e) {
+			
+			throw new UnmarshalException(e);
 		}		
 	}
 
