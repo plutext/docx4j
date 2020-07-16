@@ -27,7 +27,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.docx4j.org.apache.xalan.extensions.ExpressionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -55,6 +54,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
+import org.docx4j.org.apache.xalan.extensions.ExpressionContext;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.ResourceUtils;
 import org.docx4j.w14.CTSdtCheckbox;
@@ -68,6 +69,7 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tag;
 import org.opendope.xpaths.Xpaths;
 import org.opendope.xpaths.Xpaths.Xpath;
 import org.slf4j.Logger;
@@ -450,7 +452,166 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		placeholderBytes = IOUtils.toByteArray(is);		
 	}
 	
+	private static Boolean importXHTMLMissing = null;
 	
+	/**
+	 * @since 8.2.1
+	 * @return
+	 */
+	public static Boolean importXHTMLMissing() {
+		
+		if (importXHTMLMissing==null) {
+			
+			Class<?> xhtmlImporterClass = null;
+		    try {
+		    	xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
+		    	importXHTMLMissing=Boolean.FALSE;
+		    } catch (Exception e) {
+		    	importXHTMLMissing=Boolean.TRUE;
+		    }		
+			
+		}
+		return importXHTMLMissing;
+	}
+	
+	private static Xpath getXpathFromTag(Tag tag, Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
+
+		QueryString qs = new QueryString();
+		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+		
+		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+		
+		log.info("Looking for xpath by id: " + xpathId);
+		
+		//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+		Xpath xpath = xpathsMap.get(xpathId);
+		if (xpath==null) {
+			log.warn("Couldn't find xpath with id: " + xpathId);
+		}
+		return xpath;
+		
+	}
+	
+	private static String evaluate(Xpath xpath, BindingTraverserState bindingTraverserState, 
+			WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts) {
+		
+		String storeItemId = xpath.getDataBinding().getStoreItemID();
+		String xpathExp = xpath.getDataBinding().getXpath();
+		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+		
+		String r=null;
+		if (bindingTraverserState.getPathMap()!=null ) {
+			// Try the "cache"
+			r = bindingTraverserState.getPathMap().get(normalisePath(xpathExp));
+		}
+		if (r==null) {			
+			log.debug("cache miss for " + xpathExp);
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+		} else if (log.isDebugEnabled()
+				&& r.trim().length()==0) {	
+			// fallback removed for further speed improvement since we are comfortable there are no "cache query"
+			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
+			// sanity check - results should never differ!
+			if (r.trim().length()>0) {	
+				log.warn("cache query " + xpathExp);
+			}
+		} 
+		
+		return r;
+	}
+	
+	
+	/**
+	 * Convert the input XHTML into an altChunk, which you'll rely on Word
+	 * to convert to real Word content.
+	 *
+	 * Note that the input XHTML must be suitable for the context 
+	 * ie you can't insert block level stuff (eg p) into a run level sdt.
+	 * 
+	 * For Word to be happy, you'll need to be binding something like:
+	 * 
+	 *     &lt;html&gt;&lt;head&gt;&lt;title&gt;Import me&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;Hello World!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+	 *     
+	 * rather than eg &lt;p&gt;Hello World!&lt;/p&gt;
+	 * @since 8.2.1
+	 */
+	public static DocumentFragment convertXHTMLtoAltChunk(
+			BindingTraverserState bindingTraverserState,
+			WordprocessingMLPackage pkg, 
+			JaxbXmlPart sourcePart,				
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
+			//String storeItemId, String xpath, String prefixMappings,
+			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
+			NodeIterator sdtPrNodeIt, 
+			String sdtParent,
+			String contentChild,				
+//			NodeIterator rPrNodeIt, 
+//			String tag,
+			Map<String, Integer> sequenceCounters,
+			BookmarkCounter bookmarkCounter) {
+
+		log.debug("convertXHTMLtoAltChunk extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
+
+		SdtPr sdtPr = null;
+		Node sdtPrNode = sdtPrNodeIt.nextNode();
+		try {
+			sdtPr = (SdtPr)XmlUtils.unmarshal(sdtPrNode);
+		} catch (JAXBException e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		Xpath xpath = getXpathFromTag(sdtPr.getTag(), xpathsMap);
+				
+		if (xpath==null) {
+			return null;
+		}
+		
+		String r = evaluate(xpath, bindingTraverserState, pkg, customXmlDataStorageParts);
+		try {
+
+			RPr rPrSDT = (RPr)sdtPr.getByClass(RPr.class);
+			
+			if (r==null || r.trim().equals("")) {
+				// sdtPr.setShowingPlcHdr(true); altering here doesn't work; must do it in XSLT.				
+				return createPlaceholder(rPrSDT, sdtParent);
+			}
+
+			r = r.trim();
+//			log.debug(r);
+			//String unescaped = StringEscapeUtils.unescapeHtml(r);
+			//log.info("Unescaped: " + unescaped);
+			
+			// It comes to us unescaped, so the above is unnecessary.
+						
+			// the AFIP
+			AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(AltChunkType.Html); 
+			Relationship altChunkRel = pkg.getMainDocumentPart().addTargetPart(afiPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); 
+			// now that its attached to the package ..
+			afiPart.registerInContentTypeManager();			
+			afiPart.setBinaryData(r.getBytes()); 		
+			
+			// .. the bit in document body 
+			CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk(); 
+			ac.setId(altChunkRel.getId() ); 
+			
+			log.debug("context: " + sdtParent);
+			
+					
+			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(ac);
+			
+			if (log.isDebugEnabled() ) {
+				log.debug(XmlUtils.w3CDomNodeToString(tmpDoc));
+			}
+			
+			DocumentFragment docfrag = XmlUtils.neww3cDomDocument().createDocumentFragment();
+			XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+			return docfrag;			
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+	}
 	
 	/**
 	 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
@@ -486,8 +647,6 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		} catch (JAXBException e) {
 			log.error(e.getMessage(), e);
 		}
-		
-		String tag = sdtPr.getTag().getVal();
 		
 		
 		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
@@ -538,44 +697,14 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		    		bindingTraverserState.tblStack.peek(), 
 		    		bindingTraverserState.tcStack.peek(), xHTMLImporter);
 		} 
-		
-		QueryString qs = new QueryString();
-		HashMap<String, String> map = qs.parseQueryString(tag, true);
-		
-		String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
-		
-		log.info("Looking for xpath by id: " + xpathId);
-	
-		
-		//Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
-		Xpath xpath = xpathsMap.get(xpathId);
+
+		Xpath xpath = getXpathFromTag(sdtPr.getTag(), xpathsMap);
 		
 		if (xpath==null) {
-			log.warn("Couldn't find xpath with id: " + xpathId);
 			return null;
 		}
-		
-		String storeItemId = xpath.getDataBinding().getStoreItemID();
-		String xpathExp = xpath.getDataBinding().getXpath();
-		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
-		
-		String r=null;
-		if (bindingTraverserState.getPathMap()!=null ) {
-			// Try the "cache"
-			r = bindingTraverserState.getPathMap().get(normalisePath(xpathExp));
-		}
-		if (r==null) {			
-			log.debug("cache miss for " + xpathExp);
-			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
-		} else if (log.isDebugEnabled()
-				&& r.trim().length()==0) {	
-			// fallback removed for further speed improvement since we are comfortable there are no "cache query"
-			r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
-			// sanity check - results should never differ!
-			if (r.trim().length()>0) {	
-				log.warn("cache query " + xpathExp);
-			}
-		} 
+
+		String r = evaluate(xpath, bindingTraverserState, pkg, customXmlDataStorageParts);
 		
 		try {
 
@@ -733,7 +862,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 				log.error("with XHTML: " + r, e);
 				//throw new Docx4JException("Problem converting XHTML", e);
 				
-				String errMsg = e.getMessage() + " with XHTML from " + xpathExp + " : " + r; 
+				String errMsg = e.getMessage() + " with XHTML from " + sdtPr.getTag().getVal() + " : " + r; 
 				
 				return xhtmlError(sdtParent, docContainer, docfrag, errMsg);
 			}
