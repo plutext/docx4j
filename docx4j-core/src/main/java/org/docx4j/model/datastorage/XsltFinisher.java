@@ -1,37 +1,28 @@
 package org.docx4j.model.datastorage;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
-import org.docx4j.model.datastorage.BindingTraverserXSLT.BookmarkCounter;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
-import org.docx4j.utils.ResourceUtils;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.SdtPr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
