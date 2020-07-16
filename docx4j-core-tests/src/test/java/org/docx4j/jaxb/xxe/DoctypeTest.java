@@ -63,7 +63,8 @@ public class DoctypeTest {
 			// We expect failure here
 			//e.getLinkedException().printStackTrace();
 			assertTrue("expected SAXParseException", e.getLinkedException().getClass().getName().equals("org.xml.sax.SAXParseException"));
-			assertTrue("DOCTYPE should be disallowed", e.getLinkedException().getMessage().contains("DOCTYPE is disallowed"));
+			String message = e.getLinkedException().getMessage();
+			assertTrue("DOCTYPE should be disallowed, but " + message, message.contains("DOCTYPE is disallowed") || message.contains("DOCTYPE ist nicht zulässig") ); // mvn surefire seems to use German locale?!
 			return;
 		}
 		fail("Exception should have been thrown");
