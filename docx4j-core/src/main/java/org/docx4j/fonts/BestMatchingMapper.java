@@ -177,9 +177,17 @@ public class BestMatchingMapper extends Mapper {
 	 * Issues with  FontSubstitutions.xml, as noted and addressed by Jeromy Evans
 	 * http://www.docx4java.org/forums/docx-java-f6/bestmatchingmapper-bugs-handling-explicit-substitutions-t940.html
 	 *  
-	 * (1) FontSubstutitions.xml uses the lowercase whitespace and punctuation removed name of the font. If the document contains "Times New Roman" it is not matched to the equivalent replace element for "timesnewroman". Similarly "Arial" is not matched to "arial".
-	 * (2) When matched, the method searching PhysicalFonts for the substitution font also uses the short key, not the proper name used by PhysicalFonts. For example, if matching "arial" to a substitute it tries to find "freesans" in PhysicalFont's map instead of "Free Sans".
-	 * (3) On the system tested, the SubsFonts value is inclusive of the leading whitespace (eg. in the line above, the first token is "\n\t\tarial' instead of "arial" (seems odd that whitespace is included after unmarshalling). This means the first substitution always fails to match a font. As, by convention, the first token is usually the name of the font, this effectively means on systems where msttcorefonts are installed, the BestMatchingMapper fails to match the exact font. ie. it can't match "arial" to "arial" because the substitution is named "\n\t\tarial".
+	 * (1) FontSubstutitions.xml uses the lowercase whitespace and punctuation removed name of the font. 
+	 *     If the document contains "Times New Roman" it is not matched to the equivalent replace element for "timesnewroman". 
+	 *     Similarly "Arial" is not matched to "arial".
+	 * (2) When matched, the method searching PhysicalFonts for the substitution font also uses the short key, 
+	 *     not the proper name used by PhysicalFonts. For example, if matching "arial" to a substitute it tries 
+	 *     to find "freesans" in PhysicalFont's map instead of "Free Sans".
+	 * (3) On the system tested, the SubsFonts value is inclusive of the leading whitespace (eg in the line above, 
+	 *     the first token is "\n\t\tarial' instead of "arial" (seems odd that whitespace is included after unmarshalling). 
+	 *     This means the first substitution always fails to match a font. As, by convention, the first token is usually the 
+	 *     name of the font, this effectively means on systems where msttcorefonts are installed, the BestMatchingMapper fails 
+	 *     to match the exact font. ie. it can't match "arial" to "arial" because the substitution is named "\n\t\tarial".
 	 * 
 	 *  */	
 	private final static void setupExplicitSubstitutionsMap() throws Exception {

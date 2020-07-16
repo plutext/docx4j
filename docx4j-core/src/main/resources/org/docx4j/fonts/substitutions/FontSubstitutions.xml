@@ -2,7 +2,12 @@
 <FontSubstitutions xmlns:oor="http://openoffice.org/2001/registry">
 	
 	<!--  This XML was created by transforming OpenOffice's VCL.xcu with VCL2Friendly.xslt,
-	then adding missing fonts.
+	then adding missing fonts.  From docx4j 8.2.2, we no longer include those files.  Previously they were at:
+	
+	    https://github.com/plutext/docx4j/blob/docx4j-parent-8.2.1/docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/VCL.xcu
+	
+	    https://github.com/plutext/docx4j/blob/docx4j-parent-8.2.1/docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/VCL2Friendly.xslt
+	
 	This XML, when unmarshalled, is intuitive to work with.
 		
     For help with what font is what, see:
