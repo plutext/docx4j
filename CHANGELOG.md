@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+Version 8.2.1  
+==============
+
+Release date
+------------
+
+16 July 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.1
+-------------------------
+
+Traverse into 2010/wordprocessingShape txbxContent
+XXE avoid StreamSource in various places
+OpenDoPE XHTML support: where Import XHTML is not on classpath, insert an altChunk (ie rely on Word to process the XHTML)
+
+
+
 Version 8.2.0  
 ==============
 

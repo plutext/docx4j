@@ -79,9 +79,9 @@ Note for Java 11:  Maven Central requires Javadoc.
 
 But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
 				 
-So we have to build with Java 12:- 
+So we have to build with Java 12 or later (currently 14) :- 
 
-$ sudo archlinux-java set java-12-adoptopenjdk
+$ sudo archlinux-java set java-14-adoptopenjdk
 
 -------------
 
@@ -295,6 +295,19 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 
  ant release  -buildfile etc/build.xml
 
+Switch branch if necessary, eg:
+
+    git checkout master
+    
+and
+
+$ sudo archlinux-java set java-8-openjdk
+
+or 
+
+$ sudo archlinux-java set java-14-adoptopenjdk
+
+ 
 ----
 
 Put in /docx4j dir, for example
@@ -302,8 +315,8 @@ Put in /docx4j dir, for example
 	scp *1.6.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.6/
 
 
-Announce release in docx4j forum
 Update downloads.html
+Announce release in docx4j forum
 Update news  (includes link to release announcement)
 
 ----
