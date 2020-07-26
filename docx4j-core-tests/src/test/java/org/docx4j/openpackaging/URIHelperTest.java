@@ -67,14 +67,14 @@ public class URIHelperTest {
 		// Document and root totally different
 		URI uri4 = new URI("/");
 		try {
-			System.out.println( URIHelper.relativizeURI(uri1, uri4) );
+			URIHelper.relativizeURI(uri1, uri4);
 			//TODO: figure out why the assertion fails
             //fail("Must throw an exception ! Can't relativize with an empty URI");
 		} catch (Exception e) {
 			// Do nothing
 		}
 		try {
-			System.out.println( URIHelper.relativizeURI(uri4, uri1) );
+			URIHelper.relativizeURI(uri4, uri1);
             //TODO: figure out why the assertion fails
 			//fail("Must throw an exception ! Can't relativize with an empty URI");
 		} catch (Exception e) {
