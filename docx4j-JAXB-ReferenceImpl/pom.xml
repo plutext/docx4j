@@ -68,12 +68,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<dependency>
-		  <groupId>org.glassfish.jaxb</groupId>
-		  <artifactId>jaxb-runtime</artifactId>
-		  <version>2.3.2</version>
-		</dependency>		
-		
 <!--  
 
 	For Maven artifacts, see https://github.com/eclipse-ee4j/jaxb-ri#maven-artifacts

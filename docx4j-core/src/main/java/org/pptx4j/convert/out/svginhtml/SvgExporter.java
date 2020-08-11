@@ -11,6 +11,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.html.HtmlCssHelper;
@@ -71,7 +72,7 @@ public class SvgExporter {
 	static {
 		
 		try {
-			jcSVG = JAXBContext.newInstance("org.plutext.jaxb.svg11");
+			jcSVG = ContextFactory.createContext("org.plutext.jaxb.svg11", SvgExporter.class.getClassLoader(), null);
 			oFactory = new ObjectFactory();
 
 			Source xsltSource = new StreamSource(
