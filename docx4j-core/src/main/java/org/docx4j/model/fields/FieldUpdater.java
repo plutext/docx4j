@@ -4,6 +4,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
+import org.docx4j.model.fields.docvariable.DocVariableResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -41,6 +42,7 @@ public class FieldUpdater {
 	
 	WordprocessingMLPackage wordMLPackage;
 	DocPropertyResolver docPropertyResolver;
+	DocVariableResolver docVariableResolver;
 	
 	StringBuilder report = null;
 	
@@ -51,6 +53,7 @@ public class FieldUpdater {
 		this.wordMLPackage = wordMLPackage;
 //		docPropsCustomPart = wordMLPackage.getDocPropsCustomPart();
 		docPropertyResolver = new DocPropertyResolver(wordMLPackage);
+		docVariableResolver = new DocVariableResolver(wordMLPackage);
 	}
 
 	public void update(boolean processHeadersAndFooters) throws Docx4JException {
@@ -119,9 +122,13 @@ public class FieldUpdater {
 				
 				String key = fsm.getFldParameters().get(0);
 				
-				String val;
+				String val = null;
 				try {
-				  val = (String) docPropertyResolver.getValue(key); 
+					if (DOCPROPERTY.equals(fldSimpleName) ) {
+						val = docPropertyResolver.getValue(key);
+					} else if (DOCVARIABLE.equals(fldSimpleName) ) {
+						val = docVariableResolver.getValue(key);
+					}
 				} catch (FieldValueException e) {
 					report.append( simpleField.getInstr() + "\n");
 					report.append( key + " -> NOT FOUND! \n");	
@@ -160,7 +167,7 @@ public class FieldUpdater {
 					
 	//				System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 				}
-				
+								
 			} else {
 				
 				report.append("Ignoring " + simpleField.getInstr() + "\n");
@@ -241,7 +248,11 @@ public class FieldUpdater {
 							if (key.contains("\"") ) log.debug("(quote char will be disregarded)");
 						}
 						key = key.replaceAll("\"", "");
-						val = (String) docPropertyResolver.getValue(key);
+						if (DOCPROPERTY.equals(fldName) ) {
+							val = docPropertyResolver.getValue(key);
+						} else if (DOCVARIABLE.equals(fldName) ) {
+							val = docVariableResolver.getValue(key);
+						}
 					} else {
 						log.warn("FldParameters null or empty");
 					}

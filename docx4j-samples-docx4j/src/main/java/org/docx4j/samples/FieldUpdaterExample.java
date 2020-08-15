@@ -13,7 +13,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * This updates the docx.  If you don't want to do
  * that, apply it to a clone instead.
  */
-public class DocPropertyFieldUpdater {
+public class FieldUpdaterExample {
 
 	public static void main(String[] args) throws Docx4JException {
 
