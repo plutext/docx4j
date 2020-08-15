@@ -2,6 +2,9 @@ package org.docx4j.model.fields.docproperty;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.jaxb.Context;
@@ -85,6 +88,14 @@ public class DocPropertyResolver {
 				if (property.getLpwstr()!=null) {
 					// eg <vt:lpwstr>Martin</vt:lpwstr>
 					return property.getLpwstr();
+				} else if (property.getFiletime()!=null) {
+					// <vt:filetime>2020-01-01T10:00:00Z</vt:filetime>
+					XMLGregorianCalendar date = property.getFiletime();
+					// toString and toXMLFormat seem to be the same;
+					return date.toXMLFormat();
+					
+				} else if ( property.getDate()!=null ) {
+						return property.getDate().toXMLFormat();
 				} else {
 					throw new FieldFormattingException(" TODO: handle " + XmlUtils.marshaltoString(property, Context.jcDocPropsCustom));					
 				}

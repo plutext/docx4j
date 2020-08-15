@@ -24,7 +24,8 @@ import java.util.List;
 
 /**
  * Refreshes the values of certain fields in the
- * docx (currently DOCPROPERTY only).
+ * docx (currently DOCPROPERTY and DOCVARIABLE only).
+ * (For MERGEFIELD, see FieldsMailMerge) 
  * 
  * Do this whether they are simple or complex.
  * 
@@ -42,6 +43,9 @@ public class FieldUpdater {
 	DocPropertyResolver docPropertyResolver;
 	
 	StringBuilder report = null;
+	
+	private static final String DOCPROPERTY = "DOCPROPERTY";
+	private static final String DOCVARIABLE = "DOCVARIABLE";
 	
 	public FieldUpdater(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
@@ -103,8 +107,9 @@ public class FieldUpdater {
 			
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 //			System.out.println(simpleField.getInstr());
-			
-			if ("DOCPROPERTY".equals(FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr()))) {
+			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
+			if (DOCPROPERTY.equals(fldSimpleName)
+					|| DOCVARIABLE.equals(fldSimpleName) ) {
 				//only parse those fields that get processed
 				try {
 					fsm.build(simpleField.getInstr());
@@ -211,7 +216,10 @@ public class FieldUpdater {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ("DOCPROPERTY".equals(fr.getFldName())) {
+//			if ("DOCPROPERTY".equals(fr.getFldName())) {
+			String fldName = fr.getFldName();
+			if (DOCPROPERTY.equals(fldName)
+					|| DOCVARIABLE.equals(fldName) ) {
 				
 				String instr = extractInstr(fr.getInstructions());
 				try {
@@ -291,21 +299,4 @@ public class FieldUpdater {
 		}
 	}
 	
-	/**
-	 * @param args
-	 * @throws Docx4JException 
-	 */
-	public static void main(String[] args) throws Docx4JException {
-
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
-				new java.io.File(
-						System.getProperty("user.dir") + "/aq1.docx")); 
-		
-		FieldUpdater fu = new FieldUpdater(wordMLPackage);
-		fu.update(true);
-		
-		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-	}
-
 }
