@@ -287,7 +287,7 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 Revert and commit (most recent first) the 2 commits which change the version number in all the poms
 (Swap sub-modules back to <version>${revision}</version>)
-then manually update the version number in parent pom.
+then manually update the version number in parent pom (it needs to be the released version, since build.xml copies the pom.xml)
 
 Repeat above for -ImportXHTML 
 
@@ -307,12 +307,14 @@ or
 
 $ sudo archlinux-java set java-14-adoptopenjdk
 
- 
+
+Upodate pom.xml to -SNAPSHOT
+
 ----
 
 Put in /docx4j dir, for example
 
-	scp *1.6.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.1.6/
+	scp *2.1.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.2.1/
 
 
 Update downloads.html

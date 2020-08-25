@@ -229,7 +229,7 @@
 		<dependency>
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
-			<version>1.0.2</version>
+			<version>1.0.2</version> <!-- TODO <version>8.2.1</version> -->
 		</dependency>
 				
 		

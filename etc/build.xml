@@ -18,7 +18,7 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.2.1"/>
+	<property name="version" value="8.2.2"/>
 	<property name="importxhtml-version" value="8.0.0"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
@@ -526,7 +526,7 @@
 				<path refid="document4j-local-additional.classpath"/>
 			</path>
 		</copy>
-		<copy file="${m2Repository}/org/docx4j/docx4j-documents4j-local/8.2.0/docx4j-documents4j-local-${version}.jar" todir="${releaseDocuments4jLocal.dir}/libs"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-documents4j-local/${version}/docx4j-documents4j-local-${version}.jar" todir="${releaseDocuments4jLocal.dir}/libs"/>
 
 		<!-- logging -->
 		<mkdir dir="${releaseDocuments4jLocal.dir}/logging"/>
@@ -671,7 +671,7 @@
 				<path refid="document4j-remote-additional.classpath"/>
 			</path>
 		</copy>
-		<copy file="${m2Repository}/org/docx4j/docx4j-documents4j-remote/8.2.0/docx4j-documents4j-remote-${version}.jar" todir="${releaseDocuments4jRemote.dir}/libs"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-documents4j-remote/${version}/docx4j-documents4j-remote-${version}.jar" todir="${releaseDocuments4jRemote.dir}/libs"/>
 
 		<!-- logging -->
 		<mkdir dir="${releaseDocuments4jRemote.dir}/logging"/>
@@ -784,7 +784,7 @@
 		<exec executable="${ikvmc}">
 			<arg value="-out:${dist}/docx4j.dll" />
 			<arg value="-keyfile:Plutext.snk" />
-			<arg value="-version:${version}.84" />
+			<arg value="-version:${version}.01" />
 			<!--  must be of the form a.b.c.d -->
 			<arg value="-reference:dll/slf4j-api.dll" />
 			<!-- 

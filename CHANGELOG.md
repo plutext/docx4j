@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+Version 8.2.2  minor release
+==============
+
+Release date
+------------
+
+25 August 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.2
+-------------------------
+
+FieldUpdater support for docvars (docprops are already supported)
+
+Update OSGI stuff for current release. Confirmed working in karaf 4.2.6 with docx4j-JAXB-Internal on Java 8.
+
+
+
 Version 8.2.1  
 ==============
 
