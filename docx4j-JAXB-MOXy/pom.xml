@@ -34,6 +34,22 @@
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>${project.version}</Bundle-Version>
+                        <Import-Package>
+ <!-- org.eclipse.persistence.internal.jaxb;version="2.7.4",
+ org.eclipse.persistence.internal.jaxb.many;version="2.7.4", -->
+ org.eclipse.persistence.jaxb;version="2.7.4"
+<!--  
+ org.eclipse.persistence.jaxb.attachment;version="2.7.4",
+ org.eclipse.persistence.jaxb.compiler;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.oxm;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.reflection;version="2.7.4",
+ org.eclipse.persistence.jaxb.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.rs;version="2.7.4",
+ org.eclipse.persistence.jaxb.xmlmodel;version="2.7.4"           -->              
+                        </Import-Package>
                         <Export-Package>
                             org.docx4j.jaxb.moxy
                         </Export-Package>
