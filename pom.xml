@@ -10,7 +10,7 @@
 
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
-	<version>8.2.2</version>
+	<version>8.2.3-SNAPSHOT</version>
 	
 	<properties>
 		<revision>8.2.2-SNAPSHOT</revision>
@@ -84,7 +84,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-parent-8.2.2</tag>
+      <tag>HEAD</tag>
   </scm>
 	<inceptionYear>2007</inceptionYear>
 
