@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-samples-conversion-via-microsoft-graph</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-samples-conversion-via-microsoft-graph</name>
+	
+	<description>docx4j-samples-conversion-via-microsoft-graph</description>
+
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		
+		<plugins>
+			<!--  don't deploy this jar to Maven Central -->			
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>3.0.0-M1</version>
+			  <configuration>
+			    <skip>true</skip>
+			  </configuration>
+			</plugin>					
+		</plugins>
+		
+	</build>
+
+
+	<dependencies>
+
+		<!--  choose ONE only of the 4 following implementations -->
+		<dependency>
+			<groupId>org.plutext.graph-convert</groupId>
+			<artifactId>using-graph-sdk</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+
+<!-- 
+		<dependency>
+			<groupId>org.plutext.graph-convert</groupId>
+			<artifactId>using-graph-sdk-core-only</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.plutext.graph-convert</groupId>
+			<artifactId>without-graph-sdk-using-msal4j</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.plutext.graph-convert</groupId>
+			<artifactId>without-graph-sdk-using-scribe</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+ -->
+ <!-- 
+		<dependency>
+			<groupId>com.github.scribejava</groupId>
+			<artifactId>scribejava-httpclient-apache</artifactId>
+			<version>7.0.0</version>
+		</dependency>
+ -->		
+		<!--  if you choose without-graph-sdk-using-scribe, you can optionally also specify your preferred httpclient -->
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-conversion-via-microsoft-graph</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+  
+		<!--  choose a docx4j-JAXB implementation, one ONLY of the 3 following :-->
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+<!-- 
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-MOXy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	 -->
+
+		<!--  choose your preferred logging implementation, for example: -->
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<!--  1.3.0-alpha4 does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
+		
+		<!-- 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.11.2</version>
+		</dependency>
+		 -->
+		<!--  log4j-slf4j18-impl does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
+
+		<!--  logging config files for log4j2 and logback can be found in:-->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-samples-resources</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+	  
+	</dependencies>
+
+</project>

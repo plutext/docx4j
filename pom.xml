@@ -36,8 +36,10 @@
         <module>docx4j-docx-anon</module>
         
         <module>docx4j-export-fo</module>        
+        <module>docx4j-conversion-via-microsoft-graph</module>
         <module>docx4j-documents4j-remote</module>                
         <module>docx4j-documents4j-local</module>        
+        
         <module>docx4j-JAXB-MOXy</module>
         <module>docx4j-JAXB-ReferenceImpl</module>
         
@@ -48,6 +50,8 @@
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
+        
+        <module>docx4j-samples-conversion-via-microsoft-graph</module>
 
         <module>docx4j-samples-documents4j-remote</module>        
         <module>docx4j-samples-documents4j-local</module>        
