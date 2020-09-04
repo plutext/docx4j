@@ -52,6 +52,9 @@ from xercesImpl 2.11.0.  The ASF licenses this file under the Apache License, Ve
 org.docx4j.org.apache.xml.security repackages code in org.apache.xml.security,
 which the ASF licenses under the Apache License, Version 2.0 
 
+org.docx4j.services.client.MyRetryHandler is a modified version of Apache's http client DefaultHttpRequestRetryHandler.
+The ASF licenses that file under the Apache License, Version 2.0 
+
 com.topologi.diffx, used in docx4j-diffx, 
 is copyright Topologi 2004.
 It is licensed under the Artistic License.  Under
@@ -68,3 +71,4 @@ http://www.ecma-international.org/publications/standards/Ecma-376.htm says
 Open Specifications documents, which says you can "distribute in your implementation, 
 with or without modification, any schemas .. that are included in the documentation".
 See also the Microsoft Open Specifications Promise. 
+
