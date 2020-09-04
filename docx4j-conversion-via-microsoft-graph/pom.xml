@@ -18,19 +18,6 @@
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
-		
-		<plugins>
-			<!--  don't deploy this jar to Maven Central -->			
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-deploy-plugin</artifactId>
-			  <version>3.0.0-M1</version>
-			  <configuration>
-			    <skip>true</skip>
-			  </configuration>
-			</plugin>					
-		</plugins>
-		
 	</build>
 	
 	
