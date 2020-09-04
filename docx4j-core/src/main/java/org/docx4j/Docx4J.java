@@ -218,14 +218,17 @@ public class Docx4J {
 	 */	
 	public static OpcPackage load(final File inFile, Filetype type)  throws Docx4JException {
 		
-		return OpcPackage.load(inFile);
+		return OpcPackage.load(inFile, type);
 	}
 	
 	/**
 	 *  Load a Docx Document from a File
 	 */	
 	public static WordprocessingMLPackage load(File inFile) throws Docx4JException {
-		
+		// it'd be more flexible if these load methods returned an OpcPackage
+		// but it is too late to change this now, since it would be client code
+		// (they'd need to add a cast).
+		// And besides, for docx files anyway, this is easier.
 		return WordprocessingMLPackage.load(inFile);
 	}
 
@@ -256,53 +259,53 @@ public class Docx4J {
 	}
 	
 	/**
-	 *  Save a Docx Document to a File. 
+	 *  Save a Ddocx/pptx/xlsx to a File. 
 	 *  
 	 *  @since 3.3.0
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile) throws Docx4JException {
 		
-		wmlPackage.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
+		pkg.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
 	}
 	
 	/**
-	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  Save a docx/pptx/xlsx to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile, int flags) throws Docx4JException {
 		
-		wmlPackage.save(outFile, flags);
+		pkg.save(outFile, flags);
 	}
 
 	/**
-	 *  Save a Docx Document to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
+	 *  Save a docx/pptx/xlsx to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
 	 *
 	 *  @since 3.3.0
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream) throws Docx4JException {
 		
-		wmlPackage.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
+		pkg.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
 	}
 	
 	/**
-	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  Save a docx/pptx/xlsx to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream, int flags) throws Docx4JException {
 		
-		wmlPackage.save(outStream, flags);
+		pkg.save(outStream, flags);
 		
 	}
 
 	/**
-	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  Save a docx/pptx/xlsx to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
 	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
 	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
 	 *  
 	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
 
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags, String password) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile, int flags, String password) throws Docx4JException {
 		
-		wmlPackage.save(outFile, flags, password);
+		pkg.save(outFile, flags, password);
 	}
 	
 	/**
@@ -312,9 +315,9 @@ public class Docx4J {
 	 *  
 	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags, String password) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream, int flags, String password) throws Docx4JException {
 		
-		wmlPackage.save(outStream, flags, password);
+		pkg.save(outStream, flags, password);
 		
 	}
 	
