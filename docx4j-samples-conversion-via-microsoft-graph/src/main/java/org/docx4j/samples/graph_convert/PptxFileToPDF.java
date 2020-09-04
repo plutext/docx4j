@@ -36,7 +36,7 @@ public class PptxFileToPDF {
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		// Choose your converter implementation here, corresponding to the module you've uncommented in your pom
-		PptxToPdfConverter converter = new PptxToPdfConverterLarge(new PRIVATE_AuthConfigImpl());
+		PptxToPdfConverter converter = new PptxToPdfConverterLarge(new AuthConfigImpl());
 
 		PptxToPdfExporter exporter = new PptxToPdfExporter(converter);
 		exporter.export(

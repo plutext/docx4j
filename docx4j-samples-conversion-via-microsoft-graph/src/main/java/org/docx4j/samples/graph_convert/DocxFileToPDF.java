@@ -33,7 +33,7 @@ public class DocxFileToPDF {
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		// Choose your converter implementation here, corresponding to the module you've uncommented in your pom
-		DocxToPdfConverter converter = new DocxToPdfConverterLarge(new PRIVATE_AuthConfigImpl());
+		DocxToPdfConverter converter = new DocxToPdfConverterLarge(new AuthConfigImpl());
 
 		DocxToPdfExporter exporter = new DocxToPdfExporter(converter);
 		exporter.export(

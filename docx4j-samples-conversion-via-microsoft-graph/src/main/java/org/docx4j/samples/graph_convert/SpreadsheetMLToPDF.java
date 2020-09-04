@@ -45,7 +45,7 @@ public class SpreadsheetMLToPDF {
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		// Choose your converter implementation here, corresponding to the module you've uncommented in your pom
-		XlsxToPdfConverter converter = new XlsxToPdfConverterLarge(new PRIVATE_AuthConfigImpl());
+		XlsxToPdfConverter converter = new XlsxToPdfConverterLarge(new AuthConfigImpl());
 
 		XlsxToPdfExporter exporter = new XlsxToPdfExporter(converter);
 		exporter.export(
