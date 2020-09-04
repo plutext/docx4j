@@ -10,7 +10,7 @@
 
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
-	<version>8.2.4-SNAPSHOT</version>
+	<version>${revision}</version>
 	
 	<properties>
 		<revision>8.2.3-SNAPSHOT</revision>
