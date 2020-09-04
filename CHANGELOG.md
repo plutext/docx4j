@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 8.2.3  
+==============
+
+Release date
+------------
+
+4 September 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.3
+-------------------------
+
+Support for docx/pptx/slsx conversion to PDF via Microsoft's cloud (Microsoft Graph)
+ 
+
+
 Version 8.2.2  minor release
 ==============
 
