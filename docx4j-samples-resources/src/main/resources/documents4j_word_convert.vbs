@@ -40,8 +40,8 @@ Function ConvertFile( inputFile, outputFile, formatEnumeration )
                                                       False)
     ' Update the first of any TOC
     ' This works for docx input, but not binary .doc or RTF
-    wordDocument.TablesOfContents(1).UpdatePageNumbers
-
+    wordDocument.TablesOfContents(1).Update
+    
     If Err <> 0 Then
         WScript.Quit -2
     End If
