@@ -486,21 +486,28 @@ public class PropertyResolver {
 			// At the pPr level, what rPr do we have?
 			// .. ascend the paragraph style tree
 			if (pPr.getPStyle()==null) {
-//					log.warn("No pstyle:");
-//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+				if (log.isDebugEnabled()) {
+					log.debug("No pstyle:");
+					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+				}
 			} else {
 				log.debug("pstyle:" + pPr.getPStyle().getVal());
 				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
 				// .. and apply those
 				
+				log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
+				
 				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
 			}
 			// Check Paragraph rPr (our special hack of using ParaRPr to format a fo:block)
 			// 2013 10 02: doubts whether this is right?
-			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
+			if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {
+				log.debug("No express rPr, using p level");
 				return getEffectiveRPrUsingPStyleRPr(expressRPr, 
 						StyleUtil.apply(pPr.getRPr(), Context.getWmlObjectFactory().createRPr()));
 			} 
+			log.debug("pPr not null, but falling through");
+			
 		}
 
 		return getEffectiveRPrUsingPStyleRPr( expressRPr, null);
@@ -537,10 +544,14 @@ public class PropertyResolver {
 		// function is not used - since the rPr is made into a style as well.
 		
 
-// Not necessary, since docdefaults are part of the stack		
-//		//	First, the document defaults are applied
-//		
-//			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		//	First, the document defaults are applied		
+		RPr effectiveRPr = null;
+		if (documentDefaultRPr==null) {
+			log.warn("documentDefaultRPr null");
+			effectiveRPr = Context.getWmlObjectFactory().createRPr();
+		} else {		
+			effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+		}
 //			
 //			// Apply DefaultParagraphFont.  We only do it explicitly
 //			// here as per conditions, because if there is a run style,
@@ -549,11 +560,8 @@ public class PropertyResolver {
 //				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
 //			}
 		
-		RPr effectiveRPr = null;		
-		if (rPrFromPStyle==null) {
-			effectiveRPr = Context.getWmlObjectFactory().createRPr();
-		} else {
-			effectiveRPr=(RPr)XmlUtils.deepCopy(rPrFromPStyle);
+		if (rPrFromPStyle!=null) {
+			effectiveRPr=StyleUtil.apply(rPrFromPStyle, effectiveRPr);
 		}		
 		
 		
@@ -585,7 +593,11 @@ public class PropertyResolver {
 		String runStyleId;
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();
-			resolvedRPr = getEffectiveRPr(runStyleId);
+			
+			// we want to ignore doc default contrib, if rFonts or sz is set in the pStyle
+			boolean rFontsMissing = effectiveRPr.getRFonts()==null;
+			boolean szMissing = effectiveRPr.getSz()==null;
+			resolvedRPr = getEffectiveRPr(runStyleId, rFontsMissing, szMissing); 
 			StyleUtil.apply(resolvedRPr, effectiveRPr);
 //	    	System.out.println("resolved=\n" + XmlUtils.marshaltoString(resolvedRPr, true, true));
 			
@@ -602,7 +614,8 @@ public class PropertyResolver {
 		return effectiveRPr;
 		
 	}
-	
+
+
 	/**
 	 * apply the rPr in the stack of styles, including documentDefaultRPr
 	 * 
@@ -610,6 +623,18 @@ public class PropertyResolver {
 	 * @return
 	 */
 	public RPr getEffectiveRPr(String styleId) {
+
+		return getEffectiveRPr(styleId, true, true); 
+	}
+	/**
+	 * apply the rPr in the stack of styles, optionally including documentDefaultRPr
+	 * 
+	 * @param styleId
+	 * @return
+	 * @since 8.2.4
+	 */
+	public RPr getEffectiveRPr(String styleId, 
+			boolean applyDocDefaultsRFonts, boolean applyDocDefaultsSz) {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
 		
@@ -644,8 +669,11 @@ public class PropertyResolver {
 		Stack<RPr> rPrStack = new Stack<RPr>();
 		// Haven't done this one yet				
 		fillRPrStack(styleId, rPrStack);
-		// Finally, on top
-		rPrStack.push(documentDefaultRPr); // is this necessary? didn't we make these into a style?
+		
+		if (applyDocDefaultsRFonts /* TODO handle sz separately */ ) {
+			// Finally, on top
+			rPrStack.push(documentDefaultRPr); // is this necessary? didn't we make these into a style?
+		}
 						
 		resolvedRPr = factory.createRPr();			
 		// Now, apply the properties starting at the top of the stack
