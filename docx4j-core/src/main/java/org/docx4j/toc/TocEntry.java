@@ -476,9 +476,7 @@ public class TocEntry {
         		} else {
             		// Resolve the formatting
 					newR.setRPr(
-							getEffectiveRPr(r.getRPr()));
-//					newR.setRPr(
-//							r.getRPr());
+							propertyResolver.getEffectiveRPr(r.getRPr(), sourceP.getPPr()));
 					
 			    	// Step 3: strip/filter unwanted run formatting
 					nullify(newR.getRPr());
@@ -531,20 +529,6 @@ public class TocEntry {
         }
         
     	
-    }
-    
-    private RPr getEffectiveRPr(RPr expressRPr) {
-    	
-		RPr resolvedRPr = null;
-		if (expressRPr != null && expressRPr.getRStyle() != null ) {
-			String runStyleId = expressRPr.getRStyle().getVal();
-			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId);
-			
-			// remove the style, so it is not set by apply below
-			expressRPr.setRStyle(null);
-		}
-		
-		return StyleUtil.apply(expressRPr, resolvedRPr);
     }
     
     private void nullify(RPr destination) {
