@@ -840,7 +840,7 @@ public class PropertyResolver {
     	
 	}
 	
-	private boolean hasDirectRPrFormatting(RPr rPrToApply) {
+	public boolean hasDirectRPrFormatting(RPr rPrToApply) {
 		
 		if (rPrToApply==null) {
 			return false;
