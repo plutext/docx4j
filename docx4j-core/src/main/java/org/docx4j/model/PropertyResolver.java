@@ -664,16 +664,22 @@ public class PropertyResolver {
 //		}
 
 		
-		//	Next, run properties are applied to each run with a specific character style 
-		//	applied. 		
+		//	Next, run properties are applied to each run with a specific character style applied. 		
 		Stack<RPr> rPrStack = new Stack<RPr>();
-		// Haven't done this one yet				
 		fillRPrStack(styleId, rPrStack);
 		
-		if (applyDocDefaultsRFonts /* TODO handle sz separately */ ) {
-			// Finally, on top
-			rPrStack.push(documentDefaultRPr); // is this necessary? didn't we make these into a style?
+		// Finally, on top
+		// The intent is to be able to ignore doc default contrib, 
+		// where rFonts or sz is set in the pStyle
+		RPr defaultRPr = new RPr();
+		if (applyDocDefaultsRFonts) {
+			defaultRPr.setRFonts(this.documentDefaultRPr.getRFonts());
 		}
+		if (applyDocDefaultsSz) {
+			defaultRPr.setSz(this.documentDefaultRPr.getSz());
+			defaultRPr.setSzCs(this.documentDefaultRPr.getSzCs());
+		}
+		rPrStack.push(defaultRPr); 
 						
 		resolvedRPr = factory.createRPr();			
 		// Now, apply the properties starting at the top of the stack
