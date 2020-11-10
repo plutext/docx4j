@@ -2,27 +2,28 @@
 elementFormDefault="qualified"
 xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" 
-xmlns:xr6="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6"
-xmlns:xr10="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10">
- <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-schemaLocation="xlbasictypes.xsd"/>
- <xsd:import namespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-schemaLocation="xlstyles.xsd"/>
- <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision6"
-schemaLocation="xlrevexignore6.xsd"/>
- <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"
-schemaLocation="xlrevexignore10.xsd"/>
- <xsd:simpleType name="ST_Xrevid">
- <xsd:restriction base="xsd:unsignedLong"/>
- </xsd:simpleType>
- <xsd:complexType name="CT_RevisionPtr">
- <xsd:attribute name="revIDLastSave" type="ST_Xrevid" use="required"/>
- <xsd:attribute name="documentId" type="x:ST_Xstring" use="required"/>
- <xsd:attribute ref="xr6:coauthVersionLast" use="optional" default="0"/>
- <xsd:attribute ref="xr6:coauthVersionMax" use="optional" default="0"/>
- <xsd:attribute ref="xr10:uidLastSave" use="optional"/>
- </xsd:complexType>
- <xsd:attribute name="uid" type="x:ST_Guid"/>
- <xsd:element name="revisionPtr" type="CT_RevisionPtr"/>
-</xsd:schema>
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+
+ <xsd:attribute name="uid" type="s:ST_Guid"/>
+ 
+ </xsd:schema>
