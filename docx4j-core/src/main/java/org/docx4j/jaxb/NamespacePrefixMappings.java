@@ -480,8 +480,20 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "p166";
 		}    	
 
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2009/9/main")) {
+			return "x14";
+		}   
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac")) {
+			return "x14ac";
+		}   
+		
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main")) {
 			return "x15";
+		}   
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac")) {
+			return "x15ac";
 		}   
 		
 		// XLSX (2020 additions)
@@ -490,6 +502,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2015/revision2"))
 			return "xr2";	
+
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision3"))
+			return "xr3";	
 		
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision6"))
 			return "xr6";	
@@ -701,6 +716,9 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		
 		if (prefix.equals("xr2"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2015/revision2";	
+
+		if (prefix.equals("xr3"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision3";	
 		
 		if (prefix.equals("xr6"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2016/revision6";	
@@ -809,9 +827,18 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 			return "http://schemas.microsoft.com/office/powerpoint/2018/4/main";
 		if (prefix.equals("p166"))
 			return "http://schemas.microsoft.com/office/powerpoint/2016/6/main";
+
+		if (prefix.equals("x14"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main";
+		
+		if (prefix.equals("x14ac"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac";
 		
 		if (prefix.equals("x15"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2010/11/main";
+
+		if (prefix.equals("x15ac"))
+			return "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac";
 		
 		
 		// Registered prefixes
