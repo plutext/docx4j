@@ -2,6 +2,30 @@ CHANGELOG
 =========
 
 
+
+Version 8.2.4  minor release
+==============
+
+Release date
+------------
+
+13 November 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.2.4
+-------------------------
+
+docx4j toc generation: p-level rPr rFont or sz should take priority over doc default setting
+
+xlsx4j: Worksheet retain  xr:uid, so MOXy writes the xr namespace, 
+works around https://stackoverflow.com/questions/64778237/moxy-missing-namespace-for-content-in-xmlanyelementlax-true-object
+
+
+
 Version 8.2.3  
 ==============
 

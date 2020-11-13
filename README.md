@@ -13,9 +13,10 @@ It uses JAXB to create the Java representation.
 - Open existing docx/pptx/xlsx 
 - Create new docx/pptx/xlsx 
 - Programmatically manipulate docx/pptx/xlsx (anything the file format allows)
+- Document generation via variable, content control data binding, or MERGEFIELD
 - CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats & conditionals, and importing XHTML) 
 - Export as HTML
-- Export as PDF (using Plutext's PDF Converter, or use docx4j-export-FO project)
+- Export as PDF, choice of 3 strategies, see https://www.docx4java.org/blog/2020/09/office-pptxxlsxdocx-to-pdf-to-in-docx4j-8-2-3/ 
 - Produce/consume Word 2007's xmlPackage (pkg) format
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
