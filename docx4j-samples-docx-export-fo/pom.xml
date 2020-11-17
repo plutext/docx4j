@@ -15,7 +15,7 @@
 	<description>
 		docx4j-samples-docx-export-fo
 	</description>
-    
+
 	<properties>
 	 <!--  Avoid potential error: 
 	 
@@ -23,7 +23,7 @@
 			[ERROR] Exit code: 1 - javadoc: error - The code being documented uses packages in the unnamed module, 
 			but the packages defined in http://www.docx4java.org/docx4j-JAXB-ReferenceImpl/apidocs/ are in named modules. -->
 	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
-	</properties>    
+	</properties>
 
 	<build>
 		<plugins>
@@ -83,7 +83,7 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.3.0-alpha4</version>
 		</dependency>
-		<!--  1.3.0-alpha4 does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
+		<!--  1.3.0-alpha5 results in java.lang.ClassNotFoundException: org.slf4j.spi.LoggingEventBuilder  -->
 		
 		<!-- 
 		<dependency>
