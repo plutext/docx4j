@@ -15,16 +15,6 @@
 	<description>
 		export docx or xlsx to PDF using documents4j client to communicate with a remote documents4j server (which drives Microsoft Word).
 	</description>
-
-	<properties>
-	 <!--  Avoid potential error: 
-	 
-			 MavenReportException: Error while generating Javadoc: 
-			[ERROR] Exit code: 1 - javadoc: error - The code being documented uses packages in the unnamed module, 
-			but the packages defined in http://www.docx4java.org/docx4j-JAXB-ReferenceImpl/apidocs/ are in named modules. -->
-	    <maven.javadoc.skip>true</maven.javadoc.skip> <!--  see https://stackoverflow.com/questions/7412016/how-can-i-disable-the-maven-javadoc-plugin-from-the-command-line -->
-	</properties>
-	  
 	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
