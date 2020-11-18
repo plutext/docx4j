@@ -2,6 +2,120 @@ CHANGELOG
 =========
 
 
+Version 11.2.5  
+==============
+
+Release date
+------------
+
+18 Nov 2020
+
+Changes in Version 11.2.5
+-------------------------
+
+Cumulative update for parity 8.2.4
+
+Note: this release is labelled 11.2.5, since 11.x
+has since June 2020 contained a feature OpenDoPE image injection: tag width=n|auto 
+which isn't in 8.2.4 (but has now been ported and will be in an 8.2.5 or 8.2.6)
+
+Limitations:
+- The docx4j-documents4j-* sub-projects don't have a module-info.java until https://github.com/documents4j/documents4j/issues/108 is addressed
+- The docx4j-conversion-via-microsoft-graph sub-project doesn't have a module-info.java
+
+
+Version 8.2.4  minor release
+==============
+
+Release date
+------------
+
+13 November 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.2.4
+-------------------------
+
+docx4j toc generation: p-level rPr rFont or sz should take priority over doc default setting
+
+xlsx4j: Worksheet retain  xr:uid, so MOXy writes the xr namespace, 
+works around https://stackoverflow.com/questions/64778237/moxy-missing-namespace-for-content-in-xmlanyelementlax-true-object
+
+
+
+Version 8.2.3  
+==============
+
+Release date
+------------
+
+4 September 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.3
+-------------------------
+
+Support for docx/pptx/slsx conversion to PDF via Microsoft's cloud (Microsoft Graph)
+ 
+
+
+Version 8.2.2  minor release
+==============
+
+Release date
+------------
+
+25 August 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.2
+-------------------------
+
+FieldUpdater support for docvars (docprops are already supported)
+
+Update OSGI stuff for current release. Confirmed working in karaf 4.2.6 with docx4j-JAXB-Internal on Java 8.
+
+
+
+Version 8.2.1  
+==============
+
+Release date
+------------
+
+16 July 2020
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.2.1
+-------------------------
+
+Traverse into 2010/wordprocessingShape txbxContent
+XXE avoid StreamSource in various places
+OpenDoPE XHTML support: where Import XHTML is not on classpath, insert an altChunk (ie rely on Word to process the XHTML)
+
+
+
 Version 11.1.8  
 ==============
 
@@ -14,6 +128,31 @@ Changes in Version 11.1.8
 -------------------------
 
 OpenDoPE image injection: tag width=n|auto to specify max width (eg 10500) or let BPAI work out the scaling
+
+
+Version 8.2.0  
+==============
+
+Release date
+------------
+
+2 June 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Significant Changes in Version 8.2.0
+-------------------------
+
+New sub-projects to facilitate the use of documents4j
+to drive Microsoft Word (running locally or remotely),
+for PDF export, TOC update, and import of RTF, binary .doc
+and HTML.
+
+For examples, see docx4j-samples-documents4j-local 
+(or -remote).
 
 
 

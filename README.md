@@ -13,15 +13,16 @@ It uses JAXB to create the Java representation.
 - Open existing docx/pptx/xlsx 
 - Create new docx/pptx/xlsx 
 - Programmatically manipulate docx/pptx/xlsx (anything the file format allows)
+- Document generation via variable, content control data binding, or MERGEFIELD
 - CustomXML binding (with support for pictures, rich text, checkboxes, and OpenDoPE extensions for repeats & conditionals, and importing XHTML) 
 - Export as HTML
-- Export as PDF (using Plutext's PDF Converter, or use docx4j-export-FO project)
+- Export as PDF, choice of 3 strategies, see https://www.docx4java.org/blog/2020/09/office-pptxxlsxdocx-to-pdf-to-in-docx4j-8-2-3/ 
 - Produce/consume Word 2007's xmlPackage (pkg) format
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
-docx4j-8.0.0
-------------
+docx4j-8
+--------
 
 This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
 dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
@@ -38,10 +39,18 @@ To use docx4j v8, add the dep corresponding to the JAXB implementation you wish 
 You should use one and only one of docx4j-JAXB-* 
 
 
-docx4j for Java 9 and later
----------------------------
+docx4j for Java 11
+------------------
 
-is in preparation, will be based on this branch, and will require Java 11 (or possibly only 9); we're currently waiting on https://github.com/eclipse-ee4j/jaxb-ri to release a Java 11 friendly JAXB 2.4.0 to Maven Central.
+See https://github.com/plutext/docx4j/tree/docx4j-parent-11.1.8
+
+docx4j 11.1.x - for use with Java 11 or later - is available in Maven Central.
+
+Being a JPMS modularised release, the jars contain module-info.class entries.
+
+11.1.0 is compiled with Java 12, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.1.0.
+
+Aside from the use of named modules / module path, the releases pretty much track v8. However, docx4j-export-fo is temporarily omitted since FOP 2.3's avalon dependencies are not JPMS-friendly. 
 
 
 How do I build docx4j?
