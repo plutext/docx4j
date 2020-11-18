@@ -1,0 +1,31 @@
+module org.docx4j.documents4j.local {
+
+	requires org.slf4j;
+	requires transitive org.docx4j.core;
+	//requires org.docx4j.openxml_objects;
+
+	requires documents4j.local;
+	requires documents4j.api;
+	requires documents4j.transformer;
+	requires documents4j.util.conversion;
+	// |  |  \- javax.activation:activation:jar:1.1.1
+	
+	// |  +- com.google.guava:guava:jar:28.1-jre
+	requires com.google.common;
+	
+	/* are these required?
+	 |  |  +- com.google.guava:failureaccess:jar:1.0.1
+	 |  |  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava
+	 |  |  +- com.google.code.findbugs:jsr305:jar:3.0.2
+	 |  |  +- com.google.j2objc:j2objc-annotations:jar:1.3
+	 |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.18
+	 |  \- org.zeroturnaround:zt-exec:jar:1.11
+*/
+	
+	requires documents4j.transformer.msoffice.word;
+	requires documents4j.transformer.msoffice.base;
+	requires documents4j.transformer.api;
+	requires documents4j.util.all;
+	requires documents4j.util.transformer.process;
+	
+	exports org.docx4j.documents4j.local;
