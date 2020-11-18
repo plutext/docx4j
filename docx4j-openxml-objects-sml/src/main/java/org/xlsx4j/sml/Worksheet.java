@@ -25,10 +25,13 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 // import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -84,6 +87,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="tableParts" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_TableParts" minOccurs="0"/>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute ref="{http://schemas.microsoft.com/office/spreadsheetml/2014/revision}uid"/> *       
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -177,6 +181,10 @@ public class Worksheet implements Child
     protected CTWebPublishItems webPublishItems;
     protected CTTableParts tableParts;
     protected CTExtensionList extLst;
+    @XmlAttribute(name = "uid", namespace = "http://schemas.microsoft.com/office/spreadsheetml/2014/revision")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String uid;
+    
     @XmlTransient
     private Object parent;
 
@@ -1124,6 +1132,31 @@ public class Worksheet implements Child
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
+    }
+
+
+    /**
+     * Gets the value of the uid property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getUid() {
+        return uid;
+    }
+
+    /**
+     * Sets the value of the uid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setUid(String value) {
+        this.uid = value;
     }
     
 //     /**
