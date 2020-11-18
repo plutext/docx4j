@@ -42,6 +42,11 @@ public class NamespacePrefixMapperUtils {
 		if (testContext==null) {
 			throw new JAXBException("Couldn't create context for org.docx4j.relationships.  Everything is broken!");
 		}
+		
+		if (log.isDebugEnabled()) {
+			log.debug("testContext: " + testContext.getClass().getName());
+		}
+		
 		if (testContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 			log.info("Using MOXy NamespacePrefixMapper");
 			try {
@@ -227,8 +232,8 @@ public class NamespacePrefixMapperUtils {
     	
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {
+
 			String prefix = (String) st.nextToken();
-			
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
@@ -253,8 +258,8 @@ public class NamespacePrefixMapperUtils {
 
 		StringTokenizer st = new StringTokenizer(mcIgnorable, " ");
 		while (st.hasMoreTokens()) {
-			String prefix = (String) st.nextToken();
-			
+
+			String prefix = (String) st.nextToken();						
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {

@@ -4,6 +4,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.docproperty.DocPropertyResolver;
+import org.docx4j.model.fields.docvariable.DocVariableResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -24,7 +25,8 @@ import java.util.List;
 
 /**
  * Refreshes the values of certain fields in the
- * docx (currently DOCPROPERTY only).
+ * docx (currently DOCPROPERTY and DOCVARIABLE only).
+ * (For MERGEFIELD, see FieldsMailMerge) 
  * 
  * Do this whether they are simple or complex.
  * 
@@ -40,13 +42,18 @@ public class FieldUpdater {
 	
 	WordprocessingMLPackage wordMLPackage;
 	DocPropertyResolver docPropertyResolver;
+	DocVariableResolver docVariableResolver;
 	
 	StringBuilder report = null;
+	
+	private static final String DOCPROPERTY = "DOCPROPERTY";
+	private static final String DOCVARIABLE = "DOCVARIABLE";
 	
 	public FieldUpdater(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
 //		docPropsCustomPart = wordMLPackage.getDocPropsCustomPart();
 		docPropertyResolver = new DocPropertyResolver(wordMLPackage);
+		docVariableResolver = new DocVariableResolver(wordMLPackage);
 	}
 
 	public void update(boolean processHeadersAndFooters) throws Docx4JException {
@@ -103,8 +110,9 @@ public class FieldUpdater {
 			
 			//System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 //			System.out.println(simpleField.getInstr());
-			
-			if ("DOCPROPERTY".equals(FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr()))) {
+			String fldSimpleName = FormattingSwitchHelper.getFldSimpleName(simpleField.getInstr());
+			if (DOCPROPERTY.equals(fldSimpleName)
+					|| DOCVARIABLE.equals(fldSimpleName) ) {
 				//only parse those fields that get processed
 				try {
 					fsm.build(simpleField.getInstr());
@@ -114,9 +122,13 @@ public class FieldUpdater {
 				
 				String key = fsm.getFldParameters().get(0);
 				
-				String val;
+				String val = null;
 				try {
-				  val = (String) docPropertyResolver.getValue(key); 
+					if (DOCPROPERTY.equals(fldSimpleName) ) {
+						val = docPropertyResolver.getValue(key);
+					} else if (DOCVARIABLE.equals(fldSimpleName) ) {
+						val = docVariableResolver.getValue(key);
+					}
 				} catch (FieldValueException e) {
 					report.append( simpleField.getInstr() + "\n");
 					report.append( key + " -> NOT FOUND! \n");	
@@ -155,7 +167,7 @@ public class FieldUpdater {
 					
 	//				System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 				}
-				
+								
 			} else {
 				
 				report.append("Ignoring " + simpleField.getInstr() + "\n");
@@ -211,7 +223,10 @@ public class FieldUpdater {
 		// Populate
 		for (FieldRef fr : fieldRefs) {
 			
-			if ("DOCPROPERTY".equals(fr.getFldName())) {
+//			if ("DOCPROPERTY".equals(fr.getFldName())) {
+			String fldName = fr.getFldName();
+			if (DOCPROPERTY.equals(fldName)
+					|| DOCVARIABLE.equals(fldName) ) {
 				
 				String instr = extractInstr(fr.getInstructions());
 				try {
@@ -233,7 +248,11 @@ public class FieldUpdater {
 							if (key.contains("\"") ) log.debug("(quote char will be disregarded)");
 						}
 						key = key.replaceAll("\"", "");
-						val = (String) docPropertyResolver.getValue(key);
+						if (DOCPROPERTY.equals(fldName) ) {
+							val = docPropertyResolver.getValue(key);
+						} else if (DOCVARIABLE.equals(fldName) ) {
+							val = docVariableResolver.getValue(key);
+						}
 					} else {
 						log.warn("FldParameters null or empty");
 					}
@@ -291,21 +310,4 @@ public class FieldUpdater {
 		}
 	}
 	
-	/**
-	 * @param args
-	 * @throws Docx4JException 
-	 */
-	public static void main(String[] args) throws Docx4JException {
-
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
-				new java.io.File(
-						System.getProperty("user.dir") + "/aq1.docx")); 
-		
-		FieldUpdater fu = new FieldUpdater(wordMLPackage);
-		fu.update(true);
-		
-		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-	}
-
 }

@@ -38,7 +38,7 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 	public static final String IMAGE_DIR_PATH = "imageDirPath";
 	public static final String IMAGE_HANDLER = "imageHandler";
 	public static final String HYPERLINK_HANDLER = "hyperlinkHandler";
-	public static final String WML_PACKAGE = "wmlPackage";
+	public static final String OPC_PACKAGE = "opcPackage";
 	public static final String CUSTOM_XSLT_TEMPLATES = "customXsltTemplates";
 
 	protected Map<String, Object> settings = new TreeMap<String, Object>();
@@ -96,11 +96,15 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 		return (ConversionHyperlinkHandler)settings.get(HYPERLINK_HANDLER);
 	}
 	
+	@Deprecated
 	public void setWmlPackage(OpcPackage wmlPackage) {
-		settings.put(WML_PACKAGE, wmlPackage);
+		settings.put(OPC_PACKAGE, wmlPackage);
 	}
-	public OpcPackage getWmlPackage() {
-		return (OpcPackage)settings.get(WML_PACKAGE);
+	public void setOpcPackage(OpcPackage wmlPackage) {
+		settings.put(OPC_PACKAGE, wmlPackage);
+	}
+	public OpcPackage getOpcPackage() {
+		return (OpcPackage)settings.get(OPC_PACKAGE);
 	}
 	
 	/** Pass a custom xslt template to do the transformation.<br> 

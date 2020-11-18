@@ -31,6 +31,7 @@ import javax.xml.bind.JAXBElement;
 import org.apache.commons.lang3.StringUtils;
 import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.paragraph.Indent;
@@ -475,10 +476,9 @@ public class TocEntry {
 					newR.setRPr(wmlObjectFactory.createRPr());
         		} else {
             		// Resolve the formatting
-					newR.setRPr(
-							getEffectiveRPr(r.getRPr()));
-//					newR.setRPr(
-//							r.getRPr());
+//        			log.debug("\n\r getEffectiveRPr " + ((Text)textsFound.get(0)).getValue() );
+					newR.setRPr(getEffectiveRPr(r.getRPr())); 
+//					log.debug(XmlUtils.marshaltoString(newR.getRPr()));
 					
 			    	// Step 3: strip/filter unwanted run formatting
 					nullify(newR.getRPr());
@@ -532,19 +532,33 @@ public class TocEntry {
         
     	
     }
-    
+        
+    /**
+     * Get the rPr to apply.  This intentionally ignores pStyle and doc defaults.
+     * The TOC entry will ultimately use TOCn style; we're not interested in the
+     * pStyle of this paragraph.
+     * 
+     * @param expressRPr
+     * @return
+     */
     private RPr getEffectiveRPr(RPr expressRPr) {
     	
+		RPr effectiveRPr = Context.getWmlObjectFactory().createRPr();
+
+		// Apply run style, ignoring doc default settings
 		RPr resolvedRPr = null;
+		String runStyleId;
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
-			String runStyleId = expressRPr.getRStyle().getVal();
-			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId);
-			
-			// remove the style, so it is not set by apply below
-			expressRPr.setRStyle(null);
+			runStyleId = expressRPr.getRStyle().getVal();			
+			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId, false, false); 
+			StyleUtil.apply(resolvedRPr, effectiveRPr);
 		}
-		
-		return StyleUtil.apply(expressRPr, resolvedRPr);
+				
+		//	Apply direct formatting (run properties not from styles).		
+		if (propertyResolver.hasDirectRPrFormatting(expressRPr) ) {			
+			StyleUtil.apply(expressRPr, effectiveRPr);
+		} 
+		return effectiveRPr;
     }
     
     private void nullify(RPr destination) {

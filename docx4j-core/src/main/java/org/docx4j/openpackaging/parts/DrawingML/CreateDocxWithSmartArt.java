@@ -37,9 +37,14 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.P;
 import org.docx4j.wml.SectPr.PgSz;
 import org.glox4j.openpackaging.packages.GloxPackage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 public class CreateDocxWithSmartArt extends CreateWithSmartArtAbstract {
+	
+	private static Logger log = LoggerFactory.getLogger(CreateDocxWithSmartArt.class);		
+	
 
 	public CreateDocxWithSmartArt(CTDiagramDefinition diagramLayoutObj,
 			Templates layoutTreeCreatorXslt,
@@ -50,6 +55,15 @@ public class CreateDocxWithSmartArt extends CreateWithSmartArtAbstract {
 				 layoutTree2DiagramDataXslt);
 	}
 
+	/**createSmartArtDocx from the provided XML.  
+	 * 
+	 * @param sz
+	 * @param landscape
+	 * @param margins
+	 * @param xml
+	 * @return
+	 * @throws Exception
+	 */
 	public WordprocessingMLPackage createSmartArtDocx(
 			PageSizePaper sz, boolean landscape,
 			MarginsWellKnown margins, 

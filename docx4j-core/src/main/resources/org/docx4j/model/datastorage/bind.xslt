@@ -341,30 +341,20 @@
   				  editor must write that.
   				    			
   			 -->
-			<xsl:copy>
-			     <xsl:copy-of select="w:sdtPr"/>
-			     
-			     <xsl:if test="w:stdEndPr">
-			     	<xsl:copy-of select="w:sdtEndPr"/>
-		     	</xsl:if>
-			     
-			     <w:sdtContent>
-			     	
-				  	<xsl:choose>
-				  		<!--  Note that all branches of this choose currently do the same 
-				  			  thing, so all it does is provide documentation for the various cases.
-				  			    -->
-				  		<xsl:when test="w:sdtContent/w:tbl">
-				  		<!--  When the sdt contains a table, assume block level content is to replace it
-				  		      (most likely, an XHTML table?).
-				  		      
-				  		      Tested/works for 2.8.0
-				  		      
-				  		      A future version could possibly read/re-use w:sdtContent/w:tbl/w:tblPr
-				  		      if there were the same number of columns?
-				  		       -->
+  			 
+  			 <xsl:choose>
+
+				<xsl:when
+					test="java:org.docx4j.model.datastorage.BindingTraverserXSLT.importXHTMLMissing()"> 
+					
+					<!-- add an altChunk -->
+			
+					<xsl:copy>
+						<xsl:copy-of select="w:sdtPr" />
+						<w:sdtContent>
+						
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTMLtoAltChunk(
 										$bindingTraverserState,
 										$wmlPackage,
 										$sourcePart,
@@ -375,95 +365,139 @@
 										$child,
 										$sequenceCounters,
 										$bookmarkIdCounter )" />
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:tr">
-				  			<!--  no reason in principle why we couldn't convert
-				  			      an XHTML tr to w:tr.
-				  			      
-				  			      TODO currently xhtmlrenderer NPEs
-				  			        
-				  		      	  A future version could possibly read/re-use w:sdtContent/w:tr/w:trPr
-				  			       -->
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
-										$bindingTraverserState,
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										$xPathsMap,
-										w:sdtPr,
-										$parent,
-										$child,
-										$sequenceCounters,
-										$bookmarkIdCounter )" />
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:tc">
-				  			<!--  no reason in principle why we couldn't convert
-				  			      an XHTML table cell to w:tc.
-				  			      
-				  			      TODO currently xhtmlrenderer NPEs
-				  			        
-				  			       -->
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
-										$bindingTraverserState,
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										$xPathsMap,
-										w:sdtPr,
-										$parent,
-										$child,
-										$sequenceCounters,
-										$bookmarkIdCounter )" />
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:p">
-				  		
-			  				<!--  
-			  				
-			  				preserve existing w:pPr mode? 
-			  					<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
-			  				-->
-			  				
-			  				<!--  create runs -->
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
-										$bindingTraverserState,
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										$xPathsMap,
-										w:sdtPr,
-										$parent,
-										$child,
-										$sequenceCounters,
-										$bookmarkIdCounter )" />
-				  		</xsl:when>
-				  		<xsl:otherwise>  <!--  run level 
-				  		
-						       <w:sdtContent>
-						          <w:r>
-						            <w:rPr>				  			 
-				  		
-				  		--> 
-				  			<!--  can we insert a fragment ie multiple runs? --> 		
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
-										$bindingTraverserState,
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										$xPathsMap,
-										w:sdtPr,
-										$parent,
-										$child,
-										$sequenceCounters,
-										$bookmarkIdCounter )" />
-				  		</xsl:otherwise>  		
-				  	</xsl:choose>    
-			     </w:sdtContent>
-			     
-			</xsl:copy>  		  			
+							
+						</w:sdtContent>
+					</xsl:copy>
+				</xsl:when>
+				
+	  			 <xsl:otherwise> <!--  rely on -ImportXTML -->
+					<xsl:copy>
+					     <xsl:copy-of select="w:sdtPr"/>
+					     
+					     <xsl:if test="w:stdEndPr">
+					     	<xsl:copy-of select="w:sdtEndPr"/>
+				     	</xsl:if>
+					     
+					     <w:sdtContent>
+					     	
+						  	<xsl:choose>
+						  		<!--  Note that all branches of this choose currently do the same 
+						  			  thing, so all it does is provide documentation for the various cases.
+						  			    -->
+						  		<xsl:when test="w:sdtContent/w:tbl">
+						  		<!--  When the sdt contains a table, assume block level content is to replace it
+						  		      (most likely, an XHTML table?).
+						  		      
+						  		      Tested/works for 2.8.0
+						  		      
+						  		      A future version could possibly read/re-use w:sdtContent/w:tbl/w:tblPr
+						  		      if there were the same number of columns?
+						  		       -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+												$bindingTraverserState,
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsMap,
+												w:sdtPr,
+												$parent,
+												$child,
+												$sequenceCounters,
+												$bookmarkIdCounter )" />
+						  		</xsl:when>				  		
+						  		<xsl:when test="w:sdtContent/w:tr">
+						  			<!--  no reason in principle why we couldn't convert
+						  			      an XHTML tr to w:tr.
+						  			      
+						  			      TODO currently xhtmlrenderer NPEs
+						  			        
+						  		      	  A future version could possibly read/re-use w:sdtContent/w:tr/w:trPr
+						  			       -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+												$bindingTraverserState,
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsMap,
+												w:sdtPr,
+												$parent,
+												$child,
+												$sequenceCounters,
+												$bookmarkIdCounter )" />
+						  		</xsl:when>				  		
+						  		<xsl:when test="w:sdtContent/w:tc">
+						  			<!--  no reason in principle why we couldn't convert
+						  			      an XHTML table cell to w:tc.
+						  			      
+						  			      TODO currently xhtmlrenderer NPEs
+						  			        
+						  			       -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+												$bindingTraverserState,
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsMap,
+												w:sdtPr,
+												$parent,
+												$child,
+												$sequenceCounters,
+												$bookmarkIdCounter )" />
+						  		</xsl:when>				  		
+						  		<xsl:when test="w:sdtContent/w:p">
+						  		
+					  				<!--  
+					  				
+					  				preserve existing w:pPr mode? 
+					  					<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+					  				-->
+					  				
+					  				<!--  create runs -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+												$bindingTraverserState,
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsMap,
+												w:sdtPr,
+												$parent,
+												$child,
+												$sequenceCounters,
+												$bookmarkIdCounter )" />
+						  		</xsl:when>
+						  		<xsl:otherwise>  <!--  run level 
+						  		
+								       <w:sdtContent>
+								          <w:r>
+								            <w:rPr>				  			 
+						  		
+						  		--> 
+						  			<!--  can we insert a fragment ie multiple runs? --> 		
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
+												$bindingTraverserState,
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsMap,
+												w:sdtPr,
+												$parent,
+												$child,
+												$sequenceCounters,
+												$bookmarkIdCounter )" />
+						  		</xsl:otherwise>  		
+						  	</xsl:choose>    
+					     </w:sdtContent>
+					     
+					</xsl:copy>  		  			
+	  			 </xsl:otherwise>
+  			 
+  			 </xsl:choose>
+  			 
   		</xsl:when>
   		
   		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:progid=Word.Document' )">

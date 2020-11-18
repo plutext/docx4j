@@ -92,7 +92,7 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		
 	public static Templates generateLayoutTreeXSLT(CTDiagramDefinition pictureLayout) throws Exception {
 		
-		System.out.println(XmlUtils.marshaltoString(pictureLayout, true));
+		log.debug(XmlUtils.marshaltoString(pictureLayout, true));
 		
 //			System.out.println("Generating xslt..");
 		Source xsltSource  = new StreamSource(
@@ -107,7 +107,7 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		XmlUtils.transform(source, xsltMeta, null, intermediateResult);
 
 		String tmpXslStr = intermediate.toString("UTF-8");
-			System.out.println(tmpXslStr);
+		log.debug(tmpXslStr);
 		
 		return XmlUtils.getTransformerTemplate(
 					new StreamSource(new StringReader(tmpXslStr)));
@@ -116,7 +116,7 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 	public static String generateLayoutTree(Source myList, Templates layoutTreeCreatorXslt) throws Exception {
 		
 		// Generate hierarchical layout tree
-		System.out.println("Generating layout tree..");
+		log.info("Generating layout tree..");
 		ByteArrayOutputStream layoutBAOS = new ByteArrayOutputStream();
 		Result layoutResult = new StreamResult(layoutBAOS);
 		XmlUtils.transform(myList, layoutTreeCreatorXslt, null, layoutResult);

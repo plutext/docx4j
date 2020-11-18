@@ -1,5 +1,6 @@
 package org.docx4j;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -15,12 +16,13 @@ public class Docx4jProperties {
 	private static void init() {
 		
 		properties = new Properties();
-		try {
-			properties.load(
-					ResourceUtils.getResource("docx4j.properties"));
+		try (
+				InputStream is = ResourceUtils.getResource("docx4j.properties");
+			) {
+			properties.load(is);
 		} catch (Exception e) {
 			log.warn("Couldn't find/read docx4j.properties; " + e.getMessage());
-		}
+		} 
 	}
 	
 	public static String getProperty(String key) {

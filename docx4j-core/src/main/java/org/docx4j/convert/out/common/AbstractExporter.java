@@ -81,7 +81,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			postprocess(conversionSettings, conversionContext, intermediateOutputStream, outputStream);			
 			currentTime = logDebugStep(log, "Postprocessing", currentTime);
 			
-			if (conversionSettings.getWmlPackage()!=preprocessedPackage) {
+			if (conversionSettings.getOpcPackage()!=preprocessedPackage) {
 				// We made a temp pkg, so clean up; 
 				// this isn't really necessary since its done in WordprocessingMLPackagefinalize(), but this gets rid of them a bit sooner than GC may happen
 				if (preprocessedPackage instanceof WordprocessingMLPackage) {

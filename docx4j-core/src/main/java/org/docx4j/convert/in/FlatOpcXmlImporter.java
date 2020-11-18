@@ -31,6 +31,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.docProps.coverPageProps.CoverPageProperties;
@@ -108,14 +111,25 @@ public class FlatOpcXmlImporter  {
 		Unmarshaller u = jc.createUnmarshaller();
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-//		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-//				new javax.xml.transform.stream.StreamSource(is))).getValue(); 
+		// Guard against XXE
+        XMLInputFactory xif = XMLInputFactory.newInstance();
+        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+        XMLStreamReader xsr = null;
+        try {
+			xsr = xif.createXMLStreamReader(is);
+		} catch (XMLStreamException e) {
+			throw new JAXBException(e);
+		}		
 
 		// JAXB RI unmarshalls to JAXBElement; MOXy gives Package directly
+        
+//		org.docx4j.xmlPackage.Package flatOpcXml = 
+//        (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(xsr)).getValue(); 
+
 		org.docx4j.xmlPackage.Package flatOpcXml = null;
 		try {
-			flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
-					new javax.xml.transform.stream.StreamSource(is)));
+			flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(xsr));
 		} catch ( javax.xml.bind.UnmarshalException e) {
 			if (e.getMessage()!=null
 					&& e.getMessage().contains("http://schemas.microsoft.com/office/word/2003/wordml")) {
@@ -669,49 +683,6 @@ public class FlatOpcXmlImporter  {
 		} 
 		return part;
 	}
-	
-
-	public static void main(String[] args) throws Exception {
-		
-		// Converting an pkg to a docx and back again (ie round trip)
-		// is a reasonable test 
-		
-		// So read an existing pkg into a docx
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/pkg.pkg";
-		
-		java.io.FileInputStream fin = new java.io.FileInputStream(inputfilepath);
-		
-		JAXBContext jc = Context.jcXmlPackage;
-
-		Unmarshaller u = jc.createUnmarshaller();
-					
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-		Object o = u.unmarshal( 
-				new javax.xml.transform.stream.StreamSource(fin ) );
-		org.docx4j.xmlPackage.Package xmlPackage 
-			= (org.docx4j.xmlPackage.Package)((JAXBElement)o).getValue();
-				
-		org.docx4j.convert.in.FlatOpcXmlImporter inWorker = 
-			new org.docx4j.convert.in.FlatOpcXmlImporter(xmlPackage);
-		
-		WordprocessingMLPackage wordMLPackage = (WordprocessingMLPackage)inWorker.get();
-		
-		// Ok, now spit it out again
-			
-		org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator outWorker 
-			= new org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator(wordMLPackage);
-		
-		org.docx4j.xmlPackage.Package result = outWorker.get();
-		
-		boolean suppressDeclaration = true;
-		boolean prettyprint = true;
-		
-		log.debug( 
-				org.docx4j.XmlUtils.
-					marshaltoString(result, suppressDeclaration, prettyprint, 
-							org.docx4j.jaxb.Context.jcXmlPackage) );
-	}	
 	
 	
 }

@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.docx4j.convert.out.Documents4jConversionSettings;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.common.Exporter;
@@ -111,33 +112,6 @@ public class Docx4J {
 	/** If available export the document using a visitor
 	 */
 	public static final int FLAG_EXPORT_PREFER_NONXSL = 2;
-
-	public static Boolean EXPORT_FO_DETECTED = null;
-	
-	/**
-	 * If the docx4j-export-fo project is present, 
-	 * we'll use FO for PDF export.
-	 * 
-	 * Otherwise, we'll try to use Plutext's now-retired PDF Converter.
-	 * 
-	 * @return
-	 * @since 3.3.0
-	 */
-	public static boolean pdfViaFO() {
-		
-		if (EXPORT_FO_DETECTED==null) {
-			
-			try {
-				Object o = FOExporterVisitorGetInstance();
-				EXPORT_FO_DETECTED = Boolean.TRUE;
-			} catch (Docx4JException e) {
-				EXPORT_FO_DETECTED = Boolean.FALSE;
-			}
-		}
-		
-		return EXPORT_FO_DETECTED;
-	}
-	
 	
 	/** Save the document in a zip container (default docx)
 	 */
@@ -244,14 +218,17 @@ public class Docx4J {
 	 */	
 	public static OpcPackage load(final File inFile, Filetype type)  throws Docx4JException {
 		
-		return OpcPackage.load(inFile);
+		return OpcPackage.load(inFile, type);
 	}
 	
 	/**
 	 *  Load a Docx Document from a File
 	 */	
 	public static WordprocessingMLPackage load(File inFile) throws Docx4JException {
-		
+		// it'd be more flexible if these load methods returned an OpcPackage
+		// but it is too late to change this now, since it would be client code
+		// (they'd need to add a cast).
+		// And besides, for docx files anyway, this is easier.
 		return WordprocessingMLPackage.load(inFile);
 	}
 
@@ -282,53 +259,53 @@ public class Docx4J {
 	}
 	
 	/**
-	 *  Save a Docx Document to a File. 
+	 *  Save a Ddocx/pptx/xlsx to a File. 
 	 *  
 	 *  @since 3.3.0
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile) throws Docx4JException {
 		
-		wmlPackage.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
+		pkg.save(outFile, Docx4J.FLAG_SAVE_ZIP_FILE);
 	}
 	
 	/**
-	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  Save a docx/pptx/xlsx to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile, int flags) throws Docx4JException {
 		
-		wmlPackage.save(outFile, flags);
+		pkg.save(outFile, flags);
 	}
 
 	/**
-	 *  Save a Docx Document to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
+	 *  Save a docx/pptx/xlsx to an OutputStream using flag Docx4J.FLAG_SAVE_ZIP_FILE 
 	 *
 	 *  @since 3.3.0
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream) throws Docx4JException {
 		
-		wmlPackage.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
+		pkg.save(outStream, Docx4J.FLAG_SAVE_ZIP_FILE);
 	}
 	
 	/**
-	 *  Save a Docx Document to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
+	 *  Save a docx/pptx/xlsx to an OutputStream. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE or Docx4J.FLAG_SAVE_FLAT_XML
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream, int flags) throws Docx4JException {
 		
-		wmlPackage.save(outStream, flags);
+		pkg.save(outStream, flags);
 		
 	}
 
 	/**
-	 *  Save a Docx Document to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
+	 *  Save a docx/pptx/xlsx to a File. The flag is typically Docx4J.FLAG_SAVE_ZIP_FILE
 	 *  or Docx4J.FLAG_SAVE_FLAT_XML or one of the Docx4J.FLAG_SAVE_ENCRYPTED_ variants
 	 *  (recommend FLAG_SAVE_ENCRYPTED_AGILE) 
 	 *  
 	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
 
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, File outFile, int flags, String password) throws Docx4JException {
+	public static void save(OpcPackage pkg, File outFile, int flags, String password) throws Docx4JException {
 		
-		wmlPackage.save(outFile, flags, password);
+		pkg.save(outFile, flags, password);
 	}
 	
 	/**
@@ -338,9 +315,9 @@ public class Docx4J {
 	 *  
 	 *  For the FLAG_SAVE_ENCRYPTED_ variants, you need to provide a password.
 	 */	
-	public static void save(WordprocessingMLPackage wmlPackage, OutputStream outStream, int flags, String password) throws Docx4JException {
+	public static void save(OpcPackage pkg, OutputStream outStream, int flags, String password) throws Docx4JException {
 		
-		wmlPackage.save(outStream, flags, password);
+		pkg.save(outStream, flags, password);
 		
 	}
 	
@@ -742,9 +719,23 @@ public class Docx4J {
 		StartEvent startEvent = new StartEvent( wmlPackage, WellKnownProcessSteps.PDF );
 		startEvent.publish();
 		
-		if (pdfViaFO()) {
+		if (pdfViaDocuments4jRemote()) {
+			
+			Exporter<Documents4jConversionSettings> exporter = documents4jRemoteExporterGetInstance();
+			Documents4jConversionSettings settings = new Documents4jConversionSettings();
+			settings.setOpcPackage(wmlPackage);
+			exporter.export(settings, outputStream); 
+			
+		} else if (pdfViaDocuments4jLocal()) {
+
+			Exporter<Documents4jConversionSettings> exporter = documents4jLocalExporterGetInstance();
+			Documents4jConversionSettings settings = new Documents4jConversionSettings();
+			settings.setOpcPackage(wmlPackage);
+			exporter.export(settings, outputStream); 
+			
+		} else if (pdfViaFO()) {
 			FOSettings settings = createFOSettings();
-			settings.setWmlPackage(wmlPackage);
+			settings.setOpcPackage(wmlPackage);
 			settings.setApacheFopMime("application/pdf");
 			toFO(settings, outputStream, FLAG_NONE);
 			new EventFinished(startEvent).publish();
@@ -770,6 +761,70 @@ public class Docx4J {
 		}
 		
 	}
+
+	public static Boolean EXPORT_FO_DETECTED = null;
+	public static Boolean EXPORT_DOCUMENTS4J_REMOTE_DETECTED = null;
+	public static Boolean EXPORT_DOCUMENTS4J_LOCAL_DETECTED = null;
+	
+	/**
+	 * If the docx4j-export-fo project is present, 
+	 * we'll use FO for PDF export.
+	 * 
+	 * Otherwise, we'll try to use Plutext's now-retired PDF Converter.
+	 * 
+	 * @return
+	 * @since 3.3.0
+	 */
+	public static boolean pdfViaFO() {
+		
+		if (EXPORT_FO_DETECTED==null) {
+			
+			try {
+				Object o = FOExporterVisitorGetInstance();
+				EXPORT_FO_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_FO_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_FO_DETECTED;
+	}
+	
+	/**
+	 * @since 8.2.0
+	 */
+	public static boolean pdfViaDocuments4jRemote() {
+		
+		if (EXPORT_DOCUMENTS4J_REMOTE_DETECTED==null) {
+			
+			try {
+				Object o = documents4jRemoteExporterGetInstance();
+				EXPORT_DOCUMENTS4J_REMOTE_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_DOCUMENTS4J_REMOTE_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_DOCUMENTS4J_REMOTE_DETECTED;
+	}
+	/**
+	 * @since 8.2.0
+	 */
+	public static boolean pdfViaDocuments4jLocal() {
+		
+		if (EXPORT_DOCUMENTS4J_LOCAL_DETECTED==null) {
+			
+			try {
+				Object o = documents4jLocalExporterGetInstance();
+				EXPORT_DOCUMENTS4J_LOCAL_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_DOCUMENTS4J_LOCAL_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_DOCUMENTS4J_LOCAL_DETECTED;
+	}
+	
 	
 	protected static Exporter<FOSettings> getFOExporter(int flags)  throws Docx4JException {
 		switch (flags) {
@@ -780,11 +835,11 @@ public class Docx4J {
 				return FOExporterXsltGetInstance();
 		}
 	}
-	
+		
 	private static Exporter<FOSettings> FOExporterVisitorGetInstance() throws Docx4JException {
 		
 		// Use reflection to return FOExporterVisitor.getInstance();
-		// so docx4j can be built without docx4j-export-FO
+		// so docx4j-core doesn't depend on docx4j-export-FO
 		
 		try {
 			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterVisitor");
@@ -799,7 +854,7 @@ public class Docx4J {
 	private static Exporter<FOSettings> FOExporterXsltGetInstance()  throws Docx4JException {
 		
 		// Use reflection to return FOExporterXslt.getInstance();
-		// so docx4j can be built without docx4j-export-FO
+		// so docx4j-core doesn't depend on docx4j-export-FO
 		
 		try {
 			Class<?> clazz = Class.forName("org.docx4j.convert.out.fo.FOExporterXslt");			
@@ -808,6 +863,39 @@ public class Docx4J {
 			
 		} catch (Exception e) {
 			throw new Docx4JException("org.docx4j.convert.out.fo.FOExporterXslt not found; if you want it, add docx4j-export-FO to your path.  " + "/n" + e.getMessage(), e);
+		}			
+		
+	}
+
+	private static Exporter<Documents4jConversionSettings> documents4jRemoteExporterGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return Exporter
+		// so docx4j-core doesn't depend on docx4j-export-documents4j-remote
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.documents4j.remote.Documents4jRemoteExporter");			
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<Documents4jConversionSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			throw new Docx4JException("org.docx4j.convert.out.documents4j.remote.Documents4jRemoteExporter not found; "
+					+ "if you want it, add docx4j-export-documents4j-remote to your path.  " + "/n" + e.getMessage(), e);
+		}			
+		
+	}
+	private static Exporter<Documents4jConversionSettings> documents4jLocalExporterGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return Exporter
+		// so docx4j-core doesn't depend on docx4j-export-documents4j-local
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter");			
+			Method method = clazz.getMethod("getInstance", null);
+			return (Exporter<Documents4jConversionSettings>)method.invoke(null, null);
+			
+		} catch (Exception e) {
+			throw new Docx4JException("org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter not found; "
+					+ "if you want it, add docx4j-export-documents4j-local to your path.  " + "/n" + e.getMessage(), e);
 		}			
 		
 	}
@@ -824,7 +912,7 @@ public class Docx4J {
 	 */	
 	public static void toHTML(HTMLSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
 
-		StartEvent startEvent = new StartEvent( settings.getWmlPackage(), WellKnownProcessSteps.HTML_OUT );
+		StartEvent startEvent = new StartEvent( settings.getOpcPackage(), WellKnownProcessSteps.HTML_OUT );
 		startEvent.publish();
 		
 		Exporter<HTMLSettings> exporter = getHTMLExporter(flags);
@@ -842,7 +930,7 @@ public class Docx4J {
 		startEvent.publish();
 		
 		HTMLSettings settings = createHTMLSettings();
-		settings.setWmlPackage(wmlPackage);
+		settings.setOpcPackage(wmlPackage);
 		if (imageDirPath != null) {
 			settings.setImageDirPath(imageDirPath);
 		}

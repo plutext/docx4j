@@ -290,8 +290,8 @@ public class ContentTypeManager  {
 				log.error(noClass.getMessage(), noClass);
 				throw noClass;
 			}
-			 p.setContentType( new ContentType(contentType) );
-			 return p;
+			p.setContentType(new ContentType(contentType));
+			return p;
 		}		
 		
 		// if there is no override, get use the file extension
@@ -322,7 +322,7 @@ public class ContentTypeManager  {
 	
 	public Part newPartForContentType(String contentType, String partName, Relationship rel)
 		throws InvalidFormatException, PartUnrecognisedException {
-				
+						
 		// TODO - a number of WordML parts aren't listed here!
 		if (rel!=null && rel.getType().equals(Namespaces.AF) ) {
 			// Could have just passed String relType

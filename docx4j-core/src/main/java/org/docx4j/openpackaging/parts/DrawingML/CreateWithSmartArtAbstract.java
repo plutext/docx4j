@@ -28,9 +28,13 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTDiagramDefinition;
 import org.docx4j.jaxb.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 public class CreateWithSmartArtAbstract {
+	
+	private static Logger log = LoggerFactory.getLogger(CreateWithSmartArtAbstract.class);		
 	
 	protected CTDiagramDefinition diagramLayoutObj;
 	protected Templates layoutTreeCreatorXslt;
@@ -57,7 +61,7 @@ public class CreateWithSmartArtAbstract {
 		// Generate hierarchical layout tree
 		String tmpXslStr =  DiagramLayoutPart.generateLayoutTree(myList, 
 				layoutTreeCreatorXslt);
-		System.out.println(tmpXslStr);
+		log.debug(tmpXslStr);
 		
 		// Finally, apply pictureLayoutTree2DiagramDataXslt to create DiagramData part
 						
@@ -71,7 +75,10 @@ public class CreateWithSmartArtAbstract {
 		XmlUtils.transform( 
 				new javax.xml.transform.stream.StreamSource(
 						new java.io.StringReader(tmpXslStr)), 
-						layoutTree2DiagramDataXslt, settings, result);		
+						layoutTree2DiagramDataXslt, settings, result);	
+		// That use of StreamSource is OK from an XXE point of view,
+		// since it originally comes from Document xml, which the docx4j
+		// user should have created in an XXE-safe way before invoking createSmartArtDocx
 		
 		// What did we generate
 //		tmpXslStr = layoutBAOS3.toString("UTF-8");

@@ -545,6 +545,16 @@ public class TraversalUtil {
 			artificialList.addAll(ac.getChoice());
 			artificialList.add(ac.getFallback());
 			return artificialList;
+		} else if (o instanceof org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape) {
+			org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape sp = (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)o;
+			if (sp!=null
+					&& sp.getTxbx()!=null
+					&& sp.getTxbx().getTxbxContent()!=null) {
+
+				return sp.getTxbx().getTxbxContent().getContent();
+			}
+			return null;
+			
 		}
 
 		// OK, what is this? Use reflection ..

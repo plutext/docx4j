@@ -40,7 +40,7 @@ public abstract class AbstractWmlExporter<CS extends AbstractConversionSettings,
 	protected WordprocessingMLPackage preprocess(CS conversionSettings) throws Docx4JException {
 	WordprocessingMLPackage wmlPackage = null;
 		try {
-			wmlPackage = (WordprocessingMLPackage)conversionSettings.getWmlPackage();
+			wmlPackage = (WordprocessingMLPackage)conversionSettings.getOpcPackage();
 		}
 		catch (ClassCastException cce) {
 			throw new Docx4JException("Invalid document package in the settings, it isn't a WordprocessingMLPackage");
