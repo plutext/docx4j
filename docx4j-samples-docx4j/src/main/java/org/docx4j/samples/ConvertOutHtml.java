@@ -92,7 +92,7 @@ public class ConvertOutHtml extends AbstractSample {
     	htmlSettings.setImageDirPath(inputfilepath + "_files");
     	htmlSettings.setImageTargetUri(inputfilepath.substring(inputfilepath.lastIndexOf("/")+1)
     			+ "_files");
-    	htmlSettings.setWmlPackage(wordMLPackage);
+    	htmlSettings.setOpcPackage(wordMLPackage);
     	
     	
     	/* CSS reset, see http://itumbcom.blogspot.com.au/2013/06/css-reset-how-complex-it-should-be.html 

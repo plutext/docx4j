@@ -34,6 +34,22 @@
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>${project.version}</Bundle-Version>
+                        <Import-Package>
+ <!-- org.eclipse.persistence.internal.jaxb;version="2.7.4",
+ org.eclipse.persistence.internal.jaxb.many;version="2.7.4", -->
+ org.eclipse.persistence.jaxb;version="2.7.4"
+<!--  
+ org.eclipse.persistence.jaxb.attachment;version="2.7.4",
+ org.eclipse.persistence.jaxb.compiler;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.oxm;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.reflection;version="2.7.4",
+ org.eclipse.persistence.jaxb.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.rs;version="2.7.4",
+ org.eclipse.persistence.jaxb.xmlmodel;version="2.7.4"           -->              
+                        </Import-Package>
                         <Export-Package>
                             org.docx4j.jaxb.moxy
                         </Export-Package>
@@ -67,32 +83,22 @@
 			<artifactId>org.eclipse.persistence.moxy</artifactId>
 			<version>2.7.4</version>
 		</dependency>
-
-	<!-- To use MOXy, uncomment the following 2 dependencies. 
-		Dependency version 2.4.1 had some issues,
-		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
-		details.  	
 		
-		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
-		needs javax.mail
-		
-		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
-		so stick with 2.5.2 (since all our other deps still support Java 6)
- 		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>6.0.0</version>
-		</dependency> 
-
-				<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
+		<dependency>
+            <groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.6.2</version>
 		</dependency>
-		
-		
-		
-		-->
+
+	<!-- No need for:
+	
+		<dependency>
+            <groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+			
+	 -->
 		
 		</dependencies>
 

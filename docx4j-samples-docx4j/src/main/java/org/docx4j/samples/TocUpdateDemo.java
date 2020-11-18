@@ -23,10 +23,19 @@ package org.docx4j.samples;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.samples.AbstractSample;
-import org.docx4j.toc.Toc;
 import org.docx4j.toc.TocGenerator;
 
+/**
+ * This example uses docx4j's internal capabilities
+ * to update a ToC.  
+ * 
+ * For page numbers, you'll need export-fo on your classpath.
+ *  
+ * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
+ * That uses a different code path; please see the TocOperations example in 
+ * docx4j-samples-export-documents4j-local
+ * 
+ */
 public class TocUpdateDemo  {
 	
 	static boolean update = false;
@@ -40,9 +49,6 @@ public class TocUpdateDemo  {
 				new java.io.File(input_DOCX));    	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         
-
-        
-        
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
 
         // If you want to automatically fix any broken bookmarks
@@ -50,9 +56,6 @@ public class TocUpdateDemo  {
         
 //        	Toc.setTocHeadingText("Sumário");
         	tocGenerator.updateToc(); // including page numbers 
-        	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
-        	// from https://converter-eval.plutext.com/ and point to that in docx4j.properties
-        	// (or try docx4j-export-fo)
 	        
 	        wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TocUpdateDemo.docx") );
         

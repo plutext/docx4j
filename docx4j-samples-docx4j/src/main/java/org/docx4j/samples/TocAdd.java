@@ -21,21 +21,24 @@ package org.docx4j.samples;
 
 
 import java.io.File;
-import java.io.OutputStream;
 
-import org.docx4j.Docx4J;
-import org.docx4j.convert.out.FOSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.samples.AbstractSample;
 import org.docx4j.toc.TocGenerator;
-import org.docx4j.toc.TocHelper;
 
+/**
+ * This example uses docx4j's internal capabilities
+ * to generate a ToC.  
+ * 
+ * To add indicative page numbers, put export-fo on your classpath.
+ *  
+ * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
+ * That uses a different code path; please see the TocOperations example in 
+ * docx4j-samples-export-documents4j-local
+ * 
+ */
 public class TocAdd  { 
 	
-
-	
-	static String inputfilepath = System.getProperty("user.dir") + "/reportBeforeS.docx";
+	static String inputfilepath = System.getProperty("user.dir") + "/input.docx";
 	static String outputfilepath = System.getProperty("user.dir") + "/OUT_TocAdd.docx";
 	
     public static final String TOC_STYLE_MASK = "TOC%s";
@@ -46,8 +49,6 @@ public class TocAdd  {
 
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
-    	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
-    	// and point to that in docx4j.properties
         
         //tocGenerator.generateToc( 0,    "TOC \\h \\z \\t \"comh1,1,comh2,2,comh3,3,comh4,4\" ", true);
         

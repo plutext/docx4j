@@ -23,13 +23,20 @@ package org.docx4j.samples;
 import java.io.OutputStream;
 
 import org.docx4j.Docx4J;
-import org.docx4j.convert.out.FOSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.samples.AbstractSample;
 import org.docx4j.toc.TocGenerator;
-import org.docx4j.toc.TocHelper;
 
+/**
+ * This is an end-to-end example showing you how to 
+ * to add and populate a ToC, then update it.
+ * 
+ *  It uses export-fo to generate page numbers.
+ *  
+ * To use Word to populate (and/or update) the ToC,
+ * please see the TocOperations example in docx4j-samples-export-documents4j-local
+ * 
+ */
 public class TocSample  { 
 	
 	static boolean update = false;
@@ -91,8 +98,6 @@ public class TocSample  {
         fillPageWithContent(documentPart, "Hello 11");
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
-    	// to generate page numbers, you should install your own local instance of Plutext PDF Converter, 
-    	// and point to that in docx4j.properties
         
         tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
         
