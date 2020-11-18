@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" comparisonMethod="maven" xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 https://mojo.codehaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
+    <ignoreVersions>
+        <ignoreVersion type="regex">.*[aA]lpha.*</ignoreVersion>
+        <ignoreVersion type="regex">.*[bB]eta.*</ignoreVersion>
+        <ignoreVersion type="regex">.*[b][0-9\.-]*</ignoreVersion>
+        <ignoreVersion type="regex">.*[rR][cC][0-9\.-]*</ignoreVersion>
+    </ignoreVersions>
+    
+    <rules>
+
+		<!-- stringtemplate 4 is ok for JDK 6, but causes tests to fail -->
+		<rule groupId="org.antlr" artifactId="stringtemplate" comparisonMethod="maven">
+	      <ignoreVersions>
+	        <ignoreVersion type="regex">4.*</ignoreVersion>
+	      </ignoreVersions>
+	    </rule>
+
+     </rules>
+</ruleset>
