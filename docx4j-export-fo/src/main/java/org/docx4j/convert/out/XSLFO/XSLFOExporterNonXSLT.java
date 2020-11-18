@@ -76,8 +76,8 @@ public class XSLFOExporterNonXSLT {
 			FOSettings  pdfSettings) {
 
 		foSettings = pdfSettings;
-		if ((foSettings.getWmlPackage() == null) && (wmlPackage != null)) {
-			foSettings.setWmlPackage(wmlPackage);
+		if ((foSettings.getOpcPackage() == null) && (wmlPackage != null)) {
+			foSettings.setOpcPackage(wmlPackage);
 		}
 	}
 	
