@@ -107,27 +107,34 @@ public class FontSize extends AbstractRunProperty {
 		    hpsMeasure.setVal(BigInteger.valueOf(iVal));
 		    this.setObject(hpsMeasure);
 		    
-		} else if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_EMS) {
+		} else if (cssPrimitiveValue.getPrimitiveType() == CSSPrimitiveValue.CSS_EMS) {
+			
 			// TODO: Use the size of the font on the parent element rather than assuming 1em == medium.
 			float emVal = cssPrimitiveValue.getFloatValue(CSSPrimitiveValue.CSS_EMS);
 			hpsMeasure.setVal( BigInteger.valueOf( Math.round(emVal * mediumHP) ));
-		} else if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_EXS) {
+		    this.setObject(hpsMeasure);
+			
+		} else if (cssPrimitiveValue.getPrimitiveType() ==CSSPrimitiveValue.CSS_EXS) {
+			
 			// TODO: Use the size of the font on the parent element rather than assuming 1ex == 0.5 * medium.
 			float exVal = cssPrimitiveValue.getFloatValue(CSSPrimitiveValue.CSS_EXS);
 			hpsMeasure.setVal( BigInteger.valueOf( Math.round(0.5 * exVal * mediumHP) ));
-		} else  if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_PT) {
+		    this.setObject(hpsMeasure);
 			
-			log.error("TODO FontSize Handle units: " + cssPrimitiveValue.getPrimitiveType() );
-			debug(CSS_NAME, value);
+		} else  if (cssPrimitiveValue.getPrimitiveType() ==CSSPrimitiveValue.CSS_PT) {
 			
-		} else { // CSS_PT points
-			
+			// CSS_PT points
 			short ignored = 1;
 			float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
 			int iVal = Math.round(fVal*2);
 			
 			hpsMeasure.setVal( BigInteger.valueOf(iVal) );
 			this.setObject(hpsMeasure);
+			
+		} else { 
+			
+			log.error("TODO FontSize Handle units: " + cssPrimitiveValue.getPrimitiveType() );
+			debug(CSS_NAME, value);
 		}
 	}
 	
