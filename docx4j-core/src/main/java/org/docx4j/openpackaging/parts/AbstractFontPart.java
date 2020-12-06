@@ -125,6 +125,9 @@ public abstract class AbstractFontPart extends BinaryPart {
     	
     	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
     	// (when it is invoked first; sometimes it isn't - note this is a static method)
+    	if (log.isDebugEnabled()) {
+    		log.debug("deleting with prefix " + filenamePrefix);
+    	}
     	
     	for(File f: getTmpFontDir().listFiles() ) {
     		

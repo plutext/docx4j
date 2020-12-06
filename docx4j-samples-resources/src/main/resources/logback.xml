@@ -99,9 +99,9 @@
 		name="org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage"
 		level="INFO" />
 
-	<logger
-		name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart"
-		level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.AbstractFontPart" level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart" level="WARN" />
 
 	<logger name="org.docx4j.services.client" level="INFO" />
 
