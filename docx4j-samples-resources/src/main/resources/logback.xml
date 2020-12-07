@@ -100,8 +100,13 @@
 		level="INFO" />
 
 	<logger name="org.docx4j.openpackaging.parts.AbstractFontPart" level="WARN" />
-	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="DEBUG" />
 	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart" level="WARN" />
+
+	<!--  to see the fop config  -->
+	<logger name="org.docx4j.convert.out.fo.renderers" level="DEBUG" />
+
+
 
 	<logger name="org.docx4j.services.client" level="INFO" />
 
