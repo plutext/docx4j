@@ -2,6 +2,53 @@ CHANGELOG
 =========
 
 
+Version 8.2.6  minor release
+==============
+
+Release date
+------------
+
+7 December 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.2.6
+-------------------------
+
+PDF via FOP with docx embedded fonts: bug fix for case where temp extracted fonts were deleted too early.
+
+XHTML to docx: CSS font-size bug fix
+
+OpenDoPE image injection: tag width=n|auto to specify max width (eg 10500) or let BPAI work out the scaling (ported from 11.1.8)
+
+
+
+
+Version 11.2.5  
+==============
+
+Release date
+------------
+
+18 Nov 2020
+
+Changes in Version 11.2.5
+-------------------------
+
+Cumulative update for parity 8.2.4
+
+Note: this release is labelled 11.2.5, since 11.x
+has since June 2020 contained a feature OpenDoPE image injection: tag width=n|auto 
+which isn't in 8.2.4 (but has now been ported and will be in an 8.2.5 or 8.2.6)
+
+Limitations:
+- The docx4j-documents4j-* sub-projects don't have a module-info.java until https://github.com/documents4j/documents4j/issues/108 is addressed
+- The docx4j-conversion-via-microsoft-graph sub-project doesn't have a module-info.java
+
+
 
 Version 8.2.4  minor release
 ==============
@@ -93,6 +140,19 @@ Traverse into 2010/wordprocessingShape txbxContent
 XXE avoid StreamSource in various places
 OpenDoPE XHTML support: where Import XHTML is not on classpath, insert an altChunk (ie rely on Word to process the XHTML)
 
+
+Version 11.1.8  
+==============
+
+Release date
+------------
+
+10 June 2020
+
+Changes in Version 11.1.8 
+-------------------------
+
+OpenDoPE image injection: tag width=n|auto to specify max width (eg 10500) or let BPAI work out the scaling
 
 
 Version 8.2.0  
