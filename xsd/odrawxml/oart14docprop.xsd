@@ -1,13 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-5.1 http://schemas.microsoft.com/office/drawing/2010/main Schema
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/drawing/2010/main" elementFormDefault="qualified" xmlns="http://schemas.microsoft.com/office/drawing/2010/main" xmlns:oxsd="http://oxsdSchemaUri" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartdocprop.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>
-  <xsd:import schemaLocation="oartsp3dstyles.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartsp3dscene.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartspeffects.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import schemaLocation="oartsplineproperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="oartbasetypes.xsd"/>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2010/main"
+	elementFormDefault="qualified"
+	xmlns="http://schemas.microsoft.com/office/drawing/2010/main"
+	xmlns:oxsd="http://oxsdSchemaUri"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"
+	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.office.drawing.x2010.main"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+	
+
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+
+<!-- <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="orel.xsd"/>  -->
+  
+	<xsd:import id="rel"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd"/>
+
+  <xsd:import schemaLocation="../dml/dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+
+  
+  <xsd:import schemaLocation="../dml/dml-shape3DStyles.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-shape3DScene.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-shapeEffects.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import schemaLocation="../dml/dml-shapeLineProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+  
+  
   <xsd:simpleType name="ST_LegacySpreadsheetColorIndex">
     <xsd:restriction base="xsd:int">
       <xsd:minInclusive value="0"/>
@@ -148,11 +192,6 @@
     <xsd:attribute name="brushSize" type="ST_ArtisticEffectParam10" use="optional" default="2"/>
   </xsd:complexType>
   <xsd:complexType name="CT_PictureEffectPaintStrokes">
-    182 / 216
-    [MS-ODRAWXML] — v20130206
-    Office Drawing Extensions to Office Open XML Structure
-    Copyright © 2013 Microsoft Corporation.
-    Release: February 11, 2013
     <xsd:attribute name="trans" type="a:ST_PositiveFixedPercentage" use="optional" default="0"/>
     <xsd:attribute name="intensity" type="ST_ArtisticEffectParam10" use="optional" default="5"/>
   </xsd:complexType>

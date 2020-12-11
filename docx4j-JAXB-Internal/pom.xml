@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-JAXB-Internal</artifactId>
+	<packaging>${packaging.type}</packaging>
+	<name>docx4j-JAXB-Internal</name>
+
+	<description>
+		config specifying that docx4j should use the JAXB Internal implementation (which is available but deprecated in Java 9 and 10) 
+	</description>
+
+	<build>
+		<plugins>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<!--  avoid package com.sun.xml.internal.bind.marshaller does not exist 
+					
+					https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6778491
+					-->
+					<fork>true</fork>
+				    <compilerArgs>
+			        	<arg>-XDignore.symbol.file</arg>
+				    </compilerArgs>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+			</plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                    	<Manifest-Version>2.0</Manifest-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <!--  include this?                        
+                        <Import-Package>
+							org.docx4j.jaxb,
+                        	com.sun.xml.internal.bind
+                        </Import-Package> 
+                        -->
+                        <Export-Package>
+                            org.docx4j.jaxb.suninternal
+                        </Export-Package>
+                        <!--  ?                        
+                        <_runsystempackages>com.sun.xml.internal.bind</_runsystempackages>
+                        -->
+                    </instructions>
+                </configuration>
+            </plugin>				
+ 			
+		</plugins>
+</build>	
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		
+		</dependencies>
+
+</project>

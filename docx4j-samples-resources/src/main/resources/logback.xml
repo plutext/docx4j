@@ -1,0 +1,175 @@
+<configuration>
+
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default -->
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} %line - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.apache.commons" level="WARN" />
+	<logger name="org.apache.fop" level="INFO" />
+
+	<!-- docx4j loggers -->
+	<logger name="org.docx4j" level="WARN" />
+
+	<logger name="org.docx4j.Docx4J" level="WARN" />
+
+	<logger name="org.docx4j.TraversalUtil" level="ERROR" />
+
+	<logger name="org.docx4j.XmlUtils" level="WARN" />
+
+	<logger name="org.docx4j.utils.ResourceUtils" level="DEBUG" />
+
+	<logger name="org.docx4j.convert.in" level="WARN" />
+
+	<logger name="org.docx4j.convert.in.xhtml" level="WARN" />
+
+	<logger name="org.docx4j.convert.in.xhtml.ListHelper" level="WARN" />
+
+	<logger name="org.docx4j.convert.out" level="WARN" />
+
+	<logger
+		name="org.docx4j.convert.out.common.AbstractConversionContext"
+		level="WARN" />
+
+	<logger name="org.docx4j.convert.out.common.Preprocess" level="WARN" />
+
+	<logger name="org.docx4j.convert.out.common.preprocess" level="WARN" />
+
+	<logger
+		name="org.docx4j.convert.out.common.preprocess.FieldsCombiner"
+		level="WARN" />
+
+	<!-- PDF output via XSL FO: change this to warn to hide messages -->
+	<logger
+		name="org.docx4j.convert.out.common.writer.AbstractMessageWriter"
+		level="DEBUG" />
+
+	<logger name="org.docx4j.convert.out.fo" level="WARN" />
+
+	<logger name="org.docx4j.convert.out.html.ListsToContentControls" level="WARN" />
+
+	<logger name="org.docx4j.diff" level="INFO" />
+
+	<logger name="com.topologi" level="DEBUG" />
+
+	<logger name="org.docx4j.fonts" level="WARN" />
+
+	<logger name="org.docx4j.fonts.PhysicalFonts" level="INFO" />
+
+	<logger name="org.docx4j.fonts.RunFontSelector" level="WARN" />
+
+	<logger name="org.docx4j.jaxb" level="INFO" />
+
+	<logger name="org.docx4j.model" level="WARN" />
+
+	<logger name="org.docx4j.model.fields" level="WARN" />
+
+	<logger name="org.docx4j.model.listnumbering" level="WARN" />
+
+	<logger name="org.docx4j.model.PropertyResolver" level="WARN" />
+
+	<logger name="org.docx4j.model.structure" level="WARN" />
+
+	<logger name="org.docx4j.model.styles" level="WARN" />
+
+	<logger name="org.docx4j.model.table" level="INFO" />
+
+	<logger name="org.docx4j.openpackaging" level="WARN" />
+	
+	<logger name="org.docx4j.openpackaging.URIHelper" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.io3" level="ERROR" />
+
+	<logger name="org.docx4j.openpackaging.packages" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.parts" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.parts.relationships" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.parts.Parts" level="INFO" />
+
+	<logger name="org.docx4j.openpackaging.parts.ThemePart" level="WARN" />
+
+	<logger
+		name="org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage"
+		level="INFO" />
+
+	<logger name="org.docx4j.openpackaging.parts.AbstractFontPart" level="WARN" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="DEBUG" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart" level="WARN" />
+
+	<!--  to see the fop config  -->
+	<logger name="org.docx4j.convert.out.fo.renderers" level="DEBUG" />
+
+
+
+	<logger name="org.docx4j.services.client" level="INFO" />
+
+	<logger name="org.docx4j.toc" level="INFO" />
+
+	<logger name="org.docx4j.wml" level="WARN" />
+
+	<logger name="org.docx4j.utils.XPathFactoryUtil" level="INFO" />
+
+	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN" />
+
+	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN"/>
+	        
+	<logger name="org.pptx4j" level="WARN"/>
+	
+	<logger name="org.docx4j.convert.out.documents4j.local" level="INFO"/>
+
+
+
+	<!-- OpenDoPE functionality loggers -->
+	<logger name="org.docx4j.model.datastorage" level="WARN" />
+
+	<logger
+		name="org.docx4j.model.datastorage.OpenDoPEHandlerComponents" level="WARN" />
+
+	<logger
+		name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart" level="WARN" />
+
+	<logger name="org.docx4j.openpackaging.parts.XmlPart" level="WARN" />
+
+	<logger name="org.opendope.conditions.Xpathref" level="WARN" />
+
+	<logger name="org.opendope" level="WARN" />
+
+
+	<!-- Enterprise edition loggers -->
+	<logger name="com.plutext.merge" level="INFO" />
+
+	<logger name="com.plutext.merge.BlockRange" level="INFO" />
+
+	<logger name="com.plutext.merge.HeaderFooterUtils" level="INFO" />
+
+	<logger name="com.plutext.merge.CustomXmlPartHandler" level="WARN" />
+
+	<logger name="com.plutext.merge.altchunk" level="WARN" />
+
+	<logger name="com.plutext.merge.pptx" level="WARN" />
+
+	<logger name="com.plutext.cmis" level="WARN" />
+
+	<logger name="org.apache.jcp.xml.dsig.internal.dom" level="INFO" />
+
+	<logger name="com.plutext.crypt.dsig" level="INFO" />
+
+	<logger
+		name="org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart"
+		level="INFO" />
+
+	<logger name="com.plutext.demo.diagnostics" level="DEBUG" />
+
+
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT" />
+	</root>
+	
+</configuration>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features name="docx4j-features" xmlns="http://karaf.apache.org/xmlns/features/v1.3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.3.0 http://karaf.apache.org/xmlns/features/v1.3.0">
+
+	<feature name="docx4j-deps" version="8.2">
+
+        <bundle>mvn:org.slf4j/slf4j-api/1.8.0-beta2</bundle>
+
+        <bundle>mvn:org.docx4j/docx4j-openxml-objects/8.2.1</bundle>
+        <bundle>mvn:org.docx4j/docx4j-openxml-objects-pml/8.2.1</bundle>
+        <bundle>mvn:org.docx4j/docx4j-openxml-objects-sml/8.2.1</bundle>
+
+	    <bundle>wrap:mvn:org.plutext/jaxb-svg11/1.0.2</bundle>
+        <!-- TODO: swap that to the following, once released:
+	    <bundle>mvn:org.plutext/jaxb-svg11/8.2.1</bundle>
+        -->
+        
+	    <bundle>wrap:mvn:org.docx4j.org.apache/xalan-serializer/8.0.0</bundle>
+	    <bundle>wrap:mvn:org.docx4j.org.apache/xalan-interpretive/8.0.0</bundle>
+ 
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-annotations/2.9.0</bundle>
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-core/2.9.9</bundle>
+        <bundle>mvn:com.fasterxml.jackson.core/jackson-databind/2.9.9</bundle>
+	
+	
+		<bundle dependency="true">mvn:javax.el/javax.el-api/3.0.0</bundle> <!-- for mbassador --> 
+	    <bundle>mvn:net.engio/mbassador/1.3.2</bundle>
+	    
+	    <bundle>wrap:mvn:org.antlr/antlr-runtime/3.5.2</bundle> <!-- manifest incomplete  -->
+	    <bundle>wrap:mvn:org.antlr/stringtemplate/3.2.1</bundle>
+
+	    <bundle>wrap:mvn:commons-codec/commons-codec/1.12</bundle> <!--  Plexus archiver -->
+	    <bundle>mvn:org.apache.commons/commons-compress/1.18</bundle> 
+	    <bundle>mvn:org.apache.commons/commons-lang3/3.9</bundle> 
+
+	    <bundle>mvn:commons-io/commons-io/2.6</bundle>
+
+	    <bundle>wrap:mvn:org.apache.httpcomponents/httpclient/4.5.8</bundle>
+	    <bundle>wrap:mvn:org.apache.httpcomponents/httpcore/4.4.11</bundle>
+
+
+	    <bundle>wrap:mvn:org.apache.xmlgraphics/xmlgraphics-commons/2.3</bundle>
+
+	    <bundle>wrap:mvn:com.thedeanda/lorem/2.1</bundle>
+	    <bundle>wrap:mvn:net.arnx/wmf2svg/0.9.8</bundle>
+
+	    
+<!-- 	    
+	    <bundle>mvn:org.eclipse.persistence/org.eclipse.persistence.asm/2.7.4</bundle>
+	    <bundle>mvn:org.eclipse.persistence/org.eclipse.persistence.core/2.7.4</bundle>
+	    <bundle>wrap:mvn:org.eclipse.persistence/org.eclipse.persistence.moxy/2.7.4</bundle>
+	    <bundle>wrap:mvn:jakarta.xml.bind/jakarta.xml.bind-api/2.3.2</bundle>
+        -->
+        
+        
+        <bundle>wrap:mvn:com.google.errorprone/error_prone_annotations/2.3.3</bundle>
+        <bundle>wrap:mvn:org.checkerframework/checker-qual/2.8.1</bundle>
+            
+	</feature>
+
+
+
+<!--  org.slf4j:jcl-over-slf4j:jar:1.7.25:compile
+
+ -->
+ 
+<!-- 
+[INFO]    +- org.apache.logging.log4j:log4j-slf4j18-impl:jar:2.11.2:compile
+[INFO]    |  +- org.apache.logging.log4j:log4j-api:jar:2.11.2:compile
+[INFO]    |  \- org.apache.logging.log4j:log4j-core:jar:2.11.2:runtime
+ -->
+
+
+<!-- [INFO]    |  \- antlr:antlr:jar:2.7.7:compile -->
+
+<!-- 
+[INFO]    +- com.google.guava:guava:jar:27.0.1-jre:compile
+[INFO]    |  +- com.google.guava:failureaccess:jar:1.0.1:compile
+[INFO]    |  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:compile
+[INFO]    |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO]    |  +- org.checkerframework:checker-qual:jar:2.5.2:compile
+[INFO]    |  +- com.google.errorprone:error_prone_annotations:jar:2.2.0:compile
+[INFO]    |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO]    |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.17:compile
+
+
+]    \- org.eclipse.persistence:org.eclipse.persistence.moxy:jar:2.7.4:compile
+[INFO]       \- org.eclipse.persistence:org.eclipse.persistence.core:jar:2.7.4:compile
+[INFO]          \- org.eclipse.persistence:org.eclipse.persistence.asm:jar:2.7.4:compile
+
+ -->
+
+</features>
+

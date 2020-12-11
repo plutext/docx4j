@@ -1,0 +1,39 @@
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2017/03/chart"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	xmlns="http://schemas.microsoft.com/office/drawing/2017/03/chart"
+	xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" blockDefault="#all"
+	    	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	    
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
+         on 20190518
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.com.microsoft.schemas.office.drawing.x201703.chart"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+    
+<!--
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/chart" schemaLocation="chart.xsd"/>
+   -->
+   
+   <xsd:complexType name="CT_BooleanFalse">
+     <xsd:attribute name="val" type="xsd:boolean" use="optional" default="false"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_DataDisplayOptions16">
+     <xsd:sequence>
+       <xsd:element name="dispNaAsBlank" type="CT_BooleanFalse" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="dataDisplayOptions16" type="CT_DataDisplayOptions16"/>
+ </xsd:schema>

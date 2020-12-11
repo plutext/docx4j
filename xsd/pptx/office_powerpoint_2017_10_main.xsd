@@ -1,0 +1,31 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2017/10/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2017/10/main"
+	xmlns:p1710="http://schemas.microsoft.com/office/powerpoint/2017/10/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+         
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x201710.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+         
+         
+   <xsd:complexType name="CT_ReadonlyRecommended">
+     <xsd:attribute name="val" type="xsd:boolean" use="required"/>
+   </xsd:complexType>
+   <xsd:element name="readonlyRecommended" type="CT_ReadonlyRecommended"/>
+ </xsd:schema>

@@ -25,24 +25,26 @@ Release: July 30, 2013 -->
 				</jaxb:globalBindings>
 			</xsd:appinfo>
 			<jaxb:schemaBindings>
-				<jaxb:package name="org.pptx4j.powerpoint.main2010"/>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main"/>
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
 	</xsd:annotation>	  
 	
   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
-		schemaLocation="dml_imports.xsd" /><!--  use 1ed stuff; was 2ed dml-main -->
+		schemaLocation="../dml/dml__ROOT.xsd" />
 	<xsd:import id="s"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
 		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
-  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="dml-mainExt.xsd"/>
+  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="../odrawxml/oart14docprop.xsd"/>
   
-<!--   
-  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
-  <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2010/main" schemaLocation="dml-mainExt.xsd"/>
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd"/>
+   
+   <!--
+   
+		// Extensions don't work with xjc 2.3.0? https://stackoverflow.com/questions/28145306/how-to-use-jaxb-extensions-on-xjc-command-line?rq=1
+   
+   		sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer office_powerpoint_2010_main.xsd -d tmp  -no-header -target 2.0
+
    -->
    
   <xsd:simpleType name="ST_UniversalTimeOffset">

@@ -1,0 +1,29 @@
+<xsd:schema targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+elementFormDefault="qualified"
+xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.com.microsoft.schemas.office.spreadsheetml.x2014.revision"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+
+ <xsd:attribute name="uid" type="s:ST_Guid"/>
+ 
+ </xsd:schema>

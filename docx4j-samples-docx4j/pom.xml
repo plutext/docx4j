@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-samples-docx4j</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-samples-docx4j</name>
+	
+	<description>docx4j-samples-docx4j</description>
+
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		
+		<plugins>
+			<!--  don't deploy this jar to Maven Central -->			
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>3.0.0-M1</version>
+			  <configuration>
+			    <skip>true</skip>
+			  </configuration>
+			</plugin>					
+		</plugins>
+		
+	</build>
+	
+	
+	<dependencies>
+
+		<!--  choose a docx4j-JAXB implementation, one ONLY of the 3 following :-->
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-docx-anon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+<!-- 
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-MOXy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	 -->
+
+		<!--  choose your preferred logging implementation, for example: -->
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<!--  1.3.0-alpha4 does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
+		
+		<!-- 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.11.2</version>
+		</dependency>
+		 -->
+		<!--  log4j-slf4j18-impl does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
+
+		<!--  logging config files for log4j2 and logback can be found in:-->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-samples-resources</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+ 	<!-- If you want to use Saxon for XPath, uncomment this, and include
+ 	
+ 				XPathFactoryUtil.setxPathFactory(new net.sf.saxon.xpath.XPathFactoryImpl());
+ 	  
+	<dependency>
+	  <groupId>net.sf.saxon</groupId>
+	  <artifactId>Saxon-HE</artifactId>
+	  <version>9.9.0-2</version>
+	</dependency>
+	-->
+	
+<!-- Uncomment if javax.xml.stream is missing from your env (shouldn't be necessary in Java 8).  This provides that via META-INF/services.
+     Or you can use: System.setProperty("javax.xml.stream.XMLInputFactory", "com.ctc.wstx.stax.WstxInputFactory");
+       	
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<version>5.2.0</version>
+		</dependency>
+	  -->
+	  
+	</dependencies>
+
+</project>

@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+				xmlns="http://www.w3.org/1998/Math/MathML"
+				targetNamespace="http://www.w3.org/1998/Math/MathML"
+				elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.org.w3.x1998.math.mathML"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>	  
+				
+	<xs:annotation>
+		<xs:documentation>
+			This is an XML Schema for the MathML subset used by InkML.
+			Author: Stephen M. Watt, University of Western Ontario.
+		</xs:documentation>
+	</xs:annotation>
+	<xs:annotation>
+		<xs:documentation>
+			Copyright 2003-2011 W3C (MIT, ERCIM, Keio),
+			All Rights Reserved. Permission to use, copy,
+			modify and distribute the InkML schema and its
+			accompanying documentation for any purpose and
+			without fee is hereby granted in perpetuity,
+			provided that the above copyright notice and this
+			paragraph appear in all copies. The copyright
+			holders make no representation about the suitability
+			of the schema for any purpose. It is provided
+			"as is" without expressed or implied warranty.
+		</xs:documentation>
+	</xs:annotation>
+
+	<xs:attributeGroup name="common.attrib">
+		<!-- allow attributes from foreign namespaces, and don't check them -->
+		<xs:anyAttribute namespace="##other" processContents="skip"/>
+	</xs:attributeGroup>
+
+	<!-- math -->
+	<xs:complexType name="math.type">
+		<xs:group ref="expression.content" minOccurs="1" maxOccurs="1"/>
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:complexType>
+
+	<xs:element name="math" type="math.type"/>
+
+	<!-- Expression -->
+	<xs:group name="expression.content">
+		<xs:choice>
+			<!-- Numbers -->
+			<xs:element ref="cn"/>
+
+			<!-- Identifiers -->
+			<xs:element ref="ci"/>
+
+			<!-- Symbolic Constants -->
+			<xs:group ref="constant.content"/>
+
+			<!-- Applications -->
+			<xs:element ref="apply"/>
+
+			<!-- Qualifiers -->
+			<xs:group ref="qualifier.content"/>
+		</xs:choice>
+	</xs:group>
+
+	<!-- Operators -->
+	<xs:complexType name="operator.type">
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:complexType>
+
+	<xs:element name="abs"          type="operator.type"/>
+	<xs:element name="floor"        type="operator.type"/>
+	<xs:element name="ceiling"      type="operator.type"/>
+
+	<xs:element name="power"        type="operator.type"/>
+	<xs:element name="root"         type="operator.type"/>
+
+	<xs:element name="minus"        type="operator.type"/>
+	<xs:element name="plus"         type="operator.type"/>
+	<xs:element name="sum"          type="operator.type"/>
+	<xs:element name="times"        type="operator.type"/>
+	<xs:element name="product"      type="operator.type"/>
+
+	<xs:element name="max"          type="operator.type"/>
+	<xs:element name="min"          type="operator.type"/>
+
+	<xs:element name="quotient"     type="operator.type"/>
+	<xs:element name="divide"       type="operator.type"/>
+	<xs:element name="rem"          type="operator.type"/>
+
+
+	<xs:element name="and"          type="operator.type"/>
+	<xs:element name="or"           type="operator.type"/>
+	<xs:element name="xor"          type="operator.type"/>
+	<xs:element name="not"          type="operator.type"/>
+
+	<xs:element name="eq"           type="operator.type"/>
+	<xs:element name="neq"          type="operator.type"/>
+	<xs:element name="leq"          type="operator.type"/>
+	<xs:element name="lt"           type="operator.type"/>
+	<xs:element name="geq"          type="operator.type"/>
+	<xs:element name="gt"           type="operator.type"/>
+
+	<xs:element name="exp"          type="operator.type"/>
+	<xs:element name="ln"           type="operator.type"/>
+	<xs:element name="log"          type="operator.type"/>
+
+	<xs:element name="sin"          type="operator.type"/>
+	<xs:element name="cos"          type="operator.type"/>
+	<xs:element name="tan"          type="operator.type"/>
+
+	<xs:element name="arcsin"       type="operator.type"/>
+	<xs:element name="arccos"       type="operator.type"/>
+	<xs:element name="arctan"       type="operator.type"/>
+
+	<xs:group name="operator.content">
+		<xs:choice>
+			<!-- Arithmetic -->
+			<xs:element ref="abs"/>
+			<xs:element ref="floor"/>
+			<xs:element ref="ceiling"/>
+			<xs:element ref="quotient"/>
+			<xs:element ref="divide"/>
+			<xs:element ref="rem"/>
+			<xs:element ref="minus"/>
+			<xs:element ref="plus"/>
+			<xs:element ref="times"/>
+			<xs:element ref="power"/>
+			<xs:element ref="root"/>
+			<xs:element ref="max"/>
+			<xs:element ref="min"/>
+
+			<!-- Logic -->
+			<xs:element ref="and"/>
+			<xs:element ref="or"/>
+			<xs:element ref="xor"/>
+			<xs:element ref="not"/>
+
+			<!-- Constants -->
+			<xs:element ref="exponentiale"/>
+			<xs:element ref="pi"/>
+			<xs:element ref="true"/>
+			<xs:element ref="false"/>
+
+			<!-- Relations -->
+			<xs:element ref="eq"/>
+			<xs:element ref="neq"/>
+			<xs:element ref="leq"/>
+			<xs:element ref="lt"/>
+			<xs:element ref="geq"/>
+			<xs:element ref="gt"/>
+
+			<!-- Elementary functions -->
+			<xs:element ref="exp"/>
+			<xs:element ref="ln"/>
+			<xs:element ref="log"/>
+			<xs:element ref="sin"/>
+			<xs:element ref="cos"/>
+			<xs:element ref="tan"/>
+			<xs:element ref="arcsin"/>
+			<xs:element ref="arccos"/>
+			<xs:element ref="arctan"/>
+		</xs:choice>
+	</xs:group>
+
+	<!-- Qualifiers -->
+	<xs:complexType name="qualifier.type">
+		<xs:group ref="expression.content" minOccurs="1" maxOccurs="1"/>
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:complexType>
+
+	<xs:element name="logbase" type="qualifier.type"/>
+	<xs:element name="degree"  type="qualifier.type"/>
+
+	<xs:group name="qualifier.content">
+		<xs:choice>
+			<xs:element ref="logbase"/>
+			<xs:element ref="degree"/>
+		</xs:choice>
+	</xs:group>
+
+	<!-- Constants -->
+	<xs:complexType name="constant.type">
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:complexType>
+
+	<xs:element name="exponentiale" type="constant.type"/>
+	<xs:element name="pi"           type="constant.type"/>
+
+	<xs:element name="true"         type="constant.type"/>
+	<xs:element name="false"        type="constant.type"/>
+
+	<xs:group name="constant.content">
+		<xs:choice>
+			<xs:element ref="exponentiale"/>
+			<xs:element ref="pi"/>
+			<xs:element ref="true"/>
+			<xs:element ref="false"/>
+		</xs:choice>
+	</xs:group>
+
+	<!-- Apply -->
+	<xs:element name="apply"        type="apply.type"/>
+
+	<xs:complexType name="apply.type">
+		<xs:sequence>
+			<xs:group ref="operator.content"/>
+			<xs:group ref="expression.content" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:complexType>
+
+	<!-- "cn" -->
+	<xs:attributeGroup name="cn.attlist">
+		<xs:attribute name="type">
+			<xs:simpleType>
+				<xs:restriction base="xs:NMTOKEN">
+					<xs:enumeration value="integer"/>
+					<xs:enumeration value="rational"/>
+					<xs:enumeration value="real"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:attributeGroup>
+
+	<xs:complexType name="sep.type">
+	</xs:complexType>
+
+	<xs:element name="sep" type="sep.type"/>
+
+	<xs:group name="cn.content">
+		<xs:choice>
+			<xs:element ref="sep"/>
+		</xs:choice>
+	</xs:group>
+
+	<xs:complexType name="cn.type" mixed="true">
+		<xs:group ref="cn.content" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:attributeGroup ref="cn.attlist"/>
+	</xs:complexType>
+
+	<xs:element name="cn" type="cn.type"/>
+
+	<!-- "ci" -->
+	<xs:attributeGroup name="ci.attlist">
+		<xs:attributeGroup ref="common.attrib"/>
+	</xs:attributeGroup>
+
+	<xs:complexType name="ci.type" mixed="true">
+		<xs:attributeGroup ref="ci.attlist"/>
+	</xs:complexType>
+
+	<xs:element name="ci" type="ci.type"/>
+
+</xs:schema>

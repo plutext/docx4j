@@ -20,6 +20,7 @@ When it comes to the actual release, follow the below for:
 
 + xhtmlrenderer
 + docx4j-ImportXHTML
++ docx4j-export-FO
 
 + docx4j-MOXy
 
@@ -34,6 +35,15 @@ TODO: make toolchain UTF-8 filename safe ie git, zip, unzip
  
 ---------- 
 
+Merge changes from 8 or 11 as appropriate.  If creating a patch (of changes in 11_1_2):
+
+    git diff master VERSION_11_1_2 > patchfile
+
+may need to run dos2unix on source file(s), then its
+
+    patch -p1 --dry-run  < patchfile
+
+
 Update CHANGELOG.md, README.md with release info.
 
     http://www.jukie.net/bart/blog/pimping-out-git-log
@@ -43,6 +53,8 @@ Update CHANGELOG.md, README.md with release info.
     git lg b6c12c8..HEAD > stuff.txt  
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
+
+Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
 
 Update build.xml so it has the same version as pom.xml (but without  -SNAPSHOT) 
 
@@ -60,6 +72,18 @@ Run JarCheck on result of mvn install to check its compiled for 1.6 (run it on a
 
 git commit / push upstream
 (uses git-remote-https, if you want to force a particular network connection)
+
+-------------
+
+Note for Java 11:  Maven Central requires Javadoc.
+
+But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
+				 
+So we have to build with Java 12 or later (currently 14) :- 
+
+$ sudo archlinux-java set java-14-adoptopenjdk
+
+-------------
 
 Start up the Git Bash session and go to your project directory.
 
@@ -86,6 +110,17 @@ Github RSA key is in the c:\.ssh\ directory. If it isn’t then just substitute 
 
 $ ssh-add ~/.ssh/id_rsa
 Enter passphrase for /c/Users/jharrop/.ssh/id_rsa: [the github 2 one]
+
+--------------
+
+Linux
+
+eval "$(ssh-agent -s)"
+
+ssh-add ~/.ssh/id_rsa
+Enter passphrase for ... .ssh/id_rsa: [the github 2 one]
+
+---------------
 
 This command prompt can be used to do what follows for the 4 projects.  ie the above only needs to be done once :-)
 
@@ -181,6 +216,11 @@ If you need to start again for any reason, delete the tag it added:
 and change the version back in your pom (and commit)
 and delete release.properties
 
+Easiest is to discard all changes, and if necessary revert and commit any commits it made.
+
+You'll still need to delete any tag as per above.
+
+
 -----------
 
 You can't do:
@@ -245,28 +285,77 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 -------
 
-Repeat above for -ImportXHTML
+Revert and commit (most recent first) the 2 commits which change the version number in all the poms
+(Swap sub-modules back to <version>${revision}</version>)
+then manually update the version number in parent pom (it needs to be the released version, since build.xml copies the pom.xml)
 
-Run ant release (requires both docx4j and -ImportXHTML to be in maven)
- 
+Repeat above for -ImportXHTML 
+
+Run ant release (requires docx4j, -ImportXHTML  to be in maven)
+
+ ant release  -buildfile etc/build.xml
+
+Switch branch if necessary, eg:
+
+    git checkout master
+    
+and
+
+$ sudo archlinux-java set java-8-openjdk
+
+or 
+
+$ sudo archlinux-java set java-14-adoptopenjdk
+
+
+Upodate pom.xml to -SNAPSHOT
 
 ----
 
+Put in /docx4j dir, for example
+
+	scp *2.1.zip  ubuntu@docx4java.org:/home/ubuntu/docx4j-8.2.1/
+
+
+Update downloads.html
 Announce release in docx4j forum
+Update news  (includes link to release announcement)
 
 ----
 
 .NET releases
 
 Nuget publish procedure:
-1.	use ant to create the DLL
-	a.	(no SNK for Nuget)
-2.	in Visual Studio, remove reference to existing DLL; copy/add the new one
-3.	update docx4j.properties (don't need that in -ImportXHTML nuspec, since it is pulled in automatically)
+(see also HOWTO_update.txt on M4600)
+
+Create the dll:
+0.  you'll need slf4j-api.dll (use the version in nuget, or update it first: IKVM needs to use the version end-users will be using, or they'll get TypeInitializationException).
+    should just be 1.7.5.4
+1.  get branch:  git checkout tags/docx4j-6.0.1 -b docx4j-6.0.1
+2.  mvn install (to ensure deps are present, and since it is only mvn which writes docx4j version)
+4.	ant dist.NET to create the DLL, strong named since that's useful for VSTO
+
+C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\sn -v can be used to check
+	
+docx4.NET in Visual Studio:	
+0.  git clone https://github.com/plutext/docx4j.NET.git
+1.	open that in Visual Studio, remove reference to existing DLL; copy/add the new one
+2.	update docx4j.properties (don't need that in -ImportXHTML nuspec, since it is pulled in automatically)
+3.  build (issues doing this with VS Community 2017 on Yoga; use VS 2010 on M4600 VM )
 4.	test it works
-5.	open the existing .nuspec file (inNuGet Package Explorer)
-6.	update the version number etc
-7.	save it
-8.	publish (key is in user profiles doc)
-9.  extract new .nuspec file from .nupkg (since the tool doesn't seem to save it)
-9.  push to GitHub
+5.  update nuget deps?
+
+NuGet Package Explorer:
+6.	open the existing .nuspec file (in NuGet Package Explorer application, v4.1 or later required, I'm using 4.4.46, but that mangles @src attribute on save, so you'll need to fix it)
+7.	update the version number etc, then save it
+8.	publish (key is in user profiles doc; i left the append 'api/v2/package' option ticked)
+9.  save new .nuspec (save metadata as..) if you edited in NuGet Package Explorer 
+10.  push to GitHub
+
+Procedure for -ImportXHTML is similar,
+  but copy the docx4j.dll into it first.
+
+TODO: review which version of .NET to target (see howto file)  
+  
+
+

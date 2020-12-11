@@ -1,5 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/ink/2010/main" xmlns="http://schemas.microsoft.com/ink/2010/main" xmlns:msink="http://schemas.microsoft.com/ink/2010/main" xmlns:oxsd="http://oxsdSchemaUri">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	attributeFormDefault="unqualified" elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/ink/2010/main"
+	xmlns="http://schemas.microsoft.com/ink/2010/main"
+	xmlns:msink="http://schemas.microsoft.com/ink/2010/main"
+	xmlns:oxsd="http://oxsdSchemaUri"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    
+    <!-- 
+    
+        2019 0429: added for docx4j 8.0.1; to generate this, use ../dml/dml__ROOT.xsd
+    
+     -->
+    
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+        <xsd:appinfo>
+            <xsd:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.com.microsoft.schemas.ink.x2010.main"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+  </xsd:annotation>
+
+	
   <xsd:simpleType name="ST_KnownCtxNodeType">
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="root"/>

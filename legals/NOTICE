@@ -1,50 +1,73 @@
-   docx4j
-   Copyright 2007-2011 Plutext Pty Ltd
+docx4j
+Copyright 2007-2020 Plutext Pty Ltd
+
+Unless otherwise mentioned, the sources below are used in docx4j-core.
    
-   Portions of the package org.docx4j.openpackaging are
-   derivative works of OpenXML4J. OpenXml4J is copyright
-   Wygwam, and available under two licenses, BSD and 
-   Apache License, Version 2.0 (ASLv2).
-   http://openxml4j.svn.sourceforge.net
+Portions of the package org.docx4j.openpackaging are
+derivative works of OpenXML4J. OpenXml4J is copyright
+Wygwam, and available under two licenses, BSD and 
+Apache License, Version 2.0 (ASLv2).
+http://openxml4j.svn.sourceforge.net
  	
- 	org.jvnet.jaxb2_commons.ppp is copyright 2007 Gregory A. Kick
- 	It is licensed under ASLv2.
- 	
-    org.merlin.io is copyright (c) 2002 Merlin Hughes 
-    <merlin@merlin.org>  It is licensed under ASLv2.
+org.jvnet.jaxb2_commons.ppp is copyright 2007 Gregory A. Kick
+It is licensed under ASLv2.
     
-    com.topologi.diffx is copyright Topologi 2004.
-    It is licensed under the Artistic License.  Under
-	clause 4 of that license, we may distribute diffx
-	in object code or executable form, provided that 
-	we accompany the distribution with the machine-readable 
-	source of the modified package.
+The package package org.docx4j.fonts.fop includes software 
+developed by the Apache Software Foundation (http://www.apache.org/),
+namely Apache FOP. Apache FOP  consists of voluntary contributions 
+made by many individuals on behalf of The Apache Software Foundation 
+and was originally created by James Tauber <jtauber@jtauber.com>.  
+ 
+org.docx4j.fonts.foray.font.format.Panose is copyright 
+2006 The FOray Project, http://www.foray.org
+It is licensed under the Apache License, Version 2.0
+(ASLv2).
 
-    The package package org.docx4j.fonts.fop includes software 
-    developed by the Apache Software Foundation (http://www.apache.org/),
- 	namely Apache FOP. Apache FOP  consists of voluntary contributions 
- 	made by many individuals on behalf of The Apache Software Foundation 
- 	and was originally created by James Tauber <jtauber@jtauber.com>.  
- 	 
-	org.docx4j.fonts.foray.font.format.Panose is copyright 
-	2006 The FOray Project, http://www.foray.org
- 	It is licensed under the Apache License, Version 2.0
- 	(ASLv2).
+src/main/antlr is based on the XPath 1.0 
+(http://www.w3.org/TR/1999/REC-xpath-19991116) grammar 
+by Jan-Willem van den Broek, version 1.0, downloaded 
+on 2011-06-18 from 
+http://blog.jwbroek.com/2010/07/antlr-grammar-for-parsing-xpath-10.html
+That page said "Do with this code as you will." 
  	
- 	src/main/antlr is based on the XPath 1.0 
- 	(http://www.w3.org/TR/1999/REC-xpath-19991116) grammar 
- 	by Jan-Willem van den Broek, version 1.0, downloaded 
- 	on 2011-06-18 from 
- 	http://blog.jwbroek.com/2010/07/antlr-grammar-for-parsing-xpath-10.html
- 	That page said "Do with this code as you will." 
- 	 	
- 	Some of the package org.docx4j.model.listnumbering is a translation into 
- 	Java of a portion of Program.cs from Microsoft's OpenXmlViewer, which 
- 	is (c) Microsoft Corporation and was made available to the project under the 
- 	Microsoft Public License (Ms-PL).  See further the license header on
- 	the relevant files.		
- 	
- 	TODO reference xsd license
+Regarding org.docx4j.model.listnumbering:
+- some of the package is a translation into 
+Java of a portion of Program.cs from Microsoft's OpenXmlViewer, which 
+is (c) Microsoft Corporation and was made available to the project under the 
+Microsoft Public License (Ms-PL).  See further the license header on
+the relevant files.		
+- NumberFormatRomanAbstract, NumberFormatRomanLower and NumberFormatRomanUpper
+are derived from code written by Fred Swartz and placed in public domain under the MIT license
 
-In each case, information regarding the applicable license
-may be found in the source files in the relevant package.
+org.docx4j.com.google.common repackages portions of Guava,
+copyright the Guava Authors and Licensed under the Apache License, 
+Version 2.0
+
+org.docx4j.org.apache.poi repackages portions of Apache POI, 
+which the ASF licenses under the Apache License, Version 2.0
+
+org.docx4j.org.apache.xerces.util.EncodingMap.java repackages a file 
+from xercesImpl 2.11.0.  The ASF licenses this file under the Apache License, Version 2.0
+
+org.docx4j.org.apache.xml.security repackages code in org.apache.xml.security,
+which the ASF licenses under the Apache License, Version 2.0 
+
+org.docx4j.services.client.MyRetryHandler is a modified version of Apache's http client DefaultHttpRequestRetryHandler.
+The ASF licenses that file under the Apache License, Version 2.0 
+
+com.topologi.diffx, used in docx4j-diffx, 
+is copyright Topologi 2004.
+It is licensed under the Artistic License.  Under
+clause 4 of that license, we may distribute diffx
+in object code or executable form, provided that 
+we accompany the distribution with the machine-readable 
+source of the modified package.
+ 	
+The xsd dir (not shipped in any docx4j jar) contains various xsd files from which the object models
+used by JAXB were generated using XJC.  These generally came from
+either OfficeOpenXML-XMLSchema.zip 
+http://www.ecma-international.org/publications/standards/Ecma-376.htm says
+"Copy these file(s), free of charge", or on of the Microsoft
+Open Specifications documents, which says you can "distribute in your implementation, 
+with or without modification, any schemas .. that are included in the documentation".
+See also the Microsoft Open Specifications Promise. 

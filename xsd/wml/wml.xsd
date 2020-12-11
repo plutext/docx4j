@@ -31,6 +31,11 @@ REVISION HISTORY
 20130401 - CT_TblLook from transitional 4ed; fixes https://github.com/plutext/docx4j/issues/53 
 
 20130709 - [MS-DOCX] w14, w15 - most bits, but not rPr extensions, conflict extensions, or calendar type extensions
+
+20180526 - Add mc:AlternateContent to w:r
+           Add w14 text effects to rPr 
+           
+20181124   Add w14 EG_RPrOpenType to rPr. (since docx4j 6.1.0)           
 	
 USAGE INSTRUCTIONS
 	  
@@ -54,8 +59,13 @@ USAGE INSTRUCTIONS
 	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/math/*.java -rf
 	
   To generate the classes (from the same directory)	
-			
- 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+
+	// 201805: Extensions don't work with xjc 2.3.0? https://stackoverflow.com/questions/28145306/how-to-use-jaxb-extensions-on-xjc-command-line?rq=1
+	// so use 2.2.11 instead
+
+ 	 sh /bvols/\@Overflow/No_COW/java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
+	
+ 	 sh /media/jharrop/Overflow/java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /media/jharrop/Overflow/java/parent-pointer-plugin-1.2.jar -Xparent-pointer wml.xsd -d tmp  -no-header -target 2.0
 	 
   It would be nice to be able to add the fluent api, but having 2 entries on the class path doesn't seem to work!  TODO - try with an ant task
 	 
@@ -6579,6 +6589,15 @@ PRINCIPLES:
 				</xsd:annotation>
 				<xsd:complexType/>
 			</xsd:element>
+			
+			<!--  added docx4j 3.3.8 -->
+			<xsd:element ref="mc:AlternateContent" />
+			<!-- eg
+		        <mc:AlternateContent>
+		          <mc:Choice Requires="wps">
+		            <w:drawing>			
+			 -->
+			
 		</xsd:choice>
 	</xsd:group>
 	<xsd:element name="r">
@@ -7043,15 +7062,41 @@ PRINCIPLES:
 		
 	</xsd:element>
 	
+	<!--  avoid xjc 2.2.11 collision with w14:shadow  
+	
+	can do it this way, but its neater to do it in the w14 xsd.
+	
+	<xsd:element name="shadow" type="BooleanDefaultTrue" >
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="shadow2006"/>
+			</xsd:appinfo>
+			<xsd:documentation>Shadow</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	-->
+	
 	<xsd:group name="EG_RPrBase">
 		
-		<!-- NB - Any element defined inline in this group, 
-		ie with name= but not type= 
+		<!-- 
 		
-		will be handled incorrectly by JAXB ri-20070917 target 2.0.
+		If XJC generates an @XmlElementRef in the class, that item will 
+		also get a scoped method in ObjectFactory.
 		
-		It was making it a subclass of CT_rPrChange.rPr, irrespective 
-		of which rPr class it was part of 
+		But if XJC generates a field instead, then there won't be
+		a corresponding scoped method in ObjectFactory.
+		
+		How does XJC choose which to do?  It is not entirely clear.
+		
+		If may have something to do with whether an element is defined 
+		inline in this group, ie with name= but not type=
+		
+		But it looks like its related to whether you have a list or not.
+		In a list (eg CTParaRPrOriginal), it is annotated with @XmlElementRefs
+		
+		If its just a bunch of fields (eg our RPrAbstract), it isn't. 
+		
+		Not so obvious what the difference here in the xsd is.
 		
 		-->
 		
@@ -7105,7 +7150,7 @@ PRINCIPLES:
 						Outline</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="shadow" type="BooleanDefaultTrue" minOccurs="0">
+			<xsd:element name="shadow" type="BooleanDefaultTrue"  minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Shadow</xsd:documentation>
 				</xsd:annotation>
@@ -7244,8 +7289,20 @@ PRINCIPLES:
 					<xsd:documentation>Office Open XML Math</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			
+<!-- extended by the addition of one or more of the following elements: 
+
+		glow, shadow, reflection, textOutline, textFill, scene3d, props3d, 
+		
+		ligatures, numForm, numSpacing, stylisticSets, cntxtAlts. 
+          
+ -->			
+			<xsd:group ref="w14:EG_RPrTextEffects" minOccurs="0"></xsd:group>
+			<xsd:group ref="w14:EG_RPrOpenType" minOccurs="0"></xsd:group>
+
 		</xsd:sequence>
 	</xsd:group>
+	
 	<xsd:group name="EG_RPrContent">
 		<xsd:sequence>
 			<xsd:group ref="EG_RPrBase" minOccurs="0"></xsd:group>

@@ -1,0 +1,55 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2016/slidezoom"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2016/slidezoom"
+	xmlns:pslz="http://schemas.microsoft.com/office/powerpoint/2016/slidezoom"
+	xmlns:p166="http://schemas.microsoft.com/office/powerpoint/2016/6/main"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+         
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x2016.slidezoom"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+         
+         
+<!--          
+   <xsd:import namespace="http://schemas.microsoft.com/office/powerpoint/2016/6/main" schemaLocation="ms-pptx166.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+   -->
+   <xsd:import namespace="http://schemas.microsoft.com/office/powerpoint/2016/6/main" schemaLocation="ms-pptx166.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+   
+   <xsd:complexType name="CT_SlideZoomObject">
+     <xsd:sequence>
+       <xsd:element name="zmPr" type="p166:CT_ZoomObjectProperties" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="sldId" type="p:ST_SlideId" use="required"/>
+     <xsd:attribute name="cId" type="xsd:unsignedInt" use="optional"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_SlideZoom">
+     <xsd:sequence>
+       <xsd:element name="sldZmObj" type="CT_SlideZoomObject" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="sldZm" type="CT_SlideZoom"/>
+ </xsd:schema>

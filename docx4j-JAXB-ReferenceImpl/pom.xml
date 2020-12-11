@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+	<packaging>${packaging.type}</packaging>
+	<name>docx4j-JAXB-ReferenceImpl</name>
+
+	<description>
+		config specifying that docx4j should use the JAXB reference impls
+	</description>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+			</plugin>
+			
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                    	<Manifest-Version>2.0</Manifest-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <!--  include this?
+                        <Import-Package>
+							org.docx4j.jaxb,
+							com.sun.xml.bind.marshaller
+						</Import-Package>  
+						 -->                      
+                        <Export-Package>
+                            org.docx4j.jaxb.ri
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>				
+			
+ 			<!--  mvn versions:display-dependency-updates --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
+			</plugin> 
+			
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.glassfish.jaxb</groupId>
+		  <artifactId>jaxb-runtime</artifactId>
+		  <version>2.3.2</version>
+		</dependency>		
+		
+<!--  
+
+	For Maven artifacts, see https://github.com/eclipse-ee4j/jaxb-ri#maven-artifacts
+	which says "In Maven projects org.glassfish.jaxb artifacts are supposed to be used"
+	since com.sun.xml.bind:jaxb-impl is a JAXB runtime fat jar.
+	
+	Use https://github.com/eclipse-ee4j/jaxb-ri
+	
+	https://github.com/javaee/jaxb-v2 is archived;
+	
+	per https://javaee.github.io/jaxb-v2/doc/user-guide/release-documentation.html#jaxb-2-0-changelog
+
+		4.1. Changes between 2.3.0.1 and 2.4.0
+		
+			 JAXB RI is now JPMS modularized:
+				
+				All modules have native module descriptor.
+				
+				Removed jaxb-core module, which caused split package issue on JPMS.
+				
+				RI binary bundle now has single jar per dependency instead of shaded fat jars.
+				
+				Removed runtime class weaving optimization.
+		
+		4.2. Changes between 2.3.0 and 2.3.0.1
+		
+			  Removed legacy technology dependencies:
+				
+				com.sun.xml.bind:jaxb1-impl
+				
+				net.java.dev.msv:msv-core
+				
+				net.java.dev.msv:xsdlib
+				
+				com.sun.xml.bind.jaxb:isorelax
+		
+		4.3. Changes between 2.2.11 and 2.3.0
+		
+			  Adopt Java SE 9:
+				
+				JAXB api can now be loaded as a module.
+				
+				JAXB RI is able to run on Java SE 9 from the classpath.
+				
+				Addes support for java.util.ServiceLoader mechanism.
+				
+				Security fixes
+
+		4.7. Changes between 2.2.7 to 2.2.8
+		
+			 This release is integrated into JDK 8. (Build 2.2.8-b130911.1802)
+			
+			 JAXB RI project is now mavenized. New maven groupId introduced: org.glassfish.jaxb 
+			 
+ -->	
+ 
+ <!-- Not required for Java 8, and causes problems for Karaf (OSGi)
+			<dependency>
+				<groupId>jakarta.xml.bind</groupId>
+				<artifactId>jakarta.xml.bind-api</artifactId>
+				<version>2.4.0-SNAPSHOT</version> 
+			</dependency>
+ -->
+ 
+ <!--  ServiceMix 7.0.1 
+
+ <dependency>
+  <groupId>org.apache.servicemix.bundles</groupId>
+  <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+  <version>2.2.11_1</version>
+  <type>bundle</type>
+</dependency>
+  uses JAXB Impl 2.2.11 -->
+ 
+ 
+	</dependencies>
+
+</project>

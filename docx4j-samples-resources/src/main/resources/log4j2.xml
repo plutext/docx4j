@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+
+    <Appenders>
+    
+        
+        <Console name="console">
+            <PatternLayout pattern="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/>
+        </Console>
+        
+            <!-- error.log -->
+        <File name="error" fileName="logs/docx4j.log" >
+            <PatternLayout pattern="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/>
+        </File>
+        
+    </Appenders>
+    
+    <Loggers>
+    
+        <Logger name="org.apache.commons" level="warn"/>
+        <Logger name="org.apache.fop" level="info"/>
+        
+        <!--  docx4j loggers -->
+	        <Logger name="org.docx4j" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.Docx4J" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.TraversalUtil" level="error"/>
+	        
+	        
+	        <Logger name="org.docx4j.XmlUtils" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.utils.ResourceUtils" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.in" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.in.xhtml" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.in.xhtml.ListHelper" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.common.AbstractConversionContext" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.common.Preprocess" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.common.preprocess" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.common.preprocess.FieldsCombiner" level="warn"/>
+	        
+	            <!-- PDF output via XSL FO: change this to warn to hide messages -->
+	        <Logger name="org.docx4j.convert.out.common.writer.AbstractMessageWriter" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.fo" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.convert.out.html.ListsToContentControls" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.diff" level="warn"/>
+	        
+	        
+	        <Logger name="com.topologi" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.fonts" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.fonts.PhysicalFonts" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.fonts.RunFontSelector" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.jaxb" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.model" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.fields" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.listnumbering" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.PropertyResolver" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.structure" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.styles" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.table" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.io3" level="error"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.packages" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.Parts" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.ThemePart" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.services.client" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.toc" level="debug"/>
+	        
+	        
+	        <Logger name="org.docx4j.wml" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.utils.XPathFactoryUtil" level="info"/>
+
+	        <Logger name="org.docx4j.org.xhtmlrenderer" level="warn"/>
+	        
+	        <Logger name="org.pptx4j" level="warn"/>
+
+        
+        <!--  OpenDoPE functionality loggers -->
+        
+	        <Logger name="org.docx4j.model.datastorage" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.model.datastorage.OpenDoPEHandlerComponents" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.CustomXmlDataStoragePart" level="warn"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.XmlPart" level="warn"/>
+	        
+	        
+	        <Logger name="org.opendope.conditions.Xpathref" level="warn"/>
+	        
+	        
+	        <Logger name="org.opendope" level="warn"/>
+	        
+	        
+        
+        <!--  Enterprise edition loggers -->
+        
+	        <Logger name="com.plutext.merge" level="info"/>
+	        
+	        
+	        <Logger name="com.plutext.merge.CustomXmlPartHandler" level="warn"/>
+	        
+	        
+	        <Logger name="com.plutext.merge.altchunk" level="warn"/>
+	        
+	        
+	        <Logger name="com.plutext.merge.pptx" level="warn"/>
+	        
+	        
+	        <Logger name="com.plutext.cmis" level="warn"/>
+	        
+	        
+	        <Logger name="org.apache.jcp.xml.dsig.internal.dom" level="info"/>
+	        
+	        
+	        <Logger name="com.plutext.crypt.dsig" level="info"/>
+	        
+	        
+	        <Logger name="org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart" level="info"/>
+        
+        
+        <Logger name="com.plutext.demo.diagnostics" level="debug"/>
+        
+            <!--  Root logger -->
+        <Root level="warn">
+            <AppenderRef ref="console"/>
+        </Root>      
+    
+    </Loggers>
+    
+</Configuration>

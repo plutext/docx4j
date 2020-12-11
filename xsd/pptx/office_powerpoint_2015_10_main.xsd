@@ -1,0 +1,56 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2015/10/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2015/10/main"
+	xmlns:p1510="http://schemas.microsoft.com/office/powerpoint/2015/10/main"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+         
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x201510.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+         
+<!--                   
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+   -->
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
+   
+   <xsd:simpleType name="ST_ClientID" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     <xsd:restriction base="xsd:string"/>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_ClientRevisionNumber" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     <xsd:restriction base="xsd:unsignedInt"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_ClientRevision" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     <xsd:attribute name="id" type="ST_ClientID" use="required"/>
+     <xsd:attribute name="v" type="ST_ClientRevisionNumber" use="optional" default="0"/>
+     <xsd:attribute name="vWet" type="ST_ClientRevisionNumber" use="optional" default="0"/>
+     <xsd:attribute name="dt" type="xsd:dateTime" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_ClientRevisionList" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     <xsd:sequence>
+       <xsd:element name="client" type="CT_ClientRevision" minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_RevisionInfo" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+     <xsd:sequence>
+       <xsd:element name="revLst" type="CT_ClientRevisionList" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="revInfo" type="CT_RevisionInfo" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+ </xsd:schema>

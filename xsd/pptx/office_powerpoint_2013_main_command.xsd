@@ -1,0 +1,361 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2013/main/command"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2013/main/command"
+	xmlns:pc="http://schemas.microsoft.com/office/powerpoint/2013/main/command"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns:p15="http://schemas.microsoft.com/office/powerpoint/2012/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:ac="http://schemas.microsoft.com/office/drawing/2013/main/command"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x2013.main.command"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+
+<!-- 
+   <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2013/main/command" schemaLocation="dml-cmd.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+   
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+   
+    -->
+
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="../pml/pml-2ed.xsd"/>
+   <xsd:import namespace="http://schemas.microsoft.com/office/drawing/2013/main/command" schemaLocation="../odrawxml/office_drawing_2013_main_command.xsd"/>
+    
+   <xsd:simpleType name="ST_CreationId">
+     <xsd:restriction base="xsd:unsignedInt"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_DocumentMoniker"/>
+   <xsd:complexType name="CT_SlideMoniker">
+     <xsd:attribute name="cId" type="ST_CreationId" use="optional"/>
+     <xsd:attribute name="sldId" type="p:ST_SlideId" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_MainMasterMoniker">
+     <xsd:attribute name="cId" type="ST_CreationId" use="optional"/>
+     <xsd:attribute name="sldId" type="p:ST_SlideMasterId" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_SlideLayoutMoniker">
+     <xsd:attribute name="cId" type="ST_CreationId" use="optional"/>
+     <xsd:attribute name="sldId" type="p:ST_SlideLayoutId" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_CommentMoniker">
+     <xsd:attribute name="authorId" type="xsd:unsignedInt" use="required"/>
+     <xsd:attribute name="idx" type="p:ST_Index" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_CommentAuthorMoniker">
+     <xsd:attribute name="id" type="xsd:unsignedInt" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_DocumentMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_SlideBaseMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_MainMasterMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_SlideLayoutMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_SlideMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_CommentMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_CommentAuthorMonikerList">
+     <xsd:sequence>
+       <xsd:any minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="cmAuthorMkLst" type="CT_CommentAuthorMonikerList"/>
+   <xsd:element name="cmMkLst" type="CT_CommentMonikerList"/>
+   <xsd:element name="docMkLst" type="CT_DocumentMonikerList"/>
+   <xsd:element name="sldBaseMkLst" type="CT_SlideBaseMonikerList"/>
+   <xsd:element name="sldLayoutMkLst" type="CT_SlideLayoutMonikerList"/>
+   <xsd:element name="sldMasterMkLst" type="CT_MainMasterMonikerList"/>
+   <xsd:element name="sldMkLst" type="CT_SlideMonikerList"/>
+   <xsd:simpleType name="ST_CommentChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="add"/>
+       <xsd:enumeration value="del"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="replId"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_CommentChangeBits">
+     <xsd:list itemType="ST_CommentChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_CommentChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="cmMkLst" type="CT_CommentMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_CommentChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:simpleType name="ST_CommentAuthorChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="add"/>
+       <xsd:enumeration value="del"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="replId"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_CommentAuthorChangeBits">
+     <xsd:list itemType="ST_CommentAuthorChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_CommentAuthorChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="cmAuthorMkLst" type="CT_CommentAuthorMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_CommentAuthorChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:simpleType name="ST_SlideChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="addSp"/>
+       <xsd:enumeration value="delSp"/>
+       <xsd:enumeration value="modSp"/>
+       <xsd:enumeration value="spOrd"/>
+       <xsd:enumeration value="new"/>
+       <xsd:enumeration value="add"/>
+       <xsd:enumeration value="del"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="ord"/>
+       <xsd:enumeration value="replId"/>
+       <xsd:enumeration value="modTransition"/>
+       <xsd:enumeration value="modMedia"/>
+       <xsd:enumeration value="setBg"/>
+       <xsd:enumeration value="setFolMasterAnim"/>
+       <xsd:enumeration value="setFolMasterObjs"/>
+       <xsd:enumeration value="modClrScheme"/>
+       <xsd:enumeration value="addAnim"/>
+       <xsd:enumeration value="delAnim"/>
+       <xsd:enumeration value="modAnim"/>
+       <xsd:enumeration value="replTag"/>
+       <xsd:enumeration value="delTag"/>
+       <xsd:enumeration value="setClrOvrMap"/>
+       <xsd:enumeration value="delDesignElem"/>
+       <xsd:enumeration value="modShow"/>
+       <xsd:enumeration value="addCm"/>
+       <xsd:enumeration value="delCm"/>
+       <xsd:enumeration value="modCm"/>
+       <xsd:enumeration value="chgLayout"/>
+       <xsd:enumeration value="modNotes"/>
+       <xsd:enumeration value="modNotesTx"/>
+       <xsd:enumeration value="setSldSyncInfo"/>
+       <xsd:enumeration value="newSectionLinks"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_SlideChangeBits">
+     <xsd:list itemType="ST_SlideChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_SlideChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="sldMkLst" type="CT_SlideMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="spChg" type="ac:CT_ShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="grpChg" type="ac:CT_GroupShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="graphicFrameChg" type="ac:CT_GraphicFrameChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="picChg" type="ac:CT_PictureChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="inkChg" type="ac:CT_InkChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="cxnChg" type="ac:CT_ConnectorChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="cmChg" type="CT_CommentChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_SlideChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:simpleType name="ST_SlideLayoutChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="addSp"/>
+       <xsd:enumeration value="delSp"/>
+       <xsd:enumeration value="modSp"/>
+       <xsd:enumeration value="spOrd"/>
+       <xsd:enumeration value="new"/>
+       <xsd:enumeration value="add"/>
+       <xsd:enumeration value="del"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="ord"/>
+       <xsd:enumeration value="replId"/>
+       <xsd:enumeration value="modTransition"/>
+       <xsd:enumeration value="modMedia"/>
+       <xsd:enumeration value="setBg"/>
+       <xsd:enumeration value="setFolMasterAnim"/>
+       <xsd:enumeration value="setFolMasterObjs"/>
+       <xsd:enumeration value="modClrScheme"/>
+       <xsd:enumeration value="addAnim"/>
+       <xsd:enumeration value="delAnim"/>
+       <xsd:enumeration value="modAnim"/>
+       <xsd:enumeration value="replTag"/>
+       <xsd:enumeration value="delTag"/>
+       <xsd:enumeration value="setClrOvrMap"/>
+       <xsd:enumeration value="delDesignElem"/>
+       <xsd:enumeration value="modShow"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_SlideLayoutChangeBits">
+     <xsd:list itemType="ST_SlideLayoutChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_SlideLayoutChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="sldLayoutMkLst" type="CT_SlideLayoutMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="spChg" type="ac:CT_ShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="grpChg" type="ac:CT_GroupShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="graphicFrameChg" type="ac:CT_GraphicFrameChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="picChg" type="ac:CT_PictureChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="inkChg" type="ac:CT_InkChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="cxnChg" type="ac:CT_ConnectorChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_SlideLayoutChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:simpleType name="ST_MainMasterChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="addSp"/>
+       <xsd:enumeration value="delSp"/>
+       <xsd:enumeration value="modSp"/>
+       <xsd:enumeration value="spOrd"/>
+       <xsd:enumeration value="new"/>
+       <xsd:enumeration value="add"/>
+       <xsd:enumeration value="del"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="ord"/>
+       <xsd:enumeration value="replId"/>
+       <xsd:enumeration value="modTransition"/>
+       <xsd:enumeration value="modMedia"/>
+       <xsd:enumeration value="setBg"/>
+       <xsd:enumeration value="setFolMasterAnim"/>
+       <xsd:enumeration value="setFolMasterObjs"/>
+       <xsd:enumeration value="modClrScheme"/>
+       <xsd:enumeration value="addAnim"/>
+       <xsd:enumeration value="delAnim"/>
+       <xsd:enumeration value="modAnim"/>
+       <xsd:enumeration value="replTag"/>
+       <xsd:enumeration value="delTag"/>
+       <xsd:enumeration value="setClrOvrMap"/>
+       <xsd:enumeration value="delDesignElem"/>
+       <xsd:enumeration value="modShow"/>
+       <xsd:enumeration value="addSldLayout"/>
+       <xsd:enumeration value="delSldLayout"/>
+       <xsd:enumeration value="modSldLayout"/>
+       <xsd:enumeration value="sldLayoutOrd"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_MainMasterChangeBits">
+     <xsd:list itemType="ST_MainMasterChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_MainMasterChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="sldMasterMkLst" type="CT_MainMasterMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="spChg" type="ac:CT_ShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="grpChg" type="ac:CT_GroupShapeChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="graphicFrameChg" type="ac:CT_GraphicFrameChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="picChg" type="ac:CT_PictureChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="inkChg" type="ac:CT_InkChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="cxnChg" type="ac:CT_ConnectorChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="sldLayoutChg" type="CT_SlideLayoutChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_MainMasterChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:simpleType name="ST_DocumentChangeBit">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="undo"/>
+       <xsd:enumeration value="redo"/>
+       <xsd:enumeration value="ext"/>
+       <xsd:enumeration value="custSel"/>
+       <xsd:enumeration value="mod"/>
+       <xsd:enumeration value="addSld"/>
+       <xsd:enumeration value="delSld"/>
+       <xsd:enumeration value="modSld"/>
+       <xsd:enumeration value="sldOrd"/>
+       <xsd:enumeration value="addMainMaster"/>
+       <xsd:enumeration value="delMainMaster"/>
+       <xsd:enumeration value="modMainMaster"/>
+       <xsd:enumeration value="mainMasterOrd"/>
+       <xsd:enumeration value="addSection"/>
+       <xsd:enumeration value="delSection"/>
+       <xsd:enumeration value="modSection"/>
+       <xsd:enumeration value="addCmAuthor"/>
+       <xsd:enumeration value="delCmAuthor"/>
+       <xsd:enumeration value="modCmAuthor"/>
+       <xsd:enumeration value="replTag"/>
+       <xsd:enumeration value="delTag"/>
+       <xsd:enumeration value="addCustShow"/>
+       <xsd:enumeration value="delCustShow"/>
+       <xsd:enumeration value="modCustShow"/>
+       <xsd:enumeration value="modNotesMaster"/>
+       <xsd:enumeration value="modHandout"/>
+       <xsd:enumeration value="modShowInfo"/>
+       <xsd:enumeration value="addOsfTaskPaneApp"/>
+       <xsd:enumeration value="delOsfTaskPaneApp"/>
+       <xsd:enumeration value="setSldSz"/>
+       <xsd:enumeration value="modRtl"/>
+       <xsd:enumeration value="modChgInfo"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ST_DocumentChangeBits">
+     <xsd:list itemType="ST_DocumentChangeBit"/>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_DocumentChanges">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="docMkLst" type="CT_DocumentMonikerList" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="sldChg" type="CT_SlideChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="sldMasterChg" type="CT_MainMasterChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="cmAuthorChg" type="CT_CommentAuthorChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="chg" type="ST_DocumentChangeBits" use="required"/>
+   </xsd:complexType>
+   <xsd:complexType name="CT_DocumentChangesList">
+     <xsd:sequence>
+       <xsd:element name="chgData" type="ac:CT_ChangesData" minOccurs="0" maxOccurs="1"/>
+       <xsd:element name="docChg" type="CT_DocumentChanges" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="extLst" type="p:CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="CT_ChangesInfo">
+     <xsd:sequence>
+       <xsd:element name="docChgLst" type="CT_DocumentChangesList" minOccurs="0" maxOccurs="unbounded"/>
+     </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="chgInfo" type="CT_ChangesInfo"/>
+ </xsd:schema>

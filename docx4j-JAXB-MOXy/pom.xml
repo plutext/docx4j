@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-JAXB-MOXy</artifactId>
+	<packaging>${packaging.type}</packaging>
+	<name>docx4j-JAXB-MOXy</name>
+
+	<description>
+		config specifying that docx4j should use the EclipseLink MOXy (JAXB) runtime
+	</description>
+	
+		<build>
+	<plugins>
+	
+		<plugin>
+		    <artifactId>maven-resources-plugin</artifactId>
+		</plugin>	
+		
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                    	<Manifest-Version>2.0</Manifest-Version>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Import-Package>
+ <!-- org.eclipse.persistence.internal.jaxb;version="2.7.4",
+ org.eclipse.persistence.internal.jaxb.many;version="2.7.4", -->
+ org.eclipse.persistence.jaxb;version="2.7.4"
+<!--  
+ org.eclipse.persistence.jaxb.attachment;version="2.7.4",
+ org.eclipse.persistence.jaxb.compiler;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic;version="2.7.4",
+ org.eclipse.persistence.jaxb.dynamic.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.oxm;version="2.7.4",
+ org.eclipse.persistence.jaxb.javamodel.reflection;version="2.7.4",
+ org.eclipse.persistence.jaxb.metadata;version="2.7.4",
+ org.eclipse.persistence.jaxb.rs;version="2.7.4",
+ org.eclipse.persistence.jaxb.xmlmodel;version="2.7.4"           -->              
+                        </Import-Package>
+                        <Export-Package>
+                            org.docx4j.jaxb.moxy
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>				
+		
+ 			<!--  mvn versions:display-dependency-updates --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
+			</plugin> 
+		
+	</plugins>
+</build>
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.moxy</artifactId>
+			<version>2.7.4</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+
+	<!-- No need for:
+	
+		<dependency>
+            <groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+		</dependency>
+			
+	 -->
+		
+		</dependencies>
+
+</project>

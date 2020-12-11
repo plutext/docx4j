@@ -6,6 +6,13 @@
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
 	
+  <!--  remember, use "include" for same namespace;
+                  use "import"  for different one.
+                  
+        Imports should go into a different java package:
+                  
+-->	
+	
 <!--
 	
 WHICH VERSION?
@@ -19,10 +26,13 @@ USAGE INSTRUCTIONS
 	
 	
   To generate the classes (from the same directory)	
+
+
 			
  	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer sml_root.xsd -d ~/workspace/docx4j/src/xlsx4j/java -no-header -target 2.0
 
  	 sh ~/jaxb-ri-20071219/bin/xjc.sh sml_root.xsd -d tmp -no-header -target 2.0
+ 	 xjc  sml_root.xsd -d tmp -no-header -target 2.0
 
 	 	 
   jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
@@ -45,7 +55,10 @@ That's because there is a name collision in:
   org.xlsx4j.sml.CTCalculatedMember
   org.xlsx4j.sml.CTPCDKPI	
 
-You can use 
+You can use (2019)
+
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer sml_root.xsd -d tmp  -no-header -target 2.0
+
 
 \Java\jaxb-ri-2.2.6\bin\xjc  sml_root.xsd -d tmp -no-header -target 2.0	
 	
@@ -57,6 +70,7 @@ or better, you can use ppp 1.2,
 	
 REVISION HISTORY
 
+2019 06 24 - added mce to workbook
 2013 01 20 - moved to ECMA 376 4ed; add parent pointer
 2013 01 20 - added @xml:space in shared strings
 2010 09 06 - First compiled and added to docx4j
@@ -68,6 +82,7 @@ REVISION HISTORY
  
   <!--  DML stuff required by SML -->
   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
+  <xsd:import namespace="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" schemaLocation="sml_2014_revision.xsd" />
 
   <xsd:include schemaLocation="sml_ECMA376_4ed_transitional.xsd" />
   

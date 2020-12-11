@@ -1,0 +1,3916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FontSubstitutions xmlns:oor="http://openoffice.org/2001/registry">
+	
+	<!--  This XML was created by transforming OpenOffice's VCL.xcu with VCL2Friendly.xslt,
+	then adding missing fonts.  From docx4j 8.2.2, we no longer include those files.  Previously they were at:
+	
+	    https://github.com/plutext/docx4j/blob/docx4j-parent-8.2.1/docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/VCL.xcu
+	
+	    https://github.com/plutext/docx4j/blob/docx4j-parent-8.2.1/docx4j-core/src/main/resources/org/docx4j/fonts/substitutions/VCL2Friendly.xslt
+	
+	This XML, when unmarshalled, is intuitive to work with.
+		
+    For help with what font is what, see:
+		
+		http://www.myfonts.com/WhatTheFont/		
+		
+		http://www.apaddedcell.com/web-fonts
+		
+		http://www.ampsoft.net/webdesign-l/WindowsMacFonts.html				
+	
+	SubstFontsMS is not used and will be removed.  -->
+	
+	<!-- Suggestions from http://www.oooninja.com/2008/01/calibri-linux-vista-fonts-download.html
+		
+		Arial -> FreeSans, Liberation Sans, Caslon Roman, URW Helvetica or Nimbus Sans
+
+Times New Roman -> FreeSerif, Liberation Serif, Linux Libertine or Nimbus Roman (or Gentium if you want something a little more Garamondesque)
+
+Georgia -> Bitstream Vera Serif or DejaVu Serif
+
+Trebuchet MS -> Lucida Sans
+
+Lucida Console -> Bitstream Vera Sans Mono, DejaVu Sans Mono, Liberation Mono, Lucida Sans Typewriter
+
+Courier New -> FreeMono, URW Courier
+
+Book Antiqua/Palatino -> URW Palladio/Palatino
+
+Tahoma -> DejaVu Sans Condensed or Toga Sans
+
+Verdana -> Bitstream Vera Sans or DejaVu Sans
+		
+		-->
+	
+	<!-- Microsoft core web fonts -->
+	<replace name="arial">
+		<SubstFonts>
+			arial;nimbussansl;freesans;albanyamt;albany;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="arialblack">
+		<SubstFonts>arialblack</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="comicsansms">
+		<SubstFonts>
+			comicsansms;tscu_comic;andymt;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Italic,Script,Comic</FontType>
+	</replace>
+	<replace name="couriernew">
+		<SubstFonts>
+			couriernew;courier10pitch;freemono;cumberlandamt;cumberland;nimbusmonol;courier;tlwgmono;tlwgtypewriter;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="georgia">
+		<SubstFonts>georgia;bell;bitstreamcharter;charter;timesnewroman</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Serif</FontType>
+	</replace>
+	<replace name="impact">
+		<SubstFonts>
+			impact;falstaff;widelatin;latinwide;broadway;mtbroadway;broadwaymt</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>UltraExpanded</FontWidth>
+		<FontType>SansSerif,Decorative,Special</FontType>
+	</replace>	
+	<replace name="timesnewroman">
+		<SubstFonts>
+			timesnewroman;times;nimbusromanno9l;freeserif;thorndaleamt;thorndale;nimbusromanno9l;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="trebuchetms">
+		<SubstFonts>trebuchetms;helvetica;andalesans;geneva;verdana;albanyamt;albany;arial;nimbussansl;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="verdana">
+		<SubstFonts>
+			verdana;dejavusans;bitstreamverasans;verasans;segoe;lucidasans;albanyamt;albany;arial;nimbussansl;helvetica;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	
+	<!-- Core UI fonts -->
+	<replace name="microsoftsansserif">
+		<SubstFonts>microsoftsansserif;geneva</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="segoeui">
+		<SubstFonts>segoeui</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="tahoma">
+		<SubstFonts>
+			tahoma;geneva;andalesansui;arialunicodems;lucidaunicode;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	
+	
+	
+	<!-- Microsoft Clear Type Collection -->
+	<replace name="calibri"> <!-- this is Word 2007's default minor font -->
+		<SubstFonts>calibri;tahoma;stradatf;alineasans;verdana;helvetica;trebuchet;arial</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="cambria"> <!-- this is Word 2007's default major font -->
+		<SubstFonts>cambria;bigcaslon;cochin;didot;bitstreamcharter;gentium;gentiumalt;georgia;serif</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="candara">
+		<SubstFonts>candara;trebuchetms;helvetica;verdana;sansserif</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="consolas">
+		<SubstFonts>consolas;andalemono;bitstreamverasansmono;dejavusansmono;lucidaconsole</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="constantia">
+		<SubstFonts>constantia;bigcaslon;cochin;didot;bitstreamcharter;gentium;gentiumalt</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="corbel">
+		<SubstFonts>corbel</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+
+	<!-- other western -->
+	<replace name="franklingothicmedium">
+		<SubstFonts>franklingothicmedium</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="lucidaconsole">
+		<SubstFonts>
+			lucidaconsole;monaco;cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="marlett">
+		<SubstFonts>
+			marlett;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>	
+		<replace name="palatinolinotype">
+		<SubstFonts>palatinolinotype;palatino;urwpalladiol</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="symbol">
+		<SubstFonts>
+			symbol;starsymbol;standardsymbols;standardsymbolsl;mtsymbol;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="wingdings">
+		<SubstFonts>
+			wingdings;starsymbol;morewingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+
+	
+	
+	<!-- =============================================== -->
+	<!-- other -->
+	
+	
+		
+	<replace name="albany">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Arial</SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="albanyamt">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Arial</SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="algerian">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar</SubstFonts>
+		<SubstFontsMS>comic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Title,Outline,Shadow</FontType>
+	</replace>
+	<replace name="almanac">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="andalesans">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Trebuchet</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="andalesansui">
+		<SubstFonts>
+			andalesansui;arialunicodems;lucidaunicode;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS>Arial Unicode MS;Andale Sans UI</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Normal,SansSerif,Full</FontType>
+	</replace>
+	<replace name="andalewtui">
+		<SubstFonts>
+			andalesansui;arialunicodems;lucidaunicode;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS>Arial Unicode MS;Andale Sans UI</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Normal,SansSerif,Full</FontType>
+	</replace>
+	<replace name="antiqueolive">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	
+	<replace name="arialnarrow">
+		<SubstFonts>
+			helveticanarrow;helmetcondensed;dejavusanscondensed;nimbussanslcondensed;nimbussanscondensed</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="arialunicode">
+		<SubstFonts>
+			andalesansui;arialunicodems;lucidaunicode;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Full</FontType>
+	</replace>
+	<replace name="arioso">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="avantgarde">
+		<SubstFonts>
+			centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="baskervilleoldface">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Other</FontType>
+	</replace>
+	<replace name="batang">
+		<SubstFonts>
+			썬바탕;sunbatang;baekmukbatang;썬굴림;sungulim;hymyeongjolightk;myeongjo;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>바탕</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunbatang">
+		<SubstFonts>
+			썬바탕;batang;baekmukbatang;myeongjo;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;썬굴림;sungulim;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>바탕;batang</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="batangche">
+		<SubstFonts>
+			썬바탕;sunbatang;baekmukbatang;썬굴림;sungulim;myeongjo;batang;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;hymyeongjolightk;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="bell">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="bitstreamverasans">
+		<SubstFonts>dejavusans</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,SansSerif</FontType>
+	</replace>
+	<replace name="bitstreamveraserif">
+		<SubstFonts>dejavuserif</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Serif</FontType>
+	</replace>
+	<replace name="bitstreamveramono">
+		<SubstFonts>dejavumono</SubstFonts>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="blackadder">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="bookantiqua">
+		<SubstFonts>
+			palatino;palatinolinotype;bookantiqua;palladio;palladiol;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="bookman">
+		<SubstFonts>
+			bookman;itcbookman;bookmanl;bookmanoldstyle;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="bookmanl">
+		<SubstFonts>
+			bookman;itcbookman;bookmanl;bookmanoldstyle;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="bookmanoldstyle">
+		<SubstFonts>
+			bookman;itcbookman;bookmanl;bookmanoldstyle;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Other</FontType>
+	</replace>
+	<replace name="bradleyhand">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Handwriting</FontType>
+	</replace>
+	<replace name="broadway">
+		<SubstFonts>
+			broadway;mtbroadway;broadwaymt;falstaff;widelatin;latinwide;impact</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>Expanded</FontWidth>
+		<FontType>Decorative,Special</FontType>
+	</replace>
+	<replace name="calisto">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="castellar">
+		<SubstFonts>
+			monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Title,Outline,Shadow</FontType>
+	</replace>
+	<replace name="century">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="centurygothic">
+		<SubstFonts>
+			centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="centuryschoolbook">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Schoolbook</FontType>
+	</replace>
+	<replace name="centuryschoolbookl">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Schoolbook</FontType>
+	</replace>
+	<replace name="cfangsong">
+		<SubstFonts>
+			fangsong;fzfangsong;cfangsong;simkai;fzkai;zycjkkai;mkai;kai;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="cgtimes">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="chancery">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="chanceryl">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="chevara">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Capitals,Outline,Shadow</FontType>
+	</replace>
+	<replace name="chevaraoutline">
+		<SubstFonts>
+			monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Capitals,Outline,Shadow</FontType>
+	</replace>
+	<replace name="chicago">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="chiller">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Special,Italic,Script</FontType>
+	</replace>
+	<replace name="cmusansserif">
+		<SubstFonts>
+			albanyamt;albany;arial;dejavusans;cmusansserif;freesans;nimbussansl;helvetica;lucida;geneva;helmet;andalesansui;arialunicodems;lucidasansunicode;tahoma</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="cmuserif">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;dejavuserif;cmuserif;freeserif;nimbusromanno9l;luxiserif;times;lucidaserif;lucidabright;timmons;newyork;serif</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="cmutypewritertext">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;dejavusansmono;cmutypewritertext;freemono;nimbusmonol;courier;lucidasanstypewriter;lucidatypewriter;monaco;monospaced</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="colonna">
+		<SubstFonts>
+			monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Outline,Shadow</FontType>
+	</replace>
+	<replace name="comicsans">
+		<SubstFonts>
+			comicsansms;andymt;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Italic,Script,Comic</FontType>
+	</replace>
+	
+	<replace name="conga">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="copperlategothic">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="corsiva">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="courier">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS>Courier New</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="cumberland">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS>Courier New</SubstFontsMS>
+		<SubstFontsPS>Courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="cumberlandamt">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS>Courier New</SubstFontsMS>
+		<SubstFontsPS>Courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="curlz">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Special,Italic,Script</FontType>
+	</replace>
+	<replace name="cursive">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script</FontType>
+	</replace>
+	<replace name="dejavusans">
+		<SubstFonts>bitstreamverasans</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,SansSerif</FontType>
+	</replace>
+	<replace name="dejavuserif">
+		<SubstFonts>bitstreamveraserif</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Serif</FontType>
+	</replace>
+	<replace name="dejavumono">
+		<SubstFonts>bitstreamveramono</SubstFonts>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="dejavusanscondensed">
+		<SubstFonts>arialnarrow</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>SansSerif</FontType>
+	</replace>
+	<replace name="din">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="dingbats">
+		<SubstFonts>
+			starsymbol;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="dotum">
+		<SubstFonts>
+			썬돋움;sundotum;baekmukdotum;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sundotum">
+		<SubstFonts>
+			썬돋움;baekmukdotum;dotum;dotumche;gulim;gulimche;roundgothic;kodig;썬굴림;sungulim;hygothicmedium;hygraphicmedium;hymyeongjolightk;haansoftdotum;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>돋움;dotum</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="dotumche">
+		<SubstFonts>
+			썬돋움;sundotum;baekmukdotum;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hygothic">
+		<SubstFonts>
+			썬돋움;sundotum;baekmukdotum;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="haansoftdotum">
+		<SubstFonts>
+			썬돋움;sundotum;baekmukdotum;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hygraphic">
+		<SubstFonts>
+			썬돋움;sundotum;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="edwardianscript">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="elite">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="elited">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="engravers">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="extra">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="falstaff">
+		<SubstFonts>
+			falstaff;widelatin;latinwide;impact;broadway;mtbroadway;broadwaymt</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>UltraExpanded</FontWidth>
+		<FontType>Serif,Decorative,Special</FontType>
+	</replace>
+	<replace name="fangsong">
+		<SubstFonts>
+			fangsong;fzfangsong;cfangsong;simkai;fzkai;zycjkkai;mkai;kai;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="fantasy">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special</FontType>
+	</replace>
+	<replace name="felixtitling">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="forte">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Italic,Script,Comic</FontType>
+	</replace>
+	<replace name="freemono">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;dejavusansmono;cmutypewritertext;freemono;nimbusmonol;courier;lucidasanstypewriter;lucidatypewriter;monaco;monospaced</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="freesans">
+		<SubstFonts>
+			albanyamt;albany;arial;dejavusans;cmusansserif;freesans;nimbussansl;helvetica;lucida;geneva;helmet;andalesansui;arialunicodems;lucidasansunicode;tahoma</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="freeserif">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;dejavuserif;cmuserif;freeserif;nimbusromanno9l;luxiserif;times;lucidaserif;lucidabright;timmons;newyork;serif</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="frenchscript">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Special,Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="frutiger">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="fujiyama">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>SansSerif,Special</FontType>
+	</replace>
+	<replace name="fzhei">
+		<SubstFonts>
+			simhei;fzhei;zycjkhei;mhei;hei;andalesansui;fzsongti;msunglightsc;simsun;nsimsun;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="fzkai">
+		<SubstFonts>
+			simkai;fzkai;zycjkkai;mkai;kai;fangsong;fzfangsong;cfangsong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="gallia">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian;imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Title,Outline,Shadow</FontType>
+	</replace>
+	<replace name="garamond">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="geneva">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="gigi">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Special,Italic,Script</FontType>
+	</replace>
+	<replace name="gothic">
+		<SubstFonts>
+			hggothicbsun;msgothic;mspgothic;hggothic;hggothicb;hggothice;ipagothic;kochigothic;sazanamigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="gothicb">
+		<SubstFonts>
+			hggothicbsun;msgothic;mspgothic;hggothic;hggothicb;hggothice;ipagothic;kochigothic;sazanamigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="gothicl">
+		<SubstFonts>
+			msgothic;mspgothic;hggothic;hggothicb;hggothice;ipapgothic;sazanamigothic;kochigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="gulim">
+		<SubstFonts>
+			썬굴림;sungulim;baekmukgulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="gulimche">
+		<SubstFonts>
+			썬굴림;sungulim;baekmukgulim;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="newgulim">
+		<SubstFonts>
+			썬굴림;sungulim;gulimche;baekmukgulim;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="gungsuh">
+		<SubstFonts>
+			썬궁서;sungungseo;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="gungsuhche">
+		<SubstFonts>
+			썬궁서;sungungseo;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hygungso">
+		<SubstFonts>
+			썬궁서;sungungseo;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hyhaeseo">
+		<SubstFonts>
+			썬궁서;sungungseo;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hei">
+		<SubstFonts>
+			hei;andalesansui;simhei;fzhei;zycjkhei;mhei;fzmingti;msunglighttc;mingliu;pmingliu;ming;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="heiseimin">
+		<SubstFonts>
+			hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="helmet">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Arial</SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="helmetcondensed">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="helv">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="helvetica">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="helveticanarrow">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="hggothicbsun">
+		<SubstFonts>
+			msgothic;hggothicb;hggothice;andalesansui;gothic;hgmincholightj;msmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+	</replace>
+	<replace name="hgpgothicbsun">
+		<SubstFonts>mspgothic;hgpgothicb;hgpgothice;andalesansui</SubstFonts>
+		<SubstFontsMS>mspgothic</SubstFontsMS>
+	</replace>
+	<replace name="hgmincholsun">
+		<SubstFonts>
+			hgmincholightj;msmincho;mspmincho;hgminchoj;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+	</replace>
+	<replace name="hgpmincholsun">
+		<SubstFonts>
+			mspmincho;ipapmincho;sazanamimincho;kochimincho;andalesansui;mincho;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+	</replace>
+	<replace name="hggothic">
+		<SubstFonts>
+			msgothic;mspgothic;hggothicb;hggothice;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="hggothicb">
+		<SubstFonts>
+			msgothic;mspgothic;hggothic;hggothice;ipagothic;ipapgothic;sazanamigothic;kochigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="hggothice">
+		<SubstFonts>
+			msgothic;mspgothic;hggothic;hggothicb;ipagothic;ipapgothic;sazanamigothic;kochigothic;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="hgminchoj">
+		<SubstFonts>
+			hgmincholightj;msmincho;mspmincho;ipapmincho;sazanamimincho;kochimincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="hgminchol">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;msmincho;mspmincho;hgminchoj;ipamincho;ipapmincho;sazanamimincho;kochimincho;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="hgmincholightj">
+		<SubstFonts>
+			hgmincholsun;msmincho;mspmincho;ipapmincho;sazanamimincho;hgmincholightj;kochimincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="holidaypi">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="holidays">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="hymyeongjolightk">
+		<SubstFonts>
+			hymyeongjolightk;myeongjo;batang;batangche;gungsuh;gungsuhche;myeomjo;썬굴림;sungulim;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hymyeongjoextra">
+		<SubstFonts>
+			썬바탕;sunbatang;baekmukbatang;hymyeongjolightk;myeongjo;batang;batangche;gungsuh;gungsuhche;myeomjo;썬굴림;sungulim;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="haansoftbatang">
+		<SubstFonts>
+			썬바탕;sunbatang;baekmukbatang;hymyeongjolightk;myeongjo;batang;batangche;gungsuh;gungsuhche;myeomjo;썬굴림;sungulim;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hysinmyeongjo">
+		<SubstFonts>
+			썬바탕;sunbatang;baekmukbatang;hymyeongjolightk;myeongjo;batang;batangche;gungsuh;gungsuhche;myeomjo;썬굴림;sungulim;gulim;gulimche;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sungulim">
+		<SubstFonts>
+			썬굴림;baekmukgulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>굴림;Gulim</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sungungseo">
+		<SubstFonts>
+			썬궁서;gungsuh;gungsuhche;hygungsobold;썬바탕;썬굴림;sungulim;baekmukgulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>궁서;gungsuh</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunheadline">
+		<SubstFonts>
+			썬헤드라인;hyheadlinemedium;baekmukheadline;yetr;hygothicextra;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy헤드라인m;hyheadlinemedium</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hyheadline">
+		<SubstFonts>
+			썬헤드라인;sunheadline;baekmukheadline;hyheadlinemedium;yetr;hygothicextra;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="yetr">
+		<SubstFonts>
+			썬헤드라인;sunheadline;hyheadlinemedium;baekmukheadline;yetr;hygothicextra;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hygothicextra">
+		<SubstFonts>
+			썬헤드라인;sunheadline;hyheadlinemedium;baekmukheadline;yetr;hygothicextra;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunmokpan">
+		<SubstFonts>
+			썬목판;hy목판l;썬바탕;썬굴림;sungulim;baekmukgulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy목판l</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="mdsol">
+		<SubstFonts>
+			썬목판;sunmokpan;썬목판;hy목판l;썬바탕;썬굴림;sungulim;baekmukgulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy목판l</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hy목판l">
+		<SubstFonts>
+			썬목판;sunmokpan;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;baekmukbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunyeopseo">
+		<SubstFonts>
+			썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy엽서l;hypostlight</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hypost">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="mdgaesung">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="mdart">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="mdeasop">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="mdalong">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="magicr">
+		<SubstFonts>
+			sunyeopseo;썬엽서;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hy엽서m">
+		<SubstFonts>
+			썬엽서;sunyeopseo;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hy센스l">
+		<SubstFonts>
+			썬엽서;sunyeopseo;hypostlight;magicr;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="suncrystal">
+		<SubstFonts>
+			썬크리스탈;hy크리스탈m;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy크리스탈m</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hy크리스탈m">
+		<SubstFonts>
+			썬크리스탈;suncrystal;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunsaemmul">
+		<SubstFonts>
+			썬샘물;hyshortsamulmedium;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy얕은샘물m;hyshortsamulmedium</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hyshortsamul">
+		<SubstFonts>
+			sunsaemmul;썬샘물;hyshortsamulmedium;썬바탕;썬굴림;sungulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sunbaeksong">
+		<SubstFonts>
+			썬백송;hy백송b;썬바탕;썬굴림;sungulim;baekmukgulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>hy백송b</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="hy백송b">
+		<SubstFonts>
+			썬백송;sunbaeksong;썬바탕;썬굴림;sungulim;baekmukgulim;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;hymyeongjolightk;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="imprint">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Outline,Shadow</FontType>
+	</replace>
+	<replace name="imprintmtshadow">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Outline,Shadow</FontType>
+	</replace>
+	<replace name="imprintshadow">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Outline,Shadow</FontType>
+	</replace>
+	<replace name="informalroman">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script</FontType>
+	</replace>
+	<replace name="kai">
+		<SubstFonts>
+			kai;simkai;fzkai;zycjkkai;mkai;fzmingti;msunglighttc;mingliu;pmingliu;ming;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="kidprint">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Italic,Script,Comic</FontType>
+	</replace>
+	<replace name="kodig">
+		<SubstFonts>
+			gulim;gulimche;썬돋움;sundotum;baekmukgulim;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="kristen">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Comic</FontType>
+	</replace>
+	<replace name="kunstlerscript">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="latinwide">
+		<SubstFonts>
+			falstaff;widelatin;latinwide;impact;broadway;mtbroadway;broadwaymt</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>UltraExpanded</FontWidth>
+		<FontType>Serif,Decorative,Special</FontType>
+	</replace>
+	<replace name="lettergothic">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="liberationsans">
+		<SubstFonts>
+			liberationsans;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Arial</SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="liberationserif">
+		<SubstFonts>
+			liberationserif;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="liberationmono">
+		<SubstFonts>
+			liberationmono;cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS>Courier New</SubstFontsMS>
+		<SubstFontsPS>Courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="linedraw">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="lineprinter">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="losangeles">
+		<SubstFonts>
+			onyx;arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif,Special</FontType>
+	</replace>
+	<replace name="lucidabright">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="lucidacalligraphic">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="lucidacalligraphy">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="lucidadingbats">
+		<SubstFonts>
+			starsymbol;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="lucidahandwriting">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Handwriting</FontType>
+	</replace>
+	<replace name="lucidasans">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="lucidasansdingbats">
+		<SubstFonts>
+			starsymbol;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="lucidasanstyp">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="lucidasanstypewriter">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="lucidasansunicode">
+		<SubstFonts>
+			andalesansui;arialunicodems;lucidaunicode;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="lucidatypewriter">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="mhei">
+		<SubstFonts>
+			simhei;fzhei;zycjkhei;mhei;hei;andalesansui;fzsongti;msunglightsc;simsun;nsimsun;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="mincho">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;msmincho;mspmincho;ipamincho;ipapmincho;sazanamimincho;hgmincholightj;hgminchoj;kochimincho;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="minchoj">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;msmincho;sazanamimincho;hgmincholightj;mspmincho;hgminchoj;hgminchol;minchol;hgheiseimin;heiseimin;mincho;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="minchol">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;msmincho;ipamincho;sazanamimincho;kochimincho;mspmincho;hgminchoj;hgminchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>msmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="minchou">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;msmincho;ipamicho;ipapmincho;sazanamimincho;kochimincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="ming">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="mingli">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="mingliu">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="mkai">
+		<SubstFonts>
+			simkai;fzkai;zycjkkai;mkai;kai;fangsong;fzfangsong;cfangsong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="monaco">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="mono">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="monol">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="monospace">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="monospaced">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="morewingbats">
+		<SubstFonts>
+			starsymbol;wingdings;morewingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="msgothic">
+		<SubstFonts>
+			hggothicbsun;mspgothic;hggothic;hggothicb;ipagothic;sazanamigothic;kochigothic;hggothice;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="msmincho">
+		<SubstFonts>
+			hgmincholsun;hgmincholightj;ipamincho;sazanamimincho;kochimincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="msong">
+		<SubstFonts>
+			song;fzsongyi;fzsong;msong;shusong;fzshusong;fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;arplshanheisununi;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="mspmincho">
+		<SubstFonts>
+			hgpmincholsun;hgmincholightj;msmincho;ipapmincho;sazanamimincho;hgminchoj;hgminchol;kochimincho;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="msuigothic">
+		<SubstFonts>
+			hggothicbsun;mspgothic;msgothic;hggothic;hggothicb;ipauigothic;sazanamigothic;kochigothic;hggothice;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="msunglightsc">
+		<SubstFonts>
+			fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;song;fzsongyi;fzsong;msong;shusong;fzshusong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="fzsongti">
+		<SubstFonts>
+			fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;song;fzsongyi;fzsong;msong;shusong;fzshusong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="msunglighttc">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="fzmingti">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="mtbroadway">
+		<SubstFonts>
+			broadway;mtbroadway;broadwaymt;falstaff;widelatin;latinwide;impact</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>UltraExpanded</FontWidth>
+		<FontType>Decorative,Special</FontType>
+	</replace>
+	<replace name="myeongjo">
+		<SubstFonts>
+			썬굴림;sungulim;baekmukgulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;gulim;gulimche;썬돋움;sundotum;dotum;dotumche;roundgothic;kodig;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="newcenturyschlbk">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Schoolbook</FontType>
+	</replace>
+	<replace name="newcenturyschoolbook">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Schoolbook</FontType>
+	</replace>
+	<replace name="newyork">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="nimbusromanno9l">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="nlq">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="nimbussansl">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Arial</SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,SansSerif</FontType>
+	</replace>
+	<replace name="nimbusromannol">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="nimbusmonol">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono</SubstFonts>
+		<SubstFontsMS>Courier New</SubstFontsMS>
+		<SubstFontsPS>courier</SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="nsimsun">
+		<SubstFonts>
+			fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;song;fzsongyi;fzsong;msong;shusong;fzshusong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="ocean">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="omega">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="onyx">
+		<SubstFonts>
+			losangeles;arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif,Special</FontType>
+	</replace>
+	<replace name="opensymbol">
+		<SubstFonts>
+			starsymbol;andalesansui;arialunicodems;lucidaunicode;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl</SubstFonts>
+		<SubstFontsMS>Arial Unicode MS;Andale Sans UI</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="outlook">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="palacescript">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="palatino">
+		<SubstFonts>
+			palatino;bookantiqua;palladio;palladiol;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="palladio">
+		<SubstFonts>
+			palatino;bookantiqua;palladio;palladiol;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="palladiol">
+		<SubstFonts>
+			palatino;bookantiqua;palladio;palladiol;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="pepita">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="pgothic">
+		<SubstFonts>
+			hgpgothicbsun;mspgothic;msgothic;hggothic;hggothicb;ipapgothic;sazanamigothic;kochigothic;hggothice;andalesansui;gothic;hgmincholightj;msmincho;mspmincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>mspgothic</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="pica">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="picad">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed,Typewriter</FontType>
+	</replace>
+	<replace name="pmincho">
+		<SubstFonts>
+			hgpminchobsun;hgmincholightj;mspmincho;msmincho;ipapmincho;sazanamimincho;kochimincho;hgminchoj;hgminchol;minchol;mincho;hgheiseimin;heiseimin;minchou;msgothic;mspgothic;hggothic;hggothicb;hggothice;andalesansui;gothic;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>mspmincho</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_JP</FontType>
+	</replace>
+	<replace name="pmingliu">
+		<SubstFonts>
+			fzmingti;msunglighttc;mingliu;pmingliu;ming;hei;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_TW</FontType>
+	</replace>
+	<replace name="pristina">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="ps">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="psd">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="psnlq">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="roman">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="romanno9">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="romanno9l">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="romanps">
+		<SubstFonts>
+			cumberlandamt;cumberland;couriernew;nimbusmonol;courier;lucidatypewriter;lucidasanstypewriter;monaco;monospaced;nimbusmono;nimbusmonol</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>monospace</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Fixed</FontType>
+	</replace>
+	<replace name="roundgothic">
+		<SubstFonts>
+			gulim;gulimche;썬돋움;sundotum;baekmukdotum;dotum;dotumche;roundgothic;kodig;andalesansui;썬굴림;sungulim;hymyeongjolightk;myeongjo;썬바탕;sunbatang;batang;batangche;gungsuh;gungsuhche;myeomjo;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_KR</FontType>
+	</replace>
+	<replace name="sans">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;bitstreamvera;verdana;luxisans;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sanscondensed">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansl">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS>Verdana</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sanslcondensed">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansserif">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="schoolbook">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif,Schoolbook</FontType>
+	</replace>
+	<replace name="script">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="segoe">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="serif">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="sheffield">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="shelley">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="shusong">
+		<SubstFonts>
+			song;fzsongyi;fzsong;msong;shusong;fzshusong;fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="simhei">
+		<SubstFonts>
+			simhei;fzhei;zycjkhei;mhei;hei;andalesansui;fzsongti;msunglightsc;simsun;nsimsun;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="simkai">
+		<SubstFonts>
+			simkai;fzkai;zycjkkai;mkai;kai;fangsong;fzfangsong;cfangsong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="simsong">
+		<SubstFonts>
+			song;fzsongyi;fzsong;msong;shusong;fzshusong;fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;arplshanheisununi;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="simsun">
+		<SubstFonts>
+			fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;song;fzsongyi;fzsong;msong;shusong;fzshusong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="snowcap">
+		<SubstFonts>
+			imprintmtshadow;imprintshadow;imprint;chevaraoutline;chevara;gallia;colonnamt;algerian;castellar;monotypeoldstyleboldoutline;monotypeoldstyleoutline;chevaraoutline;imprintmtshadow;imprintshadow;imprint;colonnamt;castellar;imprintmtshadow;imprintshadow;imprint;chevara;gallia;algerian</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Decorative,Special,Outline,Shadow</FontType>
+	</replace>
+	<replace name="song">
+		<SubstFonts>
+			song;fzsongyi;fzsong;msong;shusong;fzshusong;fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="sorts">
+		<SubstFonts>
+			starsymbol;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="sorts2">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="sorts3">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="spartan">
+		<SubstFonts>
+			sheffield;conga;centurygothic;copperlategothic;felixtitling;centurygothic;avantgarde;itcavantgarde;gothic;avantgardegothic;conga;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif,Decorative,Capitals</FontType>
+	</replace>
+	<replace name="standardsymbols">
+		<SubstFonts>
+			starsymbol;symbol;standardsymbols;standardsymbolsl;mtsymbol;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="standardsymbolsl">
+		<SubstFonts>
+			starsymbol;symbol;standardsymbols;standardsymbolsl;mtsymbol;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="starbats">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="starmath">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="starsymbol">
+		<SubstFonts>
+			opensymbol;andalesansui;arialunicodems;lucidaunicode;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl</SubstFonts>
+		<SubstFontsMS>Arial Unicode MS;Andale Sans UI</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="swiss">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="swissnarrow">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="thorndale">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="thorndaleamt">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Default,Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="times">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;nimbusromanno9l;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Standard,Normal,Serif</FontType>
+	</replace>
+	<replace name="timesroman">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="timmons">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS>Times New Roman</SubstFontsMS>
+		<SubstFontsPS>Times</SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="tmsrmn">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="univers">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS>Helvetica</SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="universcondensed">
+		<SubstFonts>
+			arialnarrow;helveticanarrow;helmetcondensed;nimbussanslcondensed;nimbussanscondensed;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="utah">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="utopia">
+		<SubstFonts>
+			newcenturyschlbk;newcenturyschoolbook;centuryschoolbook;centuryschoolbookl;thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons;serif;lucidaserif;lucidabright;roman;nimbusromanno9;bookman;itcbookman;garamond;garamondmt;palatino</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="vacation">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="vinerhand">
+		<SubstFonts>
+			andymt;comicsansms;andy;kidprint;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Handwriting</FontType>
+	</replace>
+	<replace name="vivaldi">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="vladimirscript">
+		<SubstFonts>
+			palacescript;palacescriptmt;arioso;shelley;zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,BrushScript</FontType>
+	</replace>
+	<replace name="webdings">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="webdings2">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="webdings3">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="widelatin">
+		<SubstFonts>
+			falstaff;widelatin;latinwide;impact;broadway;mtbroadway;broadwaymt</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Black</FontWeight>
+		<FontWidth>UltraExpanded</FontWidth>
+		<FontType>Serif,Decorative,Special</FontType>
+	</replace>
+	<replace name="wingdings2">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="wingdings3">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="wingdings4">
+		<SubstFonts>
+			starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="zapfcalligraphic">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="zapfcalligraphy">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>cursive</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="zapfchancery">
+		<SubstFonts>
+			zapfchancery;itczapfchancery;monotypecorsiva;corsiva;chancery;chanceryl;lucidacalligraphy;lucidahandwriting;palacescript;palacescriptmt;arioso;shelley;andymt;comicsansms;andy;kidprint;</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Script,Chancery</FontType>
+	</replace>
+	<replace name="zapfdingbats">
+		<SubstFonts>
+			starsymbol;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;opensymbol;starsymbol;opensymbol;starbats;wingdings;zapfdingbats;itczapfdingbats;monotypesorts;dingbats;lucidadingbats;lucidasansdingbats;webdings;symbol;standardsymbols;standardsymbolsl;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Symbol,Special</FontType>
+	</replace>
+	<replace name="zycjkhei">
+		<SubstFonts>
+			simhei;fzhei;zycjkhei;mhei;hei;andalesansui;fzsongti;msunglightsc;simsun;nsimsun;zycjksun;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="zycjkkai">
+		<SubstFonts>
+			simkai;fzkai;zycjkkai;mkai;kai;fangsong;fzfangsong;cfangsong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="zycjksun">
+		<SubstFonts>
+			fzsongti;msunglightsc;simsun;nsimsun;arplshanheisununi;zycjksun;song;fzsongyi;fzsong;msong;shusong;fzshusong;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>CJK,CJK_SC</FontType>
+	</replace>
+	<replace name="sansregular">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansdemi">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Demi</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansheavy">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Heavy</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansbold">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Bold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sansitalic">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,SansSerif</FontType>
+	</replace>
+	<replace name="sansbolditalic">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Bold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,SansSerif</FontType>
+	</replace>
+	<replace name="sanssemibold">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>SemiBold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sanssemibolditalic">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>SemiBold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,SansSerif</FontType>
+	</replace>
+	<replace name="sanscondensedsemibold">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>Semi</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	<replace name="sanscondensedsemibolditalic">
+		<SubstFonts>
+			albanyamt;albany;arial;nimbussansl;helvetica;lucidasans</SubstFonts>
+		<FontWeight>SemiBold</FontWeight>
+		<FontWidth>Condensed</FontWidth>
+		<FontType>Italic,SansSerif</FontType>
+	</replace>
+	<replace name="serifregular">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="serifbold">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons</SubstFonts>
+		<FontWeight>Bold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,Serif</FontType>
+	</replace>
+	<replace name="serifbolditalic">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons</SubstFonts>
+		<FontWeight>Bold</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Serif</FontType>
+	</replace>
+	<replace name="serifitalic">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Italic,Serif</FontType>
+	</replace>
+	<replace name="serifcaps">
+		<SubstFonts>
+			thorndaleamt;thorndale;timesnewroman;nimbusromanno9l;times;timesroman;newyork;timmons</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Serif,Capitals</FontType>
+	</replace>
+	<replace name="charter">
+		<SubstFonts>bitstreamcharter;georgia;timesnewroman</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Serif</FontType>
+	</replace>
+	<replace name="bitstreamcharter">
+		<SubstFonts>charter;georgia;timesnewroman</SubstFonts>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Serif</FontType>
+	</replace>
+	<replace name="angsananew">
+		<SubstFonts>
+			angsanaupc;oonaksit;tahoma;browallianew;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="angsanaupc">
+		<SubstFonts>
+			angsananew;oonaksit;tahoma;browalliaupc;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="browallianew">
+		<SubstFonts>
+			browalliaupc;angsananew;oonaksit;tahoma;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="browalliaupc">
+		<SubstFonts>
+			browallianew;angsanaupc;oonaksit;tahoma;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="cordianew">
+		<SubstFonts>
+			cordiaupc;browalliaupc;angsananew;oonaksit;tahoma;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="cordiaupc">
+		<SubstFonts>
+			cordianew;browallianew;angsanaupc;oonaksit;tahoma;lucidasans;arialunicodems;clearlyu</SubstFonts>
+	</replace>
+	<replace name="ooannop">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="oonaksit">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="ooratchada">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="oosawasdee">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="oothanakrit">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="garuda">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="norasi">
+		<SubstFonts>cordianew;browallianew;angsananew;tahoma</SubstFonts>
+		<SubstFontsMS>angsananew</SubstFontsMS>
+		<SubstFontsHTML>angsananew</SubstFontsHTML>
+		<FontType>CTL</FontType>
+	</replace>
+	<replace name="nftnorasi">
+		<SubstFonts>norasi</SubstFonts>
+		<FontType>CTL</FontType>
+	</replace>
+	
+	<replace name="mangal">
+		<SubstFonts>mangal</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="latha">
+		<SubstFonts>latha</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="sylfaen">
+		<SubstFonts>sylfaen</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="raavi">
+		<SubstFonts>raavi</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="shruti">
+		<SubstFonts>shruti</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="gautami">
+		<SubstFonts>gautami</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="tunga">
+		<SubstFonts>tunga</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="estrangeloedessa">
+		<SubstFonts>estrangeloedessa</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="cambriamath">
+		<SubstFonts>cambriamath</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="arialunicodems">
+		<SubstFonts>arialunicodems</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="trebuchet">
+		<SubstFonts>
+			andalesans;verdana;trebuchetms;albanyamt;albany;arial;nimbussansl;helvetica;lucidasans;lucida;geneva;helmet;sansserif;nimbussans;andalesansui;arialunicodems;lucidaunicode</SubstFonts>
+		<SubstFontsMS></SubstFontsMS>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML>sans-serif</SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType>Normal,SansSerif</FontType>
+	</replace>
+	
+	<replace name="mvboli">
+		<SubstFonts>mvboli</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@msmincho">
+		<SubstFonts>@msmincho</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@mspmincho">
+		<SubstFonts>@mspmincho</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@msgothic">
+		<SubstFonts>@msgothic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="mspgothic">
+		<SubstFonts>mspgothic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@mspgothic">
+		<SubstFonts>@mspgothic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@msuigothic">
+		<SubstFonts>@msuigothic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@gulim">
+		<SubstFonts>@gulim</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@gulimche">
+		<SubstFonts>@gulimche</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@dotum">
+		<SubstFonts>@dotum</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@dotumche">
+		<SubstFonts>@dotumche</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@batang">
+		<SubstFonts>@batang</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@batangche">
+		<SubstFonts>@batangche</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@gungsuh">
+		<SubstFonts>@gungsuh</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@gungsuhche">
+		<SubstFonts>@gungsuhche</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@simsun">
+		<SubstFonts>@simsun</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@nsimsun">
+		<SubstFonts>@nsimsun</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@simhei">
+		<SubstFonts>@simhei</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@mingliu">
+		<SubstFonts>@mingliu</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@pmingliu">
+		<SubstFonts>@pmingliu</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="bauhaus93">
+		<SubstFonts>bauhaus93</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="bellmt">
+		<SubstFonts>bellmt</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="berlinsansfb">
+		<SubstFonts>berlinsansfb</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="bernardmtcondensed">
+		<SubstFonts>bernardmtcondensed</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="bodonimtpostercompressed">
+		<SubstFonts>bodonimtpostercompressed</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="britannicbold">
+		<SubstFonts>britannicbold</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="brushscriptmt">
+		<SubstFonts>brushscriptmt</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="californianfb">
+		<SubstFonts>californianfb</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="centaur">
+		<SubstFonts>centaur</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="colonnamt">
+		<SubstFonts>colonnamt</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="cooperblack">
+		<SubstFonts>cooperblack</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="footlightmtlight">
+		<SubstFonts>footlightmtlight</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="freestylescript">
+		<SubstFonts>freestylescript</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="harlowsoliditalic">
+		<SubstFonts>harlowsoliditalic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="harrington">
+		<SubstFonts>harrington</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="hightowertext">
+		<SubstFonts>hightowertext</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="jokerman">
+		<SubstFonts>jokerman</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="juiceitc">
+		<SubstFonts>juiceitc</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="kristenitc">
+		<SubstFonts>kristenitc</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="lucidafax">
+		<SubstFonts>lucidafax</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="magneto">
+		<SubstFonts>magneto</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="maturamtscriptcapitals">
+		<SubstFonts>maturamtscriptcapitals</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="mistral">
+		<SubstFonts>mistral</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="modernno.20">
+		<SubstFonts>modernno.20</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="monotypecorsiva">
+		<SubstFonts>monotypecorsiva</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="niagaraengraved">
+		<SubstFonts>niagaraengraved</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="niagarasolid">
+		<SubstFonts>niagarasolid</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="oldenglishtextmt">
+		<SubstFonts>oldenglishtextmt</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="parchment">
+		<SubstFonts>parchment</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="playbill">
+		<SubstFonts>playbill</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="poorrichard">
+		<SubstFonts>poorrichard</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="ravie">
+		<SubstFonts>ravie</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="showcardgothic">
+		<SubstFonts>showcardgothic</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="snapitc">
+		<SubstFonts>snapitc</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="stencil">
+		<SubstFonts>stencil</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="tempussansitc">
+		<SubstFonts>tempussansitc</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="vinerhanditc">
+		<SubstFonts>vinerhanditc</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="berlinsansfbdemi">
+		<SubstFonts>berlinsansfbdemi</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="nina">
+		<SubstFonts>nina</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="mtextra">
+		<SubstFonts>mtextra</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="bookshelfsymbol7">
+		<SubstFonts>bookshelfsymbol7</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="msreferencesansserif">
+		<SubstFonts>msreferencesansserif</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="msreferencespecialty">
+		<SubstFonts>msreferencespecialty</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	<replace name="@arialunicodems">
+		<SubstFonts>@arialunicodems</SubstFonts>
+		<SubstFontsPS></SubstFontsPS>
+		<SubstFontsHTML></SubstFontsHTML>
+		<FontWeight>Normal</FontWeight>
+		<FontWidth>Normal</FontWidth>
+		<FontType></FontType>
+	</replace>
+	
+</FontSubstitutions>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-docx-anon</artifactId>
+	<packaging>jar</packaging>
+	<name>docx4j-docx-anon</name>
+	
+	<description>
+		anonymization of docx files
+	</description>
+
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->        
+	</build>
+	
+	
+	<dependencies>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<!--  for anon functionality; since 3.3.1 -->
+		<dependency>
+		    <groupId>com.thedeanda</groupId>
+		    <artifactId>lorem</artifactId>
+		    <version>2.1</version>
+		</dependency>		
+
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+<!-- 	
+		<dependency>
+		  <groupId>ch.qos.logback</groupId>
+		  <artifactId>logback-classic</artifactId>
+		  <version>1.3.0-alpha4</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-samples-resources</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+	 -->
+        
+	</dependencies>
+	
+</project>

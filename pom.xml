@@ -5,14 +5,59 @@
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <version>9</version>
   </parent>
-  
+
 	<groupId>org.docx4j</groupId>
-	<artifactId>docx4j</artifactId>
-	<version>3.3.4-SNAPSHOT-brein-patches3</version>
-	<packaging>jar</packaging>
-	<name>docx4j</name>
+	<artifactId>docx4j-parent</artifactId>	
+	<version>${revision}</version>
+	
+	<properties>
+		<revision>8.2.7-SNAPSHOT</revision>
+		<packaging.type>jar</packaging.type>
+	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
+	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
+	    <github.global.server>github</github.global.server>
+	</properties>
+
+    <packaging>pom</packaging>
+
+    <name>docx4j parent</name>
+    
+    <modules>
+        <module>docx4j-openxml-objects</module>
+        <module>docx4j-openxml-objects-pml</module>
+        <module>docx4j-openxml-objects-sml</module>
+        <module>docx4j-core</module>
+        
+        <module>docx4j-JAXB-Internal</module> 
+        <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
+        <module>docx4j-diffx</module>
+        <module>docx4j-docx-anon</module>
+        
+        <module>docx4j-export-fo</module>        
+        <module>docx4j-conversion-via-microsoft-graph</module>
+        <module>docx4j-documents4j-remote</module>                
+        <module>docx4j-documents4j-local</module>        
+        
+        <module>docx4j-JAXB-MOXy</module>
+        <module>docx4j-JAXB-ReferenceImpl</module>
+        
+        <module>docx4j-samples-resources</module>
+        <module>docx4j-samples-docx4j</module>
+        <module>docx4j-samples-docx-diffx</module>
+        <module>docx4j-samples-docx-export-fo</module>
+        <module>docx4j-samples-pptx4j</module>
+        <module>docx4j-samples-xlsx4j</module>
+        <module>docx4j-samples-glox4j</module>
+        
+        <module>docx4j-samples-conversion-via-microsoft-graph</module>
+
+        <module>docx4j-samples-documents4j-remote</module>        
+        <module>docx4j-samples-documents4j-local</module>        
+        
+        <module>docx4j-bundle</module>        
+    </modules>
 	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
@@ -28,113 +73,129 @@
 	    <comments>A business-friendly OSS license</comments>
 	  </license>
   	</licenses>
+  	
+	<!--  https://central.sonatype.org/pages/requirements.html
+	      requires developers be populated. Others have 
+	      contributed to docx4j over the years; see the CHANGELOG -->
+	<developers>
+		<developer>
+			<name>Jason Harrop</name>
+			<email>jason@plutext.org</email>
+			<organization>Plutext</organization>
+			<organizationUrl>http://www.plutext.com</organizationUrl>
+		</developer>
+	</developers>
+  	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 	<inceptionYear>2007</inceptionYear>
 
-	  <properties>
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
-    <github.global.server>github</github.global.server>
-	  </properties>	
-	  
 	
 	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
-		<testOutputDirectory>bin-testOutput</testOutputDirectory>
-			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
-			     You need to run mvn test from the command line to recompile, then Eclipse can run 
-			     the new code.  -->
+
+	<pluginManagement>
 		<plugins>
+
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.3</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/pptx4j/java</source>
-								<source>src/xlsx4j/java</source>
-								<source>src/glox4j/java</source>
-								<source>src/diffx</source>
-								<!-- <source>src/xslfo</source> -->
-								<!-- <source>src/svg</source> -->
-								<!--source>src/sun</source -->
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+					<useReleaseProfile>false</useReleaseProfile>
+					<arguments>${arguments} -Psonatype-oss-release</arguments>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<!-- The objective is to generate a jar which is compatible with Java
-						1.5, whilst at the same time allowing @Override annotations in the source
-						code on methods which merely implement an interface (Java 6 allows this,
-						but 1.5 gives an error). When I played around with this, I found that both
-						maven and ant would happily compile to target 1.5 with the pesky @Override
-						annotations present (irrespective of whether source was set to 1.5 or 1.6).
-						You are not allowed source=1.6, target=1.5; this results in: Failure executing
-						javac, but could not parse the error javac: source release 1.6 requires target
-						release 1.6 So we need source=1.5, target=1.5 The downside is that m2eclipse
-						mirrors this in Eclipse's compiler settings, and Eclipse then complains about
-						the @Override annotations :-( So you must manually change the Eclipse compiler
-						setting back to 1.6. -->
-					<source>1.5</source>
-					<target>1.5</target>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+			</plugin>
 
-					<verbose>false</verbose>
-					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
-					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller:
-						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
+			<plugin>
+				<groupId>org.eclipse.m2e</groupId>
+				<artifactId>lifecycle-mapping</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<lifecycleMappingMetadata>
+						<pluginExecutions>
+							<pluginExecution>
+								<pluginExecutionFilter>
+									<groupId>org.codehaus.mojo</groupId>
+									<artifactId>flatten-maven-plugin</artifactId>
+									<versionRange>[1.0.0,)</versionRange>
+									<goals>
+										<goal>flatten</goal>
+										<goal>clean</goal>
+									</goals>
+								</pluginExecutionFilter>
+								<action>
+									<ignore />
+								</action>
+							</pluginExecution>
+						</pluginExecutions>
+					</lifecycleMappingMetadata>
+				</configuration>
+			</plugin>
+		</plugins>
+	</pluginManagement>    
+    	
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
-					to execute the unit tests of an application -->
-				<version>2.6</version>
-				<configuration>
-					<excludes>
-						<exclude>**/samples/*.java</exclude>
-						<exclude>**/AbstractNumberingTest.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
-				<configuration>
-					<excludes>
-						<!--  the below are prob not necessary, now that we are building from bin-mvn, and so avoiding stuff Eclipse puts into bin dir -->
-						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources add unwanted 1 MB to jar. -->
-						<exclude>src/test/resources/**/*</exclude>
-						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
-					</excludes>
-				</configuration>
-			</plugin>
+			
+			<!--  you can run this with: mvn validate
+			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules -->
+		     <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-enforcer-plugin</artifactId>
+		        <version>3.0.0-M2</version> 
+		        <executions>
+		          <execution>
+		            <id>enforce-bytecode-version</id>
+		            <goals>
+		              <goal>enforce</goal>
+		            </goals>
+		            <configuration>
+		              <rules>
+		                <enforceBytecodeVersion>
+		                  <maxJdkVersion>1.8</maxJdkVersion>
+		                  <excludes>
+		                    <exclude>org.mindrot:jbcrypt</exclude>
+		                  </excludes>
+		                </enforceBytecodeVersion>
+		              </rules>
+		              <fail>true</fail>
+		            </configuration>
+		          </execution>
+		        </executions>
+		        <dependencies>
+		          <dependency>
+		            <groupId>org.codehaus.mojo</groupId>
+		            <artifactId>extra-enforcer-rules</artifactId>
+		            <version>1.2</version>
+		          </dependency>
+		        </dependencies> 
+		      </plugin>
+	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
 				<!-- The Source Plugin creates a jar archive of the source files of the
 					current project. -->
-				<version>2.1.2</version>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
 						<goals>
@@ -144,15 +205,14 @@
 				</executions>
 			</plugin>
 			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this
-				out if your build is failing because you don't have enough. -->
+				out if your build is failing because you don't have enough -->
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.8</version>
 				<configuration>
 					<maxmemory>512m</maxmemory>
-					<!-- 18 MB without the exclusion; still 15MB with -->
-					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
-			        <additionalparam>-Xdoclint:none</additionalparam> <!-- for Java 8 -->
+			        <additionalparam>-Xdoclint:none</additionalparam> 
+                    <source>8</source>
 				 </configuration>
 				<executions>
 					<execution>
@@ -162,35 +222,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.soebes.maven.plugins</groupId>
-				<artifactId>maven-echo-plugin</artifactId>
-				<version>0.1</version>
-				<executions>
-					<execution>
-						<id>install-echo</id>
-						<phase>install</phase>
-						<goals>
-							<goal>echo</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>deploy-echo</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>echo</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<echos>
-						<echo>+-------------------------------------------------------+</echo>
-						<echo>!       Join the docx4j developers mailing list by      !</echo>
-						<echo>!       emailing docx4j-dev-subscribe@docx4java.org     !</echo>
-						<echo>+-------------------------------------------------------+</echo>
-					</echos>
-				</configuration>
 			</plugin>
 <!-- 			
 		<plugin>
@@ -232,415 +263,66 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
 			</plugin> 
 			
-		<!--  mvn package
-			<plugin> 
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<excludes>
-									<exclude>junit:junit</exclude>
-								</excludes>								
-							</artifactSet>
-			              <shadedArtifactAttached>true</shadedArtifactAttached>
-			              <shadedClassifierName>shaded</shadedClassifierName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>	
-			 -->		
-		</plugins>
-    	<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>build-helper-maven-plugin</artifactId>
-										<versionRange>[1.3,2.0)</versionRange>
-										<goals>
-											<goal>add-source</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>true</runOnIncremental>
-										</execute>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<resources>
-			<!-- be sure to get xml,xlst resources in various src trees -->
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
-			<!-- 
-			<resource>
-				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
-				<includes>
-					<include>*.properties</include>
-				</includes>
-			</resource>
-			 -->
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.properties</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/pptx4j/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/xlsx4j/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/test/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>			<!-- 
-			<resource>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>docx4j.properties</include>
-				</includes>
-			</resource>
-			 -->
-			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
-				</excludes> </resource> -->
-		</resources>
-	</build>
-	<reporting>
-		<plugins>
 			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<reportSets>
-					<reportSet>
-						<id>standard-javadoc</id>
-						<inherited>true</inherited>
-						<configuration>
-							<description>
-								docx4j Open XML manipulation library
-							</description>
-							<docfilessubdirs>true</docfilessubdirs>
-							<failOnError>false</failOnError>
-							<locale>en_AU</locale>
-							<name>Javadoc report</name>
-							<quiet>true</quiet>
-							<serialwarn>false</serialwarn>
-							<show>private</show>
-							<source>1.6</source>
-							<stylesheet>maven</stylesheet>
-							<version>true</version>
-						</configuration>
-						<reports>
-							<report>javadoc</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>flatten-maven-plugin</artifactId>
+			    <version>1.0.0</version>
+			    <configuration>
+			        <!--  <updatePomFile>true</updatePomFile>-->
+			        <flattenMode>oss</flattenMode>           
+			    </configuration>
+			    <executions>
+			        <execution>
+			            <id>flatten</id>
+			            <phase>process-resources</phase>
+			            <goals>
+			                <goal>flatten</goal>
+			            </goals>
+			        </execution>
+			        <execution>
+			            <id>flatten.clean</id>
+			            <phase>clean</phase>
+			            <goals>
+			                <goal>clean</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+			</plugin>			
+			
 		</plugins>
-	</reporting>
-	
+	</build>
 	
 	<dependencies>
 
+		<!--  required if eclipse is using a recent Java 
 		<dependency>
-			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
-			<version>1.0.2</version>
-		</dependency>
-
-	<!-- To use MOXy, uncomment the following 2 dependencies. 
-		Dependency version 2.4.1 had some issues,
-		see http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html for further
-		details.  	
-		
-		org.eclipse.persistence.internal.oxm.XMLBinaryDataHelper.initializeDataTypes(XMLBinaryDataHelper.java:75)
-		needs javax.mail
-		
-		v2.6+ org/eclipse/persistence is class file version 51.0  ie Java 7,
-		so stick with 2.5.2 (since all our other deps still support Java 6)
- 		<dependency>
-			<groupId>org.docx4j</groupId>
-			<artifactId>docx4j-MOXy-JAXBContext</artifactId>
-			<version>3.3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>org.eclipse.persistence.moxy</artifactId>
-			<version>2.5.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.2</version>
 		</dependency>
 		-->
-
 		
-		<!--  events -->
-		<dependency>
-		    <groupId>net.engio</groupId>
-		    <artifactId>mbassador</artifactId>
-		    <version>1.2.4.2</version>
-		</dependency>
-
-		<!--  From 3.0, docx4j uses slf4j --> 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
+			<version>1.7.26</version>
 		</dependency>
-
-		<!--  instead of FOP's commons-logging -->		
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.21</version>
-		</dependency>		
-
-		<!--  .. default to log4j implementation, just like docx4j 2.8.1 and earlier.  -->
-		 <dependency>
-		  <groupId>org.slf4j</groupId>
-		  <artifactId>slf4j-log4j12</artifactId>
-		  <version>1.7.21</version>
-		</dependency>		
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-				<exclusions>
-					<exclusion>
-						<groupId>javax.mail</groupId>
-						<artifactId>mail</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>javax.jms</groupId>
-						<artifactId>jms</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.sun.jdmk</groupId>
-						<artifactId>jmxtools</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.sun.jmx</groupId>
-						<artifactId>jmxri</artifactId>
-					</exclusion>
-				</exclusions>
-		</dependency>
-		
- 		 
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
-		</dependency>
-		 
-		 
-		 <!--  supports org.apache.commons.lang.NotImplementedException -->
-		 <!-- 
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.4</version> 
-		</dependency>
-		 -->
-		
-		<dependency>
-			<!--  required for ole introspection -->
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.10</version>
-		</dependency>
-
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.4</version> <!--  2.2 works -->
-		</dependency>
-		
-		<!-- you can comment out if you don't want
-			 to use Plutext's commercial PDF Converter.	
-		 -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
-		</dependency>
-						
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.7.8</version>
-		</dependency>
-		
-		<dependency>
-		  <groupId>com.fasterxml.jackson.core</groupId>
-		  <artifactId>jackson-databind</artifactId>
-			<version>2.7.8</version>
-		</dependency>		
-		
-
-	<dependency>
-		<groupId>org.apache.xmlgraphics</groupId>
-		<artifactId>xmlgraphics-commons</artifactId>
-		<version>2.1</version>
-		<exclusions>
-			<exclusion>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-			</exclusion>		
-		</exclusions>
-	</dependency>
-		
-
-
-	<!-- these two are to correct issues in fop dependency -->
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-api</artifactId>
-		<version>4.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>org.apache.avalon.framework</groupId>
-		<artifactId>avalon-framework-impl</artifactId>
-		<version>4.3.1</version>
-	</dependency>
-	<dependency>
-		<groupId>xalan</groupId>
-		<artifactId>xalan</artifactId>
-		<version>2.7.2</version>
-		<exclusions>
-			<exclusion>
-				<groupId>xml-apis</groupId>
-				<artifactId>xml-apis</artifactId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-
-<!-- These work for basic marshalling/unmarshalling,
-     but not with our XSLT extension functions.
-<dependency>
-    <groupId>net.sf.saxon</groupId>
-    <artifactId>saxon</artifactId>
-    <version>8.7</version>
-</dependency>
-<dependency>
-    <groupId>net.sf.saxon</groupId>
-    <artifactId>saxon-dom</artifactId>
-    <version>8.7</version>
-</dependency>
--->
-
-<dependency>
-    <groupId>net.arnx</groupId>
-    <artifactId>wmf2svg</artifactId>
-    <version>0.9.8</version>
-</dependency>
-
-
-		<!-- Ensure both the Java 6 and RI interfaces are present,
-		     even if the user has just one.
-		     NB: this (or an added source location containing them) is
-		     necessary (at least for Maven 2.2.1) since without this,
-		     Maven doesn't find the Java 6 copy in rt.jar -->
-		<dependency>
-		    <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
-		    <artifactId>JAXBNamespacePrefixMapper</artifactId>
-		    <version>2.2.4</version>
-   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->
-   			<scope>provided</scope>
-   		</dependency>
-
-		<dependency>
-    		<groupId>org.antlr</groupId>
-    		<artifactId>antlr-runtime</artifactId>
-    		<version>3.5.2</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.antlr</groupId>
-		    <artifactId>stringtemplate</artifactId>
-		    <version>3.2.1</version>
-		</dependency>
-		
-		<!--  since 3.1.1 -->
-		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
-		    <version>19.0</version>
-		</dependency>	
-		
-		<!--  for anon functionality; since 3.3.1 -->
-		<dependency>
-		    <groupId>com.thedeanda</groupId>
-		    <artifactId>lorem</artifactId>
-		    <version>2.0</version>
-		</dependency>		
 		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
-		</dependency>
-
-<!-- Uncomment for load/save via JCR, which
-		may be found in docx4j-extras.
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-			<version>1.0</version>
-		</dependency>
-		-->
-
-
-  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-
-			(stuff not available in public repositories)
-
-			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-
-		-->
+		</dependency>		
 		
-
-	</dependencies>
+	</dependencies>	
+	
 
 <!-- 
 <distributionManagement>
@@ -673,6 +355,13 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+
+		<profile>
+			<id>OSGi</id>
+			<properties>
+				<packaging.type>bundle</packaging.type>
+			</properties>
 		</profile>
 		
 
@@ -769,6 +458,18 @@
    		</dependencies>
    	</profile>
    				-->
+
+
+<!-- 
+
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+
+ -->
+
 
    </profiles>
 

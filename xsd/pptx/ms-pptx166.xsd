@@ -1,0 +1,58 @@
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.microsoft.com/office/powerpoint/2016/6/main"
+	xmlns="http://schemas.microsoft.com/office/powerpoint/2016/6/main"
+	xmlns:p166="http://schemas.microsoft.com/office/powerpoint/2016/6/main"
+	xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+	xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+    <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-pptx/57a00b08-a235-4172-96a5-b5ade23c080a
+         on 20190518
+         This is [MS-PPTX] Protocol Revision 15.0 of 12/11/2018 -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.com.microsoft.schemas.office.powerpoint.x201606.main"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	  
+         
+<!--          
+   <xsd:import namespace="http://schemas.microsoft.com/office/powerpoint/2010/main" schemaLocation="ms-pptx14.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/presentationml/2006/main" schemaLocation="pml.xsd"/>
+    -->
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="../shared/shared-commonSimpleTypes.xsd" />
+   <xsd:import namespace="http://schemas.microsoft.com/office/powerpoint/2010/main" schemaLocation="office_powerpoint_2010_main.xsd"/>
+   <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml-baseTypes.xsd"/>
+    
+   <xsd:simpleType name="ST_ZoomObjectImageType">
+     <xsd:restriction base="xsd:token">
+       <xsd:enumeration value="preview"/>
+       <xsd:enumeration value="cover"/>
+     </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:complexType name="CT_ZoomObjectProperties">
+     <xsd:sequence>
+       <xsd:element name="blipFill" type="a:CT_BlipFillProperties" minOccurs="1" maxOccurs="1"/>
+       <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1"/>
+     </xsd:sequence>
+     <xsd:attribute name="id" type="s:ST_Guid" use="required"/>
+     <xsd:attribute name="returnToParent" type="xsd:boolean" use="optional" default="true"/>
+     <xsd:attribute name="imageType" type="ST_ZoomObjectImageType" use="optional" default="preview"/>
+     <xsd:attribute name="transitionDur" type="p14:ST_UniversalTimeOffset" use="optional"/>
+     <xsd:attribute name="showBg" type="xsd:boolean" use="optional" default="true"/>
+   </xsd:complexType>
+ </xsd:schema>
