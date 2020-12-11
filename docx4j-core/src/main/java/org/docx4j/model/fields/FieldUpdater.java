@@ -160,10 +160,7 @@ public class FieldUpdater {
 					}
 					simpleField.getContent().clear();	
 					simpleField.getContent().add(r);
-					Text t = Context.getWmlObjectFactory().createText();
-					t.setValue(val);
-					// t.setSpace(value) //TODO
-					r.getContent().add(t);
+                    setSimpleFieldContent(r, val);
 					
 	//				System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 				}
@@ -176,7 +173,14 @@ public class FieldUpdater {
 		}
 		
 	}
-	
+
+    protected void setSimpleFieldContent(R r, String val) {
+        Text t = Context.getWmlObjectFactory().createText();
+        t.setValue(val);
+        // t.setSpace(value) //TODO
+        r.getContent().add(t);
+    }
+
 	private R getFirstRun(List<Object> content) {
 		
 		for (Object o : content) {

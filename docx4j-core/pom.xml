@@ -11,6 +11,7 @@
 	<artifactId>docx4j-core</artifactId>
 	<packaging>${packaging.type}</packaging>
 	<name>docx4j-core</name>
+	<version>${revision}</version>
 	
 	<description>
 		docx4j is a library which helps you to work with the Office Open
