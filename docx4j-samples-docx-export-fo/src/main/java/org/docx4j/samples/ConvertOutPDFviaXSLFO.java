@@ -92,7 +92,7 @@ public class ConvertOutPDFviaXSLFO {
 		
 		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	inputfilepath = System.getProperty("user.dir") + "/emoji-export-segoe.docx";
+    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
     	saveFO = true;
 	}
@@ -158,7 +158,7 @@ public class ConvertOutPDFviaXSLFO {
 //			fontMapper.put("Times New Roman", font);
 //			fontMapper.put("Arial", font);
 //		}
-//		fontMapper.put("Apple Color Emoji", PhysicalFonts.get("Segoe UI Emoji"));
+//		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
 
 		// FO exporter setup (required)
 		// .. the FOSettings object
