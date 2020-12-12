@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import static java.lang.Math.toIntExact;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -119,22 +120,35 @@ public class LoadFromZipNG extends Load {
 		return get(new File(filepath));
 	}
 	
-	public static byte[] getBytesFromInputStream(InputStream is)
+	public static byte[] getBytesFromInputStream(InputStream is, long size)
 		throws Exception {
 		
-		BufferedInputStream bufIn = new BufferedInputStream(is);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		BufferedOutputStream bos = new BufferedOutputStream(baos);
-		int c = bufIn.read();
-		while (c != -1) {
-			bos.write(c);
-			c = bufIn.read();
-		}
-		bos.flush();
-		baos.flush();		
-		//bufIn.close(); //don't do that, since it closes the ZipInputStream after we've read an entry!
-		bos.close();
-		return baos.toByteArray();
+		if (size == -1) {
+			BufferedInputStream bufIn = new BufferedInputStream(is);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			BufferedOutputStream bos = new BufferedOutputStream(baos);
+			int c = bufIn.read();
+			while (c != -1) {
+				bos.write(c);
+				c = bufIn.read();
+			}
+			bos.flush();
+			baos.flush();		
+			//bufIn.close(); //don't do that, since it closes the ZipInputStream after we've read an entry!
+			bos.close();
+			return baos.toByteArray();
+			
+        } else {
+        	int sizeInt = toIntExact(size);
+            byte[] targetArray = new byte[sizeInt];
+            int read = is.read(targetArray);
+            int offset = read;
+            while (read != -1 && (sizeInt-offset!=0)) {
+               read = is.read(targetArray,offset, sizeInt-offset);
+               offset += read;
+            }
+            return targetArray;
+         }			
 	} 			
 	
 	public OpcPackage get(File f) throws Docx4JException {
@@ -158,7 +172,7 @@ public class LoadFromZipNG extends Load {
 			log.info( "\n\n" + entry.getName() + "\n" );
 			InputStream in = null;
 			try {			
-				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry) );
+				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry), entry.getSize() );
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (Exception e) {
 				e.printStackTrace() ;
@@ -182,7 +196,7 @@ public class LoadFromZipNG extends Load {
             ZipInputStream zis = new ZipInputStream(is);
             ZipEntry entry = null;
             while ((entry = zis.getNextEntry()) != null) {
-				byte[] bytes =  getBytesFromInputStream( zis );
+				byte[] bytes =  getBytesFromInputStream( zis, entry.getSize() );
 				//log.debug("Extracting " + entry.getName());
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
