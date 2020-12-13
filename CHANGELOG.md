@@ -2,6 +2,36 @@ CHANGELOG
 =========
 
 
+
+Version 8.2.7  for pptx4j users
+==============
+
+Release date
+------------
+
+14 December 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Guillermo
+
+Yavuz Tas
+
+
+Changes in Version 8.2.7
+-------------------------
+
+Zip loading optimisation: Avoid using streams where entry size is known
+
+Fix issue in unmarshalString(String str, JAXBContext jc, Class declaredType) introduced by XXE fixes in 8.2.1 mostly affecting pptx
+
+Emojis: specify fallback font in docx4j.properties property docx4j.fonts.RunFontSelector.EmojiFont 
+
+
+
 Version 8.2.6  minor release
 ==============
 
