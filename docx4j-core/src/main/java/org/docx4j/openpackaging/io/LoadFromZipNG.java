@@ -124,6 +124,9 @@ public class LoadFromZipNG extends Load {
 		throws Exception {
 		
 		if (size == -1) {
+			
+			log.debug("entry.getSize() -1");
+			
 			BufferedInputStream bufIn = new BufferedInputStream(is);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(baos);
@@ -139,6 +142,11 @@ public class LoadFromZipNG extends Load {
 			return baos.toByteArray();
 			
         } else {
+        	
+        	if (log.isDebugEnabled()) {
+        		log.info("entry.getSize()=" + size );
+        	}
+        	
         	int sizeInt = toIntExact(size);
             byte[] targetArray = new byte[sizeInt];
             int read = is.read(targetArray);

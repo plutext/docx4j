@@ -190,6 +190,8 @@ public class ZipPartStore implements PartStore {
 
 		if (size == -1) {
 		
+			log.debug("entry.getSize() -1");
+			
 			BufferedInputStream bufIn = new BufferedInputStream(is);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(baos);
@@ -205,6 +207,10 @@ public class ZipPartStore implements PartStore {
 			return baos.toByteArray();
 			
         } else {
+
+        	if (log.isDebugEnabled()) {
+        		log.info("entry.getSize()=" + size );
+        	}
         	
         	int sizeInt = toIntExact(size);
             byte[] targetArray = new byte[sizeInt];

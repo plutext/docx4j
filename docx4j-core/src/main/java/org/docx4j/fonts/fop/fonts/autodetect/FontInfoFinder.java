@@ -182,6 +182,7 @@ public class FontInfoFinder {
      *         will have only one entry, unless the fontUrl is a TrueType Collection
      */
     public EmbedFontInfo[] find(URL fontUrl, FontResolver resolver, FontCache fontCache) {
+    	
         String embedUrl = null;
         embedUrl = fontUrl.toExternalForm();
 
@@ -195,7 +196,8 @@ public class FontInfoFinder {
                     return fontInfos;
                 }
             // is this a previously failed parsed font?
-            } else if (fontCache.isFailedFont(embedUrl, fileLastModified)) {
+            } 
+            else if (fontCache.isFailedFont(embedUrl, fileLastModified)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Skipping font file that failed to load previously: " + embedUrl);
                 }
@@ -267,6 +269,9 @@ public class FontInfoFinder {
                     customFont.setEventListener(this.eventListener);
                 }
             } catch (Exception e) {
+            	if (log.isDebugEnabled()) {
+            		log.debug(e.getMessage(), e);
+            	}
                 if (fontCache != null) {
                     fontCache.registerFailedFont(embedUrl, fileLastModified);
                 }
