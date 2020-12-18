@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,16 +15,15 @@
  * limitations under the License.
  */
 
-/* $Id: PFBParser.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.DataInputStream;
-import java.io.BufferedInputStream;
 
-//Commons
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -49,38 +42,6 @@ public class PFBParser {
             CLEARTOMARK = "cleartomark".getBytes("US-ASCII");
         } catch (java.io.UnsupportedEncodingException e) {
             throw new RuntimeException("Incompatible VM. It doesn't support the US-ASCII encoding");
-        }
-    }
-
-
-    /**
-     * Parses a PFB file into a PFBData object.
-     * @param url URL to load the PFB file from
-     * @return PFBData memory representation of the font
-     * @throws IOException In case of an I/O problem
-     */
-    public PFBData parsePFB(java.net.URL url) throws IOException {
-        InputStream in = url.openStream();
-        try {
-            return parsePFB(in);
-        } finally {
-            in.close();
-        }
-    }
-
-
-    /**
-     * Parses a PFB file into a PFBData object.
-     * @param pfbFile File to load the PFB file from
-     * @return PFBData memory representation of the font
-     * @throws IOException In case of an I/O problem
-     */
-    public PFBData parsePFB(java.io.File pfbFile) throws IOException {
-        InputStream in = new java.io.FileInputStream(pfbFile);
-        try {
-            return parsePFB(in);
-        } finally {
-            in.close();
         }
     }
 
@@ -120,7 +81,6 @@ public class PFBParser {
     private void parsePCFormat(PFBData pfb, DataInputStream din) throws IOException {
         int segmentHead;
         int segmentType;
-        int bytesRead;
 
         //Read first segment
         segmentHead = din.readUnsignedByte();
@@ -167,7 +127,7 @@ public class PFBParser {
     }
 
 
-    private static final boolean byteCmp(byte[] src, int srcOffset, byte[] cmp) {
+    private static boolean byteCmp(byte[] src, int srcOffset, byte[] cmp) {
         for (int i = 0; i < cmp.length; i++) {
             // System.out.println("Compare: " + src[srcOffset + i] + " " + cmp[i]);
             if (src[srcOffset + i] != cmp[i]) {

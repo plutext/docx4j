@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +15,11 @@
  * limitations under the License.
  */
 
-/* $Id: MutableFont.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +29,12 @@ import java.util.Set;
  * This interface is used to set the values of a font during configuration time.
  */
 public interface MutableFont {
+
+    /**
+     * Sets the URI from which this font is or will be loaded.
+     * @param uri URI from which font is or will be loaded
+     */
+    void setFontURI(URI uri);
 
     /**
      * Sets the "PostScript" font name (Example: "Helvetica-BoldOblique").
@@ -52,19 +53,25 @@ public interface MutableFont {
      * Sets the font's family names (Example: "Helvetica").
      * @param names the font's family names (a Set of Strings)
      */
-    void setFamilyNames(Set names);
+    void setFamilyNames(Set<String> names);
 
     /**
-     * Sets the path to the embeddable font file.
-     * @param path URI to the file
+     * Sets the URI to the embeddable font.
+     * @param path URI to the font
      */
-    void setEmbedFileName(String path);
+    void setEmbedURI(URI path);
 
     /**
      * Sets the resource name of the embeddable font file.
      * @param name resource name
      */
     void setEmbedResourceName(String name);
+
+    /**
+     * Sets the embedding mode.
+     * @param embeddingMode the embedding mode
+     */
+    void setEmbeddingMode(EmbeddingMode embeddingMode);
 
     /**
      * Sets the capital height value.
@@ -139,10 +146,16 @@ public interface MutableFont {
     void setKerningEnabled(boolean enabled);
 
     /**
+     * Enables/disabled advanced typographic features.
+     * @param enabled true if advanced typographic features should be enabled if available
+     */
+    void setAdvancedEnabled(boolean enabled);
+
+    /**
      * Adds an entry to the kerning table.
      * @param key Kerning key
      * @param value Kerning value
      */
-    void putKerningEntry(Integer key, Map value);
+    void putKerningEntry(Integer key, Map<Integer, Integer> value);
 
 }

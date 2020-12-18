@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +15,13 @@
  * limitations under the License.
  */
 
-/* $Id: FontSetup.java 707627 2008-10-24 13:20:51Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
 // FOP (base 14 fonts)
 import java.util.List;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.base14.Courier;
 import org.docx4j.fonts.fop.fonts.base14.CourierBold;
 import org.docx4j.fonts.fop.fonts.base14.CourierBoldOblique;
@@ -47,6 +36,7 @@ import org.docx4j.fonts.fop.fonts.base14.TimesBoldItalic;
 import org.docx4j.fonts.fop.fonts.base14.TimesItalic;
 import org.docx4j.fonts.fop.fonts.base14.TimesRoman;
 import org.docx4j.fonts.fop.fonts.base14.ZapfDingbats;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 
 //TODO remove small dependency on and refactor this
 
@@ -57,19 +47,18 @@ import org.docx4j.fonts.fop.fonts.base14.ZapfDingbats;
  * Assigns the font (with metrics) to internal names like "F1" and
  * assigns family-style-weight triplets to the fonts
  */
-public class FontSetup {
+public final class FontSetup {
 
-    /**
-     * logging instance
-     */
-    protected static Logger log = LoggerFactory.getLogger(FontSetup.class);
+    private FontSetup() {
+    }
 
     /**
      * Sets up a font info
      * @param fontInfo font info
+     * @param base14Kerning true if base14 kerning applies
      */
-    public static void setup(FontInfo fontInfo) {
-        setup(fontInfo, null, null);
+    public static void setup(FontInfo fontInfo, boolean base14Kerning) {
+        setup(fontInfo, null, null, base14Kerning);
     }
 
     /**
@@ -80,10 +69,11 @@ public class FontSetup {
      *
      * @param fontInfo the font info object to set up
      * @param embedFontInfoList a list of EmbedFontInfo objects
-     * @param resolver the font resolver
+     * @param resourceResolver the font resolver
+     * @param base14Kerning true if base14 kerning applies
      */
-    public static void setup(FontInfo fontInfo, List embedFontInfoList, FontResolver resolver) {
-        final boolean base14Kerning = false;
+    public static void setup(FontInfo fontInfo, List embedFontInfoList,
+            InternalResourceResolver resourceResolver, boolean base14Kerning) {
         fontInfo.addMetrics("F1", new Helvetica(base14Kerning));
         fontInfo.addMetrics("F2", new HelveticaOblique(base14Kerning));
         fontInfo.addMetrics("F3", new HelveticaBold(base14Kerning));
@@ -189,7 +179,7 @@ public class FontSetup {
         final int startNum = 15;
 
         /* Add configured fonts */
-        addConfiguredFonts(fontInfo, embedFontInfoList, startNum, resolver);
+        addConfiguredFonts(fontInfo, embedFontInfoList, startNum, resourceResolver, base14Kerning);
     }
 
     /**
@@ -197,47 +187,30 @@ public class FontSetup {
      * @param fontInfo the font info to set up
      * @param embedFontInfoList a list of EmbedFontInfo objects
      * @param num starting index for internal font numbering
-     * @param resolver the font resolver
+     * @param resourceResolver the font resolver
      */
     private static void addConfiguredFonts(FontInfo fontInfo,
-            List/*<EmbedFontInfo>*/ embedFontInfoList, int num, FontResolver resolver) {
+            List<EmbedFontInfo> embedFontInfoList, int num,
+            InternalResourceResolver resourceResolver,
+            boolean base14Kerning) {
         if (embedFontInfoList == null) {
             return; //No fonts to process
         }
-
-        if (resolver == null) {
-            //Ensure that we have minimal font resolution capabilities
-            resolver = createMinimalFontResolver();
-        }
+        assert resourceResolver != null;
 
         String internalName = null;
 
-        for (int i = 0; i < embedFontInfoList.size(); i++) {
-            EmbedFontInfo embedFontInfo = (EmbedFontInfo)embedFontInfoList.get(i);
-
+        for (EmbedFontInfo embedFontInfo : embedFontInfoList) {
             internalName = "F" + num;
             num++;
 
-            LazyFont font = new LazyFont(embedFontInfo, resolver);
+            LazyFont font = new LazyFont(embedFontInfo, resourceResolver, false);
             fontInfo.addMetrics(internalName, font);
 
-            List triplets = embedFontInfo.getFontTriplets();
-            for (int tripletIndex = 0; tripletIndex < triplets.size(); tripletIndex++) {
-                FontTriplet triplet = (FontTriplet) triplets.get(tripletIndex);
+            List<FontTriplet> triplets = embedFontInfo.getFontTriplets();
+            for (FontTriplet triplet : triplets) {
                 fontInfo.addFontProperties(internalName, triplet);
             }
         }
-    }
-
-    /** @return a new FontResolver to be used by the font subsystem */
-    public static FontResolver createMinimalFontResolver() {
-        return new FontResolver() {
-
-            /** {@inheritDoc} */
-            public Source resolve(String href) {
-                //Minimal functionality here
-                return new StreamSource(href);
-            }
-        };
     }
 }

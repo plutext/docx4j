@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,15 +15,15 @@
  * limitations under the License.
  */
 
-/* $Id: FontFileFinder.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.autodetect;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.DirectoryWalker;
@@ -37,8 +31,9 @@ import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.docx4j.fonts.fop.fonts.FontEventListener;
 
 /**
  * Helps to autodetect/locate available operating system fonts.
@@ -46,24 +41,28 @@ import org.slf4j.LoggerFactory;
 public class FontFileFinder extends DirectoryWalker implements FontFinder {
 
     /** logging instance */
-    private final Logger log = LoggerFactory.getLogger(FontFileFinder.class);
+    private final Log log = LogFactory.getLog(FontFileFinder.class);
 
     /** default depth limit of recursion when searching for font files **/
     public static final int DEFAULT_DEPTH_LIMIT = -1;
+    private final FontEventListener eventListener;
 
     /**
      * Default constructor
+     * @param listener for throwing font related events
      */
-    public FontFileFinder() {
-        super(getDirectoryFilter(), getFileFilter(), DEFAULT_DEPTH_LIMIT);
+    public FontFileFinder(FontEventListener listener) {
+        this(DEFAULT_DEPTH_LIMIT, listener);
     }
 
     /**
      * Constructor
      * @param depthLimit recursion depth limit
+     * @param listener for throwing font related events
      */
-    public FontFileFinder(int depthLimit) {
+    public FontFileFinder(int depthLimit, FontEventListener listener) {
         super(getDirectoryFilter(), getFileFilter(), depthLimit);
+        eventListener = listener;
     }
 
     /**
@@ -97,6 +96,7 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @return whether directory should be handled
      * {@inheritDoc}
      */
+    @Override
     protected boolean handleDirectory(File directory, int depth, Collection results) {
         return true;
     }
@@ -107,6 +107,7 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @param results collection
      * {@inheritDoc}
      */
+    @Override
     protected void handleFile(File file, int depth, Collection results) {
         try {
             // Looks Strange, but is actually recommended over just .URL()
@@ -122,6 +123,7 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @param results the collection of results objects
      * {@inheritDoc}
      */
+    @Override
     protected void handleDirectoryEnd(File directory, int depth, Collection results) {
         if (log.isDebugEnabled()) {
             log.debug(directory + ": found " + results.size() + " font"
@@ -136,8 +138,8 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @throws IOException io exception
      * {@inheritDoc}
      */
-    public List find() throws IOException {
-        final FontFinder fontDirFinder;
+    public List<URL> find() throws IOException {
+        final FontDirFinder fontDirFinder;
         final String osName = System.getProperty("os.name");
         if (osName.startsWith("Windows")) {
             fontDirFinder = new WindowsFontDirFinder();
@@ -148,10 +150,9 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
                 fontDirFinder = new UnixFontDirFinder();
             }
         }
-        List fontDirs = fontDirFinder.find();
-        List results = new java.util.ArrayList();
-        for (Iterator iter = fontDirs.iterator(); iter.hasNext();) {
-            final File dir = (File)iter.next();
+        List<File> fontDirs = fontDirFinder.find();
+        List<URL> results = new java.util.ArrayList<URL>();
+        for (File dir : fontDirs) {
             super.walk(dir, results);
         }
         return results;
@@ -164,9 +165,14 @@ public class FontFileFinder extends DirectoryWalker implements FontFinder {
      * @return list of font files
      * @throws IOException thrown if an I/O exception of some sort has occurred
      */
-    public List find(String dir) throws IOException {
-        List results = new java.util.ArrayList();
-        super.walk(new File(dir), results);
+    public List<URL> find(String dir) throws IOException {
+        List<URL> results = new java.util.ArrayList<URL>();
+        File directory = new File(dir);
+        if (!directory.isDirectory()) {
+            eventListener.fontDirectoryNotFound(this, dir);
+        } else {
+            super.walk(directory, results);
+        }
         return results;
     }
 }

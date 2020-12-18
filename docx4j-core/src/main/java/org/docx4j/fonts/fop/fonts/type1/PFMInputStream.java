@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +15,14 @@
  * limitations under the License.
  */
 
-/* $Id: PFMInputStream.java 693462 2008-09-09 13:35:13Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
+import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.DataInputStream;
 import java.io.InputStreamReader;
 
 /**

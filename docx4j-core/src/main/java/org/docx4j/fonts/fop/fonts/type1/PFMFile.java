@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: PFMFile.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
@@ -29,11 +23,12 @@ package org.docx4j.fonts.fop.fonts.type1;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.apache.xmlgraphics.fonts.Glyphs;
 
@@ -46,7 +41,7 @@ public class PFMFile {
     private String windowsName;
     private String postscriptName;
     private short dfItalic;
-    private int dfWeight;
+    //private int dfWeight;
     private short dfCharSet;
     private short dfPitchAndFamily;
     private int dfAvgWidth;
@@ -67,12 +62,12 @@ public class PFMFile {
     // Extent table
     private int[] extentTable;
 
-    private Map kerningTab = new java.util.HashMap();
+    private Map<Integer, Map<Integer, Integer>> kerningTab = new HashMap<Integer, Map<Integer, Integer>>();
 
     /**
      * logging instance
      */
-    protected Logger log = LoggerFactory.getLogger(PFMFile.class);
+    protected Log log = LogFactory.getLog(PFMFile.class);
 
     /**
      * Parses a PFM file
@@ -90,14 +85,15 @@ public class PFMFile {
         short sh2 = in.readByte();
         if (sh1 == 128 && sh2 == 1) {
             //Found the first section header of a PFB file!
+            IOUtils.closeQuietly(in);
             throw new IOException("Cannot parse PFM file. You probably specified the PFB file"
                     + " of a Type 1 font as parameter instead of the PFM.");
         }
         bufin.reset();
         byte[] b = new byte[16];
-        bufin.read(b);
-        if (new String(b, "US-ASCII").equalsIgnoreCase("StartFontMetrics")) {
+        if ((bufin.read(b) == b.length) && new String(b, "US-ASCII").equalsIgnoreCase("StartFontMetrics")) {
             //Found the header of a AFM file!
+            IOUtils.closeQuietly(in);
             throw new IOException("Cannot parse PFM file. You probably specified the AFM file"
                     + " of a Type 1 font as parameter instead of the PFM.");
         }
@@ -122,26 +118,38 @@ public class PFMFile {
      * @throws IOException In case of an I/O problem
      */
     private void loadHeader(PFMInputStream inStream) throws IOException {
-        inStream.skip(80);
+        if (inStream.skip(80) != 80) {
+            throw new IOException("premature EOF when skipping 80 bytes");
+        }
         dfItalic = inStream.readByte();
-        inStream.skip(2);
-        dfWeight = inStream.readShort();
+        if (inStream.skip(2) != 2) {
+            throw new IOException("premature EOF when skipping 2 bytes");
+        }
+        inStream.readShort(); // dfWeight =
         dfCharSet = inStream.readByte();
-        inStream.skip(4);
+        if (inStream.skip(4) != 4) {
+            throw new IOException("premature EOF when skipping 4 bytes");
+        }
         dfPitchAndFamily = inStream.readByte();
         dfAvgWidth = inStream.readShort();
         dfMaxWidth = inStream.readShort();
         dfFirstChar = inStream.readByte();
         dfLastChar = inStream.readByte();
-        inStream.skip(8);
+        if (inStream.skip(8) != 8) {
+            throw new IOException("premature EOF when skipping 8 bytes");
+        }
         long faceOffset = inStream.readInt();
 
         inStream.reset();
-        inStream.skip(faceOffset);
+        if (inStream.skip(faceOffset) != faceOffset) {
+            throw new IOException("premature EOF when skipping faceOffset bytes");
+        }
         windowsName = inStream.readString();
 
         inStream.reset();
-        inStream.skip(117);
+        if (inStream.skip(117) != 117) {
+            throw new IOException("premature EOF when skipping 117 bytes");
+        }
     }
 
     /**
@@ -157,29 +165,41 @@ public class PFMFile {
         }
         final long extMetricsOffset = inStream.readInt();
         final long extentTableOffset = inStream.readInt();
-        inStream.skip(4); //Skip dfOriginTable
+        if (inStream.skip(4) != 4) { //Skip dfOriginTable
+            throw new IOException("premature EOF when skipping dfOriginTable bytes");
+        }
         final long kernPairOffset = inStream.readInt();
-        inStream.skip(4); //Skip dfTrackKernTable
+        if (inStream.skip(4) != 4) { //Skip dfTrackKernTable
+            throw new IOException("premature EOF when skipping dfTrackKernTable bytes");
+        }
         long driverInfoOffset = inStream.readInt();
 
         if (kernPairOffset > 0) {
             inStream.reset();
-            inStream.skip(kernPairOffset);
+            if (inStream.skip(kernPairOffset) != kernPairOffset) {
+                throw new IOException("premature EOF when skipping kernPairOffset bytes");
+            }
             loadKernPairs(inStream);
         }
 
         inStream.reset();
-        inStream.skip(driverInfoOffset);
+        if (inStream.skip(driverInfoOffset) != driverInfoOffset) {
+            throw new IOException("premature EOF when skipping driverInfoOffset bytes");
+        }
         postscriptName = inStream.readString();
 
         if (extMetricsOffset != 0) {
             inStream.reset();
-            inStream.skip(extMetricsOffset);
+            if (inStream.skip(extMetricsOffset) != extMetricsOffset) {
+                throw new IOException("premature EOF when skipping extMetricsOffset bytes");
+            }
             loadExtMetrics(inStream);
         }
         if (extentTableOffset != 0) {
             inStream.reset();
-            inStream.skip(extentTableOffset);
+            if (inStream.skip(extentTableOffset) != extentTableOffset) {
+                throw new IOException("premature EOF when skipping extentTableOffset bytes");
+            }
             loadExtentTable(inStream);
         }
 
@@ -198,10 +218,10 @@ public class PFMFile {
             log.trace(i + " kerning pairs");
         }
         while (i > 0) {
-            int g1 = (int)inStream.readByte();
+            int g1 = (int) inStream.readByte();
             i--;
 
-            int g2 = (int)inStream.readByte();
+            int g2 = (int) inStream.readByte();
 
             int adj = inStream.readShort();
             if (adj > 0x8000) {
@@ -215,12 +235,12 @@ public class PFMFile {
                 log.trace("glyphs: " + glyph1 + ", " + glyph2);
             }
 
-            Map adjTab = (Map)kerningTab.get(new Integer(g1));
+            Map<Integer, Integer> adjTab = kerningTab.get(g1);
             if (adjTab == null) {
-                adjTab = new java.util.HashMap();
+                adjTab = new HashMap<Integer, Integer>();
             }
-            adjTab.put(new Integer(g2), new Integer(adj));
-            kerningTab.put(new Integer(g1), adjTab);
+            adjTab.put(g2, adj);
+            kerningTab.put(g1, adjTab);
         }
     }
 
@@ -235,8 +255,10 @@ public class PFMFile {
             log.warn("Size of extension block was expected to be "
                 + "52 bytes, but was " + size + " bytes.");
         }
-        inStream.skip(12); //Skip etmPointSize, etmOrientation, etmMasterHeight,
-                           //etmMinScale, etmMaxScale, emtMasterUnits
+        if (inStream.skip(12) != 12) { //Skip etmPointSize, etmOrientation, etmMasterHeight,
+                                       //etmMinScale, etmMaxScale, emtMasterUnits
+            throw new IOException("premature EOF when skipping etmPointSize, ... bytes");
+        }
         etmCapHeight = inStream.readShort();
         etmXHeight = inStream.readShort();
         etmLowerCaseAscent = inStream.readShort();
@@ -276,7 +298,7 @@ public class PFMFile {
      *
      * @return A Map containing the kerning table
      */
-    public Map getKerning() {
+    public Map<Integer, Map<Integer, Integer>> getKerning() {
         return kerningTab;
     }
 
@@ -459,9 +481,9 @@ public class PFMFile {
     public int getStemV() {
         // Just guessing....
         if (dfItalic != 0) {
-            return (int)Math.round(dfMinWidth * 0.25);
+            return (int) Math.round(dfMinWidth * 0.25);
         } else {
-            return (int)Math.round(dfMinWidth * 0.6);
+            return (int) Math.round(dfMinWidth * 0.6);
         }
     }
 
@@ -487,7 +509,13 @@ public class PFMFile {
      * @return The width of a character.
      */
     public int getCharWidth(short which) {
-        return extentTable[which - dfFirstChar];
+        if (extentTable != null) {
+            return extentTable[which - dfFirstChar];
+        } else {
+            //Fixed-width font (PFM may have no extent table)
+            //we'll just use the average width
+            return this.dfAvgWidth;
+        }
     }
 
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +15,16 @@
  * limitations under the License.
  */
 
-/* $Id: Typeface.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.apache.xmlgraphics.fonts.Glyphs;
 
 /**
@@ -43,19 +39,19 @@ public abstract class Typeface implements FontMetrics {
     public static final char NOT_FOUND = '#';
 
     /** logger */
-    private static Logger log = LoggerFactory.getLogger(Typeface.class);
+    private static Log log = LogFactory.getLog(Typeface.class);
 
     /**
      * Used to identify whether a font has been used (a character map operation
      * is used as the trigger). This could just as well be a boolean but is a
      * long out of statistical interest.
      */
-    private long charMapOps = 0;
+    private long charMapOps;
 
     /** An optional event listener that receives events such as missing glyphs etc. */
     protected FontEventListener eventListener;
 
-    private Set warnedChars;
+    private Set<Character> warnedChars;
 
     /**
      * Get the encoding of the font.
@@ -102,9 +98,18 @@ public abstract class Typeface implements FontMetrics {
         return false;
     }
 
+    public boolean isCID() {
+        return getFontType() == FontType.TYPE1C;
+    }
+
     /** {@inheritDoc} */
     public int getMaxAscent(int size) {
         return getAscender(size);
+    }
+
+    /** {@inheritDoc} */
+    public boolean hasFeature(int tableType, String script, String language, String feature) {
+        return false;
     }
 
     /**
@@ -124,9 +129,9 @@ public abstract class Typeface implements FontMetrics {
      */
     protected void warnMissingGlyph(char c) {
         // Give up, character is not available
-        Character ch = new Character(c);
+        Character ch = c;
         if (warnedChars == null) {
-            warnedChars = new java.util.HashSet();
+            warnedChars = new HashSet<Character>();
         }
         if (warnedChars.size() < 8 && !warnedChars.contains(ch)) {
             warnedChars.add(ch);
@@ -145,9 +150,13 @@ public abstract class Typeface implements FontMetrics {
             }
         }
     }
-    
+
     /** {@inheritDoc} */
     public String toString() {
-        return getFullName();
-    }   
+        StringBuffer sbuf = new StringBuffer(super.toString());
+        sbuf.append('{');
+        sbuf.append(getFullName());
+        sbuf.append('}');
+        return sbuf.toString();
+    }
 }

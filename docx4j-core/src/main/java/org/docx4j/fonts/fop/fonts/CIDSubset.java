@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,163 +15,158 @@
  * limitations under the License.
  */
 
-/* $Id: CIDSubset.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.docx4j.fonts.fop.util.CharUtilities;
 
-//Naming:
-//glyph index: original index of the glyph in the non-subset font (!= unicode index)
-//character selector: index into a set of glyphs. For subset CID fonts, this starts at 0. For
-//  non-subset fonts, this is the same as the glyph index.
-//Unicode index: The Unicode codepoint of a character.
-//Glyph name: the Adobe glyph name (as found in Glyphs.java)
-
 /**
- * Keeps track of the glyphs used in a document. This information is later used to build
- * a subset of a font.
+ * Provides methods to get font information.
+ * Naming:
+ * glyph index: original index of the glyph in the non-subset font (!= unicode index)
+ * character selector: index into a set of glyphs. For subset CID fonts, this starts at 0. For non-subset
+ * fonts, this is the same as the glyph index.
+ * Unicode index: The Unicode codepoint of a character.
+ * Glyph name: the Adobe glyph name (as found in Glyphs.java)
  */
-public class CIDSubset {
+public class CIDSubset implements CIDSet {
 
     /**
      * usedGlyphs contains orginal, new glyph index (glyph index -> char selector)
      */
-    private Map/*<Integer, Integer>*/ usedGlyphs = new java.util.HashMap();
+    private Map<Integer, Integer> usedGlyphs = new LinkedHashMap<Integer, Integer>();
 
     /**
      * usedGlyphsIndex contains new glyph, original index (char selector -> glyph index)
      */
-    private Map/*<Integer, Integer>*/ usedGlyphsIndex = new java.util.HashMap();
-    private int usedGlyphsCount = 0;
+    private Map<Integer, Integer> usedGlyphsIndex = new HashMap<Integer, Integer>();
+    private int usedGlyphsCount;
 
     /**
      * usedCharsIndex contains new glyph, original char (char selector -> Unicode)
      */
-    private Map/*<Integer, Character>*/ usedCharsIndex = new java.util.HashMap();
-
-    public CIDSubset() {
-    }
+    private Map<Integer, Integer> usedCharsIndex = new HashMap<Integer, Integer>();
 
     /**
-     * Adds the initial 3 glyphs which are the same for all CID subsets.
+     * A map between the original character and it's GID in the original font.
      */
-    public void setupFirstThreeGlyphs() {
-        // Make sure that the 3 first glyphs are included
-        usedGlyphs.put(new Integer(0), new Integer(0));
-        usedGlyphsIndex.put(new Integer(0), new Integer(0));
-        usedGlyphsCount++;
-        usedGlyphs.put(new Integer(1), new Integer(1));
-        usedGlyphsIndex.put(new Integer(1), new Integer(1));
-        usedGlyphsCount++;
-        usedGlyphs.put(new Integer(2), new Integer(2));
-        usedGlyphsIndex.put(new Integer(2), new Integer(2));
+    private Map<Integer, Integer> charToGIDs = new HashMap<Integer, Integer>();
+
+
+    private final MultiByteFont font;
+
+    public CIDSubset(MultiByteFont mbf) {
+        font = mbf;
+        // The zeroth value is reserved for .notdef
+        usedGlyphs.put(0, 0);
+        usedGlyphsIndex.put(0, 0);
         usedGlyphsCount++;
     }
 
-    /**
-     * Returns the original index of the glyph inside the (non-subset) font's glyph list. This
-     * index can be used to access the character width information, for example.
-     * @param subsetIndex the subset index (character selector) to access the glyph
-     * @return the original index (or -1 if no glyph index is available for the subset index)
-     */
-    public int getGlyphIndexForSubsetIndex(int subsetIndex) {
-        Integer glyphIndex = (Integer)usedGlyphsIndex.get(new Integer(subsetIndex));
+    /** {@inheritDoc} */
+    public int getOriginalGlyphIndex(int index) {
+        Integer glyphIndex = usedGlyphsIndex.get(index);
         if (glyphIndex != null) {
-            return glyphIndex.intValue();
+            return glyphIndex;
         } else {
             return -1;
         }
     }
 
-    /**
-     * Returns the Unicode value for a subset index (character selector). If there's no such
-     * Unicode value, the "NOT A CHARACTER" (0xFFFF) is returned.
-     * @param subsetIndex the subset index (character selector)
-     * @return the Unicode value or "NOT A CHARACTER" (0xFFFF)
-     */
-    public char getUnicodeForSubsetIndex(int subsetIndex) {
-        Character mapValue = (Character)usedCharsIndex.get(new Integer(subsetIndex));
+    /** {@inheritDoc} */
+    public int getUnicode(int index) {
+        Integer mapValue = usedCharsIndex.get(index);
         if (mapValue != null) {
-            return mapValue.charValue();
+            return mapValue;
         } else {
             return CharUtilities.NOT_A_CHARACTER;
         }
     }
 
-    /**
-     * Maps a character to a character selector for a font subset. If the character isn't in the
-     * subset, yet, it is added and a new character selector returned. Otherwise, the already
-     * allocated character selector is returned from the existing map/subset.
-     * @param glyphIndex the glyph index of the character
-     * @param unicode the Unicode index of the character
-     * @return the subset index
-     */
-    public int mapSubsetChar(int glyphIndex, char unicode) {
+    /** {@inheritDoc} */
+    public int mapChar(int glyphIndex, char unicode) {
+        return mapCodePoint(glyphIndex, unicode);
+    }
+
+    /** {@inheritDoc} */
+    public int mapCodePoint(int glyphIndex, int codePoint) {
         // Reencode to a new subset font or get the reencoded value
         // IOW, accumulate the accessed characters and build a character map for them
-        Integer subsetCharSelector = (Integer)usedGlyphs.get(new Integer(glyphIndex));
+        Integer subsetCharSelector = usedGlyphs.get(glyphIndex);
         if (subsetCharSelector == null) {
             int selector = usedGlyphsCount;
-            usedGlyphs.put(new Integer(glyphIndex),
-                           new Integer(selector));
-            usedGlyphsIndex.put(new Integer(selector),
-                                new Integer(glyphIndex));
-            usedCharsIndex.put(new Integer(selector),
-                                new Character(unicode));
+            usedGlyphs.put(glyphIndex, selector);
+            usedGlyphsIndex.put(selector, glyphIndex);
+            usedCharsIndex.put(selector, codePoint);
+            charToGIDs.put(codePoint, glyphIndex);
             usedGlyphsCount++;
             return selector;
         } else {
-            return subsetCharSelector.intValue();
+            return subsetCharSelector;
         }
     }
 
-    /**
-     * Returns an unmodifiable Map of the font subset. It maps from glyph index to
-     * character selector (i.e. the subset index in this case).
-     * @return Map Map&lt;Integer, Integer&gt; of the font subset
-     */
-    public Map/*<Integer, Integer>*/ getSubsetGlyphs() {
+    /** {@inheritDoc} */
+    public Map<Integer, Integer> getGlyphs() {
         return Collections.unmodifiableMap(this.usedGlyphs);
     }
 
-    /**
-     * Returns a char array containing all Unicode characters that are in the subset.
-     * @return a char array with all used Unicode characters
-     */
-    public char[] getSubsetChars() {
-        char[] charArray = new char[usedGlyphsCount];
-        for (int i = 0; i < usedGlyphsCount; i++) {
-            charArray[i] = getUnicodeForSubsetIndex(i);
-        }
-        return charArray;
+    /** {@inheritDoc} */
+    public char getUnicodeFromGID(int glyphIndex) {
+        // TODO this method is never called in the MultiByte font path.
+        // This is why we can safely cast the value of usedCharsIndex.get(selector)
+        // to int . BTW is a question if it should be changed to int as getUnicode
+        // or left like this.
+        int selector = usedGlyphs.get(glyphIndex);
+        return (char) usedCharsIndex.get(selector).intValue();
     }
 
-    /**
-     * Returns the number of glyphs in the subset.
-     * @return the number of glyphs in the subset
-     */
-    public int getSubsetSize() {
+    /** {@inheritDoc} */
+    public int getGIDFromChar(char ch) {
+        return charToGIDs.get((int) ch);
+    }
+
+    /** {@inheritDoc} */
+    public char[] getChars() {
+        StringBuilder buf = new StringBuilder();
+
+        for (int i = 0; i < usedGlyphsCount; i++) {
+            buf.appendCodePoint(getUnicode(i));
+        }
+
+        return buf.toString().toCharArray();
+    }
+
+    /** {@inheritDoc} */
+    public int getNumberOfGlyphs() {
         return this.usedGlyphsCount;
     }
 
-    /**
-     * Returns a BitSet with bits set for each available glyph index.
-     * @return a BitSet indicating available glyph indices
-     */
-    public BitSet getGlyphIndexBitSet() {
+    /** {@inheritDoc} */
+    public BitSet getGlyphIndices() {
         BitSet bitset = new BitSet();
-        Iterator iter = usedGlyphs.keySet().iterator();
-        while (iter.hasNext()) {
-            Integer cid = (Integer)iter.next();
-            bitset.set(cid.intValue());
+        for (Integer cid : usedGlyphs.keySet()) {
+            bitset.set(cid);
         }
         return bitset;
+    }
+
+    /** {@inheritDoc} */
+    public int[] getWidths() {
+        int[] widths = font.getWidths();
+        int[] tmpWidth = new int[getNumberOfGlyphs()];
+        for (int i = 0, c = getNumberOfGlyphs(); i < c; i++) {
+            int nwx = Math.max(0, getOriginalGlyphIndex(i));
+            tmpWidth[i] = widths[nwx];
+        }
+        return tmpWidth;
     }
 
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: NativeFontDirFinder.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.autodetect;
 
@@ -31,19 +25,19 @@ import java.util.List;
 /**
  * Native font finder base class
  */
-public abstract class NativeFontDirFinder implements FontFinder {
+public abstract class NativeFontDirFinder implements FontDirFinder {
 
     /**
      * Generic method used by Mac and Unix font finders.
      * @return list of natively existing font directories
      * {@inheritDoc}
      */
-    public List find() {
-        List fontDirList = new java.util.ArrayList();
+    public List<File> find() {
+        List<File> fontDirList = new java.util.ArrayList<File>();
         String[] searchableDirectories = getSearchableDirectories();
         if (searchableDirectories != null) {
-            for (int i = 0; i < searchableDirectories.length; i++) {
-                File fontDir = new File(searchableDirectories[i]);
+            for (String searchableDirectory : searchableDirectories) {
+                File fontDir = new File(searchableDirectory);
                 if (fontDir.exists() && fontDir.canRead()) {
                     fontDirList.add(fontDir);
                 }

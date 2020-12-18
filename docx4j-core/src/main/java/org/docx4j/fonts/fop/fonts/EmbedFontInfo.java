@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,117 +15,117 @@
  * limitations under the License.
  */
 
-/* $Id: EmbedFontInfo.java 731248 2009-01-04 12:59:29Z jeremias $ */
-
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.List;
-import java.util.Set;
-
-import org.docx4j.fonts.foray.font.format.Panose;
 
 /**
  * FontInfo contains meta information on fonts (where is the metrics file etc.)
+ * TODO: We need to remove this class and think about more intelligent design patterns
+ * (Data classes =&gt; Procedural code)
  */
 public class EmbedFontInfo implements Serializable {
 
     /** Serialization Version UID */
-    private static final long serialVersionUID = 8755432068669997368L;
-    
-    protected Set familyNames;
+    private static final long serialVersionUID = 8755432068669997369L;
 
-    /** filename of the metrics file */
-    protected String metricsFile;
-    /** filename of the main font file */
-    protected String embedFile;
     /** false, to disable kerning */
-    protected boolean kerning;
+    protected final boolean kerning;
+    /** false, to disable advanced typographic features */
+    protected final boolean advanced;
     /** the requested encoding mode for the font */
-    protected EncodingMode encodingMode = EncodingMode.AUTO;
+    private final EncodingMode encodingMode;
+    /** the requested embedding mode for this font */
+    private final EmbeddingMode embeddingMode;
+    /** simulates bold or italic on a regular font */
+    private final boolean simulateStyle;
+    private final boolean embedAsType1;
 
     /** the PostScript name of the font */
-    protected String postScriptName = null;
+    protected String postScriptName;
     /** the sub-fontname of the font (used for TrueType Collections, null otherwise) */
-    protected String subFontName = null;
+    protected String subFontName;
 
     /** the list of associated font triplets */
-    private List/*<FontTriplet>*/ fontTriplets = null;
+    private List<FontTriplet> fontTriplets;
 
     private transient boolean embedded = true;
 
-    private boolean isEmbeddable = true;
+    private FontUris fontUris;
 
-	public boolean isEmbeddable() {
-		return isEmbeddable;
-	}
-
-	public void setEmbeddable(boolean isEmbeddable) {
-		this.isEmbeddable = isEmbeddable;
-	}
-
-	protected Panose panose = null;
-
-	public Panose getPanose() {
-		return panose;
-	}
-
-	public void setPanose(Panose panose) {
-		this.panose = panose;
-	}
-    
     /**
-	 * Main constructor
-	 * 
-	 * @param metricsFile
-	 *            Path to the xml file containing font metrics
-	 * @param kerning
-	 *            True if kerning should be enabled
-	 * @param fontTriplets
-	 *            List of font triplets to associate with this font
-	 * @param embedFile
-	 *            Path to the embeddable font file (may be null)
-	 * @param subFontName
-	 *            the sub-fontname used for TrueType Collections (null
-	 *            otherwise)
-	 */
-    public EmbedFontInfo(String metricsFile, boolean kerning,
-                    List/*<FontTriplet>*/ fontTriplets, String embedFile, String subFontName) {
-        this.metricsFile = metricsFile;
-        this.embedFile = embedFile;
+     * Main constructor
+     * @param fontUris the URI of the XML resource containing font metrics
+     * @param kerning True if kerning should be enabled
+     * @param advanced true if advanced typography features should be enabled
+     * @param fontTriplets List of font triplets to associate with this font
+     * @param subFontName the sub-fontname used for TrueType Collections (null otherwise)
+     * @param encodingMode the encoding mode to use for this font
+     */
+    public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced,
+            List<FontTriplet> fontTriplets, String subFontName, EncodingMode encodingMode,
+            EmbeddingMode embeddingMode, boolean simulateStyle, boolean embedAsType1) {
         this.kerning = kerning;
+        this.advanced = advanced;
         this.fontTriplets = fontTriplets;
         this.subFontName = subFontName;
+        this.encodingMode = encodingMode;
+        this.embeddingMode = embeddingMode;
+        this.fontUris = fontUris;
+        this.simulateStyle = simulateStyle;
+        this.embedAsType1 = embedAsType1;
     }
 
     /**
-     * Returns the path to the metrics file
+     * Main constructor
+     * @param fontUris the URI of the XML resource containing font metrics
+     * @param kerning True if kerning should be enabled
+     * @param fontTriplets List of font triplets to associate with this font
+     * @param subFontName the sub-fontname used for TrueType Collections (null otherwise)
+     */
+    public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced,
+            List<FontTriplet> fontTriplets, String subFontName) {
+        this(fontUris, kerning, advanced, fontTriplets, subFontName, EncodingMode.AUTO,
+                EmbeddingMode.AUTO, false, false);
+    }
+
+    /**
+     * Returns the URI of the metrics XML resource
+     *
      * @return the metrics file path
      */
-    public String getMetricsFile() {
-        return metricsFile;
+    public URI getMetricsURI() {
+        return fontUris.getMetrics();
     }
 
     /**
-     * Returns the path to the embeddable font file
-     * @return the font file path
+     * Returns the URI to the embeddable font resource
+     *
+     * @return the font resource URI
      */
-    public String getEmbedFile() {
-        return embedFile;
+    public URI getEmbedURI() {
+        return fontUris.getEmbed();
     }
 
     /**
      * Determines if kerning is enabled
-     * @return True if enabled
+     * @return true if enabled
      */
     public boolean getKerning() {
         return kerning;
+    }
+
+    /**
+     * Determines if advanced typographic features are enabled
+     * @return true if enabled
+     */
+    public boolean getAdvanced() {
+        return advanced;
     }
 
     /**
@@ -163,7 +157,7 @@ public class EmbedFontInfo implements Serializable {
      * Returns the list of font triplets associated with this font.
      * @return List of font triplets
      */
-    public List/*<FontTriplet>*/ getFontTriplets() {
+    public List<FontTriplet> getFontTriplets() {
         return fontTriplets;
     }
 
@@ -172,11 +166,19 @@ public class EmbedFontInfo implements Serializable {
      * @return true if the font is embedded, false if it is referenced.
      */
     public boolean isEmbedded() {
-        if (metricsFile != null && embedFile == null) {
+        if (fontUris.getEmbed() == null) {
             return false;
         } else {
             return this.embedded;
         }
+    }
+
+    /**
+     * Returns the embedding mode for this font.
+     * @return the embedding mode.
+     */
+    public EmbeddingMode getEmbeddingMode() {
+       return embeddingMode;
     }
 
     /**
@@ -196,24 +198,17 @@ public class EmbedFontInfo implements Serializable {
     }
 
     /**
-     * Sets the requested encoding mode for this font.
-     * @param mode the new encoding mode
+     * Determines whether the font can simulate a style such as bold or italic.
+     * @return true if the font is being simulated as a different style.
      */
-    public void setEncodingMode(EncodingMode mode) {
-        if (mode == null) {
-            throw new NullPointerException("mode must not be null");
-        }
-        this.encodingMode = mode;
+    public boolean getSimulateStyle() {
+        return this.simulateStyle;
     }
 
-	public Set getFamilyNames() {
-		return familyNames;
-	}
+    public boolean getEmbedAsType1() {
+        return embedAsType1;
+    }
 
-	public void setFamilyNames(Set familyNames) {
-		this.familyNames = familyNames;
-	}    
-    
     private void readObject(java.io.ObjectInputStream in)
                 throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -222,13 +217,16 @@ public class EmbedFontInfo implements Serializable {
 
     /** {@inheritDoc} */
     public String toString() {
-        return "metrics-url=" + metricsFile + ", embed-url=" + embedFile
+        return "metrics-uri=" + fontUris.getMetrics() + ", embed-uri=" + fontUris.getEmbed()
             + ", kerning=" + kerning
+            + ", advanced=" + advanced
             + ", enc-mode=" + encodingMode
             + ", font-triplet=" + fontTriplets
             + (getSubFontName() != null ? ", sub-font=" + getSubFontName() : "")
             + (isEmbedded() ? "" : ", NOT embedded");
     }
 
-
+    public FontUris getFontUris() {
+        return fontUris;
+    }
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +15,11 @@
  * limitations under the License.
  */
 
-/* $Id: CIDFont.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
+
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 
 //Java
 
@@ -33,7 +29,14 @@ package org.docx4j.fonts.fop.fonts;
 public abstract class CIDFont extends CustomFont {
 
     /** Contains the character widths for all characters in the font */
-    protected int[] width = null;
+    protected int[] width;
+
+    /**
+     * @param resourceResolver the URI resolver for controlling file access
+     */
+    public CIDFont(InternalResourceResolver resourceResolver) {
+        super(resourceResolver);
+    }
 
     // ---- Required ----
     /**
@@ -66,7 +69,21 @@ public abstract class CIDFont extends CustomFont {
      * Returns the subset information for this font.
      * @return the subset information
      */
-    public abstract CIDSubset getCIDSubset();
+    public abstract CIDSet getCIDSet();
+
+    /**
+     * Determines whether this font contains a particular code point/glyph.
+     * @param cp character to check
+     * @return True if the character is supported, False otherwise
+     */
+    public abstract boolean hasCodePoint(int cp);
+
+    /**
+     * Map a Unicode code point to a code point in the font.
+     * @param cp code point to map
+     * @return the mapped code point
+     */
+    public abstract int mapCodePoint(int cp);
 
     // ---- Optional ----
     /**
@@ -79,7 +96,7 @@ public abstract class CIDFont extends CustomFont {
 
     /** {@inheritDoc} */
     public boolean isMultiByte() {
-        return true;
+        return getFontType() != FontType.TYPE1C;
     }
 
 }

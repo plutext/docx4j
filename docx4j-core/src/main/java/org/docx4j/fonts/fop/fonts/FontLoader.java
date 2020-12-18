@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +15,17 @@
  * limitations under the License.
  */
 
-/* $Id: FontLoader.java 746664 2009-02-22 12:40:44Z jeremias $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.docx4j.fonts.fop.fonts.truetype.TTFFontLoader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.fop.fonts.truetype.OFFontLoader;
 import org.docx4j.fonts.fop.fonts.type1.Type1FontLoader;
 
 /**
@@ -46,138 +34,79 @@ import org.docx4j.fonts.fop.fonts.type1.Type1FontLoader;
 public abstract class FontLoader {
 
     /** logging instance */
-    protected static Logger log = LoggerFactory.getLogger(FontLoader.class);
+    protected static final Log log = LogFactory.getLog(FontLoader.class);
 
     /** URI representing the font file */
-    protected String fontFileURI = null;
-    /** the FontResolver to use for font URI resolution */
-    protected FontResolver resolver = null;
+    protected final URI fontFileURI;
+    /** the resource resolver to use for font URI resolution */
+    protected final InternalResourceResolver resourceResolver;
     /** the loaded font */
-    protected CustomFont returnFont = null;
+    protected CustomFont returnFont;
 
     /** true if the font has been loaded */
-    protected boolean loaded = false;
+    protected boolean loaded;
     /** true if the font will be embedded, false if it will be referenced only. */
-    protected boolean embedded = true;
-    /** true if kerning information shall be loaded if available. */
-    protected boolean useKerning = true;
+    protected boolean embedded;
+    /** true if kerning information false be loaded if available. */
+    protected boolean useKerning;
+    /** true if advanced typographic information shall be loaded if available. */
+    protected boolean useAdvanced;
 
     /**
      * Default constructor.
      * @param fontFileURI the URI to the PFB file of a Type 1 font
      * @param embedded indicates whether the font is embedded or referenced
      * @param useKerning indicates whether kerning information shall be loaded if available
-     * @param resolver the font resolver used to resolve URIs
+     * @param useAdvanced indicates whether advanced typographic information shall be loaded if
+     * available
+     * @param resourceResolver the font resolver used to resolve URIs
      */
-    public FontLoader(String fontFileURI, boolean embedded, boolean useKerning,
-            FontResolver resolver) {
+    public FontLoader(URI fontFileURI, boolean embedded, boolean useKerning,
+            boolean useAdvanced, InternalResourceResolver resourceResolver) {
         this.fontFileURI = fontFileURI;
         this.embedded = embedded;
         this.useKerning = useKerning;
-        this.resolver = resolver;
+        this.useAdvanced = useAdvanced;
+        this.resourceResolver = resourceResolver;
     }
 
-    private static boolean isType1(String fontURI) {
-        return fontURI.toLowerCase().endsWith(".pfb");
-    }
-
-    /**
-     * Loads a custom font from a File. In the case of Type 1 fonts, the PFB file must be specified.
-     * @param fontFile the File representation of the font
-     * @param subFontName the sub-fontname of a font (for TrueType Collections, null otherwise)
-     * @param embedded indicates whether the font is embedded or referenced
-     * @param encodingMode the requested encoding mode
-     * @param resolver the font resolver to use when resolving URIs
-     * @return the newly loaded font
-     * @throws IOException In case of an I/O error
-     */
-    public static CustomFont loadFont(File fontFile, String subFontName,
-            boolean embedded, EncodingMode encodingMode, FontResolver resolver) throws IOException {
-        return loadFont(fontFile.getAbsolutePath(), subFontName,
-                embedded, encodingMode, true, resolver);
-    }
-
-    /**
-     * Loads a custom font from an URL. In the case of Type 1 fonts, the PFB file must be specified.
-     * @param fontUrl the URL representation of the font
-     * @param subFontName the sub-fontname of a font (for TrueType Collections, null otherwise)
-     * @param embedded indicates whether the font is embedded or referenced
-     * @param encodingMode the requested encoding mode
-     * @param resolver the font resolver to use when resolving URIs
-     * @return the newly loaded font
-     * @throws IOException In case of an I/O error
-     */
-    public static CustomFont loadFont(URL fontUrl, String subFontName,
-            boolean embedded, EncodingMode encodingMode,
-            FontResolver resolver) throws IOException {
-        return loadFont(fontUrl.toExternalForm(), subFontName,
-                embedded, encodingMode, true,
-                resolver);
+    private static boolean isType1(FontUris fontUris) {
+        return fontUris.getEmbed().toASCIIString().toLowerCase().endsWith(".pfb") || fontUris.getAfm() != null
+            || fontUris.getPfm() != null;
     }
 
     /**
      * Loads a custom font from a URI. In the case of Type 1 fonts, the PFB file must be specified.
-     * @param fontFileURI the URI to the font
+     * @param fontUris the URI to the font
      * @param subFontName the sub-fontname of a font (for TrueType Collections, null otherwise)
      * @param embedded indicates whether the font is embedded or referenced
+     * @param embeddingMode the embedding mode of the font
      * @param encodingMode the requested encoding mode
      * @param useKerning indicates whether kerning information should be loaded if available
-     * @param resolver the font resolver to use when resolving URIs
+     * @param useAdvanced indicates whether advanced typographic information shall be loaded if
+     * available
+     * @param resourceResolver the font resolver to use when resolving URIs
      * @return the newly loaded font
      * @throws IOException In case of an I/O error
      */
-    public static CustomFont loadFont(String fontFileURI, String subFontName,
-            boolean embedded, EncodingMode encodingMode, boolean useKerning,
-            FontResolver resolver) throws IOException {
-        fontFileURI = fontFileURI.trim();
-        boolean type1 = isType1(fontFileURI);
+    public static CustomFont loadFont(FontUris fontUris, String subFontName,
+            boolean embedded, EmbeddingMode embeddingMode, EncodingMode encodingMode,
+            boolean useKerning, boolean useAdvanced, InternalResourceResolver resourceResolver,
+            boolean simulateStyle, boolean embedAsType1) throws IOException {
+        boolean type1 = isType1(fontUris);
         FontLoader loader;
         if (type1) {
             if (encodingMode == EncodingMode.CID) {
                 throw new IllegalArgumentException(
                         "CID encoding mode not supported for Type 1 fonts");
             }
-            loader = new Type1FontLoader(fontFileURI, embedded, useKerning, resolver);
+            loader = new Type1FontLoader(fontUris, embedded, embeddingMode, useKerning,
+                    resourceResolver);
         } else {
-            loader = new TTFFontLoader(fontFileURI, subFontName,
-                    embedded, encodingMode, useKerning, resolver);
+            loader = new OFFontLoader(fontUris.getEmbed(), subFontName, embedded, embeddingMode,
+                    encodingMode, useKerning, useAdvanced, resourceResolver, simulateStyle, embedAsType1);
         }
         return loader.getFont();
-    }
-
-    /**
-     * Opens a font URI and returns an input stream.
-     * @param resolver the FontResolver to use for font URI resolution
-     * @param uri the URI representing the font
-     * @return the InputStream to read the font from.
-     * @throws IOException In case of an I/O error
-     * @throws MalformedURLException If an invalid URL is built
-     */
-    public static InputStream openFontUri(FontResolver resolver, String uri)
-                    throws IOException, MalformedURLException {
-        InputStream in = null;
-        if (resolver != null) {
-            Source source = resolver.resolve(uri);
-            if (source == null) {
-                String err = "Cannot load font: failed to create Source for font file "
-                    + uri;
-                throw new IOException(err);
-            }
-            if (source instanceof StreamSource) {
-                in = ((StreamSource) source).getInputStream();
-            }
-            if (in == null && source.getSystemId() != null) {
-                in = new java.net.URL(source.getSystemId()).openStream();
-            }
-            if (in == null) {
-                String err = "Cannot load font: failed to create InputStream from"
-                    + " Source for font file " + uri;
-                throw new IOException(err);
-            }
-        } else {
-            in = new URL(uri).openStream();
-        }
-        return in;
     }
 
     /**

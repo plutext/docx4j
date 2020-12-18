@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,35 +15,35 @@
  * limitations under the License.
  */
 
-/* $Id: FontSubstitutions.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.substitute;
 
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.docx4j.fonts.fop.fonts.FontInfo;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 
 /**
  * Font substitutions
  */
-public class FontSubstitutions extends java.util.ArrayList/*<Substitutions>*/ {
+public class FontSubstitutions extends java.util.ArrayList<FontSubstitution> {
 
     private static final long serialVersionUID = -9173104935431899722L;
 
     /** logging instance */
-    protected static Logger log = LoggerFactory.getLogger(FontSubstitutions.class);
+    protected static final Log log = LogFactory.getLog(FontSubstitutions.class);
 
     /**
      * Adjusts a given fontInfo using this font substitution catalog
      * @param fontInfo font info
      */
     public void adjustFontInfo(FontInfo fontInfo) {
-        for (Iterator/*<FontSubstitution>*/ subsIt = super.iterator(); subsIt.hasNext();) {
-            FontSubstitution substitution = (FontSubstitution)subsIt.next();
+        for (Iterator<FontSubstitution> subsIt = super.iterator(); subsIt.hasNext();) {
+            FontSubstitution substitution = subsIt.next();
 
             // find the best matching font triplet
             FontQualifier toQualifier = substitution.getToQualifier();
@@ -62,9 +56,9 @@ public class FontSubstitutions extends java.util.ArrayList/*<Substitutions>*/ {
             String internalFontKey = fontInfo.getInternalFontKey(fontTriplet);
 
             FontQualifier fromQualifier = substitution.getFromQualifier();
-            List/*<FontTriplet>*/ tripletList = fromQualifier.getTriplets();
-            for (Iterator tripletit = tripletList.iterator(); tripletit.hasNext();) {
-                FontTriplet triplet = (FontTriplet) tripletit.next();
+            List<FontTriplet> tripletList = fromQualifier.getTriplets();
+            for (Object aTripletList : tripletList) {
+                FontTriplet triplet = (FontTriplet) aTripletList;
                 fontInfo.addFontProperties(internalFontKey, triplet);
             }
         }

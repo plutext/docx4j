@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +15,24 @@
  * limitations under the License.
  */
 
-/* $Id: Base14FontCollection.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.base14;
 
+import org.docx4j.fonts.fop.fonts.base14.Courier;
+import org.docx4j.fonts.fop.fonts.base14.CourierBold;
+import org.docx4j.fonts.fop.fonts.base14.CourierBoldOblique;
+import org.docx4j.fonts.fop.fonts.base14.CourierOblique;
+import org.docx4j.fonts.fop.fonts.base14.Helvetica;
+import org.docx4j.fonts.fop.fonts.base14.HelveticaBold;
+import org.docx4j.fonts.fop.fonts.base14.HelveticaBoldOblique;
+import org.docx4j.fonts.fop.fonts.base14.HelveticaOblique;
+import org.docx4j.fonts.fop.fonts.base14.Symbol;
+import org.docx4j.fonts.fop.fonts.base14.TimesBold;
+import org.docx4j.fonts.fop.fonts.base14.TimesBoldItalic;
+import org.docx4j.fonts.fop.fonts.base14.TimesItalic;
+import org.docx4j.fonts.fop.fonts.base14.TimesRoman;
+import org.docx4j.fonts.fop.fonts.base14.ZapfDingbats;
 import org.docx4j.fonts.fop.fonts.Font;
 import org.docx4j.fonts.fop.fonts.FontCollection;
 import org.docx4j.fonts.fop.fonts.FontInfo;
@@ -34,7 +42,7 @@ import org.docx4j.fonts.fop.fonts.FontInfo;
  */
 public class Base14FontCollection implements FontCollection {
 
-    private boolean kerning = false;
+    private boolean kerning;
 
     /**
      * Main constructor

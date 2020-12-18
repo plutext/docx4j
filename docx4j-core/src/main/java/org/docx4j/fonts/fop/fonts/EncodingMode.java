@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,30 +15,23 @@
  * limitations under the License.
  */
 
-/* $Id: EncodingMode.java 731248 2009-01-04 12:59:29Z jeremias $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-
-
 /**
- * This class enumerates all supported encoding modes for fonts: 
- * auto, single-byte and CID.
+ * This class enumerates all supported encoding modes for fonts: auto, single-byte and CID.
  */
-public final class EncodingMode implements Serializable {
-
-    private static final long serialVersionUID = 8311486102457779529L;
+public enum EncodingMode {
 
     /** Automatic selection of encoding mode. */
-    public static final EncodingMode AUTO = new EncodingMode("auto");
+    AUTO("auto"),
 
     /** Single-byte encoding */
-    public static final EncodingMode SINGLE_BYTE = new EncodingMode("single-byte");
+    SINGLE_BYTE("single-byte"),
 
     /** CID encoding */
-    public static final EncodingMode CID = new EncodingMode("cid");
+    CID("cid");
 
     private String name;
 
@@ -65,25 +52,18 @@ public final class EncodingMode implements Serializable {
      * @param name the name of the encoding mode to look up
      * @return the encoding mode constant
      */
-    public static EncodingMode valueOf(String name) {
-        if (name.equalsIgnoreCase(EncodingMode.AUTO.getName())) {
-            return EncodingMode.AUTO;
-        } else if (name.equalsIgnoreCase(EncodingMode.SINGLE_BYTE.getName())) {
-            return EncodingMode.SINGLE_BYTE;
-        } else if (name.equalsIgnoreCase(EncodingMode.CID.getName())) {
-            return EncodingMode.CID;
-        } else {
-            throw new IllegalArgumentException("Invalid encoding mode: " + name);
+    public static EncodingMode getValue(String name) {
+        for (EncodingMode em : EncodingMode.values()) {
+            if (name.equalsIgnoreCase(em.getName())) {
+                return em;
+            }
         }
-    }
-
-    private Object readResolve() throws ObjectStreamException {
-        return valueOf(getName());
+        throw new IllegalArgumentException("Invalid encoding mode: " + name);
     }
 
     /** {@inheritDoc} */
     public String toString() {
-        return "EncodingMode:" + getName();
+        return "EncodingMode: " + getName();
     }
 
 }

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: Base14Font.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
@@ -30,5 +24,16 @@ package org.docx4j.fonts.fop.fonts;
  * Base class for all Base 14 fonts.
  */
 public abstract class Base14Font extends Typeface {
+
+    /** Thickness for underline and strikeout. */
+    private static final int LINE_THICKNESS = 50;
+
+    public int getStrikeoutPosition(int size) {
+        return getXHeight(size) / 2;
+    }
+
+    public int getStrikeoutThickness(int size) {
+        return size * LINE_THICKNESS;
+    }
 
 }

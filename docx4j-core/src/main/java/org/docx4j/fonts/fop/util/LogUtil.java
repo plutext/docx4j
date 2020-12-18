@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,17 +15,20 @@
  * limitations under the License.
  */
 
-/* $Id: LogUtil.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.util;
 
-import org.slf4j.Logger;
+import org.apache.commons.logging.Log;
 import org.docx4j.fonts.fop.apps.FOPException;
 
 /**
  * Convenience Logging utility methods used in FOP
  */
-public class LogUtil {
+public final class LogUtil {
+
+    private LogUtil() {
+    }
 
     /**
      * Convenience method that handles any error appropriately
@@ -40,7 +37,7 @@ public class LogUtil {
      * @param strict validate strictly
      * @throws FOPException fop exception
      */
-    public static void handleError(Logger log, String errorStr, boolean strict) throws FOPException {
+    public static void handleError(Log log, String errorStr, boolean strict) throws FOPException {
         handleException(log, new FOPException(errorStr), strict);
     }
 
@@ -51,7 +48,7 @@ public class LogUtil {
      * @param strict validate strictly
      * @throws FOPException fop exception
      */
-    public static void handleException(Logger log, Exception e, boolean strict) throws FOPException {
+    public static void handleException(Log log, Exception e, boolean strict) throws FOPException {
         if (strict) {
             if (e instanceof FOPException) {
                 throw (FOPException)e;

@@ -1,10 +1,4 @@
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * The package name has been changed; there may also be other changes.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: Glyphs.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
@@ -29,7 +23,10 @@ package org.docx4j.fonts.fop.fonts;
  * This class provides a number of constants for glyph management.
  * @deprecated Use the Glyphs class from XML Graphics Commons instead!
  */
-public class Glyphs {
+public final class Glyphs {
+
+    private Glyphs() {
+    }
 
     /**
      * Glyph name for the "notdef" glyph
@@ -39,7 +36,7 @@ public class Glyphs {
     /**
      * Glyph names for Mac encoding
      */
-    public static final String MAC_GLYPH_NAMES[] = {
+    public static final String[] MAC_GLYPH_NAMES = {
         /* 0x00 */
         NOTDEF, ".null", "CR", "space", "exclam", "quotedbl", "numbersign",
                 "dollar", "percent", "ampersand", "quotesingle", "parenleft",
@@ -1279,8 +1276,8 @@ public class Glyphs {
      * @param ch glyph to evaluate
      * @return the name of the glyph
      */
-    public static final String charToGlyphName(char ch) {
-        return stringToGlyph(new Character(ch).toString());
+    public static String charToGlyphName(char ch) {
+        return stringToGlyph(Character.toString(ch));
     }
 
     /**
@@ -1292,7 +1289,7 @@ public class Glyphs {
      * TODO: javadocs for glyphToString and stringToGlyph are confused
      * TODO: Improve method names
      */
-    public static final String glyphToString(String name) {
+    public static String glyphToString(String name) {
         for (int i = 0; i < UNICODE_GLYPHS.length; i += 2) {
             if (UNICODE_GLYPHS[i + 1].equals(name)) {
                 return UNICODE_GLYPHS[i];
