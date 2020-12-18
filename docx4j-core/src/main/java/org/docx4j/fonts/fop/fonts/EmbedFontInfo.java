@@ -24,6 +24,11 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
 
+import java.util.Set;
+
+import org.docx4j.fonts.foray.font.format.Panose;
+
+
 /**
  * FontInfo contains meta information on fonts (where is the metrics file etc.)
  * TODO: We need to remove this class and think about more intelligent design patterns
@@ -32,7 +37,7 @@ import java.util.List;
 public class EmbedFontInfo implements Serializable {
 
     /** Serialization Version UID */
-    private static final long serialVersionUID = 8755432068669997369L;
+    private static final long serialVersionUID = 8755432068669997368L;
 
     /** false, to disable kerning */
     protected final boolean kerning;
@@ -46,15 +51,37 @@ public class EmbedFontInfo implements Serializable {
     private final boolean simulateStyle;
     private final boolean embedAsType1;
 
+    protected Set familyNames;
+    
     /** the PostScript name of the font */
-    protected String postScriptName;
+    protected String postScriptName = null;
     /** the sub-fontname of the font (used for TrueType Collections, null otherwise) */
-    protected String subFontName;
+    protected String subFontName = null;
 
     /** the list of associated font triplets */
-    private List<FontTriplet> fontTriplets;
+    private List<FontTriplet> fontTriplets = null;
 
     private transient boolean embedded = true;
+    
+    private boolean isEmbeddable = true;
+
+	public boolean isEmbeddable() {
+		return isEmbeddable;
+	}
+
+	public void setEmbeddable(boolean isEmbeddable) {
+		this.isEmbeddable = isEmbeddable;
+	}
+
+	protected Panose panose = null;
+
+	public Panose getPanose() {
+		return panose;
+	}
+
+	public void setPanose(Panose panose) {
+		this.panose = panose;
+	}    
 
     private FontUris fontUris;
 
@@ -70,6 +97,7 @@ public class EmbedFontInfo implements Serializable {
     public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced,
             List<FontTriplet> fontTriplets, String subFontName, EncodingMode encodingMode,
             EmbeddingMode embeddingMode, boolean simulateStyle, boolean embedAsType1) {
+    	
         this.kerning = kerning;
         this.advanced = advanced;
         this.fontTriplets = fontTriplets;
@@ -90,6 +118,7 @@ public class EmbedFontInfo implements Serializable {
      */
     public EmbedFontInfo(FontUris fontUris, boolean kerning, boolean advanced,
             List<FontTriplet> fontTriplets, String subFontName) {
+    	
         this(fontUris, kerning, advanced, fontTriplets, subFontName, EncodingMode.AUTO,
                 EmbeddingMode.AUTO, false, false);
     }
@@ -209,6 +238,14 @@ public class EmbedFontInfo implements Serializable {
         return embedAsType1;
     }
 
+	public Set getFamilyNames() {
+		return familyNames;
+	}
+
+	public void setFamilyNames(Set familyNames) {
+		this.familyNames = familyNames;
+	}    
+        
     private void readObject(java.io.ObjectInputStream in)
                 throws IOException, ClassNotFoundException {
         in.defaultReadObject();

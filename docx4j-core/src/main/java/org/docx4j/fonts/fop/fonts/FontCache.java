@@ -58,7 +58,7 @@ public final class FontCache implements Serializable {
     private static Log log = LogFactory.getLog(FontCache.class);
 
     /** FOP's user directory name */
-    private static final String FOP_USER_DIR = ".fop";
+    private static final String FOP_USER_DIR = ".docx4j";
 
     /** font cache file path */
     private static final String DEFAULT_CACHE_FILENAME = "fop-fonts.cache";

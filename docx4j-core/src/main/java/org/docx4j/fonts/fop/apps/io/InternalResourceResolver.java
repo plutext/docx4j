@@ -48,7 +48,7 @@ public class InternalResourceResolver {
      * @param baseUri the base URI from which to resolve relative URIs
      * @param resourceResolver the resolver to delegate to
      */
-    InternalResourceResolver(URI baseUri, ResourceResolver resourceResolver) {
+    public InternalResourceResolver(URI baseUri, ResourceResolver resourceResolver) {
         this.baseUri = baseUri;
         this.resourceResolver = resourceResolver;
     }
