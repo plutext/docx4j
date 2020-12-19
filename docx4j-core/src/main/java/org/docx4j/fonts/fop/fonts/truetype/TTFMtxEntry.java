@@ -3,6 +3,11 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * The package name has been changed; there may also be other changes.
+ * 
+ * This notice is included to meet the condition in clause 4(b) of the License. 
+ */
 
  /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
