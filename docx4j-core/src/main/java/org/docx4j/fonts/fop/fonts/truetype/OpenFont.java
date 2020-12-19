@@ -252,7 +252,7 @@ public abstract class OpenFont {
     /**
      * logging instance
      */
-    protected  Logger log = LoggerFactory.getLogger(TTFFile.class);
+    protected  Logger log = LoggerFactory.getLogger(OpenFont.class);
 
     public OpenFont() {
         this(true, false);

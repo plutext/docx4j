@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Reads a TrueType file and generates a subset
@@ -39,6 +42,8 @@ import java.util.SortedSet;
  * Typography site: http://www.microsoft.com/truetype/
  */
 public class TTFSubSetFile extends TTFFile {
+	
+    private static  Logger log = LoggerFactory.getLogger(TTFSubSetFile.class);
 
     protected byte[] output;
     protected int realSize;

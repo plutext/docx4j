@@ -26,12 +26,17 @@ package org.docx4j.fonts.fop.fonts.truetype;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Reads a TrueType file or a TrueType Collection.
  * The TrueType spec can be found at the Microsoft.
  * Typography site: http://www.microsoft.com/truetype/
  */
 public class TTFFile extends OpenFont {
+	
+    private static  Logger log = LoggerFactory.getLogger(TTFFile.class);
 
     public TTFFile() {
         this(true, false);
