@@ -33,12 +33,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostscriptParser {
 
-    protected static final Log LOG = LogFactory.getLog(PostscriptParser.class);
+    protected static final  Logger log = LoggerFactory.getLogger(PostscriptParser.class);
     /* Patterns used to identify Postscript elements */
     private static final String DICTIONARY = "dict";
     private static final String FIXED_ARRAY = "array";
@@ -117,7 +117,7 @@ public class PostscriptParser {
                             if (!hasMatch(foundElement.getOperator(), parsedElements)) {
                                 parsedElements.add(foundElement);
                             } else {
-                                LOG.warn("Duplicate " + foundElement.getOperator()
+                                log.warn("Duplicate " + foundElement.getOperator()
                                         + " in font file, Ignoring.");
                             }
                         }

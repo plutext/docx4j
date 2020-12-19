@@ -27,8 +27,8 @@ package org.docx4j.fonts.fop.render.java2d;
 import java.awt.GraphicsEnvironment;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.Font;
 import org.docx4j.fonts.fop.fonts.FontCollection;
 import org.docx4j.fonts.fop.fonts.FontInfo;
@@ -40,7 +40,7 @@ import org.docx4j.fonts.fop.fonts.FontUtil;
  */
 public class InstalledFontCollection implements FontCollection {
 
-    private static Log log = LogFactory.getLog(InstalledFontCollection.class);
+    private static  Logger log = LoggerFactory.getLogger(InstalledFontCollection.class);
 
     private static final Set<String> HARDCODED_FONT_NAMES;
 

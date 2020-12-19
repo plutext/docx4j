@@ -24,7 +24,7 @@
 
 package org.docx4j.fonts.fop.util;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.docx4j.fonts.fop.apps.FOPException;
 
 /**
@@ -42,7 +42,7 @@ public final class LogUtil {
      * @param strict validate strictly
      * @throws FOPException fop exception
      */
-    public static void handleError(Log log, String errorStr, boolean strict) throws FOPException {
+    public static void handleError(Logger log, String errorStr, boolean strict) throws FOPException {
         handleException(log, new FOPException(errorStr), strict);
     }
 
@@ -53,7 +53,7 @@ public final class LogUtil {
      * @param strict validate strictly
      * @throws FOPException fop exception
      */
-    public static void handleException(Log log, Exception e, boolean strict) throws FOPException {
+    public static void handleException(Logger log, Exception e, boolean strict) throws FOPException {
         if (strict) {
             if (e instanceof FOPException) {
                 throw (FOPException)e;

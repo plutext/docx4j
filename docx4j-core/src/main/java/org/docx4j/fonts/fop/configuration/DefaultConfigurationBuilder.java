@@ -42,7 +42,7 @@ public class DefaultConfigurationBuilder {
 
 	private static Logger LOG = LoggerFactory.getLogger(DefaultConfigurationBuilder.class);	
 	
-//    private static final Log LOG = LogFactory.getLog(DefaultConfigurationBuilder.class.getName());
+//    private static final  Logger log = LoggerFactory.getLogger(DefaultConfigurationBuilder.class.getName());
 
     public DefaultConfiguration build(InputStream confStream) throws ConfigurationException {
         try {

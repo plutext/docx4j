@@ -42,8 +42,8 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.SingleByteFont;
 import org.docx4j.fonts.fop.fonts.type1.PostscriptParser.PSDictionary;
 import org.docx4j.fonts.fop.fonts.type1.PostscriptParser.PSElement;
@@ -53,7 +53,7 @@ import org.docx4j.fonts.fop.fonts.type1.PostscriptParser.PSVariable;
 
 public class Type1SubsetFile {
 
-    protected static final Log LOG = LogFactory.getLog(Type1SubsetFile.class);
+    protected static final  Logger log = LoggerFactory.getLogger(Type1SubsetFile.class);
     /* The subset list of char strings */
     protected HashMap<String, byte[]> subsetCharStrings;
     /* The list of character names in the subset font */
@@ -231,7 +231,7 @@ public class Type1SubsetFile {
                     }
                 }
             } else {
-                LOG.warn("Only Custom or StandardEncoding is supported when creating a Type 1 subset.");
+                log.warn("Only Custom or StandardEncoding is supported when creating a Type 1 subset.");
             }
         }
         return subsetEncodingEntries;
@@ -309,7 +309,7 @@ public class Type1SubsetFile {
                 try {
                     skipBytes = Integer.parseInt(lenIV.getValue());
                 } catch (NumberFormatException ex) {
-                    LOG.warn(String.format("Invalid value `%s` for lenIV found in font %s", lenIV.getValue(),
+                    log.warn(String.format("Invalid value `%s` for lenIV found in font %s", lenIV.getValue(),
                             sbfont.getEmbedFileURI().toString()));
                 }
             }

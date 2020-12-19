@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.scripts.ScriptProcessor;
 import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 import org.docx4j.fonts.fop.complexscripts.util.ScriptContextTester;
@@ -51,7 +51,7 @@ import org.docx4j.fonts.fop.complexscripts.util.ScriptContextTester;
 public class GlyphTable {
 
     /** logging instance */
-    private static final Log log = LogFactory.getLog(GlyphTable.class);
+    private static final  Logger log = LoggerFactory.getLogger(GlyphTable.class);
 
     /** substitution glyph table type */
     public static final int GLYPH_TABLE_TYPE_SUBSTITUTION = 1;

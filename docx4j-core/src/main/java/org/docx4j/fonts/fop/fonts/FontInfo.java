@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
 public class FontInfo {
 
     /** logging instance */
-    protected static final Log log = LogFactory.getLog(FontInfo.class);
+    protected static final  Logger log = LoggerFactory.getLogger(FontInfo.class);
 
     /** Map containing fonts that have been used */
     private Map<String, Typeface> usedFonts; //(String = font key)

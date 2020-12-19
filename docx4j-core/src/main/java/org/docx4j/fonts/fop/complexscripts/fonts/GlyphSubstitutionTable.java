@@ -29,8 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.scripts.ScriptProcessor;
 import org.docx4j.fonts.fop.complexscripts.util.CharAssociation;
 import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
@@ -48,7 +48,7 @@ import org.docx4j.fonts.fop.fonts.MultiByteFont;
 public class GlyphSubstitutionTable extends GlyphTable {
 
     /** logging instance */
-    private static final Log log = LogFactory.getLog(GlyphSubstitutionTable.class);
+    private static final  Logger log = LoggerFactory.getLogger(GlyphSubstitutionTable.class);
 
     /** single substitution subtable type */
     public static final int GSUB_LOOKUP_TYPE_SINGLE = 1;

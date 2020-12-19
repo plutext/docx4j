@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.NamedCharacter;
 
 /**
@@ -45,7 +45,7 @@ import org.docx4j.fonts.fop.fonts.NamedCharacter;
  */
 public class AFMParser {
 
-    private static Log log = LogFactory.getLog(AFMParser.class);
+    private static  Logger log = LoggerFactory.getLogger(AFMParser.class);
 
     private static final String START_FONT_METRICS = "StartFontMetrics";
     //private static final String END_FONT_METRICS = "EndFontMetrics";

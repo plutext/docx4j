@@ -32,8 +32,8 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.util.ClasspathResource;
 import org.docx4j.fonts.fop.apps.FOPException;
@@ -76,7 +76,7 @@ public final class FontDetectorFactory {
      * Detector of operating system and classpath fonts
      */
     private static class DefaultFontDetector implements FontDetector {
-        private static Log log = LogFactory.getLog(DefaultFontDetector.class);
+        private static  Logger log = LoggerFactory.getLogger(DefaultFontDetector.class);
 
         private static final String[] FONT_MIMETYPES = {
             "application/x-font", "application/x-font-truetype"

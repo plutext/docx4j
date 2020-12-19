@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.scripts.ScriptProcessor;
 import org.docx4j.fonts.fop.fonts.truetype.FontFileReader;
 import org.docx4j.fonts.fop.fonts.truetype.OFDirTabEntry;
@@ -49,7 +49,7 @@ import org.docx4j.fonts.fop.fonts.truetype.OpenFont;
 public final class OTFAdvancedTypographicTableReader {
 
     // logging state
-    private static Log log = LogFactory.getLog(OTFAdvancedTypographicTableReader.class);
+    private static  Logger log = LoggerFactory.getLogger(OTFAdvancedTypographicTableReader.class);
     // instance state
     private OpenFont otf;                                        // parent font file reader
     private FontFileReader in;                                  // input reader

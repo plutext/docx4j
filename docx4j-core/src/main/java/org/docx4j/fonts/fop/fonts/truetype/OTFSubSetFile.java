@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.fontbox.cff.CFFStandardString;
 import org.apache.fontbox.cff.CFFType1Font;
@@ -696,7 +696,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
         /**
          * logging instance
          */
-        protected Log log = LogFactory.getLog(Type2Parser.class);
+        protected  Logger log = LoggerFactory.getLogger(Type2Parser.class);
 
         private List<BytesNumber> stack = new ArrayList<BytesNumber>();
         private int hstemCount;

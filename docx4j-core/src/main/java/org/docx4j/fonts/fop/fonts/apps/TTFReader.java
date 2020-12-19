@@ -122,8 +122,6 @@ public class TTFReader extends AbstractFontReader {
         Map options = new java.util.HashMap();
         String[] arguments = parseArguments(options, args);
 
-        determineLogLevel(options);
-
         TTFReader app = new TTFReader();
 
         log.info("TTF Reader for Apache FOP " + Version.getVersion() + "\n");

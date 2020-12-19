@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CodePointMapping;
 import org.apache.xmlgraphics.fonts.Glyphs;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
@@ -46,7 +46,7 @@ import org.docx4j.fonts.fop.util.CharUtilities;
 public class SingleByteFont extends CustomFont {
 
     /** logger */
-    private  static Log log = LogFactory.getLog(SingleByteFont.class);
+    private  static  Logger log = LoggerFactory.getLogger(SingleByteFont.class);
 
     protected SingleByteEncoding mapping;
     private boolean useNativeEncoding;

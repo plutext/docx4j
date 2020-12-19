@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.scripts.ScriptProcessor;
 import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 
@@ -44,7 +44,7 @@ import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 public class GlyphDefinitionTable extends GlyphTable {
 
     /** logging instance */
-    private static final Log log = LogFactory.getLog(GlyphDefinitionTable.class);
+    private static final  Logger log = LoggerFactory.getLogger(GlyphDefinitionTable.class);
 
     /** glyph class subtable type */
     public static final int GDEF_LOOKUP_TYPE_GLYPH_CLASS = 1;

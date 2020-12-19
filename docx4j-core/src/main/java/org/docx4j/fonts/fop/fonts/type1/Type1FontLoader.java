@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CodePointMapping;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.EmbeddingMode;
@@ -51,7 +51,7 @@ import org.docx4j.fonts.fop.fonts.SingleByteFont;
  */
 public class Type1FontLoader extends FontLoader {
 
-    private static final Log log = LogFactory.getLog(Type1FontLoader.class);
+    private static final  Logger log = LoggerFactory.getLogger(Type1FontLoader.class);
 
     private SingleByteFont singleFont;
 

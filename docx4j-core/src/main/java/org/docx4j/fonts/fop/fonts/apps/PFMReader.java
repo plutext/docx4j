@@ -92,8 +92,6 @@ public class PFMReader extends AbstractFontReader {
         Map options = new java.util.HashMap();
         String[] arguments = parseArguments(options, args);
 
-        determineLogLevel(options);
-
         PFMReader app = new PFMReader();
 
         log.info("PFM Reader for Apache FOP " + Version.getVersion() + "\n");

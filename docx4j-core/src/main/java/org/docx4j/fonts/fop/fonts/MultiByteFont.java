@@ -34,8 +34,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.complexscripts.fonts.GlyphDefinitionTable;
 import org.docx4j.fonts.fop.complexscripts.fonts.GlyphPositioningTable;
@@ -54,8 +54,8 @@ import org.docx4j.fonts.fop.util.CharUtilities;
 public class MultiByteFont extends CIDFont implements Substitutable, Positionable {
 
     /** logging instance */
-    private static final Log log
-        = LogFactory.getLog(MultiByteFont.class);
+    private static final Logger log
+        = LoggerFactory.getLogger(MultiByteFont.class);
 
     private String ttcName;
     private String encoding = "Identity-H";

@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CodePointMapping;
 import org.docx4j.fonts.fop.complexscripts.fonts.Positionable;
 import org.docx4j.fonts.fop.complexscripts.fonts.Substitutable;
@@ -74,7 +74,7 @@ public class Font implements Substitutable, Positionable {
                     "any", STYLE_NORMAL, WEIGHT_NORMAL, PRIORITY_DEFAULT);
 
     /** logger */
-    private  static Log log = LogFactory.getLog(Font.class);
+    private  static  Logger log = LoggerFactory.getLogger(Font.class);
 
     private final String fontName;
     private final FontTriplet triplet;

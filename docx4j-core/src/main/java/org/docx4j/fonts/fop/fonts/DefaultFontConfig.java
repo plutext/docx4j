@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.fop.events.EventProducer;
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.configuration.Configuration;
@@ -42,7 +42,7 @@ import org.docx4j.fonts.fop.util.LogUtil;
  */
 public final class DefaultFontConfig implements FontConfig {
 
-    private static final Log log = LogFactory.getLog(DefaultFontConfig.class);
+    private static final  Logger log = LoggerFactory.getLogger(DefaultFontConfig.class);
 
     private final List<Directory> directories = new ArrayList<Directory>();
 

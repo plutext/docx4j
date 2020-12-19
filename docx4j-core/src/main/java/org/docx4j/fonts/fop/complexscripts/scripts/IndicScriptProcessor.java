@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.fonts.GlyphTable;
 import org.docx4j.fonts.fop.complexscripts.util.CharAssociation;
 import org.docx4j.fonts.fop.complexscripts.util.CharScript;
@@ -53,7 +53,7 @@ import org.docx4j.fonts.fop.complexscripts.util.ScriptContextTester;
 public class IndicScriptProcessor extends DefaultScriptProcessor {
 
     /** logging instance */
-    private static final Log log = LogFactory.getLog(IndicScriptProcessor.class);
+    private static final  Logger log = LoggerFactory.getLogger(IndicScriptProcessor.class);
 
     /** required features to use for substitutions */
     private static final String[] GSUB_REQ_FEATURES =

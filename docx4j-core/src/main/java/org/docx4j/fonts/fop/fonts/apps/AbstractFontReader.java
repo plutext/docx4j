@@ -34,8 +34,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for the PFM and TTF Reader command-line applications.
@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractFontReader {
 
     /** Logger instance */
-    protected static final Log log = LogFactory.getLog(AbstractFontReader.class);
+    protected static final  Logger log = LoggerFactory.getLogger(AbstractFontReader.class);
 
     /**
      * Main constructor.
@@ -80,31 +80,6 @@ public abstract class AbstractFontReader {
         return (String[])arguments.toArray(new String[arguments.size()]);
     }
 
-    /**
-     * Sets the logging level.
-     * @param level the logging level ("debug", "info", "error" etc., see Jakarta Commons Logging)
-     */
-    protected static void setLogLevel(String level) {
-        // Set the evel for future loggers.
-        LogFactory.getFactory().setAttribute("level", level);
-    }
-
-    /**
-     * Determines the log level based of the options from the command-line.
-     * @param options the command-line options
-     */
-    protected static void determineLogLevel(Map options) {
-        //Determine log level
-        if (options.get("-t") != null) {
-            setLogLevel("trace");
-        } else if (options.get("-d") != null) {
-            setLogLevel("debug");
-        } else if (options.get("-q") != null) {
-            setLogLevel("error");
-        } else {
-            setLogLevel("info");
-        }
-    }
 
     /**
      * Writes the generated DOM Document to a file.

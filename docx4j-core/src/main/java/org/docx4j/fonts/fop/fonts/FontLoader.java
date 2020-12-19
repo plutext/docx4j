@@ -27,8 +27,8 @@ package org.docx4j.fonts.fop.fonts;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.truetype.OFFontLoader;
 import org.docx4j.fonts.fop.fonts.type1.Type1FontLoader;
@@ -39,7 +39,7 @@ import org.docx4j.fonts.fop.fonts.type1.Type1FontLoader;
 public abstract class FontLoader {
 
     /** logging instance */
-    protected static final Log log = LogFactory.getLog(FontLoader.class);
+    protected static final  Logger log = LoggerFactory.getLogger(FontLoader.class);
 
     /** URI representing the font file */
     protected final URI fontFileURI;

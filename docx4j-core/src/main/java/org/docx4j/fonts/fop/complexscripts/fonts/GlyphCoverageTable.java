@@ -27,8 +27,8 @@ package org.docx4j.fonts.fop.complexscripts.fonts;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // CSOFF: LineLengthCheck
 
@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 public final class GlyphCoverageTable extends GlyphMappingTable implements GlyphCoverageMapping {
 
     /* logging instance */
-    private static final Log log = LogFactory.getLog(GlyphCoverageTable.class);
+    private static final  Logger log = LoggerFactory.getLogger(GlyphCoverageTable.class);
 
     /** empty mapping table */
     public static final int GLYPH_COVERAGE_TYPE_EMPTY = GLYPH_MAPPING_TYPE_EMPTY;

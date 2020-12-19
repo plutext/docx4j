@@ -24,8 +24,8 @@
 
 package org.docx4j.fonts.fop.complexscripts.scripts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.util.CharAssociation;
 import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 
@@ -40,7 +40,7 @@ import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 public class GurmukhiScriptProcessor extends IndicScriptProcessor {
 
     /** logging instance */
-    private static final Log log = LogFactory.getLog(GurmukhiScriptProcessor.class);
+    private static final  Logger log = LoggerFactory.getLogger(GurmukhiScriptProcessor.class);
 
     GurmukhiScriptProcessor(String script) {
         super(script);

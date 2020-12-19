@@ -32,8 +32,8 @@ import java.util.Set;
 
 import org.xml.sax.InputSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.complexscripts.fonts.Positionable;
 import org.docx4j.fonts.fop.complexscripts.fonts.Substitutable;
@@ -43,7 +43,7 @@ import org.docx4j.fonts.fop.complexscripts.fonts.Substitutable;
  */
 public class LazyFont extends Typeface implements FontDescriptor, Substitutable, Positionable {
 
-    private static Log log = LogFactory.getLog(LazyFont.class);
+    private static  Logger log = LoggerFactory.getLogger(LazyFont.class);
 
     private final FontUris fontUris;
 

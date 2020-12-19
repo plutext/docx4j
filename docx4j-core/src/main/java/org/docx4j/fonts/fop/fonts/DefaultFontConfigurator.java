@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.DefaultFontConfig.Directory;
@@ -47,7 +47,7 @@ import org.docx4j.fonts.fop.util.LogUtil;
  */
 public class DefaultFontConfigurator implements FontConfigurator<EmbedFontInfo> {
     /** logger instance */
-    protected static final Log log = LogFactory.getLog(DefaultFontConfigurator.class);
+    protected static final  Logger log = LoggerFactory.getLogger(DefaultFontConfigurator.class);
 
     private final FontManager fontManager;
     private final InternalResourceResolver resourceResolver;

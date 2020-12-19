@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.java2d.Dimension2DDouble;
 import org.docx4j.fonts.fop.fonts.NamedCharacter;
@@ -43,7 +43,7 @@ import org.docx4j.fonts.fop.fonts.SingleByteEncoding;
 public class AFMFile {
 
     /** logging instance */
-    private static final Log LOG = LogFactory.getLog(AFMFile.class);
+    private static final  Logger log = LoggerFactory.getLogger(AFMFile.class);
 
     private String fontName;
     private String fullName;
@@ -455,8 +455,8 @@ public class AFMFile {
      * @param encoding the encoding to replace the one given in the AFM
      */
     public void overridePrimaryEncoding(SingleByteEncoding encoding) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Overriding primary encoding of " + getFontName() + " with: " + encoding);
+        if (log.isDebugEnabled()) {
+            log.debug("Overriding primary encoding of " + getFontName() + " with: " + encoding);
         }
         AFMCharMetrics[] mapped = new AFMCharMetrics[256];
         for (AFMCharMetrics cm : this.charMetrics) {
@@ -465,7 +465,7 @@ public class AFMFile {
                 int codePoint = encoding.mapChar(nc.getSingleUnicodeValue());
                 if (codePoint > 0) {
                     if (mapped[codePoint] != null) {
-                        if (LOG.isDebugEnabled()) {
+                        if (log.isDebugEnabled()) {
                             AFMCharMetrics other = mapped[codePoint];
                             String msg = "Not mapping character " + nc + " to code point "
                                 + codePoint + " (" + Integer.toHexString(codePoint) + ") in "
@@ -484,7 +484,7 @@ public class AFMFile {
                                 msg += " They have differing widths: "
                                     + cm.getWidthX() + " vs. " + other.getWidthX();
                             }
-                            LOG.debug(msg);
+                            log.debug(msg);
                         }
                     } else {
                         cm.setCharCode(codePoint);

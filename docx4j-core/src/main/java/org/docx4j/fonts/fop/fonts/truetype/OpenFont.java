@@ -44,8 +44,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.fonts.Glyphs;
 import org.docx4j.fonts.fop.complexscripts.fonts.AdvancedTypographicTableFormatException;
@@ -252,7 +252,7 @@ public abstract class OpenFont {
     /**
      * logging instance
      */
-    protected Log log = LogFactory.getLog(TTFFile.class);
+    protected  Logger log = LoggerFactory.getLogger(TTFFile.class);
 
     public OpenFont() {
         this(true, false);
@@ -444,7 +444,7 @@ public abstract class OpenFont {
         } else if (symbolMapOffset > 0) {
             return readUnicodeCmap(symbolMapOffset, 0);
         } else {
-            log.fatal("Unsupported TrueType font: No Unicode or Symbol cmap table"
+            log.error("Unsupported TrueType font: No Unicode or Symbol cmap table"
                     + " not present. Aborting");
             return false;
         }

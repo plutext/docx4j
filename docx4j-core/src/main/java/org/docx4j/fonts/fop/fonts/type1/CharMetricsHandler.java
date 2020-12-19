@@ -30,8 +30,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.xmlgraphics.fonts.Glyphs;
 import org.docx4j.fonts.fop.fonts.NamedCharacter;
@@ -42,7 +42,7 @@ import org.docx4j.fonts.fop.fonts.type1.AFMParser.ValueHandler;
  */
 abstract class CharMetricsHandler {
 
-    private static final Log LOG = LogFactory.getLog(CharMetricsHandler.class);
+    private static final  Logger log = LoggerFactory.getLogger(CharMetricsHandler.class);
 
     private static final String WHITE_SPACE = "\\s*";
     private static final String OPERATOR = "([A-Z0-9]{1,3})";
@@ -111,7 +111,7 @@ abstract class CharMetricsHandler {
                 String charName = namedChar.getName();
                 int codePoint = AdobeStandardEncoding.getAdobeCodePoint(charName);
                 if (chm.getCharCode() != codePoint && !Glyphs.NOTDEF.equals(charName)) {
-                    LOG.info(afmFileName + ": named character '" + charName + "'"
+                    log.info(afmFileName + ": named character '" + charName + "'"
                             + " has an incorrect code point: " + chm.getCharCode()
                             + ". Changed to " + codePoint);
                     chm.setCharCode(codePoint);

@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -45,7 +45,7 @@ import org.docx4j.fonts.fop.fonts.LazyFont;
  */
 public class ConfiguredFontCollection implements FontCollection {
 
-    private static Log log = LogFactory.getLog(ConfiguredFontCollection.class);
+    private static  Logger log = LoggerFactory.getLogger(ConfiguredFontCollection.class);
 
     private final InternalResourceResolver resourceResolver;
     private final List<EmbedFontInfo> embedFontInfoList;
