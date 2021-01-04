@@ -4,7 +4,6 @@ package org.docx4j.com.microsoft.schemas.office.word.x2006.wordml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -16,16 +15,16 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_VbaSuppData">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="docEvents" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_DocEvents" minOccurs="0"/>
- *         &lt;element name="mcds" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_Mcds" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="CT_VbaSuppData"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="docEvents" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_DocEvents" minOccurs="0"/&gt;
+ *         &lt;element name="mcds" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_Mcds" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -35,9 +34,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "docEvents",
     "mcds"
 })
-@XmlRootElement(name = "vbaSuppData")
-public class CTVbaSuppData
-    implements Child
+public class CTVbaSuppData implements Child
 {
 
     protected CTDocEvents docEvents;

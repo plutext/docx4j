@@ -105,6 +105,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.KeyMapCustomizationsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
@@ -507,6 +508,9 @@ public class ContentTypeManager  {
 			
 		} else if (contentType.equals(ContentTypes.INK_ML)) {
 			return new InkmlPart(new PartName(partName));
+
+		} else if (contentType.equals(ContentTypes.MS_WORD_KEYMAP)) {
+			return new KeyMapCustomizationsPart(new PartName(partName));
 			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| contentType.equals(ContentTypes.IMAGE_SVG)				

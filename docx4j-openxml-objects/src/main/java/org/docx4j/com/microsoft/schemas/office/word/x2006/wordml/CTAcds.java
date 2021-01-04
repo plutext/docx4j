@@ -6,22 +6,23 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Mcds complex type.
+ * <p>Java class for CT_Acds complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Mcds"&gt;
+ * &lt;complexType name="CT_Acds"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="mcd" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_Mcd" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="acd" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_Acd" maxOccurs="unbounded"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -31,43 +32,44 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Mcds", propOrder = {
-    "mcd"
+@XmlType(name = "CT_Acds", propOrder = {
+    "acd"
 })
-public class CTMcds implements Child
+public class CTAcds implements Child
 {
 
-    protected List<CTMcd> mcd;
+    @XmlElement(required = true)
+    protected List<CTAcd> acd;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the mcd property.
+     * Gets the value of the acd property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the mcd property.
+     * This is why there is not a <CODE>set</CODE> method for the acd property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getMcd().add(newItem);
+     *    getAcd().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTMcd }
+     * {@link CTAcd }
      * 
      * 
      */
-    public List<CTMcd> getMcd() {
-        if (mcd == null) {
-            mcd = new ArrayList<CTMcd>();
+    public List<CTAcd> getAcd() {
+        if (acd == null) {
+            acd = new ArrayList<CTAcd>();
         }
-        return this.mcd;
+        return this.acd;
     }
 
     /**
