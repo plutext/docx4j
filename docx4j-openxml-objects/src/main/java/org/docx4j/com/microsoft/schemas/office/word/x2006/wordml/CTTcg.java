@@ -4,6 +4,7 @@ package org.docx4j.com.microsoft.schemas.office.word.x2006.wordml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -38,6 +39,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "toolbars",
     "acds"
 })
+@XmlRootElement(name="tcg")
 public class CTTcg implements Child
 {
 
