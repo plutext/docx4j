@@ -2,6 +2,25 @@ CHANGELOG
 =========
 
 
+Version 8.2.8   minor release
+==============
+
+Release date
+------------
+
+5 January 2021
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.2.8
+-------------------------
+
+Microsoft Word: Dedicated part for template command group (wne:tcg), which contains customizations for keyboard shortcuts and toolbars
+
+
 
 Version 8.2.7  for pptx4j users
 ==============
