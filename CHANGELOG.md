@@ -2,6 +2,91 @@ CHANGELOG
 =========
 
 
+Version 11.2.8
+==============
+
+Release date
+------------
+
+7 January 2021
+
+Changes in Version 11.2.8
+-------------------------
+
+Cumulative update for parity 8.2.8
+
+
+Version 8.2.8   minor release
+==============
+
+Release date
+------------
+
+5 January 2021
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.2.8
+-------------------------
+
+Microsoft Word: Dedicated part for template command group (wne:tcg), which contains customizations for keyboard shortcuts and toolbars
+
+
+Version 8.2.7  for pptx4j users
+==============
+
+Release date
+------------
+
+14 December 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Guillermo
+
+Yavuz Tas
+
+
+Changes in Version 8.2.7
+-------------------------
+
+Zip loading optimisation: Avoid using streams where entry size is known
+
+Fix issue in unmarshalString(String str, JAXBContext jc, Class declaredType) introduced by XXE fixes in 8.2.1 mostly affecting pptx
+
+Emojis: specify fallback font in docx4j.properties property docx4j.fonts.RunFontSelector.EmojiFont 
+
+
+
+Version 8.2.6  minor release
+==============
+
+Release date
+------------
+
+7 December 2020
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.2.6
+-------------------------
+
+PDF via FOP with docx embedded fonts: bug fix for case where temp extracted fonts were deleted too early.
+
+XHTML to docx: CSS font-size bug fix
+
+OpenDoPE image injection: tag width=n|auto to specify max width (eg 10500) or let BPAI work out the scaling (ported from 11.1.8)
+
+
 Version 11.2.5  
 ==============
 
