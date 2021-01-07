@@ -6,22 +6,23 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Mcds complex type.
+ * <p>Java class for CT_AcdManifest complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Mcds"&gt;
+ * &lt;complexType name="CT_AcdManifest"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="mcd" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_Mcd" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="acdEntry" type="{http://schemas.microsoft.com/office/word/2006/wordml}CT_AcdKeymap" maxOccurs="unbounded"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -31,43 +32,44 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Mcds", propOrder = {
-    "mcd"
+@XmlType(name = "CT_AcdManifest", propOrder = {
+    "acdEntry"
 })
-public class CTMcds implements Child
+public class CTAcdManifest implements Child
 {
 
-    protected List<CTMcd> mcd;
+    @XmlElement(required = true)
+    protected List<CTAcdKeymap> acdEntry;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the mcd property.
+     * Gets the value of the acdEntry property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the mcd property.
+     * This is why there is not a <CODE>set</CODE> method for the acdEntry property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getMcd().add(newItem);
+     *    getAcdEntry().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTMcd }
+     * {@link CTAcdKeymap }
      * 
      * 
      */
-    public List<CTMcd> getMcd() {
-        if (mcd == null) {
-            mcd = new ArrayList<CTMcd>();
+    public List<CTAcdKeymap> getAcdEntry() {
+        if (acdEntry == null) {
+            acdEntry = new ArrayList<CTAcdKeymap>();
         }
-        return this.mcd;
+        return this.acdEntry;
     }
 
     /**

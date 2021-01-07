@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.docx4j.convert.out.Documents4jConversionSettings;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.HTMLSettings;
+import org.docx4j.convert.out.MicrosoftGraphConversionSettings;
 import org.docx4j.convert.out.common.Exporter;
 import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.convert.out.html.HTMLExporterVisitor;
@@ -739,7 +740,14 @@ public class Docx4J {
 			settings.setApacheFopMime("application/pdf");
 			toFO(settings, outputStream, FLAG_NONE);
 			new EventFinished(startEvent).publish();
+			
+		} else if (pdfViaMicrosoftGraph()) {
+			
+			log.error("Microsoft Graph can't be invoked via this interface.  Use it directly; see https://github.com/plutext/java-docx-to-pdf-using-Microsoft-Graph   ");
+			
 		} else {
+			
+			log.info("No documents4j or FO found); falling back to legacy Converter.");
 			
 			// Configure this property to point to your own Converter instance.
 			// Since this converter is no longer available, this will only suit existing users
@@ -765,6 +773,7 @@ public class Docx4J {
 	public static Boolean EXPORT_FO_DETECTED = null;
 	public static Boolean EXPORT_DOCUMENTS4J_REMOTE_DETECTED = null;
 	public static Boolean EXPORT_DOCUMENTS4J_LOCAL_DETECTED = null;
+	public static Boolean EXPORT_MICROSOFT_GRAPH_DETECTED = null;
 	
 	/**
 	 * If the docx4j-export-fo project is present, 
@@ -823,6 +832,42 @@ public class Docx4J {
 		}
 		
 		return EXPORT_DOCUMENTS4J_LOCAL_DETECTED;
+	}
+	
+	/**
+	 * @since 8.2.7
+	 */
+	public static boolean pdfViaMicrosoftGraph() {
+		
+		if (EXPORT_MICROSOFT_GRAPH_DETECTED==null) {
+			
+			try {
+				Object o = microsoftGraphExporterGetInstance();
+				EXPORT_MICROSOFT_GRAPH_DETECTED = Boolean.TRUE;
+			} catch (Docx4JException e) {
+				EXPORT_MICROSOFT_GRAPH_DETECTED = Boolean.FALSE;
+			}
+		}
+		
+		return EXPORT_MICROSOFT_GRAPH_DETECTED;
+	}
+
+	private static Exporter<MicrosoftGraphConversionSettings> microsoftGraphExporterGetInstance()  throws Docx4JException {
+		
+		// Use reflection to return Exporter
+		// so docx4j-core doesn't depend on docx4j-conversion-via-microsoft-graph
+		
+		try {
+			Class<?> clazz = Class.forName("org.docx4j.convert.out.microsoft_graph.DocxToPdfExporter");			
+			Method method = clazz.getMethod("getInstance", null);
+			// TODO: must pass a DocxToPdfConverter arg for this to be useful
+			return (Exporter<MicrosoftGraphConversionSettings>)method.invoke(null, null, null);
+			
+		} catch (Exception e) {
+			throw new Docx4JException("org.docx4j.convert.out.microsoft_graph.DocxToPdfExporter not found; "
+					+ "if you want it, add an implementation to your path.  " + "/n" + e.getMessage(), e);
+		}			
+		
 	}
 	
 	

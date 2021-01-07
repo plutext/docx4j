@@ -25,6 +25,7 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _VbaSuppData_QNAME = new QName("http://schemas.microsoft.com/office/word/2006/wordml", "vbaSuppData");
+    private final static QName _Tcg_QNAME = new QName("http://schemas.microsoft.com/office/word/2006/wordml", "tcg");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.com.microsoft.schemas.office.word.x2006.wordml
@@ -42,11 +43,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTMcd }
+     * Create an instance of {@link CTTcg }
      * 
      */
-    public CTMcd createCTMcd() {
-        return new CTMcd();
+    public CTTcg createCTTcg() {
+        return new CTTcg();
     }
 
     /**
@@ -58,11 +59,107 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTMcd }
+     * 
+     */
+    public CTMcd createCTMcd() {
+        return new CTMcd();
+    }
+
+    /**
      * Create an instance of {@link CTMcds }
      * 
      */
     public CTMcds createCTMcds() {
         return new CTMcds();
+    }
+
+    /**
+     * Create an instance of {@link CTAcds }
+     * 
+     */
+    public CTAcds createCTAcds() {
+        return new CTAcds();
+    }
+
+    /**
+     * Create an instance of {@link CTAcd }
+     * 
+     */
+    public CTAcd createCTAcd() {
+        return new CTAcd();
+    }
+
+    /**
+     * Create an instance of {@link CTKeymaps }
+     * 
+     */
+    public CTKeymaps createCTKeymaps() {
+        return new CTKeymaps();
+    }
+
+    /**
+     * Create an instance of {@link CTKeymap }
+     * 
+     */
+    public CTKeymap createCTKeymap() {
+        return new CTKeymap();
+    }
+
+    /**
+     * Create an instance of {@link CTFci }
+     * 
+     */
+    public CTFci createCTFci() {
+        return new CTFci();
+    }
+
+    /**
+     * Create an instance of {@link CTAcdKeymap }
+     * 
+     */
+    public CTAcdKeymap createCTAcdKeymap() {
+        return new CTAcdKeymap();
+    }
+
+    /**
+     * Create an instance of {@link CTMacroWll }
+     * 
+     */
+    public CTMacroWll createCTMacroWll() {
+        return new CTMacroWll();
+    }
+
+    /**
+     * Create an instance of {@link CTLongHexNumber }
+     * 
+     */
+    public CTLongHexNumber createCTLongHexNumber() {
+        return new CTLongHexNumber();
+    }
+
+    /**
+     * Create an instance of {@link CTToolbars }
+     * 
+     */
+    public CTToolbars createCTToolbars() {
+        return new CTToolbars();
+    }
+
+    /**
+     * Create an instance of {@link CTAcdManifest }
+     * 
+     */
+    public CTAcdManifest createCTAcdManifest() {
+        return new CTAcdManifest();
+    }
+
+    /**
+     * Create an instance of {@link CTRel }
+     * 
+     */
+    public CTRel createCTRel() {
+        return new CTRel();
     }
 
     /**
@@ -72,6 +169,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2006/wordml", name = "vbaSuppData")
     public JAXBElement<CTVbaSuppData> createVbaSuppData(CTVbaSuppData value) {
         return new JAXBElement<CTVbaSuppData>(_VbaSuppData_QNAME, CTVbaSuppData.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTTcg }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/word/2006/wordml", name = "tcg")
+    public JAXBElement<CTTcg> createTcg(CTTcg value) {
+        return new JAXBElement<CTTcg>(_Tcg_QNAME, CTTcg.class, null, value);
     }
 
 }

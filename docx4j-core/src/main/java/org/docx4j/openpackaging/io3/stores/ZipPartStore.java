@@ -19,6 +19,8 @@
  */
 package org.docx4j.openpackaging.io3.stores;
 
+import static java.lang.Math.toIntExact;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -109,7 +111,7 @@ public class ZipPartStore implements PartStore {
 			policePartSize(f, entry.getSize(), entry.getName());
 			InputStream in = null;
 			try {
-				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry) );
+				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry), entry.getSize() );
 				policePartSize(f, bytes.length, entry.getName()); // in case earlier check ineffective
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (PartTooLargeException e) {
@@ -151,9 +153,12 @@ public class ZipPartStore implements PartStore {
             ArchiveEntry entry = null;
             while ((entry = zis.getNextEntry()) != null) {
             	// How to read the data descriptor for length? ie before reading?
-				byte[] bytes =  getBytesFromInputStream( zis );
+            	// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=4079029
+    			policePartSize(null, entry.getSize(), entry.getName());
+            	
+				byte[] bytes =  getBytesFromInputStream( zis, entry.getSize() );
 				//log.debug("Extracting " + entry.getName());
-				policePartSize(null, bytes.length, entry.getName()); 
+				policePartSize(null, bytes.length, entry.getName()); // in case earlier check ineffective
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
             zis.close();
@@ -180,9 +185,13 @@ public class ZipPartStore implements PartStore {
 		return (partByteArrays.get(partName) !=null );
 	}
 
-	private byte[] getBytesFromInputStream(InputStream is)
+	private byte[] getBytesFromInputStream(InputStream is, long size)
 			throws Exception {
 
+		if (size == -1) {
+		
+			log.debug("entry.getSize() -1");
+			
 			BufferedInputStream bufIn = new BufferedInputStream(is);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(baos);
@@ -196,7 +205,25 @@ public class ZipPartStore implements PartStore {
 			//bufIn.close(); //don't do that, since it closes the ZipInputStream after we've read an entry!
 			bos.close();
 			return baos.toByteArray();
-		}
+			
+        } else {
+
+        	if (log.isDebugEnabled()) {
+        		log.info("entry.getSize()=" + size );
+        	}
+        	
+        	int sizeInt = toIntExact(size);
+            byte[] targetArray = new byte[sizeInt];
+            int read = is.read(targetArray);
+            int offset = read;
+            while (read != -1  && (sizeInt-offset!=0)) {
+               read = is.read(targetArray,offset, sizeInt-offset);
+               offset += read;
+            }
+            return targetArray;
+         }			
+			
+	}
 
 //	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
 //			String partName) throws IOException {

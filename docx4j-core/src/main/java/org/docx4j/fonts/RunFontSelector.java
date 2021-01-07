@@ -21,6 +21,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
+//import com.vdurmont.emoji.EmojiManager;
+
 import java.awt.font.NumericShaper;
 import java.util.concurrent.ExecutionException;
 
@@ -596,7 +598,16 @@ public class RunFontSelector {
     	
     	return langEastAsia.contains(lang);
     }
-        	
+
+	private static String EMOJI_FONT=null;
+	private static String getEmojiFont() {
+		
+		if (EMOJI_FONT==null) {
+			EMOJI_FONT = Docx4jProperties.getProperty("docx4j.fonts.RunFontSelector.EmojiFont");
+		}
+		return EMOJI_FONT;
+	}
+         
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi) {
     	
@@ -633,8 +644,54 @@ public class RunFontSelector {
     		    vis.createNew();
     		    vis.setMustCreateNewFlag(false);
     		    
-    		    // 
-				vis.fontAction(hAnsi); 
+    		    // Set the font
+    		    if (getEmojiFont()==null) {
+    		    	// Default
+    		    	vis.fontAction(hAnsi);
+    		    } else {
+    		    	
+    		    	// we know what to do with an emoji
+    		    	
+    		    	// Is it an emoji?  
+        	    	/* Use this in next major release, or
+        	    	 * better, TODO, use via reflection if present
+	       	    	 *
+	       	    	 * 		<dependency>
+								  <groupId>com.vdurmont</groupId>
+								  <artifactId>emoji-java</artifactId>
+								  <version>5.1.1</version>
+								</dependency>
+	
+	       	    	 * 
+	       	    	if (EmojiManager.isEmoji(
+	       	    			new String(
+	       	    					Character.toChars(
+	       	    							text.codePointAt(i))))) {
+	       	    		
+	       	    	}
+    		    	// For now, a quick n dirty check
+	       	    	
+	       	    	*/
+        	    	if (c=='\uD83D' || c=='\uD83D' || c=='\uD83E') {
+        	    		
+        	    		log.debug("assuming emoji " + Integer.toHexString(c));
+        		    	
+        		    	try {
+							if (GlyphCheck.hasChar(hAnsi, c)) {
+								// TODO: doubt this works for high surrogate 
+								log.debug("present in " + hAnsi);
+								vis.fontAction(hAnsi);        		    		
+							} else {
+								vis.fontAction(getEmojiFont());        		    		        		    		
+							}
+						} catch (ExecutionException e) {
+							log.error(e.getMessage(), e);
+						}
+        	    	} else {
+        		    	// Default
+        		    	vis.fontAction(hAnsi);        	    		
+        	    	}
+    		    }
 				
     	    	//vis.addCharacterToCurrent(c);
 				vis.addCodePointToCurrent(text.codePointAt(i));
@@ -1009,6 +1066,9 @@ public class RunFontSelector {
         	    	
         	    	currentRangeLower = '\uFF00';
         	    	currentRangeUpper = '\uFFEF';	
+        	    	
+//        	    } else if (c>=Character.toChar(0x1F600) && c<='\u1F64F') {
+        	    	
         	    } else {
         	    	// Per http://msdn.microsoft.com/en-us/library/ff533743.aspx
         	    	// for all ranges not listed in the above, the hAnsi (or hAnsiTheme if defined) font shall be used.

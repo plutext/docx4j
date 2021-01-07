@@ -146,12 +146,14 @@ public class LayoutMasterSetBuilder {
 			
 			FOPAreaTreeHelper.adjustLayoutMasterSet(lms, context.getSections(), headerBpda, footerBpda);				
 			
-			// Clean up
-			// this isn't really necessary since its done in WordprocessingMLPackagefinalize(), but this gets rid of them a bit sooner than GC may happen
-			FontTablePart ftp = hfPkg.getMainDocumentPart().getFontTablePart();
-			if (ftp!=null) {
-				ftp.deleteEmbeddedFontTempFiles();
-			}
+			/* Don't deleteEmbeddedFontTempFiles here, since they may be required by FOP later.
+			 * And they should get deleted later anyway...
+			 * 
+				FontTablePart ftp = hfPkg.getMainDocumentPart().getFontTablePart();
+				if (ftp!=null) {
+					ftp.deleteEmbeddedFontTempFiles();
+				}
+			*/
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

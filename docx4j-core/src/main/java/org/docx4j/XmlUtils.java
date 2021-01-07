@@ -548,7 +548,7 @@ public class XmlUtils {
 			DocumentBuilder db = XmlUtils.getNewDocumentBuilder();
 			try (InputStream is = IOUtils.toInputStream(str, "UTF-8")) {
 				Document document = db.parse(is);
-				o = u.unmarshal( document );
+				o = u.unmarshal( document, declaredType );
 			}
 		} catch (Exception e) {
 			throw new JAXBException(e);
