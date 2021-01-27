@@ -160,7 +160,7 @@ public class FieldUpdater {
 					}
 					simpleField.getContent().clear();	
 					simpleField.getContent().add(r);
-                    setSimpleFieldContent(r, val);
+                    			setSimpleFieldContent(r, val);
 					
 	//				System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 				}
