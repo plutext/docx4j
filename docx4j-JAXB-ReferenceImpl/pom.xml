@@ -41,7 +41,7 @@
 						</Import-Package>  
 						 -->                      
                         <Export-Package>
-                            org.docx4j.jaxb.ri
+                            org.docx4j.jaxb.ri,org.docx4j.jaxb.generic
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -72,9 +72,9 @@
 		  <groupId>org.glassfish.jaxb</groupId>
 		  <artifactId>jaxb-runtime</artifactId>
 		  <version>2.3.2</version>
-		</dependency>		
-		
-<!--  
+		</dependency>
+
+<!--
 
 	For Maven artifacts, see https://github.com/eclipse-ee4j/jaxb-ri#maven-artifacts
 	which says "In Maven projects org.glassfish.jaxb artifacts are supposed to be used"

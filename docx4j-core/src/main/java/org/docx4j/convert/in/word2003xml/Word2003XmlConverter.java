@@ -5,17 +5,15 @@ package org.docx4j.convert.in.word2003xml;
 
 import java.io.File;
 import java.io.IOException;
-
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
-
 import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.generic.ContextHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -65,7 +63,7 @@ public class Word2003XmlConverter {
 		java.lang.ClassLoader classLoader = Word2003XmlConverter.class.getClassLoader();		
 		
 		JAXBResult result = new JAXBResult(
-		         JAXBContext.newInstance("org.docx4j.convert.in.word2003xml", classLoader) );
+				ContextHelper.createContext("org.docx4j.convert.in.word2003xml", classLoader, null) );
 		XmlUtils.transform(source, xslt, null, result);
 		
 		// set the unmarshalled content tree

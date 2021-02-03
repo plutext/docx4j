@@ -51,7 +51,7 @@
  org.eclipse.persistence.jaxb.xmlmodel;version="2.7.4"           -->              
                         </Import-Package>
                         <Export-Package>
-                            org.docx4j.jaxb.moxy
+                            org.docx4j.jaxb.moxy,org.docx4j.jaxb.generic
                         </Export-Package>
                     </instructions>
                 </configuration>
