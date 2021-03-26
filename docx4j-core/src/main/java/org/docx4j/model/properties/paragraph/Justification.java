@@ -53,13 +53,19 @@ public class Justification extends AbstractParagraphProperty {
 				
 		Jc jc = Context.getWmlObjectFactory().createJc();
 		
-		if (value.getCssText().toLowerCase().equals("left")) {
+		String lowerCase = value.getCssText().toLowerCase();
+		
+		if (lowerCase.equals("left")
+				|| lowerCase.equals("start") ) {
+			// TODO: this needs to be made RTL aware
 			jc.setVal(JcEnumeration.LEFT);
-		} else if (value.getCssText().toLowerCase().equals("center")) {
+		} else if (lowerCase.equals("center")) {
 			jc.setVal(JcEnumeration.CENTER);
-		} else if (value.getCssText().toLowerCase().equals("right")) {
+		} else if (lowerCase.equals("right")
+				|| lowerCase.equals("end")) {
 			jc.setVal(JcEnumeration.RIGHT);
-		} else if (value.getCssText().toLowerCase().equals("justify")) {
+		} else if (lowerCase.equals("justify")
+				|| lowerCase.equals("justify-all")) {
 			jc.setVal(JcEnumeration.BOTH);
 		} else {
 			log.warn("How to handle justification: " + value.getCssText());
