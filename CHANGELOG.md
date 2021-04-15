@@ -2,6 +2,29 @@ CHANGELOG
 =========
 
 
+Version 8.2.9  namespaces required in documents created using recent Word updates
+==============
+
+Release date
+------------
+
+15 April 2021
+
+
+Contributors to this release
+----------------------------
+
+Dingfu.Ye (jdkcn)
+Jason Harrop
+
+
+Changes in Version 8.2.9 
+-------------------------
+
+http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash is new in [MS-DOCX] v15.0 of 22 March. Word writes this namespace prefix to @mc:Ignorable in the MDP, for example, "w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14", so Word requires the namespace to also be declared.
+
+
+
 Version 8.2.8   minor release
 ==============
 
