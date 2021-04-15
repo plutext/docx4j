@@ -18,8 +18,8 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.2.8"/>
-	<property name="importxhtml-version" value="8.0.0"/>
+	<property name="version" value="8.2.9"/>
+	<property name="importxhtml-version" value="8.2.0"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
@@ -210,8 +210,13 @@
 		<!-- ImportXHTML -->
 		<mkdir dir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="${m2Repository}/org/docx4j/xhtmlrenderer/3.0.0/xhtmlrenderer-3.0.0.jar" todir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="${m2Repository}/com/lowagie/itext/2.1.7/itext-2.1.7.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.6/openhtmltopdf-core-1.0.6.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.6/openhtmltopdf-pdfbox-1.0.6.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.22/pdfbox-2.0.22.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/org/apache/pdfbox/fontbox/2.0.22/fontbox-2.0.22.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.22/xmpbox-2.0.22.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/de/rototor/pdfbox/graphics2d/0.30/graphics2d-0.30.jar" todir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
 		<!-- export-fo -->
