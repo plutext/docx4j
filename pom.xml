@@ -88,7 +88,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>VERSION_11_2_4</tag>
+      <tag>VERSION_11_2_9</tag>
   </scm>
 	<inceptionYear>2007</inceptionYear>
 
