@@ -206,7 +206,7 @@ public class AlteredParts {
 			return FlatOpcXmlCreator.createRawBinaryPart( part );
 			
 		} else {
-			return FlatOpcXmlCreator.createRawXmlPart(part );
+			return FlatOpcXmlCreator.getRawXmlPart(part );
 		}
 	}
 	

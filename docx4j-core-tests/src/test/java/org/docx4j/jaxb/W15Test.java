@@ -1,16 +1,21 @@
 package org.docx4j.jaxb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.org.apache.xml.security.c14n.CanonicalizationException;
+import org.docx4j.org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTSettings;
@@ -18,6 +23,7 @@ import org.docx4j.wml.Document;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 public class W15Test {
 
@@ -145,4 +151,19 @@ public class W15Test {
 		assertTrue(startTag.contains("xmlns:w15=") );
 		
 	}
+	
+	@Test
+	public void testCanonicalisation() throws SAXException, IOException, InvalidCanonicalizerException, CanonicalizationException  {
+
+		InputStream resourceAsStream = W15Test.class.getClassLoader().getResourceAsStream("document_with_ignorable.xml");
+		
+		DocumentBuilder builder = XmlUtils.getNewDocumentBuilder();
+		org.w3c.dom.Document doc = builder.parse(resourceAsStream);
+		
+		byte[] bytes = XmlUtils.trimNamespaces(doc, "w14");
+
+		assertTrue(new String(bytes).contains("xmlns:w14=") );
+		
+	}
+		
 }
