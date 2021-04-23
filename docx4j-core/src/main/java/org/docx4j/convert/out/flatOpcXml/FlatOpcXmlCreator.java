@@ -209,6 +209,7 @@ public class FlatOpcXmlCreator implements Output {
 				if (associatedContent.get(p)==null) {
 					
 					marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+					marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 					NamespacePrefixMapperUtils.setProperty(marshaller, 
 							NamespacePrefixMapperUtils.getPrefixMapper());
 		
