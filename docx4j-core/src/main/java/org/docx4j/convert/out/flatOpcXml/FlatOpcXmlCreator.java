@@ -43,6 +43,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -108,7 +109,7 @@ public class FlatOpcXmlCreator implements Output {
 	private static org.docx4j.xmlPackage.ObjectFactory factory = new org.docx4j.xmlPackage.ObjectFactory();
 	
 	private org.docx4j.xmlPackage.Package pkgResult;
-	
+		
 	@Deprecated
 	public org.docx4j.xmlPackage.Package get() throws Docx4JException {
 	
@@ -199,6 +200,11 @@ public class FlatOpcXmlCreator implements Output {
 			byte[] xmlDataTagClose = "</pkg:xmlData>".getBytes();
 			
 			os.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>".getBytes());
+			if (packageIn instanceof WordprocessingMLPackage) {
+				os.write("<?mso-application progid=\"Word.Document\"?>".getBytes());
+			} else if (packageIn instanceof PresentationMLPackage) {
+				os.write("<?mso-application progid=\"PowerPoint.Show\"?>".getBytes());
+			}
 			os.write("<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\" >".getBytes() );
 			
 			for (org.docx4j.xmlPackage.Part p :  pkgResult.getPart()) {
