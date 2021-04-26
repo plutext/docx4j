@@ -202,10 +202,7 @@ public class FlatOpcXmlCreator implements Output {
 			os.write("<pkg:package xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\" >".getBytes() );
 			
 			for (org.docx4j.xmlPackage.Part p :  pkgResult.getPart()) {
-				
-				String pkgPartTagOpen = "<pkg:part pkg:name=\"" + p.getName() + "\" " +  "pkg:contentType=\"" + p.getContentType() + "\">";
-				os.write( pkgPartTagOpen.getBytes() );
-				
+								
 				if (associatedContent.get(p)==null) {
 					
 					marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -213,17 +210,23 @@ public class FlatOpcXmlCreator implements Output {
 					NamespacePrefixMapperUtils.setProperty(marshaller, 
 							NamespacePrefixMapperUtils.getPrefixMapper());
 		
-					// .. marshall it 
+					// .. marshall the entire pkg:part object 
 					marshaller.marshal(p, os);
 					
 					
 				} else {
+					
+					String pkgPartTagOpen = "<pkg:part pkg:name=\"" + p.getName() + "\" " +  "pkg:contentType=\"" + p.getContentType() + "\">";
+					os.write( pkgPartTagOpen.getBytes() );
+					
 					os.write( xmlDataTagOpen );
 					os.write(associatedContent.get(p));
 					os.write( xmlDataTagClose );
+					
+					os.write(pkgPartTagClose);
+					
 				}
 				
-				os.write(pkgPartTagClose);
 			}
 
 			os.write("</pkg:package>".getBytes() );
