@@ -14,6 +14,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -65,7 +66,7 @@ public class Word2003XmlConverter {
 		java.lang.ClassLoader classLoader = Word2003XmlConverter.class.getClassLoader();		
 		
 		JAXBResult result = new JAXBResult(
-		         JAXBContext.newInstance("org.docx4j.convert.in.word2003xml", classLoader) );
+				ContextFactory.createContext("org.docx4j.convert.in.word2003xml", classLoader, null) );
 		XmlUtils.transform(source, xslt, null, result);
 		
 		// set the unmarshalled content tree

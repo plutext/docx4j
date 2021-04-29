@@ -1,5 +1,6 @@
 package org.docx4j.jaxb.ri;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -17,7 +18,7 @@ public class MarshalTest {
 	public void JAXBImplementationTest() throws JAXBException {
 
 		java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
-		JAXBContext testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+		JAXBContext testContext = ContextFactory.createContext("org.docx4j.relationships",classLoader, null);
 		
         assertEquals("com.sun.xml.bind.v2.runtime.JAXBContextImpl", testContext.getClass().getName() );
 	}

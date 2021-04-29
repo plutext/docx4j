@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -36,7 +37,7 @@ public class NamespacePrefixMapperUtils {
 				
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
-			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+			testContext = ContextFactory.createContext("org.docx4j.relationships",classLoader, null);
 		}
 		
 		if (testContext==null) {
@@ -57,8 +58,8 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
-		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
-			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
+		if (testContext.getClass().getName().equals("com.sun.xml.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml NamespacePrefixMapper");
 			try {
 				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapper");
 				prefixMapper = c.newInstance();
@@ -103,7 +104,7 @@ public class NamespacePrefixMapperUtils {
 
 		if (testContext==null) {
 			java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
-			testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+			testContext = ContextFactory.createContext("org.docx4j.relationships",classLoader, null);
 		}
 		
 		if (testContext==null) {
@@ -120,7 +121,7 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
-		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+		if (testContext.getClass().getName().equals("com.sun.xml.bind.v2.runtime.JAXBContextImpl")) {
 			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
 			try {
 				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapperRelationshipsPart");

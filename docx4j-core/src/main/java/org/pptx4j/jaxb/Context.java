@@ -22,6 +22,7 @@ package org.pptx4j.jaxb;
 
 import javax.xml.bind.JAXBContext;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.docx4j.jaxb.ProviderProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class Context {
 			
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
-			jcPML = JAXBContext.newInstance("org.pptx4j.pml:" +
+			jcPML = ContextFactory.createContext("org.pptx4j.pml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main:" +

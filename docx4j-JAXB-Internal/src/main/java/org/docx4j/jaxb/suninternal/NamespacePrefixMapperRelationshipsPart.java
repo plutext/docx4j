@@ -23,7 +23,7 @@ package org.docx4j.jaxb.suninternal;
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperInterface;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
+public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 
 	// Must use 'internal' for Java 6
 

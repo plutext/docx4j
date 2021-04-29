@@ -22,6 +22,7 @@ package org.xlsx4j.jaxb;
 
 import javax.xml.bind.JAXBContext;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.docx4j.jaxb.ProviderProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class Context {
 			
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 				
-			jcSML = JAXBContext.newInstance("org.xlsx4j.sml:" +
+			jcSML = ContextFactory.createContext("org.xlsx4j.sml:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel.x2010.spreadsheetDrawing:" +	
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2006.main:" +
 					"org.xlsx4j.schemas.microsoft.com.office.excel_2008_2.main",classLoader, ProviderProperties.getProviderProperties() );

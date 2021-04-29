@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import com.sun.xml.bind.v2.ContextFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +132,7 @@ public class BestMatchingMapper extends Mapper {
 	private final static void setupMicrosoftFontFilenames() throws Exception {
 
 		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();				
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft", classLoader);
+		JAXBContext msFontsContext = ContextFactory.createContext("org.docx4j.fonts.microsoft", classLoader, null);
 		
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
@@ -193,7 +194,7 @@ public class BestMatchingMapper extends Mapper {
 	private final static void setupExplicitSubstitutionsMap() throws Exception {
 				
 		java.lang.ClassLoader classLoader = BestMatchingMapper.class.getClassLoader();						
-		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions", classLoader);
+		JAXBContext substitutionsContext = ContextFactory.createContext("org.docx4j.fonts.substitutions", classLoader, null);
 		
 		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
 		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
