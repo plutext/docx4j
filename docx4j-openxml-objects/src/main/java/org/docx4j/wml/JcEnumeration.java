@@ -38,6 +38,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="center"/>
  *     &lt;enumeration value="right"/>
  *     &lt;enumeration value="both"/>
+ *     &lt;enumeration value="start"/>
+ *     &lt;enumeration value="end"/>
  *     &lt;enumeration value="mediumKashida"/>
  *     &lt;enumeration value="distribute"/>
  *     &lt;enumeration value="numTab"/>
@@ -81,6 +83,20 @@ public enum JcEnumeration {
      */
     @XmlEnumValue("both")
     BOTH("both"),
+    
+   /**
+     * Align Left (in newer docx files)
+     * 
+     */
+    @XmlEnumValue("start")
+    START("start"),
+    
+   /**
+     * Align Right (in newer docx files)
+     * 
+     */
+    @XmlEnumValue("end")
+    END("end"),
 
     /**
      * Medium Kashida Length
