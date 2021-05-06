@@ -172,6 +172,7 @@ public class SdtPr
         @XmlElementRef(name = "placeholder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "dataBinding", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
         @XmlElementRef(name = "alias", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "label", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "checkbox", namespace = "http://schemas.microsoft.com/office/word/2010/wordml", type = JAXBElement.class),
         @XmlElementRef(name = "showingPlcHdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "webExtensionCreated", namespace = "http://schemas.microsoft.com/office/word/2012/wordml", type = JAXBElement.class),
@@ -225,6 +226,7 @@ public class SdtPr
      * {@link JAXBElement }{@code <}{@link CTPlaceholder }{@code >}
      * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
      * {@link JAXBElement }{@code <}{@link SdtPr.Alias }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Label }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSdtCheckbox }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
@@ -590,6 +592,87 @@ public class SdtPr
 
     }
 
+
+    /**
+     * <p>Java class for anonymous complex type.
+     *
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     *
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     *
+     *
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    @XmlRootElement(name = "label")
+    public static class Label
+        implements Child
+    {
+
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the val property.
+         *
+         * @return
+         *     possible object is
+         *     {@link String }
+         *
+         */
+        public String getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         *
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *
+         */
+        public void setVal(String value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         *
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         *
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
 
     /**
      * <p>Java class for anonymous complex type.
