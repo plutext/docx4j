@@ -83,6 +83,10 @@ So we have to build with Java 12 or later (currently 14) :-
 
 $ sudo archlinux-java set java-14-adoptopenjdk
 
+for import-XHTML:
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+    mvn install -P jdk-8-config
+
 -------------
 
 Start up the Git Bash session and go to your project directory.
