@@ -904,6 +904,9 @@ public class PropertyResolver {
 		}
 
 		//CTSignedTwipsMeasure spacing;
+		if (rPrToApply.getSpacing()!=null ) {
+			return true;			
+		}
 		//CTTextScale w;
 		//HpsMeasure kern;
 		//CTSignedHpsMeasure position;

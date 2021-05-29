@@ -295,8 +295,8 @@ public class PropertyFactory {
 //			dest.setSmallCaps(rPr.getSmallCaps());
 //		if (rPr.getSnapToGrid() != null)
 //			dest.setSnapToGrid(rPr.getSnapToGrid());
-//		if (rPr.getSpacing() != null)
-//			dest.setSpacing(rPr.getSpacing());
+		if (rPr.getSpacing() != null)
+			properties.add(new org.docx4j.model.properties.run.Spacing(rPr.getSpacing()));
 //		if (rPr.getSpecVanish() != null)
 //			dest.setSpecVanish(rPr.getSpecVanish());
 		if (rPr.getStrike() != null)
@@ -386,8 +386,9 @@ public class PropertyFactory {
 //			dest.setSmallCaps(rPr.getSmallCaps());
 //		if (rPr.getSnapToGrid() != null)
 //			dest.setSnapToGrid(rPr.getSnapToGrid());
-//		if (rPr.getSpacing() != null)
-//			dest.setSpacing(rPr.getSpacing());
+		if (rPr.getSpacing() != null)
+			properties.add(new org.docx4j.model.properties.run.Spacing(rPr.getSpacing()));
+		
 //		if (rPr.getSpecVanish() != null)
 //			dest.setSpecVanish(rPr.getSpecVanish());
 		if (rPr.getStrike() != null)
@@ -600,8 +601,9 @@ public class PropertyFactory {
 			        return null;
 			    }
 			    return new VerticalAlignment(value);
-			}
-			
+			} else if (name.equals(org.docx4j.model.properties.run.Spacing.CSS_NAME )) {
+				return new org.docx4j.model.properties.run.Spacing(value);
+			}			
 			// Paragraph properties
 			if (name.equals(Indent.CSS_NAME )) {
 				// left

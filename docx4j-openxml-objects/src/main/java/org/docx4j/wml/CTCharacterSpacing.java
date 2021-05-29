@@ -46,7 +46,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;/complexType>
  * </pre>
  * 
- * 
+ * <p>Note this class is only used in CTCharacterSpacing characterSpacingControl in the Settings part. </p>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_CharacterSpacing")
