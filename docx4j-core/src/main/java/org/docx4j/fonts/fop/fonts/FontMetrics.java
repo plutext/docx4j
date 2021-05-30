@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,19 +20,25 @@
  * limitations under the License.
  */
 
-/* $Id: FontMetrics.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.awt.Rectangle;
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
-
-
 
 /**
  * Main interface for access to font metrics.
  */
 public interface FontMetrics {
+
+    /**
+     * Returns the URI of the font file from which these metrics were loaded.
+     * @return the font file's URI
+     */
+    URI getFontURI();
 
     /**
      * Returns the "PostScript" font name (Example: "Helvetica-BoldOblique").
@@ -51,7 +56,7 @@ public interface FontMetrics {
      * Returns the font's family names as a Set of Strings (Example: "Helvetica").
      * @return the font's family names (a Set of Strings)
      */
-    Set getFamilyNames();
+    Set<String> getFamilyNames();
 
     /**
      * Returns the font name for font embedding (may include a prefix, Example: "1E28bcArialMT").
@@ -126,8 +131,17 @@ public interface FontMetrics {
     int[] getWidths();
 
     /**
-     * Indicates if the font has kering information.
-     * @return True, if kerning is available.
+     * Returns the bounding box of the glyph at the given index, for the given font size.
+     *
+     * @param glyphIndex glyph index
+     * @param size font size
+     * @return the scaled bounding box scaled in 1/1000ths of the given size
+     */
+    Rectangle getBoundingBox(int glyphIndex, int size);
+
+    /**
+     * Indicates if the font has kerning information.
+     * @return true if kerning is available.
      */
     boolean hasKerningInfo();
 
@@ -135,6 +149,57 @@ public interface FontMetrics {
      * Returns the kerning map for the font.
      * @return the kerning map
      */
-    Map getKerningInfo();
+    Map<Integer, Map<Integer, Integer>> getKerningInfo();
+
+    /**
+     * Returns the distance from the baseline to the center of the underline (negative
+     * value indicates below baseline).
+     *
+     * @param size font size
+     * @return the position in 1/1000ths of the font size
+     */
+    int getUnderlinePosition(int size);
+
+    /**
+     * Returns the thickness of the underline.
+     *
+     * @param size font size
+     * @return the thickness in 1/1000ths of the font size
+     */
+    int getUnderlineThickness(int size);
+
+    /**
+     * Returns the distance from the baseline to the center of the strikeout line
+     * (negative value indicates below baseline).
+     *
+     * @param size font size
+     * @return the position in 1/1000ths of the font size
+     */
+    int getStrikeoutPosition(int size);
+
+    /**
+     * Returns the thickness of the strikeout line.
+     *
+     * @param size font size
+     * @return the thickness in 1/1000ths of the font size
+     */
+    int getStrikeoutThickness(int size);
+
+    /**
+     * Determine if metrics supports specific feature in specified font table.
+     *
+     * @param tableType type of table (GSUB, GPOS, ...), see GlyphTable.GLYPH_TABLE_TYPE_*
+     * @param script to qualify feature lookup
+     * @param language to qualify feature lookup
+     * @param feature to test
+     * @return true if feature supported (and has at least one lookup)
+     */
+    boolean hasFeature(int tableType, String script, String language, String feature);
+
+    /**
+     * Determines whether the font is a multibyte font.
+     * @return True if it is multibyte
+     */
+    boolean isMultiByte();
 
 }

@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +20,7 @@
  * limitations under the License.
  */
 
-/* $Id: LogUtil.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.util;
 
@@ -31,7 +30,10 @@ import org.docx4j.fonts.fop.apps.FOPException;
 /**
  * Convenience Logging utility methods used in FOP
  */
-public class LogUtil {
+public final class LogUtil {
+
+    private LogUtil() {
+    }
 
     /**
      * Convenience method that handles any error appropriately

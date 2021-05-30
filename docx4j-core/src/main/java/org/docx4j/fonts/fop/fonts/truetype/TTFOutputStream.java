@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,53 +20,35 @@
  * limitations under the License.
  */
 
-/* $Id: BFEntry.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
-package org.docx4j.fonts.fop.fonts;
+package org.docx4j.fonts.fop.fonts.truetype;
+
+import java.io.IOException;
 
 /**
- * This is just a holder class for bfentries, groups of characters of a base font (bf).
+ * An interface for writing a TrueType font to an output stream.
  */
-public class BFEntry {
-
-    private int unicodeStart;
-    private int unicodeEnd;
-    private int glyphStartIndex;
+public interface TTFOutputStream {
 
     /**
-     * Main constructor.
-     * @param unicodeStart Unicode start index
-     * @param unicodeEnd Unicode end index
-     * @param glyphStartIndex glyph start index
+     * Starts writing the font.
      */
-    public BFEntry(int unicodeStart, int unicodeEnd, int glyphStartIndex) {
-        this.unicodeStart = unicodeStart;
-        this.unicodeEnd = unicodeEnd;
-        this.glyphStartIndex = glyphStartIndex;
-    }
+    void startFontStream() throws IOException;
 
     /**
-     * Returns the unicodeStart.
-     * @return the Unicode start index
+     * Returns an object for streaming TrueType tables.
      */
-    public int getUnicodeStart() {
-        return unicodeStart;
-    }
+    TTFTableOutputStream getTableOutputStream();
 
     /**
-     * Returns the unicodeEnd.
-     * @return the Unicode end index
+     * Returns an object for streaming TrueType glyphs in the glyf table.
      */
-    public int getUnicodeEnd() {
-        return unicodeEnd;
-    }
+    TTFGlyphOutputStream getGlyphOutputStream();
 
     /**
-     * Returns the glyphStartIndex.
-     * @return the glyph start index
+     * Ends writing the font.
      */
-    public int getGlyphStartIndex() {
-        return glyphStartIndex;
-    }
+    void endFontStream() throws IOException;
 
 }

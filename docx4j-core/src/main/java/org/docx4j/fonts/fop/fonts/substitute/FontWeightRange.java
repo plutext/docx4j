@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +20,7 @@
  * limitations under the License.
  */
 
-/* $Id: FontWeightRange.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.substitute;
 
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class FontWeightRange {
 
     /** logging instance */
-    protected static Logger log = LoggerFactory.getLogger("org.apache.fop.render.fonts");
+    protected static final  Logger log = LoggerFactory.getLogger("org.docx4j.fonts.fop.render.fonts");
 
     /**
      * Returns an <code>FontWeightRange</code> object holding the

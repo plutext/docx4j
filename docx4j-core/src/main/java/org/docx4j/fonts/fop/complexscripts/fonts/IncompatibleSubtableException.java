@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,25 +20,28 @@
  * limitations under the License.
  */
 
-/* $Id: FontResolver.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
-package org.docx4j.fonts.fop.fonts;
-
-import javax.xml.transform.Source;
+package org.docx4j.fonts.fop.complexscripts.fonts;
 
 /**
- * This interface is used to resolve absolute and relative font URIs.
+ * <p>Exception thrown during when attempting to map glyphs to associated characters
+ * in the case that the associated characters do not represent a compact interval.</p>
+ *
+ * <p>This work was originally authored by Glenn Adams (gadams@apache.org).</p>
  */
-public interface FontResolver {
-
+public class IncompatibleSubtableException extends RuntimeException {
     /**
-     * Called to resolve an URI to a Source instance. The base URI needed by the URIResolver's
-     * resolve() method is defined to be implicitly available in this case. If the URI cannot
-     * be resolved, null is returned and it is assumed that the FontResolver implementation
-     * already warned the user about the problem.
-     * @param href An href attribute, which may be relative or absolute.
-     * @return A Source object, or null if the href could not resolved.
+     * Instantiate incompatible subtable exception
      */
-    Source resolve(String href);
-
+    public IncompatibleSubtableException() {
+        super();
+    }
+    /**
+     * Instantiate incompatible subtable exception
+     * @param message a message string
+     */
+    public IncompatibleSubtableException(String message) {
+        super(message);
+    }
 }

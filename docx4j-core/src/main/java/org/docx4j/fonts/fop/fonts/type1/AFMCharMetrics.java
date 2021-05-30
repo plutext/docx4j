@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +20,11 @@
  * limitations under the License.
  */
 
-/* $Id: AFMCharMetrics.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
-import java.awt.geom.RectangularShape;
+import java.awt.Rectangle;
 
 import org.docx4j.fonts.fop.fonts.NamedCharacter;
 
@@ -39,7 +38,7 @@ public class AFMCharMetrics {
     private NamedCharacter character;
     private double widthX;
     private double widthY;
-    private RectangularShape bBox;
+    private Rectangle bBox;
 
     /**
      * Returns the character code.
@@ -143,7 +142,7 @@ public class AFMCharMetrics {
      * Returns the character's bounding box.
      * @return the bounding box (or null if it isn't available)
      */
-    public RectangularShape getBBox() {
+    public Rectangle getBBox() {
         return bBox;
     }
 
@@ -151,7 +150,7 @@ public class AFMCharMetrics {
      * Sets the character's bounding box.
      * @param box the bounding box
      */
-    public void setBBox(RectangularShape box) {
+    public void setBBox(Rectangle box) {
         bBox = box;
     }
 

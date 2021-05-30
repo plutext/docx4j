@@ -58,11 +58,14 @@
 	<logger name="com.topologi" level="DEBUG" />
 
 	<logger name="org.docx4j.fonts" level="WARN" />
+	<logger name="org.docx4j.fonts.fop.complexscripts.fonts.OTFAdvancedTypographicTableReader" level="WARN" />  
+	<!-- 
 	<logger name="org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder" level="WARN" /> 
 	<logger name="org.docx4j.fonts.BestMatchingMapper" level="WARN" />
 	<logger name="org.docx4j.fonts.PhysicalFonts" level="WARN" />
 
 	<logger name="org.docx4j.fonts.RunFontSelector" level="WARN" />
+ -->
 
 	<logger name="org.docx4j.jaxb" level="INFO" />
 

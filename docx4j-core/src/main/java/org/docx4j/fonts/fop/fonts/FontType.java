@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +20,9 @@
  * limitations under the License.
  */
 
-/* $Id: FontType.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
-
 
 /**
  * This class enumerates all supported font types.
@@ -56,12 +54,18 @@ public class FontType {
      */
     public static final FontType TRUETYPE    = new FontType("TrueType", 5);
 
+    public static final FontType TYPE1C       = new FontType("Type1C", 6);
+
+    public static final FontType CIDTYPE0       = new FontType("CIDFontType0", 7);
+
     private final String name;
     private final int value;
 
 
     /**
-     * @see org.apache.avalon.framework.Enum#Enum(String)
+     * Construct a font type.
+     * @param name a font type name
+     * @param value a font type value
      */
     protected FontType(String name, int value) {
         this.name = name;
@@ -132,6 +136,11 @@ public class FontType {
      */
     public int getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
 }

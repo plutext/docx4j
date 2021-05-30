@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +20,30 @@
  * limitations under the License.
  */
 
-/* $Id: Type1FontLoader.java 746664 2009-02-22 12:40:44Z jeremias $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
+import java.awt.Rectangle;
 import java.awt.geom.RectangularShape;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CodePointMapping;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.fop.fonts.EmbeddingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
-import org.docx4j.fonts.fop.fonts.FontResolver;
 import org.docx4j.fonts.fop.fonts.FontType;
+import org.docx4j.fonts.fop.fonts.FontUris;
+import org.docx4j.fonts.fop.fonts.SingleByteEncoding;
 import org.docx4j.fonts.fop.fonts.SingleByteFont;
 
 /**
@@ -45,19 +51,27 @@ import org.docx4j.fonts.fop.fonts.SingleByteFont;
  */
 public class Type1FontLoader extends FontLoader {
 
+    private static final  Logger log = LoggerFactory.getLogger(Type1FontLoader.class);
+
     private SingleByteFont singleFont;
+
+    private EmbeddingMode embeddingMode;
+
+    private final FontUris fontUris;
 
     /**
      * Constructs a new Type 1 font loader.
-     * @param fontFileURI the URI to the PFB file of a Type 1 font
+     * @param fontUris the URI to the PFB file of a Type 1 font
      * @param embedded indicates whether the font is embedded or referenced
      * @param useKerning indicates whether to load kerning information if available
-     * @param resolver the font resolver used to resolve URIs
+     * @param resourceResolver the font resolver used to resolve URIs
      * @throws IOException In case of an I/O error
      */
-    public Type1FontLoader(String fontFileURI, boolean embedded, boolean useKerning,
-            FontResolver resolver) throws IOException {
-        super(fontFileURI, embedded, useKerning, resolver);
+    public Type1FontLoader(FontUris fontUris, boolean embedded, EmbeddingMode embeddingMode,
+            boolean useKerning, InternalResourceResolver resourceResolver) throws IOException {
+        super(fontUris.getEmbed(), embedded, useKerning, true, resourceResolver);
+        this.embeddingMode = embeddingMode;
+        this.fontUris = fontUris;
     }
 
     private String getPFMURI(String pfbURI) {
@@ -70,38 +84,54 @@ public class Type1FontLoader extends FontLoader {
     private static final String[] AFM_EXTENSIONS = new String[] {".AFM", ".afm", ".Afm"};
 
     /** {@inheritDoc} */
+    @Override
     protected void read() throws IOException {
         AFMFile afm = null;
         PFMFile pfm = null;
 
         InputStream afmIn = null;
-        for (int i = 0; i < AFM_EXTENSIONS.length; i++) {
-            try {
-                String afmUri = this.fontFileURI.substring(0, this.fontFileURI.length() - 4)
-                        + AFM_EXTENSIONS[i];
-                afmIn = openFontUri(resolver, afmUri);
-                if (afmIn != null) {
-                    break;
+        String fontFileStr = fontFileURI.toASCIIString();
+        String partialAfmUri = fontFileStr.substring(0, fontFileStr.length() - 4);
+        String afmUri = (fontUris.getAfm() != null) ? fontUris.getAfm().toASCIIString() : null;
+        if (afmUri == null) {
+            for (String afmExtension : AFM_EXTENSIONS) {
+                try {
+                    afmUri = partialAfmUri + afmExtension;
+                    afmIn = resourceResolver.getResource(afmUri);
+                    if (afmIn != null) {
+                        break;
+                    }
+                } catch (IOException ioe) {
+                    // Ignore, AFM probably not available under the URI
+                } catch (URISyntaxException e) {
+                    // Ignore, AFM probably not available under the URI
                 }
-            } catch (IOException ioe) {
-                //Ignore, AFM probably not available under the URI
+            }
+        } else {
+            try {
+                afmIn = resourceResolver.getResource(afmUri);
+            } catch (URISyntaxException e) {
+                throw new IOException(e);
             }
         }
         if (afmIn != null) {
             try {
                 AFMParser afmParser = new AFMParser();
-                afm = afmParser.parse(afmIn);
+                afm = afmParser.parse(afmIn, afmUri);
             } finally {
                 IOUtils.closeQuietly(afmIn);
             }
         }
 
-        String pfmUri = getPFMURI(this.fontFileURI);
+        String pfmUri = (fontUris.getPfm() == null) ? getPFMURI(fontFileStr) : fontUris.getPfm()
+                .toASCIIString();
         InputStream pfmIn = null;
         try {
-            pfmIn = openFontUri(resolver, pfmUri);
+            pfmIn = resourceResolver.getResource(pfmUri);
         } catch (IOException ioe) {
-            //Ignore, PFM probably not available under the URI
+            // Ignore, PFM probably not available under the URI
+        } catch (URISyntaxException e) {
+            // Ignore, PFM probably not available under the URI
         }
         if (pfmIn != null) {
             try {
@@ -109,7 +139,7 @@ public class Type1FontLoader extends FontLoader {
                 pfm.load(pfmIn);
             } catch (IOException ioe) {
                 if (afm == null) {
-                    //Ignore the exception if we have a valid PFM. PFM is only the fallback.
+                    // Ignore the exception if we have a valid PFM. PFM is only the fallback.
                     throw ioe;
                 }
             } finally {
@@ -129,11 +159,10 @@ public class Type1FontLoader extends FontLoader {
         if (afm == null && pfm == null) {
             throw new IllegalArgumentException("Need at least an AFM or a PFM!");
         }
-        singleFont = new SingleByteFont();
+        singleFont = new SingleByteFont(resourceResolver, embeddingMode);
         singleFont.setFontType(FontType.TYPE1);
-        singleFont.setResolver(this.resolver);
         if (this.embedded) {
-            singleFont.setEmbedFileName(this.fontFileURI);
+            singleFont.setEmbedURI(this.fontFileURI);
         }
         returnFont = singleFont;
 
@@ -143,12 +172,13 @@ public class Type1FontLoader extends FontLoader {
     }
 
     private void handleEncoding(AFMFile afm, PFMFile pfm) {
-        //Encoding
+        // Encoding
         if (afm != null) {
             String encoding = afm.getEncodingScheme();
             singleFont.setUseNativeEncoding(true);
             if ("AdobeStandardEncoding".equals(encoding)) {
                 singleFont.setEncoding(CodePointMapping.STANDARD_ENCODING);
+                addUnencodedBasedOnEncoding(afm);
             } else {
                 String effEncodingName;
                 if ("FontSpecific".equals(encoding)) {
@@ -162,47 +192,98 @@ public class Type1FontLoader extends FontLoader {
                 }
                 CodePointMapping mapping = buildCustomEncoding(effEncodingName, afm);
                 singleFont.setEncoding(mapping);
-            }
-            List charMetrics = afm.getCharMetrics();
-            for (int i = 0, c = afm.getCharCount(); i < c; i++) {
-                AFMCharMetrics metrics = (AFMCharMetrics)charMetrics.get(i);
-                if (!metrics.hasCharCode() && metrics.getCharacter() != null) {
-                    singleFont.addUnencodedCharacter(metrics.getCharacter(),
-                            (int)Math.round(metrics.getWidthX()));
-                }
+                addUnencodedBasedOnAFM(afm);
             }
         } else {
-            if (pfm.getCharSet() >= 0 && pfm.getCharSet() <= 2) {
+            if (pfm.getCharSet() == 2 && !pfm.getCharSetName().equals("Symbol")) {
+                int[] table = new int[256];
+                String[] charNameMap = new String[256];
+                int j = 0;
+                for (int i = pfm.getFirstChar(); i < pfm.getLastChar(); i++) {
+                    if (j < table.length) {
+                        table[j] = i;
+                        table[j + 1] = i;
+                        j += 2;
+                    }
+                    charNameMap[i] = String.format("x%03o", i);
+                }
+                CodePointMapping mapping  = new CodePointMapping("custom", table, charNameMap);
+                singleFont.setEncoding(mapping);
+            } else if (pfm.getCharSet() >= 0 && pfm.getCharSet() <= 2) {
                 singleFont.setEncoding(pfm.getCharSetName() + "Encoding");
             } else {
                 log.warn("The PFM reports an unsupported encoding ("
                         + pfm.getCharSetName() + "). The font may not work as expected.");
-                singleFont.setEncoding("WinAnsiEncoding"); //Try fallback, no guarantees!
+                singleFont.setEncoding("WinAnsiEncoding"); // Try fallback, no guarantees!
+            }
+        }
+    }
+
+    private Set<String> toGlyphSet(String[] glyphNames) {
+        Set<String> glyphSet = new java.util.HashSet<String>();
+        Collections.addAll(glyphSet, glyphNames);
+        return glyphSet;
+    }
+
+    /**
+     * Adds characters not encoded in the font's primary encoding. This method is used when we
+     * don't trust the AFM to expose the same encoding as the primary font.
+     * @param afm the AFM file.
+     */
+    private void addUnencodedBasedOnEncoding(AFMFile afm) {
+        SingleByteEncoding encoding = singleFont.getEncoding();
+        Set<String> glyphNames = toGlyphSet(encoding.getCharNameMap());
+        List<AFMCharMetrics> charMetrics = afm.getCharMetrics();
+        for (AFMCharMetrics metrics : charMetrics) {
+            String charName = metrics.getCharName();
+            if (charName != null && !glyphNames.contains(charName)) {
+                addUnencodedCharacter(singleFont, metrics);
+            }
+        }
+    }
+
+    private static void addUnencodedCharacter(SingleByteFont font, AFMCharMetrics metrics) {
+        font.addUnencodedCharacter(metrics.getCharacter(),
+                (int) Math.round(metrics.getWidthX()), metrics.getBBox());
+    }
+
+    /**
+     * Adds characters not encoded in the font's primary encoding. This method is used when
+     * the primary encoding is built based on the character codes in the AFM rather than
+     * the specified encoding (ex. with symbolic fonts).
+     * @param afm the AFM file
+     */
+    private void addUnencodedBasedOnAFM(AFMFile afm) {
+        List charMetrics = afm.getCharMetrics();
+        for (int i = 0, c = afm.getCharCount(); i < c; i++) {
+            AFMCharMetrics metrics = (AFMCharMetrics)charMetrics.get(i);
+            if (!metrics.hasCharCode() && metrics.getCharacter() != null) {
+                addUnencodedCharacter(singleFont, metrics);
             }
         }
     }
 
     private void handleFontName(AFMFile afm, PFMFile pfm) {
-        //Font name
+        // Font name
         if (afm != null) {
-            returnFont.setFontName(afm.getFontName()); //PostScript font name
+            returnFont.setFontName(afm.getFontName()); // PostScript font name
             returnFont.setFullName(afm.getFullName());
-            Set names = new java.util.HashSet();
+            Set<String> names = new HashSet<String>();
             names.add(afm.getFamilyName());
             returnFont.setFamilyNames(names);
         } else {
             returnFont.setFontName(pfm.getPostscriptName());
             String fullName = pfm.getPostscriptName();
-            fullName = fullName.replace('-', ' '); //Hack! Try to emulate full name
-            returnFont.setFullName(fullName); //emulate afm.getFullName()
-            Set names = new java.util.HashSet();
-            names.add(pfm.getWindowsName()); //emulate afm.getFamilyName()
+            fullName = fullName.replace('-', ' '); // Hack! Try to emulate full name
+            returnFont.setFullName(fullName); // emulate afm.getFullName()
+            Set<String> names = new HashSet<String>();
+            names.add(pfm.getWindowsName()); // emulate afm.getFamilyName()
             returnFont.setFamilyNames(names);
         }
     }
 
     private void handleMetrics(AFMFile afm, PFMFile pfm) {
-        //Basic metrics
+        // Basic metrics
         if (afm != null) {
             if (afm.getCapHeight() != null) {
                 returnFont.setCapHeight(afm.getCapHeight().intValue());
@@ -221,16 +302,19 @@ public class Type1FontLoader extends FontLoader {
             if (afm.getStdVW() != null) {
                 returnFont.setStemV(afm.getStdVW().intValue());
             } else {
-                returnFont.setStemV(80); //Arbitrary value
+                returnFont.setStemV(80); // Arbitrary value
             }
-            returnFont.setItalicAngle((int)afm.getWritingDirectionMetrics(0).getItalicAngle());
+            AFMWritingDirectionMetrics metrics = afm.getWritingDirectionMetrics(0);
+            returnFont.setItalicAngle((int) metrics.getItalicAngle());
+            returnFont.setUnderlinePosition(metrics.getUnderlinePosition().intValue());
+            returnFont.setUnderlineThickness(metrics.getUnderlineThickness().intValue());
         } else {
             returnFont.setFontBBox(pfm.getFontBBox());
             returnFont.setStemV(pfm.getStemV());
             returnFont.setItalicAngle(pfm.getItalicAngle());
         }
         if (pfm != null) {
-            //Sometimes the PFM has these metrics while the AFM doesn't (ex. Symbol)
+            // Sometimes the PFM has these metrics while the AFM doesn't (ex. Symbol)
             if (returnFont.getCapHeight() == 0) {
                 returnFont.setCapHeight(pfm.getCapHeight());
             }
@@ -245,8 +329,8 @@ public class Type1FontLoader extends FontLoader {
             }
         }
 
-        //Fallbacks when some crucial font metrics aren't available
-        //(the following are all optional in AFM, but FontBBox is always available)
+        // Fallbacks when some crucial font metrics aren't available
+        // (the following are all optional in AFM, but FontBBox is always available)
         if (returnFont.getXHeight(1) == 0) {
             int xHeight = 0;
             if (afm != null) {
@@ -254,7 +338,7 @@ public class Type1FontLoader extends FontLoader {
                 if (chm != null) {
                     RectangularShape rect = chm.getBBox();
                     if (rect != null) {
-                        xHeight = (int)Math.round(rect.getMinX());
+                        xHeight = (int) Math.round(rect.getMinX());
                     }
                 }
             }
@@ -270,7 +354,7 @@ public class Type1FontLoader extends FontLoader {
                 if (chm != null) {
                     RectangularShape rect = chm.getBBox();
                     if (rect != null) {
-                        asc = (int)Math.round(rect.getMinX());
+                        asc = (int) Math.round(rect.getMinX());
                     }
                 }
             }
@@ -286,7 +370,7 @@ public class Type1FontLoader extends FontLoader {
                 if (chm != null) {
                     RectangularShape rect = chm.getBBox();
                     if (rect != null) {
-                        desc = (int)Math.round(rect.getMinX());
+                        desc = (int) Math.round(rect.getMinX());
                     }
                 }
             }
@@ -303,30 +387,29 @@ public class Type1FontLoader extends FontLoader {
             String charSet = afm.getCharacterSet();
             int flags = 0;
             if ("Special".equals(charSet)) {
-                flags |= 4; //bit 3: Symbolic
+                flags |= 4; // bit 3: Symbolic
             } else {
                 if (singleFont.getEncoding().mapChar('A') == 'A') {
-                    //High likelyhood that the font is non-symbolic
-                    flags |= 32; //bit 6: Nonsymbolic
+                    // High likelyhood that the font is non-symbolic
+                    flags |= 32; // bit 6: Nonsymbolic
                 } else {
-                    flags |= 4; //bit 3: Symbolic
+                    flags |= 4; // bit 3: Symbolic
                 }
             }
             if (afm.getWritingDirectionMetrics(0).isFixedPitch()) {
-                flags |= 1; //bit 1: FixedPitch
+                flags |= 1; // bit 1: FixedPitch
             }
             if (afm.getWritingDirectionMetrics(0).getItalicAngle() != 0.0) {
-                flags |= 64; //bit 7: Italic
+                flags |= 64; // bit 7: Italic
             }
             returnFont.setFlags(flags);
 
             returnFont.setFirstChar(afm.getFirstChar());
             returnFont.setLastChar(afm.getLastChar());
-            Iterator iter = afm.getCharMetrics().iterator();
-            while (iter.hasNext()) {
-                AFMCharMetrics chm = (AFMCharMetrics)iter.next();
+            for (AFMCharMetrics chm : afm.getCharMetrics()) {
                 if (chm.hasCharCode()) {
-                    singleFont.setWidth(chm.getCharCode(), (int)Math.round(chm.getWidthX()));
+                    singleFont.setWidth(chm.getCharCode(), (int) Math.round(chm.getWidthX()));
+                    singleFont.setBoundingBox(chm.getCharCode(), chm.getBBox());
                 }
             }
             if (useKerning) {
@@ -337,7 +420,10 @@ public class Type1FontLoader extends FontLoader {
             returnFont.setFirstChar(pfm.getFirstChar());
             returnFont.setLastChar(pfm.getLastChar());
             for (short i = pfm.getFirstChar(); i <= pfm.getLastChar(); i++) {
-                singleFont.setWidth(i, pfm.getCharWidth(i));
+                int cw = pfm.getCharWidth(i);
+                singleFont.setWidth(i, cw);
+                int[] bbox = pfm.getFontBBox();
+                singleFont.setBoundingBox(i, new Rectangle(bbox[0], bbox[1], cw, bbox[3]));
             }
             if (useKerning) {
                 returnFont.replaceKerningMap(pfm.getKerning());
@@ -346,31 +432,28 @@ public class Type1FontLoader extends FontLoader {
     }
 
     private CodePointMapping buildCustomEncoding(String encodingName, AFMFile afm) {
-        List chars = afm.getCharMetrics();
         int mappingCount = 0;
-        //Just count the first time...
-        Iterator iter = chars.iterator();
-        while (iter.hasNext()) {
-            AFMCharMetrics charMetrics = (AFMCharMetrics)iter.next();
+        // Just count the first time...
+        List<AFMCharMetrics> chars = afm.getCharMetrics();
+        for (AFMCharMetrics charMetrics : chars) {
             if (charMetrics.getCharCode() >= 0) {
-                String u = charMetrics.getUnicodeSequence();
-                if (u != null && u.length() == 1) {
-                    mappingCount++;
-                }
+                mappingCount++;
             }
         }
-        //...and now build the table.
+        // ...and now build the table.
         int[] table = new int[mappingCount * 2];
         String[] charNameMap = new String[256];
-        iter = chars.iterator();
         int idx = 0;
-        while (iter.hasNext()) {
-            AFMCharMetrics charMetrics = (AFMCharMetrics)iter.next();
+        for (AFMCharMetrics charMetrics : chars) {
             if (charMetrics.getCharCode() >= 0) {
                 charNameMap[charMetrics.getCharCode()] = charMetrics.getCharName();
                 String unicodes = charMetrics.getUnicodeSequence();
                 if (unicodes == null) {
                     log.info("No Unicode mapping for glyph: " + charMetrics);
+                    table[idx] = charMetrics.getCharCode();
+                    idx++;
+                    table[idx] = charMetrics.getCharCode();
+                    idx++;
                 } else if (unicodes.length() == 1) {
                     table[idx] = charMetrics.getCharCode();
                     idx++;

@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,21 +20,27 @@
  * limitations under the License.
  */
 
-/* $Id: Font.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.fonts.CodePointMapping;
+import org.docx4j.fonts.fop.complexscripts.fonts.Positionable;
+import org.docx4j.fonts.fop.complexscripts.fonts.Substitutable;
+import org.docx4j.fonts.fop.render.java2d.CustomFontMetricsMapper;
+import org.docx4j.fonts.fop.util.CharUtilities;
 
 /**
  * This class holds font state information and provides access to the font
  * metrics.
  */
-public class Font {
+public class Font implements Substitutable, Positionable {
 
     /** Extra Bold font weight */
     public static final int WEIGHT_EXTRA_BOLD = 800;
@@ -69,7 +74,7 @@ public class Font {
                     "any", STYLE_NORMAL, WEIGHT_NORMAL, PRIORITY_DEFAULT);
 
     /** logger */
-    private  static Logger log = LoggerFactory.getLogger(Font.class);
+    private  static  Logger log = LoggerFactory.getLogger(Font.class);
 
     private final String fontName;
     private final FontTriplet triplet;
@@ -102,6 +107,14 @@ public class Font {
      */
     public FontMetrics getFontMetrics() {
         return this.metric;
+    }
+
+    /**
+     * Determines whether the font is a multibyte font.
+     * @return True if it is multibyte
+     */
+    public boolean isMultiByte() {
+        return getFontMetrics().isMultiByte();
     }
 
     /**
@@ -162,30 +175,45 @@ public class Font {
         return metric.hasKerningInfo();
     }
 
+    /** @return true if the font has feature (i.e., at least one lookup matches) */
+    public boolean hasFeature(int tableType, String script, String language, String feature) {
+        return metric.hasFeature(tableType, script, language, feature);
+    }
+
     /**
      * Returns the font's kerning table
      * @return the kerning table
      */
-    public Map getKerning() {
+    public Map<Integer, Map<Integer, Integer>> getKerning() {
         if (metric.hasKerningInfo()) {
             return metric.getKerningInfo();
         } else {
-            return java.util.Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
 
     /**
      * Returns the amount of kerning between two characters.
+     *
+     * The value returned measures in pt. So it is already adjusted for font size.
+     *
      * @param ch1 first character
      * @param ch2 second character
      * @return the distance to adjust for kerning, 0 if there's no kerning
      */
-    public int getKernValue(char ch1, char ch2) {
-        Map kernPair = (Map)getKerning().get(new Integer(ch1));
+    public int getKernValue(int ch1, int ch2) {
+        // Isolate surrogate pair
+        if ((ch1 >= 0xD800) && (ch1 <= 0xE000)) {
+            return 0;
+        } else if ((ch2 >= 0xD800) && (ch2 <= 0xE000)) {
+            return 0;
+        }
+
+        Map<Integer, Integer> kernPair = getKerning().get(ch1);
         if (kernPair != null) {
-            Integer width = (Integer)kernPair.get(new Integer(ch2));
+            Integer width = kernPair.get(ch2);
             if (width != null) {
-                return width.intValue();
+                return width * getFontSize() / 1000;
             }
         }
         return 0;
@@ -226,9 +254,29 @@ public class Font {
     }
 
     /**
+     * Map a unicode code point to a font character.
+     * Default uses CodePointMapping.
+     * @param cp code point to map
+     * @return the mapped character
+     */
+    public int mapCodePoint(int cp) {
+        FontMetrics fontMetrics = getRealFontMetrics();
+
+        if (fontMetrics instanceof CIDFont) {
+            return ((CIDFont) fontMetrics).mapCodePoint(cp);
+        }
+
+        if (CharUtilities.isBmpCodePoint(cp)) {
+            return mapChar((char) cp);
+        }
+
+        return Typeface.NOT_FOUND;
+    }
+
+    /**
      * Determines whether this font contains a particular character/glyph.
      * @param c character to check
-     * @return True if the character is supported, Falso otherwise
+     * @return True if the character is supported, False otherwise
      */
     public boolean hasChar(char c) {
         if (metric instanceof org.docx4j.fonts.fop.fonts.Typeface) {
@@ -240,11 +288,51 @@ public class Font {
     }
 
     /**
+     * Determines whether this font contains a particular code point/glyph.
+     * @param cp code point to check
+     * @return True if the code point is supported, False otherwise
+     */
+    public boolean hasCodePoint(int cp) {
+        FontMetrics realFont = getRealFontMetrics();
+
+        if (realFont instanceof CIDFont) {
+            return ((CIDFont) realFont).hasCodePoint(cp);
+        }
+
+        if (CharUtilities.isBmpCodePoint(cp)) {
+            return hasChar((char) cp);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the real underlying font if it is wrapped inside some container such as a {@link LazyFont} or a
+     * {@link CustomFontMetricsMapper}.
+     *
+     * @return instance of the font
+     */
+    private FontMetrics getRealFontMetrics() {
+        FontMetrics realFontMetrics = metric;
+
+        if (realFontMetrics instanceof CustomFontMetricsMapper) {
+            realFontMetrics = ((CustomFontMetricsMapper) realFontMetrics).getRealFont();
+        }
+
+        if (realFontMetrics instanceof LazyFont) {
+            return ((LazyFont) realFontMetrics).getRealFont();
+        }
+
+        return realFontMetrics;
+    }
+
+    /**
      * {@inheritDoc}
      */
+    @Override
     public String toString() {
-        StringBuffer sbuf = new StringBuffer();
-        sbuf.append('(');
+        StringBuffer sbuf = new StringBuffer(super.toString());
+        sbuf.append('{');
         /*
         sbuf.append(fontFamily);
         sbuf.append(',');*/
@@ -256,7 +344,7 @@ public class Font {
         sbuf.append(fontStyle);
         sbuf.append(',');
         sbuf.append(fontWeight);*/
-        sbuf.append(')');
+        sbuf.append('}');
         return sbuf.toString();
     }
 
@@ -266,7 +354,7 @@ public class Font {
      * This also performs some guessing on widths on various
      * versions of space that might not exists in the font.
      * @param c character to inspect
-     * @return the width of the character
+     * @return the width of the character or -1 if no width available
      */
     public int getCharWidth(char c) {
         int width;
@@ -331,6 +419,27 @@ public class Font {
     }
 
     /**
+     * Helper method for getting the width of a unicode char
+     * from the current fontstate.
+     * This also performs some guessing on widths on various
+     * versions of space that might not exists in the font.
+     * @param c character to inspect
+     * @return the width of the character or -1 if no width available
+     */
+    public int getCharWidth(int c) {
+        if (c < 0x10000) {
+            return getCharWidth((char) c);
+        }
+
+        if (hasCodePoint(c)) {
+            int mappedChar = mapCodePoint(c);
+            return getWidth(mappedChar);
+        }
+
+        return -1;
+    }
+
+    /**
      * Calculates the word width.
      * @param word text to get width for
      * @return the width of the text
@@ -349,6 +458,61 @@ public class Font {
         return width;
     }
 
+    /** {@inheritDoc} */
+    public boolean performsSubstitution() {
+        if (metric instanceof Substitutable) {
+            Substitutable s = (Substitutable) metric;
+            return s.performsSubstitution();
+        } else {
+            return false;
+        }
+    }
+
+    /** {@inheritDoc} */
+    public CharSequence performSubstitution(CharSequence cs,
+        String script, String language, List associations, boolean retainControls) {
+        if (metric instanceof Substitutable) {
+            Substitutable s = (Substitutable) metric;
+            return s.performSubstitution(cs, script, language, associations, retainControls);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public CharSequence reorderCombiningMarks(CharSequence cs, int[][] gpa,
+        String script, String language, List associations) {
+        if (metric instanceof Substitutable) {
+            Substitutable s = (Substitutable) metric;
+            return s.reorderCombiningMarks(cs, gpa, script, language, associations);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public boolean performsPositioning() {
+        if (metric instanceof Positionable) {
+            Positionable p = (Positionable) metric;
+            return p.performsPositioning();
+        } else {
+            return false;
+        }
+    }
+
+    /** {@inheritDoc} */
+    public int[][] performPositioning(CharSequence cs, String script, String language, int fontSize) {
+        if (metric instanceof Positionable) {
+            Positionable p = (Positionable) metric;
+            return p.performPositioning(cs, script, language, fontSize);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public int[][] performPositioning(CharSequence cs, String script, String language) {
+        return performPositioning(cs, script, language, fontSize);
+    }
+
 }
-
-

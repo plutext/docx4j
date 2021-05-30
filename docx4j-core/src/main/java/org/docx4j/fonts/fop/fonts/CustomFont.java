@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +20,23 @@
  * limitations under the License.
  */
 
-/* $Id: CustomFont.java 721430 2008-11-28 11:13:12Z acumiskey $ */
-
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.awt.Rectangle;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.transform.Source;
-
-import org.docx4j.fonts.foray.font.format.Panose;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 
 
 /**
@@ -46,52 +45,64 @@ import org.docx4j.fonts.foray.font.format.Panose;
 public abstract class CustomFont extends Typeface
             implements FontDescriptor, MutableFont {
 
-    private String fontName = null;
-    private String fullName = null;
-    private Set familyNames = null; //Set<String>
-    private String fontSubName = null;
-    private String embedFileName = null;
-    private String embedResourceName = null;
-    private FontResolver resolver = null;
+    /** Fallback thickness for underline and strikeout when not provided by the font. */
+    private static final int DEFAULT_LINE_THICKNESS = 50;
 
-    private int capHeight = 0;
-    private int xHeight = 0;
-    private int ascender = 0;
-    private int descender = 0;
+    private URI fontFileURI;
+    private String fontName;
+    private String fullName;
+    private Set<String> familyNames;
+    private String fontSubName;
+    private URI embedFileURI;
+    private String embedResourceName;
+    private final InternalResourceResolver resourceResolver;
+    private EmbeddingMode embeddingMode = EmbeddingMode.AUTO;
+
+    private int capHeight;
+    private int xHeight;
+    private int ascender;
+    private int descender;
     private int[] fontBBox = {0, 0, 0, 0};
     private int flags = 4;
-    private int weight = 0; //0 means unknown weight
-    private int stemV = 0;
-    private int italicAngle = 0;
-    private int missingWidth = 0;
+    private int weight; //0 means unknown weight
+    private int stemV;
+    private int italicAngle;
+    private int missingWidth;
     private FontType fontType = FontType.TYPE1;
-    private int firstChar = 0;
+    private int firstChar;
     private int lastChar = 255;
 
-    private Map kerning;
+    private int underlinePosition;
+
+    private int underlineThickness;
+
+    private int strikeoutPosition;
+
+    private int strikeoutThickness;
+
+    private Map<Integer, Map<Integer, Integer>> kerning;
 
     private boolean useKerning = true;
+    /** the character map, mapping Unicode ranges to glyph indices. */
+    protected List<CMapSegment> cmap = new ArrayList<CMapSegment>();
+    private boolean useAdvanced = true;
+    private boolean simulateStyle;
+    protected List<SimpleSingleByteEncoding> additionalEncodings;
+    protected Map<Character, SingleByteFont.UnencodedCharacter> unencodedCharacters;
 
-    private boolean isEmbeddable = true;
+    /**
+     * @param resourceResolver the URI resource resolver for controlling file access
+     */
+    public CustomFont(InternalResourceResolver resourceResolver) {
+        this.resourceResolver = resourceResolver;
+    }
 
-	public boolean isEmbeddable() {
-		return isEmbeddable;
-	}
 
-	public void setEmbeddable(boolean isEmbeddable) {
-		this.isEmbeddable = isEmbeddable;
-	}
+    /** {@inheritDoc} */
+    public URI getFontURI() {
+        return fontFileURI;
+    }
 
-	private Panose panose = null;
-
-	public Panose getPanose() {
-		return panose;
-	}
-
-	public void setPanose(Panose panose) {
-		this.panose = panose;
-	}
-    
     /** {@inheritDoc} */
     public String getFontName() {
         return fontName;
@@ -111,7 +122,7 @@ public abstract class CustomFont extends Typeface
      * Returns the font family names.
      * @return the font family names (a Set of Strings)
      */
-    public Set getFamilyNames() {
+    public Set<String> getFamilyNames() {
         return Collections.unmodifiableSet(this.familyNames);
     }
 
@@ -133,29 +144,31 @@ public abstract class CustomFont extends Typeface
     }
 
     /**
-     * Returns an URI representing an embeddable font file. The URI will often
-     * be a filename or an URL.
+     * Returns an URI representing an embeddable font file.
+     *
      * @return URI to an embeddable font file or null if not available.
      */
-    public String getEmbedFileName() {
-        return embedFileName;
+    public URI getEmbedFileURI() {
+        return embedFileURI;
     }
 
     /**
-     * Returns a Source representing an embeddable font file.
-     * @return Source for an embeddable font file
+
+     * Returns the embedding mode for this font.
+     * @return embedding mode
+     */
+    public EmbeddingMode getEmbeddingMode() {
+        return embeddingMode;
+    }
+
+    /**
+     * Returns an {@link InputStream} representing an embeddable font file.
+     *
+     * @return {@link InputStream} for an embeddable font file
      * @throws IOException if embedFileName is not null but Source is not found
      */
-    public Source getEmbedFileSource() throws IOException {
-        Source result = null;
-        if (resolver != null && embedFileName != null) {
-            result = resolver.resolve(embedFileName);
-            if (result == null) {
-                throw new IOException("Unable to resolve Source '"
-                        + embedFileName + "' for embedded font");
-            }
-        }
-        return result;
+    public InputStream getInputStream() throws IOException {
+        return resourceResolver.getResource(embedFileURI);
     }
 
     /**
@@ -308,15 +321,29 @@ public abstract class CustomFont extends Typeface
     /**
      * {@inheritDoc}
      */
-    public final Map getKerningInfo() {
+    public final Map<Integer, Map<Integer, Integer>> getKerningInfo() {
         if (hasKerningInfo()) {
             return kerning;
         } else {
-            return java.util.Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
 
+    /**
+     * Used to determine if advanced typographic features are enabled.
+     * By default, this is false, but may be overridden by subclasses.
+     * @return true if enabled.
+     */
+    public boolean isAdvancedEnabled() {
+        return useAdvanced;
+    }
+
     /* ---- MutableFont interface ---- */
+
+    /** {@inheritDoc} */
+    public void setFontURI(URI uri) {
+        this.fontFileURI = uri;
+    }
 
     /** {@inheritDoc} */
     public void setFontName(String name) {
@@ -329,8 +356,8 @@ public abstract class CustomFont extends Typeface
     }
 
     /** {@inheritDoc} */
-    public void setFamilyNames(Set names) {
-        this.familyNames = new java.util.HashSet(names);
+    public void setFamilyNames(Set<String> names) {
+        this.familyNames = new HashSet<String>(names);
     }
 
     /**
@@ -344,8 +371,8 @@ public abstract class CustomFont extends Typeface
     /**
      * {@inheritDoc}
      */
-    public void setEmbedFileName(String path) {
-        this.embedFileName = path;
+    public void setEmbedURI(URI path) {
+        this.embedFileURI = path;
     }
 
     /**
@@ -353,6 +380,13 @@ public abstract class CustomFont extends Typeface
      */
     public void setEmbedResourceName(String name) {
         this.embedResourceName = name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setEmbeddingMode(EmbeddingMode embeddingMode) {
+        this.embeddingMode = embeddingMode;
     }
 
     /**
@@ -459,32 +493,198 @@ public abstract class CustomFont extends Typeface
     }
 
     /**
-     * Sets the font resolver. Needed for URI resolution.
-     * @param resolver the font resolver
+     * {@inheritDoc}
      */
-    public void setResolver(FontResolver resolver) {
-        this.resolver = resolver;
+    public void setAdvancedEnabled(boolean enabled) {
+        this.useAdvanced = enabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setSimulateStyle(boolean enabled) {
+        this.simulateStyle = enabled;
+    }
+
+    public boolean getSimulateStyle() {
+        return this.simulateStyle;
     }
 
     /** {@inheritDoc} */
-    public void putKerningEntry(Integer key, Map value) {
+    public void putKerningEntry(Integer key, Map<Integer, Integer> value) {
         if (kerning == null) {
-            kerning = new java.util.HashMap();
+            kerning = new HashMap<Integer, Map<Integer, Integer>>();
         }
         this.kerning.put(key, value);
     }
 
     /**
      * Replaces the existing kerning map with a new one.
-     * @param kerningMap the kerning map (Map<Integer, Map<Integer, Integer>, the integers are
+     * @param kerningMap the kerning map (the integers are
      *                          character codes)
      */
-    public void replaceKerningMap(Map kerningMap) {
+    public void replaceKerningMap(Map<Integer, Map<Integer, Integer>> kerningMap) {
         if (kerningMap == null) {
-            this.kerning = Collections.EMPTY_MAP;
+            this.kerning = Collections.emptyMap();
         } else {
             this.kerning = kerningMap;
         }
     }
 
+    /**
+     * Sets the character map for this font. It maps all available Unicode characters
+     * to their glyph indices inside the font.
+     * @param cmap the character map
+     */
+    public void setCMap(CMapSegment[] cmap) {
+        this.cmap.clear();
+        Collections.addAll(this.cmap, cmap);
+    }
+
+    /**
+     * Returns the character map for this font. It maps all available Unicode characters
+     * to their glyph indices inside the font.
+     * @return the character map
+     */
+    public CMapSegment[] getCMap() {
+        return cmap.toArray(new CMapSegment[cmap.size()]);
+    }
+
+    public int getUnderlinePosition(int size) {
+        return (underlinePosition == 0)
+                ? getDescender(size) / 2
+                : size * underlinePosition;
+    }
+
+    public void setUnderlinePosition(int underlinePosition) {
+        this.underlinePosition = underlinePosition;
+    }
+
+    public int getUnderlineThickness(int size) {
+        return size * ((underlineThickness == 0) ? DEFAULT_LINE_THICKNESS : underlineThickness);
+    }
+
+    public void setUnderlineThickness(int underlineThickness) {
+        this.underlineThickness = underlineThickness;
+    }
+
+    public int getStrikeoutPosition(int size) {
+        return (strikeoutPosition == 0)
+                ? getXHeight(size) / 2
+                : size * strikeoutPosition;
+    }
+
+    public void setStrikeoutPosition(int strikeoutPosition) {
+        this.strikeoutPosition = strikeoutPosition;
+    }
+
+    public int getStrikeoutThickness(int size) {
+        return (strikeoutThickness == 0) ? getUnderlineThickness(size) : size * strikeoutThickness;
+    }
+
+    public void setStrikeoutThickness(int strikeoutThickness) {
+        this.strikeoutThickness = strikeoutThickness;
+    }
+
+    /**
+     * Returns a Map of used Glyphs.
+     * @return Map Map of used Glyphs
+     */
+    public abstract Map<Integer, Integer> getUsedGlyphs();
+
+    /**
+     * Returns the character from it's original glyph index in the font
+     * @param glyphIndex The original index of the character
+     * @return The character
+     */
+    public abstract char getUnicodeFromGID(int glyphIndex);
+
+    /**
+     * Indicates whether the encoding has additional encodings besides the primary encoding.
+     * @return true if there are additional encodings.
+     */
+    public boolean hasAdditionalEncodings() {
+        return (this.additionalEncodings != null) && (this.additionalEncodings.size() > 0);
+    }
+
+    /**
+     * Returns the number of additional encodings this single-byte font maintains.
+     * @return the number of additional encodings
+     */
+    public int getAdditionalEncodingCount() {
+        if (hasAdditionalEncodings()) {
+            return this.additionalEncodings.size();
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Returns an additional encoding.
+     * @param index the index of the additional encoding
+     * @return the additional encoding
+     * @throws IndexOutOfBoundsException if the index is out of bounds
+     */
+    public SimpleSingleByteEncoding getAdditionalEncoding(int index)
+            throws IndexOutOfBoundsException {
+        if (hasAdditionalEncodings()) {
+            return this.additionalEncodings.get(index);
+        } else {
+            throw new IndexOutOfBoundsException("No additional encodings available");
+        }
+    }
+
+    /**
+     * Adds an unencoded character (one that is not supported by the primary encoding).
+     * @param ch the named character
+     * @param width the width of the character
+     */
+    public void addUnencodedCharacter(NamedCharacter ch, int width, Rectangle bbox) {
+        if (this.unencodedCharacters == null) {
+            this.unencodedCharacters = new HashMap<Character, SingleByteFont.UnencodedCharacter>();
+        }
+        if (ch.hasSingleUnicodeValue()) {
+            SingleByteFont.UnencodedCharacter uc = new SingleByteFont.UnencodedCharacter(ch, width, bbox);
+            this.unencodedCharacters.put(ch.getSingleUnicodeValue(), uc);
+        } else {
+            //Cannot deal with unicode sequences, so ignore this character
+        }
+    }
+
+    /**
+     * Adds a character to additional encodings
+     * @param ch character to map
+     */
+    protected char mapUnencodedChar(char ch) {
+        if (this.unencodedCharacters != null) {
+            SingleByteFont.UnencodedCharacter unencoded = this.unencodedCharacters.get(ch);
+            if (unencoded != null) {
+                if (this.additionalEncodings == null) {
+                    this.additionalEncodings = new ArrayList<SimpleSingleByteEncoding>();
+                }
+                SimpleSingleByteEncoding encoding = null;
+                char mappedStart = 0;
+                int additionalsCount = this.additionalEncodings.size();
+                for (int i = 0; i < additionalsCount; i++) {
+                    mappedStart += 256;
+                    encoding = getAdditionalEncoding(i);
+                    char alt = encoding.mapChar(ch);
+                    if (alt != 0) {
+                        return (char)(mappedStart + alt);
+                    }
+                }
+                if (encoding != null && encoding.isFull()) {
+                    encoding = null;
+                }
+                if (encoding == null) {
+                    encoding = new SimpleSingleByteEncoding(
+                            getFontName() + "EncodingSupp" + (additionalsCount + 1));
+                    this.additionalEncodings.add(encoding);
+                    mappedStart += 256;
+                }
+                return (char)(mappedStart + encoding.addCharacter(unencoded.getCharacter()));
+            }
+        }
+        return 0;
+    }
 }
