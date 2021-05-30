@@ -140,7 +140,7 @@ public class FopConfigUtil {
 				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
 
 			    	if (mustSimulateStyle) {
-					    result.append("<font simulate-style=\"true\" embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );	
+					    result.append("<font simulate-style=\"true\" embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );	
 					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"normal\" /> "); 
 					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"italic\" weight=\"normal\" /> "); 
 					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"bold\" /> "); 
@@ -149,7 +149,7 @@ public class FopConfigUtil {
 			    	} else {
 			    		// If we don't have to simulate-style, fall back to the old way of doing things
 			    		
-					    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );			    					    		
+					    result.append("<font embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );			    					    		
 			    
 				    	// now add the first font triplet
 					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
@@ -180,7 +180,7 @@ public class FopConfigUtil {
 				    if (pf.getEmbedFontInfo().getSubFontName()!=null)
 				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
 				    
-				    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
+				    result.append("<font embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );
 				    	// now add the first font triplet
 					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
 					    addFontTriplet(result, fontTriplet);
@@ -201,7 +201,7 @@ public class FopConfigUtil {
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
 			addFontTriplet(result, pf.getName(), "normal", "bold");
 		    result.append("</font>" );
 		}
@@ -209,7 +209,7 @@ public class FopConfigUtil {
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold italic form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
 			addFontTriplet(result, pf.getName(), "italic", "bold");
 		    result.append("</font>" );
 		}
@@ -217,7 +217,7 @@ public class FopConfigUtil {
 		if (pfVariation==null) {
 			log.debug(fontName + " no italic form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
 			addFontTriplet(result, pf.getName(), "italic", "normal");
 		    result.append("</font>" );
 		}
