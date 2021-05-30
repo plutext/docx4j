@@ -168,7 +168,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	        	boolean simulateStyle = false;
 	        	boolean embedAsType1 = false;
 	        	
-	        	FontUris fontUris = new FontUris(new URI("file:" + path), null);
+	        	FontUris fontUris = new FontUris(new URI("file:" + path.replace(" ", "%20")), null);
 	        	
 	            customFont = FontLoader.loadFont(fontUris, 
 	            		subFontName, embedded, EmbeddingMode.AUTO, EncodingMode.AUTO, 
@@ -191,9 +191,9 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 
 		// Get this font as a PhysicalFont object; do NOT add it to physical fonts (since those are available to all documents)  
         try {
-					List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, new URI("file:" + path));
-					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
-
+			List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, 
+					new URI("file:" + path.replace(" ", "%20")));
+			return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 			// This needs to be done before populateFontMappings, 
 			// otherwise this font will be ignored, and references
