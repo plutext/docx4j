@@ -117,54 +117,109 @@ public class FopConfigUtil {
 	 * @return
 	 */
 	protected static void declareFonts(Mapper fontMapper, Set<String> fontsInUse, StringBuilder result) {
+		
+		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {
+
+			for (String fontName : fontsInUse) {		    
+			    
+			    PhysicalFont pf = fontMapper.get(fontName);
+			    String subFontAtt = "";
+			    
+			    if (pf==null) {
+			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
+			    	// We may still have eg Cambria-bold embedded, but ignore this for now
+			    } else {
+			    	
+			    	boolean mustSimulateStyle = false;
+			    	if (fontMapper.getBoldForm(fontName, pf)==null
+			    			|| fontMapper.getItalicForm(fontName, pf)==null) {
+			    		mustSimulateStyle = true;
+			    	}
+			    	
+				    if (pf.getEmbedFontInfo().getSubFontName()!=null)
+				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+
+			    	if (mustSimulateStyle) {
+					    result.append("<font simulate-style=\"true\" embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );	
+					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"normal\" /> "); 
+					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"italic\" weight=\"normal\" /> "); 
+					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"bold\" /> "); 
+					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"italic\" weight=\"bold\" /> "); 
+					    result.append("</font>" );
+			    	} else {
+			    		// If we don't have to simulate-style, fall back to the old way of doing things
+			    		
+					    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );			    					    		
+			    
+				    	// now add the first font triplet
+					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+					    addFontTriplet(result, fontTriplet);
+					    
+					    
+					    result.append("</font>" );
+			    
+					    addVariations(fontMapper, result, fontName, pf, subFontAtt);
+			    	}
+			    }
+			}
+			
+			
+		} else {
 
 		
-		for (String fontName : fontsInUse) {		    
-		    
-		    PhysicalFont pf = fontMapper.get(fontName);
-		    String subFontAtt = "";
-		    
-		    if (pf==null) {
-		    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
-		    	// We may still have eg Cambria-bold embedded
-		    } else {
-		    
-			    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-			    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+			for (String fontName : fontsInUse) {		    
 			    
-			    result.append("<font embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );
-			    	// now add the first font triplet
-				    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-				    addFontTriplet(result, fontTriplet);
-			    result.append("</font>" );
-		    }
-		    
-		    // bold, italic etc
-		    PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
-		    if (pfVariation==null) {
-		    	log.debug(fontName + " no bold form");
-		    } else {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "normal", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
-		    if (pfVariation==null) {
-		    	log.debug(fontName + " no bold italic form");
-		    } else {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = fontMapper.getItalicForm(fontName, pf);
-		    if (pfVariation==null) {
-		    	log.debug(fontName + " no italic form");
-		    } else {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "normal");
-			    result.append("</font>" );
-		    }
+			    PhysicalFont pf = fontMapper.get(fontName);
+			    String subFontAtt = "";
 			    
+			    if (pf==null) {
+			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
+			    	// We may still have eg Cambria-bold embedded
+			    } else {
+			    
+				    if (pf.getEmbedFontInfo().getSubFontName()!=null)
+				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+				    
+				    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
+				    	// now add the first font triplet
+					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+					    addFontTriplet(result, fontTriplet);
+				    result.append("</font>" );
+			    }
+			    
+			    addVariations(fontMapper, result, fontName, pf, subFontAtt);
+				    
+			}
+		
+		}
+	}
+
+	private static void addVariations(Mapper fontMapper, StringBuilder result, String fontName, PhysicalFont pf,
+			String subFontAtt) {
+		// bold, italic etc
+		PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
+		if (pfVariation==null) {
+			log.debug(fontName + " no bold form");
+		} else {
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+			addFontTriplet(result, pf.getName(), "normal", "bold");
+		    result.append("</font>" );
+		}
+		pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
+		if (pfVariation==null) {
+			log.debug(fontName + " no bold italic form");
+		} else {
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+			addFontTriplet(result, pf.getName(), "italic", "bold");
+		    result.append("</font>" );
+		}
+		pfVariation = fontMapper.getItalicForm(fontName, pf);
+		if (pfVariation==null) {
+			log.debug(fontName + " no italic form");
+		} else {
+		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
+			addFontTriplet(result, pf.getName(), "italic", "normal");
+		    result.append("</font>" );
 		}
 	}
 		

@@ -904,6 +904,9 @@ public class PropertyResolver {
 		}
 
 		//CTSignedTwipsMeasure spacing;
+		if (rPrToApply.getSpacing()!=null ) {
+			return true;			
+		}
 		//CTTextScale w;
 		//HpsMeasure kern;
 		//CTSignedHpsMeasure position;
@@ -1243,7 +1246,11 @@ public class PropertyResolver {
     	if (style.getBasedOn()==null) {
 			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
-        	String basedOnStyleName = style.getBasedOn().getVal();           	
+        	String basedOnStyleName = style.getBasedOn().getVal();
+//        	if (styleId.equals(basedOnStyleName)) {
+//    		log.error(XmlUtils.marshaltoString(style));
+//    		throw new RuntimeException(styleId + " is basedOn itself!");
+//    	} 
         	fillRPrStack( basedOnStyleName, rPrStack);
     	} else {
     		log.debug("No basedOn set for: " + style.getStyleId() );

@@ -83,6 +83,10 @@ So we have to build with Java 12 or later (currently 14) :-
 
 $ sudo archlinux-java set java-14-adoptopenjdk
 
+for import-XHTML:
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+    mvn install -P jdk-8-config
+
 -------------
 
 Start up the Git Bash session and go to your project directory.
@@ -294,6 +298,11 @@ Repeat above for -ImportXHTML
 Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 
  ant release  -buildfile etc/build.xml
+    
+Ideally you'd commit the branch with the actual released version number in the pom,
+then checkout -b an incremented version number,
+and in that branch do -SNAPSHOT.
+Here, also do:  git push -u origin [the incremented version number]
 
 Switch branch if necessary, eg:
 

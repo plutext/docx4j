@@ -102,7 +102,7 @@ public class ContentTypes {
 
 	public final static String OFFICEDOCUMENT_VBA_DATA =
 		"application/vnd.ms-word.vbaData+xml";
-
+	
 	/**
 	 * @since 3.2.0
 	 */
@@ -157,6 +157,8 @@ public class ContentTypes {
 
 	// PartName="/word/header[N].xml"
 	public final static String WORDPROCESSINGML_HEADER ="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+
+	public final static String MS_WORD_KEYMAP = "application/vnd.ms-word.keyMapCustomizations+xml";
 	
 	// PartName="/word/numbering.xml"
 	public final static String WORDPROCESSINGML_NUMBERING ="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"; 

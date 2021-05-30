@@ -7,19 +7,27 @@
 	targetNamespace="http://schemas.microsoft.com/office/word/2006/wordml"	
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
-	
-	<!-- From [MS-OFFMACRO2]  -->
-	
+
+
 	<!--
 	
 	JAXB INSTRUCTIONS
+	
+	You can generate this directly from here, or by using JAXB on wml.xsd, whichever you prefer.
 		  
 	  To generate java classes, you need xjc, from the JAXB 2.1 RI.
 	  
 				
 	 	  \Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer  office-word-2006-wordml.xsd -d temp -no-header -target 2.0 -extension
+
+	20210104: 		 
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer office-word-2006-wordml.xsd -d tmp  -no-header -target 2.0
+
 		 
 	-->	
+	
+	<!-- From [MS-OFFMACRO2]  -->
+	
 	
 	<xsd:import
 		namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -27,6 +35,8 @@
 	<xsd:import id="rel"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 		schemaLocation="../shared/shared-relationshipReference.xsd" /> <!-- orel.xsd -->
+		
+		
 		
 	<xsd:annotation>
 		<xsd:appinfo>
@@ -89,4 +99,120 @@
 				maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+<!-- 2021 01 04 From [MS-OI29500] 
+	preferred prefix is wne -->
+
+	<xsd:element name="tcg" type="CT_Tcg" />
+ 
+  <xsd:complexType name="CT_Tcg">
+   <xsd:sequence>
+     <xsd:element name="keymaps" type="CT_Keymaps" minOccurs="0" maxOccurs="1"/>
+     <xsd:element name="keymapsBad" type="CT_Keymaps" minOccurs="0" maxOccurs="1"/>
+     <xsd:element name="toolbars" type="CT_Toolbars" minOccurs="0" maxOccurs="1"/>
+     <xsd:element name="acds" type="CT_Acds" minOccurs="0" maxOccurs="1"/>
+   </xsd:sequence>
+ </xsd:complexType>
+ 
+ <!-- Allocated Commands -->
+  <xsd:complexType name="CT_Acds">
+   <xsd:sequence>
+     <xsd:element name="acd" type="CT_Acd" minOccurs="1" maxOccurs="unbounded"/>
+   </xsd:sequence>
+ </xsd:complexType>
+ 
+  <xsd:complexType name="CT_Acd">
+   <xsd:attribute name="argValue" type="ST_String"/>
+   <xsd:attribute name="fciBasedOn" type="ST_String"/>
+   <xsd:attribute name="fciIndexBasedOn" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="acdName" type="ST_String" use="required"/>
+ </xsd:complexType>
+ 
+  <xsd:simpleType name="ST_LongHexNumber">
+   <xsd:restriction base="xsd:hexBinary">
+     <xsd:length value="4"/>
+   </xsd:restriction>
+ </xsd:simpleType>
+ 
+  <xsd:simpleType name="ST_ShortHexNumber">
+   <xsd:restriction base="xsd:hexBinary">
+     <xsd:length value="2"/>
+   </xsd:restriction>
+ </xsd:simpleType>
+ 
+  <xsd:simpleType name="ST_String">
+   <xsd:restriction base="xsd:string"/>
+ </xsd:simpleType>
+ 
+ <!-- Key Map Customizations -->
+  <xsd:complexType name="CT_Keymaps">
+   <xsd:sequence>
+     <xsd:element name="keymap" type="CT_Keymap" minOccurs="1" maxOccurs="unbounded"/>
+   </xsd:sequence>
+ </xsd:complexType>
+ 
+  <xsd:complexType name="CT_Keymap">
+   <xsd:choice minOccurs="0" maxOccurs="1">
+     <xsd:element name="fci" type="CT_Fci"/>
+     <xsd:element name="macro" type="CT_MacroWll"/>
+     <xsd:element name="acd" type="CT_AcdKeymap"/>
+     <xsd:element name="wll" type="CT_MacroWll"/>
+     <xsd:element name="wch" type="CT_LongHexNumber"/>
+   </xsd:choice>
+   <xsd:attribute name="chmPrimary" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="chmSecondary" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="kcmPrimary" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="kcmSecondary" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="mask" type="ST_OnOff"/>
+ </xsd:complexType>
+ 
+  <xsd:simpleType name="ST_OnOff">
+   <xsd:restriction base="xsd:string">
+     <xsd:enumeration value="true"/>
+     <xsd:enumeration value="false"/>
+     <xsd:enumeration value="on"/>
+     <xsd:enumeration value="off"/>
+     <xsd:enumeration value="0"/>
+     <xsd:enumeration value="1"/>
+   </xsd:restriction>
+ </xsd:simpleType>
+ 
+  <xsd:complexType name="CT_Fci">
+   <xsd:attribute name="fciName" type="ST_String"/>
+   <xsd:attribute name="fciIndex" type="ST_ShortHexNumber"/>
+   <xsd:attribute name="swArg" type="ST_ShortHexNumber"/>
+ </xsd:complexType>
+ 
+ <xsd:complexType name="CT_AcdKeymap">
+   <xsd:attribute name="acdName" type="ST_String" use="required"/>
+ </xsd:complexType>
+ 
+  <xsd:complexType name="CT_MacroWll">
+   <xsd:attribute name="macroName" type="ST_String" use="required"/>
+ </xsd:complexType>
+  <xsd:complexType name="CT_LongHexNumber">
+   <xsd:attribute name="val" type="ST_LongHexNumber" use="required"/>
+ </xsd:complexType>
+ 
+ 
+ <!-- Legacy Toolbar Customizations -->
+  <xsd:complexType name="CT_Toolbars">
+   <xsd:sequence>
+     <xsd:element name="acdManifest" minOccurs="0" maxOccurs="1" type="CT_AcdManifest"/>
+     <xsd:element name="toolbarData" minOccurs="0" maxOccurs="1" type="CT_Rel"/>
+   </xsd:sequence>
+ </xsd:complexType>
+ 
+  <xsd:complexType name="CT_AcdManifest">
+   <xsd:sequence>
+     <xsd:element name="acdEntry" type="CT_AcdKeymap" minOccurs="1" maxOccurs="unbounded"/>
+   </xsd:sequence>
+ </xsd:complexType>
+  
+  <xsd:complexType name="CT_Rel">
+   <xsd:attribute ref="r:id" use="required"/>
+ </xsd:complexType>
+	
+	
+	
 </xsd:schema>

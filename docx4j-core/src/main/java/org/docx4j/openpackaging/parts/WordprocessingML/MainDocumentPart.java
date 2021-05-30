@@ -850,11 +850,22 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		return glossaryDocumentPart;
 	}
 
+	KeyMapCustomizationsPart keyMapCustomizationsPart;
+	/**
+	 * @since 8.2.8
+	 */	
+	public KeyMapCustomizationsPart getKeyMapCustomizationsPart() {
+		return keyMapCustomizationsPart;
+	}
+	
 	@Override
 	public boolean setPartShortcut(Part part, String relationshipType) {
 
 		if (relationshipType.equals(Namespaces.GLOSSARY_DOCUMENT)) {
 			glossaryDocumentPart = (GlossaryDocumentPart)part;
+			return true;			
+		} else if (relationshipType.equals(Namespaces.KEYMAP)) {
+			keyMapCustomizationsPart = (KeyMapCustomizationsPart)part;
 			return true;			
 		} else {
 			return super.setPartShortcut(part, relationshipType);

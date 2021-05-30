@@ -159,6 +159,9 @@ public class Namespaces {
 		"http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 	public final static String VBA_DATA_WORD = 
 		"http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
+
+	public final static String KEYMAP = 
+			"http://schemas.microsoft.com/office/2006/relationships/keyMapCustomizations";
 	
 	/**
 	 * @since 3.2.0
