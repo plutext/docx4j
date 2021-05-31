@@ -304,16 +304,14 @@ public class PhysicalFonts {
 		log.debug(nameAsInFontTablePart);
 
 		
-		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
-		/* FOP r644208 (Bugzilla #44737) 3/04/08 made this an array,
-		// so if you are using non-patched FOP, it needs to be at least this revision
-		// (but doesn't seem to be in FOP 0.95 binary?!) */ 
 		
 		if (embedFontInfoList==null) {
-			// Quite a few fonts exist that we can't seem to get
-			// EmbedFontInfo for. To be investigated.
-			log.warn("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
+			if (fontInfoFinder.log.isDebugEnabled()) {
+				log.warn("Aborting: " + fontUrl.toString() );				
+			} else {
+				log.warn("Aborting: " + fontUrl.toString() +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
+			}
 			return null;
 		}
 		

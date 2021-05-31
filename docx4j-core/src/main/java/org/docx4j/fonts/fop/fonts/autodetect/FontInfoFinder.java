@@ -58,7 +58,7 @@ import org.docx4j.fonts.fop.fonts.truetype.TTFFile;
 public class FontInfoFinder {
 
     /** logging instance */
-    private final  Logger log = LoggerFactory.getLogger(FontInfoFinder.class);
+    public final  Logger log = LoggerFactory.getLogger(FontInfoFinder.class);
 
     private FontEventListener eventListener;
 
@@ -188,10 +188,10 @@ public class FontInfoFinder {
                     return fontInfos;
                 }
             // is this a previously failed parsed font?
+            } else if (log.isDebugEnabled() ) {
+            	// Always retry failed fonts (or newly installed ones of course)
             } else if (fontCache.isFailedFont(embedStr, fileLastModified)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Skipping font file that failed to load previously: " + embedUri);
-                }
+                log.warn("Skipping font file that failed to load previously: " + embedUri);
                 return null;
             }
         }

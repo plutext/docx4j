@@ -30,11 +30,16 @@ import java.util.List;
 
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adds a list of fonts to a given font info list
  */
 public class FontAdder {
+	
+	protected static Logger log = LoggerFactory.getLogger(FontAdder.class);
+	
     private final FontEventListener listener;
     private final InternalResourceResolver resourceResolver;
     private final FontManager manager;
@@ -67,6 +72,11 @@ public class FontAdder {
         for (URL fontURL : fontURLList) {
             EmbedFontInfo[] embedFontInfos = finder.find(fontURL.toURI(), resourceResolver, cache);
             if (embedFontInfos == null) {
+    			if (finder.log.isDebugEnabled()) {
+    				log.warn("Aborting: " + fontURL.toString() );				
+    			} else {
+    				log.warn("Aborting: " + fontURL.toString() +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
+    			}
                 continue;
             }
             for (EmbedFontInfo fontInfo : embedFontInfos) {

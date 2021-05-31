@@ -265,7 +265,7 @@ public final class GlyphClassTable extends GlyphMappingTable implements GlyphCla
     private static class CoverageSetClassTable extends GlyphMappingTable.EmptyMappingTable implements GlyphClassMapping {
         private static final  Logger log = LoggerFactory.getLogger(CoverageSetClassTable.class);
         public CoverageSetClassTable(List entries) {
-            log.warn("coverage set class table not yet supported");
+            log.info("coverage set class table not yet supported");
         }
         /** {@inheritDoc} */
         public int getType() {
