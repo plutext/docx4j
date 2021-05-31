@@ -2,6 +2,36 @@ CHANGELOG
 =========
 
 
+Version 8.3.0  new deps:  fontbox and fop-events
+==============
+
+Release date
+------------
+
+31 May 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+mayangsong
+
+
+Changes in Version 8.3.0 
+-------------------------
+
+PDF via FO: Update font discovery to FOP as of 18 Dec 2020
+
+Where bold/italic font variations are not available, use fop's simulate-style to  generate bold and oblique looking glyphs for PDF output.
+
+Support rPr spacing in PDF and HTML output, XHTML import.
+
+Rework FlatOpcXmlCreator to prevent marshaller elevating namespace decs to the package element.  Fixes #444
+
+Bump commons-compress to 1.20; fop to 2.5
+
+
 Version 8.2.9  namespaces required in documents created using recent Word updates
 ==============
 
