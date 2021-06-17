@@ -48,6 +48,25 @@ public abstract class AbstractWmlExporter<CS extends AbstractConversionSettings,
 		if (wmlPackage == null) {
 			throw new Docx4JException("Missing WordprocessingMLPackage in the conversion settings");
 		}
+		else if (wmlPackage.getMainDocumentPart() == null) {
+			throw new Docx4JException("MainDocumentPart missing");
+		}
+		else if (wmlPackage.getMainDocumentPart().getContents() == null
+				|| wmlPackage.getMainDocumentPart().getContents().getBody() == null
+				|| wmlPackage.getMainDocumentPart().getContents().getBody().getContent().size() == 0
+				) {
+			
+			/* Would result in:
+			 * 
+				Caused by: org.apache.fop.fo.ValidationException: null:1:1602: "fo:flow" is missing child elements. Required content model: marker* (%block;)+ (See position 1:1602)
+					at org.apache.fop.events.ValidationExceptionFactory.createException(ValidationExceptionFactory.java:38)
+					at org.apache.fop.events.EventExceptionManager.throwException(EventExceptionManager.java:58)
+					at org.apache.fop.events.DefaultEventBroadcaster$1.invoke(DefaultEventBroadcaster.java:173)
+					at com.sun.proxy.$Proxy36.missingChildElement(Unknown Source)
+					at org.apache.fop.fo.FONode.missingChildElementError(FONode.java:608)
+				 */
+			throw new Docx4JException("MainDocumentPart empty");
+		}
 		return Preprocess.process(wmlPackage, conversionSettings.getFeatures());
 	}
 
