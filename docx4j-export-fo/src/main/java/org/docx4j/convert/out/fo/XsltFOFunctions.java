@@ -185,6 +185,9 @@ public class XsltFOFunctions {
     		// Note that it doesn't seem to be necessary for leader in TOC, but it doesn't hurt
 			block.setAttribute("text-align-last", "justify");
     	}
+
+		block.setAttribute("hyphenate", "true");
+    	
     	
     	return df;
     }
