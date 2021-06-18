@@ -344,6 +344,10 @@ public class XsltFOFunctions {
             			hm.setVal( pPrDirect.getRPr().getSz().getVal() ); // does this suffice as a copy?
                 		fontSzOnlyRPr.setSz(hm);
             		}
+            		if (pPrDirect.getRPr()!=null) {
+            			// Assume no need to clone
+            			fontSzOnlyRPr.setLang(pPrDirect.getRPr().getLang());
+            		}
             		
             		rPr = propertyResolver.getEffectiveRPr(fontSzOnlyRPr, pPrDirect);
             		
