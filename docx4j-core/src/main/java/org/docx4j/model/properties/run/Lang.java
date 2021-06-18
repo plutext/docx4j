@@ -63,13 +63,15 @@ public class Lang extends AbstractRunProperty {
 	public void setXslFO(Element foElement) {
 		
 		String val = ((CTLanguage)this.getObject()).getVal();
+		
+		if (val!=null) {
 
-		String lang = val.substring(0, val.indexOf("-"));
-		String country = val.substring(val.indexOf("-")+1);
-		
-		foElement.setAttribute(FO_NAME, lang );
-		foElement.setAttribute("country", country );
-		
+			String lang = val.substring(0, val.indexOf("-"));
+			String country = val.substring(val.indexOf("-")+1);
+			
+			foElement.setAttribute(FO_NAME, lang );
+			foElement.setAttribute("country", country );
+		}
 	}
 
 	@Override
