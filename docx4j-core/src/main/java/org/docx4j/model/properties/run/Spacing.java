@@ -63,7 +63,7 @@ public class Spacing extends AbstractRunProperty {
 		short ignored = 1;
 		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
 		if (fVal==0f) {
-			this.setObject(BigInteger.ZERO);
+			this.setObject(null);
 			return;
 		}
 
@@ -86,10 +86,12 @@ public class Spacing extends AbstractRunProperty {
 			twip = UnitsOfMeasurement.pxToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
 			log.error("No support for unit: CSS_NUMBER ");
-			twip = 0;			
+			this.setObject(null);
+			return;
 		} else {
 			log.error("No support for unit " + type);
-			twip = 0;
+			this.setObject(null);
+			return;
 		}
 		CTSignedTwipsMeasure spacing = Context.getWmlObjectFactory().createCTSignedTwipsMeasure();
 		spacing.setVal(BigInteger.valueOf(twip));
@@ -99,6 +101,7 @@ public class Spacing extends AbstractRunProperty {
 
 	@Override
 	public String getCssProperty() {
+		if (this.getObject()==null) return null; 
 		return  composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(
 				((CTSignedTwipsMeasure)this.getObject()).getVal().intValue()) );		
 	}
@@ -106,13 +109,17 @@ public class Spacing extends AbstractRunProperty {
 
 	@Override
 	public void setXslFO(Element foElement) {
-		foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(
-				((CTSignedTwipsMeasure)this.getObject()).getVal().intValue()) );		
+		if (this.getObject()!=null) {
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(
+					((CTSignedTwipsMeasure)this.getObject()).getVal().intValue()) );
+		}
 	}
 
 	@Override
 	public void set(RPr rPr) {
-		rPr.setSpacing((CTSignedTwipsMeasure)this.getObject() );
+		if (this.getObject()!=null) {
+			rPr.setSpacing((CTSignedTwipsMeasure)this.getObject() );
+		}
 	}
 
 	@Override
