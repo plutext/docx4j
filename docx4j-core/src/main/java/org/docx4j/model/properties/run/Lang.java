@@ -62,6 +62,8 @@ public class Lang extends AbstractRunProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 		
+		if (this.getObject()==null) return;
+		
 		String val = ((CTLanguage)this.getObject()).getVal();
 		
 		if (val!=null) {
@@ -81,6 +83,7 @@ public class Lang extends AbstractRunProperty {
 
 	@Override
 	public void set(CTTextCharacterProperties rPr) {
+		if (this.getObject()==null) return;
 		rPr.setLang(((CTLanguage)this.getObject()).getVal());
 		
 	}
