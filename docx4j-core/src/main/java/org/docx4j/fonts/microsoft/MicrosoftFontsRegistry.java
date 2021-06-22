@@ -4,10 +4,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
-
+import org.docx4j.jaxb.generic.ContextHelper;
 import org.docx4j.utils.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,8 @@ public class MicrosoftFontsRegistry {
 //		filenamesToMsFontNames = new HashMap<String, String>();
 		
 		java.lang.ClassLoader classLoader = MicrosoftFontsRegistry.class.getClassLoader();		
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft", classLoader);
+		JAXBContext msFontsContext = ContextHelper
+				.createContext("org.docx4j.fonts.microsoft", classLoader, null);
 		
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());

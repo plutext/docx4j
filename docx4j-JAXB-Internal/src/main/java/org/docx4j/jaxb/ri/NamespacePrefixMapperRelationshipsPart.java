@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.jaxb.suninternal;
+package org.docx4j.jaxb.ri;
 
 import org.docx4j.jaxb.McIgnorableNamespaceDeclarator;
 import org.docx4j.jaxb.NamespacePrefixMapperInterface;

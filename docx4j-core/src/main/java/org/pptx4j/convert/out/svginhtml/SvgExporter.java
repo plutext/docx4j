@@ -1,7 +1,6 @@
 package org.pptx4j.convert.out.svginhtml;
 
 import java.io.ByteArrayOutputStream;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -10,13 +9,13 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
+import org.docx4j.jaxb.generic.ContextHelper;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
@@ -71,7 +70,8 @@ public class SvgExporter {
 	static {
 		
 		try {
-			jcSVG = JAXBContext.newInstance("org.plutext.jaxb.svg11");
+			jcSVG = ContextHelper
+					.createContext("org.plutext.jaxb.svg11", SvgExporter.class.getClassLoader(), null);
 			oFactory = new ObjectFactory();
 
 			Source xsltSource = new StreamSource(

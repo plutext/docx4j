@@ -27,12 +27,10 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-
 import org.apache.commons.io.IOUtils;
-import org.docx4j.utils.ResourceUtils;
+import org.docx4j.jaxb.generic.ContextHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +101,7 @@ public class Context {
 		
       
       try { 
-			// JAXBContext.newInstance uses the context class loader of the current thread. 
+			// ContextFactory.createContext uses the context class loader of the current thread.
 			// To specify the use of a different class loader, 
 			// either set it via the Thread.setContextClassLoader() api 
 			// or use the newInstance method.
@@ -117,7 +115,7 @@ public class Context {
     	  
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
-			tempContext = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
+			tempContext = ContextHelper.createContext("org.docx4j.wml:org.docx4j.w14:org.docx4j.w15:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2006.wordml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chart.x2007:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
 					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
@@ -222,21 +220,21 @@ public class Context {
 			} else {
 				log.warn("Using unexpected JAXB: " + tempContext.getClass().getName());
 			}
+
+			jcThemePart = tempContext; //ContextHelper.createContext("org.docx4j.dml",classLoader );
+			jcDocPropsCore = ContextHelper.createContext("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsCustom = ContextHelper.createContext("org.docx4j.docProps.custom",classLoader, ProviderProperties.getProviderProperties() );
+			jcDocPropsExtended = ContextHelper.createContext("org.docx4j.docProps.extended",classLoader, ProviderProperties.getProviderProperties() );
+			jcXmlPackage = ContextHelper.createContext("org.docx4j.xmlPackage",classLoader, ProviderProperties.getProviderProperties() );
+			jcRelationships = ContextHelper.createContext("org.docx4j.relationships",classLoader, ProviderProperties.getProviderProperties() );
+			jcCustomXmlProperties = ContextHelper.createContext("org.docx4j.customXmlProperties",classLoader, ProviderProperties.getProviderProperties() );
+			jcContentTypes = ContextHelper.createContext("org.docx4j.openpackaging.contenttype",classLoader, ProviderProperties.getProviderProperties() );
 			
-			jcThemePart = tempContext; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader, ProviderProperties.getProviderProperties() );
-			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader, ProviderProperties.getProviderProperties() );
-			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader, ProviderProperties.getProviderProperties() );
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader, ProviderProperties.getProviderProperties() );
-			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader, ProviderProperties.getProviderProperties() );
-			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader, ProviderProperties.getProviderProperties() );
-			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader, ProviderProperties.getProviderProperties() );
-			
-			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader, ProviderProperties.getProviderProperties() );
+			jcSectionModel = ContextHelper.createContext("org.docx4j.model.structure.jaxb",classLoader, ProviderProperties.getProviderProperties() );
 			
 			try {
-				//jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
-				jcEncryption = JAXBContext.newInstance(
+				//jcXmlDSig = ContextHelper.createContext("org.plutext.jaxb.xmldsig",classLoader );
+				jcEncryption = ContextHelper.createContext(
 						 "org.docx4j.com.microsoft.schemas.office.x2006.encryption:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
@@ -245,7 +243,7 @@ public class Context {
 				log.error(e.getMessage());
 			}
 
-			jcMCE = JAXBContext.newInstance("org.docx4j.mce",classLoader, ProviderProperties.getProviderProperties() );
+			jcMCE = ContextHelper.createContext("org.docx4j.mce",classLoader, ProviderProperties.getProviderProperties() );
 			
 			log.debug(".. other contexts loaded ..");
 										
@@ -274,7 +272,7 @@ public class Context {
 				Context tmp = new Context();
 				java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
 
-				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
+				jcXslFo = ContextHelper.createContext("org.plutext.jaxb.xslfo",classLoader, null);
 				
 			} catch (JAXBException ex) {
 	      log.error("Cannot determine XSL-FO context", ex);

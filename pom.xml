@@ -42,7 +42,8 @@
         
         <module>docx4j-JAXB-MOXy</module>
         <module>docx4j-JAXB-ReferenceImpl</module>
-        
+        <module>docx4j-JAXB-Glassfish</module>
+
         <module>docx4j-samples-resources</module>
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-docx-diffx</module>
