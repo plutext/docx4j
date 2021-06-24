@@ -79,8 +79,6 @@
 						    org.apache.commons.codec,
 						    org.apache.commons.compress,
 						    org.apache.commons.lang3,
-						    org.apache.httpcomponents.httpclient,
-						    org.apache.httpcomponents.httpcore,
     
                             org.apache.commons.io,
                             org.apache.commons.io.filefilter,
@@ -281,22 +279,7 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version> <!--  2.2 works -->
-		</dependency>
-		
-		<!-- you can comment out if you don't want
-			 to use Plutext's commercial PDF Converter.	
-		 -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.8</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>        
-            </exclusions>
-        </dependency>
+		</dependency>		
 						
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

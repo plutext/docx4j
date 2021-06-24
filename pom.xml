@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.0</revision>
+		<revision>8.3.1-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -57,6 +57,9 @@
         <module>docx4j-samples-documents4j-local</module>        
         
         <module>docx4j-bundle</module>        
+        
+        <module>docx4j-legacy-service</module>        
+        
     </modules>
 	
 	<description>

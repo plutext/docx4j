@@ -162,6 +162,20 @@ public class ConverterHttp implements Converter {
 	}
 
 	/**
+	 * Convert docx byte array to PDF, streaming result to OutputStream os.
+	 * 
+	 * @param bytesIn
+	 * @param os
+	 * @throws IOException
+	 * @throws ConversionException
+	 * @since 8.3.1
+	 */
+	public void convert(byte[] bytesIn, OutputStream os) throws IOException, ConversionException {
+		
+		convert(bytesIn, Format.DOCX, Format.PDF, os);
+	}
+
+	/**
 	 * Convert byte array fromFormat to toFormat, streaming result to OutputStream os.
 	 * 
 	 * fromFormat supported: DOC, DOCX
@@ -194,7 +208,7 @@ public class ConverterHttp implements Converter {
         }
 		
 	}
-
+	
 	/**
 	 * @param httpclient
 	 * @param httppost
