@@ -11,6 +11,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.vml.CTTextbox;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
@@ -163,7 +164,7 @@ public class FieldUpdater {
 					Text t = Context.getWmlObjectFactory().createText();
 					t.setValue(val);
 					// t.setSpace(value) //TODO
-					r.getContent().add(t);
+					setSimpleFieldConent(r, val);
 					
 	//				System.out.println(XmlUtils.marshaltoString(simpleField, true, true));
 				}
@@ -177,6 +178,13 @@ public class FieldUpdater {
 		
 	}
 	
+	protected void setSimpleFieldConent(R r, String val) {
+		Text t = Context.getWmlObjectFactory().createText();
+		t.setValue(val);
+		// t.setSpace(value) //TODO
+		r.getContent().add(t);
+	}
+
 	private R getFirstRun(List<Object> content) {
 		
 		for (Object o : content) {
@@ -215,6 +223,10 @@ public class FieldUpdater {
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
 //				log.debug("NewP length: " + newP.getContent().size() );
 				((java.util.List)p.getParent()).set(index, newP);				
+			} else if (p.getParent() instanceof CTTextbox) {
+				index = ((CTTextbox) p.getParent()).getTxbxContent().getContent().indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				((CTTextbox) p.getParent()).getTxbxContent().getContent().set(index, newP);
 			} else {
 				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
 			}
