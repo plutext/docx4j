@@ -946,12 +946,12 @@ public class Docx4J {
 		// so docx4j-core doesn't depend on docx4j-export-documents4j-remote
 		
 		try {
-			Class<?> clazz = Class.forName("org.docx4j.convert.out.documents4j.remote.Documents4jRemoteExporter");			
+			Class<?> clazz = Class.forName("org.docx4j.documents4j.remote.Documents4jRemoteServices");			
 			Method method = clazz.getMethod("getInstance", null);
 			return (Exporter<Documents4jConversionSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			throw new Docx4JException("org.docx4j.convert.out.documents4j.remote.Documents4jRemoteExporter not found; "
+			throw new Docx4JException("\"org.docx4j.documents4j.remote.Documents4jRemoteServices not found; "
 					+ "if you want it, add docx4j-export-documents4j-remote to your path.  " + "/n" + e.getMessage(), e);
 		}			
 		
@@ -962,12 +962,12 @@ public class Docx4J {
 		// so docx4j-core doesn't depend on docx4j-export-documents4j-local
 		
 		try {
-			Class<?> clazz = Class.forName("org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter");			
+			Class<?> clazz = Class.forName("org.docx4j.documents4j.local.Documents4jLocalServices");			
 			Method method = clazz.getMethod("getInstance", null);
 			return (Exporter<Documents4jConversionSettings>)method.invoke(null, null);
 			
 		} catch (Exception e) {
-			throw new Docx4JException("org.docx4j.convert.out.documents4j.local.Documents4jLocalExporter not found; "
+			throw new Docx4JException("org.docx4j.documents4j.local.Documents4jLocalServices not found; "
 					+ "if you want it, add docx4j-export-documents4j-local to your path.  " + "/n" + e.getMessage(), e);
 		}			
 		
