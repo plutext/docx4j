@@ -18,7 +18,7 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.3.0"/>
+	<property name="version" value="8.3.1"/>
 	<property name="importxhtml-version" value="8.2.1"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
@@ -101,11 +101,6 @@
 		<pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.20/commons-compress-1.20.jar"/>
 		<pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
 		<pathelement location="${m2Repository}/commons-io/commons-io/2.6/commons-io-2.6.jar"/>
-		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
-		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
 		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
 
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
@@ -136,6 +131,18 @@
 		-->
 
 	</path>
+
+
+<!-- docx4j-legacy-service (in 8.3.1) uses the following, but we don't add them to the zip.  They can be found in earlier
+     zio distributions.
+
+		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
+		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
+
+-->
 
 
 	<path id="docx4j-export-fo.classpath">

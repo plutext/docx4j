@@ -2,6 +2,35 @@ CHANGELOG
 =========
 
 
+
+Version 8.3.1  
+==============
+
+Release date
+------------
+
+12 July 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.3.1 
+-------------------------
+
+Fix known regressions in v8.3.0
+
+Concurrency fix in NamespacePrefixMapper (most obvious with MOXy); fixes #464
+
+PDF via FO: Output hyphenate, language and country attributes to support hyphenation in PDF output
+
+Move legacy PDF converter out of docx4j-core, reducing core deps
+
+
+
 Version 8.3.0  new deps:  fontbox and fop-events
 ==============
 
