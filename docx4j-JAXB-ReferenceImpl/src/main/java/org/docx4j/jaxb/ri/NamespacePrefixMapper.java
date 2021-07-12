@@ -28,9 +28,9 @@ import org.docx4j.jaxb.NamespacePrefixMappings;
 public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper 
 	implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
-	private String mcIgnorable;
+	private ThreadLocal<String> mcIgnorable = new ThreadLocal<String>();
 	public void setMcIgnorable(String mcIgnorable) {
-		this.mcIgnorable = mcIgnorable;
+		this.mcIgnorable.set(mcIgnorable);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
      *      JAXB RI 1.0.2 
      */
     public String[] getPreDeclaredNamespaceUris() {
-    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable);
+    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable.get());
     }
     
     /**

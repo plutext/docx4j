@@ -29,9 +29,9 @@ public class NamespacePrefixMapper extends com.sun.xml.internal.bind.marshaller.
 
 	// Must use 'internal' for Java 6
 	
-	private String mcIgnorable;
+	private ThreadLocal<String> mcIgnorable = new ThreadLocal<String>();
 	public void setMcIgnorable(String mcIgnorable) {
-		this.mcIgnorable = mcIgnorable;
+		this.mcIgnorable.set(mcIgnorable);
 	}
 
 	
@@ -125,7 +125,7 @@ public class NamespacePrefixMapper extends com.sun.xml.internal.bind.marshaller.
      *      JAXB RI 1.0.2 
      */
     public String[] getPreDeclaredNamespaceUris() {
-    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable);
+    	return NamespacePrefixMapperUtils.getPreDeclaredNamespaceUris(mcIgnorable.get());
     }
     /* like getPreDeclaredNamespaceUris2(),
      * this can cause fatal duplicate namespace declarations, 
