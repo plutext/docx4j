@@ -28,7 +28,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,9 +61,6 @@ import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * This class creates and populates a table of contents.
@@ -720,32 +716,18 @@ public class TocGenerator {
 		 */
 		
 		byte[] json = baos.toByteArray();
-		
-		Map<String,Integer> map = new HashMap<String,Integer>();
-		ObjectMapper m = new ObjectMapper();
-		
-		JsonNode rootNode;
 		try {
-			rootNode = m.readTree(json);
+			Class<?> clazz = Class.forName("org.docx4j.services.client.JsonUtil");		
+			Method method = clazz.getMethod("bytesToMap", byte[].class);
+			Map<String,Integer> map = (Map<String,Integer>)method.invoke(null, json);
+			log.debug("page number map size " + map.size());
+			return map;
 		} catch (Exception e) {
 			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
 		}
-		JsonNode bookmarksNode = rootNode.path("bookmarks");
-		
-		Iterator<Map.Entry<String, JsonNode>> bookmarksValueObj = bookmarksNode.fields();
-		while (bookmarksValueObj.hasNext()) {
-			Map.Entry<String, JsonNode> entry = bookmarksValueObj.next();
-			if (entry.getValue()==null) {
-				log.warn("Null page number computed for bookmark " + entry.getKey());
-			}
-			map.put(entry.getKey(), new Integer(entry.getValue().asInt()));
-		}		
-		
-		log.debug("page number map size " + map.size());
-			
-		return map;
 
     }
+    
     
     /**
      * Invoke FOP to calculate page numbers
