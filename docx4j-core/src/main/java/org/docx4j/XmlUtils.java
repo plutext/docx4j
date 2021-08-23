@@ -784,15 +784,20 @@ public class XmlUtils {
 	 * @param o
 	 * @since 3.1.1
 	 */
-	private static String setMcIgnorable(McIgnorableNamespaceDeclarator prefixMapper, Object o) {
+	private static String setMcIgnorable(McIgnorableNamespaceDeclarator prefixMapper, Object o, 
+			String mcChoiceNamespace ) {
 
 		if (o instanceof org.docx4j.wml.Document) {
 			String ignorables = ((org.docx4j.wml.Document)o).getIgnorable();
+			if (mcChoiceNamespace!=null) {
+				ignorables = ignorables + mcChoiceNamespace; 
+			}
 			if (ignorables!=null) {
 				prefixMapper.setMcIgnorable(ignorables);	
-				// TODO, add getMcChoiceNamespaces()
 			}
 			return ignorables;
+		} else if (log.isDebugEnabled()){
+			log.debug("Not declaring mc ignorable or choice namespaces on " + o.getClass().getName() );
 		}
 		
 		return null;
@@ -819,10 +824,19 @@ public class XmlUtils {
 
 	}
 	
-	
+
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint, 
 			JAXBContext jc ) {
+
+		return marshaltoString(o, suppressDeclaration, prettyprint, jc, null);
+	}
+	
+	/** Marshal to a String, declaring mcChoiceNamespace 	 
+	 * @since 8.3.2
+	 */ 
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint, 
+			JAXBContext jc, String mcChoiceNamespace ) {
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
@@ -848,7 +862,8 @@ public class XmlUtils {
 			Marshaller m=jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
+					o, mcChoiceNamespace);
 			
 			// WARNING: that won't guarantee you have all the top level declarations you need
 			// if you are using MOXy. This is a TODO, using XMLStreamWriterWrapper 
@@ -902,18 +917,31 @@ public class XmlUtils {
 		}
 	}
 
+	
 	/** Marshal to a String, for object
-	 *  missing an @XmlRootElement annotation.  */
+	 *  missing an @XmlRootElement annotation
+	 */
 	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint,
 			JAXBContext jc,
 			String uri, String local, Class declaredType) {
+		return 	marshaltoString(o,  suppressDeclaration,  prettyprint, jc, uri, local, declaredType, null);
+	}
+	
+	/** Marshal to a String, for object
+	 *  missing an @XmlRootElement annotation, declaring mcChoiceNamespace  
+	 *  @since 8.3.2
+	 */
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint,
+			JAXBContext jc,
+			String uri, String local, Class declaredType, String mcChoiceNamespace ) {
 		// TODO - refactor this.
 		try {
 
 			Marshaller m = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
+					o, mcChoiceNamespace);
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -946,8 +974,18 @@ public class XmlUtils {
 		} 
 	}
 	
-	
+
+	/** marshaltoInputStream, declaring mcChoiceNamespace
+	 */
 	public static java.io.InputStream marshaltoInputStream(Object o, boolean suppressDeclaration, JAXBContext jc ) {
+		return marshaltoInputStream(o, suppressDeclaration, jc, null );
+	}
+	
+	/** marshaltoInputStream, declaring mcChoiceNamespace
+	 *   @since 8.3.2
+	 */
+	public static java.io.InputStream marshaltoInputStream(Object o, boolean suppressDeclaration, JAXBContext jc,
+			String mcChoiceNamespace ) {
 		
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
@@ -964,7 +1002,8 @@ public class XmlUtils {
 			Marshaller m=jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
 					NamespacePrefixMapperUtils.getPrefixMapper());
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
+					o, mcChoiceNamespace);
 						
 			if (suppressDeclaration) {
 				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
@@ -996,11 +1035,20 @@ public class XmlUtils {
 	/** Marshal to a W3C document */ 
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o) {
 
-		return marshaltoW3CDomDocument(o, Context.jc);
+		return marshaltoW3CDomDocument(o, Context.jc, null);
 	}
 
-	/** Marshal to a W3C document */
+	/** Marshal to a W3C document, declaring mcChoiceNamespace 
+	 */
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc) {
+		return 	marshaltoW3CDomDocument(o, jc, null);
+
+	}
+	
+	/** Marshal to a W3C document, declaring mcChoiceNamespace 
+	 *  @since 8.3.2
+	 */
+	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc, String mcChoiceNamespace) {
 		// TODO - refactor this.
 		try {
 
@@ -1008,7 +1056,8 @@ public class XmlUtils {
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());	
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
+					o, mcChoiceNamespace);
 			
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			marshaller.marshal(o, doc);
@@ -1046,6 +1095,16 @@ public class XmlUtils {
 	 *  missing an @XmlRootElement annotation.  */
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,
 			String uri, String local, Class declaredType) {
+
+		return marshaltoW3CDomDocument(o, jc, uri, local, declaredType, null);
+	}
+	
+	/** Marshal to a W3C document, for object
+	 *  missing an @XmlRootElement annotation, declaring mcChoiceNamespace  
+	 *  @since 8.3.2
+	 */
+	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,
+			String uri, String local, Class declaredType, String mcChoiceNamespace) {
 		// TODO - refactor this.
 		try {
 
@@ -1053,7 +1112,8 @@ public class XmlUtils {
 
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper());			
-			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), o);
+			String ignorables = setMcIgnorable(((McIgnorableNamespaceDeclarator)NamespacePrefixMapperUtils.getPrefixMapper()), 
+					o, mcChoiceNamespace);
 
 			org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
 			// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
