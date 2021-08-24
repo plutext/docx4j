@@ -247,7 +247,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @since 3.0.0
 	 */
 	public String getXML() {
-		return XmlUtils.marshaltoString( getJaxbElement(), true, true, jc );
+		
+		return XmlUtils.marshaltoString( getJaxbElement(), true, true, jc, getMcChoiceNamespaces() );
 	}
 	
 	public boolean isUnmarshalled(){
@@ -1086,6 +1087,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
 						XmlUtils.transform(new StAXSource(xsr), 
 								mcPreprocessorXslt, null, result);
+						
+						// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+						// https://github.com/plutext/docx4j/issues/474
+						
 						jaxbElement = (E) XmlUtils.unwrap(
 								result.getResult() );	
 					} catch (Exception e) {
@@ -1137,6 +1142,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					
+					// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+					// https://github.com/plutext/docx4j/issues/474
+					
 					jaxbElement = (E) XmlUtils.unwrap(
 							result.getResult() );	
 				} catch (Exception e) {

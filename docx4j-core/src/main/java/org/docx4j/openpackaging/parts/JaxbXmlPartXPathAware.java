@@ -386,6 +386,7 @@ implements XPathEnabled<E> {
 
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
+					log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
 					
 					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 						log.debug("MOXy: checking whether binder workaround is necessary");
@@ -451,6 +452,10 @@ implements XPathEnabled<E> {
 					
 //					eventHandler.setContinue(false);
 					binder.setEventHandler(eventHandler);
+
+					// TODO: binder doesn't support listener; warning is logged above
+//					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+//					((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
 					
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
 					
@@ -588,6 +593,11 @@ implements XPathEnabled<E> {
 						eventHandler.setContinue(true);
 						binder = jc.createBinder();
 						binder.setEventHandler(eventHandler);
+						
+						// TODO: binder doesn't support listener
+//						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+//						((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+						
 						jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( doc ));
 					} catch (ClassCastException cce) {
 						/* 
@@ -616,6 +626,10 @@ implements XPathEnabled<E> {
 						Unmarshaller u = jc.createUnmarshaller();
 						eventHandler.setContinue(true);
 						u.setEventHandler(eventHandler);
+						
+						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+						u.setListener(docx4jUnmarshallerListener);
+						
 						unwrapUsually(u.unmarshal( doc ));		
 						
 					}
@@ -664,6 +678,7 @@ implements XPathEnabled<E> {
 
 		try {
 			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				
+			log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
 
 			if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 				log.debug("MOXy: pre-emptively transforming");
@@ -685,6 +700,10 @@ implements XPathEnabled<E> {
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			binder.setEventHandler(eventHandler);
+			
+			// TODO: binder doesn't support listener
+//			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+//			((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
 			
 			try {
 //				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
@@ -722,6 +741,10 @@ implements XPathEnabled<E> {
 					Unmarshaller u = jc.createUnmarshaller();
 					eventHandler.setContinue(true);
 					u.setEventHandler(eventHandler);
+					
+					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+					u.setListener(docx4jUnmarshallerListener);
+					
 					jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
