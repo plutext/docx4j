@@ -1002,6 +1002,19 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return sb.toString();
 	}
 
+	/**
+	 * Specify a namespace prefix (used in mc:Choice/@Requires) which
+	 * docx4j should declare on the top-level element of the part
+	 * (otherwise Microsoft Office won't be able to open the file).  
+	 * 
+	 * Specify a prefix (eg 'wpg') as opposed to the namespace itself.
+	 * 
+	 * This is often done automatically (see further McIgnorableNamespaceDeclarator),
+	 * but where it isn't, you should invoke this method directly
+	 * from your code.
+	 * 
+	 * @param mcChoiceNamespace
+	 */
 	public void addMcChoiceNamespace(String mcChoiceNamespace) {
 		this.mcChoiceNamespaces.add(mcChoiceNamespace);
 	}
