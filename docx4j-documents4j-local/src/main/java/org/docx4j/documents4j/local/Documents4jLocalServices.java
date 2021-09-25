@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.documents4j.api.DocumentType;
 import com.documents4j.api.IConverter;
+import com.documents4j.conversion.msoffice.MicrosoftPowerpointBridge;
 import com.documents4j.job.LocalConverter;
 
 /**
@@ -84,11 +85,24 @@ public class Documents4jLocalServices implements Exporter<Documents4jConversionS
 	public Documents4jLocalServices() {
 		
 		setWordConversionScript();	       
-		converter = LocalConverter.builder()
-               .baseFolder(tmpDir)
-               .workerPool(20, 25, 2, TimeUnit.SECONDS)
-               .processTimeout(30, TimeUnit.SECONDS)
-               .build();		       
+		
+		if (Docx4jProperties.getProperty("pptx4j.documents4j.MicrosoftPowerpointBridge.enabled", true)) {
+		
+			converter = LocalConverter.builder().enable(MicrosoftPowerpointBridge.class)
+	               .baseFolder(tmpDir)
+	               .workerPool(20, 25, 2, TimeUnit.SECONDS)
+	               .processTimeout(30, TimeUnit.SECONDS)
+	               .build();
+			
+		} else {
+			// Don't enable MicrosoftPowerpointBridge;
+			// you can disable it if you only need docx or xlsx to PDF
+			converter = LocalConverter.builder()
+		               .baseFolder(tmpDir)
+		               .workerPool(20, 25, 2, TimeUnit.SECONDS)
+		               .processTimeout(30, TimeUnit.SECONDS)
+		               .build();			
+		}
 	}
 	
     /**
@@ -113,12 +127,26 @@ public class Documents4jLocalServices implements Exporter<Documents4jConversionS
 	public Documents4jLocalServices(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, long timeout) {
 
 		setWordConversionScript();	       
-		converter = LocalConverter.builder()
-               .baseFolder(tmpDir)
-               .workerPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS)
-               .processTimeout(30, TimeUnit.SECONDS)
-               .build();
-	       
+
+		if (Docx4jProperties.getProperty("pptx4j.documents4j.MicrosoftPowerpointBridge.enabled", true)) {
+			
+			converter = LocalConverter.builder().enable(MicrosoftPowerpointBridge.class)
+		               .baseFolder(tmpDir)
+		               .workerPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS)
+		               .processTimeout(30, TimeUnit.SECONDS)
+		               .build();
+			
+		} else {
+			// Don't enable MicrosoftPowerpointBridge;
+			// you can disable it if you only need docx or xlsx to PDF
+			converter = LocalConverter.builder()
+		               .baseFolder(tmpDir)
+		               .workerPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS)
+		               .processTimeout(30, TimeUnit.SECONDS)
+		               .build();
+		}
+		
+		
 	}
 
 	private void setWordConversionScript() {
@@ -204,8 +232,18 @@ public class Documents4jLocalServices implements Exporter<Documents4jConversionS
 			export(file, outputStream, DocumentType.MS_EXCEL, asDocumentType);
 			
 		} else if (pkg instanceof PresentationMLPackage) {
-			// https://github.com/documents4j/documents4j/pull/29
-			throw new Docx4JException("pptx export is not available via documents4j"); 
+
+			try {
+				file = File.createTempFile("pptx_", ".pptx", tmpDir);
+			} catch (IOException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			}
+			Docx4J.save( (WordprocessingMLPackage)pkg, file);
+			export(file, outputStream, DocumentType.MS_POWERPOINT, asDocumentType);
+			
+		} else {
+			
+			throw new Docx4JException("Unsupported package type: " + pkg.getClass().getName() );
 		}
 	}
 
