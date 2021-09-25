@@ -11,7 +11,7 @@ import com.documents4j.api.DocumentType;
 
 
 /**
- * This example uses documents4j (running remotely) to convert a docx file
+ * This example uses documents4j (running remotely) to convert an XLSX file
  * to PDF.
  * 
  * First you'll need Word and documents4j running on the remote server.
@@ -31,22 +31,22 @@ import com.documents4j.api.DocumentType;
  * 
  * or with logging:
  *   
- *   java -jar documents4j-server-standalone-1.1.7-shaded.jar http://192.168.0.33:9998 --level debug
- *  
- * Note that you'd typically have a WordprocessingMLPackage, in which case
+ *   java -jar documents4j-server-standalone-1.1.7-shaded.jar http://192.168.0.33:9998 --level debug *  
+ * Note that you'd typically have a SpreadsheetMLPackage, in which case
  * see that example instead.
  *
  */
-public class DocxFileToPDF {
+public class XlsxFileToPDF {
 
 	
 	public static void main(String[] args) throws IOException, Docx4JException {
 	
-		File output = new File(System.getProperty("user.dir")+"/result.pdf");
+		File output = new File(System.getProperty("user.dir")+"/result-xlsx.pdf");
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		Documents4jRemoteServices exporter = new Documents4jRemoteServices();
-		exporter.export(new File(System.getProperty("user.dir")+"/../docx4j-samples-docx4j/sample-docs/sample-docx.docx") , fos, DocumentType.MS_WORD); 
+		exporter.export(new File(System.getProperty("user.dir")+"/../docx4j-samples-xlsx4j/sample-docs/comments.xlsx") , 
+				fos, DocumentType.MS_EXCEL); 
 		
 		fos.close();
 	}

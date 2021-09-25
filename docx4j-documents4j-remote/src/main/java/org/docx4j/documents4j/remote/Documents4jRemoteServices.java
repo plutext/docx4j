@@ -201,8 +201,17 @@ public class Documents4jRemoteServices implements Exporter<Documents4jConversion
 			} 
 			
 		} else if (pkg instanceof PresentationMLPackage) {
-			// https://github.com/documents4j/documents4j/pull/29
-			throw new Docx4JException("pptx export is not available via documents4j"); 
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+			pkg.save( baos);
+			
+			try {
+				export(outputStreamToInputStream(baos), outputStream, DocumentType.MS_POWERPOINT, asDocumentType);
+			} catch (IOException e) {
+				throw new Docx4JException(e.getMessage(), e);
+			} 
+			
+		
 		}
 		
 		

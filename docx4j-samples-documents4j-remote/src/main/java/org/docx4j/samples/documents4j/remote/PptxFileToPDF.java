@@ -24,29 +24,25 @@ import com.documents4j.api.DocumentType;
  *  
  * Then start it:
  * 
- * java -jar documents4j-server-standalone-1.1.7-shaded.jar http://localhost:9998
+ * java -jar documents4j-server-standalone-1.1.7-shaded.jar http://192.168.0.33:9998 --enable com.documents4j.conversion.msoffice.MicrosoftPowerpointBridge
  * 
  * (don't use http://localhost:9998 if you are trying to access it from a remote
  *  server!)
- * 
- * or with logging:
- *   
- *   java -jar documents4j-server-standalone-1.1.7-shaded.jar http://192.168.0.33:9998 --level debug
- *  
- * Note that you'd typically have a WordprocessingMLPackage, in which case
- * see that example instead.
  *
+ * Note that com.documents4j.conversion.msoffice.MicrosoftPowerpointBridge has to be 
+ * specifically enabled (unlike the Word and Excel converters) 
  */
-public class DocxFileToPDF {
+public class PptxFileToPDF {
 
 	
 	public static void main(String[] args) throws IOException, Docx4JException {
 	
-		File output = new File(System.getProperty("user.dir")+"/result.pdf");
+		File output = new File(System.getProperty("user.dir")+"/result_pptx.pdf");
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		Documents4jRemoteServices exporter = new Documents4jRemoteServices();
-		exporter.export(new File(System.getProperty("user.dir")+"/../docx4j-samples-docx4j/sample-docs/sample-docx.docx") , fos, DocumentType.MS_WORD); 
+		exporter.export(new File(System.getProperty("user.dir")+"/../docx4j-samples-pptx4j/sample-docs/pptx-chart.pptx") , 
+				fos, DocumentType.MS_POWERPOINT); 
 		
 		fos.close();
 	}
