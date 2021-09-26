@@ -139,6 +139,11 @@
   <xsl:template match="w:ind/@w:hanging" >  <!--  20170504 w:hanging="141.99999999999994" -->
            <xsl:attribute name="w:hanging"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template>  
+
+  <xsl:template match="w:trHeight/@w:val" >
+           <xsl:attribute name="w:val"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template>  
+
   
   <!-- 
         <w:pBdr>
