@@ -35,11 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.SAXParserFactory;
-
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.apps.TTFReader;
+import org.docx4j.org.apache.poi.util.XMLHelper;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -91,9 +90,7 @@ public class XMLFontMetricsReader extends DefaultHandler {
         XMLReader parser = null;
 
         try {
-            final SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            parser = factory.newSAXParser().getXMLReader();
+            parser = XMLHelper.newXMLReader();
         } catch (Exception e) {
             throw new FOPException(e);
         }

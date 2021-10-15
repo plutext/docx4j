@@ -17,7 +17,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -28,7 +27,7 @@ import org.xml.sax.XMLReader;
  * Utility class that provides common XML operations so that the calling class uses lighter
  * code.
  * 
- * <p>Most methdos in this implementation will forward the exceptions should occur, so they
+ * <p>Most methods in this implementation will forward the exceptions should occur, so they
  * will have to be handled externally.
  * 
  * @author Christophe Lauret - Allette Systems (Australia)
@@ -58,10 +57,8 @@ public final class XMLHelper {
    */
   public static XMLReader makeXMLReader(ContentHandler handler)
       throws SAXException, ParserConfigurationException {
-    SAXParserFactory factory = SAXParserFactory.newInstance();
-    factory.setNamespaceAware(false);
-    factory.setValidating(false);
-    XMLReader reader = factory.newSAXParser().getXMLReader();
+
+	XMLReader reader = org.docx4j.org.apache.poi.util.XMLHelper.newXMLReader();
     if (handler != null) {
       reader.setContentHandler(handler);
     }
