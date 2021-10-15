@@ -25,94 +25,58 @@ package org.docx4j.org.apache.poi.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.events.Namespace;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public final class DocumentHelper {
-
-	private static Logger logger = LoggerFactory.getLogger(DocumentHelper.class);	
 	
-    
+    // must only be used to create empty documents, do not use it for parsing!
+    private static final DocumentBuilder documentBuilderSingleton = newDocumentBuilder();
+
     private DocumentHelper() {}
 
     /**
      * Creates a new document builder, with sensible defaults
+     *
+     * @throws IllegalStateException If creating the DocumentBuilder fails, e.g.
+     *  due to {@link ParserConfigurationException}.
      */
-    public static synchronized DocumentBuilder newDocumentBuilder() {
-        try {
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            documentBuilder.setEntityResolver(SAXHelper.IGNORING_ENTITY_RESOLVER);
-            return documentBuilder;
-        } catch (ParserConfigurationException e) {
-            throw new IllegalStateException("cannot create a DocumentBuilder", e);
-        }
-    }
-
-    private static final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    static {
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setValidating(false);
-        trySetSAXFeature(documentBuilderFactory, XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        trySetXercesSecurityManager(documentBuilderFactory);
-    }
-
-    private static void trySetSAXFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean enabled) {
-        try {
-            documentBuilderFactory.setFeature(feature, enabled);
-        } catch (Exception e) {
-            logger.warn( "SAX Feature unsupported " + feature, e);
-        } catch (AbstractMethodError ame) {
-            logger.warn("Cannot set SAX feature because outdated XML parser in classpath " + feature, ame);
-        }
-    }
-    
-    private static void trySetXercesSecurityManager(DocumentBuilderFactory documentBuilderFactory) {
-        // Try built-in JVM one first, standalone if not
-        for (String securityManagerClassName : new String[] {
-                "com.sun.org.apache.xerces.internal.util.SecurityManager",
-                "org.apache.xerces.util.SecurityManager"
-        }) {
-            try {
-                Object mgr = Class.forName(securityManagerClassName).newInstance();
-                Method setLimit = mgr.getClass().getMethod("setEntityExpansionLimit", Integer.TYPE);
-                setLimit.invoke(mgr, 4096);
-                documentBuilderFactory.setAttribute("http://apache.org/xml/properties/security-manager", mgr);
-                // Stop once one can be setup without error
-                return;
-            } catch (Throwable t) {
-                logger.warn( "SAX Security Manager could not be setup", t);
-            }
-        }
+    public static DocumentBuilder newDocumentBuilder() {
+        return XMLHelper.newDocumentBuilder();
     }
 
     /**
      * Parses the given stream via the default (sensible)
      * DocumentBuilder
      * @param inp Stream to read the XML data from
-     * @return the parsed Document 
+     * @return the parsed Document
      */
     public static Document readDocument(InputStream inp) throws IOException, SAXException {
         return newDocumentBuilder().parse(inp);
     }
 
-    // must only be used to create empty documents, do not use it for parsing!
-    private static final DocumentBuilder documentBuilderSingleton = newDocumentBuilder();
+    /**
+     * Parses the given stream via the default (sensible)
+     * DocumentBuilder
+     * @param inp sax source to read the XML data from
+     * @return the parsed Document 
+     */
+    public static Document readDocument(InputSource inp) throws IOException, SAXException {
+        return newDocumentBuilder().parse(inp);
+    }
 
     /**
      * Creates a new DOM Document
      */
-    public static synchronized Document createDocument() {
+    public static Document createDocument() {
         return documentBuilderSingleton.newDocument();
     }
 
@@ -131,5 +95,4 @@ public final class DocumentHelper {
     public static void addNamespaceDeclaration(Element element, Namespace namespace) {
         addNamespaceDeclaration(element, namespace.getPrefix(), namespace.getNamespaceURI());
     }
-
 }
