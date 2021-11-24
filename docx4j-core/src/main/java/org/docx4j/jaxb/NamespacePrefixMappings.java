@@ -516,6 +516,33 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (namespaceUri.equals("http://schemas.microsoft.com/office/spreadsheetml/2016/revision10"))
 			return "xr10";	
 		
+		
+		
+		
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2015/9/8/chartex"))
+			return "cx1";	
+        		
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2015/10/21/chartex"))
+			return "cx2"; 
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/9/chartex"))
+			return "cx3";  
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/10/chartex"))
+			return "cx4";  
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/11/chartex"))
+			return "cx5";  
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/12/chartex"))
+			return "cx6";  
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/13/chartex"))
+			return "cx7";  
+        
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"))
+			return "cx8";  
+		
 				
     	return suggestion;
     }
@@ -847,6 +874,23 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		if (prefix.equals("x15ac"))
 			return "http://schemas.microsoft.com/office/spreadsheetml/2010/11/ac";
 		
+		
+		if (prefix.equals("cx1"))
+			return "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex";
+		if (prefix.equals("cx2"))
+			return "http://schemas.microsoft.com/office/drawing/2015/10/21/chartex";
+		if (prefix.equals("cx3"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/9/chartex";
+		if (prefix.equals("cx4"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex";
+		if (prefix.equals("cx5"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/11/chartex";
+		if (prefix.equals("cx6"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/12/chartex";
+		if (prefix.equals("cx7"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/13/chartex";
+		if (prefix.equals("cx8"))
+			return "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex";
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
