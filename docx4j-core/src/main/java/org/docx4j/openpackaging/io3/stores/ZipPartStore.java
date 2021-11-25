@@ -56,6 +56,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -451,7 +453,10 @@ public class ZipPartStore implements PartStore {
 	}
 
 	public void saveBinaryPart(Part part) throws Docx4JException {
-
+		
+		if (log.isDebugEnabled()) {
+			log.debug("saving " + part.getPartName() + " class " + part.getClass().getName() );	
+		}
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 
@@ -486,7 +491,9 @@ public class ZipPartStore implements PartStore {
 	        }
 			
 	        // Add ZIP entry to output stream.
-			if (part instanceof OleObjectBinaryPart) {
+			if (part instanceof OleObjectBinaryPart 
+					|| part instanceof EmbeddedPackagePart
+					|| part instanceof ImagePngPart) {
 				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
 				// (though 64-bit version is fine)
 				
