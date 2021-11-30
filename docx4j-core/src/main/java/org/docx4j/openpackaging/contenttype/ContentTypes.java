@@ -439,4 +439,15 @@ public class ContentTypes {
 	 */
 	public final static String INK_ML = "application/inkml+xml";
 	
+	/*
+	<Override ContentType="application/vnd.ms-office.chartex+xml" PartName="/word/charts/chartEx1.xml"/>
+	<Override ContentType="application/vnd.ms-office.chartstyle+xml" PartName="/word/charts/style1.xml"/>
+	<Override ContentType="application/vnd.ms-office.chartcolorstyle+xml" PartName="/word/charts/colors1.xml"/>
+	*/
+	public static final String CHART_EX = "application/vnd.ms-office.chartex+xml";
+	public static final String CHART_STYLE = "application/vnd.ms-office.chartstyle+xml";
+	public static final String CHART_COLOR_STYLE = "application/vnd.ms-office.chartcolorstyle+xml";
+	
+	
+	
 }

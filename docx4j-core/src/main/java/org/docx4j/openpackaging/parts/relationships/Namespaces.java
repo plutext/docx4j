@@ -175,6 +175,15 @@ public class Namespaces {
 	public final static String ACTIVEX_XML_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/control"; 
 	
+	public final static String CHART_EX = 
+			"http://schemas.microsoft.com/office/2014/relationships/chartEx";
+
+	public final static String CHART_COLOR_STYLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/chartColorStyle";
+
+	public final static String CHART_STYLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/chartStyle";
+	
 	// "/word/diagrams/data1.xml"
 	public final static String DRAWINGML_DIAGRAM_DATA =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData";
