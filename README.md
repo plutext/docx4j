@@ -85,7 +85,7 @@ How do I get started?
 
 See the Getting Started guide:  https://github.com/plutext/docx4j/tree/master/docs
 
-and the Cheat Sheet:  http://www.docx4java.org/blog/2013/05/docx4j-in-a-single-page/
+and the Cheat Sheet:  https://www.docx4java.org/docx4j/plutext-docx4j_on_a_page-v800.pdf
 
 And see the sample code:  https://github.com/plutext/docx4j/tree/master/src/samples
 
