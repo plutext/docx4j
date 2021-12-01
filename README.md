@@ -1,9 +1,6 @@
 README
 ======
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core?gav=true)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core)
 
 What is docx4j?
 ---------------
@@ -34,9 +31,12 @@ docx4j v8 is a multi-module Maven project.
 
 To use docx4j v8, add the dep corresponding to the JAXB implementation you wish to use
 
-* docx4j-JAXB-Internal (shipped in Oracle and OpenJDK v8)
-* docx4j-JAXB-ReferenceImpl (you may need to respect the endorsed dir mechanism for the RI jars)
-* docx4j-JAXB-MOXy
+* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-Internal/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-Internal?gav=true)
+ docx4j-JAXB-Internal (shipped in Oracle and OpenJDK v8)
+* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl?gav=true)
+ docx4j-JAXB-ReferenceImpl (you may need to respect the endorsed dir mechanism for the RI jars)
+* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy?gav=true)
+ docx4j-JAXB-MOXy
 
 You should use one and only one of docx4j-JAXB-* 
 
@@ -53,6 +53,13 @@ Being a JPMS modularised release, the jars contain module-info.class entries.
 11.1.0 is compiled with Java 12, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.1.0.
 
 Aside from the use of named modules / module path, the releases pretty much track v8. However, docx4j-export-fo is temporarily omitted since FOP 2.3's avalon dependencies are not JPMS-friendly. 
+
+To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
+
+* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl)
+ docx4j-JAXB-ReferenceImpl
+* [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy)
+ docx4j-JAXB-MOXy
 
 
 How do I build docx4j?
