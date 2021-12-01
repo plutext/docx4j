@@ -102,14 +102,14 @@ public interface XHTMLImporter {
     
     
     
-    /**
-     * @param source
-     * @param baseUrl
-     * @param wordMLPackage
-     * @return
-     * @throws IOException
-     */
-    public List<Object> convert(Source source,  String baseUrl) throws Docx4JException;
+//    /**
+//     * @param source
+//     * @param baseUrl
+//     * @param wordMLPackage
+//     * @return
+//     * @throws IOException
+//     */
+//    public List<Object> convert(Source source,  String baseUrl) throws Docx4JException;
     
         
     //public List<Object> convert(XMLEventReader reader) throws IOException {
