@@ -2,6 +2,8 @@ README
 ======
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core/badge.svg?gav=true)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core?gav=true)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-core)
 
 What is docx4j?
 ---------------
