@@ -235,13 +235,13 @@
 		<mkdir dir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
 
-        <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.8/openhtmltopdf-core-1.0.8.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.8/openhtmltopdf-pdfbox-1.0.8.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.23/pdfbox-2.0.23.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/org/apache/pdfbox/fontbox/2.0.23/fontbox-2.0.23.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.23/xmpbox-2.0.23.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/de/rototor/pdfbox/graphics2d/0.30/graphics2d-0.30.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <pathelement location="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.10/openhtmltopdf-core-1.0.10.jar"/>
+        <pathelement location="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.10/openhtmltopdf-pdfbox-1.0.10.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.24/pdfbox-2.0.24.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.24/fontbox-2.0.24.jar"/>
+        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.24/xmpbox-2.0.24.jar"/>
+        <pathelement location="${m2Repository}/de/rototor/pdfbox/graphics2d/0.32/graphics2d-0.32.jar"/>
 
 		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
