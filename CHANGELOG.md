@@ -3,6 +3,37 @@ CHANGELOG
 
 
 
+Version 8.3.2  
+==============
+
+Release date
+------------
+
+2 Dec 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Dheeraj3reddy 
+vdkuil 
+
+
+Significant Changes in Version 8.3.2 
+-------------------------
+
+ChartEx (eg the newish statistical, hierarchy and combo charts) changes so Word can open output, fixes #481 
+
+When saving as zip, STORE don't DEFLATE certain binary parts
+
+PDF via FO: bump FOP from 2.5 to 2.6
+
+PDF via documents4j: support pptx to pdf
+
+Address various security alerts
+
+
 Version 8.3.1  
 ==============
 
