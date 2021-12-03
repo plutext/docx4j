@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +20,7 @@
  * limitations under the License.
  */
 
-/* $Id: FontUtil.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
@@ -29,7 +28,10 @@ package org.docx4j.fonts.fop.fonts;
 /**
  * Font utilities.
  */
-public class FontUtil {
+public final class FontUtil {
+
+    private FontUtil() {
+    }
 
     /**
      * Parses an CSS2 (SVG and XSL-FO) font weight (normal, bold, 100-900) to
@@ -43,7 +45,7 @@ public class FontUtil {
         int weight = 400;
         try {
             weight = Integer.parseInt(text);
-            weight = ((int)weight / 100) * 100;
+            weight = (weight / 100) * 100;
             weight = Math.max(weight, 100);
             weight = Math.min(weight, 900);
         } catch (NumberFormatException nfe) {
@@ -107,8 +109,8 @@ public class FontUtil {
      */
     public static String guessStyle(String fontName) {
         if (fontName != null) {
-            for (int i = 0; i < ITALIC_WORDS.length; i++) {
-                if (fontName.indexOf(ITALIC_WORDS[i]) != -1) {
+            for (String word : ITALIC_WORDS) {
+                if (fontName.indexOf(word) != -1) {
                     return Font.STYLE_ITALIC;
                 }
             }
@@ -125,34 +127,34 @@ public class FontUtil {
         // weight
         int weight = Font.WEIGHT_NORMAL;
 
-        for (int i = 0; i < BOLD_WORDS.length; i++) {
-            if (fontName.indexOf(BOLD_WORDS[i]) != -1) {
+        for (String word : BOLD_WORDS) {
+            if (fontName.indexOf(word) != -1) {
                 weight = Font.WEIGHT_BOLD;
                 break;
             }
         }
-        for (int i = 0; i < MEDIUM_WORDS.length; i++) {
-            if (fontName.indexOf(MEDIUM_WORDS[i]) != -1) {
+        for (String word : MEDIUM_WORDS) {
+            if (fontName.indexOf(word) != -1) {
                 weight = Font.WEIGHT_NORMAL + 100; //500
                 break;
             }
         }
         //Search for "semi/demi" before "light", but after "bold"
         //(normally semi/demi-bold is meant, but it can also be semi/demi-light)
-        for (int i = 0; i < DEMI_WORDS.length; i++) {
-            if (fontName.indexOf(DEMI_WORDS[i]) != -1) {
+        for (String word : DEMI_WORDS) {
+            if (fontName.indexOf(word) != -1) {
                 weight = Font.WEIGHT_BOLD - 100; //600
                 break;
             }
         }
-        for (int i = 0; i < EXTRA_BOLD_WORDS.length; i++) {
-            if (fontName.indexOf(EXTRA_BOLD_WORDS[i]) != -1) {
+        for (String word : EXTRA_BOLD_WORDS) {
+            if (fontName.indexOf(word) != -1) {
                 weight = Font.WEIGHT_EXTRA_BOLD;
                 break;
             }
         }
-        for (int i = 0; i < LIGHT_WORDS.length; i++) {
-            if (fontName.indexOf(LIGHT_WORDS[i]) != -1) {
+        for (String word : LIGHT_WORDS) {
+            if (fontName.indexOf(word) != -1) {
                 weight = Font.WEIGHT_LIGHT;
                 break;
             }

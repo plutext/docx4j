@@ -14,6 +14,25 @@ import com.documents4j.api.DocumentType;
  * This example uses documents4j (running remotely) to convert a docx file
  * to PDF.
  * 
+ * First you'll need Word and documents4j running on the remote server.
+ * 
+ * The easiest way to set up documents4j on a remote server is to build it
+ * from https://github.com/documents4j/documents4j using maven, then in
+ * documents4j-server-standalone, create a shaded jar using profile shaded-jar.
+ * 
+ * For example: mvn install -Pshaded-jar
+ *  
+ * Then start it:
+ * 
+ * java -jar documents4j-server-standalone-1.1.7-shaded.jar http://localhost:9998
+ * 
+ * (don't use http://localhost:9998 if you are trying to access it from a remote
+ *  server!)
+ * 
+ * or with logging:
+ *   
+ *   java -jar documents4j-server-standalone-1.1.7-shaded.jar http://192.168.0.33:9998 --level debug
+ *  
  * Note that you'd typically have a WordprocessingMLPackage, in which case
  * see that example instead.
  *
@@ -27,7 +46,7 @@ public class DocxFileToPDF {
 		FileOutputStream fos = new FileOutputStream(output); 
 		
 		Documents4jRemoteServices exporter = new Documents4jRemoteServices();
-		exporter.export(new File(System.getProperty("user.dir")+"/Hello.docx") , fos, DocumentType.MS_WORD); 
+		exporter.export(new File(System.getProperty("user.dir")+"/../docx4j-samples-docx4j/sample-docs/sample-docx.docx") , fos, DocumentType.MS_WORD); 
 		
 		fos.close();
 	}

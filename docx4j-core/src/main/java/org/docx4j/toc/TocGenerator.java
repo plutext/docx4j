@@ -22,10 +22,12 @@ package org.docx4j.toc;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,10 +49,6 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.services.client.ConversionException;
-import org.docx4j.services.client.Converter;
-import org.docx4j.services.client.ConverterHttp;
-import org.docx4j.services.client.Format;
 import org.docx4j.toc.switches.SwitchProcessor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTTabStop;
@@ -63,9 +61,6 @@ import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * This class creates and populates a table of contents.
@@ -653,12 +648,14 @@ public class TocGenerator {
     	
     	if (Docx4J.pdfViaFO()) {
     		return getPageNumbersMapViaFOP();
-    	} else {
+    	} else if (Docx4J.pdfViaLegacyConverter()) {
     		try {
     			return getPageNumbersMapViaService();
     		} catch (TocException e) {
     			throw new TocException("Page number service not available; try using docx4j-export-documents4j-local|remote or docx4j-export-fo");
     		}
+    	} else {
+    		throw new TocException("For page numbering, try using docx4j-export-documents4j-local|remote or docx4j-export-fo");
     	}
     }
 
@@ -691,30 +688,22 @@ public class TocGenerator {
     	// 
 		String documentServicesEndpoint = Docx4jProperties.getProperty("com.plutext.converter.URL", 
 				"http://localhost:9016/v1/00000000-0000-0000-0000-000000000000/convert");
-		
-		Converter converter = new ConverterHttp(documentServicesEndpoint); 
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 			
 		try {
-			converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
-			log.debug("page numbers successfully received from service");
-		} catch (ConversionException e) {
 			
-			if (e.getResponse()!=null) {
-
-				throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + "\n HTTP response: " 
-						+ e.getResponse().getStatusLine().getStatusCode()
-						+ " " + e.getResponse().getStatusLine().getReasonPhrase() ,e);
-				
-			} else if (e.getMessage()==null){			
-				throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + "\n",e);
-			} else {
-				throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + "\n" + e.getMessage(),e);				
-			}
+			//Converter converter = new ConverterHttp(documentServicesEndpoint); 
+			Class<?> clazz = Class.forName("org.docx4j.services.client.ConverterHttp");		
+			Constructor constructor =
+					clazz.getConstructor(new Class[]{String.class});
+			Object converter = constructor.newInstance(documentServicesEndpoint);
+			Method method = converter.getClass().getMethod("convert", byte[].class, OutputStream.class);
+			// converter.convert(tmpDocxFile.toByteArray(), Format.DOCX, Format.TOC, baos);
+			method.invoke(converter, tmpDocxFile.toByteArray(),  baos);
+			baos.close();
+			
+			log.debug("page numbers successfully received from service");
 			
 		} catch (Exception e) {
 			throw new TocException("Error in toc web service at " 
@@ -727,32 +716,18 @@ public class TocGenerator {
 		 */
 		
 		byte[] json = baos.toByteArray();
-		
-		Map<String,Integer> map = new HashMap<String,Integer>();
-		ObjectMapper m = new ObjectMapper();
-		
-		JsonNode rootNode;
 		try {
-			rootNode = m.readTree(json);
+			Class<?> clazz = Class.forName("org.docx4j.services.client.JsonUtil");		
+			Method method = clazz.getMethod("bytesToMap", byte[].class);
+			Map<String,Integer> map = (Map<String,Integer>)method.invoke(null, json);
+			log.debug("page number map size " + map.size());
+			return map;
 		} catch (Exception e) {
 			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
 		}
-		JsonNode bookmarksNode = rootNode.path("bookmarks");
-		
-		Iterator<Map.Entry<String, JsonNode>> bookmarksValueObj = bookmarksNode.fields();
-		while (bookmarksValueObj.hasNext()) {
-			Map.Entry<String, JsonNode> entry = bookmarksValueObj.next();
-			if (entry.getValue()==null) {
-				log.warn("Null page number computed for bookmark " + entry.getKey());
-			}
-			map.put(entry.getKey(), new Integer(entry.getValue().asInt()));
-		}		
-		
-		log.debug("page number map size " + map.size());
-			
-		return map;
 
     }
+    
     
     /**
      * Invoke FOP to calculate page numbers

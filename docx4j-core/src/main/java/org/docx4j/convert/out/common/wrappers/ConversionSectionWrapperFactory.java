@@ -398,8 +398,12 @@ public class ConversionSectionWrapperFactory {
 			
 			// OK if the last object is w:p and it contains a sectPr.
 			List<Object> all = document.getBody().getContent();
-	    	Object last = all.get( all.size()-1 );
-	    	if (last instanceof P 
+	    	Object last = null;
+	    	if (all.size()>0) {
+	    		last = all.get( all.size()-1 );
+	    	}
+	    	if (last !=null
+	    			&& last instanceof P 
 	    			&& ((P) last).getPPr()!=null 
 	    				&& ((P) last).getPPr().getSectPr() !=null) {
 	    			// ok

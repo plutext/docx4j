@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+  <parent>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j-parent</artifactId>
+	<version>${revision}</version>
+  </parent>
+  
+	<artifactId>docx4j-legacy-service</artifactId>
+	<packaging>${packaging.type}</packaging>
+	<name>docx4j-legacy-service</name>
+	
+	<description>
+		Code supporting the no longer available legacy commercial PDF Converter.
+	</description>
+
+	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>bin</outputDirectory><!--  for a clean jar, be sure to avoid mixing mvn and eclipse output -->
+		<testOutputDirectory>bin-testOutput</testOutputDirectory>
+			<!-- NB this confuses Eclipse, in that if you modify test src, it doesn't recompile it to this dir. 
+			     You need to run mvn test from the command line to recompile, then Eclipse can run 
+			     the new code.  -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
+					to execute the unit tests of an application -->
+				<version>2.6</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+			</plugin>
+			
+ 			
+ 			<!--  mvn versions:display-dependency-updates --> 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<rulesUri>file:///${project.basedir}/rules.xml</rulesUri>
+				</configuration>
+			</plugin> 
+ 			
+		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<!-- beware, a couple of our resources are UTF-16, but with filtering=true, 
+					Maven will break them when it copies them. -->
+				</resource>
+		</resources>
+	</build>
+	
+	
+	<dependencies>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+        
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.13</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>        
+            </exclusions>
+        </dependency>
+    		 
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.9.9</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-databind</artifactId>
+			<version>2.9.10.8</version>
+		</dependency>		
+    		 
+	</dependencies>
+	
+</project>

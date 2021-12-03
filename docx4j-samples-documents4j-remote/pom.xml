@@ -39,8 +39,30 @@
 			  <configuration>
 			    <skip>true</skip>
 			  </configuration>
-			</plugin>			
+			</plugin>					
+			
 		</plugins>
+        
+		<resources>
+			<!-- be sure to get xml,xlst resources in various src trees -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<!-- 
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>docx4j.properties</include>
+				</includes>
+			</resource>
+			 -->
+			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude>
+				</excludes> </resource> -->
+		</resources>
 	</build>
 	
 	<dependencies>

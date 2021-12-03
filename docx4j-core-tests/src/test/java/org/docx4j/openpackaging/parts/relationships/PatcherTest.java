@@ -390,19 +390,7 @@ public class PatcherTest {
 		
 	   	// Create a org.docx4j.wml.Package object
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPkg);
-		org.docx4j.xmlPackage.Package pkg = worker.get();
-    	
-    	// Now marshall it
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		NamespacePrefixMapperUtils.setProperty(marshaller, 
-				NamespacePrefixMapperUtils.getPrefixMapper());	
-		
-		marshaller.marshal(pkg, baos);
-//		marshaller.marshal(pkg, System.out);
-		
+		worker.marshal(baos);
 		return baos;
 		
 	}

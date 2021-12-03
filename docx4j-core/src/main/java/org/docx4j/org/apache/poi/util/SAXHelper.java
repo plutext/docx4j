@@ -23,84 +23,23 @@
 
 package org.docx4j.org.apache.poi.util;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.Method;
-
-import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
+import org.docx4j.org.apache.poi.util.XMLHelper;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 
 /**
  * Provides handy methods for working with SAX parsers and readers
+ * @deprecated use {@link XMLHelper}
  */
+@Deprecated
 public final class SAXHelper {
-
-	private static Logger logger = LoggerFactory.getLogger(SAXHelper.class);	
-	
-
-    private SAXHelper() {}
-
     /**
      * Creates a new SAX XMLReader, with sensible defaults
      */
-    public static synchronized XMLReader newXMLReader() throws SAXException, ParserConfigurationException {
-        XMLReader xmlReader = saxFactory.newSAXParser().getXMLReader();
-        xmlReader.setEntityResolver(IGNORING_ENTITY_RESOLVER);
-        trySetSAXFeature(xmlReader, XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        trySetXercesSecurityManager(xmlReader);
-        return xmlReader;
-    }
-    
-    static final EntityResolver IGNORING_ENTITY_RESOLVER = new EntityResolver() {
-        @Override
-        public InputSource resolveEntity(String publicId, String systemId)
-                throws SAXException, IOException {
-            return new InputSource(new StringReader(""));
-        }
-    };
-    
-    private static final SAXParserFactory saxFactory;
-    static {
-        saxFactory = SAXParserFactory.newInstance();
-        saxFactory.setValidating(false);
-        saxFactory.setNamespaceAware(true);
-    }
-            
-    private static void trySetSAXFeature(XMLReader xmlReader, String feature, boolean enabled) {
-        try {
-            xmlReader.setFeature(feature, enabled);
-        } catch (Exception e) {
-            logger.warn("SAX Feature unsupported "+ feature, e);
-        } catch (AbstractMethodError ame) {
-            logger.warn( "Cannot set SAX feature because outdated XML parser in classpath" + feature, ame);
-        }
-    }
-    
-    private static void trySetXercesSecurityManager(XMLReader xmlReader) {
-        // Try built-in JVM one first, standalone if not
-        for (String securityManagerClassName : new String[] {
-                "com.sun.org.apache.xerces.internal.util.SecurityManager",
-                "org.apache.xerces.util.SecurityManager"
-        }) {
-            try {
-                Object mgr = Class.forName(securityManagerClassName).newInstance();
-                Method setLimit = mgr.getClass().getMethod("setEntityExpansionLimit", Integer.TYPE);
-                setLimit.invoke(mgr, 4096);
-                xmlReader.setProperty("http://apache.org/xml/properties/security-manager", mgr);
-                // Stop once one can be setup without error
-                return;
-            } catch (Exception e) {
-                logger.warn( "SAX Security Manager could not be setup", e);
-            }
-        }
+    public static XMLReader newXMLReader() throws SAXException, ParserConfigurationException {
+        return XMLHelper.newXMLReader();
     }
 }

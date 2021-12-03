@@ -94,6 +94,9 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ChartColorStylePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ChartExSpacePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ChartStylePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsIdsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -508,9 +511,16 @@ public class ContentTypeManager  {
 			
 		} else if (contentType.equals(ContentTypes.INK_ML)) {
 			return new InkmlPart(new PartName(partName));
-			
+
 		} else if (contentType.equals(ContentTypes.MS_WORD_KEYMAP)) {
-			return new KeyMapCustomizationsPart(new PartName(partName));			
+			return new KeyMapCustomizationsPart(new PartName(partName));
+
+		} else if (contentType.equals(ContentTypes.CHART_EX)) {
+			return new ChartExSpacePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.CHART_COLOR_STYLE)) {
+			return new ChartColorStylePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.CHART_STYLE)) {
+			return new ChartStylePart(new PartName(partName));
 			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| contentType.equals(ContentTypes.IMAGE_SVG)				

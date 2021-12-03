@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +20,10 @@
  * limitations under the License.
  */
 
-/* $Id: FontQualifier.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.substitute;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,16 +41,16 @@ import org.docx4j.fonts.fop.fonts.FontUtil;
 public class FontQualifier {
 
     /** logger instance */
-    private static Logger log = LoggerFactory.getLogger(FontQualifier.class);
+    private static  Logger log = LoggerFactory.getLogger(FontQualifier.class);
 
     /** font family attribute value */
-    private AttributeValue fontFamilyAttributeValue = null;
+    private AttributeValue fontFamilyAttributeValue;
 
     /** font style attribute value */
-    private AttributeValue fontStyleAttributeValue = null;
+    private AttributeValue fontStyleAttributeValue;
 
     /** font weight attribute value */
-    private AttributeValue fontWeightAttributeValue = null;
+    private AttributeValue fontWeightAttributeValue;
 
     /**
      * Default constructor
@@ -91,10 +89,9 @@ public class FontQualifier {
     public void setFontWeight(String fontWeight) {
         AttributeValue fontWeightAttribute = AttributeValue.valueOf(fontWeight);
         if (fontWeightAttribute != null) {
-            for (Iterator it = fontWeightAttribute.iterator(); it.hasNext();) {
-                Object weightObj = it.next();
+            for (Object weightObj : fontWeightAttribute) {
                 if (weightObj instanceof String) {
-                    String weightString = ((String)weightObj).trim();
+                    String weightString = ((String) weightObj).trim();
                     try {
                         FontUtil.parseCSS2FontWeight(weightString);
                     } catch (IllegalArgumentException ex) {
@@ -154,22 +151,21 @@ public class FontQualifier {
      * @param fontInfo the font info
      * @return a list of matching font triplets
      */
-    protected List/*<FontTriplet>*/ match(FontInfo fontInfo) {
+    protected List<FontTriplet> match(FontInfo fontInfo) {
         AttributeValue fontFamilyValue = getFontFamily();
         AttributeValue weightValue = getFontWeight();
         AttributeValue styleValue = getFontStyle();
 
-        List/*<FontTriplet>*/ matchingTriplets = new java.util.ArrayList/*<FontTriplet>*/();
+        List<FontTriplet> matchingTriplets = new java.util.ArrayList<FontTriplet>();
 
         // try to find matching destination font triplet
-        for (Iterator attrIt = fontFamilyValue.iterator(); attrIt.hasNext();) {
-            String fontFamilyString = (String)attrIt.next();
-            Map/*<FontTriplet>*/ triplets = (Map/*<FontTriplet>*/)fontInfo.getFontTriplets();
+        for (Object aFontFamilyValue : fontFamilyValue) {
+            String fontFamilyString = (String) aFontFamilyValue;
+            Map<FontTriplet, String> triplets = fontInfo.getFontTriplets();
             if (triplets != null) {
-                Set/*<FontTriplet>*/ tripletSet = triplets.keySet();
-                for (Iterator/*<FontTriplet>*/ tripletIt = tripletSet.iterator();
-                        tripletIt.hasNext();) {
-                    FontTriplet triplet = (FontTriplet)tripletIt.next();
+                Set<FontTriplet> tripletSet = triplets.keySet();
+                for (Object aTripletSet : tripletSet) {
+                    FontTriplet triplet = (FontTriplet) aTripletSet;
                     String fontName = triplet.getName();
 
                     // matched font family name
@@ -178,23 +174,22 @@ public class FontQualifier {
                         // try and match font weight
                         boolean weightMatched = false;
                         int fontWeight = triplet.getWeight();
-                        for (Iterator weightIt = weightValue.iterator(); weightIt.hasNext();) {
-                            Object weightObj = weightIt.next();
+                        for (Object weightObj : weightValue) {
                             if (weightObj instanceof FontWeightRange) {
-                                FontWeightRange intRange = (FontWeightRange)weightObj;
+                                FontWeightRange intRange = (FontWeightRange) weightObj;
                                 if (intRange.isWithinRange(fontWeight)) {
                                     weightMatched = true;
                                 }
                             } else if (weightObj instanceof String) {
-                                String fontWeightString = (String)weightObj;
+                                String fontWeightString = (String) weightObj;
                                 int fontWeightValue = FontUtil.parseCSS2FontWeight(
                                         fontWeightString);
                                 if (fontWeightValue == fontWeight) {
                                     weightMatched = true;
                                 }
                             } else if (weightObj instanceof Integer) {
-                                Integer fontWeightInteger = (Integer)weightObj;
-                                int fontWeightValue = fontWeightInteger.intValue();
+                                Integer fontWeightInteger = (Integer) weightObj;
+                                int fontWeightValue = fontWeightInteger;
                                 if (fontWeightValue == fontWeight) {
                                     weightMatched = true;
                                 }
@@ -204,8 +199,8 @@ public class FontQualifier {
                         // try and match font style
                         boolean styleMatched = false;
                         String fontStyleString = triplet.getStyle();
-                        for (Iterator styleIt = styleValue.iterator(); styleIt.hasNext();) {
-                            String style = (String)styleIt.next();
+                        for (Object aStyleValue : styleValue) {
+                            String style = (String) aStyleValue;
                             if (fontStyleString.equals(style)) {
                                 styleMatched = true;
                             }
@@ -227,13 +222,13 @@ public class FontQualifier {
      * @return the highest priority matching font triplet
      */
     protected FontTriplet bestMatch(FontInfo fontInfo) {
-        List/*<FontTriplet>*/ matchingTriplets = match(fontInfo);
+        List<FontTriplet> matchingTriplets = match(fontInfo);
         FontTriplet bestTriplet = null;
         if (matchingTriplets.size() == 1) {
-            bestTriplet = (FontTriplet)matchingTriplets.get(0);
+            bestTriplet = matchingTriplets.get(0);
         } else {
-            for (Iterator iterator = matchingTriplets.iterator(); iterator.hasNext();) {
-                FontTriplet triplet = (FontTriplet)iterator.next();
+            for (Object matchingTriplet : matchingTriplets) {
+                FontTriplet triplet = (FontTriplet) matchingTriplet;
                 if (bestTriplet == null) {
                     bestTriplet = triplet;
                 } else {
@@ -250,34 +245,32 @@ public class FontQualifier {
     /**
      * @return a list of font triplets matching this qualifier
      */
-    public List/*<FontTriplet>*/ getTriplets() {
-        List/*<FontTriplet>*/ triplets = new java.util.ArrayList/*<FontTriplet>*/();
+    public List<FontTriplet> getTriplets() {
+        List<FontTriplet> triplets = new java.util.ArrayList<FontTriplet>();
 
         AttributeValue fontFamilyValue = getFontFamily();
-        for (Iterator fontFamilyIt = fontFamilyValue.iterator(); fontFamilyIt.hasNext();) {
-            String name = (String)fontFamilyIt.next();
+        for (Object aFontFamilyValue : fontFamilyValue) {
+            String name = (String) aFontFamilyValue;
 
             AttributeValue styleValue = getFontStyle();
-            for (Iterator styleIt = styleValue.iterator(); styleIt.hasNext();) {
-                String style = (String)styleIt.next();
+            for (Object aStyleValue : styleValue) {
+                String style = (String) aStyleValue;
 
                 AttributeValue weightValue = getFontWeight();
-                for (Iterator weightIt = weightValue.iterator(); weightIt.hasNext();) {
-                    Object weightObj = weightIt.next();
-
+                for (Object weightObj : weightValue) {
                     if (weightObj instanceof FontWeightRange) {
-                        FontWeightRange fontWeightRange = (FontWeightRange)weightObj;
+                        FontWeightRange fontWeightRange = (FontWeightRange) weightObj;
                         int[] weightRange = fontWeightRange.toArray();
-                        for (int i = 0; i < weightRange.length; i++) {
-                            triplets.add(new FontTriplet(name, style, weightRange[i]));
+                        for (int aWeightRange : weightRange) {
+                            triplets.add(new FontTriplet(name, style, aWeightRange));
                         }
                     } else if (weightObj instanceof String) {
-                        String weightString = (String)weightObj;
+                        String weightString = (String) weightObj;
                         int weight = FontUtil.parseCSS2FontWeight(weightString);
                         triplets.add(new FontTriplet(name, style, weight));
                     } else if (weightObj instanceof Integer) {
-                        Integer weightInteger = (Integer)weightObj;
-                        int weight = weightInteger.intValue();
+                        Integer weightInteger = (Integer) weightObj;
+                        int weight = weightInteger;
                         triplets.add(new FontTriplet(name, style, weight));
                     }
                 }
@@ -290,7 +283,7 @@ public class FontQualifier {
      * {@inheritDoc}
      */
     public String toString() {
-        String str = new String();
+        String str = "";
         if (fontFamilyAttributeValue != null) {
             str += "font-family=" + fontFamilyAttributeValue;
         }

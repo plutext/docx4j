@@ -107,10 +107,22 @@ public class CTLine implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
         @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> egShapeElements = new ArrayListVml<JAXBElement<?>>(this);
+    
+    /* The following 4 attributes need to be written in this order,
+     * because Word's behaviour is sensitive to this.  
+     * See further https://github.com/plutext/docx4j/issues/469
+     */
+    
+    @XmlAttribute(name = "id")
+    protected String vmlId;
+    @XmlAttribute(name = "style")
+    protected String style;
     @XmlAttribute(name = "from")
     protected String from;
     @XmlAttribute(name = "to")
     protected String to;
+    
+    
     @XmlAttribute(name = "href")
     protected String href;
     @XmlAttribute(name = "target")
@@ -129,10 +141,6 @@ public class CTLine implements Child, VmlShapeElements, VmlAllCoreAttributes, Vm
     protected String wrapcoords;
     @XmlAttribute(name = "print")
     protected org.docx4j.vml.STTrueFalse print;
-    @XmlAttribute(name = "style")
-    protected String style;
-    @XmlAttribute(name = "id")
-    protected String vmlId;
     @XmlAttribute(name = "spid", namespace = "urn:schemas-microsoft-com:office:office")
     protected String spid;
     @XmlAttribute(name = "oned", namespace = "urn:schemas-microsoft-com:office:office")

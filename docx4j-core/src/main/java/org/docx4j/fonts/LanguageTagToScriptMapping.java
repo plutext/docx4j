@@ -75,8 +75,8 @@ public class LanguageTagToScriptMapping {
 		if (lang.equals("zh")) {
 		
 			//    <a:font script="Hans" typeface="宋体"/>
-			if (langTag.equals("zh_CN")
-					|| langTag.equals("zh_SG")) {
+			if (langTag.equals("zh-CN")
+					|| langTag.equals("zh-SG")) {
 				// Mainland China and Singapore both use simplified characters
 				return "Hans";
 			} else {

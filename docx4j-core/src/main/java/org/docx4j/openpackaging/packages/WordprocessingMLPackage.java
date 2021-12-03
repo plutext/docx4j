@@ -21,6 +21,8 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -226,17 +228,17 @@ public class WordprocessingMLPackage extends OpcPackage {
     	// Prepare in the input document
     	
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(this);
-		org.docx4j.xmlPackage.Package pkg = worker.get();
-    	
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
-		marshaller.marshal(pkg, doc);
-    			
-//		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+		worker.populate();
 		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		worker.marshal(baos);
+		org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(
+				new ByteArrayInputStream(baos.toByteArray()));
+		
+    					
 		// Use constructor which takes Unmarshaller, rather than JAXBContext,
 		// so we can set JaxbValidationEventHandler
+		JAXBContext jc = Context.jcXmlPackage;
 		Unmarshaller u = jc.createUnmarshaller();
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
@@ -244,9 +246,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 		// Perform the transformation		
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 		
-
-//		javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
-//		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
 		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(result.getResult());
 		
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 

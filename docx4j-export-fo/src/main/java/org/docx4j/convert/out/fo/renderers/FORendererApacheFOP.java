@@ -373,7 +373,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			
 			fopFactory = (FopFactory)method.invoke(fopFactoryBuilder);
 
-			log.debug("FOP 2.1 configured OK." );
+			log.debug("FOP configured OK." );
 			
 		} catch (Exception e) {
 			log.error("Can't set up FOP 2.x; " + e.getMessage() );

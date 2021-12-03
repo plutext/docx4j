@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema elementFormDefault="qualified" attributeFormDefault="qualified"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -7,9 +7,8 @@
 	targetNamespace="http://schemas.microsoft.com/office/word/2006/wordml"	
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
-	
-	<!-- From [MS-OFFMACRO2]  -->
-	
+
+
 	<!--
 	
 	JAXB INSTRUCTIONS
@@ -21,8 +20,10 @@
 				
 	 	  \Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer  office-word-2006-wordml.xsd -d temp -no-header -target 2.0 -extension
 
-		20210104: 		 
-		sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer office-word-2006-wordml.xsd -d tmp  -no-header -target 2.0		 
+	20210104: 		 
+	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer office-word-2006-wordml.xsd -d tmp  -no-header -target 2.0
+
+		 
 	-->	
 	
 	<!-- From [MS-OFFMACRO2]  -->

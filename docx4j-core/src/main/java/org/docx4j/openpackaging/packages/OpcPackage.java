@@ -735,16 +735,9 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		if (flags == Docx4J.FLAG_SAVE_FLAT_XML) {
 			JAXBContext jc = Context.jcXmlPackage;
 			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(this);
-			org.docx4j.xmlPackage.Package pkg = opcXmlCreator.get();
-			Marshaller marshaller;
-			try {
-				marshaller = jc.createMarshaller();
-				NamespacePrefixMapperUtils.setProperty(marshaller, 
-						NamespacePrefixMapperUtils.getPrefixMapper());			
-				marshaller.marshal(pkg, outStream);				
-			} catch (JAXBException e) {
-				throw new Docx4JException("Exception marshalling document for output: " + e.getMessage(), e);
-			}
+			opcXmlCreator.populate();
+			opcXmlCreator.marshal(outStream);
+			
 		} else if (
 				flags == Docx4J.FLAG_SAVE_ENCRYPTED_BINARYRC4
 				|| flags == Docx4J.FLAG_SAVE_ENCRYPTED_STANDARD 

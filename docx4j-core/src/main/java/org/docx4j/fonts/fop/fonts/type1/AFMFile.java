@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +20,30 @@
  * limitations under the License.
  */
 
-/* $Id: AFMFile.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.type1;
 
 import java.awt.geom.Dimension2D;
 import java.awt.geom.RectangularShape;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.xmlgraphics.java2d.Dimension2DDouble;
+import org.docx4j.fonts.fop.fonts.NamedCharacter;
+import org.docx4j.fonts.fop.fonts.SingleByteEncoding;
 
 /**
  * Represents the contents of a Type 1 AFM font metrics file.
  */
 public class AFMFile {
+
+    /** logging instance */
+    private static final  Logger log = LoggerFactory.getLogger(AFMFile.class);
 
     private String fontName;
     private String fullName;
@@ -59,15 +65,13 @@ public class AFMFile {
     private AFMWritingDirectionMetrics[] writingDirectionMetrics
         = new AFMWritingDirectionMetrics[3];
 
-    private List charMetrics = new java.util.ArrayList();
-    //List<AFMCharMetrics>
-    private Map charNameToMetrics = new java.util.HashMap();
-    //Map<String, AFMCharMetrics>
+    private List<AFMCharMetrics> charMetrics = new java.util.ArrayList<AFMCharMetrics>();
+    private Map<String, AFMCharMetrics> charNameToMetrics
+                = new java.util.HashMap<String, AFMCharMetrics>();
     private int firstChar = -1;
     private int lastChar = -1;
 
-    private Map kerningMap;
-    //Map<String, Map<String, Dimension2D>>
+    private Map<String, Map<String, Dimension2D>> kerningMap;
 
     /**
      * Default constructor.
@@ -319,7 +323,7 @@ public class AFMFile {
      */
     public void addCharMetrics(AFMCharMetrics metrics) {
         String name = metrics.getCharName();
-        if (metrics.getUnicodeSequence() == null) {
+        if (metrics.getUnicodeSequence() == null && name.equals(".notdef")) {
             //Ignore as no Unicode assignment is possible
             return;
         }
@@ -368,14 +372,14 @@ public class AFMFile {
      * @return the character metrics or null if there's no such character
      */
     public AFMCharMetrics getChar(String name) {
-        return (AFMCharMetrics)this.charNameToMetrics.get(name);
+        return this.charNameToMetrics.get(name);
     }
 
     /**
      * Returns the list of AFMCharMetrics instances representing all the available characters.
      * @return a List of AFMCharMetrics instances
      */
-    public List getCharMetrics() {
+    public List<AFMCharMetrics> getCharMetrics() {
         return Collections.unmodifiableList(this.charMetrics);
     }
 
@@ -387,11 +391,11 @@ public class AFMFile {
      */
     public void addXKerning(String name1, String name2, double kx) {
         if (this.kerningMap == null) {
-            this.kerningMap = new java.util.HashMap();
+            this.kerningMap = new java.util.HashMap<String, Map<String, Dimension2D>>();
         }
-        Map entries = (Map)this.kerningMap.get(name1);
+        Map<String, Dimension2D> entries = this.kerningMap.get(name1);
         if (entries == null) {
-            entries = new java.util.HashMap();
+            entries = new java.util.HashMap<String, Dimension2D>();
             this.kerningMap.put(name1, entries);
         }
         entries.put(name2, new Dimension2DDouble(kx, 0));
@@ -409,46 +413,95 @@ public class AFMFile {
      * Creates and returns a kerning map for writing mode 0 (ltr) with character codes.
      * @return the kerning map or null if there is no kerning information.
      */
-    public Map createXKerningMapEncoded() {
+    public Map<Integer, Map<Integer, Integer>> createXKerningMapEncoded() {
         if (!hasKerning()) {
             return null;
         }
-        Map m = new java.util.HashMap();
-        Iterator iterFrom = this.kerningMap.entrySet().iterator();
-        while (iterFrom.hasNext()) {
-            Map.Entry entryFrom = (Map.Entry)iterFrom.next();
-            String name1 = (String)entryFrom.getKey();
+        Map<Integer, Map<Integer, Integer>> m
+                    = new java.util.HashMap<Integer, Map<Integer, Integer>>();
+        for (Map.Entry<String, Map<String, Dimension2D>> entryFrom : this.kerningMap.entrySet()) {
+            String name1 = entryFrom.getKey();
             AFMCharMetrics chm1 = getChar(name1);
             if (chm1 == null || !chm1.hasCharCode()) {
                 continue;
             }
-            Map container = null;
-            Map entriesTo = (Map)entryFrom.getValue();
-            Iterator iterTo = entriesTo.entrySet().iterator();
-            while (iterTo.hasNext()) {
-                Map.Entry entryTo = (Map.Entry)iterTo.next();
-                String name2 = (String)entryTo.getKey();
+            Map<Integer, Integer> container = null;
+            Map<String, Dimension2D> entriesTo = entryFrom.getValue();
+            for (Map.Entry<String, Dimension2D> entryTo : entriesTo.entrySet()) {
+                String name2 = entryTo.getKey();
                 AFMCharMetrics chm2 = getChar(name2);
                 if (chm2 == null || !chm2.hasCharCode()) {
                     continue;
                 }
                 if (container == null) {
-                    Integer k1 = new Integer(chm1.getCharCode());
-                    container = (Map)m.get(k1);
+                    Integer k1 = chm1.getCharCode();
+                    container = m.get(k1);
                     if (container == null) {
-                        container = new java.util.HashMap();
+                        container = new java.util.HashMap<Integer, Integer>();
                         m.put(k1, container);
                     }
                 }
-                Dimension2D dim = (Dimension2D)entryTo.getValue();
-                container.put(new Integer(chm2.getCharCode()),
-                        new Integer((int)Math.round(dim.getWidth())));
+                Dimension2D dim = entryTo.getValue();
+                container.put(chm2.getCharCode(),
+                        (int) Math.round(dim.getWidth()));
             }
         }
         return m;
     }
 
+    /**
+     * The character codes in an AFM cannot always be trusted to be the same values as in the
+     * font's primary encoding. Therefore, we provide a way to override this primary encoding.
+     * @param encoding the encoding to replace the one given in the AFM
+     */
+    public void overridePrimaryEncoding(SingleByteEncoding encoding) {
+        if (log.isDebugEnabled()) {
+            log.debug("Overriding primary encoding of " + getFontName() + " with: " + encoding);
+        }
+        AFMCharMetrics[] mapped = new AFMCharMetrics[256];
+        for (AFMCharMetrics cm : this.charMetrics) {
+            NamedCharacter nc = cm.getCharacter();
+            if (nc.hasSingleUnicodeValue()) {
+                int codePoint = encoding.mapChar(nc.getSingleUnicodeValue());
+                if (codePoint > 0) {
+                    if (mapped[codePoint] != null) {
+                        if (log.isDebugEnabled()) {
+                            AFMCharMetrics other = mapped[codePoint];
+                            String msg = "Not mapping character " + nc + " to code point "
+                                + codePoint + " (" + Integer.toHexString(codePoint) + ") in "
+                                + encoding + ". "
+                                + other + " has already been assigned that code point.";
+                            if (other.getUnicodeSequence()
+                                    .equals(nc.getUnicodeSequence())) {
+                                msg += " This is a specialized glyph for the"
+                                    + " same Unicode character.";
+                                //TODO should these be mapped to a private Unicode area to make
+                                //them accessible?
+                            } else {
+                                msg += " This is a similar character.";
+                            }
+                            if (cm.getWidthX() != other.getWidthX()) {
+                                msg += " They have differing widths: "
+                                    + cm.getWidthX() + " vs. " + other.getWidthX();
+                            }
+                            log.debug(msg);
+                        }
+                    } else {
+                        cm.setCharCode(codePoint);
+                        mapped[codePoint] = cm;
+                    }
+                } else {
+                    cm.setCharCode(-1);
+                }
+            } else {
+                //No Unicode equivalent
+                cm.setCharCode(-1);
+            }
+        }
+    }
+
     /** {@inheritDoc} */
+    @Override
     public String toString() {
         return "AFM: " + getFullName();
     }

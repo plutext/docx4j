@@ -23,16 +23,22 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.fonts.fop.fonts.CustomFont;
+import org.docx4j.fonts.fop.fonts.EmbeddingMode;
 import org.docx4j.fonts.fop.fonts.EncodingMode;
 import org.docx4j.fonts.fop.fonts.FontLoader;
-import org.docx4j.fonts.fop.fonts.FontResolver;
+//import org.docx4j.fonts.fop.fonts.FontResolver;
 import org.docx4j.fonts.fop.fonts.FontSetup;
+import org.docx4j.fonts.fop.fonts.FontUris;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.AbstractFontPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -72,7 +78,8 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	 * but FontLoader can't readily load from a byte array. 
 	 * @param fontKey
 	 */
-	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, String filenamePrefix ) {
+	public PhysicalFont extract(String fontNameAsInTablePart, String fontFileName, String fontKey, 
+			String filenamePrefix ) {
 		
 		/*  NB deobfuscation is done multiple times during PDF output.
 		 *  
@@ -139,7 +146,16 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		// Save to "Temporary Font Files" directory.
 		// TODO 1 write to a subdir controlled by FontTablePart
 		// TODO 2 add a method there which can be called to delete the dir when the docx is closed/unloaded
-        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
+//        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
+		URI baseUri=null;
+		try {
+			baseUri = new URI("/");
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}  
+		InternalResourceResolver fontResolver = new InternalResourceResolver(baseUri,
+				ResourceResolverFactory.createDefaultResourceResolver()) ;
 
 		if (log.isDebugEnabled()) {
 	        CustomFont customFont = null;
@@ -148,8 +164,17 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	        	String subFontName = null; // TODO set this if its a TTC
 	        	boolean embedded = true;   
 	        	boolean useKerning = true;
-	            customFont = FontLoader.loadFont("file:" + path, 
-	            		subFontName, embedded, EncodingMode.AUTO, useKerning, fontResolver);
+	        	boolean useAdvanced = false;
+	        	boolean simulateStyle = false;
+	        	boolean embedAsType1 = false;
+	        	
+	        	FontUris fontUris = new FontUris(new URI("file:" + path.replace(" ", "%20")), null);
+	        	
+	            customFont = FontLoader.loadFont(fontUris, 
+	            		subFontName, embedded, EmbeddingMode.AUTO, EncodingMode.AUTO, 
+	            		useKerning, useAdvanced, fontResolver,
+	            		simulateStyle, embedAsType1);
+	            
 	        } catch (Exception e) {
 				e.printStackTrace();
 	        }
@@ -166,15 +191,15 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 
 		// Get this font as a PhysicalFont object; do NOT add it to physical fonts (since those are available to all documents)  
         try {
-					List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, new java.net.URL("file:" + path));
-					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
-
+			List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, 
+					new URI("file:" + path.replace(" ", "%20")));
+			return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 			// This needs to be done before populateFontMappings, 
 			// otherwise this font will be ignored, and references
 			// to it mapped to some substitute font!
 			
-		} catch (MalformedURLException e) {
+		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -114,7 +114,7 @@
 
   	  <xsl:choose>
   	  	<!--  limit fix to certain cases -->
-  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz' or local-name(..)='gridCol' or local-name(..)='tblW'">
+  		<xsl:when test="../@w:type='dxa' or local-name(..)='pgSz' or local-name(..)='gridCol' or local-name(..)='tblW' or local-name(..)='tblInd'  ">
 		  	<xsl:attribute name="w:w"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   		</xsl:when>
   		<xsl:otherwise>
@@ -139,6 +139,11 @@
   <xsl:template match="w:ind/@w:hanging" >  <!--  20170504 w:hanging="141.99999999999994" -->
            <xsl:attribute name="w:hanging"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template>  
+
+  <xsl:template match="w:trHeight/@w:val" >
+           <xsl:attribute name="w:val"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template>  
+
   
   <!-- 
         <w:pBdr>

@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +20,12 @@
  * limitations under the License.
  */
 
-/* $Id: FontFinder.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.autodetect;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -37,12 +37,10 @@ public interface FontFinder {
     /**
      * Finds a list of font files.
      *
-     * @return list of font files. List&lt;URL&gt; in the case of the
-     *         FontFinder, and List&lt;File&gt; in the case of the
-     *         FonrDirFinders.
+     * @return list of font files.
      * @throws IOException
      *             In case of an I/O problem
      */
-    List find() throws IOException;
+    List<URL> find() throws IOException;
 
 }

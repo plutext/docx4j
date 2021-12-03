@@ -17,6 +17,18 @@ package org.docx4j.jaxb;
  * But since both require the namespace to be pre-declared, this mechanism is 
  * used for both. (search for getMcChoiceNamespaces)
  * 
+ * In order to pre-declare any namespaces used in mc:Choice (eg Requires="wpg"),
+ * an Unmarshaller.Listener (Docx4jUnmarshallerListener) detects and records them.  
+ * 
+ * This works, except in 3 cases:
+ * (i)  where binder is used
+ * (ii) where we take the JAXBResult of a transformation (eg running the pre-processor) 
+ * since you can't register a listener in either of these cases, and
+ * (iii)where you have added mc:Choice content to the docx yourself.
+ * 
+ * If you have mc:Choice content in one of these cases, then you need to 
+ * manage the mcChoiceNamespaces manually.  On your part object, invoke addMcChoiceNamespace.  
+ *  
  * @author jharrop
  */
 public interface McIgnorableNamespaceDeclarator {

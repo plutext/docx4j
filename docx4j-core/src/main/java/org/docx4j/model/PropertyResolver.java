@@ -597,7 +597,8 @@ public class PropertyResolver {
 			// we want to ignore doc default contrib, if rFonts or sz is set in the pStyle
 			boolean rFontsMissing = effectiveRPr.getRFonts()==null;
 			boolean szMissing = effectiveRPr.getSz()==null;
-			resolvedRPr = getEffectiveRPr(runStyleId, rFontsMissing, szMissing); 
+			boolean langMissing = effectiveRPr.getLang()==null;
+			resolvedRPr = getEffectiveRPr(runStyleId, rFontsMissing, szMissing, langMissing); 
 			StyleUtil.apply(resolvedRPr, effectiveRPr);
 //	    	System.out.println("resolved=\n" + XmlUtils.marshaltoString(resolvedRPr, true, true));
 			
@@ -624,7 +625,7 @@ public class PropertyResolver {
 	 */
 	public RPr getEffectiveRPr(String styleId) {
 
-		return getEffectiveRPr(styleId, true, true); 
+		return getEffectiveRPr(styleId, true, true, true); 
 	}
 	/**
 	 * apply the rPr in the stack of styles, optionally including documentDefaultRPr
@@ -634,7 +635,8 @@ public class PropertyResolver {
 	 * @since 8.2.4
 	 */
 	public RPr getEffectiveRPr(String styleId, 
-			boolean applyDocDefaultsRFonts, boolean applyDocDefaultsSz) {
+			boolean applyDocDefaultsRFonts, boolean applyDocDefaultsSz,
+			boolean applyDocDefaultsLang) {
 		// styleId passed in could be a run style
 		// or a *paragraph* style
 		
@@ -678,6 +680,9 @@ public class PropertyResolver {
 		if (applyDocDefaultsSz) {
 			defaultRPr.setSz(this.documentDefaultRPr.getSz());
 			defaultRPr.setSzCs(this.documentDefaultRPr.getSzCs());
+		}
+		if (applyDocDefaultsLang) {
+			defaultRPr.setLang(this.documentDefaultRPr.getLang());
 		}
 		rPrStack.push(defaultRPr); 
 						
@@ -904,6 +909,9 @@ public class PropertyResolver {
 		}
 
 		//CTSignedTwipsMeasure spacing;
+		if (rPrToApply.getSpacing()!=null ) {
+			return true;			
+		}
 		//CTTextScale w;
 		//HpsMeasure kern;
 		//CTSignedHpsMeasure position;
@@ -940,6 +948,9 @@ public class PropertyResolver {
 		//BooleanDefaultTrue cs;
 		//CTEm em;
 		//CTLanguage lang;
+		if (rPrToApply.getLang()!=null ) {
+			return true;			
+		}
 		//CTEastAsianLayout eastAsianLayout;
 		//BooleanDefaultTrue specVanish;
 		//BooleanDefaultTrue oMath;
@@ -1245,9 +1256,9 @@ public class PropertyResolver {
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();
 //        	if (styleId.equals(basedOnStyleName)) {
-//        		log.error(XmlUtils.marshaltoString(style));
-//        		throw new RuntimeException(styleId + " is basedOn itself!");
-//        	}
+//    		log.error(XmlUtils.marshaltoString(style));
+//    		throw new RuntimeException(styleId + " is basedOn itself!");
+//    	} 
         	fillRPrStack( basedOnStyleName, rPrStack);
     	} else {
     		log.debug("No basedOn set for: " + style.getStyleId() );

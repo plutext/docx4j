@@ -159,9 +159,9 @@ public class Namespaces {
 		"http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 	public final static String VBA_DATA_WORD = 
 		"http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
-	
+
 	public final static String KEYMAP = 
-		"http://schemas.microsoft.com/office/2006/relationships/keyMapCustomizations";
+			"http://schemas.microsoft.com/office/2006/relationships/keyMapCustomizations";
 	
 	/**
 	 * @since 3.2.0
@@ -174,6 +174,15 @@ public class Namespaces {
 	
 	public final static String ACTIVEX_XML_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/control"; 
+	
+	public final static String CHART_EX = 
+			"http://schemas.microsoft.com/office/2014/relationships/chartEx";
+
+	public final static String CHART_COLOR_STYLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/chartColorStyle";
+
+	public final static String CHART_STYLE = 
+			"http://schemas.microsoft.com/office/2011/relationships/chartStyle";
 	
 	// "/word/diagrams/data1.xml"
 	public final static String DRAWINGML_DIAGRAM_DATA =

@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,33 +20,34 @@
  * limitations under the License.
  */
 
-/* $Id: CustomFontCollection.java 677543 2008-07-17 09:11:09Z jeremias $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
 import java.util.List;
+
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 
 /**
  * Sets up a set of custom (embedded) fonts
  */
 public class CustomFontCollection implements FontCollection {
 
-    private FontResolver fontResolver;
-    private List/*<EmbedFontInfo>*/ embedFontInfoList;
+    private final List<EmbedFontInfo> embedFontInfoList;
+    private final InternalResourceResolver uriResolver;
+    private final boolean useComplexScripts;
 
     /**
      * Main constructor.
      * @param fontResolver a font resolver
      * @param customFonts the list of custom fonts
+     * @param useComplexScriptFeatures true if complex script features enabled
      */
-    public CustomFontCollection(FontResolver fontResolver,
-            List/*<EmbedFontInfo>*/ customFonts) {
-        this.fontResolver = fontResolver;
-        if (this.fontResolver == null) {
-            //Ensure that we have minimal font resolution capabilities
-            this.fontResolver = FontManager.createMinimalFontResolver();
-        }
+    public CustomFontCollection(InternalResourceResolver fontResolver,
+            List<EmbedFontInfo> customFonts, boolean useComplexScriptFeatures) {
+        this.uriResolver = fontResolver;
         this.embedFontInfoList = customFonts;
+        this.useComplexScripts = useComplexScriptFeatures;
     }
 
     /** {@inheritDoc} */
@@ -57,27 +57,16 @@ public class CustomFontCollection implements FontCollection {
         }
 
         String internalName = null;
-        //FontReader reader = null;
 
-        for (int i = 0; i < embedFontInfoList.size(); i++) {
-            EmbedFontInfo embedFontInfo = (EmbedFontInfo)embedFontInfoList.get(i);
-
-            //String metricsFile = configFontInfo.getMetricsFile();
+        for (EmbedFontInfo embedFontInfo : embedFontInfoList) {
             internalName = "F" + num;
             num++;
-            /*
-            reader = new FontReader(metricsFile);
-            reader.useKerning(configFontInfo.getKerning());
-            reader.setFontEmbedPath(configFontInfo.getEmbedFile());
-            fontInfo.addMetrics(internalName, reader.getFont());
-            */
 
-            LazyFont font = new LazyFont(embedFontInfo, this.fontResolver);
+            LazyFont font = new LazyFont(embedFontInfo, this.uriResolver, useComplexScripts);
             fontInfo.addMetrics(internalName, font);
 
-            List triplets = embedFontInfo.getFontTriplets();
-            for (int tripletIndex = 0; tripletIndex < triplets.size(); tripletIndex++) {
-                FontTriplet triplet = (FontTriplet) triplets.get(tripletIndex);
+            List<FontTriplet> triplets = embedFontInfo.getFontTriplets();
+            for (FontTriplet triplet : triplets) {
                 fontInfo.addFontProperties(internalName, triplet);
             }
         }

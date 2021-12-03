@@ -102,7 +102,7 @@ public class ContentTypes {
 
 	public final static String OFFICEDOCUMENT_VBA_DATA =
 		"application/vnd.ms-word.vbaData+xml";
-
+	
 	/**
 	 * @since 3.2.0
 	 */
@@ -157,7 +157,7 @@ public class ContentTypes {
 
 	// PartName="/word/header[N].xml"
 	public final static String WORDPROCESSINGML_HEADER ="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
-	
+
 	public final static String MS_WORD_KEYMAP = "application/vnd.ms-word.keyMapCustomizations+xml";
 	
 	// PartName="/word/numbering.xml"
@@ -438,5 +438,16 @@ public class ContentTypes {
 	 * @since 8.1.0
 	 */
 	public final static String INK_ML = "application/inkml+xml";
+	
+	/*
+	<Override ContentType="application/vnd.ms-office.chartex+xml" PartName="/word/charts/chartEx1.xml"/>
+	<Override ContentType="application/vnd.ms-office.chartstyle+xml" PartName="/word/charts/style1.xml"/>
+	<Override ContentType="application/vnd.ms-office.chartcolorstyle+xml" PartName="/word/charts/colors1.xml"/>
+	*/
+	public static final String CHART_EX = "application/vnd.ms-office.chartex+xml";
+	public static final String CHART_STYLE = "application/vnd.ms-office.chartstyle+xml";
+	public static final String CHART_COLOR_STYLE = "application/vnd.ms-office.chartcolorstyle+xml";
+	
+	
 	
 }

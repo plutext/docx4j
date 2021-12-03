@@ -1,15 +1,21 @@
 package org.docx4j.fonts;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.fop.events.DefaultEventBroadcaster;
+import org.apache.xmlgraphics.io.ResourceResolver;
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
 import org.docx4j.fonts.fop.fonts.FontCache;
-import org.docx4j.fonts.fop.fonts.FontResolver;
+import org.docx4j.fonts.fop.fonts.FontEventAdapter;
+//import org.docx4j.fonts.fop.fonts.FontResolver;
 import org.docx4j.fonts.fop.fonts.FontSetup;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
@@ -90,7 +96,7 @@ public class PhysicalFonts {
 //     */ 
 //    public static final int MATCH_THRESHOLD = 30;
 
-    private static FontResolver fontResolver;        
+    private static InternalResourceResolver fontResolver;        
 	
     // parse font to ascertain font info
     private static FontInfoFinder fontInfoFinder; 
@@ -113,8 +119,10 @@ public class PhysicalFonts {
 							= new HashMap<String, PhysicalFont>();
 			
 //			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
-			
-			fontResolver = FontSetup.createMinimalFontResolver();
+
+			URI baseUri = new URI("/");  
+			fontResolver = new InternalResourceResolver(baseUri,
+					ResourceResolverFactory.createDefaultResourceResolver()) ;
 			
             // parse font to ascertain font info
 			fontInfoFinder = new FontInfoFinder();			
@@ -157,7 +165,9 @@ public class PhysicalFonts {
 		// instead, but don't, since in docx4j we're settled on
 		// PDF output via XSL FO)		
 		
-        FontFileFinder fontFileFinder = new FontFileFinder();
+		
+		FontEventAdapter fea = new FontEventAdapter(new DefaultEventBroadcaster());
+        FontFileFinder fontFileFinder = new FontFileFinder(fea);
         
         // Automagically finds a list of font files on local system
         // based on os.name
@@ -167,7 +177,7 @@ public class PhysicalFonts {
         if (regex==null) {
             for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
             	
-            	URL fontUrl = getURL(iter.next());
+            	URI fontUrl = getURI(iter.next());
                 
                 // parse font to ascertain font info
             	addPhysicalFont( fontUrl);
@@ -176,7 +186,7 @@ public class PhysicalFonts {
         	Pattern pattern = Pattern.compile(regex);
             for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
             	
-            	URL fontUrl = getURL(iter.next());
+            	URI fontUrl = getURI(iter.next());
                 
             	
                 // parse font to ascertain font info
@@ -202,14 +212,14 @@ public class PhysicalFonts {
         
 	}
 	
-	private static URL getURL(Object o) throws Exception {
+	private static URI getURI(Object o) throws Exception {
 		
     	if (o instanceof java.io.File) {
     		// Running in Tomcat
     		java.io.File f = (java.io.File)o;
-    		return f.toURL();
+    		return f.toURL().toURI();
     	} else if (o instanceof java.net.URL) {
-    		return (URL)o;
+    		return ((URL)o).toURI();
     	} else {
     		throw new Exception("Unexpected object:" + o.getClass().getName() );
     	}        	
@@ -222,7 +232,7 @@ public class PhysicalFonts {
 	 *
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static void addPhysicalFont(URL fontUrl) {
+	public static void addPhysicalFont(URI fontUrl) {
 		addPhysicalFonts(null, fontUrl);
 	}
 
@@ -231,7 +241,7 @@ public class PhysicalFonts {
 	 * 
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static void addPhysicalFonts(String nameAsInFontTablePart, URL fontUrl) {
+	public static void addPhysicalFonts(String nameAsInFontTablePart, URI fontUrl) {
 
 		List<PhysicalFont> physicalFonts = getPhysicalFont( nameAsInFontTablePart,  fontUrl);
 		if (physicalFonts==null) return;
@@ -241,17 +251,17 @@ public class PhysicalFonts {
 	        		        	
 	        	// Add it to the map
 	        	put(pf.getName(), pf);
-	    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedFile());
+	    		log.debug("Added '" + pf.getName() + "' -> " + pf.getEmbeddedURI());
 
 				if (nameAsInFontTablePart != null 
 						&& get(nameAsInFontTablePart)==null) {
 					
 					put(nameAsInFontTablePart, pf);
-					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedFile());
+					log.debug("Added '" + nameAsInFontTablePart + "' -> " + pf.getEmbeddedURI());
 				}
 	    		
 	    		// We also need to add it to map by filename
-	    		String filename = pf.getEmbeddedFile();
+	    		String filename = pf.getEmbeddedURI().toString();
 	    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
 	    				    		
 	    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
@@ -287,23 +297,21 @@ public class PhysicalFonts {
 	 * 
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
-	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+	public static List<PhysicalFont> getPhysicalFont(String nameAsInFontTablePart, URI fontUrl) {
 
 		List<PhysicalFont> pfList = new ArrayList<PhysicalFont>();
 		
 		log.debug(nameAsInFontTablePart);
 
 		
-		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
-		/* FOP r644208 (Bugzilla #44737) 3/04/08 made this an array,
-		// so if you are using non-patched FOP, it needs to be at least this revision
-		// (but doesn't seem to be in FOP 0.95 binary?!) */ 
 		
 		if (embedFontInfoList==null) {
-			// Quite a few fonts exist that we can't seem to get
-			// EmbedFontInfo for. To be investigated.
-			log.warn("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
+			if (fontInfoFinder.log.isDebugEnabled()) {
+				log.warn("Aborting: " + fontUrl.toString() );				
+			} else {
+				log.warn("Aborting: " + fontUrl.toString() +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
+			}
 			return null;
 		}
 		
@@ -369,7 +377,7 @@ public class PhysicalFonts {
 							will be thrown if os_2.fsType == 2
 							
 						 */
-				    	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
+				    	log.warn(fontInfo.getEmbedURI() + " is not embeddable; ignoring this font.");
 					 
 					 //return;
 				    continue;
@@ -393,7 +401,7 @@ public class PhysicalFonts {
 				// for each of them.  For our purposes though, each of
 				// these physical font objects contains the same info
 		    	
-		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        String lower = fontInfo.getEmbedURI().toString().toLowerCase();
 		        log.debug("Processing physical font: " + lower);
 				debug.append(".. triplet " + triplet.getName() 
 						+ " (priority " + triplet.getPriority() +"\n" );
@@ -457,11 +465,12 @@ public class PhysicalFonts {
 //							}
 				        	pf = new PhysicalFont(triplet.getName(), fontInfo, fontResolver);
 				        } else {
-				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
+				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " 
+				    					+ fontInfo.getEmbedURI());                	                    					        	
 				        }
 			        }
 		        } else {                    	
-		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
+		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedURI());                	                    	
 		        }
 		        
 		        if (pf!=null) {

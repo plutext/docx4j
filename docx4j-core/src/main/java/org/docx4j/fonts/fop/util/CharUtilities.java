@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +20,12 @@
  * limitations under the License.
  */
 
-/* $Id: CharUtilities.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.util;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * This class provides utilities to distinguish various kinds of Unicode
@@ -80,6 +82,20 @@ public class CharUtilities {
     public static final char WORD_JOINER = '\u2060';
     /** zero-width joiner */
     public static final char ZERO_WIDTH_JOINER = '\u200D';
+    /** left-to-right mark */
+    public static final char LRM = '\u200E';
+    /** right-to-left mark */
+    public static final char RLM = '\u202F';
+    /** left-to-right embedding */
+    public static final char LRE = '\u202A';
+    /** right-to-left embedding */
+    public static final char RLE = '\u202B';
+    /** pop directional formatting */
+    public static final char PDF = '\u202C';
+    /** left-to-right override */
+    public static final char LRO = '\u202D';
+    /** right-to-left override */
+    public static final char RLO = '\u202E';
     /** zero-width no-break space (= byte order mark) */
     public static final char ZERO_WIDTH_NOBREAK_SPACE = '\uFEFF';
     /** soft hyphen */
@@ -92,9 +108,10 @@ public class CharUtilities {
     public static final char MISSING_IDEOGRAPH = '\u25A1';
     /** Ideogreaphic space */
     public static final char IDEOGRAPHIC_SPACE = '\u3000';
+    /** Object replacement character */
+    public static final char OBJECT_REPLACEMENT_CHARACTER = '\uFFFC';
     /** Unicode value indicating the the character is "not a character". */
     public static final char NOT_A_CHARACTER = '\uFFFF';
-
 
     /**
      * Utility class: Constructor prevents instantiating when subclassed.
@@ -109,7 +126,7 @@ public class CharUtilities {
      * @param c character to inspect
      * @return the determined character class
      */
-    public static int classOf(char c) {
+    public static int classOf(int c) {
         switch (c) {
             case CODE_EOT:
                 return EOT;
@@ -132,7 +149,7 @@ public class CharUtilities {
      * @param c character to inspect
      * @return True if the character is a normal space
      */
-    public static boolean isBreakableSpace(char c) {
+    public static boolean isBreakableSpace(int c) {
         return (c == SPACE || isFixedWidthSpace(c));
     }
 
@@ -141,7 +158,7 @@ public class CharUtilities {
      * @param c the character to check
      * @return true if the character is a zero-width space
      */
-    public static boolean isZeroWidthSpace(char c) {
+    public static boolean isZeroWidthSpace(int c) {
         return c == ZERO_WIDTH_SPACE           // 200Bh
             || c == WORD_JOINER                // 2060h
             || c == ZERO_WIDTH_NOBREAK_SPACE;  // FEFFh (also used as BOM)
@@ -152,7 +169,7 @@ public class CharUtilities {
      * @param c the character to check
      * @return true if the character has a fixed-width
      */
-    public static boolean isFixedWidthSpace(char c) {
+    public static boolean isFixedWidthSpace(int c) {
         return (c >= '\u2000' && c <= '\u200B')
                 || c == '\u3000';
 //      c == '\u2000'                   // en quad
@@ -176,7 +193,7 @@ public class CharUtilities {
      * @param c character to check
      * @return True if the character is a nbsp
      */
-    public static boolean isNonBreakableSpace(char c) {
+    public static boolean isNonBreakableSpace(int c) {
         return
             (c == NBSPACE       // no-break space
             || c == '\u202F'    // narrow no-break space
@@ -191,7 +208,7 @@ public class CharUtilities {
      * @param c character to check
      * @return True if the character is adjustable
      */
-    public static boolean isAdjustableSpace(char c) {
+    public static boolean isAdjustableSpace(int c) {
         //TODO: are there other kinds of adjustable spaces?
         return
             (c == '\u0020'    // normal space
@@ -203,19 +220,19 @@ public class CharUtilities {
      * @param c character to check
      * @return True if the character represents any kind of space
      */
-    public static boolean isAnySpace(char c) {
+    public static boolean isAnySpace(int c) {
         return (isBreakableSpace(c) || isNonBreakableSpace(c));
     }
 
     /**
      * Indicates whether a character is classified as "Alphabetic" by the Unicode standard.
-     * @param ch the character
+     * @param c the character
      * @return true if the character is "Alphabetic"
      */
-    public static boolean isAlphabetic(char ch) {
+    public static boolean isAlphabetic(int c) {
         //http://www.unicode.org/Public/UNIDATA/UCD.html#Alphabetic
         //Generated from: Other_Alphabetic + Lu + Ll + Lt + Lm + Lo + Nl
-        int generalCategory = Character.getType(ch);
+        int generalCategory = Character.getType((char)c);
         switch (generalCategory) {
             case Character.UPPERCASE_LETTER: //Lu
             case Character.LOWERCASE_LETTER: //Ll
@@ -233,15 +250,246 @@ public class CharUtilities {
 
     /**
      * Indicates whether the given character is an explicit break-character
-     * @param ch    the character to check
+     * @param c    the character to check
      * @return  true if the character represents an explicit break
      */
-    public static boolean isExplicitBreak(char ch) {
-        return (ch == LINEFEED_CHAR
-            || ch == CARRIAGE_RETURN
-            || ch == NEXT_LINE
-            || ch == LINE_SEPARATOR
-            || ch == PARAGRAPH_SEPARATOR);
+    public static boolean isExplicitBreak(int c) {
+        return (c == LINEFEED_CHAR
+            || c == CARRIAGE_RETURN
+            || c == NEXT_LINE
+            || c == LINE_SEPARATOR
+            || c == PARAGRAPH_SEPARATOR);
+    }
+
+    /**
+     * Convert a single unicode scalar value to an XML numeric character
+     * reference. If in the BMP, four digits are used, otherwise 6 digits are used.
+     * @param c a unicode scalar value
+     * @return a string representing a numeric character reference
+     */
+    public static String charToNCRef(int c) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0, nDigits = (c > 0xFFFF) ? 6 : 4; i < nDigits; i++, c >>= 4) {
+            int d = c & 0xF;
+            char hd;
+            if (d < 10) {
+                hd = (char) ((int) '0' + d);
+            } else {
+                hd = (char) ((int) 'A' + (d - 10));
+            }
+            sb.append(hd);
+        }
+        return "&#x" + sb.reverse() + ";";
+    }
+
+    /**
+     * Convert a string to a sequence of ASCII or XML numeric character references.
+     * @param s a java string (encoded in UTF-16)
+     * @return a string representing a sequence of numeric character reference or
+     * ASCII characters
+     */
+    public static String toNCRefs(String s) {
+        StringBuffer sb = new StringBuffer();
+        if (s != null) {
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if ((c >= 32) && (c < 127)) {
+                    if (c == '<') {
+                        sb.append("&lt;");
+                    } else if (c == '>') {
+                        sb.append("&gt;");
+                    } else if (c == '&') {
+                        sb.append("&amp;");
+                    } else {
+                        sb.append(c);
+                    }
+                } else {
+                    sb.append(charToNCRef(c));
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Pad a string S on left out to width W using padding character PAD.
+     * @param s string to pad
+     * @param width width of field to add padding
+     * @param pad character to use for padding
+     * @return padded string
+     */
+    public static String padLeft(String s, int width, char pad) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = s.length(); i < width; i++) {
+            sb.append(pad);
+        }
+        sb.append(s);
+        return sb.toString();
+    }
+
+    /**
+     * Format character for debugging output, which it is prefixed with "0x", padded left with '0'
+     * and either 4 or 6 hex characters in width according to whether it is in the BMP or not.
+     * @param c character code
+     * @return formatted character string
+     */
+    public static String format(int c) {
+        if (c < 1114112) {
+            return "0x" + padLeft(Integer.toString(c, 16), (c < 65536) ? 4 : 6, '0');
+        } else {
+            return "!NOT A CHARACTER!";
+        }
+    }
+
+    /**
+     * Determine if two character sequences contain the same characters.
+     * @param cs1 first character sequence
+     * @param cs2 second character sequence
+     * @return true if both sequences have same length and same character sequence
+     */
+    public static boolean isSameSequence(CharSequence cs1, CharSequence cs2) {
+        assert cs1 != null;
+        assert cs2 != null;
+        if (cs1.length() != cs2.length()) {
+            return false;
+        } else {
+            for (int i = 0, n = cs1.length(); i < n; i++) {
+                if (cs1.charAt(i) != cs2.charAt(i)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Determine whether the specified character (Unicode code point) is in then Basic
+     * Multilingual Plane (BMP). Such code points can be represented using a single {@code char}.
+     *
+     * @see Character#isBmpCodePoint(int) from Java 1.7
+     * @param  codePoint the character (Unicode code point) to be tested
+     * @return {@code true} if the specified code point is between  Character#MIN_VALUE and
+     *          Character#MAX_VALUE} inclusive; {@code false} otherwise
+     */
+    public static boolean isBmpCodePoint(int codePoint) {
+        return codePoint >>> 16 == 0;
+    }
+
+    /**
+     * Returns 1 if codePoint not in the BMP. This function is particularly useful in for
+     * loops over strings where, in presence of surrogate pairs, you need to skip one loop.
+     *
+     * @param codePoint 1 if codePoint &gt; 0xFFFF, 0 otherwise
+     * @return 1 if codePoint &gt; 0xFFFF, 0 otherwise
+     */
+    public static int incrementIfNonBMP(int codePoint) {
+        return isBmpCodePoint(codePoint) ? 0 : 1;
+    }
+
+    /**
+     * Determine if the given characters is part of a surrogate pair.
+     *
+     * @param ch character to be checked
+     * @return true if ch is an high surrogate or a low surrogate
+     */
+    public static boolean isSurrogatePair(char ch) {
+        return Character.isHighSurrogate(ch) || Character.isLowSurrogate(ch);
+    }
+
+    /**
+     * Tells whether there is a surrogate pair starting from the given index in the {@link CharSequence}. If the
+     * character at index is an high surrogate then the character at index+1 is checked to be a low surrogate. If a
+     * malformed surrogate pair is encountered then an {@link IllegalArgumentException} is thrown.
+     * <pre>
+     * high surrogate [0xD800 - 0xDC00]
+     * low surrogate [0xDC00 - 0xE000]
+     * </pre>
+     *
+     * @param chars CharSequence to check
+     * @param index index in the CharSequqnce where to start the check
+     * @throws IllegalArgumentException if there wrong usage of surrogate pairs
+     * @return true if there is a well-formed surrogate pair at index
+     */
+    public static boolean containsSurrogatePairAt(CharSequence chars, int index) {
+        char ch = chars.charAt(index);
+
+        if (Character.isHighSurrogate(ch)) {
+            if ((index + 1) > chars.length()) {
+                throw new IllegalArgumentException(
+                        "ill-formed UTF-16 sequence, contains isolated high surrogate at end of sequence");
+            }
+
+            if (Character.isLowSurrogate(chars.charAt(index + 1))) {
+                return true;
+            }
+
+            throw new IllegalArgumentException(
+                    "ill-formed UTF-16 sequence, contains isolated high surrogate at index " + index);
+
+        } else if (Character.isLowSurrogate(ch)) {
+            throw new IllegalArgumentException(
+                    "ill-formed UTF-16 sequence, contains isolated low surrogate at index " + index);
+        }
+
+        return false;
+    }
+
+    /**
+     * Creates an iterator to iter a {@link CharSequence} codepoints.
+     *
+     * @see #codepointsIter(CharSequence, int, int)
+     * @param s {@link CharSequence} to iter
+     * @return codepoint iterator for the given {@link CharSequence}.
+     */
+    public static Iterable<Integer> codepointsIter(final CharSequence s) {
+        return codepointsIter(s, 0, s.length());
+    }
+
+    /**
+     * Creates an iterator to iter a sub-CharSequence codepoints.
+     *
+     * @see <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=5003547">Bug JDK-5003547</a>
+     * @param s {@link CharSequence} to iter
+     * @param beginIndex lower range
+     * @param endIndex upper range
+     * @return codepoint iterator for the given sub-CharSequence.
+     */
+    public static Iterable<Integer> codepointsIter(final CharSequence s, final int beginIndex, final int endIndex) {
+        if (beginIndex < 0) {
+            throw new StringIndexOutOfBoundsException(beginIndex);
+        }
+        if (endIndex > s.length()) {
+            throw new StringIndexOutOfBoundsException(endIndex);
+        }
+        int subLen = endIndex - beginIndex;
+        if (subLen < 0) {
+            throw new StringIndexOutOfBoundsException(subLen);
+        }
+
+        return new Iterable<Integer>() {
+            public Iterator<Integer> iterator() {
+                return new Iterator<Integer>() {
+                    int nextIndex = beginIndex;
+
+                    public boolean hasNext() {
+                        return nextIndex < endIndex;
+                    }
+
+                    public Integer next() {
+                        if (!hasNext()) {
+                            // Findbugs wants this: IT_NO_SUCH_ELEMENT
+                            throw new NoSuchElementException();
+                        }
+                        int result = Character.codePointAt(s, nextIndex);
+                        nextIndex += Character.charCount(result);
+                        return result;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
     }
 }
-

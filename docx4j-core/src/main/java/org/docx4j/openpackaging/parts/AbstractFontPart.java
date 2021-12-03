@@ -22,19 +22,10 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.List;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.fonts.fop.fonts.CustomFont;
-import org.docx4j.fonts.fop.fonts.EncodingMode;
-import org.docx4j.fonts.fop.fonts.FontLoader;
-import org.docx4j.fonts.fop.fonts.FontResolver;
-import org.docx4j.fonts.fop.fonts.FontSetup;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,8 +5,11 @@ package org.docx4j.fonts;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+
+import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
-import org.docx4j.fonts.fop.fonts.FontResolver;
 import org.docx4j.fonts.fop.fonts.LazyFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
 
@@ -29,11 +32,11 @@ import org.docx4j.fonts.fop.fonts.Typeface;
  */
 public class PhysicalFont {
 	protected static Logger log = LoggerFactory.getLogger(PhysicalFont.class);		
-	protected FontResolver fontResolver = null;
+	protected InternalResourceResolver fontResolver = null;
 	protected boolean loadTypefaceFailed = false;
 	protected Typeface typeface = null;
 	
-	PhysicalFont(String name, EmbedFontInfo embedFontInfo, FontResolver fontResolver) {
+	PhysicalFont(String name, EmbedFontInfo embedFontInfo, InternalResourceResolver fontResolver) {
 		
 		try {
 			// Sanity check
@@ -58,7 +61,7 @@ public class PhysicalFont {
     	
 //    	setName(fontInfo.getPostScriptName());
     	
-		setEmbeddedFile(embedFontInfo.getEmbedFile());
+		setEmbeddedURI(embedFontInfo.getEmbedURI());
     	try {
         	setPanose(embedFontInfo.getPanose());		
 		} catch (Exception e) {
@@ -97,12 +100,12 @@ public class PhysicalFont {
 //		this.familyName = familyName;
 //	}
 			
-	String embeddedFile;
-	public String getEmbeddedFile() {
-		return embeddedFile;
+	URI embeddedURI;
+	public URI getEmbeddedURI() {
+		return embeddedURI;
 	}
-	public void setEmbeddedFile(String embeddedFile) {
-		this.embeddedFile = embeddedFile;
+	public void setEmbeddedURI(URI embeddedURI) {
+		this.embeddedURI = embeddedURI;
 	}
 	
 	org.docx4j.fonts.foray.font.format.Panose panose;
@@ -114,10 +117,10 @@ public class PhysicalFont {
 	}
 
 	public Typeface getTypeface() {
-	LazyFont lazyFont = null;
+		LazyFont lazyFont = null;
 		if (typeface == null) {
 			if (!loadTypefaceFailed) {
-				lazyFont = new LazyFont(embedFontInfo, fontResolver);
+				lazyFont = new LazyFont(embedFontInfo, fontResolver, false); // TODO: useComplexScripts
 				typeface = lazyFont.getRealFont();
 				loadTypefaceFailed = (typeface == null);
 			}

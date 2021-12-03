@@ -501,6 +501,11 @@ public class MailMerger {
 			if ( fr.getFldName().equals("MERGEFIELD") ) {
 				
 				String instr = extractInstr(fr.getInstructions() );
+				if (instr==null) {
+					log.warn("No instructions found in this field");
+					// TODO for various cases
+					continue;
+				}
 				String lang = extractLang(fr.getResultsSlot());
 				String datafieldName = getDatafieldNameFromInstr(instr);
 				String val = datamap.get( new DataFieldName(datafieldName));
@@ -701,7 +706,7 @@ public class MailMerger {
 		// For MERGEFIELD, expect the list to contain a simple string
 		
 		if (instructions.size()!=1) {
-			log.error("TODO MERGEFIELD field contained complex instruction");
+			log.warn("MERGEFIELD field contained complex instruction; attempting to process");
 			/* eg
 			 * 
 			 *    <w:r>
@@ -720,7 +725,20 @@ public class MailMerger {
 					}
 				}
 			 */
-			return null;
+			StringBuffer sb = new StringBuffer(); 
+			for (Object i : instructions) {
+				i = XmlUtils.unwrap(i);
+				if (i instanceof Text) {
+					String t = ((Text)i).getValue();
+					log.debug( t);
+					sb.append(t);
+				} else {
+					log.warn("Failed: non Text object encountered.");
+					log.debug(XmlUtils.marshaltoString(i, true, true) );
+					return null;					
+				}
+			}
+			return sb.toString();
 		}
 		
 		Object o = XmlUtils.unwrap(instructions.get(0));

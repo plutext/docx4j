@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.2.10-SNAPSHOT</revision>
+		<revision>8.3.3-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -30,23 +30,23 @@
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
         
-        <module>docx4j-JAXB-ReferenceImpl</module>
-        <module>docx4j-core-tests</module> <!--  needs a docx4j-JAXB  -->
+        <module>docx4j-JAXB-Internal</module> 
+        <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
         <module>docx4j-diffx</module>
         <module>docx4j-docx-anon</module>
-
-        <module>docx4j-export-fo</module>
+        
+        <module>docx4j-export-fo</module>        
         <module>docx4j-conversion-via-microsoft-graph</module>
         <module>docx4j-documents4j-remote</module>                
-        <module>docx4j-documents4j-local</module>  
-              
+        <module>docx4j-documents4j-local</module>        
+        
         <module>docx4j-JAXB-MOXy</module>
-        <!-- <module>docx4j-JAXB-Jakarta</module> -->
+        <module>docx4j-JAXB-ReferenceImpl</module>
         
         <module>docx4j-samples-resources</module>
         <module>docx4j-samples-docx4j</module>
         <module>docx4j-samples-docx-diffx</module>
-        <module>docx4j-samples-docx-export-fo</module> 
+        <module>docx4j-samples-docx-export-fo</module>
         <module>docx4j-samples-pptx4j</module>
         <module>docx4j-samples-xlsx4j</module>
         <module>docx4j-samples-glox4j</module>
@@ -54,9 +54,12 @@
         <module>docx4j-samples-conversion-via-microsoft-graph</module>
 
         <module>docx4j-samples-documents4j-remote</module>        
-        <module>docx4j-samples-documents4j-local</module>      
-
+        <module>docx4j-samples-documents4j-local</module>        
+        
         <module>docx4j-bundle</module>        
+        
+        <module>docx4j-legacy-service</module>        
+        
     </modules>
 	
 	<description>

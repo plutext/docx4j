@@ -607,7 +607,7 @@ public class RunFontSelector {
 		}
 		return EMOJI_FONT;
 	}
-         
+    
     private Object unicodeRangeToFont(String text, STHint hint, String langEastAsia,
     		String eastAsia, String ascii, String hAnsi) {
     	
@@ -636,7 +636,7 @@ public class RunFontSelector {
 //    		int cp = text.codePointAt(i);
     	    
     	    if (Character.isHighSurrogate(c)) {
-
+    	    	
     	    	// Populate previous span
     	    	vis.finishPrevious();
     	    	
@@ -1201,7 +1201,7 @@ public class RunFontSelector {
 		Object getResult();  // when used in output a DocumentFragment; when used to find fonts, a Set.
 
 	}
-
+	
 	// Arabic numbering stuff
 	
 	enum MicrosoftWordNumeralOption {

@@ -62,7 +62,9 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 			log.debug("Start conversion");
 			preprocessedPackage = preprocess(conversionSettings);
 			if (preprocessedPackage instanceof WordprocessingMLPackage) {
-				log.debug("Results of preprocess: " + ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getXML());
+				if (log.isDebugEnabled()) {
+					log.debug("Results of preprocess: " + ((WordprocessingMLPackage)preprocessedPackage).getMainDocumentPart().getXML());
+				}
 			}
 			currentTime = logDebugStep(log, "Preprocessing", currentTime);
 			

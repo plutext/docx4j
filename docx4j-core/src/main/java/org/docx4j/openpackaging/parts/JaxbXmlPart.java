@@ -39,8 +39,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.Location;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
@@ -71,6 +69,7 @@ import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOutputStream;
+import org.docx4j.org.apache.poi.util.XMLHelper;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
 import org.docx4j.utils.XMLStreamWriterWrapper;
@@ -247,7 +246,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @since 3.0.0
 	 */
 	public String getXML() {
-		return XmlUtils.marshaltoString( getJaxbElement(), true, true, jc );
+		
+		return XmlUtils.marshaltoString( getJaxbElement(), true, true, jc, getMcChoiceNamespaces() );
 	}
 	
 	public boolean isUnmarshalled(){
@@ -393,12 +393,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @throws JAXBException
 	 */
 	public void pipe(SAXHandler saxHandler) throws ParserConfigurationException, SAXException, Docx4JException, IOException, JAXBException {
-		
-	    SAXParserFactory spf = SAXParserFactory.newInstance();
-	    spf.setNamespaceAware(true);
-	    SAXParser saxParser = spf.newSAXParser();		
-		
-	    XMLReader xmlReader = saxParser.getXMLReader();
+				
+	    XMLReader xmlReader = XMLHelper.newXMLReader();
 	    xmlReader.setContentHandler(saxHandler);
 	    
 	    PartStore partStore = null;
@@ -1001,6 +997,19 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return sb.toString();
 	}
 
+	/**
+	 * Specify a namespace prefix (used in mc:Choice/@Requires) which
+	 * docx4j should declare on the top-level element of the part
+	 * (otherwise Microsoft Office won't be able to open the file).  
+	 * 
+	 * Specify a prefix (eg 'wpg') as opposed to the namespace itself.
+	 * 
+	 * This is often done automatically (see further McIgnorableNamespaceDeclarator),
+	 * but where it isn't, you should invoke this method directly
+	 * from your code.
+	 * 
+	 * @param mcChoiceNamespace
+	 */
 	public void addMcChoiceNamespace(String mcChoiceNamespace) {
 		this.mcChoiceNamespaces.add(mcChoiceNamespace);
 	}
@@ -1086,6 +1095,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
 						XmlUtils.transform(new StAXSource(xsr), 
 								mcPreprocessorXslt, null, result);
+						
+						// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+						// https://github.com/plutext/docx4j/issues/474
+						
 						jaxbElement = (E) XmlUtils.unwrap(
 								result.getResult() );	
 					} catch (Exception e) {
@@ -1137,6 +1150,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					
+					// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+					// https://github.com/plutext/docx4j/issues/474
+					
 					jaxbElement = (E) XmlUtils.unwrap(
 							result.getResult() );	
 				} catch (Exception e) {

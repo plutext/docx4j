@@ -550,7 +550,7 @@ public class TocEntry {
 		String runStyleId;
 		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();			
-			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId, false, false); 
+			resolvedRPr = propertyResolver.getEffectiveRPr(runStyleId, false, false, false); 
 			StyleUtil.apply(resolvedRPr, effectiveRPr);
 		}
 				

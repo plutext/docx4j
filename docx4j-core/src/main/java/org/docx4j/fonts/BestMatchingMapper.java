@@ -361,7 +361,7 @@ public class BestMatchingMapper extends Mapper {
 					
 						put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
 						log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
-								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedFile() );
+								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedURI() );
 					} else {
 						
 						log.debug("font with key " + panoseKey + " doesn't exist!");
@@ -455,7 +455,7 @@ public class BestMatchingMapper extends Mapper {
                     fontMatched = getPhysicalFontByKey(tokens[x]);
 					if (fontMatched != null) {
 
-						String physicalFontFile = fontMatched.getEmbeddedFile();
+						String physicalFontFile = fontMatched.getEmbeddedURI().toString();
 						log.debug("PDF: " + documentFontName + " --> "
 								+ physicalFontFile);
 						foundMapping = true;
@@ -516,7 +516,7 @@ public class BestMatchingMapper extends Mapper {
 			if (fontMatched!=null) {
 				put(documentFontName, fontMatched);
 				log.warn("Mapped " +  documentFontName  + " -->  " + fontMatched.getName() 
-						+ "( "+ fontMatched.getEmbeddedFile() );
+						+ "( "+ fontMatched.getEmbeddedURI() );
 			} else {
 				log.debug("Nothing added for: " + documentFontName);
 			}
@@ -564,7 +564,7 @@ public class BestMatchingMapper extends Mapper {
 		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, PhysicalFonts.getPhysicalFonts(),
 				MATCH_THRESHOLD); 
 		if ( resultingPanoseKey!=null ) {
-			log.info("--> " + PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey).getEmbeddedFile() );
+			log.info("--> " + PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey).getEmbeddedURI() );
         	return PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey);
 		}  else {
 			log.warn("No match in panose space");
@@ -735,7 +735,7 @@ public class BestMatchingMapper extends Mapper {
 	        if(pairs.getKey()==null) {
 	        	log.info("Skipped null key");
 	        	if (pairs.getValue()!=null) {
-	        		log.error(((PhysicalFont)pairs.getValue()).getEmbeddedFile());
+	        		log.error(((PhysicalFont)pairs.getValue()).getEmbeddedURI().toString());
 	        	}
 	        	
 	        	if (fontIterator.hasNext() ) {

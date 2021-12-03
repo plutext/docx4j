@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,17 +20,22 @@
  * limitations under the License.
  */
 
-/* $Id: FontTriplet.java 721430 2008-11-28 11:13:12Z acumiskey $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 
 /**
  * FontTriplet contains information on name, style and weight of one font
  */
-public class FontTriplet implements Comparable, Serializable {
+public class FontTriplet implements Comparable<FontTriplet>, Serializable {
+
+    public static final FontTriplet DEFAULT_FONT_TRIPLET
+            = new FontTriplet("any", Font.STYLE_NORMAL, Font.WEIGHT_NORMAL);
 
     /** serial version UID */
     private static final long serialVersionUID = 1168991106658033508L;
@@ -44,12 +48,8 @@ public class FontTriplet implements Comparable, Serializable {
     //This is only a cache
     private transient String key;
 
-    /**
-     * Creates a new font triplet (for base14 use).
-     * @param name font name
-     */
-    public FontTriplet(String name) {
-        this.name = name;
+    public FontTriplet() {
+        this(null, null, 0);
     }
 
     /**
@@ -70,10 +70,14 @@ public class FontTriplet implements Comparable, Serializable {
      * @param priority priority of this triplet/font mapping
      */
     public FontTriplet(String name, String style, int weight, int priority) {
-        this(name);
+        this.name = name;
         this.style = style;
         this.weight = weight;
         this.priority = priority;
+    }
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
     }
 
     /** @return the font name */
@@ -105,8 +109,8 @@ public class FontTriplet implements Comparable, Serializable {
     }
 
     /** {@inheritDoc} */
-    public int compareTo(Object o) {
-        return getKey().compareTo(((FontTriplet)o).getKey());
+    public int compareTo(FontTriplet o) {
+        return getKey().compareTo(o.getKey());
     }
 
     /** {@inheritDoc} */
@@ -149,6 +153,5 @@ public class FontTriplet implements Comparable, Serializable {
          */
         boolean matches(FontTriplet triplet);
     }
-
 }
 

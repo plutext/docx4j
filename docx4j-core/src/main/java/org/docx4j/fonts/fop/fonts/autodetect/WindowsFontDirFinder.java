@@ -3,8 +3,7 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
- /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +20,7 @@
  * limitations under the License.
  */
 
-/* $Id: WindowsFontDirFinder.java 679326 2008-07-24 09:35:34Z vhennebert $ */
+/* $Id$ */
 
 package org.docx4j.fonts.fop.fonts.autodetect;
 
@@ -31,10 +30,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+
 /**
  * FontFinder for native Windows platforms
  */
-public class WindowsFontDirFinder implements FontFinder {
+public class WindowsFontDirFinder implements FontDirFinder {
 
     /**
      * Attempts to read windir environment variable on windows
@@ -48,17 +49,26 @@ public class WindowsFontDirFinder implements FontFinder {
         } else {
             process = runtime.exec("cmd.exe /c echo %windir%");
         }
-        BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()));
-        return bufferedReader.readLine();
+        InputStreamReader isr = null;
+        BufferedReader bufferedReader = null;
+        String dir = "";
+        try {
+            isr = new InputStreamReader(process.getInputStream());
+            bufferedReader = new BufferedReader(isr);
+            dir = bufferedReader.readLine();
+        } finally {
+            IOUtils.closeQuietly(bufferedReader);
+            IOUtils.closeQuietly(isr);
+        }
+        return dir;
     }
 
     /**
      * {@inheritDoc}
      * @return a list of detected font files
      */
-    public List find() {
-        List fontDirList = new java.util.ArrayList();
+    public List<File> find() {
+        List<File> fontDirList = new java.util.ArrayList<File>();
         String windir = null;
         try {
             windir = System.getProperty("env.windir");
@@ -73,7 +83,8 @@ public class WindowsFontDirFinder implements FontFinder {
                 // should continue if this fails
             }
         }
-        File osFontsDir = null, psFontsDir = null;
+        File osFontsDir = null;
+        File psFontsDir = null;
         if (windir != null) {
             // remove any trailing '/'
             if (windir.endsWith("/")) {
