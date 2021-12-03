@@ -3,17 +3,16 @@
  * 
  * This notice is included to meet the condition in clause 4(b) of the License. 
  */
-
-  /*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,21 +22,31 @@
 
 package org.docx4j.fonts.fop.fonts;
 
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
+
+import org.docx4j.fonts.fop.fonts.AbstractCodePointMapping;
+
+// CSOFF: ConstantNameCheck
 
 public class CodePointMapping extends AbstractCodePointMapping {
 
 
-      public static final String STANDARD_ENCODING = "StandardEncoding";
-      public static final String ISOLATIN1_ENCODING = "ISOLatin1Encoding";
-      public static final String CE_ENCODING = "CEEncoding";
-      public static final String MAC_ROMAN_ENCODING = "MacRomanEncoding";
-      public static final String WIN_ANSI_ENCODING = "WinAnsiEncoding";
-      public static final String PDF_DOC_ENCODING = "PDFDocEncoding";
-      public static final String SYMBOL_ENCODING = "SymbolEncoding";
-      public static final String ZAPF_DINGBATS_ENCODING = "ZapfDingbatsEncoding";
-  
+    public static final String STANDARD_ENCODING = "StandardEncoding";
+
+    public static final String ISOLATIN1_ENCODING = "ISOLatin1Encoding";
+
+    public static final String CE_ENCODING = "CEEncoding";
+
+    public static final String MAC_ROMAN_ENCODING = "MacRomanEncoding";
+
+    public static final String WIN_ANSI_ENCODING = "WinAnsiEncoding";
+
+    public static final String PDF_DOC_ENCODING = "PDFDocEncoding";
+
+    public static final String SYMBOL_ENCODING = "SymbolEncoding";
+
+    public static final String ZAPF_DINGBATS_ENCODING = "ZapfDingbatsEncoding";
 
 
     public CodePointMapping(String name, int[] table) {
@@ -57,69 +66,52 @@ public class CodePointMapping extends AbstractCodePointMapping {
         CodePointMapping mapping = (CodePointMapping) mappings.get(encoding);
         if (mapping != null) {
             return mapping;
-        } 
-  
-        else if (encoding.equals(STANDARD_ENCODING)) {
-    mapping = new CodePointMapping(STANDARD_ENCODING, encStandardEncoding, namesStandardEncoding);
+
+        } else if (encoding.equals(STANDARD_ENCODING)) {
+            mapping = new CodePointMapping(STANDARD_ENCODING, encStandardEncoding, namesStandardEncoding);
             mappings.put(STANDARD_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(ISOLATIN1_ENCODING)) {
-    mapping = new CodePointMapping(ISOLATIN1_ENCODING, encISOLatin1Encoding, namesISOLatin1Encoding);
+
+        } else if (encoding.equals(ISOLATIN1_ENCODING)) {
+            mapping = new CodePointMapping(ISOLATIN1_ENCODING, encISOLatin1Encoding, namesISOLatin1Encoding);
             mappings.put(ISOLATIN1_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(CE_ENCODING)) {
-    mapping = new CodePointMapping(CE_ENCODING, encCEEncoding, namesCEEncoding);
+
+        } else if (encoding.equals(CE_ENCODING)) {
+            mapping = new CodePointMapping(CE_ENCODING, encCEEncoding, namesCEEncoding);
             mappings.put(CE_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(MAC_ROMAN_ENCODING)) {
-    mapping = new CodePointMapping(MAC_ROMAN_ENCODING, encMacRomanEncoding, namesMacRomanEncoding);
+
+        } else if (encoding.equals(MAC_ROMAN_ENCODING)) {
+            mapping = new CodePointMapping(MAC_ROMAN_ENCODING, encMacRomanEncoding, namesMacRomanEncoding);
             mappings.put(MAC_ROMAN_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(WIN_ANSI_ENCODING)) {
-    mapping = new CodePointMapping(WIN_ANSI_ENCODING, encWinAnsiEncoding, namesWinAnsiEncoding);
+
+        } else if (encoding.equals(WIN_ANSI_ENCODING)) {
+            mapping = new CodePointMapping(WIN_ANSI_ENCODING, encWinAnsiEncoding, namesWinAnsiEncoding);
             mappings.put(WIN_ANSI_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(PDF_DOC_ENCODING)) {
-    mapping = new CodePointMapping(PDF_DOC_ENCODING, encPDFDocEncoding, namesPDFDocEncoding);
+
+        } else if (encoding.equals(PDF_DOC_ENCODING)) {
+            mapping = new CodePointMapping(PDF_DOC_ENCODING, encPDFDocEncoding, namesPDFDocEncoding);
             mappings.put(PDF_DOC_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(SYMBOL_ENCODING)) {
-    mapping = new CodePointMapping(SYMBOL_ENCODING, encSymbolEncoding, namesSymbolEncoding);
+
+        } else if (encoding.equals(SYMBOL_ENCODING)) {
+            mapping = new CodePointMapping(SYMBOL_ENCODING, encSymbolEncoding, namesSymbolEncoding);
             mappings.put(SYMBOL_ENCODING, mapping);
             return mapping;
-        }
-  
-  
-        else if (encoding.equals(ZAPF_DINGBATS_ENCODING)) {
-    mapping = new CodePointMapping(ZAPF_DINGBATS_ENCODING, encZapfDingbatsEncoding, namesZapfDingbatsEncoding);
+
+        } else if (encoding.equals(ZAPF_DINGBATS_ENCODING)) {
+            mapping = new CodePointMapping(ZAPF_DINGBATS_ENCODING, encZapfDingbatsEncoding, namesZapfDingbatsEncoding);
             mappings.put(ZAPF_DINGBATS_ENCODING, mapping);
             return mapping;
-        }
-  
-  
 
-        throw new UnsupportedOperationException("Unknown encoding: " + encoding);
+        } else {
+            throw new UnsupportedOperationException("Unknown encoding: " + encoding);
+        }
     }
 
-  
     private static final int[] encStandardEncoding
         = {
             0x20, 0x0020, // space
@@ -277,8 +269,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfa, 0x0153, // oe
             0xfb, 0x00DF, // germandbls
         };
-  
-  
+
     private static final int[] encISOLatin1Encoding
         = {
             0x20, 0x0020, // space
@@ -487,8 +478,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfe, 0x00FE, // thorn
             0xff, 0x00FF, // ydieresis
         };
-  
-  
+
     private static final int[] encCEEncoding
         = {
             0x20, 0x0020, // space
@@ -713,8 +703,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfe, 0x021B, // tcommaaccent
             0xff, 0x02D9, // dotaccent
         };
-  
-  
+
     private static final int[] encMacRomanEncoding
         = {
             0x20, 0x0020, // space
@@ -931,8 +920,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xb4, 0x00A5, // yen
             0x7a, 0x007A, // z
         };
-  
-  
+
     private static final int[] encWinAnsiEncoding
         = {
             0x20, 0x0020, // space
@@ -1157,8 +1145,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfe, 0x00FE, // thorn
             0xff, 0x00FF, // ydieresis
         };
-  
-  
+
     private static final int[] encPDFDocEncoding
         = {
             0x18, 0x02D8, // breve
@@ -1397,8 +1384,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfe, 0x00FE, // thorn
             0xff, 0x00FF, // ydieresis
         };
-  
-  
+
     private static final int[] encSymbolEncoding
         = {
             0x20, 0x0020, // space
@@ -1596,8 +1582,7 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xfd, 0xF8FD, // bracerightmid
             0xfe, 0xF8FE, // bracerightbt
         };
-  
-  
+
     private static final int[] encZapfDingbatsEncoding
         = {
             0x20, 0x0020, // space
@@ -1804,48 +1789,557 @@ public class CodePointMapping extends AbstractCodePointMapping {
             0xFD, 0x27BD, // a190
             0xFE, 0x27BE, // a191
         };
-  
-  
 
     private static final String[] namesStandardEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quoteright",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "hyphen", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "quoteleft", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ null, null, null, null,     /*84*/ null, null, null, null,     /*88*/ null, null, null, null,     /*8C*/ null, null, null, null,     /*90*/ null, null, null, null,     /*94*/ null, null, null, null,     /*98*/ null, null, null, null,     /*9C*/ null, null, null, null,     /*A0*/ null, "exclamdown", "cent", "sterling",     /*A4*/ "fraction", "yen", "florin", "section",     /*A8*/ "currency", "quotesingle", "quotedblleft", "guillemotleft",     /*AC*/ "guilsinglleft", "guilsinglright", "fi", "fl",     /*B0*/ null, "endash", "dagger", "daggerdbl",     /*B4*/ "periodcentered", null, "paragraph", "bullet",     /*B8*/ "quotesinglbase", "quotedblbase", "quotedblright", "guillemotright",     /*BC*/ "ellipsis", "perthousand", null, "questiondown",     /*C0*/ null, "grave", "acute", "circumflex",     /*C4*/ "tilde", "macron", "breve", "dotaccent",     /*C8*/ "dieresis", null, "ring", "cedilla",     /*CC*/ null, "hungarumlaut", "ogonek", "caron",     /*D0*/ "emdash", null, null, null,     /*D4*/ null, null, null, null,     /*D8*/ null, null, null, null,     /*DC*/ null, null, null, null,     /*E0*/ null, "AE", null, "ordfeminine",     /*E4*/ null, null, null, null,     /*E8*/ "Lslash", "Oslash", "OE", "ordmasculine",     /*EC*/ null, null, null, null,     /*F0*/ null, "ae", null, null,     /*F4*/ null, "dotlessi", null, null,     /*F8*/ "lslash", "oslash", "oe", "germandbls",     /*FC*/ null, null, null, null
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quoteright",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "hyphen", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "quoteleft", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ null, null, null, null,
+    /*84*/ null, null, null, null,
+    /*88*/ null, null, null, null,
+    /*8C*/ null, null, null, null,
+    /*90*/ null, null, null, null,
+    /*94*/ null, null, null, null,
+    /*98*/ null, null, null, null,
+    /*9C*/ null, null, null, null,
+    /*A0*/ null, "exclamdown", "cent", "sterling",
+    /*A4*/ "fraction", "yen", "florin", "section",
+    /*A8*/ "currency", "quotesingle", "quotedblleft", "guillemotleft",
+    /*AC*/ "guilsinglleft", "guilsinglright", "fi", "fl",
+    /*B0*/ null, "endash", "dagger", "daggerdbl",
+    /*B4*/ "periodcentered", null, "paragraph", "bullet",
+    /*B8*/ "quotesinglbase", "quotedblbase", "quotedblright", "guillemotright",
+    /*BC*/ "ellipsis", "perthousand", null, "questiondown",
+    /*C0*/ null, "grave", "acute", "circumflex",
+    /*C4*/ "tilde", "macron", "breve", "dotaccent",
+    /*C8*/ "dieresis", null, "ring", "cedilla",
+    /*CC*/ null, "hungarumlaut", "ogonek", "caron",
+    /*D0*/ "emdash", null, null, null,
+    /*D4*/ null, null, null, null,
+    /*D8*/ null, null, null, null,
+    /*DC*/ null, null, null, null,
+    /*E0*/ null, "AE", null, "ordfeminine",
+    /*E4*/ null, null, null, null,
+    /*E8*/ "Lslash", "Oslash", "OE", "ordmasculine",
+    /*EC*/ null, null, null, null,
+    /*F0*/ null, "ae", null, null,
+    /*F4*/ null, "dotlessi", null, null,
+    /*F8*/ "lslash", "oslash", "oe", "germandbls",
+    /*FC*/ null, null, null, null
         };
-  
+
     private static final String[] namesISOLatin1Encoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quoteright",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "minus", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "quoteleft", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ null, null, null, null,     /*84*/ null, null, null, null,     /*88*/ null, null, null, null,     /*8C*/ null, null, null, null,     /*90*/ "dotlessi", "grave", null, "circumflex",     /*94*/ "tilde", null, "breve", "dotaccent",     /*98*/ null, null, "ring", null,     /*9C*/ null, "hungarumlaut", "ogonek", "caron",     /*A0*/ null, "exclamdown", "cent", "sterling",     /*A4*/ "currency", "yen", "brokenbar", "section",     /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",     /*AC*/ "logicalnot", "hyphen", "registered", "macron",     /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",     /*B4*/ "acute", "mu", "paragraph", "periodcentered",     /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",     /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",     /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",     /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",     /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",     /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",     /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",     /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",     /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",     /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",     /*E0*/ "agrave", "aacute", "acircumflex", "atilde",     /*E4*/ "adieresis", "aring", "ae", "ccedilla",     /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",     /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",     /*F0*/ "eth", "ntilde", "ograve", "oacute",     /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",     /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",     /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quoteright",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "minus", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "quoteleft", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ null, null, null, null,
+    /*84*/ null, null, null, null,
+    /*88*/ null, null, null, null,
+    /*8C*/ null, null, null, null,
+    /*90*/ "dotlessi", "grave", null, "circumflex",
+    /*94*/ "tilde", null, "breve", "dotaccent",
+    /*98*/ null, null, "ring", null,
+    /*9C*/ null, "hungarumlaut", "ogonek", "caron",
+    /*A0*/ null, "exclamdown", "cent", "sterling",
+    /*A4*/ "currency", "yen", "brokenbar", "section",
+    /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",
+    /*AC*/ "logicalnot", "hyphen", "registered", "macron",
+    /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",
+    /*B4*/ "acute", "mu", "paragraph", "periodcentered",
+    /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",
+    /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",
+    /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",
+    /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",
+    /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",
+    /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",
+    /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",
+    /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",
+    /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",
+    /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",
+    /*E0*/ "agrave", "aacute", "acircumflex", "atilde",
+    /*E4*/ "adieresis", "aring", "ae", "ccedilla",
+    /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",
+    /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",
+    /*F0*/ "eth", "ntilde", "ograve", "oacute",
+    /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",
+    /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",
+    /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
         };
-  
+
     private static final String[] namesCEEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quotesingle",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "hyphen", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "grave", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ null, null, "quotesinglbase", null,     /*84*/ "quotedblbase", "ellipsis", "dagger", "daggerdbl",     /*88*/ null, "perthousand", "Scaron", "guilsinglleft",     /*8C*/ "Sacute", "Tcaron", "Zcaron", "Zacute",     /*90*/ null, "quoteleft", "quoteright", "quotedblleft",     /*94*/ "quotedblright", "bullet", "endash", "emdash",     /*98*/ null, "trademark", "scaron", "guilsinglright",     /*9C*/ "sacute", "tcaron", "zcaron", "zacute",     /*A0*/ null, "caron", "breve", "Lslash",     /*A4*/ "currency", "Aogonek", "brokenbar", "section",     /*A8*/ "dieresis", "copyright", "Scommaaccent", "guillemotleft",     /*AC*/ "logicalnot", null, "registered", "Zdotaccent",     /*B0*/ "degree", "plusminus", "ogonek", "lslash",     /*B4*/ "acute", "mu", "paragraph", "periodcentered",     /*B8*/ "cedilla", "aogonek", "scommaaccent", "guillemotright",     /*BC*/ "Lcaron", "hungarumlaut", "lcaron", "zdotaccent",     /*C0*/ "Racute", "Aacute", "Acircumflex", "Abreve",     /*C4*/ "Adieresis", "Lacute", "Cacute", "Ccedilla",     /*C8*/ "Ccaron", "Eacute", "Eogonek", "Edieresis",     /*CC*/ "Ecaron", "Iacute", "Icircumflex", "Dcaron",     /*D0*/ "Dcroat", "Nacute", "Ncaron", "Oacute",     /*D4*/ "Ocircumflex", "Ohungarumlaut", "Odieresis", "multiply",     /*D8*/ "Rcaron", "Uring", "Uacute", "Uhungarumlaut",     /*DC*/ "Udieresis", "Yacute", "Tcommaaccent", "germandbls",     /*E0*/ "racute", "aacute", "acircumflex", "abreve",     /*E4*/ "adieresis", "lacute", "cacute", "ccedilla",     /*E8*/ "ccaron", "eacute", "eogonek", "edieresis",     /*EC*/ "ecaron", "iacute", "icircumflex", "dcaron",     /*F0*/ "dcroat", "nacute", "ncaron", "oacute",     /*F4*/ "ocircumflex", "ohungarumlaut", "odieresis", "divide",     /*F8*/ "rcaron", "uring", "uacute", "uhungarumlaut",     /*FC*/ "udieresis", "yacute", "tcommaaccent", "dotaccent"
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quotesingle",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "hyphen", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "grave", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ null, null, "quotesinglbase", null,
+    /*84*/ "quotedblbase", "ellipsis", "dagger", "daggerdbl",
+    /*88*/ null, "perthousand", "Scaron", "guilsinglleft",
+    /*8C*/ "Sacute", "Tcaron", "Zcaron", "Zacute",
+    /*90*/ null, "quoteleft", "quoteright", "quotedblleft",
+    /*94*/ "quotedblright", "bullet", "endash", "emdash",
+    /*98*/ null, "trademark", "scaron", "guilsinglright",
+    /*9C*/ "sacute", "tcaron", "zcaron", "zacute",
+    /*A0*/ null, "caron", "breve", "Lslash",
+    /*A4*/ "currency", "Aogonek", "brokenbar", "section",
+    /*A8*/ "dieresis", "copyright", "Scommaaccent", "guillemotleft",
+    /*AC*/ "logicalnot", null, "registered", "Zdotaccent",
+    /*B0*/ "degree", "plusminus", "ogonek", "lslash",
+    /*B4*/ "acute", "mu", "paragraph", "periodcentered",
+    /*B8*/ "cedilla", "aogonek", "scommaaccent", "guillemotright",
+    /*BC*/ "Lcaron", "hungarumlaut", "lcaron", "zdotaccent",
+    /*C0*/ "Racute", "Aacute", "Acircumflex", "Abreve",
+    /*C4*/ "Adieresis", "Lacute", "Cacute", "Ccedilla",
+    /*C8*/ "Ccaron", "Eacute", "Eogonek", "Edieresis",
+    /*CC*/ "Ecaron", "Iacute", "Icircumflex", "Dcaron",
+    /*D0*/ "Dcroat", "Nacute", "Ncaron", "Oacute",
+    /*D4*/ "Ocircumflex", "Ohungarumlaut", "Odieresis", "multiply",
+    /*D8*/ "Rcaron", "Uring", "Uacute", "Uhungarumlaut",
+    /*DC*/ "Udieresis", "Yacute", "Tcommaaccent", "germandbls",
+    /*E0*/ "racute", "aacute", "acircumflex", "abreve",
+    /*E4*/ "adieresis", "lacute", "cacute", "ccedilla",
+    /*E8*/ "ccaron", "eacute", "eogonek", "edieresis",
+    /*EC*/ "ecaron", "iacute", "icircumflex", "dcaron",
+    /*F0*/ "dcroat", "nacute", "ncaron", "oacute",
+    /*F4*/ "ocircumflex", "ohungarumlaut", "odieresis", "divide",
+    /*F8*/ "rcaron", "uring", "uacute", "uhungarumlaut",
+    /*FC*/ "udieresis", "yacute", "tcommaaccent", "dotaccent"
         };
-  
+
     private static final String[] namesMacRomanEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quotesingle",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "hyphen", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "grave", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ "Adieresis", "Aring", "Ccedilla", "Eacute",     /*84*/ "Ntilde", "Odieresis", "Udieresis", "aacute",     /*88*/ "agrave", "acircumflex", "adieresis", "atilde",     /*8C*/ "aring", "ccedilla", "eacute", "egrave",     /*90*/ "ecircumflex", "edieresis", "iacute", "igrave",     /*94*/ "icircumflex", "idieresis", "ntilde", "oacute",     /*98*/ "ograve", "ocircumflex", "odieresis", "otilde",     /*9C*/ "uacute", "ugrave", "ucircumflex", "udieresis",     /*A0*/ "dagger", "degree", "cent", "sterling",     /*A4*/ "section", "bullet", "paragraph", "germandbls",     /*A8*/ "registered", "copyright", "trademark", "acute",     /*AC*/ "dieresis", null, "AE", "Oslash",     /*B0*/ null, "plusminus", null, null,     /*B4*/ "yen", "mu", null, null,     /*B8*/ null, null, null, "ordfeminine",     /*BC*/ "ordmasculine", null, "ae", "oslash",     /*C0*/ "questiondown", "exclamdown", "logicalnot", null,     /*C4*/ "florin", null, null, "guillemotleft",     /*C8*/ "guillemotright", "ellipsis", null, "Agrave",     /*CC*/ "Atilde", "Otilde", "OE", "oe",     /*D0*/ "endash", "emdash", "quotedblleft", "quotedblright",     /*D4*/ "quoteleft", "quoteright", "divide", null,     /*D8*/ "ydieresis", "Ydieresis", "fraction", "currency",     /*DC*/ "guilsinglleft", "guilsinglright", "fi", "fl",     /*E0*/ "daggerdbl", "periodcentered", "quotesinglbase", "quotedblbase",     /*E4*/ "perthousand", "Acircumflex", "Ecircumflex", "Aacute",     /*E8*/ "Edieresis", "Egrave", "Iacute", "Icircumflex",     /*EC*/ "Idieresis", "Igrave", "Oacute", "Ocircumflex",     /*F0*/ null, "Ograve", "Uacute", "Ucircumflex",     /*F4*/ "Ugrave", "dotlessi", "circumflex", "tilde",     /*F8*/ "macron", "breve", "dotaccent", "ring",     /*FC*/ "cedilla", "hungarumlaut", "ogonek", "caron"
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quotesingle",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "hyphen", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "grave", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ "Adieresis", "Aring", "Ccedilla", "Eacute",
+    /*84*/ "Ntilde", "Odieresis", "Udieresis", "aacute",
+    /*88*/ "agrave", "acircumflex", "adieresis", "atilde",
+    /*8C*/ "aring", "ccedilla", "eacute", "egrave",
+    /*90*/ "ecircumflex", "edieresis", "iacute", "igrave",
+    /*94*/ "icircumflex", "idieresis", "ntilde", "oacute",
+    /*98*/ "ograve", "ocircumflex", "odieresis", "otilde",
+    /*9C*/ "uacute", "ugrave", "ucircumflex", "udieresis",
+    /*A0*/ "dagger", "degree", "cent", "sterling",
+    /*A4*/ "section", "bullet", "paragraph", "germandbls",
+    /*A8*/ "registered", "copyright", "trademark", "acute",
+    /*AC*/ "dieresis", null, "AE", "Oslash",
+    /*B0*/ null, "plusminus", null, null,
+    /*B4*/ "yen", "mu", null, null,
+    /*B8*/ null, null, null, "ordfeminine",
+    /*BC*/ "ordmasculine", null, "ae", "oslash",
+    /*C0*/ "questiondown", "exclamdown", "logicalnot", null,
+    /*C4*/ "florin", null, null, "guillemotleft",
+    /*C8*/ "guillemotright", "ellipsis", null, "Agrave",
+    /*CC*/ "Atilde", "Otilde", "OE", "oe",
+    /*D0*/ "endash", "emdash", "quotedblleft", "quotedblright",
+    /*D4*/ "quoteleft", "quoteright", "divide", null,
+    /*D8*/ "ydieresis", "Ydieresis", "fraction", "currency",
+    /*DC*/ "guilsinglleft", "guilsinglright", "fi", "fl",
+    /*E0*/ "daggerdbl", "periodcentered", "quotesinglbase", "quotedblbase",
+    /*E4*/ "perthousand", "Acircumflex", "Ecircumflex", "Aacute",
+    /*E8*/ "Edieresis", "Egrave", "Iacute", "Icircumflex",
+    /*EC*/ "Idieresis", "Igrave", "Oacute", "Ocircumflex",
+    /*F0*/ null, "Ograve", "Uacute", "Ucircumflex",
+    /*F4*/ "Ugrave", "dotlessi", "circumflex", "tilde",
+    /*F8*/ "macron", "breve", "dotaccent", "ring",
+    /*FC*/ "cedilla", "hungarumlaut", "ogonek", "caron"
         };
-  
+
     private static final String[] namesWinAnsiEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quotesingle",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "hyphen", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "grave", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ "Euro", null, "quotesinglbase", "florin",     /*84*/ "quotedblbase", "ellipsis", "dagger", "daggerdbl",     /*88*/ "circumflex", "perthousand", "Scaron", "guilsinglleft",     /*8C*/ "OE", null, "Zcaron", null,     /*90*/ null, "quoteleft", "quoteright", "quotedblleft",     /*94*/ "quotedblright", "bullet", "endash", "emdash",     /*98*/ "tilde", "trademark", "scaron", "guilsinglright",     /*9C*/ "oe", null, "zcaron", "Ydieresis",     /*A0*/ null, "exclamdown", "cent", "sterling",     /*A4*/ "currency", "yen", "brokenbar", "section",     /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",     /*AC*/ "logicalnot", null, "registered", "macron",     /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",     /*B4*/ "acute", "mu", "paragraph", "periodcentered",     /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",     /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",     /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",     /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",     /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",     /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",     /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",     /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",     /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",     /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",     /*E0*/ "agrave", "aacute", "acircumflex", "atilde",     /*E4*/ "adieresis", "aring", "ae", "ccedilla",     /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",     /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",     /*F0*/ "eth", "ntilde", "ograve", "oacute",     /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",     /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",     /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quotesingle",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "hyphen", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "grave", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ "Euro", null, "quotesinglbase", "florin",
+    /*84*/ "quotedblbase", "ellipsis", "dagger", "daggerdbl",
+    /*88*/ "circumflex", "perthousand", "Scaron", "guilsinglleft",
+    /*8C*/ "OE", null, "Zcaron", null,
+    /*90*/ null, "quoteleft", "quoteright", "quotedblleft",
+    /*94*/ "quotedblright", "bullet", "endash", "emdash",
+    /*98*/ "tilde", "trademark", "scaron", "guilsinglright",
+    /*9C*/ "oe", null, "zcaron", "Ydieresis",
+    /*A0*/ null, "exclamdown", "cent", "sterling",
+    /*A4*/ "currency", "yen", "brokenbar", "section",
+    /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",
+    /*AC*/ "logicalnot", null, "registered", "macron",
+    /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",
+    /*B4*/ "acute", "mu", "paragraph", "periodcentered",
+    /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",
+    /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",
+    /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",
+    /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",
+    /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",
+    /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",
+    /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",
+    /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",
+    /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",
+    /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",
+    /*E0*/ "agrave", "aacute", "acircumflex", "atilde",
+    /*E4*/ "adieresis", "aring", "ae", "ccedilla",
+    /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",
+    /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",
+    /*F0*/ "eth", "ntilde", "ograve", "oacute",
+    /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",
+    /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",
+    /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
         };
-  
+
     private static final String[] namesPDFDocEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ "breve", "caron", "circumflex", "dotaccent",     /*1C*/ "hungarumlaut", "ogonek", "ring", "tilde",     /*20*/ "space", "exclam", "quotedbl", "numbersign",     /*24*/ "dollar", "percent", "ampersand", "quotesingle",     /*28*/ "parenleft", "parenright", "asterisk", "plus",     /*2C*/ "comma", "hyphen", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "at", "A", "B", "C",     /*44*/ "D", "E", "F", "G",     /*48*/ "H", "I", "J", "K",     /*4C*/ "L", "M", "N", "O",     /*50*/ "P", "Q", "R", "S",     /*54*/ "T", "U", "V", "W",     /*58*/ "X", "Y", "Z", "bracketleft",     /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",     /*60*/ "grave", "a", "b", "c",     /*64*/ "d", "e", "f", "g",     /*68*/ "h", "i", "j", "k",     /*6C*/ "l", "m", "n", "o",     /*70*/ "p", "q", "r", "s",     /*74*/ "t", "u", "v", "w",     /*78*/ "x", "y", "z", "braceleft",     /*7C*/ "bar", "braceright", "asciitilde", null,     /*80*/ "bullet", "dagger", "daggerdbl", "ellipsis",     /*84*/ "emdash", "endash", "florin", "fraction",     /*88*/ "guilsinglleft", "guilsinglright", "minus", "perthousand",     /*8C*/ "quotedblbase", "quotedblleft", "quotedblright", "quoteleft",     /*90*/ "quoteright", "quotesinglbase", "trademark", "fi",     /*94*/ "fl", "Lslash", "OE", "Scaron",     /*98*/ "Ydieresis", "Zcaron", "dotlessi", "lslash",     /*9C*/ "oe", "scaron", "zcaron", null,     /*A0*/ "Euro", "exclamdown", "cent", "sterling",     /*A4*/ "currency", "yen", "brokenbar", "section",     /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",     /*AC*/ "logicalnot", null, "registered", "macron",     /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",     /*B4*/ "acute", "mu", "paragraph", "periodcentered",     /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",     /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",     /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",     /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",     /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",     /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",     /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",     /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",     /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",     /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",     /*E0*/ "agrave", "aacute", "acircumflex", "atilde",     /*E4*/ "adieresis", "aring", "ae", "ccedilla",     /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",     /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",     /*F0*/ "eth", "ntilde", "ograve", "oacute",     /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",     /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",     /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ "breve", "caron", "circumflex", "dotaccent",
+    /*1C*/ "hungarumlaut", "ogonek", "ring", "tilde",
+    /*20*/ "space", "exclam", "quotedbl", "numbersign",
+    /*24*/ "dollar", "percent", "ampersand", "quotesingle",
+    /*28*/ "parenleft", "parenright", "asterisk", "plus",
+    /*2C*/ "comma", "hyphen", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "at", "A", "B", "C",
+    /*44*/ "D", "E", "F", "G",
+    /*48*/ "H", "I", "J", "K",
+    /*4C*/ "L", "M", "N", "O",
+    /*50*/ "P", "Q", "R", "S",
+    /*54*/ "T", "U", "V", "W",
+    /*58*/ "X", "Y", "Z", "bracketleft",
+    /*5C*/ "backslash", "bracketright", "asciicircum", "underscore",
+    /*60*/ "grave", "a", "b", "c",
+    /*64*/ "d", "e", "f", "g",
+    /*68*/ "h", "i", "j", "k",
+    /*6C*/ "l", "m", "n", "o",
+    /*70*/ "p", "q", "r", "s",
+    /*74*/ "t", "u", "v", "w",
+    /*78*/ "x", "y", "z", "braceleft",
+    /*7C*/ "bar", "braceright", "asciitilde", null,
+    /*80*/ "bullet", "dagger", "daggerdbl", "ellipsis",
+    /*84*/ "emdash", "endash", "florin", "fraction",
+    /*88*/ "guilsinglleft", "guilsinglright", "minus", "perthousand",
+    /*8C*/ "quotedblbase", "quotedblleft", "quotedblright", "quoteleft",
+    /*90*/ "quoteright", "quotesinglbase", "trademark", "fi",
+    /*94*/ "fl", "Lslash", "OE", "Scaron",
+    /*98*/ "Ydieresis", "Zcaron", "dotlessi", "lslash",
+    /*9C*/ "oe", "scaron", "zcaron", null,
+    /*A0*/ "Euro", "exclamdown", "cent", "sterling",
+    /*A4*/ "currency", "yen", "brokenbar", "section",
+    /*A8*/ "dieresis", "copyright", "ordfeminine", "guillemotleft",
+    /*AC*/ "logicalnot", null, "registered", "macron",
+    /*B0*/ "degree", "plusminus", "twosuperior", "threesuperior",
+    /*B4*/ "acute", "mu", "paragraph", "periodcentered",
+    /*B8*/ "cedilla", "onesuperior", "ordmasculine", "guillemotright",
+    /*BC*/ "onequarter", "onehalf", "threequarters", "questiondown",
+    /*C0*/ "Agrave", "Aacute", "Acircumflex", "Atilde",
+    /*C4*/ "Adieresis", "Aring", "AE", "Ccedilla",
+    /*C8*/ "Egrave", "Eacute", "Ecircumflex", "Edieresis",
+    /*CC*/ "Igrave", "Iacute", "Icircumflex", "Idieresis",
+    /*D0*/ "Eth", "Ntilde", "Ograve", "Oacute",
+    /*D4*/ "Ocircumflex", "Otilde", "Odieresis", "multiply",
+    /*D8*/ "Oslash", "Ugrave", "Uacute", "Ucircumflex",
+    /*DC*/ "Udieresis", "Yacute", "Thorn", "germandbls",
+    /*E0*/ "agrave", "aacute", "acircumflex", "atilde",
+    /*E4*/ "adieresis", "aring", "ae", "ccedilla",
+    /*E8*/ "egrave", "eacute", "ecircumflex", "edieresis",
+    /*EC*/ "igrave", "iacute", "icircumflex", "idieresis",
+    /*F0*/ "eth", "ntilde", "ograve", "oacute",
+    /*F4*/ "ocircumflex", "otilde", "odieresis", "divide",
+    /*F8*/ "oslash", "ugrave", "uacute", "ucircumflex",
+    /*FC*/ "udieresis", "yacute", "thorn", "ydieresis"
         };
-  
+
     private static final String[] namesSymbolEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "exclam", "universal", "numbersign",     /*24*/ "existential", "percent", "ampersand", "suchthat",     /*28*/ "parenleft", "parenright", "asteriskmath", "plus",     /*2C*/ "comma", "minus", "period", "slash",     /*30*/ "zero", "one", "two", "three",     /*34*/ "four", "five", "six", "seven",     /*38*/ "eight", "nine", "colon", "semicolon",     /*3C*/ "less", "equal", "greater", "question",     /*40*/ "congruent", "Alpha", "Beta", "Chi",     /*44*/ "Delta", "Epsilon", "Phi", "Gamma",     /*48*/ "Eta", "Iota", "theta1", "Kappa",     /*4C*/ "Lambda", "Mu", "Nu", "Omicron",     /*50*/ "Pi", "Theta", "Rho", "Sigma",     /*54*/ "Tau", "Upsilon", "sigma1", "Omega",     /*58*/ "Xi", "Psi", "Zeta", "bracketleft",     /*5C*/ "therefore", "bracketright", "perpendicular", "underscore",     /*60*/ "radicalex", "alpha", "beta", "chi",     /*64*/ "delta", "epsilon", "phi", "gamma",     /*68*/ "eta", "iota", "phi1", "kappa",     /*6C*/ "lambda", "mu", "nu", "omicron",     /*70*/ "pi", "theta", "rho", "sigma",     /*74*/ "tau", "upsilon", "omega1", "omega",     /*78*/ "xi", "psi", "zeta", "braceleft",     /*7C*/ "bar", "braceright", "similar", null,     /*80*/ null, null, null, null,     /*84*/ null, null, null, null,     /*88*/ null, null, null, null,     /*8C*/ null, null, null, null,     /*90*/ null, null, null, null,     /*94*/ null, null, null, null,     /*98*/ null, null, null, null,     /*9C*/ null, null, null, null,     /*A0*/ "Euro", "Upsilon1", "minute", "lessequal",     /*A4*/ "fraction", "infinity", "florin", "club",     /*A8*/ "diamond", "heart", "spade", "arrowboth",     /*AC*/ "arrowleft", "arrowup", "arrowright", "arrowdown",     /*B0*/ "degree", "plusminus", "second", "greaterequal",     /*B4*/ "multiply", "proportional", "partialdiff", "bullet",     /*B8*/ "divide", "notequal", "equivalence", "approxequal",     /*BC*/ "ellipsis", "arrowvertex", "arrowhorizex", "carriagereturn",     /*C0*/ "aleph", "Ifraktur", "Rfraktur", "weierstrass",     /*C4*/ "circlemultiply", "circleplus", "emptyset", "intersection",     /*C8*/ "union", "propersuperset", "reflexsuperset", "notsubset",     /*CC*/ "propersubset", "reflexsubset", "element", "notelement",     /*D0*/ "angle", "gradient", "registerserif", "copyrightserif",     /*D4*/ "trademarkserif", "product", "radical", "dotmath",     /*D8*/ "logicalnot", "logicaland", "logicalor", "arrowdblboth",     /*DC*/ "arrowdblleft", "arrowdblup", "arrowdblright", "arrowdbldown",     /*E0*/ "lozenge", "angleleft", "registersans", "copyrightsans",     /*E4*/ "trademarksans", "summation", "parenlefttp", "parenleftex",     /*E8*/ "parenleftbt", "bracketlefttp", "bracketleftex", "bracketleftbt",     /*EC*/ "bracelefttp", "braceleftmid", "braceleftbt", "braceex",     /*F0*/ null, "angleright", "integral", "integraltp",     /*F4*/ "integralex", "integralbt", "parenrighttp", "parenrightex",     /*F8*/ "parenrightbt", "bracketrighttp", "bracketrightex", "bracketrightbt",     /*FC*/ "bracerighttp", "bracerightmid", "bracerightbt", null
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "exclam", "universal", "numbersign",
+    /*24*/ "existential", "percent", "ampersand", "suchthat",
+    /*28*/ "parenleft", "parenright", "asteriskmath", "plus",
+    /*2C*/ "comma", "minus", "period", "slash",
+    /*30*/ "zero", "one", "two", "three",
+    /*34*/ "four", "five", "six", "seven",
+    /*38*/ "eight", "nine", "colon", "semicolon",
+    /*3C*/ "less", "equal", "greater", "question",
+    /*40*/ "congruent", "Alpha", "Beta", "Chi",
+    /*44*/ "Delta", "Epsilon", "Phi", "Gamma",
+    /*48*/ "Eta", "Iota", "theta1", "Kappa",
+    /*4C*/ "Lambda", "Mu", "Nu", "Omicron",
+    /*50*/ "Pi", "Theta", "Rho", "Sigma",
+    /*54*/ "Tau", "Upsilon", "sigma1", "Omega",
+    /*58*/ "Xi", "Psi", "Zeta", "bracketleft",
+    /*5C*/ "therefore", "bracketright", "perpendicular", "underscore",
+    /*60*/ "radicalex", "alpha", "beta", "chi",
+    /*64*/ "delta", "epsilon", "phi", "gamma",
+    /*68*/ "eta", "iota", "phi1", "kappa",
+    /*6C*/ "lambda", "mu", "nu", "omicron",
+    /*70*/ "pi", "theta", "rho", "sigma",
+    /*74*/ "tau", "upsilon", "omega1", "omega",
+    /*78*/ "xi", "psi", "zeta", "braceleft",
+    /*7C*/ "bar", "braceright", "similar", null,
+    /*80*/ null, null, null, null,
+    /*84*/ null, null, null, null,
+    /*88*/ null, null, null, null,
+    /*8C*/ null, null, null, null,
+    /*90*/ null, null, null, null,
+    /*94*/ null, null, null, null,
+    /*98*/ null, null, null, null,
+    /*9C*/ null, null, null, null,
+    /*A0*/ "Euro", "Upsilon1", "minute", "lessequal",
+    /*A4*/ "fraction", "infinity", "florin", "club",
+    /*A8*/ "diamond", "heart", "spade", "arrowboth",
+    /*AC*/ "arrowleft", "arrowup", "arrowright", "arrowdown",
+    /*B0*/ "degree", "plusminus", "second", "greaterequal",
+    /*B4*/ "multiply", "proportional", "partialdiff", "bullet",
+    /*B8*/ "divide", "notequal", "equivalence", "approxequal",
+    /*BC*/ "ellipsis", "arrowvertex", "arrowhorizex", "carriagereturn",
+    /*C0*/ "aleph", "Ifraktur", "Rfraktur", "weierstrass",
+    /*C4*/ "circlemultiply", "circleplus", "emptyset", "intersection",
+    /*C8*/ "union", "propersuperset", "reflexsuperset", "notsubset",
+    /*CC*/ "propersubset", "reflexsubset", "element", "notelement",
+    /*D0*/ "angle", "gradient", "registerserif", "copyrightserif",
+    /*D4*/ "trademarkserif", "product", "radical", "dotmath",
+    /*D8*/ "logicalnot", "logicaland", "logicalor", "arrowdblboth",
+    /*DC*/ "arrowdblleft", "arrowdblup", "arrowdblright", "arrowdbldown",
+    /*E0*/ "lozenge", "angleleft", "registersans", "copyrightsans",
+    /*E4*/ "trademarksans", "summation", "parenlefttp", "parenleftex",
+    /*E8*/ "parenleftbt", "bracketlefttp", "bracketleftex", "bracketleftbt",
+    /*EC*/ "bracelefttp", "braceleftmid", "braceleftbt", "braceex",
+    /*F0*/ null, "angleright", "integral", "integraltp",
+    /*F4*/ "integralex", "integralbt", "parenrighttp", "parenrightex",
+    /*F8*/ "parenrightbt", "bracketrighttp", "bracketrightex", "bracketrightbt",
+    /*FC*/ "bracerighttp", "bracerightmid", "bracerightbt", null
         };
-  
+
     private static final String[] namesZapfDingbatsEncoding
     = {
-    /*00*/ null, null, null, null,     /*04*/ null, null, null, null,     /*08*/ null, null, null, null,     /*0C*/ null, null, null, null,     /*10*/ null, null, null, null,     /*14*/ null, null, null, null,     /*18*/ null, null, null, null,     /*1C*/ null, null, null, null,     /*20*/ "space", "a1", "a2", "a202",     /*24*/ "a3", "a4", "a5", "a119",     /*28*/ "a118", "a117", "a11", "a12",     /*2C*/ "a13", "a14", "a15", "a16",     /*30*/ "a105", "a17", "a18", "a19",     /*34*/ "a20", "a21", "a22", "a23",     /*38*/ "a24", "a25", "a26", "a27",     /*3C*/ "a28", "a6", "a7", "a8",     /*40*/ "a9", "a10", "a29", "a30",     /*44*/ "a31", "a32", "a33", "a34",     /*48*/ "a35", "a36", "a37", "a38",     /*4C*/ "a39", "a40", "a41", "a42",     /*50*/ "a43", "a44", "a45", "a46",     /*54*/ "a47", "a48", "a49", "a50",     /*58*/ "a51", "a52", "a53", "a54",     /*5C*/ "a55", "a56", "a57", "a58",     /*60*/ "a59", "a60", "a61", "a62",     /*64*/ "a63", "a64", "a65", "a66",     /*68*/ "a67", "a68", "a69", "a70",     /*6C*/ "a71", "a72", "a73", "a74",     /*70*/ "a203", "a75", "a204", "a76",     /*74*/ "a77", "a78", "a79", "a81",     /*78*/ "a82", "a83", "a84", "a97",     /*7C*/ "a98", "a99", "a100", null,     /*80*/ "a89", "a90", "a93", "a94",     /*84*/ "a91", "a92", "a205", "a85",     /*88*/ "a206", "a86", "a87", "a88",     /*8C*/ "a95", "a96", null, null,     /*90*/ null, null, null, null,     /*94*/ null, null, null, null,     /*98*/ null, null, null, null,     /*9C*/ null, null, null, null,     /*A0*/ null, "a101", "a102", "a103",     /*A4*/ "a104", "a106", "a107", "a108",     /*A8*/ "a112", "a111", "a110", "a109",     /*AC*/ "a120", "a121", "a122", "a123",     /*B0*/ "a124", "a125", "a126", "a127",     /*B4*/ "a128", "a129", "a130", "a131",     /*B8*/ "a132", "a133", "a134", "a135",     /*BC*/ "a136", "a137", "a138", "a139",     /*C0*/ "a140", "a141", "a142", "a143",     /*C4*/ "a144", "a145", "a146", "a147",     /*C8*/ "a148", "a149", "a150", "a151",     /*CC*/ "a152", "a153", "a154", "a155",     /*D0*/ "a156", "a157", "a158", "a159",     /*D4*/ "a160", "a161", "a163", "a164",     /*D8*/ "a196", "a165", "a192", "a166",     /*DC*/ "a167", "a168", "a169", "a170",     /*E0*/ "a171", "a172", "a173", "a162",     /*E4*/ "a174", "a175", "a176", "a177",     /*E8*/ "a178", "a179", "a193", "a180",     /*EC*/ "a199", "a181", "a200", "a182",     /*F0*/ null, "a201", "a183", "a184",     /*F4*/ "a197", "a185", "a194", "a198",     /*F8*/ "a186", "a195", "a187", "a188",     /*FC*/ "a189", "a190", "a191", null
+
+    /*00*/ null, null, null, null,
+    /*04*/ null, null, null, null,
+    /*08*/ null, null, null, null,
+    /*0C*/ null, null, null, null,
+    /*10*/ null, null, null, null,
+    /*14*/ null, null, null, null,
+    /*18*/ null, null, null, null,
+    /*1C*/ null, null, null, null,
+    /*20*/ "space", "a1", "a2", "a202",
+    /*24*/ "a3", "a4", "a5", "a119",
+    /*28*/ "a118", "a117", "a11", "a12",
+    /*2C*/ "a13", "a14", "a15", "a16",
+    /*30*/ "a105", "a17", "a18", "a19",
+    /*34*/ "a20", "a21", "a22", "a23",
+    /*38*/ "a24", "a25", "a26", "a27",
+    /*3C*/ "a28", "a6", "a7", "a8",
+    /*40*/ "a9", "a10", "a29", "a30",
+    /*44*/ "a31", "a32", "a33", "a34",
+    /*48*/ "a35", "a36", "a37", "a38",
+    /*4C*/ "a39", "a40", "a41", "a42",
+    /*50*/ "a43", "a44", "a45", "a46",
+    /*54*/ "a47", "a48", "a49", "a50",
+    /*58*/ "a51", "a52", "a53", "a54",
+    /*5C*/ "a55", "a56", "a57", "a58",
+    /*60*/ "a59", "a60", "a61", "a62",
+    /*64*/ "a63", "a64", "a65", "a66",
+    /*68*/ "a67", "a68", "a69", "a70",
+    /*6C*/ "a71", "a72", "a73", "a74",
+    /*70*/ "a203", "a75", "a204", "a76",
+    /*74*/ "a77", "a78", "a79", "a81",
+    /*78*/ "a82", "a83", "a84", "a97",
+    /*7C*/ "a98", "a99", "a100", null,
+    /*80*/ "a89", "a90", "a93", "a94",
+    /*84*/ "a91", "a92", "a205", "a85",
+    /*88*/ "a206", "a86", "a87", "a88",
+    /*8C*/ "a95", "a96", null, null,
+    /*90*/ null, null, null, null,
+    /*94*/ null, null, null, null,
+    /*98*/ null, null, null, null,
+    /*9C*/ null, null, null, null,
+    /*A0*/ null, "a101", "a102", "a103",
+    /*A4*/ "a104", "a106", "a107", "a108",
+    /*A8*/ "a112", "a111", "a110", "a109",
+    /*AC*/ "a120", "a121", "a122", "a123",
+    /*B0*/ "a124", "a125", "a126", "a127",
+    /*B4*/ "a128", "a129", "a130", "a131",
+    /*B8*/ "a132", "a133", "a134", "a135",
+    /*BC*/ "a136", "a137", "a138", "a139",
+    /*C0*/ "a140", "a141", "a142", "a143",
+    /*C4*/ "a144", "a145", "a146", "a147",
+    /*C8*/ "a148", "a149", "a150", "a151",
+    /*CC*/ "a152", "a153", "a154", "a155",
+    /*D0*/ "a156", "a157", "a158", "a159",
+    /*D4*/ "a160", "a161", "a163", "a164",
+    /*D8*/ "a196", "a165", "a192", "a166",
+    /*DC*/ "a167", "a168", "a169", "a170",
+    /*E0*/ "a171", "a172", "a173", "a162",
+    /*E4*/ "a174", "a175", "a176", "a177",
+    /*E8*/ "a178", "a179", "a193", "a180",
+    /*EC*/ "a199", "a181", "a200", "a182",
+    /*F0*/ null, "a201", "a183", "a184",
+    /*F4*/ "a197", "a185", "a194", "a198",
+    /*F8*/ "a186", "a195", "a187", "a188",
+    /*FC*/ "a189", "a190", "a191", null
         };
-  
+
 }
-  
