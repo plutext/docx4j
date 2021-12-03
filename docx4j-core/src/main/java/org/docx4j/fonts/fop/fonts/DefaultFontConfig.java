@@ -30,11 +30,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.fop.events.EventProducer;
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.configuration.Configuration;
 import org.docx4j.fonts.fop.configuration.ConfigurationException;
 import org.docx4j.fonts.fop.util.LogUtil;
+import org.docx4j.org.apache.fop.events.EventProducer;
 
 /**
  * The font configuration data for the more generic fonts such as TTF and Type1, that are used by

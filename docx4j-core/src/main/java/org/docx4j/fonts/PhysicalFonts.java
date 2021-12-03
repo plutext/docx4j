@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.fop.events.DefaultEventBroadcaster;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
@@ -25,6 +24,7 @@ import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
+import org.docx4j.org.apache.fop.events.DefaultEventBroadcaster;
 
 //import com.lowagie.text.pdf.BaseFont;
 

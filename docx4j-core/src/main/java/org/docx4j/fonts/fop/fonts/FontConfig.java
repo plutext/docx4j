@@ -24,9 +24,9 @@
 
 package org.docx4j.fonts.fop.fonts;
 
-import org.apache.fop.events.EventProducer;
 import org.docx4j.fonts.fop.apps.FOPException;
 import org.docx4j.fonts.fop.configuration.Configuration;
+import org.docx4j.org.apache.fop.events.EventProducer;
 
 /**
  * An interface for font configuration information.
