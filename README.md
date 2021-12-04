@@ -44,13 +44,13 @@ You should use one and only one of docx4j-JAXB-*
 docx4j for Java 11
 ------------------
 
-See https://github.com/plutext/docx4j/tree/docx4j-parent-11.1.8
+See https://github.com/plutext/docx4j/tree/VERSION_11_3_2
 
-docx4j 11.1.x - for use with Java 11 or later - is available in Maven Central.
+docx4j 11.3.x - for use with Java 11 or later - is available in Maven Central.
 
 Being a JPMS modularised release, the jars contain module-info.class entries.
 
-11.1.0 is compiled with Java 14, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.1.0.
+11.3.2 is compiled with Java 14, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.3.x.
 
 Aside from the use of named modules / module path, the releases pretty much track v8. 
 
