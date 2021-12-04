@@ -1,6 +1,5 @@
 module org.docx4j.core {
 	
-    requires com.fasterxml.jackson.databind;
     requires java.xml.crypto;
     requires jaxb.svg11;
 //    requires jcl.over.slf4j;
@@ -24,21 +23,20 @@ module org.docx4j.core {
     requires transitive jdk.xml.dom;
     requires transitive mbassador;
     requires transitive org.apache.commons.io;
-    requires transitive org.apache.httpcomponents.httpclient;
-    requires transitive org.apache.httpcomponents.httpcore;
     requires transitive docx4j_xalan_serializer;
 //    requires transitive slf4j.api;
     requires transitive stringtemplate;
     requires transitive docx4j_xalan_interpretive;
     requires transitive xmlgraphics.commons;
-    requires transitive com.fasterxml.jackson.core;
 	requires error.prone.annotations;
 	requires org.checkerframework.checker.qual;
 //	requires org.eclipse.persistence.moxy;
 //	requires org.eclipse.persistence.core;
 	
 	requires jdk.unsupported; // for org/docx4j/com/google/common/cache/  package sun.misc is not visible
-	requires java.logging; // for org/docx4j/com/google  TODO get rid of 
+	requires java.logging;
+	requires org.apache.fontbox;
+	requires qdox;
     
     exports org.docx4j;
     exports org.docx4j.convert.in;
@@ -134,7 +132,6 @@ module org.docx4j.core {
     exports org.docx4j.org.apache.xml.security.transforms.implementations;
     exports org.docx4j.org.apache.xml.security.transforms.params;
     exports org.docx4j.org.apache.xml.security.utils;
-    exports org.docx4j.services.client;
     exports org.docx4j.toc;
     exports org.docx4j.toc.switches;
     exports org.docx4j.utils;
