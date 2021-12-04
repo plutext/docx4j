@@ -52,7 +52,7 @@ Being a JPMS modularised release, the jars contain module-info.class entries.
 
 11.1.0 is compiled with Java 12, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.1.0.
 
-Aside from the use of named modules / module path, the releases pretty much track v8. However, docx4j-export-fo is temporarily omitted since FOP 2.3's avalon dependencies are not JPMS-friendly. 
+Aside from the use of named modules / module path, the releases pretty much track v8. 
 
 To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
 
