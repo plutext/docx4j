@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.2.9"/>
-	<property name="importxhtml-version" value="8.2.1"/>
+	<property name="version" value="11.3.2"/>
+	<property name="importxhtml-version" value="8.3.2"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
@@ -43,7 +43,7 @@
 		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	 -->
 	<!-- docx4j 8 settings: log4j-slf4j-impl should be used with SLF4J 1.7.x releases or older. --> 
-	<property name="logback-version" value="1.2.3"/>
+	<property name="logback-version" value="1.3.0-alpha4"/>
 	<property name="log4j-slf4j-impl" value="log4j-slf4j-impl"/>
 	
 	<!--.NET properties -->
@@ -51,42 +51,35 @@
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 
 	<!-- 
-		+- org.docx4j:docx4j-core:jar:8.3.0
-		|  +- org.docx4j:docx4j-openxml-objects:jar:8.3.0
-		|  +- org.docx4j:docx4j-openxml-objects-pml:jar:8.3.0
-		|  +- org.docx4j:docx4j-openxml-objects-sml:jar:8.3.0
-		|  +- org.plutext:jaxb-svg11:jar:1.0.2
-		|  +- net.engio:mbassador:jar:1.3.2
-		|  +- org.slf4j:jcl-over-slf4j:jar:1.7.26
-		|  +- org.apache.commons:commons-lang3:jar:3.9
-		|  +- org.apache.commons:commons-compress:jar:1.20
-		|  +- commons-codec:commons-codec:jar:1.12
-		|  +- commons-io:commons-io:jar:2.6
-		|  +- org.apache.httpcomponents:httpclient:jar:4.5.8
-		|  |  \- org.apache.httpcomponents:httpcore:jar:4.4.11
-		|  +- com.fasterxml.jackson.core:jackson-core:jar:2.9.9
-		|  +- com.fasterxml.jackson.core:jackson-databind:jar:2.9.9
-		|  |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0
-		|  +- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.3
-		|  +- org.docx4j.org.apache:xalan-metainf:jar:8.0.0
-		|  +- org.docx4j.org.apache:xalan-interpretive:jar:8.0.0
-		|  |  \- org.docx4j.org.apache:xalan-serializer:jar:8.0.0
-		|  +- net.arnx:wmf2svg:jar:0.9.8
-		|  +- org.antlr:antlr-runtime:jar:3.5.2
-		|  +- org.antlr:stringtemplate:jar:3.2.1
-		|  |  \- antlr:antlr:jar:2.7.7
-		|  +- org.checkerframework:checker-qual:jar:2.8.1
-		|  +- com.google.errorprone:error_prone_annotations:jar:2.3.3
+		org.docx4j:docx4j-core
+		+- org.docx4j:docx4j-openxml-objects:jar:11.3.2
+		+- org.docx4j:docx4j-openxml-objects-pml:jar:11.3.2
+		+- org.docx4j:docx4j-openxml-objects-sml:jar:11.3.2
 		
-		|  +- org.apache.pdfbox:fontbox:jar:2.0.19
-		|  |  \- commons-logging:commons-logging:jar:1.2
+		+- org.plutext:jaxb-svg11:jar:1.0.2
+		+- net.engio:mbassador:jar:1.3.2
 		
-		|  \- org.apache.xmlgraphics:fop-events:jar:2.5
-		|     +- org.apache.xmlgraphics:fop-util:jar:2.5
+		+- org.slf4j:jcl-over-slf4j:jar:1.7.26
+		+- org.apache.commons:commons-lang3:jar:3.9
+		+- org.apache.commons:commons-compress:jar:1.21
+		+- commons-codec:commons-codec:jar:1.12
+		+- commons-io:commons-io:jar:2.7
+		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.4
 		
-		|     +- com.thoughtworks.qdox:qdox:jar:1.12
-		|     \- org.apache.ant:ant:jar:1.8.2
-		|        \- org.apache.ant:ant-launcher:jar:1.8.2
+		+- org.docx4j.org.apache:xalan-interpretive:jar:11.0.0
+		|  \- org.docx4j.org.apache:xalan-serializer:jar:11.0.0
+		
+		+- net.arnx:wmf2svg:jar:0.9.8
+		+- org.antlr:antlr-runtime:jar:3.5.2
+		+- org.antlr:stringtemplate:jar:3.2.1
+		|  \- antlr:antlr:jar:2.7.7
+		+- org.checkerframework:checker-qual:jar:2.8.1
+		+- com.google.errorprone:error_prone_annotations:jar:2.3.3
+		+- org.apache.pdfbox:fontbox:jar:2.0.24
+		+- com.thoughtworks.qdox:qdox:jar:1.12
+		+- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.2
+		|  \- jakarta.activation:jakarta.activation-api:jar:1.2.1
+		+- org.slf4j:slf4j-api:jar:1.8.0-beta4
 	 -->
 	<path id="MavenDeps">
 
@@ -99,9 +92,8 @@
 		<pathelement location="${m2Repository}/commons-io/commons-io/2.7/commons-io-2.7.jar"/>
 		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.4/xmlgraphics-commons-2.4.jar"/>
 
-		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
-		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/8.0.0/xalan-interpretive-8.0.0.jar"/>
-		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/8.0.0/xalan-serializer-8.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/11.0.0/xalan-interpretive-11.0.0.jar"/>
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/11.0.0/xalan-serializer-11.0.0.jar"/>
 
 		<pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.8/wmf2svg-0.9.8.jar"/>
 
@@ -116,10 +108,9 @@
         <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/> -->
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-events/2.6/fop-events-2.6.jar"/>
         
-    	<pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-util/2.6/fop-util-2.6.jar"/>
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>        
 
-		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
+		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.8.0-beta4/slf4j-api-1.8.0-beta4.jar"/>
 		
 <!--
 		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
@@ -148,15 +139,11 @@
 		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
 
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.6/fop-2.6.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-util/2.6/fop-util-2.6.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-events/2.6/fop-events-2.6.jar"/>
 		<!--
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>
         <pathelement location="${m2Repository}/org/apache/ant/ant/1.8.2/ant-1.8.2.jar"/>
         <pathelement location="${m2Repository}/org/apache/ant/ant-launcher/1.8.2/ant-launcher-1.8.2.jar"/>
 		-->
-		
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-core/2.6/fop-core-2.6.jar"/>
 		
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.14/batik-anim-1.14.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.14/batik-css-1.14.jar"/>

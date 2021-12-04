@@ -1,6 +1,121 @@
 CHANGELOG
 =========
 
+
+Version 11.3.2  parity with 8.3.2
+==============
+￼
+Release date
+------------
+￼
+4 Dec 2021
+￼
+￼
+Contributors to this release
+----------------------------
+￼
+Jason Harrop
+￼
+￼
+Changes in Version 11.3.2 
+-------------------------
+
+Parity with 8.3.2￼
+
+Repackages fop-events to satisfy JPMS
+
+
+
+Version 8.3.2  
+==============
+
+Release date
+------------
+
+2 Dec 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Dheeraj3reddy 
+vdkuil 
+
+
+Significant Changes in Version 8.3.2 
+-------------------------
+
+ChartEx (eg the newish statistical, hierarchy and combo charts) changes so Word can open output, fixes #481 
+
+When saving as zip, STORE don't DEFLATE certain binary parts
+
+PDF via FO: bump FOP from 2.5 to 2.6
+
+PDF via documents4j: support pptx to pdf
+
+Address various security alerts
+
+
+Version 8.3.1  
+==============
+
+Release date
+------------
+
+12 July 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.3.1 
+-------------------------
+
+Fix known regressions in v8.3.0
+
+Concurrency fix in NamespacePrefixMapper (most obvious with MOXy); fixes #464
+
+PDF via FO: Output hyphenate, language and country attributes to support hyphenation in PDF output
+
+Move legacy PDF converter out of docx4j-core, reducing core deps
+
+
+
+Version 8.3.0  new deps:  fontbox and fop-events
+==============
+
+Release date
+------------
+
+31 May 2021
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+mayangsong
+
+
+Changes in Version 8.3.0 
+-------------------------
+
+PDF via FO: Update font discovery to FOP as of 18 Dec 2020
+
+Where bold/italic font variations are not available, use fop's simulate-style to  generate bold and oblique looking glyphs for PDF output.
+
+Support rPr spacing in PDF and HTML output, XHTML import.
+
+Rework FlatOpcXmlCreator to prevent marshaller elevating namespace decs to the package element.  Fixes #444
+
+Bump commons-compress to 1.20; fop to 2.5
+
+
+
 Version 11.2.9  namespaces required in documents created using recent Word updates; parity with 8.2.9
 ==============
 ￼

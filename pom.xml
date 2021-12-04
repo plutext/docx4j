@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.3-SNAPSHOT</revision>
+		<revision>11.3.2-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -30,7 +30,6 @@
         <module>docx4j-openxml-objects-sml</module>
         <module>docx4j-core</module>
         
-        <module>docx4j-JAXB-Internal</module> 
         <module>docx4j-core-tests</module> <!--  needs docx4j-JAXB-Internal  -->
         <module>docx4j-diffx</module>
         <module>docx4j-docx-anon</module>
@@ -91,7 +90,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>VERSION_11_2_9</tag>
+      <tag>VERSION_11_3_2</tag>
   </scm>
 	<inceptionYear>2007</inceptionYear>
 
