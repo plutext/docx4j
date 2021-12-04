@@ -187,8 +187,6 @@
 		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar" todir="${release.dir}"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar" todir="${release.dir}"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar" todir="${release.dir}"/>
-		<!-- include this for convenience; Java 8 -->
-		<copy file="${m2Repository}/org/docx4j/docx4j-JAXB-Internal/${version}/docx4j-JAXB-Internal-${version}.jar" todir="${release.dir}"/>
 
 		<copy file="CHANGELOG.md" todir="${release.dir}"/>
 
