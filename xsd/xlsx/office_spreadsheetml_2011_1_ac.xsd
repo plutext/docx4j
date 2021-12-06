@@ -3,8 +3,8 @@
 	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2011/1/ac"
 	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-	xmlns="xl12AcSchemaUri"	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns="xl12AcSchemaUri"	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
    
   <!-- From [MS-XLSX] — v20130726

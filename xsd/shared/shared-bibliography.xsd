@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" elementFormDefault="qualified"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 <!-- 
 	From ECMA-376 2ed

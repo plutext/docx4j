@@ -6,8 +6,8 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 xmlns="http://schemas.openxmlformats.org/officeDocument/2006/customXml" 
 xmlns:wbld="http://schemas.microsoft.com/office/word/2004/5/build" 
 xmlns:odoc="http://schemas.microsoft.com/office/internal/2005/internalDocumentation"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
 	<!-- 
 	

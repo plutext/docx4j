@@ -4,8 +4,8 @@
 	xmlns="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11"
 	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
   <!-- http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11 Schema
        from 

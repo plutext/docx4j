@@ -9,8 +9,8 @@
 	xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
 	xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
-    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
     
     <!-- 
     

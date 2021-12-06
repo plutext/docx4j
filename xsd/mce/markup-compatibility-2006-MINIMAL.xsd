@@ -3,8 +3,8 @@
 	attributeFormDefault="unqualified" elementFormDefault="qualified"
 	targetNamespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">           
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">           
            
   <!--  This XSD has 2 objectives:
   

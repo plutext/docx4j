@@ -6,8 +6,8 @@
 	xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
 <!--  Downloaded from http://msdn.microsoft.com/en-us/library/ee198341(v=office.12).aspx
       2011 05 18 

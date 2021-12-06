@@ -14,8 +14,8 @@ xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 xmlns:wvml="urn:schemas-microsoft-com:office:word" 
 xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
 xmlns:x="urn:schemas-microsoft-com:office:excel"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 
 

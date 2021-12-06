@@ -4,8 +4,8 @@
 	elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:oxsd="http://oxsdSchemaUri" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 <!-- 	
 	<xsd:import schemaLocation="oarte2o.xsd"

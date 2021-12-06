@@ -9,8 +9,8 @@
 	xmlns:oxsd="http://oxsdSchemaUri"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:rel="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
 
 <!--  drawmingml/2006/main 

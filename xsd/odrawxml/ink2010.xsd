@@ -5,8 +5,8 @@
 	xmlns="http://schemas.microsoft.com/ink/2010/main"
 	xmlns:msink="http://schemas.microsoft.com/ink/2010/main"
 	xmlns:oxsd="http://oxsdSchemaUri"
-    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
     
     <!-- 
     

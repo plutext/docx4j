@@ -5,8 +5,8 @@
 	xmlns:dc="http://purl.org/dc/elements/1.1/" 
 	xmlns:dcterms="http://purl.org/dc/terms/" 
 	elementFormDefault="qualified" blockDefault="#all"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 <!--	
   <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="http://dublincore.org/schemas/xmls/qdc/2003/04/02/dc.xsd" />

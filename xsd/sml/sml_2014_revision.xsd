@@ -3,8 +3,8 @@ elementFormDefault="qualified"
 xmlns="http://schemas.microsoft.com/office/spreadsheetml/2014/revision"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">

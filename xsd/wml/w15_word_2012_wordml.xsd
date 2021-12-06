@@ -4,8 +4,8 @@
 	elementFormDefault="qualified" attributeFormDefault="qualified"
 	blockDefault="#all" xmlns="http://schemas.microsoft.com/office/word/2012/wordml"
 	targetNamespace="http://schemas.microsoft.com/office/word/2012/wordml"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
   <!-- From [MS-DOCX] — v20121003
 Word Extensions to the Office Open XML (.docx) File Format

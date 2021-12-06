@@ -4,8 +4,8 @@
 				elementFormDefault="qualified"
 				xmlns:inkml="http://www.w3.org/2003/InkML"
 				xmlns:mathml="http://www.w3.org/1998/Math/MathML"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 
 	<xsd:annotation>
 		<xsd:appinfo>

@@ -6,8 +6,8 @@
 	targetNamespace="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"
 	elementFormDefault="qualified"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:xm="http://schemas.microsoft.com/office/excel/2006/main"	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
    
   <!-- From [MS-XLSX] — v20130726

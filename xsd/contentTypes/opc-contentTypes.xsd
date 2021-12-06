@@ -5,8 +5,8 @@
 	targetNamespace="http://schemas.openxmlformats.org/package/2006/content-types"
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
 	blockDefault="#all"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
 	<!-- 
  	 sh ~/jaxb-ri-20071219/bin/xjc.sh opc-contentTypes.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0		

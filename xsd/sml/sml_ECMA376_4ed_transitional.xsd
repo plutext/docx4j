@@ -8,8 +8,8 @@
 	xmlns:xr="http://schemas.microsoft.com/office/spreadsheetml/2014/revision" 
 	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 	elementFormDefault="qualified"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xjc="https://jakarta.ee/xml/ns/jaxb/xjc" jaxb:version="3.0">
 	
 <!--
 	Don't use xjc on this file; use it on sml_root instead
