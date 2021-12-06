@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 
-import javax.xml.bind.Binder;
+import jakarta.xml.bind.Binder;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.XmlUtils;
@@ -294,7 +294,7 @@ public class AlternateContentPreprocessorTest {
 			System.out.println(XmlUtils.marshaltoString(o));
 			Assert.fail("Expect an exception, since mark not supported");
 			
-		} catch (javax.xml.bind.UnmarshalException e){
+		} catch (jakarta.xml.bind.UnmarshalException e){
 			System.out.println("OK " + e.getMessage() + " OK");
 		}
 		

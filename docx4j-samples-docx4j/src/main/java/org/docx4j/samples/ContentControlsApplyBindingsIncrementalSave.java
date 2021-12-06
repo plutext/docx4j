@@ -23,7 +23,7 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;

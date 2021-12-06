@@ -2,7 +2,7 @@ package org.docx4j;
 
 import static org.junit.Assert.*;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import junit.framework.Assert;
 
@@ -21,11 +21,11 @@ public class XmlUtilsDeepCopyTest {
 	 * 
 	 * With moxY:
 	 * 
-	 *  java.lang.IllegalArgumentException: javax.xml.bind.UnmarshalException
+	 *  java.lang.IllegalArgumentException: jakarta.xml.bind.UnmarshalException
 	 *  
 		 - with linked exception:
 		[Exception [EclipseLink-25007] (Eclipse Persistence Services - 2.5.2.v20140319-9ad6abd): org.eclipse.persistence.exceptions.XMLMarshalException
-		Exception Description: A descriptor for class javax.xml.bind.JAXBElement was not found in the project.  
+		Exception Description: A descriptor for class jakarta.xml.bind.JAXBElement was not found in the project.  
 		For JAXB, if the JAXBContext was bootstrapped using TypeMappingInfo[] you must call a marshal method that accepts TypeMappingInfo 
 		as an input parameter.]
 

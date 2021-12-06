@@ -18,5 +18,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:powerpoint")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:powerpoint")
 package org.docx4j.vml.presentationDrawing;

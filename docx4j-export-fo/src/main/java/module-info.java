@@ -29,7 +29,8 @@ module org.docx4j.export_fo {
 		requires batik.gvt;
 		requires batik.transcoder;
 		requires batik.svggen;
-		requires org.apache.fontbox; // has an Automatic-Module-Name in its MANIFEST.MF
+		requires org.apache.fontbox;
+		requires jakarta.xml.bind; // has an Automatic-Module-Name in its MANIFEST.MF
 		//requires jai.core;
 		//requires jai.codec;
 

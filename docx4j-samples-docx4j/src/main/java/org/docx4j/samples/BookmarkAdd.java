@@ -23,8 +23,8 @@ package org.docx4j.samples;
 
 import java.math.BigInteger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;

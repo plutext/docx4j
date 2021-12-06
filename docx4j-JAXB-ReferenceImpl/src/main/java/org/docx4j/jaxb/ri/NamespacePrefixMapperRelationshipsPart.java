@@ -25,7 +25,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperInterface;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
+public class NamespacePrefixMapperRelationshipsPart extends org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper  implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
 //	private String mcIgnorable;
 	public void setMcIgnorable(String mcIgnorable) {

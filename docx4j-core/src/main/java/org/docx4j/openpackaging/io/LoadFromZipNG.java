@@ -40,8 +40,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
@@ -685,7 +685,7 @@ public class LoadFromZipNG extends Load {
 							
 						}
 						
-					} catch (javax.xml.bind.UnmarshalException ue) {
+					} catch (jakarta.xml.bind.UnmarshalException ue) {
 
 						log.warn("No JAXB model for this CustomXmlDataStorage part; " + ue.getMessage()  );
 						

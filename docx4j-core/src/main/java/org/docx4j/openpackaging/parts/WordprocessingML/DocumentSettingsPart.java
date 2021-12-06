@@ -31,7 +31,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.jaxb.Context;

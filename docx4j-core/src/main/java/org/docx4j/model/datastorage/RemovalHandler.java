@@ -26,8 +26,8 @@ import static org.docx4j.model.datastorage.RemovalHandler.Quantifier.NAMED;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.util.JAXBResult;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.util.JAXBResult;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;

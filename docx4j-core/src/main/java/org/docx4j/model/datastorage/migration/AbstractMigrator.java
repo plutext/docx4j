@@ -3,7 +3,7 @@ package org.docx4j.model.datastorage.migration;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.customXmlProperties.DatastoreItem;
 import org.docx4j.customXmlProperties.SchemaRefs;

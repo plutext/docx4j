@@ -1,6 +1,6 @@
 package org.docx4j.jaxb;
 
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;

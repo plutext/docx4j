@@ -21,8 +21,8 @@
 
 package org.docx4j.wml; 
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import org.docx4j.w14.CTFillTextEffect;
 import org.docx4j.w14.CTGlow;

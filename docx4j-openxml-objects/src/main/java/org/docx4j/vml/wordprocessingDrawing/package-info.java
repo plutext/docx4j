@@ -18,5 +18,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:word")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:word")
 package org.docx4j.vml.wordprocessingDrawing;

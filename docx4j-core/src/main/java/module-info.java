@@ -19,7 +19,6 @@ module org.docx4j.core {
     requires transitive antlr.runtime;
     requires transitive java.desktop;
     requires transitive java.xml;
-    requires transitive java.xml.bind;
     requires transitive jdk.xml.dom;
     requires transitive mbassador;
     requires transitive org.apache.commons.io;
@@ -37,6 +36,7 @@ module org.docx4j.core {
 	requires java.logging;
 	requires org.apache.fontbox;
 	requires qdox;
+	requires jakarta.xml.bind;
     
     exports org.docx4j;
     exports org.docx4j.convert.in;
@@ -160,15 +160,15 @@ module org.docx4j.core {
     exports org.opendope.questions;
     exports org.opendope.xpaths;
 
-    opens org.opendope.SmartArt.dataHierarchy to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.opendope.answers to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.opendope.components to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.opendope.conditions to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.opendope.questions to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.opendope.xpaths to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.SmartArt.dataHierarchy to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.answers to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.components to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.conditions to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.questions to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.opendope.xpaths to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
-    opens org.docx4j.openpackaging.contenttype to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
-    opens org.docx4j.model.structure.jaxb  to java.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.docx4j.openpackaging.contenttype to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    opens org.docx4j.model.structure.jaxb  to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
     opens org.docx4j.model.datastorage;//  to java.xml.bind, com.sun.xml.bind; // for HistgramQNameTest
 

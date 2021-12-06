@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;

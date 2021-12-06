@@ -24,16 +24,16 @@ package org.docx4j.wml;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRefs;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.docx4j.math.CTOMath;
 import org.docx4j.math.CTOMathPara;
@@ -1158,7 +1158,7 @@ public class P implements Child, ContentAccessor
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
 		    	List runContent = run.getContent();
 				for (Object o2 : runContent ) {					
-					if ( o2 instanceof javax.xml.bind.JAXBElement) {
+					if ( o2 instanceof jakarta.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
 						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
 //					    	System.out.println("Found Text");

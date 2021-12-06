@@ -1,6 +1,6 @@
 package org.docx4j.model.properties.table.tr;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.XmlUtils;

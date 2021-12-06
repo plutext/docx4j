@@ -17,5 +17,5 @@
     limitations under the License.
 
  */
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://purl.org/dc/terms/", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://purl.org/dc/terms/", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.docx4j.docProps.core.dc.terms;

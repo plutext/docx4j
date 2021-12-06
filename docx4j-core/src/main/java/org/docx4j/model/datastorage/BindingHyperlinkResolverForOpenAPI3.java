@@ -1,6 +1,6 @@
 package org.docx4j.model.datastorage;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.P.Hyperlink;

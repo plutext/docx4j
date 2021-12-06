@@ -1,6 +1,6 @@
 package org.docx4j.openpackaging.parts.SpreadsheetML;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;

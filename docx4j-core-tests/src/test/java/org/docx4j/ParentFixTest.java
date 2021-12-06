@@ -9,8 +9,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 
 import junit.framework.Assert;
 
@@ -191,7 +191,7 @@ public class ParentFixTest {
 		} else if (o2.getParent() instanceof JAXBElement) {
 
 			// 3.3.0: Sad but true
-			// <= 3.3.0: org.docx4j.wml.CTBookmark has parent class javax.xml.bind.JAXBElement - NOT GOOD
+			// <= 3.3.0: org.docx4j.wml.CTBookmark has parent class jakarta.xml.bind.JAXBElement - NOT GOOD
 			Assert.assertEquals(JAXBElement.class, o2.getParent().getClass() );
 			
 			// Traverse to fix

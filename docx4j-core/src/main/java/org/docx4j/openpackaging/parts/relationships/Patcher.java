@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;

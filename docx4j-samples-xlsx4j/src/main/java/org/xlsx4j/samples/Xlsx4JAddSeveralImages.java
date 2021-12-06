@@ -2,7 +2,7 @@ package org.xlsx4j.samples;
 
 import java.io.File;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;

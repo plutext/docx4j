@@ -25,7 +25,7 @@ import org.docx4j.jaxb.NamespacePrefixMapperInterface;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 
-public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper 
+public class NamespacePrefixMapper extends org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper 
 	implements NamespacePrefixMapperInterface, McIgnorableNamespaceDeclarator {
 	
 	private ThreadLocal<String> mcIgnorable = new ThreadLocal<String>();

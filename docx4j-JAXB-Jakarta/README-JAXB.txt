@@ -5,7 +5,7 @@
 </dependency>
 
 had module name java.xml.bind
-and packages javax.xml.bind
+and packages jakarta.xml.bind
 
 
 <dependency>

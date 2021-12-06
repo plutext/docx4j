@@ -139,7 +139,7 @@ public final class DiagramDrawingPart extends JaxbDmlPart<CTDataModel> {
 
 						for (Object o : children) {
 
-							// if its wrapped in javax.xml.bind.JAXBElement, get its
+							// if its wrapped in jakarta.xml.bind.JAXBElement, get its
 							// value
 							o = XmlUtils.unwrap(o);
 

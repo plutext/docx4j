@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.UnmarshalException;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.Location;
@@ -92,12 +92,12 @@ import org.xml.sax.XMLReader;
  *  
  *  This class provides only one of the methods for serializing (marshalling) the 
  *  Java content tree back into XML data found in 
- *  javax.xml.bind.Marshaller interface.  You can always use 
+ *  jakarta.xml.bind.Marshaller interface.  You can always use 
  *  any of the others by getting the jaxbElement required by those
  *  methods.
  *  
  *  Insofar as unmarshalling is concerned, at present it doesn't 
- *  contain all the methods in javax.xml.bind.unmarshaller interface.
+ *  contain all the methods in jakarta.xml.bind.unmarshaller interface.
  *  This is because the content always comes from the same place
  *  (ie from a zip file or JCR via org.docx4j.io.*).  
  *  TODO - what is the best thing to unmarshall from?

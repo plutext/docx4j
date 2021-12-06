@@ -15,8 +15,8 @@ import org.docx4j.wml.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -89,7 +89,7 @@ public class FieldsPreprocessor {
 			// so we can set JaxbValidationEventHandler
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+			jakarta.xml.bind.util.JAXBResult result = new jakarta.xml.bind.util.JAXBResult(u );
 								
 			org.docx4j.XmlUtils.transform(doc, xslt, null, result);
 			

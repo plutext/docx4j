@@ -20,7 +20,7 @@
 package org.xlsx4j.jaxb;
 
 
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
 import org.docx4j.jaxb.ProviderProperties;
 import org.slf4j.Logger;

@@ -6,4 +6,4 @@
 # 1. run ant JAXB-switch-from-MOXy-to-Oracle
 # 2. in pom.xml, comment those things again
 
-javax.xml.bind.context.factory=org.eclipse.persistence.jaxb.JAXBContextFactory
+jakarta.xml.bind.context.factory=org.eclipse.persistence.jaxb.JAXBContextFactory

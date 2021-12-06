@@ -20,7 +20,7 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.dml.CTTableStyleList;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

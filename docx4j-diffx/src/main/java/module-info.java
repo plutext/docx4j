@@ -2,6 +2,7 @@ module org.docx4j.docx4j_diffx {
 
 	requires org.slf4j;
 	requires org.docx4j.core;
+	requires jakarta.xml.bind;
 //	requires docx4j_openxml_objects;
     
     exports com.topologi.diffx;

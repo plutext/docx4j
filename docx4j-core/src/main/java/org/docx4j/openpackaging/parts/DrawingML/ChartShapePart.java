@@ -19,7 +19,7 @@
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.dml.chartDrawing.CTDrawing;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

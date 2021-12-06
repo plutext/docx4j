@@ -1,6 +1,6 @@
 package org.docx4j.samples;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
@@ -26,7 +26,7 @@ public class MathsEquationsFormulae {
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();		
 		P p = new P();
 		mdp.getContent().add(p);
-		javax.xml.bind.JAXBElement omathpara = (JAXBElement) XmlUtils.unmarshalString(openXML); // or could have used generated code which uses JAXB factory approach
+		jakarta.xml.bind.JAXBElement omathpara = (JAXBElement) XmlUtils.unmarshalString(openXML); // or could have used generated code which uses JAXB factory approach
 		p.getContent().add(omathpara);
 		String filename = System.getProperty("user.dir") + "/OUT_maths.docx";
 		Docx4J.save(wordMLPackage, new java.io.File(filename), Docx4J.FLAG_SAVE_ZIP_FILE); 

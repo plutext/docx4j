@@ -3,7 +3,7 @@ package org.docx4j.convert.out.XSLFO;
 import java.io.File;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.preprocess.ParagraphStylesInTableFix;

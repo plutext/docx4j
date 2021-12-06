@@ -2,7 +2,7 @@ package org.docx4j.openpackaging;
 
 import static org.junit.Assert.*;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.exceptions.Docx4JException;

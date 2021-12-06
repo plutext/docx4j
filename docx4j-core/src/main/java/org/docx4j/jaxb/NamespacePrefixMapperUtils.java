@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,16 +57,6 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
-		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
-			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
-			try {
-				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapper");
-				prefixMapper = c.newInstance();
-				return prefixMapper;
-			} catch (Exception e) {
-				throw new JAXBException("Can't create internal NamespacePrefixMapper", e);
-			}
-		}
 		Marshaller m=testContext.createMarshaller();		
 		return tryUsingRI(m);			
 
@@ -79,14 +69,14 @@ public class NamespacePrefixMapperUtils {
 			Class c = Class.forName("org.docx4j.jaxb.ri.NamespacePrefixMapper");
 			prefixMapper = c.newInstance();
 			
-			// Weird javax.xml.bind.PropertyException: property "com.sun.xml.bind.namespacePrefixMapper" 
+			// Weird jakarta.xml.bind.PropertyException: property "com.sun.xml.bind.namespacePrefixMapper" 
 			// must be an instance of type com.sun.xml.bind.marshaller.NamespacePrefixMapper, 
 			// not org.docx4j.jaxb.ri.NamespacePrefixMapper
 	        // at com.sun.xml.bind.v2.runtime.MarshallerImpl.setProperty(MarshallerImpl.java:502)
 			// with ServiceMix 5.4.1 and org.apache.servicemix.bundles.jaxb-impl 2.2.11_1
 			// Recommend you upgrade to ServiceMix 7.0.1, which works
 			
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", prefixMapper );
+			m.setProperty("org.glassfish.jaxb.namespacePrefixMapper", prefixMapper );
 			// Try RI suitable one
 			log.info("Using ri.NamespacePrefixMapper, which is suitable for the JAXB RI");
 			return prefixMapper;
@@ -120,16 +110,6 @@ public class NamespacePrefixMapperUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.NamespacePrefixMapper", e);
 			}
 		}
-		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
-			log.info("Using com.sun.xml.internal NamespacePrefixMapper");
-			try {
-				Class c = Class.forName("org.docx4j.jaxb.suninternal.NamespacePrefixMapperRelationshipsPart");
-				prefixMapperRels = c.newInstance();
-				return prefixMapperRels;
-			} catch (Exception e) {
-				throw new JAXBException("Can't create internal NamespacePrefixMapperRelationshipsPart", e);
-			}
-		}
 		
 		Marshaller m=testContext.createMarshaller();
 		
@@ -144,7 +124,7 @@ public class NamespacePrefixMapperUtils {
 			Class c = Class.forName("org.docx4j.jaxb.ri.NamespacePrefixMapperRelationshipsPart");
 			prefixMapperRels = c.newInstance();
 			
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", prefixMapperRels );
+			m.setProperty("org.glassfish.jaxb.namespacePrefixMapper", prefixMapper );
 			// Try RI suitable one
 			log.info("Using ri.NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
 			return prefixMapperRels;
@@ -182,19 +162,12 @@ public class NamespacePrefixMapperUtils {
 			} else if ( Context.getJaxbImplementation() == JAXBImplementation.REFERENCE 
 					|| Context.getJaxbImplementation() == JAXBImplementation.IBM_WEBSPHERE_XLXP ) {
 			
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+				marshaller.setProperty("org.glassfish.jaxb.namespacePrefixMapper", 
 						namespacePrefixMapper ); 
 			
 				// Reference implementation appears to be present (in endorsed dir?)
-				log.debug("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+				log.debug("setProperty: org.glassfish.jaxb.namespacePrefixMapper");
 //				System.out.println("setProperty: com.sun.xml.bind.namespacePrefixMapper");
-				
-			} else if ( Context.getJaxbImplementation() == JAXBImplementation.ORACLE_JRE ) {
-
-				// Use JAXB distributed in Java 6 - note 'internal' 
-				log.debug("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
-				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", namespacePrefixMapper);
-//				System.out.println("setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 				
 			} else {
 
@@ -204,7 +177,7 @@ public class NamespacePrefixMapperUtils {
 				
 			}
 			
-		} catch (javax.xml.bind.PropertyException e) {
+		} catch (jakarta.xml.bind.PropertyException e) {
 			
 			log.error("Couldn't setProperty on marshaller " + marshaller.getClass().getName() );
 			log.error(e.getMessage(), e);

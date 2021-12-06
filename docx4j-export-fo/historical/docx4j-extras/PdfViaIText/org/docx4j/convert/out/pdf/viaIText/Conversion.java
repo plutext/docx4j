@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,7 +212,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				
 				log.debug("not traversing into unhandled Node: " + ((org.w3c.dom.Node)o).getNodeName() );
 				
-			} else if ( o instanceof javax.xml.bind.JAXBElement) {
+			} else if ( o instanceof jakarta.xml.bind.JAXBElement) {
 
 				log.debug( "Encountered " + ((JAXBElement) o).getDeclaredType().getName() );
 					
@@ -314,7 +314,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 				for (Object rc : runContent) {
 
-					if (rc instanceof javax.xml.bind.JAXBElement) {
+					if (rc instanceof jakarta.xml.bind.JAXBElement) {
 
 						log.debug("Encountered "
 								+ ((JAXBElement) rc).getDeclaredType()
@@ -370,7 +370,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				log.debug("not traversing into unhandled Node: "
 						+ ((org.w3c.dom.Node) o).getNodeName());
 
-			} else if (o instanceof javax.xml.bind.JAXBElement) {
+			} else if (o instanceof jakarta.xml.bind.JAXBElement) {
 
 				log.debug("Encountered "
 						+ ((JAXBElement) o).getDeclaredType().getName());

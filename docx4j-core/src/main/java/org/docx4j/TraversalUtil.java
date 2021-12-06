@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.dml.CTHyperlink;
@@ -124,7 +124,7 @@ public class TraversalUtil {
 				for (Object o : children) {
 					
 					// In 3.3.4, we don't expect to do any parent fixes here.
-					if (o instanceof javax.xml.bind.JAXBElement) {
+					if (o instanceof jakarta.xml.bind.JAXBElement) {
 						// get its value; this is ok, 
 						// provided the results of the Callback
 						// won't be marshalled
@@ -595,7 +595,7 @@ public class TraversalUtil {
 				} else {
 					for (Object o : getChildren(parent) ) {
 
-						// if its wrapped in javax.xml.bind.JAXBElement, get its value
+						// if its wrapped in jakarta.xml.bind.JAXBElement, get its value
 						o = XmlUtils.unwrap(o);
 						
 						newChildren.addAll(this.apply(o));

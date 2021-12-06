@@ -22,10 +22,10 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 //import java.io.IOException;
 
-//import javax.xml.bind.JAXBElement;
+//import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;

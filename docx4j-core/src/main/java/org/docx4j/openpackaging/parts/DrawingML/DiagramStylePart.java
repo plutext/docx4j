@@ -23,7 +23,7 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.dml.diagram.CTStyleDefinition;
 import org.docx4j.dml.diagram.CTStyleLabel;

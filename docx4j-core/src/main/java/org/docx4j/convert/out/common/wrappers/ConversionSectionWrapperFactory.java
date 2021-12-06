@@ -88,7 +88,7 @@ public class ConversionSectionWrapperFactory {
 
 				for (Object o : children) {
 					
-					// if its wrapped in javax.xml.bind.JAXBElement, get its
+					// if its wrapped in jakarta.xml.bind.JAXBElement, get its
 					// value; this is ok, provided the results of the Callback
 					// won't be marshalled
 					o = XmlUtils.unwrap(o);

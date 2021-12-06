@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.apache.commons.io.FileUtils;
 import org.docx4j.Docx4J;

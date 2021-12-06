@@ -2,8 +2,8 @@ package org.docx4j.openpackaging.parts;
 
 import java.util.List;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Binder;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.jaxb.JAXBAssociation;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;

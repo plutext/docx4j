@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ public class PartsList {
 		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " );		
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
-			if (o instanceof javax.xml.bind.JAXBElement) {
+			if (o instanceof jakarta.xml.bind.JAXBElement) {
 				sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 			} else {
 				sb.append(" containing JaxbElement:"  + o.getClass().getName() );

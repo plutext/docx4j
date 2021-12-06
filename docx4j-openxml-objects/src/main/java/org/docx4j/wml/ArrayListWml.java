@@ -3,7 +3,7 @@ package org.docx4j.wml;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class ArrayListWml<E> extends ArrayList<E> {
             for (int i = 0; i < size(); i++) {
                 if (o.equals(get(i))) {
                     return i;
-                } else if (get(i) instanceof javax.xml.bind.JAXBElement
+                } else if (get(i) instanceof jakarta.xml.bind.JAXBElement
                 		&& o.equals(((JAXBElement)get(i)).getValue())) {
                             return i;
                 }
@@ -84,7 +84,7 @@ public class ArrayListWml<E> extends ArrayList<E> {
             for (int i = size()-1; i >= 0; i--) {
                 if (o.equals(get(i))) {
                     return i;
-                } else if (get(i) instanceof javax.xml.bind.JAXBElement
+                } else if (get(i) instanceof jakarta.xml.bind.JAXBElement
                 		&& o.equals(((JAXBElement)get(i)).getValue())) {
                             return i;
                 }
@@ -179,7 +179,7 @@ public class ArrayListWml<E> extends ArrayList<E> {
             if (o.equals(get(i))) {
                 remove(i);
                 return true;
-            } else if (get(i) instanceof javax.xml.bind.JAXBElement
+            } else if (get(i) instanceof jakarta.xml.bind.JAXBElement
             		&& o.equals(((JAXBElement)get(i)).getValue())) {
                 remove(i);
                 return true;

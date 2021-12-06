@@ -21,7 +21,7 @@ package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import junit.framework.Assert;
 

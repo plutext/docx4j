@@ -1,6 +1,6 @@
 package org.pptx4j.convert.out.svginhtml;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

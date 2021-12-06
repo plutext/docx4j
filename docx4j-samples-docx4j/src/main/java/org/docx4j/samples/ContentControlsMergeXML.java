@@ -23,7 +23,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.FileInputStream;
 
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;

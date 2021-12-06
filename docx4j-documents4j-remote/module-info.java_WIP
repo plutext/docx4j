@@ -25,7 +25,7 @@ module org.docx4j.documents4j.remote {
 	requires documents4j.util.all;
 	
 /*
-[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.3.0:compile
+[INFO] |  |  +- jakarta.xml.bind:jaxb-api:jar:2.3.0:compile
 [INFO] |  |  +- com.sun.xml.bind:jaxb-core:jar:2.3.0:compile
 [INFO] |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.3.0:compile
 [INFO] |  +- org.glassfish.jersey.core:jersey-client:jar:2.29:compile

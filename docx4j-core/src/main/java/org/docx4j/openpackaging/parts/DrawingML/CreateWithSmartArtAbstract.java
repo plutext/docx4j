@@ -20,7 +20,7 @@
 
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.util.JAXBResult;
+import jakarta.xml.bind.util.JAXBResult;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 

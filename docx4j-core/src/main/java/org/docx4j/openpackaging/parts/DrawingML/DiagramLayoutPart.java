@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.util.Map.Entry;
 
-import javax.xml.bind.util.JAXBResult;
+import jakarta.xml.bind.util.JAXBResult;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;

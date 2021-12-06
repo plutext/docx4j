@@ -1,7 +1,7 @@
 
 package org.docx4j.convert.in.word2003xml;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.annotation.XmlRegistry;
 
 
 /**

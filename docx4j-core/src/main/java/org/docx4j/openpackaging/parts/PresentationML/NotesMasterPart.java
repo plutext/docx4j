@@ -20,7 +20,7 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

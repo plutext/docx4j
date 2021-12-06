@@ -20,7 +20,7 @@
 
 package org.docx4j.docProps.custom;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.annotation.XmlRegistry;
 
 
 /**

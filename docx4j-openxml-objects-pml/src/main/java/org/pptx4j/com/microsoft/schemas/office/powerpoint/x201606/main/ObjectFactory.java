@@ -1,7 +1,7 @@
 
 package org.pptx4j.com.microsoft.schemas.office.powerpoint.x201606.main;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.annotation.XmlRegistry;
 
 
 /**

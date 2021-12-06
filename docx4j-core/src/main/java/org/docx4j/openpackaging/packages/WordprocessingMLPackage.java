@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
@@ -241,7 +241,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		JAXBContext jc = Context.jcXmlPackage;
 		Unmarshaller u = jc.createUnmarshaller();
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+		jakarta.xml.bind.util.JAXBResult result = new jakarta.xml.bind.util.JAXBResult(u );
 		
 		// Perform the transformation		
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);

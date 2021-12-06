@@ -21,7 +21,7 @@
 package org.pptx4j.samples;
 
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.STShapeType;

@@ -18,5 +18,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/drawingml/2006/compatibility")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/drawingml/2006/compatibility")
 package org.docx4j.dml.compatibility;

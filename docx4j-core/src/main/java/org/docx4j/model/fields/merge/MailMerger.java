@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -779,7 +779,7 @@ public class MailMerger {
                 org.docx4j.wml.R run = (org.docx4j.wml.R) content;
                 List<Object> runContent = run.getContent();
                 for (Object o2 : runContent) {
-                    if (o2 instanceof javax.xml.bind.JAXBElement) {
+                    if (o2 instanceof jakarta.xml.bind.JAXBElement) {
                         if (((JAXBElement<?>) o2).getDeclaredType().getName().equals("org.docx4j.wml.Text")) {
                             org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o2).getValue();
                             result.append(t.getValue());

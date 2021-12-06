@@ -4,6 +4,7 @@ module org.docx4j.docx_anon {
 	requires org.docx4j.core;
 	requires org.docx4j.openxml_objects;
     requires lorem;
+	requires jakarta.xml.bind;
 	
 	//requires docx4j_JAXB_ReferenceImpl;
     

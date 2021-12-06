@@ -23,8 +23,8 @@ package org.docx4j.samples;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -132,7 +132,7 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 
 						this.apply(o);
 
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
+						// if its wrapped in jakarta.xml.bind.JAXBElement, get its
 						// value
 						o = XmlUtils.unwrap(o);
 						

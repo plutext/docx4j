@@ -64,8 +64,8 @@
 			<artifactId>docx4j-JAXB-MOXy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	 -->
-
+ -->
+ 
 		<dependency>
 		  <groupId>xerces</groupId>
 		  <artifactId>xercesImpl</artifactId>

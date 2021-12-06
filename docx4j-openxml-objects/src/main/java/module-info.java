@@ -1,7 +1,7 @@
 module org.docx4j.openxml_objects {
 
-    requires java.xml.bind;
 	requires org.slf4j;
+	requires jakarta.xml.bind;
     
     exports org.docx4j.bibliography;
     

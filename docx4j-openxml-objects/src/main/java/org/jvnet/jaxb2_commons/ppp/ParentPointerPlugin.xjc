@@ -23,8 +23,8 @@ import static com.sun.codemodel.JMod.PUBLIC;
 
 import java.util.logging.Logger;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import org.xml.sax.ErrorHandler;
 

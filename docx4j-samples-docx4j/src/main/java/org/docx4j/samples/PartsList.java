@@ -24,7 +24,7 @@ package org.docx4j.samples;
 import java.io.IOException;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -123,7 +123,7 @@ public class PartsList extends AbstractSample {
 
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
-			if (o instanceof javax.xml.bind.JAXBElement) {
+			if (o instanceof jakarta.xml.bind.JAXBElement) {
 				sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 			} else {
 				sb.append(" containing:"  + o.getClass().getName() );
@@ -133,12 +133,12 @@ public class PartsList extends AbstractSample {
 				org.w3c.dom.Document doc = ((DefaultXmlPart)p).getDocument();
 				try {
 					Object o = XmlUtils.unmarshal(doc);
-					if (o instanceof javax.xml.bind.JAXBElement) {
+					if (o instanceof jakarta.xml.bind.JAXBElement) {
 						sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 					} else {
 						sb.append(" containing:"  + o.getClass().getName() );
 					}				
-				} catch (javax.xml.bind.UnmarshalException e) {
+				} catch (jakarta.xml.bind.UnmarshalException e) {
 					sb.append(" containing raw root element:" + doc.getDocumentElement().getLocalName()); 
 //					sb.append(e.getMessage()); 
 					

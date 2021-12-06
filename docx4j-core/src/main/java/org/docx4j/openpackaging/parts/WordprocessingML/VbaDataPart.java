@@ -21,7 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.com.microsoft.schemas.office.word.x2006.wordml.CTVbaSuppData;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

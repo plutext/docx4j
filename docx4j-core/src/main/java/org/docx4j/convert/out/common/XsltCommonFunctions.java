@@ -20,8 +20,8 @@
 
 package org.docx4j.convert.out.common;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;

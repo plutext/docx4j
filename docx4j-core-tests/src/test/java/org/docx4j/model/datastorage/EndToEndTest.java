@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.Binder;
+import jakarta.xml.bind.Binder;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;

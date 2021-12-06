@@ -37,12 +37,12 @@
                             org.slf4j;version="[1.6,2)";resolution:=optional,
                             org.slf4j.impl;version="[1.6,2)";resolution:=optional,
                             
-                            javax.xml.bind,
-                            javax.xml.bind.util,
-                            javax.xml.bind.annotation,
-                            javax.xml.bind.annotation.adapters,
-                            javax.xml.bind.attachment,
-                            javax.xml.bind.helpers,
+                            jakarta.xml.bind,
+                            jakarta.xml.bind.util,
+                            jakarta.xml.bind.annotation,
+                            jakarta.xml.bind.annotation.adapters,
+                            jakarta.xml.bind.attachment,
+                            jakarta.xml.bind.helpers,
                         </Import-Package>
  -->                        
                         <Export-Package>

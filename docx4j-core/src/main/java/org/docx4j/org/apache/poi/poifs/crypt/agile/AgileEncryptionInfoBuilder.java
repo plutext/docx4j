@@ -25,7 +25,7 @@ package org.docx4j.org.apache.poi.poifs.crypt.agile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 //import org.apache.xmlbeans.XmlException;
 

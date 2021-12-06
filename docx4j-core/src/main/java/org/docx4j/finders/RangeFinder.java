@@ -3,7 +3,7 @@ package org.docx4j.finders;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -71,7 +71,7 @@ public class RangeFinder extends CallbackImpl {
 		}
 
 		if (startElement.equals("org.docx4j.wml.CTBookmark") 
-				&& o instanceof javax.xml.bind.JAXBElement
+				&& o instanceof jakarta.xml.bind.JAXBElement
 				&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
 			refs.add( (Text)XmlUtils.unwrap(o) );
 		}

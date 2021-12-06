@@ -3,7 +3,7 @@ package org.docx4j.dml;
 
 import java.util.ArrayList;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.jvnet.jaxb2_commons.ppp.Child;
 //import org.jvnet.jaxb2_commons.ppp.Child;

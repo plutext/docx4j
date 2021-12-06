@@ -35,15 +35,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
-import javax.xml.bind.util.JAXBSource;
+import jakarta.xml.bind.Binder;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.UnmarshalException;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.util.JAXBResult;
+import jakarta.xml.bind.util.JAXBSource;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -373,7 +373,7 @@ public class XmlUtils {
 		
 		if (o==null) return null;
 		
-		if (o instanceof javax.xml.bind.JAXBElement) {
+		if (o instanceof jakarta.xml.bind.JAXBElement) {
 			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			log.debug("name: " + ((JAXBElement)o).getName() );
 			return ((JAXBElement)o).getValue();
@@ -393,7 +393,7 @@ public class XmlUtils {
 //		if (o instanceof x) {
 //			
 //		}
-//		else if (o instanceof javax.xml.bind.JAXBElement) {
+//		else if (o instanceof jakarta.xml.bind.JAXBElement) {
 //			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 //			return ((JAXBElement)o).getValue();
 //		} else {
@@ -402,7 +402,7 @@ public class XmlUtils {
 //	}
 
 	
-	public static String JAXBElementDebug(javax.xml.bind.JAXBElement o)  {
+	public static String JAXBElementDebug(jakarta.xml.bind.JAXBElement o)  {
 				
 		String prefix = null;
 		if (o.getName().getNamespaceURI()!=null) {
@@ -414,10 +414,10 @@ public class XmlUtils {
 		}
 		if (prefix!=null) {
 			return  prefix + ':' + o.getName().getLocalPart() 
-				+ " is a javax.xml.bind.JAXBElement; it has declared type " 
+				+ " is a jakarta.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 
 		} else {
-			return  o.getName() + " is a javax.xml.bind.JAXBElement; it has declared type " 
+			return  o.getName() + " is a jakarta.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 			
 		}
 		
@@ -679,7 +679,7 @@ public class XmlUtils {
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 		Object o = u.unmarshal(n,
 				declaredType);
-		if ( o instanceof javax.xml.bind.JAXBElement) {
+		if ( o instanceof jakarta.xml.bind.JAXBElement) {
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;

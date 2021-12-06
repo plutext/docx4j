@@ -7,7 +7,8 @@ module org.docx4j.JAXB_ReferenceImpl {
 	requires org.slf4j;
 	requires org.docx4j.core;
 	
-	requires com.sun.xml.bind; // should require the below!
+//	requires com.sun.xml.bind; 
+	requires org.glassfish.jaxb.runtime; 
 
 //	requires transitive org.jvnet.staxex;
 //	requires transitive com.sun.xml.txw2;

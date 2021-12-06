@@ -20,7 +20,7 @@
 
 package org.docx4j.model.datastorage;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

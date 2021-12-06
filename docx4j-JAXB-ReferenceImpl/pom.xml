@@ -71,13 +71,16 @@
 		<dependency>
 		  <groupId>org.glassfish.jaxb</groupId>
 		  <artifactId>jaxb-runtime</artifactId>
-		  <version>2.3.2</version>
-		</dependency>	
-		<!--  2.3.2 should be good:  https://github.com/eclipse-ee4j/jaxb-ri/issues/1168 
-		
-		See also https://javaee.github.io/jaxb-v2/doc/user-guide/release-documentation.html#deployment-jaxb-on-jpms
-		
-		-->	
+		  <version>3.0.2</version>
+		</dependency>
+		 
+		<!-- 
+         <dependency>
+                 <groupId>com.sun.xml.bind</groupId>
+                 <artifactId>jaxb-impl</artifactId>
+                 <version>3.0.0</version>
+         </dependency>
+		 -->
 		
 <!--  
 

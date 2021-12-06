@@ -24,10 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.Binder;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.UnmarshalException;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -306,8 +306,8 @@ implements XPathEnabled<E> {
 		if (jaxbElement instanceof org.docx4j.dml.chartDrawing.CTDrawing) {
 			// Check it
 			Object tmp = binder.unmarshal( doc );
-			if (tmp instanceof javax.xml.bind.JAXBElement) {
-				QName qname = ((javax.xml.bind.JAXBElement)tmp).getName();
+			if (tmp instanceof jakarta.xml.bind.JAXBElement) {
+				QName qname = ((jakarta.xml.bind.JAXBElement)tmp).getName();
 				if (qname.equals( org.docx4j.dml.chart.ObjectFactory._UserShapes_QNAME)) {
 					jaxbElement=(E)tmp;	
 				}
@@ -320,8 +320,8 @@ implements XPathEnabled<E> {
 	
 		// ..  we do need to leave it wrapped, 
 		// if there is no @XmlRootElement annotation 
-		if (tmp instanceof javax.xml.bind.JAXBElement) {
-			QName qname = ((javax.xml.bind.JAXBElement)tmp).getName();
+		if (tmp instanceof jakarta.xml.bind.JAXBElement) {
+			QName qname = ((jakarta.xml.bind.JAXBElement)tmp).getName();
 			if (qname.equals( org.docx4j.dml.chart.ObjectFactory._UserShapes_QNAME)) {
 				jaxbElement=(E)tmp;	
 				return;
@@ -606,7 +606,7 @@ implements XPathEnabled<E> {
 						 * See http://old.nabble.com/BinderImpl.associativeUnmarshal-ClassCastException-casting-to-JAXBElement-td32456585.html
 						 * and  http://java.net/jira/browse/JAXB-874
 						 * 
-						 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
+						 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to jakarta.xml.bind.JAXBElement
 							at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext.endElement(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)

@@ -28,8 +28,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.utils.ResourceUtils;
@@ -113,7 +113,7 @@ public class Context {
     	  	// (java.lang.Thread.currentThread().setContextClassLoader doesn't seem to help!)
     	  	// and there are no environments in which this approach is known to be problematic
 			
-//    	  System.setProperty("javax.xml.bind.JAXBContextFactory", "org.eclipse.persistence.jaxb.JAXBContextFactory");
+//    	  System.setProperty("jakarta.xml.bind.JAXBContextFactory", "org.eclipse.persistence.jaxb.JAXBContextFactory");
     	  
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
@@ -167,7 +167,7 @@ public class Context {
 			
 			log.debug("JAXB Context: " + tempContext.getClass().getName());
 
-			if (tempContext.getClass().getName().equals("com.sun.xml.bind.v2.runtime.JAXBContextImpl")) {
+			if (tempContext.getClass().getName().equals("org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl")) {
 				jaxbImplementation = JAXBImplementation.REFERENCE;
 				log.info("JAXB Reference Implementation is in use.");
 				
@@ -216,9 +216,6 @@ public class Context {
 				}
 				log.info("Using " + jaxbImplementation);
 				
-			} else if (tempContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
-				jaxbImplementation = JAXBImplementation.ORACLE_JRE;
-				log.info("Using Java 6+ JAXB implementation");
 			} else {
 				log.warn("Using unexpected JAXB: " + tempContext.getClass().getName());
 			}
@@ -241,7 +238,7 @@ public class Context {
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.certificate:"
 						+ "org.docx4j.com.microsoft.schemas.office.x2006.keyEncryptor.password:"
 						,classLoader, ProviderProperties.getProviderProperties() );
-			} catch (javax.xml.bind.JAXBException e) {
+			} catch (jakarta.xml.bind.JAXBException e) {
 				log.error(e.getMessage());
 			}
 
@@ -299,8 +296,61 @@ public class Context {
                     	Attributes mainAttribs = manifest.getMainAttributes();
                     	String impTitle = mainAttribs.getValue("Implementation-Title");
                     	if (impTitle!=null
-                    			&& (impTitle.contains("JAXB Reference Implementation")
-                    					|| impTitle.contains("org.eclipse.persistence")) ) {
+                    			&& impTitle.contains("Jakarta XML Binding Implementation")
+                    				) {
+                    		
+                    		/*
+				                 <groupId>com.sun.xml.bind</groupId>
+				                 <artifactId>jaxb-impl</artifactId>
+				                 <version>3.0.0</version>
+                    		 * 
+									Implementation-Title: Jakarta XML Binding Implementation
+									Implementation-Vendor: Eclipse Foundation
+									Implementation-Vendor-Id: org.eclipse
+									Implementation-Version: 3.0.0
+									Major-Version: 3.0.0
+									Specification-Title: Jakarta XML Binding
+									Specification-Version: 3.0
+									Bundle-Description: Old JAXB Runtime module. Contains sources required f
+									 or runtime processing.
+									Bundle-ManifestVersion: 2
+									Bundle-Name: Old JAXB Runtime
+									Bundle-SymbolicName: com.sun.xml.bind.jaxb-impl
+									Bundle-Vendor: Eclipse Foundation
+									Bundle-Version: 3.0.0
+								
+								
+							  <groupId>org.glassfish.jaxb</groupId>
+							  <artifactId>jaxb-runtime</artifactId>
+							  <version>3.0.2</version>
+
+								Build-Version: JAXB RI 3.0.2
+								Git-Url: scm:git:ssh://git@github.com/eclipse-ee4j/jaxb-ri/jaxb-runtime-
+								 parent/jaxb-runtime
+								Implementation-Title: Jakarta XML Binding Implementation
+								Implementation-Vendor: Eclipse Foundation
+								Implementation-Vendor-Id: org.glassfish.jaxb
+								Implementation-Version: 3.0.2
+								Major-Version: 3.0.2
+								Specification-Title: Jakarta XML Binding
+								Specification-Version: 3.0
+								Bundle-Description: JAXB (JSR 222) Reference Implementation
+								Bundle-Name: JAXB Runtime
+								Bundle-SymbolicName: org.glassfish.jaxb.runtime								
+								
+                    		 */
+	                    
+        	                log.info("\n" + url);
+		                    for(Object key2  : mainAttribs.keySet() ) {
+		                    	
+		                    	log.info(key2 + " : " + mainAttribs.getValue((java.util.jar.Attributes.Name)key2));
+		                    }
+                    	}
+                    	// Bundle-Name: EclipseLink MOXy
+                    	impTitle = mainAttribs.getValue("Bundle-Name");
+                    	if (impTitle!=null
+                    			&& impTitle.contains("EclipseLink MOXy")
+                        				) {
 	                    
         	                log.info("\n" + url);
 		                    for(Object key2  : mainAttribs.keySet() ) {

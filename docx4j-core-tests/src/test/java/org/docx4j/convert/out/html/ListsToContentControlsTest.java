@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.Docx4J;
 import org.docx4j.Docx4jProperties;

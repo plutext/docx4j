@@ -7,7 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;

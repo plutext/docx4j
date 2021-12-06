@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
@@ -606,7 +606,7 @@ public class BookmarkRenumber {
 				if (o.getClass().getName().equals(refElement)) {
 					refs.add(o);
 				} else if (startElement.equals("org.docx4j.wml.CTBookmark") 
-						&& o instanceof javax.xml.bind.JAXBElement
+						&& o instanceof jakarta.xml.bind.JAXBElement
 						&& ((JAXBElement)o).getName().getLocalPart().equals("instrText")) {
 					refs.add( XmlUtils.unwrap(o) );
 				}

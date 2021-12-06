@@ -21,7 +21,7 @@
 
 package org.docx4j.dml.chartDrawing;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.annotation.XmlRegistry;
 
 
 /**

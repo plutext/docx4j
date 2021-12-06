@@ -21,7 +21,7 @@
 
 package org.docx4j.samples;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;

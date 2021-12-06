@@ -27,10 +27,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -130,7 +130,7 @@ public class FlatOpcXmlImporter  {
 		org.docx4j.xmlPackage.Package flatOpcXml = null;
 		try {
 			flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(xsr));
-		} catch ( javax.xml.bind.UnmarshalException e) {
+		} catch ( jakarta.xml.bind.UnmarshalException e) {
 			if (e.getMessage()!=null
 					&& e.getMessage().contains("http://schemas.microsoft.com/office/word/2003/wordml")) {
 				throw new IllegalArgumentException("Word 2003 XML is not supported. Use a docx or Flat OPC XML instead, or look at the Word2003XmlConverter proof of concept.");	
@@ -618,7 +618,7 @@ public class FlatOpcXmlImporter  {
 							
 						}
 						
-					} catch (javax.xml.bind.UnmarshalException ue) {
+					} catch (jakarta.xml.bind.UnmarshalException ue) {
 						
 						// No ...
 						CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();

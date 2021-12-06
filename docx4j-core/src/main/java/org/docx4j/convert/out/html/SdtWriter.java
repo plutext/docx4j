@@ -22,7 +22,7 @@ package org.docx4j.convert.out.html;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;

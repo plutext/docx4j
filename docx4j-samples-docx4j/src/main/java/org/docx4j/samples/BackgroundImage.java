@@ -3,7 +3,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.IOException;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;

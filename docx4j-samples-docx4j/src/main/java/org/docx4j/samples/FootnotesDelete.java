@@ -23,7 +23,7 @@ package org.docx4j.samples;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import org.docx4j.Docx4J;
 import org.docx4j.TraversalUtil;
