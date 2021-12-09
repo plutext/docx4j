@@ -85,7 +85,7 @@
 		<dependency>
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
-			<version>1.0.1</version>
+			<version>11.4.0</version>
 		</dependency>
 		
 		<dependency>

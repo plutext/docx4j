@@ -57,7 +57,6 @@ public class Context {
 
 	public static JAXBContext jcXmlPackage;
 	
-	private static JAXBContext jcXslFo;
 	public static JAXBContext jcSectionModel;
 
 	public static JAXBContext jcEncryption;
@@ -263,21 +262,6 @@ public class Context {
 		}
 		return wmlObjectFactory;
 		
-	}
-
-	public static JAXBContext getXslFoContext() {
-		if (jcXslFo==null) {
-			try {	
-				Context tmp = new Context();
-				java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
-
-				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
-				
-			} catch (JAXBException ex) {
-	      log.error("Cannot determine XSL-FO context", ex);
-			}						
-		}
-		return jcXslFo;		
 	}
 	
 	public static void searchManifestsForJAXBImplementationInfo(ClassLoader loader) {

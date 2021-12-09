@@ -3,7 +3,7 @@ module org.docx4j.export_fo {
 	requires org.slf4j;
 	requires org.docx4j.core;
 	requires org.docx4j.openxml_objects;
-	requires jaxb.xslfo;
+	requires org.plutext.jaxb.xslfo;
 
 	//requires fop; // that's an uber/shaded jar, but it lists fop-core etc as deps, so can either use them directly, or use this, but exclude them
 	//requires fop.util;
