@@ -5,6 +5,7 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTColorMapping;
@@ -50,6 +51,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
     "printSettings",
     "extLst"
 })
+@XmlRootElement(name = "chartSpace")
 public class CTChartSpace implements Child
 {
 
