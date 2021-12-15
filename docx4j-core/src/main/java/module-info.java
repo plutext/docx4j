@@ -1,7 +1,7 @@
 module org.docx4j.core {
 	
     requires java.xml.crypto;
-    requires jaxb.svg11;
+    requires org.plutext.jaxb.svg11;
 //    requires jcl.over.slf4j;
     requires org.apache.commons.codec;
     requires org.apache.commons.compress;
@@ -175,7 +175,7 @@ module org.docx4j.core {
     // Resource folders must be open! See https://stackoverflow.com/questions/45166757/loading-classes-and-resources-in-java-9/45173837#45173837  
 	opens org.pptx4j.convert.out.svginhtml;
 	opens org.docx4j.toc;
-	opens org.docx4j.org.apache.xml.security.resource;
+	//opens org.docx4j.org.apache.xml.security.resource;
 	opens org.docx4j.openpackaging.parts.WordprocessingML;
 	opens org.docx4j.openpackaging.parts.PresentationML;
 	opens org.docx4j.openpackaging.parts.DrawingML;
