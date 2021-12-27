@@ -239,11 +239,17 @@
 		</dependency>
 
 
-		<!--  instead of FOP's commons-logging;  without this commons-graphics gives no class def --> 		
+		<!--  instead of FOP's commons-logging;  without this commons-graphics gives no class def 
+		
+				java.lang.NoClassDefFoundError: org/apache/commons/logging/LogFactory
+				        at org.apache.xmlgraphics.util.uri.DataURIResolver.<clinit>(DataURIResolver.java:45)
+				        at org.docx4j.fonts.fop.apps.io.InternalResourceResolver.<init>(InternalResourceResolver.java:50)
+				        at org.docx4j.fonts.PhysicalFonts.<clinit>(PhysicalFonts.java:125)
+		--> 		
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.26</version>
+		    <version>2.0.0-alpha5</version>
 		</dependency>		
  		 
 		<dependency>
