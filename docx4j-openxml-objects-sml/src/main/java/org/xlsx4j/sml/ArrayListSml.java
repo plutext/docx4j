@@ -234,13 +234,13 @@ public class ArrayListSml<E> extends ArrayList<E> {
 	
     public boolean removeAll(Collection<?> c) {
     	// For now, just warn that behaviour is inconsistent with other remove methods
-    	log.warn("This method won't remove an object if it is wrapped in a JAXBElement");
+    	log.info("This method won't remove an object if it is wrapped in a JAXBElement");
     	return super.removeAll(c);
     }
 
     public boolean retainAll(Collection<?> c) {
     	// For now, just warn that behaviour is inconsistent with other remove methods
-    	log.warn("This method won't retain an object if it is wrapped in a JAXBElement");
+    	log.info("This method won't retain an object if it is wrapped in a JAXBElement");
         return super.retainAll(c);
     }
 	
