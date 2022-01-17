@@ -4,19 +4,20 @@ package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for CT_NumberColorPosition complex type.
+ * <p>Java class for CT_SubtotalIndex complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_NumberColorPosition"&gt;
+ * &lt;complexType name="CT_SubtotalIndex"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
- *       &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}double" /&gt;
+ *       &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" /&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
@@ -25,17 +26,18 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_NumberColorPosition")
-public class CTNumberColorPosition {
+@XmlType(name = "CT_SubtotalIndex")
+public class CTSubtotalIndex {
 
     @XmlAttribute(name = "val", required = true)
-    protected double val;
+    @XmlSchemaType(name = "unsignedInt")
+    protected long val;
 
     /**
      * Gets the value of the val property.
      * 
      */
-    public double getVal() {
+    public long getVal() {
         return val;
     }
 
@@ -43,7 +45,7 @@ public class CTNumberColorPosition {
      * Sets the value of the val property.
      * 
      */
-    public void setVal(double value) {
+    public void setVal(long value) {
         this.val = value;
     }
 

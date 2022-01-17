@@ -1,15 +1,12 @@
 
 package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSchemaType;
-import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlValue;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -33,16 +30,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
 @XmlType(name = "CT_NumericValue", propOrder = {
     "value"
 })
-public class CTNumericValue implements Child
-{
+public class CTNumericValue {
 
     @XmlValue
     protected double value;
     @XmlAttribute(name = "idx", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long idx;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the value property.
@@ -74,32 +68,6 @@ public class CTNumericValue implements Child
      */
     public void setIdx(long value) {
         this.idx = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

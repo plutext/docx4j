@@ -3,14 +3,11 @@ package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSchemaType;
-import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -39,8 +36,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
 @XmlType(name = "CT_NumericLevel", propOrder = {
     "pt"
 })
-public class CTNumericLevel implements Child
-{
+public class CTNumericLevel {
 
     protected List<CTNumericValue> pt;
     @XmlAttribute(name = "ptCount", required = true)
@@ -50,8 +46,6 @@ public class CTNumericLevel implements Child
     protected String formatCode;
     @XmlAttribute(name = "name")
     protected String name;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the pt property.
@@ -59,7 +53,7 @@ public class CTNumericLevel implements Child
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the pt property.
      * 
      * <p>
@@ -144,32 +138,6 @@ public class CTNumericLevel implements Child
      */
     public void setName(String value) {
         this.name = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

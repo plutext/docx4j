@@ -4,14 +4,11 @@ package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
-import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -41,16 +38,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
 @XmlType(name = "CT_TextData", propOrder = {
     "content"
 })
-public class CTTextData implements Child
-{
+public class CTTextData {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "f", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", type = JAXBElement.class),
-        @XmlElementRef(name = "v", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", type = JAXBElement.class)
+        @XmlElementRef(name = "f", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", type = JAXBElement.class, required = false),
+        @XmlElementRef(name = "v", namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", type = JAXBElement.class, required = false)
     })
     protected List<JAXBElement<?>> content;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the rest of the content model. 
@@ -58,8 +52,8 @@ public class CTTextData implements Child
      * <p>
      * You are getting this "catch-all" property because of the following reason: 
      * The field name "V" is used by two different parts of a schema. See: 
-     * line 189 of file:/bvols/@git/repos/docx4j/xsd/odrawxml/office_drawing_2014_chartex.xsd
-     * line 187 of file:/bvols/@git/repos/docx4j/xsd/odrawxml/office_drawing_2014_chartex.xsd
+     * line 193 of file:/bvols/@git/repos/docx4j/xsd/odrawxml/office_drawing_2014_chartex.xsd
+     * line 191 of file:/bvols/@git/repos/docx4j/xsd/odrawxml/office_drawing_2014_chartex.xsd
      * <p>
      * To get rid of this property, apply a property customization to one 
      * of both of the following declarations to change their names: 
@@ -68,7 +62,7 @@ public class CTTextData implements Child
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the content property.
      * 
      * <p>
@@ -80,8 +74,8 @@ public class CTTextData implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
+     * {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
      * 
      */
@@ -90,32 +84,6 @@ public class CTTextData implements Child
             content = new ArrayList<JAXBElement<?>>();
         }
         return this.content;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

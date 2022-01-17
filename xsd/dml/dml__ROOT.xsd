@@ -18,6 +18,11 @@
 		If you regenerate, make sure you diffs from 053f6655ab35bae6eed9f81d466c6b0feaacfd71 to 3aeba7044a0bb5437591292c6c2e2ac25a36bb83
 		
 		git diff 053f6655ab35bae6eed9f81d466c6b0feaacfd71 3aeba7044a0bb5437591292c6c2e2ac25a36bb83 src/main/java/org/docx4j/dml
+
+	2022 01 18 (Jakarta):
+	sh ~/git/docx4j/xjc/jaxb-ri/bin/xjc.sh  dml__ROOT.xsd -d tmp  -no-header -target 3.0
+	Can't use parent-pointer-plugin; TODO try -Xinject-code and -Xlocator
+
 		 
 	20190429: 		 
 	sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh -classpath  /bvols/\@Overflow/No_COW/java/parent-pointer-plugin-1.2.jar -Xparent-pointer dml__ROOT.xsd -d tmp  -no-header -target 2.0
