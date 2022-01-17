@@ -1,5 +1,5 @@
 docx4j
-Copyright 2007-2020 Plutext Pty Ltd
+Copyright 2007-20202 Plutext Pty Ltd
 
 Unless otherwise mentioned, the sources below are used in docx4j-core.
    
@@ -42,6 +42,11 @@ are derived from code written by Fred Swartz and placed in public domain under t
 org.docx4j.com.google.common repackages portions of Guava,
 copyright the Guava Authors and Licensed under the Apache License, 
 Version 2.0
+
+org.docx4j.org.apache.camel.support.builder.xml.StAX2SAXSource repackages 
+https://github.com/apache/camel/blob/main/core/camel-xml-jaxp/src/main/java/org/apache/camel/support/builder/xml/StAX2SAXSource.java
+at commit https://github.com/apache/camel/commit/4ea9e6c357371682b855d2d79655b41120331b7a
+in docx4j 11.4.0 onward. The ASF licenses this file under the Apache License, Version 2.0
 
 org.docx4j.org.apache.poi repackages portions of Apache POI, 
 which the ASF licenses under the Apache License, Version 2.0

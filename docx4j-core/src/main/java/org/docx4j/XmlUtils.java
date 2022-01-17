@@ -76,6 +76,7 @@ import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.jaxb.XPathBinderAssociationIsPartialException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.org.apache.camel.support.builder.xml.StAX2SAXSource;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.CanonicalizationException;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
@@ -607,7 +608,7 @@ public class XmlUtils {
 		}		
 	}
 
-	private static Object handleUnmarshalException(JAXBContext jc, JaxbValidationEventHandler eventHandler,
+	public static Object handleUnmarshalException(JAXBContext jc, JaxbValidationEventHandler eventHandler,
 			Document document, Exception ue) throws UnmarshalException, JAXBException {
 		// Old code
 		if (ue instanceof UnmarshalException
@@ -1373,11 +1374,23 @@ public class XmlUtils {
 	    } catch (TransformerConfigurationException e) {
 	      throw new Docx4JException("The Transformer is ill-configured", e);
 	    }
-	    	    
-	    log.info("Using " + xformer.getClass().getName());
 	    
+	    if (log.isInfoEnabled()) {
+	    	log.info("Using " + xformer.getClass().getName()
+	    			+ " on source " + source.getClass().getName());
+	    }
+	    
+
+	    // Fixes for Xalan interpretive
 		if (xformer.getClass().getName().equals(
 				"org.docx4j.org.apache.xalan.transformer.TransformerImpl")) {
+
+	    	// Xalan interpretive's DTM Manager doesn't support StAXSource
+			if (source instanceof StAXSource) {
+				log.info("Xalan doesn't support StAXSource; switching to SAXSource..");
+				source = new StAX2SAXSource(((StAXSource)source).getXMLStreamReader());
+			}
+			
 			
 		    // Use our patched serializer, which fixes Unicode astral character
 	    	// issue. See https://issues.apache.org/jira/browse/XALANJ-2419
