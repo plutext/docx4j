@@ -412,6 +412,7 @@ public class ContentTypes {
 	public static final String IMAGE_PNG = "image/png";
 	public static final String EXTENSION_PNG = "png";
 
+	public static final String IMAGE_X_PNG = "image/x-png";  // BIRT
 
 	/**
 	 * TIFF image format.
