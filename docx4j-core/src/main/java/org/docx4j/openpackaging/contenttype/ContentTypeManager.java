@@ -421,7 +421,8 @@ public class ContentTypeManager  {
 			return new VbaProjectSignatureBin(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {
+		} else if (contentType.equals(ContentTypes.IMAGE_PNG)
+				|| contentType.equals(ContentTypes.IMAGE_X_PNG)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_GIF)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart(new PartName(partName));
