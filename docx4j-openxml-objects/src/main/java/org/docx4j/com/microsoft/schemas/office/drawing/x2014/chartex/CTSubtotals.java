@@ -3,14 +3,9 @@ package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -23,7 +18,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="idx" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="idx" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_SubtotalIndex" maxOccurs="unbounded" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -36,14 +31,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
 @XmlType(name = "CT_Subtotals", propOrder = {
     "idx"
 })
-public class CTSubtotals implements Child
-{
+public class CTSubtotals {
 
-    @XmlElement(type = Long.class)
-    @XmlSchemaType(name = "unsignedInt")
-    protected List<Long> idx;
-    @XmlTransient
-    private Object parent;
+    protected List<CTSubtotalIndex> idx;
 
     /**
      * Gets the value of the idx property.
@@ -51,7 +41,7 @@ public class CTSubtotals implements Child
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the idx property.
      * 
      * <p>
@@ -63,41 +53,15 @@ public class CTSubtotals implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Long }
+     * {@link CTSubtotalIndex }
      * 
      * 
      */
-    public List<Long> getIdx() {
+    public List<CTSubtotalIndex> getIdx() {
         if (idx == null) {
-            idx = new ArrayList<Long>();
+            idx = new ArrayList<CTSubtotalIndex>();
         }
         return this.idx;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

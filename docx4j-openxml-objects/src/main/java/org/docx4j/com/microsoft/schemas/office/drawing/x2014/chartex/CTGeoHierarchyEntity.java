@@ -1,13 +1,10 @@
 
 package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -31,8 +28,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_GeoHierarchyEntity")
-public class CTGeoHierarchyEntity implements Child
-{
+public class CTGeoHierarchyEntity {
 
     @XmlAttribute(name = "entityName", required = true)
     protected String entityName;
@@ -40,8 +36,6 @@ public class CTGeoHierarchyEntity implements Child
     protected String entityId;
     @XmlAttribute(name = "entityType", required = true)
     protected STEntityType entityType;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the entityName property.
@@ -113,32 +107,6 @@ public class CTGeoHierarchyEntity implements Child
      */
     public void setEntityType(STEntityType value) {
         this.entityType = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

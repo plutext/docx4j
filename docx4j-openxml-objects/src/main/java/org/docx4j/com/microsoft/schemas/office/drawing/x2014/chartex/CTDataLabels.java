@@ -3,15 +3,12 @@ package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -52,8 +49,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
     "dataLabelHidden",
     "extLst"
 })
-public class CTDataLabels implements Child
-{
+public class CTDataLabels {
 
     protected CTNumberFormat numFmt;
     protected CTShapeProperties spPr;
@@ -65,8 +61,6 @@ public class CTDataLabels implements Child
     protected CTExtensionList extLst;
     @XmlAttribute(name = "pos")
     protected STDataLabelPos pos;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the numFmt property.
@@ -194,7 +188,7 @@ public class CTDataLabels implements Child
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the dataLabel property.
      * 
      * <p>
@@ -223,7 +217,7 @@ public class CTDataLabels implements Child
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
+     * returned list will be present inside the Jakarta XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the dataLabelHidden property.
      * 
      * <p>
@@ -292,32 +286,6 @@ public class CTDataLabels implements Child
      */
     public void setPos(STDataLabelPos value) {
         this.pos = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

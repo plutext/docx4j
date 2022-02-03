@@ -1,17 +1,14 @@
 
 package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.w3c.dom.Element;
 
 
@@ -39,8 +36,7 @@ import org.w3c.dom.Element;
 @XmlType(name = "CT_Extension", propOrder = {
     "any"
 })
-public class CTExtension implements Child
-{
+public class CTExtension {
 
     @XmlAnyElement(lax = true)
     protected Object any;
@@ -48,16 +44,14 @@ public class CTExtension implements Child
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "token")
     protected String uri;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the any property.
      * 
      * @return
      *     possible object is
-     *     {@link Object }
      *     {@link Element }
+     *     {@link Object }
      *     
      */
     public Object getAny() {
@@ -69,8 +63,8 @@ public class CTExtension implements Child
      * 
      * @param value
      *     allowed object is
-     *     {@link Object }
      *     {@link Element }
+     *     {@link Object }
      *     
      */
     public void setAny(Object value) {
@@ -99,32 +93,6 @@ public class CTExtension implements Child
      */
     public void setUri(String value) {
         this.uri = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

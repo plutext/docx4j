@@ -10,7 +10,11 @@
 	    
     <!-- downloaded from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/bdc95a77-957c-40f8-9ef2-47cbcdeb8af2
          on 20190518
-         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 -->
+         This is [MS-ODRAWXML] Protocol Revision 21.0 of 3/27/2019 
+         
+         2022 01 18 updated to 29.0 of 11/16/2021 from https://docs.microsoft.com/en-us/openspecs/office_standards/ms-odrawxml/e2723b0a-9120-42a5-bd11-c252ccb13c1e
+         
+         -->
 
 	<xsd:annotation>
 		<xsd:appinfo>
@@ -39,7 +43,7 @@
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 		schemaLocation="../shared/shared-relationshipReference.xsd"/>
    
-   <xsd:complexType name="CT_Extension">
+  <xsd:complexType name="CT_Extension">
      <xsd:sequence>
        <xsd:any processContents="lax"/>
      </xsd:sequence>
@@ -538,7 +542,7 @@
    </xsd:complexType>
    <xsd:complexType name="CT_GeoChildEntities">
      <xsd:sequence>
-       <xsd:element name="geoHierarchyEntity" type="CT_GeoHierarchyEntity" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="geoHierarchyEntity" type="CT_GeoHierarchyEntity " minOccurs="0" maxOccurs="unbounded"/>
      </xsd:sequence>
    </xsd:complexType>
    <xsd:complexType name="CT_GeoChildEntitiesQueryResult">
@@ -628,9 +632,12 @@
    <xsd:complexType name="CT_Statistics">
      <xsd:attribute name="quartileMethod" type="ST_QuartileMethod" use="optional"/>
    </xsd:complexType>
+   <xsd:complexType name="CT_SubtotalIndex">
+     <xsd:attribute name="val" type="xsd:unsignedInt" use="required"/>
+   </xsd:complexType>
    <xsd:complexType name="CT_Subtotals">
      <xsd:sequence>
-       <xsd:element name="idx" type="xsd:unsignedInt" minOccurs="0" maxOccurs="unbounded"/>
+       <xsd:element name="idx" type="CT_SubtotalIndex" minOccurs="0" maxOccurs="unbounded"/>
      </xsd:sequence>
    </xsd:complexType>
    <xsd:complexType name="CT_SeriesLayoutProperties">

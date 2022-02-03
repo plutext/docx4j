@@ -1,12 +1,9 @@
 
 package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;;
 
 
 /**
@@ -50,8 +47,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;;
     "subtotals",
     "extLst"
 })
-public class CTSeriesLayoutProperties implements Child
-{
+public class CTSeriesLayoutProperties {
 
     protected CTParentLabelLayout parentLabelLayout;
     protected CTRegionLabelLayout regionLabelLayout;
@@ -62,8 +58,6 @@ public class CTSeriesLayoutProperties implements Child
     protected CTStatistics statistics;
     protected CTSubtotals subtotals;
     protected CTExtensionList extLst;
-    @XmlTransient
-    private Object parent;
 
     /**
      * Gets the value of the parentLabelLayout property.
@@ -279,32 +273,6 @@ public class CTSeriesLayoutProperties implements Child
      */
     public void setExtLst(CTExtensionList value) {
         this.extLst = value;
-    }
-
-    /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
-     * 
-     * @return
-     *     The parent object.
-     */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
-    }
-
-    /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-     * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
-     */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
     }
 
 }

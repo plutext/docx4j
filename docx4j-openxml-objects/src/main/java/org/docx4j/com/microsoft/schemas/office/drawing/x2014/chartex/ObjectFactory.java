@@ -1,10 +1,10 @@
 
 package org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex;
 
+import javax.xml.namespace.QName;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
-import javax.xml.namespace.QName;
 
 
 /**
@@ -567,6 +567,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTSubtotalIndex }
+     * 
+     */
+    public CTSubtotalIndex createCTSubtotalIndex() {
+        return new CTSubtotalIndex();
+    }
+
+    /**
      * Create an instance of {@link CTSubtotals }
      * 
      */
@@ -767,8 +775,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTChartSpace }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTChartSpace }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTChartSpace }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "chartSpace")
     public JAXBElement<CTChartSpace> createChartSpace(CTChartSpace value) {
@@ -776,8 +788,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTRelId }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTRelId }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTRelId }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "chart")
     public JAXBElement<CTRelId> createChart(CTRelId value) {
@@ -785,8 +801,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "f", scope = CTTextData.class)
     public JAXBElement<CTFormula> createCTTextDataF(CTFormula value) {
@@ -794,8 +814,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link String }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "v", scope = CTTextData.class)
     public JAXBElement<String> createCTTextDataV(String value) {
@@ -803,8 +827,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "f", scope = CTNumericDimension.class)
     public JAXBElement<CTFormula> createCTNumericDimensionF(CTFormula value) {
@@ -812,8 +840,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "nf", scope = CTNumericDimension.class)
     public JAXBElement<CTFormula> createCTNumericDimensionNf(CTFormula value) {
@@ -821,8 +853,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumericLevel }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTNumericLevel }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTNumericLevel }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "lvl", scope = CTNumericDimension.class)
     public JAXBElement<CTNumericLevel> createCTNumericDimensionLvl(CTNumericLevel value) {
@@ -830,8 +866,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "f", scope = CTStringDimension.class)
     public JAXBElement<CTFormula> createCTStringDimensionF(CTFormula value) {
@@ -839,8 +879,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTFormula }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "nf", scope = CTStringDimension.class)
     public JAXBElement<CTFormula> createCTStringDimensionNf(CTFormula value) {
@@ -848,8 +892,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTStringLevel }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStringLevel }{@code >}
      * 
+     * @param value
+     *     Java instance representing xml element's value.
+     * @return
+     *     the new instance of {@link JAXBElement }{@code <}{@link CTStringLevel }{@code >}
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/office/drawing/2014/chartex", name = "lvl", scope = CTStringDimension.class)
     public JAXBElement<CTStringLevel> createCTStringDimensionLvl(CTStringLevel value) {
