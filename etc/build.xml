@@ -101,7 +101,7 @@
 		<pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"/>
 		<pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
 		<pathelement location="${m2Repository}/commons-io/commons-io/2.7/commons-io-2.7.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.4/xmlgraphics-commons-2.4.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.6/xmlgraphics-commons-2.6.jar"/>
 
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/8.0.0/xalan-interpretive-8.0.0.jar"/>
