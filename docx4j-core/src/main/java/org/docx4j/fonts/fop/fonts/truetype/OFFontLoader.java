@@ -184,6 +184,9 @@ public class OFFontLoader extends FontLoader {
         returnFont.setItalicAngle(Integer.parseInt(otf.getItalicAngle()));
         returnFont.setMissingWidth(0);
         returnFont.setWeight(otf.getWeightClass());
+        
+        returnFont.setPanose(otf.getPanose() );
+        
         if (isCid) {
             if (otf instanceof OTFFile) {
                 if (((OTFFile) otf).isType1() && embeddingMode == EmbeddingMode.SUBSET && !embedAsType1) {

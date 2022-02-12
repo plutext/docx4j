@@ -156,7 +156,11 @@ public class FontInfoFinder {
         }
         EmbedFontInfo fontInfo = new EmbedFontInfo(fontUris, customFont.isKerningEnabled(),
                 customFont.isAdvancedEnabled(), fontTripletList, subFontName);
+        fontInfo.setFamilyNames(customFont.getFamilyNames());
+        fontInfo.setPanose(customFont.getPanose());
         fontInfo.setPostScriptName(customFont.getFontName());
+        fontInfo.setEmbeddable(customFont.isEmbeddable());
+        
         if (fontCache != null) {
             fontCache.addFont(fontInfo, resourceResolver);
         }

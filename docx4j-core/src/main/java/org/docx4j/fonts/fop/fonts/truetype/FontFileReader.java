@@ -100,7 +100,7 @@ public class FontFileReader {
      * @return One byte
      * @throws IOException If EOF is reached
      */
-    private byte read() throws IOException {
+    byte read() throws IOException {
         if (current >= fsize) {
             throw new java.io.EOFException("Reached EOF, file size=" + fsize);
         }

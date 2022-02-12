@@ -598,12 +598,17 @@ public class BestMatchingMapper extends Mapper {
 	        physicalFontKey = (String)mapPairs.getKey();
 	        PhysicalFont physicalFont = (PhysicalFont)mapPairs.getValue();
 	        	        
-	        if (physicalFont.getPanose() == null ) {			        	
-	        	//log.info(physicalFontKey + " has no Panose data; skipping.");
+	        if (physicalFont.getPanose() == null ) {
+//	        	if (log.isDebugEnabled()) {
+//	        		log.debug(physicalFontKey + " has no Panose data; skipping.");
+//	        	}
 	        	continue;
 	        }
+//        	if (log.isDebugEnabled()) {
+//        		log.debug(physicalFontKey + " Panose data found.");
+//        	}
 			org.docx4j.fonts.foray.font.format.Panose physicalFontPanose = null;
-	        long panoseMatchValue = MATCH_THRESHOLD + 1; // inititaliase to a non-match
+	        long panoseMatchValue = MATCH_THRESHOLD + 1; // initialize to a non-match
 			try {
 				physicalFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(physicalFont.getPanose().getPanoseArray() );
 		        panoseMatchValue = documentFontPanose.difference(physicalFontPanose, null);

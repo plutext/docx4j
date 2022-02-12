@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
+import org.docx4j.fonts.foray.font.format.Panose;
 
 
 /**
@@ -89,6 +90,16 @@ public abstract class CustomFont extends Typeface
     private boolean simulateStyle;
     protected List<SimpleSingleByteEncoding> additionalEncodings;
     protected Map<Character, SingleByteFont.UnencodedCharacter> unencodedCharacters;
+    
+	private Panose panose = null;
+
+	public Panose getPanose() {
+		return panose;
+	}
+
+	public void setPanose(Panose panose) {
+		this.panose = panose;
+	}    
 
     /**
      * @param resourceResolver the URI resource resolver for controlling file access
