@@ -298,7 +298,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		try {
 			
 			// Default base URI must not be null
-			String baseUriProperty=Docx4jProperties.getProperty("docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI");
+			String baseUriProperty=Docx4jProperties.getProperty("docx4j.convert.out.fop.FopConfParser.defaultBaseURI");
 			
 			URI defaultBaseURI = null;
 			if (baseUriProperty==null) {
