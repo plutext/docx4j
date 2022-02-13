@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://purl.org/dc/elements/1.1/"
+           targetNamespace="http://purl.org/dc/elements/1.1/"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+<!--
+	docx4j 8.3.3 (javax.xml.bind):
+
+		sudo archlinux-java set java-8-openjdk
+		sh /bvols/\@Overflow/No_COW//java/jaxb-ri-2.2.11/bin/xjc.sh  fop.xsd -d tmp  -no-header -target 2.0
+		sudo archlinux-java set java-15-openjdk
+ 
+-->
+  <xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.docx4j.convert.out.fopconf"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	  
+  </xs:annotation>
+
+  <xs:element name="fop">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="strict-validation" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="strict-configuration" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="accessibility" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="base" type="xs:string" minOccurs="0"/>
+        <xs:element name="hyphenation-base" type="xs:string" />
+        <xs:element maxOccurs="unbounded" name="hyphenation-pattern">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="lang" type="xs:string" use="required" />
+                <xs:attribute name="extension" type="xs:string" use="optional" />
+                <xs:attribute name="country" type="xs:string" use="optional" />
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="fonts"  minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="substitutions" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element maxOccurs="unbounded" name="substitution">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="from">
+                            <xs:complexType>
+                              <xs:attribute name="font-family" type="xs:string" use="required" />
+                              <xs:attribute name="font-weight" type="xs:string" use="optional" />
+                              <xs:attribute name="font-style" type="xs:string" use="optional" />
+                            </xs:complexType>
+                          </xs:element>
+                          <xs:element name="to">
+                            <xs:complexType>
+                              <xs:attribute name="font-family" type="xs:string" use="required" />
+                              <xs:attribute name="font-weight" type="xs:string" use="optional" />
+                              <xs:attribute name="font-style" type="xs:string" use="optional" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="renderers">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="renderer">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="fonts">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element minOccurs="0" maxOccurs="unbounded" name="font">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element maxOccurs="unbounded" name="font-triplet">
+                                  <xs:complexType>
+                                    <xs:attribute name="name" type="xs:string" use="required" />
+                                    <xs:attribute name="style" type="xs:string" use="required" />
+                                    <xs:attribute name="weight" type="xs:string" use="required" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="simulate-style" type="xs:boolean" use="required" />
+                              <xs:attribute name="embed-url" type="xs:string" use="required" />
+                              <xs:attribute name="sub-font" type="xs:string" use="optional" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="mime" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
