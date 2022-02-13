@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="http://purl.org/dc/elements/1.1/"
-           targetNamespace="http://purl.org/dc/elements/1.1/"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
@@ -35,63 +34,46 @@
 	  
   </xs:annotation>
 
-  <xs:element name="fop">
+    <xs:element name="hyphenation-pattern">
+      <xs:complexType>
+        <xs:simpleContent>
+          <xs:extension base="xs:string">
+            <xs:attribute name="lang" type="xs:string" use="required" />
+            <xs:attribute name="extension" type="xs:string" use="optional" />
+            <xs:attribute name="country" type="xs:string" use="optional" />
+          </xs:extension>
+        </xs:simpleContent>
+      </xs:complexType>
+    </xs:element>
+
+
+  <xs:element name="substitutions" >
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="strict-validation" type="xs:boolean" minOccurs="0"/>
-        <xs:element name="strict-configuration" type="xs:boolean" minOccurs="0"/>
-        <xs:element name="accessibility" type="xs:boolean" minOccurs="0"/>
-        <xs:element name="base" type="xs:string" minOccurs="0"/>
-        <xs:element name="hyphenation-base" type="xs:string" />
-        <xs:element maxOccurs="unbounded" name="hyphenation-pattern">
-          <xs:complexType>
-            <xs:simpleContent>
-              <xs:extension base="xs:string">
-                <xs:attribute name="lang" type="xs:string" use="required" />
-                <xs:attribute name="extension" type="xs:string" use="optional" />
-                <xs:attribute name="country" type="xs:string" use="optional" />
-              </xs:extension>
-            </xs:simpleContent>
-          </xs:complexType>
-        </xs:element>
-        <xs:element name="fonts"  minOccurs="0">
+        <xs:element maxOccurs="unbounded" name="substitution">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="substitutions" minOccurs="0">
+              <xs:element name="from">
                 <xs:complexType>
-                  <xs:sequence>
-                    <xs:element maxOccurs="unbounded" name="substitution">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="from">
-                            <xs:complexType>
-                              <xs:attribute name="font-family" type="xs:string" use="required" />
-                              <xs:attribute name="font-weight" type="xs:string" use="optional" />
-                              <xs:attribute name="font-style" type="xs:string" use="optional" />
-                            </xs:complexType>
-                          </xs:element>
-                          <xs:element name="to">
-                            <xs:complexType>
-                              <xs:attribute name="font-family" type="xs:string" use="required" />
-                              <xs:attribute name="font-weight" type="xs:string" use="optional" />
-                              <xs:attribute name="font-style" type="xs:string" use="optional" />
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-                  </xs:sequence>
+                  <xs:attribute name="font-family" type="xs:string" use="required" />
+                  <xs:attribute name="font-weight" type="xs:string" use="optional" />
+                  <xs:attribute name="font-style" type="xs:string" use="optional" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="to">
+                <xs:complexType>
+                  <xs:attribute name="font-family" type="xs:string" use="required" />
+                  <xs:attribute name="font-weight" type="xs:string" use="optional" />
+                  <xs:attribute name="font-style" type="xs:string" use="optional" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="renderers">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element name="renderer">
-                <xs:complexType>
-                  <xs:sequence>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
                     <xs:element name="fonts">
                       <xs:complexType>
                         <xs:sequence>
@@ -114,6 +96,30 @@
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
+
+  <xs:element name="fop">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="strict-validation" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="strict-configuration" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="accessibility" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="base" type="xs:string" minOccurs="0"/>
+        <xs:element name="hyphenation-base" type="xs:string" />
+        <xs:element maxOccurs="unbounded" ref="hyphenation-pattern" />
+        <xs:element name="fonts"  minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="substitutions" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="renderers">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="renderer">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="fonts" />
                   </xs:sequence>
                   <xs:attribute name="mime" type="xs:string" use="required" />
                 </xs:complexType>
