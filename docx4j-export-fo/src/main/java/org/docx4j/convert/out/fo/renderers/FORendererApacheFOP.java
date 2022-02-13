@@ -38,7 +38,9 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopConfParser;
 import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
@@ -196,7 +198,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		if (settings==null) throw new Docx4JException("FOSettings was null");
 		String ret = settings.getApacheFopConfiguration();
 		if (ret == null) {
-			
+			log.debug("Configuring FOP fonts");
 			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getOpcPackage();
 			if (wmlPackage==null) throw new Docx4JException("No WmlPackage in FOSettings");
 			
@@ -329,23 +331,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @throws FOPException
 	 */
 	protected static FopFactory createFopFactory(String userConfig) throws FOPException {
-		// This class won't compile unless you have some version of FOP on your path. 
-
-		/* 
-		 * Unfortunately, <=1.1 requires Configuration object,
-		 * and >1.1 requires InputStream.
-		 * 
-		 * So either we pass Configuration object into this method, 
-		 * and use DefaultConfigurationSerializer to get an input stream from it,
-		 * or we pass a string, and make it into a Configuration object in the case
-		 * where it is required. 
-		 * 
-		 * I've submitted a patch to FOP allowing configuration
-		 * using a Configuration object.  Let's see whether it is applied.
-		 * 
-		 * In the absence of that, passing a String (or an InputStream) seems better going forward.
-		 * So that's what the code accepts for now.
-		 */
 		
 		InputStream is=null;
 		try {
@@ -355,33 +340,24 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		}
 		FopFactory fopFactory = null;
 		
-		// If FopConfParser is on path, it is post 1.1
 		try {
-			Class fopConfParserClass = Class.forName("org.apache.fop.apps.FopConfParser");
 			
 			URI defaultBaseURI = new URI("http://dummy.domain");
 				// Default base URI must not be null, but we don't need it.
 				// at org.apache.fop.apps.EnvironmentalProfileFactory$Profile (EnvironmentalProfileFactory.java:92)
 
-			Object o = fopConfParserClass.getConstructor(InputStream.class, URI.class).newInstance(is, defaultBaseURI);
-			
-			Method method = fopConfParserClass.getDeclaredMethod("getFopFactoryBuilder", new Class[0] );
-			Object fopFactoryBuilder = method.invoke(o);
-			
-			Class fopFactoryBuilderClass = Class.forName("org.apache.fop.apps.FopFactoryBuilder");
-			method = fopFactoryBuilderClass.getDeclaredMethod("build", new Class[0] );
-			
-			fopFactory = (FopFactory)method.invoke(fopFactoryBuilder);
+			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI);
+			FopFactoryBuilder fopFactoryBuilder = fopConfParser.getFopFactoryBuilder();
 
 			log.debug("FOP configured OK." );
+			
+			return fopFactoryBuilder.build();
 			
 		} catch (Exception e) {
 			log.error("Can't set up FOP 2.x; " + e.getMessage() );
 			log.error(e.getMessage(), e);
-			e.printStackTrace();
-			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
+			throw new FOPException(e.getMessage(), e);
 		}
-		return fopFactory;
 	}
 
 
