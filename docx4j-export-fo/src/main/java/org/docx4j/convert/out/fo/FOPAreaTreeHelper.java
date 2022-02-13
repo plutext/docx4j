@@ -20,6 +20,7 @@ import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
+import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
 import org.docx4j.finders.SectPrFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.PageDimensions;
@@ -165,11 +166,16 @@ public class FOPAreaTreeHelper {
     }    
 	
     
-    static org.w3c.dom.Document getAreaTreeViaFOP(WordprocessingMLPackage hfPkg, boolean useXSLT) throws Docx4JException, ParserConfigurationException, SAXException, IOException  {
+    static org.w3c.dom.Document getAreaTreeViaFOP(WordprocessingMLPackage hfPkg, boolean useXSLT, FOSettings foSettingsOverall) throws Docx4JException, ParserConfigurationException, SAXException, IOException  {
 
-    	  // Currently FOP dependent!  But an Antenna House version ought to be feasible.
+    	// Currently FOP dependent!  But an Antenna House version ought to be feasible.
     	
         FOSettings foSettings = Docx4J.createFOSettings();
+
+    	// 2022: need our FopFactory; reuse overall value
+        foSettings.getSettings().put(FORendererApacheFOP.FOP_FACTORY,
+        		foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY));
+        
         foSettings.setOpcPackage(hfPkg);
         foSettings.setApacheFopMime(MimeConstants.MIME_FOP_AREA_TREE);
         

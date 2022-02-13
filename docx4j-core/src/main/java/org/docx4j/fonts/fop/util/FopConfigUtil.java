@@ -95,22 +95,11 @@ public class FopConfigUtil {
 		}
 	}
 
-	@Deprecated
-	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
-
-		Fop fopConfig = createConfigurationObject( fontMapper, fontsInUse);
-		
-		String conf = XmlUtils.marshaltoString(fopConfig, Context.getFopConfigContext());
-		
-		if (log.isDebugEnabled()) {
-			log.debug("\nUsing fop config:\n " + conf + "\n");
-		}
-
-		return conf;
-	}
 	
 	public static Fop createConfigurationObject(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 		
+		log.debug("Config object");
+
 		Fop fopConfig = factory.createFop();
 		fopConfig.setVersion("1.0");
 		

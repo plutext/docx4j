@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 
 /**
@@ -100,8 +101,8 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 	public void setWmlPackage(OpcPackage wmlPackage) {
 		settings.put(OPC_PACKAGE, wmlPackage);
 	}
-	public void setOpcPackage(OpcPackage wmlPackage) {
-		settings.put(OPC_PACKAGE, wmlPackage);
+	public void setOpcPackage(OpcPackage opcPackage) throws Docx4JException {
+		settings.put(OPC_PACKAGE, opcPackage);
 	}
 	public OpcPackage getOpcPackage() {
 		return (OpcPackage)settings.get(OPC_PACKAGE);

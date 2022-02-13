@@ -73,7 +73,7 @@ public class XSLFOExporterNonXSLT {
 	FOSettings foSettings = null;
 	
 	public XSLFOExporterNonXSLT(WordprocessingMLPackage wmlPackage, 
-			FOSettings  pdfSettings) {
+			FOSettings  pdfSettings) throws Docx4JException {
 
 		foSettings = pdfSettings;
 		if ((foSettings.getOpcPackage() == null) && (wmlPackage != null)) {

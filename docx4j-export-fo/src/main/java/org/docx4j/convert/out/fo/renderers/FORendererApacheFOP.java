@@ -44,6 +44,7 @@ import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
@@ -53,6 +54,7 @@ import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.XmlSerializerUtil;
@@ -70,7 +72,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 	
 	private static final String FO_USER_AGENT = "foUserAgent";
-	private static final String FOP_FACTORY = "fopFactory";
+	public static final String FOP_FACTORY = "fopFactory";
 	
 	
 	protected static class FopPlaceholderLookup extends AbstractPlaceholderLookup {
@@ -111,23 +113,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			List<SectionPageInformation> pageNumberInformation,
 			OutputStream outputStream) throws Docx4JException {
 		
-		String apacheFopConfiguration = setupApacheFopConfiguration(settings);
-		log.debug(apacheFopConfiguration);
-		/* for example:
-
-			<fop version="1.0">
-				<strict-configuration>true</strict-configuration>
-				<renderers>
-					<renderer mime="application/pdf">
-						<fonts>
-							<font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/cour.ttf">
-								<font-triplet name="Courier New" style="normal" weight="normal"/>
-							</font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/courbd.ttf"><font-triplet name="Courier New" style="normal" weight="bold"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/courbi.ttf"><font-triplet name="Courier New" style="italic" weight="bold"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/couri.ttf"><font-triplet name="Courier New" style="italic" weight="normal"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/Arial_Black.ttf"><font-triplet name="Arial Black" style="normal" weight="normal"/></font>
-						</fonts>
-					</renderer>
-				</renderers>
-			</fop>		 
-		*/
 		
 		String apacheFopMime = setupApacheFopMime(settings);
 		StreamSource foDocumentSrc = new StreamSource(new StringReader(foDocument));
@@ -135,11 +120,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		FormattingResults formattingResults = null;
 		FopFactory fopFactory = null;
 		if (settings.getSettings().get(FOP_FACTORY)==null) {
-			try {
-				fopFactory = getFopFactory(apacheFopConfiguration);				
-			} catch (FOPException e) {
-				throw new Docx4JException("Exception creating fop factory for rendering: " + e.getMessage(), e);
-			}
+			throw new Docx4JException("You must invoke FORendererApacheFOP.getFOUserAgent");
 		} else {
 			fopFactory = (FopFactory)settings.getSettings().get(FOP_FACTORY);
 		}
@@ -185,28 +166,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		new EventFinished(startEvent).publish();
 	}
 
-	/**
-	 * Generate a Fop configuration (unless FOSettings already has it)
-	 * based on fonts used in the document.
-	 * 
-	 * @param settings
-	 * @return
-	 * @throws Docx4JException
-	 */
-	private static String setupApacheFopConfiguration(FOSettings settings) throws Docx4JException {
-
-		if (settings==null) throw new Docx4JException("FOSettings was null");
-		String ret = settings.getApacheFopConfiguration();
-		if (ret == null) {
-			log.debug("Configuring FOP fonts");
-			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getOpcPackage();
-			if (wmlPackage==null) throw new Docx4JException("No WmlPackage in FOSettings");
-			
-			ret = FopConfigUtil.createDefaultConfiguration(wmlPackage.getFontMapper(), 
-					wmlPackage.getMainDocumentPart().fontsInUse());
-		}
-		return ret;
-	}
 
 	private String setupApacheFopMime(FOSettings settings) {
 	String ret = settings.getApacheFopMime();
@@ -276,12 +235,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		return fop.getResults();
 	}
 	
-	protected Fop createFop(String userConfiguration, String outputFormat, OutputStream outputStream) throws FOPException {
-		
-		FopFactory fopFactory = getFopFactory(userConfiguration);
-		return fopFactory.newFop(outputFormat != null ? outputFormat : MimeConstants.MIME_PDF, outputStream);
-	}
-
 	
 	/**
 	 * Allow user access to FOUserAgent, so they can setAccessibility(true).  Access to other settings
@@ -291,35 +244,17 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @return
 	 * @throws FOPException
 	 */
-	public static FOUserAgent getFOUserAgent(FOSettings settings) throws Docx4JException, FOPException {
+	public static FOUserAgent getFOUserAgent(FOSettings settings, FopFactory fopFactory) throws Docx4JException, FOPException {
 		
-		FopFactory fopFactory = getFopFactory(
-				setupApacheFopConfiguration(settings)); // relies on the WordML package being there, for font info
+		if (fopFactory==null) {
+			throw new Docx4JException("FopFactory is null");
+		}
 		settings.getSettings().put(FOP_FACTORY, fopFactory);
 		
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 		settings.getSettings().put(FO_USER_AGENT, foUserAgent);
 		
 		return foUserAgent;
-	}
-	
-	protected  static FopFactory getFopFactory(String userConfig) throws FOPException {
-
-		//The current implementation doesn't pass the user config to the fop factory 
-		//if there is only a factory per Thread, all documents rendered in that  
-		//Thread would use the configuration done for the first document.
-		//For this reason disable the reuse of the FopFactories until this issue 
-		//gets resolved.
-		return createFopFactory(userConfig);
-//		FopFactory fopFactory = fopFactories.get(Thread.currentThread().getId());
-//		if (fopFactory == null) {
-//			synchronized(fopFactories) {
-//				fopFactory = createFopFactory(userConfig);
-//				fopFactories.put(Thread.currentThread().getId(), fopFactory);
-//			}
-//		}
-//		fopFactory.setUserConfig(userConfig);
-//		return fopFactory;
 	}
 	
 	/**
@@ -330,15 +265,20 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @return
 	 * @throws FOPException
 	 */
-	protected static FopFactory createFopFactory(String userConfig) throws FOPException {
+	public static FopFactoryBuilder createFopFactory(FOSettings settings) throws FOPException {
+
+		org.docx4j.convert.out.fopconf.Fop fopConfig = settings.getFopConfig();
+		String userConfig = XmlUtils.marshaltoString(fopConfig, Context.getFopConfigContext());
+		if (log.isDebugEnabled()) {
+			log.debug(userConfig);
+		}
 		
 		InputStream is=null;
 		try {
 			is = IOUtils.toInputStream(userConfig, "UTF-8");
 		} catch (IOException e2) {
-			e2.printStackTrace();
-		}
-		FopFactory fopFactory = null;
+			throw new FOPException(e2.getMessage(), e2); 
+		}		
 		
 		try {
 			
@@ -355,11 +295,10 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			}
 
 			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI);
-			FopFactoryBuilder fopFactoryBuilder = fopConfParser.getFopFactoryBuilder();
+			return fopConfParser.getFopFactoryBuilder();
 
-			log.debug("FOP configured OK." );
-			
-			return fopFactoryBuilder.build();
+//			log.debug("FOP configured OK." );
+//			return fopFactoryBuilder.build();
 			
 		} catch (Exception e) {
 			log.error("Can't set up FOP 2.x; " + e.getMessage() );

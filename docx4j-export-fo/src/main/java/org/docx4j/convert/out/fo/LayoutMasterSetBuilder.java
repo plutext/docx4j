@@ -135,7 +135,8 @@ public class LayoutMasterSetBuilder {
 			
 			FOPAreaTreeHelper.trimContent(hfPkg);
 			
-			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT);
+			FOSettings foSettings = (FOSettings)context.getConversionSettings();
+			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT, foSettings);
 			
 			log.debug(XmlUtils.w3CDomNodeToString(areaTree));
 			
