@@ -20,11 +20,17 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
 import java.io.OutputStream;
+import java.net.URI;
 
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
+import org.apache.fop.apps.io.InternalResourceResolver;
+import org.apache.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.Docx4J;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
 import org.docx4j.fonts.BestMatchingMapper;
@@ -32,6 +38,7 @@ import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldUpdater;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -160,21 +167,35 @@ public class ConvertOutPDFviaXSLFO {
 //		}
 //		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
 
+		// Config - step 1
 		// FO exporter setup (required)
 		// .. the FOSettings object
-    	FOSettings foSettings = Docx4J.createFOSettings();
+    	FOSettings foSettings = new FOSettings(wordMLPackage);
+    	// Now you can inspect generated font settings in case of any issues
+    	System.out.println(XmlUtils.marshaltoString(foSettings.getFopConfig(), Context.getFopConfigContext()));
+    	// You can also alter that Fop config object if you wish 
 		if (saveFO) {
 			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
-		foSettings.setOpcPackage(wordMLPackage);
+
+		// Config - step 2
+		// Get FopFactoryBuilder, then its standard FOP config stuff
+		FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings) ;
+		// or specify your own resolver.
+		// FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings, new ClasspathResolverURIAdapter()) ;
+		// Either way, defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
 		
-	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings);
+		// You can specify a HyphenBaseResourceResolver, but its probably not necessary if your specify your own resolver above
+//		fopFactoryBuilder.setHyphenBaseResourceResolver( 
+//				ResourceResolverFactory.createInternalResourceResolver( (new File(".")).toURI(), new ClasspathResolverURIAdapter()));
+		FopFactory fopFactory = fopFactoryBuilder.build();
+		
+		// Config - step 3
+	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory);
 	    // configure foUserAgent as desired
 	    foUserAgent.setTitle("my title");
 	    
 //	    foUserAgent.getRendererOptions().put("pdf-a-mode", "PDF/A-1b");
-	    // is easier than 
-//		foSettings.setApacheFopConfiguration(apacheFopConfiguration);
 	    
 	    // PDF/A-1a, PDF/A-2a and PDF/A-3a require accessibility to be enabled
 	    // see further https://stackoverflow.com/a/54587413/1031689

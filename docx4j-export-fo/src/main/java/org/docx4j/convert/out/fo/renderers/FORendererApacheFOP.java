@@ -44,6 +44,7 @@ import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
+import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
@@ -256,16 +257,30 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		
 		return foUserAgent;
 	}
-	
+
 	/**
-	 * Create and configure FopFactory.
+	 * Get a FopFactoryBuilder, automagically preconfigured with font info.
+	 * Uses default ResourceResolver.
+	 * defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
 	 * 
-	 * @param userConfig
-	 * @param defaultBaseURI
+	 * @param settings
 	 * @return
 	 * @throws FOPException
 	 */
-	public static FopFactoryBuilder createFopFactory(FOSettings settings) throws FOPException {
+	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings) throws FOPException {
+		return getFopFactoryBuilder(settings, null); 
+	}	
+	/**
+	 * Get a FopFactoryBuilder, automagically preconfigured with font info.
+	 * Uses the specified ResourceResolver.
+	 * defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
+	 * 
+	 * @param settings
+	 * @param resourceResolver  your custom resourceResolver 
+	 * @return
+	 * @throws FOPException
+	 */
+	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings, ResourceResolver resourceResolver) throws FOPException {
 
 		org.docx4j.convert.out.fopconf.Fop fopConfig = settings.getFopConfig();
 		String userConfig = XmlUtils.marshaltoString(fopConfig, Context.getFopConfigContext());
@@ -294,7 +309,12 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 				defaultBaseURI = new URI(baseUriProperty);
 			}
 
-			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI);
+			FopConfParser fopConfParser = null;
+			if (resourceResolver==null) {
+				fopConfParser = new FopConfParser(is, defaultBaseURI);
+			} else {
+				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
+			}
 			return fopConfParser.getFopFactoryBuilder();
 
 //			log.debug("FOP configured OK." );
