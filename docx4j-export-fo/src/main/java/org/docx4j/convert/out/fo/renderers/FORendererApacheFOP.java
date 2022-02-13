@@ -342,9 +342,17 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		
 		try {
 			
-			URI defaultBaseURI = new URI("http://dummy.domain");
-				// Default base URI must not be null, but we don't need it.
-				// at org.apache.fop.apps.EnvironmentalProfileFactory$Profile (EnvironmentalProfileFactory.java:92)
+			// Default base URI must not be null
+			String baseUriProperty=Docx4jProperties.getProperty("docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI");
+			
+			URI defaultBaseURI = null;
+			if (baseUriProperty==null) {
+				log.debug("Using defaultBaseURI");
+				defaultBaseURI = new java.io.File(".").toURI();
+			} else {
+				log.debug("Using baseURI " + baseUriProperty);
+				defaultBaseURI = new URI(baseUriProperty);
+			}
 
 			FopConfParser fopConfParser = new FopConfParser(is, defaultBaseURI);
 			FopFactoryBuilder fopFactoryBuilder = fopConfParser.getFopFactoryBuilder();
