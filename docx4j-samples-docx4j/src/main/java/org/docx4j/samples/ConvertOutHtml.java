@@ -56,7 +56,7 @@ public class ConvertOutHtml extends AbstractSample {
 	// Config for non-command line version
 	static {
 	
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docxv2.docx";
+        inputfilepath = "/home/jharrop/git/docx4j-8_3_3/docs/Docx4j_GettingStarted.docx"; 
 
 		save = true;
 		nestLists = true;
