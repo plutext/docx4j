@@ -50,7 +50,7 @@
 	<!-- PDF output via XSL FO: change this to warn to hide messages -->
 	<logger
 		name="org.docx4j.convert.out.common.writer.AbstractMessageWriter"
-		level="DEBUG" />
+		level="INFO" />
 
 	<logger name="org.docx4j.convert.out.fo" level="WARN" />
 
@@ -109,11 +109,11 @@
 		level="INFO" />
 
 	<logger name="org.docx4j.openpackaging.parts.AbstractFontPart" level="WARN" />
-	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="DEBUG" />
+	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart" level="INFO" />
 	<logger name="org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart" level="WARN" />
 
 	<!--  to see the fop config  -->
-	<logger name="org.docx4j.convert.out.fo.renderers" level="DEBUG" />
+	<logger name="org.docx4j.convert.out.fo.renderers" level="INFO" />
 
 
 
@@ -176,7 +176,7 @@
 		name="org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart"
 		level="INFO" />
 
-	<logger name="com.plutext.demo.diagnostics" level="DEBUG" />
+	<logger name="com.plutext.demo.diagnostics" level="INFO" />
 
 
 	<root level="DEBUG">
