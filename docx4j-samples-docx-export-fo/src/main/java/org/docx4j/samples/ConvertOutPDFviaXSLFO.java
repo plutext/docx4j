@@ -150,8 +150,8 @@ public class ConvertOutPDFviaXSLFO {
 //		updater.update(true);
 		
 		// Set up font mapper (optional)
-		Mapper fontMapper = new IdentityPlusMapper();
-//		Mapper fontMapper = new BestMatchingMapper();
+//		Mapper fontMapper = new IdentityPlusMapper();  // Only for Windows, unless you have Microsoft's fonts installed
+		Mapper fontMapper = new BestMatchingMapper();  // Good for Linux (and OSX?)
 		wordMLPackage.setFontMapper(fontMapper);
 		
 		// .. example of mapping font Times New Roman which doesn't have certain Arabic glyphs
