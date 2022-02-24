@@ -237,7 +237,7 @@ public class NamespacePrefixMapperUtils {
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
-				log.warn("No mapping for prefix '" + prefix + "'");
+				log.warn("No mapping for prefix '" + prefix + "' in " + mcIgnorable);
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
 				//entries.add(prefix);
