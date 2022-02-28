@@ -215,14 +215,11 @@ public class FopConfigUtil {
 		    		rendererFont.getFontTriplet().add(
 		    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
 		    						weightToCSS2FontWeight(fontTriplet.getWeight())));
-		    		
+
+				    addVariations(fontMapper, rendererFonts, fontName, pf, 
+				    		pf.getEmbedFontInfo().getSubFontName());
 			    }
-			    
-			    addVariations(fontMapper, rendererFonts, fontName, pf, 
-			    		pf.getEmbedFontInfo().getSubFontName());
-				    
 			}
-		
 		}
 		if (!haveSomeMappedPhysicalFonts) log.warn("No fonts configured!");
 		return rendererFonts;
