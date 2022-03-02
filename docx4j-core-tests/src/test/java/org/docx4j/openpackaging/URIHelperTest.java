@@ -25,62 +25,76 @@
 package org.docx4j.openpackaging;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class URIHelperTest {
-	
-	public static void main(String[] args) throws Exception {
 
-		//testRelativizeURI();
+	private URI uriDocInSuperFolder;
+	private URI uriImageInSubFolder;
+	private URI uriDocInADifferentFolder;
+	private URI uriRootPath;
+
+	@Before
+	public void setUp() {
+		try {
+			uriDocInSuperFolder = new URI("/word/document.xml");
+			uriImageInSubFolder = new URI("/word/media/image1.gif");
+			uriDocInADifferentFolder = new URI("/customXml/item1.xml");
+			uriRootPath = new URI("/");
+		} catch (Exception e) {	
+			fail("URI violates RFC&nbsp;2396 or is null.");			
+		}
+		
 	}
-	
-	
-	/**
-	 * Test relativizePartName() method.
-     *
-     * TODO: need upstream fix (not available as at 2009 02 16)
-	 */
+
 	@Test
-	public void testRelativizeURI() throws Exception {
-		URI uri1 = new URI("/word/document.xml");
-		URI uri2 = new URI("/word/media/image1.gif");
-		
+	public void testRelativizeURIFromSuperFolderToSubFolder() throws Exception {
 		// Document to image is down a directory
-		URI retURI1to2 = URIHelper.relativizeURI(uri1, uri2);
-		assertEquals("media/image1.gif", retURI1to2.getPath());
-		// Image to document is up a directory
-		URI retURI2to1 = URIHelper.relativizeURI(uri2, uri1);
-		assertEquals("../document.xml", retURI2to1.getPath());
-		
-		// Document and CustomXML parts totally different [Julien C.]
-		URI uriCustomXml = new URI("/customXml/item1.xml");
-		URI uriRes = URIHelper.relativizeURI(uri1, uriCustomXml);
-		assertEquals("../customXml/item1.xml", uriRes.toString());
-
-		// Document to itself is the same place (empty URI)
-		URI retURI2 = URIHelper.relativizeURI(uri1, uri1);
-		assertEquals("", retURI2.getPath());
-
-		// Document and root totally different
-		URI uri4 = new URI("/");
-		try {
-			System.out.println( URIHelper.relativizeURI(uri1, uri4) );
-			//TODO: figure out why the assertion fails
-            //fail("Must throw an exception ! Can't relativize with an empty URI");
-		} catch (Exception e) {
-			// Do nothing
-		}
-		try {
-			System.out.println( URIHelper.relativizeURI(uri4, uri1) );
-            //TODO: figure out why the assertion fails
-			//fail("Must throw an exception ! Can't relativize with an empty URI");
-		} catch (Exception e) {
-			// Do nothing
-		}
+		final URI relativizedURI = URIHelper.relativizeURI(uriDocInSuperFolder, uriImageInSubFolder);
+		assertEquals("media/image1.gif", relativizedURI.getPath());
 	}
+
+	@Test
+	public void testRelativizeURIFromSubFolderToSuperFolder() throws Exception {
+		// Image to document is up a directory
+		final URI relativizedURI = URIHelper.relativizeURI(uriImageInSubFolder, uriDocInSuperFolder);
+		assertEquals("../document.xml", relativizedURI.getPath());
+	}
+
+	@Test
+	public void testRelativizeURIDocInATotalyDifferentFolder() throws Exception {
+		// Document and CustomXML parts totally different [Julien C.]
+		final URI relativizedURI = URIHelper.relativizeURI(uriDocInSuperFolder, uriDocInADifferentFolder);
+		assertEquals("../customXml/item1.xml", relativizedURI.toString());
+	}
+
+	@Test
+	public void testRelativizeURIDocToItselfInTheSamePlace() throws Exception {
+		// Document to itself is the same place (empty URI)
+		final URI relativizedURI = URIHelper.relativizeURI(uriDocInSuperFolder, uriDocInSuperFolder);
+		assertEquals("", relativizedURI.getPath());
+	}
+
+
+	@Test
+	public void testRelativizeURIDocToRootPath() throws Exception {
+		// Document and root totally different
+		final URI relativizedURI = URIHelper.relativizeURI(uriDocInSuperFolder, uriRootPath);
+		assertEquals("../", relativizedURI.getPath());
+	}
+
+	@Test
+	public void testRelativizeURIRootPathToDoc() throws Exception {
+		// Document and root totally different
+		final URI relativizedURI = URIHelper.relativizeURI(uriRootPath, uriDocInSuperFolder);;
+		assertEquals(uriDocInSuperFolder.getPath(), relativizedURI.getPath());
+	}
+
 
 //	/**
 //	 * Test createPartName(String, y)
