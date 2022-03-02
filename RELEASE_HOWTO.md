@@ -306,6 +306,8 @@ then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
 Here, also do:  git push -u origin [the incremented version number]
 
+--------
+
 Switch branch if necessary, eg:
 
     git checkout master
@@ -318,8 +320,6 @@ or
 
 $ sudo archlinux-java set java-14-adoptopenjdk
 
-
-Upodate pom.xml to -SNAPSHOT
 
 ----
 

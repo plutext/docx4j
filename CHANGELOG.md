@@ -2,6 +2,29 @@ CHANGELOG
 =========
 
 
+Version 8.3.4  
+==============
+
+Release date
+------------
+
+3 March 2022
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.3.4
+-------------------------
+
+docx to PDF via XSL FO: Font configuration was ignored in 8.3.3, now fixed.
+
+Use FOP 2.7
+
+
 
 Version 8.3.3  
 ==============
