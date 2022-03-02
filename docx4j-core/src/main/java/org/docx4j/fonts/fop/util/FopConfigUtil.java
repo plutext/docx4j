@@ -142,7 +142,7 @@ public class FopConfigUtil {
 		boolean haveSomeMappedPhysicalFonts = false;
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {
-			
+		// <font simulate-style="true"	
 			for (String fontName : fontsInUse) {		    
 			    
 			    PhysicalFont pf = fontMapper.get(fontName);
@@ -190,7 +190,7 @@ public class FopConfigUtil {
 			
 		} else {
 
-		
+		// <font simulate-style="false"
 			for (String fontName : fontsInUse) {		    
 			    
 			    PhysicalFont pf = fontMapper.get(fontName);
