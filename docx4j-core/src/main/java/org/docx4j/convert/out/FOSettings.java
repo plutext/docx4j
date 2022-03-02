@@ -55,6 +55,20 @@ public class FOSettings extends AbstractConversionSettings {
 	public static final String FO_DUMP_FILE = "foDumpFile";
 
 	private Fop fopConfig;
+	/**
+	 * Generally there is no need to invoke this;
+	 * the fop config will be generated based on
+	 * the fonts used in your WordprocessingMLPackage
+	 * and the specified FontMapper.  
+	 * But in an advanced unsupported usage, you can
+	 * specify your own Fop config.  If its a String
+	 * or InputStream, you'll need to unmarshall it. 
+	 * @param fopConfig
+	 */
+	public void setFopConfig(Fop fopConfig) {
+		this.fopConfig = fopConfig;
+	}
+
 	public Fop getFopConfig() {
 		return fopConfig;
 	}
@@ -71,13 +85,15 @@ public class FOSettings extends AbstractConversionSettings {
 	}
 	
 	/**
-	 * Side effect for WordprocessingMLPackage is to invoke FopConfigUtil.createConfigurationObject
+	 * Side effect (where there is no fopConfig) for WordprocessingMLPackage is to 
+	 * invoke FopConfigUtil.createConfigurationObject
 	 */
 	@Override
 	public void setOpcPackage(OpcPackage opcPackage) throws Docx4JException {
 		settings.put(OPC_PACKAGE, opcPackage);
 		
-		if (opcPackage instanceof WordprocessingMLPackage) {
+		if (fopConfig==null
+				&& opcPackage instanceof WordprocessingMLPackage) {
 			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)opcPackage;
 			fopConfig = FopConfigUtil.createConfigurationObject(
 					wmlPackage.getFontMapper(), 
