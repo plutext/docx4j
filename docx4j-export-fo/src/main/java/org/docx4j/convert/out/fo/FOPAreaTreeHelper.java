@@ -12,8 +12,12 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.fop.apps.FOUserAgent;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.MimeConstants;
 import org.docx4j.Docx4J;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
@@ -21,6 +25,8 @@ import org.docx4j.convert.out.FOSettings;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
 import org.docx4j.convert.out.common.ConversionSectionWrappers;
 import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
+import org.docx4j.convert.out.fopconf.Fonts.Font;
+import org.docx4j.convert.out.fopconf.Fop;
 import org.docx4j.finders.SectPrFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.PageDimensions;
@@ -170,33 +176,85 @@ public class FOPAreaTreeHelper {
 
     	// Currently FOP dependent!  But an Antenna House version ought to be feasible.
     	
-        FOSettings foSettings = Docx4J.createFOSettings();
+        log.info("Creating FopFactory for AreaTree calculations");
+    	
+        FOSettings foSettingsHere = Docx4J.createFOSettings();
+        foSettingsHere.setFopConfig(foSettingsOverall.getFopConfig());
+        
+        /* Here is where fonts are first configured in a FopFactory.
+         * It seems that is remembered, and is not dependent on
+         * type of renderer.
+         * 
+         * So if you set up FopFactory using a config which defines
+         * fonts for "application/pdf" only, but the renderer is
+         * actually application/X-fop-areatree (as it is here),
+         * then you'll only get the default fonts here, and worse,
+         * later on for "application/pdf".
+         * 
+         * In other words, with 
+         * 
+		    <renderers>
+		        <renderer mime="application/pdf">
+		            <fonts>
+		            
+		   as opposed to application/X-fop-areatree
+		   
+		   FOP will say:
+		   
+		   DEBUG FOP 696 - No user configuration found for MIME type application/X-fop-areatree
+		   
+         * So we use a distinct FopFactory here, and better, specifically configure
+         * fonts for renderer application/X-fop-areatree             
+         */
 
-    	// 2022: need our FopFactory; reuse overall value
-        foSettings.getSettings().put(FORendererApacheFOP.FOP_FACTORY,
-        		foSettingsOverall.getSettings().get(FORendererApacheFOP.FOP_FACTORY));
+        // no need to clone, as long as we remember to change it back again
+        foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(MimeConstants.MIME_FOP_AREA_TREE);
+        //  ERROR org.apache.fop.apps.FOUserAgent 103 - The simulate-style property is only supported in PDF.
+        boolean flippedSimulateStyle = false;
+        if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {        	
+        	// Need to set to false
+        	for (Font f : foSettingsOverall.getFopConfig().getRenderers().getRenderer().getFonts().getFont()) {
+        		if (f.isSimulateStyle()) {
+        			f.setSimulateStyle(false);
+        			flippedSimulateStyle = true;
+        		}
+        	}
+        }
         
-        foSettings.setOpcPackage(hfPkg);
-        foSettings.setApacheFopMime(MimeConstants.MIME_FOP_AREA_TREE);
+		FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettingsHere) ;
+		FopFactory fopFactory = fopFactoryBuilder.build();
         
-        foSettings.setLayoutMasterSetCalculationInProgress(true); // avoid recursion
+		// change it back
+        foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(FOSettings.MIME_PDF);
+        if (flippedSimulateStyle) {        	
+        	for (Font f : foSettingsOverall.getFopConfig().getRenderers().getRenderer().getFonts().getFont()) {
+        		f.setSimulateStyle(true);
+        	}
+        }
+        
+	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettingsHere, fopFactory);
+                
+        foSettingsHere.setOpcPackage(hfPkg);
+        foSettingsHere.setApacheFopMime(MimeConstants.MIME_FOP_AREA_TREE);
+        
+        foSettingsHere.setLayoutMasterSetCalculationInProgress(true); // avoid recursion
         
 //        foSettings.getFeatures().add(ConversionFeatures.PP_PDF_APACHEFOP_DISABLE_PAGEBREAK_LIST_ITEM); // in 3.0.1, this is off by default
         
         // Since hfPkg is already a clone, we don't need PP_COMMON_DEEP_COPY
         // Plus it invokes setFontMapper, which does processEmbeddings again, and those fonts aren't much use to us here
-        foSettings.getFeatures().remove(ConversionFeatures.PP_COMMON_DEEP_COPY);
+        foSettingsHere.getFeatures().remove(ConversionFeatures.PP_COMMON_DEEP_COPY);
         
         if (log.isDebugEnabled()) {
-        	foSettings.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/hf.fo"));
+        	foSettingsHere.setFoDumpFile(new java.io.File(System.getProperty("user.dir") + "/hf.fo"));
         }
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         if (useXSLT) {
-        	Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
+        	Docx4J.toFO(foSettingsHere, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
         } else {
-        	Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        	
+        	Docx4J.toFO(foSettingsHere, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        	
         }
         
         InputStream is = new ByteArrayInputStream(os.toByteArray());
