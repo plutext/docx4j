@@ -83,6 +83,10 @@ public class BindingHyperlinkResolver {
 	 * @throws JAXBException
 	 */
 	public Hyperlink generateHyperlink(String relId, String url) throws JAXBException {
+		// replace '&' with '&amp;'
+		if(url.contains("&")) {
+			url = url.replaceAll("&(?!amp;)", "&amp;");
+		}
 		
 		String hpl = "<w:hyperlink r:id=\"" + relId + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
 		        "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
