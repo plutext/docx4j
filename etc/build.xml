@@ -55,41 +55,41 @@
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 
 	<!-- 
-		org.docx4j:docx4j-core:jar:8.3.3
-		+- org.docx4j:docx4j-openxml-objects:jar:8.3.3
-		+- org.docx4j:docx4j-openxml-objects-pml:jar:8.3.3
-		+- org.docx4j:docx4j-openxml-objects-sml:jar:8.3.3
-		+- org.plutext:jaxb-svg11:jar:1.0.2
-		
-		+- net.engio:mbassador:jar:1.3.2
-		
-		+- org.slf4j:jcl-over-slf4j:jar:1.7.26
-		+- org.apache.commons:commons-lang3:jar:3.9
-		+- org.apache.commons:commons-compress:jar:1.21
-		+- commons-codec:commons-codec:jar:1.12
-		+- commons-io:commons-io:jar:2.7
-		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.4
-		
-		+- org.docx4j.org.apache:xalan-metainf:jar:8.0.0
-		+- org.docx4j.org.apache:xalan-interpretive:jar:8.0.0
-		|  \- org.docx4j.org.apache:xalan-serializer:jar:8.0.0
-		
-		+- net.arnx:wmf2svg:jar:0.9.8
-		
-		+- org.antlr:antlr-runtime:jar:3.5.2
-		+- org.antlr:stringtemplate:jar:3.2.1
-		|  \- antlr:antlr:jar:2.7.7
-		
-		+- org.checkerframework:checker-qual:jar:2.8.1
-		+- com.google.errorprone:error_prone_annotations:jar:2.3.3
-		
-		+- org.apache.pdfbox:fontbox:jar:2.0.24
-		
-		+- org.apache.xmlgraphics:fop-events:jar:2.6
-		|  +- org.apache.xmlgraphics:fop-util:jar:2.6
-		|  \- com.thoughtworks.qdox:qdox:jar:1.12
-		
-		+- org.slf4j:slf4j-api:jar:1.7.26
+        org.docx4j:docx4j-core:jar:8.3.4
+        +- org.docx4j:docx4j-openxml-objects:jar:8.3.4
+        +- org.docx4j:docx4j-openxml-objects-pml:jar:8.3.4
+        +- org.docx4j:docx4j-openxml-objects-sml:jar:8.3.4
+        +- org.plutext:jaxb-svg11:jar:1.0.2
+    
+        +- net.engio:mbassador:jar:1.3.2
+    
+        +- org.slf4j:jcl-over-slf4j:jar:1.7.26
+        +- org.apache.commons:commons-lang3:jar:3.9
+        +- org.apache.commons:commons-compress:jar:1.21
+        +- commons-codec:commons-codec:jar:1.12
+        +- commons-io:commons-io:jar:2.7
+        +- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.7
+    
+        +- org.docx4j.org.apache:xalan-metainf:jar:8.0.0
+        +- org.docx4j.org.apache:xalan-interpretive:jar:8.0.0
+        |  \- org.docx4j.org.apache:xalan-serializer:jar:8.0.0
+    
+        +- net.arnx:wmf2svg:jar:0.9.8
+    
+        +- org.antlr:antlr-runtime:jar:3.5.2
+        +- org.antlr:stringtemplate:jar:3.2.1
+        |  \- antlr:antlr:jar:2.7.7
+    
+        +- org.checkerframework:checker-qual:jar:2.8.1
+        +- com.google.errorprone:error_prone_annotations:jar:2.3.3
+    
+        +- org.apache.pdfbox:fontbox:jar:2.0.24
+    
+        +- org.apache.xmlgraphics:fop-events:jar:2.7
+        |  +- org.apache.xmlgraphics:fop-util:jar:2.7
+        |  \- com.thoughtworks.qdox:qdox:jar:1.12
+    
+        +- org.slf4j:slf4j-api:jar:1.7.26
 	 -->
 	<path id="MavenDeps">
 
@@ -137,7 +137,29 @@
 
 -->
 
-
+<!--
+        +- org.apache.xmlgraphics:fop:jar:2.7
+        |  +- org.apache.xmlgraphics:fop-util:jar:2.7
+        |  \- org.apache.xmlgraphics:fop-core:jar:2.7
+        |     +- org.apache.xmlgraphics:batik-anim:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-css:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-dom:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-ext:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-parser:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-shared-resources:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-svg-dom:jar:1.14
+        |     |  \- org.apache.xmlgraphics:batik-util:jar:1.14
+        |     |     +- org.apache.xmlgraphics:batik-constants:jar:1.14
+        |     |     \- org.apache.xmlgraphics:batik-i18n:jar:1.14
+        |     +- org.apache.xmlgraphics:batik-awt-util:jar:1.14
+        |     +- org.apache.xmlgraphics:batik-bridge:jar:1.14
+        |     |  +- org.apache.xmlgraphics:batik-script:jar:1.14
+        |     |  \- org.apache.xmlgraphics:batik-xml:jar:1.14
+        |     +- org.apache.xmlgraphics:batik-extension:jar:1.14
+        |     +- org.apache.xmlgraphics:batik-gvt:jar:1.14
+        |     \- org.apache.xmlgraphics:batik-transcoder:jar:1.14
+        |        \- org.apache.xmlgraphics:batik-svggen:jar:1.14
+    -->    
 	<path id="docx4j-export-fo.classpath">
 
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
