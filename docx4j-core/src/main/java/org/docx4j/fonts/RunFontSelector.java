@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 //import com.vdurmont.emoji.EmojiManager;
 
 import java.awt.font.NumericShaper;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -69,7 +70,9 @@ public class RunFontSelector {
 
 	private WordprocessingMLPackage wordMLPackage;
 	private RunFontCharacterVisitor vis;
-		
+
+	private java.util.Map<String, RPr> resolvedEffectiveStyleRPrFromPStyle = new HashMap<String, RPr>();
+
 	private RunFontActionType outputType;
 	public enum RunFontActionType {
 		XSL_FO,
@@ -368,9 +371,16 @@ public class RunFontSelector {
 
     	
     	// now apply the direct rPr
-    	rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr); 
+
+		// cache effective rPr
+		String effectiveRPrKey = buildEffectiveRPrKey(rPr, pRPr);
+		if (resolvedEffectiveStyleRPrFromPStyle.get(effectiveRPrKey) != null) {
+			rPr = resolvedEffectiveStyleRPrFromPStyle.get(effectiveRPrKey);
+		} else {
+			rPr = propertyResolver.getEffectiveRPrUsingPStyleRPr(rPr, pRPr);
+			resolvedEffectiveStyleRPrFromPStyle.put(effectiveRPrKey, rPr);
+		}
     	// TODO use effective rPr, but don't inherit theme val,
-    	// TODO, add cache?
 
     	if(log.isDebugEnabled()) {
             log.debug("effective\n" + XmlUtils.marshaltoString(rPr));
@@ -590,8 +600,20 @@ public class RunFontSelector {
 		return unicodeRangeToFont(text,  hint,  langEastAsia,
 	    		 eastAsia,  ascii,  hAnsi );
     }
-    
-    private boolean contains(String langEastAsia, String lang) {
+
+	private String buildEffectiveRPrKey(RPr rPr, RPr pRPr) {
+		String left = "";
+		String right = "";
+		if (rPr != null && pRPr.getRStyle() != null) {
+			left = rPr.getRStyle().getVal();
+		}
+		if (pRPr != null && pRPr.getRStyle() != null) {
+			right = pRPr.getRStyle().getVal();
+		}
+		return new StringBuilder().append(left).append("_").append(right).toString();
+	}
+
+	private boolean contains(String langEastAsia, String lang) {
     	
     	// eg <w:lang w:eastAsia="zh-CN" .. />
     	if (langEastAsia==null) return false;
