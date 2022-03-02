@@ -154,6 +154,7 @@ public class FopConfigUtil {
 			    	haveSomeMappedPhysicalFonts = true;
 			    	
 			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+			    	rendererFont.setSimulateStyle(true);
 			    	rendererFonts.getFont().add(rendererFont);
 			    	
 				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
@@ -202,6 +203,7 @@ public class FopConfigUtil {
 			    	haveSomeMappedPhysicalFonts = true;
 
 			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+			    	rendererFont.setSimulateStyle(false);
 			    	rendererFonts.getFont().add(rendererFont);
 			    	
 				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
@@ -264,6 +266,8 @@ public class FopConfigUtil {
 			String subFontAtt, String style, String weight) {
 
 		org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+    	rendererFont.setSimulateStyle(
+    			Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false));
     	// name?
     	rendererFont.setEmbedUrl(pfVariation.getEmbeddedURI().toString());
     	rendererFont.setSubFont(subFontAtt);
