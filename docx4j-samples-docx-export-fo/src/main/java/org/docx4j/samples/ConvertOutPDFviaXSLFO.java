@@ -174,6 +174,12 @@ public class ConvertOutPDFviaXSLFO {
     	// Now you can inspect generated font settings in case of any issues
     	System.out.println(XmlUtils.marshaltoString(foSettings.getFopConfig(), Context.getFopConfigContext()));
     	// You can also alter that Fop config object if you wish 
+    	
+    	// Alternatively, in an advanced usage
+//        FOSettings foSettings = Docx4J.createFOSettings();
+//        foSettings.setFopConfig(your settings); // TODO, extend this config object to support all available fop configuration
+//        foSettings.setOpcPackage(wordMLPackage);
+    	
 		if (saveFO) {
 			foSettings.setFoDumpFile(new java.io.File(inputfilepath + ".fo"));
 		}
