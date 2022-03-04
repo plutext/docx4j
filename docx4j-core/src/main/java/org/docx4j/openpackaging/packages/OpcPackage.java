@@ -733,7 +733,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		startEvent.publish();
 		
 		if (flags == Docx4J.FLAG_SAVE_FLAT_XML) {
-			JAXBContext jc = Context.jcXmlPackage;
+			
 			FlatOpcXmlCreator opcXmlCreator = new FlatOpcXmlCreator(this);
 			opcXmlCreator.populate();
 			opcXmlCreator.marshal(outStream);
