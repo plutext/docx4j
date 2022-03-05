@@ -168,6 +168,8 @@ module org.docx4j.core {
     opens org.opendope.questions to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.opendope.xpaths to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
+    opens org.docx4j.convert.out.fopconf to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
+    
     opens org.docx4j.openpackaging.contenttype to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
     opens org.docx4j.model.structure.jaxb  to jakarta.xml.bind, com.sun.xml.bind, org.eclipse.persistence.moxy, org.eclipse.persistence.core;
 
