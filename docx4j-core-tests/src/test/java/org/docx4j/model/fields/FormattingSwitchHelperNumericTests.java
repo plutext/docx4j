@@ -2,14 +2,30 @@ package org.docx4j.model.fields;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Locale;
+
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FormattingSwitchHelperNumericTests {
 	
+	private static Locale defaultLocale = null;
+	
+	@BeforeClass
+    public static void setup() {
+		defaultLocale = Locale.getDefault();
+		Locale.setDefault(Locale.ENGLISH);
+    }
+
+    @AfterClass
+    public static void tearDown() {
+		Locale.setDefault(defaultLocale);
+    }	
 	
 	@Test
 	public void testNumberNotSpecified() throws TransformerException, Docx4JException {

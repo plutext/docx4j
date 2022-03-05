@@ -2,6 +2,8 @@ package org.docx4j.model.fields;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Locale;
+
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.Docx4jProperties;
@@ -14,16 +16,25 @@ public class FormattingSwitchHelperDateTests {
 	
 	static boolean wasDateFormatInferencerUSA = false;
 	
+	private static Locale defaultLocale = null;
+		
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Tests assume USA date format
 		wasDateFormatInferencerUSA = Docx4jProperties.getProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", false);		
 		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", true);
+
+		// And are sensitive to locale
+		defaultLocale = Locale.getDefault();
+		Locale.setDefault(Locale.ENGLISH);
+		
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		Docx4jProperties.setProperty("docx4j.Fields.Dates.DateFormatInferencer.USA", wasDateFormatInferencerUSA);
+		
+		Locale.setDefault(defaultLocale);		
 	}
 	
 	@Test
