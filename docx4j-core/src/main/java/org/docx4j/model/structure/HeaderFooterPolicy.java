@@ -281,6 +281,12 @@ public class HeaderFooterPolicy {
 		
 		for (CTRel rel : hdrFtrRefs) {
 			String relId = rel.getId();
+			
+			if (relId==null) {
+				log.warn("Header ref is missing relId! Skipping..");
+				continue;
+			}
+			
 			log.debug("for h|f relId: " + relId);
 			
 			Part part = rels.getPart(relId);
@@ -310,6 +316,12 @@ public class HeaderFooterPolicy {
 		
 		for (CTRel rel : hdrFtrRefs) {
 			String relId = rel.getId();
+			
+			if (relId==null) {
+				log.warn("Footer ref is missing relId! Skipping..");
+				continue;
+			}
+			
 			log.debug("for h|f relId: " + relId);
 			
 			Part part = rels.getPart(relId);
