@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.3.0-alpha4</version>
+			<version>${version.logback-classic}</version>
 		</dependency>
 		<!--  1.3.0-alpha4 does not play nice with slf4j-api-1.7.26, only 1.8.0-beta2 -->
 		
