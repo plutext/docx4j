@@ -480,6 +480,8 @@ implements XPathEnabled<E> {
 					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
 					u.setListener(docx4jUnmarshallerListener);
 					
+					log.debug("Unmarshalling " + this.partName.getName());
+					
 					unwrapUsually(u.unmarshal( xsr ));						
 					
 				}
