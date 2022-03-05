@@ -19,7 +19,7 @@ public class MarshalTest {
 		java.lang.ClassLoader classLoader = NamespacePrefixMapperUtils.class.getClassLoader();
 		JAXBContext testContext = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 		
-        assertEquals("com.sun.xml.bind.v2.runtime.JAXBContextImpl", testContext.getClass().getName() );
+        assertEquals("org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl", testContext.getClass().getName() );
 	}
 	
 	@Test
