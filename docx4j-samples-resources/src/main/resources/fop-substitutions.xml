@@ -4,7 +4,9 @@
 	assuming your docx4j.properties contains:
 	
 	    docx4j.fonts.fop.util.FopConfigUtil.substitutions=fop-substitutions.xml
-	    
+
+    See https://github.com/plutext/docx4j/issues/424 for motivations.
+    
 	From http://xmlgraphics.apache.org/fop/trunk/fonts.html
 		
 		When a <substitutions/> section is defined in the configuration, 
