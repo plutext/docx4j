@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<fop version="1.0">
+  
+<!--
+
+       // strict fo validation
+        if (cfg.getChild("strict-validation", false) != null) {
+            try {
+                boolean strict = cfg.getChild("strict-validation").getValueAsBoolean();
+                fopFactoryBuilder.setStrictFOValidation(strict);
+            } catch (ConfigurationException e) {
+                LogUtil.handleException(log, e, false);
+            }
+        }
+
+        boolean strict = false;
+        if (cfg.getChild("strict-configuration", false) != null) {
+            try {
+                strict = cfg.getChild("strict-configuration").getValueAsBoolean();
+                fopFactoryBuilder.setStrictUserConfigValidation(strict);
+            } catch (ConfigurationException e) {
+                LogUtil.handleException(log, e, false);
+            }
+        }
+
+        if (cfg.getChild("accessibility", false) != null) {
+            try {
+                fopFactoryBuilder.setAccessibility(cfg.getChild("accessibility").getValueAsBoolean());
+                fopFactoryBuilder.setKeepEmptyTags(
+                        cfg.getChild("accessibility").getAttributeAsBoolean(Accessibility.KEEP_EMPTY_TAGS, true));
+            } catch (ConfigurationException e) {
+                LogUtil.handleException(log, e, false);
+            }
+        }
+
+        // base definitions for relative path resolution
+        if (cfg.getChild("base", false) != null) {
+            try {
+                URI confUri = InternalResourceResolver.getBaseURI(cfg.getChild("base").getValue(null));
+                fopFactoryBuilder.setBaseURI(baseURI.resolve(confUri));
+            } catch (URISyntaxException use) {
+                LogUtil.handleException(log, use, strict);
+            }
+        }
+
+
+-->
+  <strict-validation>false</strict-validation>
+  <strict-configuration>true</strict-configuration>
+
+  <accessibility>false</accessibility>
+
+  <!-- Base URL for resolving relative URLs -->
+  <base>.</base>
+  
+<!--
+   private void setHyphenationBase(Configuration cfg, ResourceResolver resourceResolver, URI baseURI,
+                                    FopFactoryBuilder fopFactoryBuilder) throws FOPException {
+        if (cfg.getChild("hyphenation-base", false) != null) {
+            try {
+                URI fontBase = InternalResourceResolver.getBaseURI(cfg.getChild("hyphenation-base").getValue(null));
+                fopFactoryBuilder.setHyphenBaseResourceResolver(
+                        ResourceResolverFactory.createInternalResourceResolver(
+                                baseURI.resolve(fontBase), resourceResolver));
+            } catch (URISyntaxException use) {
+                LogUtil.handleException(log, use, true);
+            }
+        } else {
+            fopFactoryBuilder.setHyphenBaseResourceResolver(
+                    ResourceResolverFactory.createInternalResourceResolver(
+                            fopFactoryBuilder.getBaseURI(), resourceResolver));
+        }
+    }
+-->
+  <hyphenation-base>.</hyphenation-base>
+  <!--
+    private void setHyphPatNames(Configuration cfg, FopFactoryBuilder builder, boolean strict)
+            throws FOPException {
+        Configuration[] hyphPatConfig = cfg.getChildren("hyphenation-pattern");
+        if (hyphPatConfig.length != 0) {
+            Map<String, String> hyphPatNames = new HashMap<String, String>();
+            for (Configuration aHyphPatConfig : hyphPatConfig) {
+                String lang;
+                String country;
+                String filename;
+                StringBuffer error = new StringBuffer();
+                String location = aHyphPatConfig.getLocation();
+
+                lang = aHyphPatConfig.getAttribute("lang", null);
+                if (lang == null) {
+                    addError("The lang attribute of a hyphenation-pattern configuration"
+                            + " element must exist (" + location + ")", error);
+                } else if (!lang.matches("[a-zA-Z]{2}")) {
+                    addError("The lang attribute of a hyphenation-pattern configuration"
+                            + " element must consist of exactly two letters ("
+                            + location + ")", error);
+                }
+                lang = lang.toLowerCase(Locale.getDefault());
+
+                country = aHyphPatConfig.getAttribute("country", null);
+                if ("".equals(country)) {
+                    country = null;
+                }
+                if (country != null) {
+                    if (!country.matches("[a-zA-Z]{2}")) {
+                        addError("The country attribute of a hyphenation-pattern configuration"
+                                + " element must consist of exactly two letters ("
+                                + location + ")", error);
+                    }
+                    country = country.toUpperCase(Locale.getDefault());
+                }
+
+                filename = aHyphPatConfig.getValue(null);
+                if (filename == null) {
+                    addError("The value of a hyphenation-pattern configuration"
+                            + " element may not be empty (" + location + ")", error);
+                }
+
+                if (error.length() != 0) {
+                    LogUtil.handleError(log, error.toString(), strict);
+                    continue;
+                }
+
+                String llccKey = HyphenationTreeCache.constructLlccKey(lang, country);
+
+                String extension = aHyphPatConfig.getAttribute("extension", null);
+                if ("xml".equals(extension)) {
+                    hyphPatNames.put(llccKey, filename + Hyphenator.XMLTYPE);
+                } else if ("hyp".equals(extension)) {
+                    hyphPatNames.put(llccKey, filename + Hyphenator.HYPTYPE);
+                } else {
+                    hyphPatNames.put(llccKey, filename);
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Using hyphenation pattern filename " + filename
+                            + " for lang=\"" + lang + "\""
+                            + (country != null ? ", country=\"" + country + "\"" : ""));
+                }
+            }
+            builder.setHyphPatNames(hyphPatNames);
+        }
+    }-->
+
+  <hyphenation-pattern lang="de" extension="xml">de_1901</hyphenation-pattern>
+  <hyphenation-pattern lang="en" country="IN">en_GB</hyphenation-pattern>
+
+  <fonts>
+    <substitutions>
+      <substitution>
+        <from font-family="Arial" font-weight="700..900"/>
+        <to font-family="Arial Black"/>
+      </substitution>
+      <substitution>
+        <from font-family="FrutigerLight"/>
+        <to font-family="Times" font-weight="bold" font-style="italic"/>
+      </substitution>
+      <substitution>
+        <from font-family="ZapfDingbats" font-style="normal" font-weight="700"/>
+        <to font-family="Calibri" font-weight="bold" font-style="italic"/>
+      </substitution>
+    </substitutions>
+  </fonts>
+  <renderers>
+    <renderer mime="application/pdf">
+      <fonts>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/liberation/LiberationMono-Regular.ttf">
+          <font-triplet name="Liberation Mono" style="normal" weight="normal" />
+          <font-triplet name="Liberation Mono" style="italic" weight="normal" />
+          <font-triplet name="Liberation Mono" style="normal" weight="bold" />
+          <font-triplet name="Liberation Mono" style="italic" weight="bold" />
+        </font>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/liberation/LiberationSerif-Regular.ttf">
+          <font-triplet name="Liberation Serif" style="normal" weight="normal" />
+          <font-triplet name="Liberation Serif" style="italic" weight="normal" />
+          <font-triplet name="Liberation Serif" style="normal" weight="bold" />
+          <font-triplet name="Liberation Serif" style="italic" weight="bold" />
+        </font>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/calibril.ttf">
+          <font-triplet name="Calibri Light" style="normal" weight="normal" />
+          <font-triplet name="Calibri Light" style="italic" weight="normal" />
+          <font-triplet name="Calibri Light" style="normal" weight="bold" />
+          <font-triplet name="Calibri Light" style="italic" weight="bold" />
+        </font>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/gsfonts/StandardSymbolsPS.otf">
+          <font-triplet name="Standard Symbols PS" style="normal" weight="normal" />
+          <font-triplet name="Standard Symbols PS" style="italic" weight="normal" />
+          <font-triplet name="Standard Symbols PS" style="normal" weight="bold" />
+          <font-triplet name="Standard Symbols PS" style="italic" weight="bold" />
+        </font>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/TTF/oriya.ttf">
+          <font-triplet name="orya" style="normal" weight="normal" />
+          <font-triplet name="orya" style="italic" weight="normal" />
+          <font-triplet name="orya" style="normal" weight="bold" />
+          <font-triplet name="orya" style="italic" weight="bold" />
+        </font>
+        <font simulate-style="true" embed-url="file:/usr/share/fonts/liberation/LiberationSans-Bold.ttf">
+          <font-triplet name="Liberation Sans Bold" style="normal" weight="normal" />
+          <font-triplet name="Liberation Sans Bold" style="italic" weight="normal" />
+          <font-triplet name="Liberation Sans Bold" style="normal" weight="bold" />
+          <font-triplet name="Liberation Sans Bold" style="italic" weight="bold" />
+        </font>
+      </fonts>
+    </renderer>
+  </renderers>
+</fop>
