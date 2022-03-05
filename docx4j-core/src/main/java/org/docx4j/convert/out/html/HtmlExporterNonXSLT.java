@@ -53,7 +53,12 @@ public class HtmlExporterNonXSLT {
 			ConversionImageHandler conversionImageHandler) {
 		
 		htmlSettings = new HTMLSettings();
-		htmlSettings.setOpcPackage(wordMLPackage);
+		try {
+			htmlSettings.setOpcPackage(wordMLPackage);
+		} catch (Docx4JException e) {
+			// Won't happen
+			log.error(e.getMessage(), e);
+		}
 		htmlSettings.setImageHandler(conversionImageHandler);
 	}
 	

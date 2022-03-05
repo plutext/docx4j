@@ -736,8 +736,38 @@ public class Docx4J {
 			FOSettings settings = createFOSettings();
 			settings.setOpcPackage(wmlPackage);
 			settings.setApacheFopMime("application/pdf");
-			toFO(settings, outputStream, FLAG_NONE);
-			new EventFinished(startEvent).publish();
+			
+			try {
+				/*
+				 *  FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings) ;
+				 */
+				Class foRendererApacheFOPClass = Class.forName("org.docx4j.convert.out.fo.renderers.FORendererApacheFOP");
+				Method method = foRendererApacheFOPClass.getMethod("getFopFactoryBuilder", FOSettings.class );
+	
+				Object fopFactoryBuilder = method.invoke(null, settings);
+				
+				/*
+				 * FopFactory fopFactory = fopFactoryBuilder.build();
+				 */
+				Class fopFactoryBuilderClass = Class.forName("org.apache.fop.apps.FopFactoryBuilder");
+				method = fopFactoryBuilderClass.getDeclaredMethod("build", new Class[0] );						
+				Object fopFactory = method.invoke(fopFactoryBuilder);
+				
+				/*
+				 * FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory); 			
+				 */
+				Method getFOUserAgent = foRendererApacheFOPClass.getMethod("getFOUserAgent", FOSettings.class, 
+						Class.forName("org.apache.fop.apps.FopFactory") );
+				getFOUserAgent.invoke(null, settings, fopFactory);
+
+				toFO(settings, outputStream, FLAG_NONE);
+				
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+				throw new Docx4JException(e.getMessage(), e);
+			} finally {
+				new EventFinished(startEvent).publish();
+			}
 			
 		} else if (pdfViaMicrosoftGraph()) {
 			
@@ -772,6 +802,7 @@ public class Docx4J {
 
 			throw new Docx4JException("No PDF Converter found; see https://www.docx4java.org/blog/2020/09/office-pptxxlsxdocx-to-pdf-to-in-docx4j-8-2-3/" );
 		}
+		new EventFinished(startEvent).publish();
 		
 	}
 

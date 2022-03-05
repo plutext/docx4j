@@ -57,7 +57,9 @@ public class Context {
 
 	public static JAXBContext jcXmlPackage;
 	
+	private static JAXBContext jcXslFo;
 	public static JAXBContext jcSectionModel;
+	public static JAXBContext jcFopConfig;
 
 	public static JAXBContext jcEncryption;
 
@@ -262,6 +264,36 @@ public class Context {
 		}
 		return wmlObjectFactory;
 		
+	}
+
+	public static JAXBContext getXslFoContext() {
+		if (jcXslFo==null) {
+			try {	
+				Context tmp = new Context();
+				java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
+
+				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
+				
+			} catch (JAXBException ex) {
+				log.error("Cannot determine XSL-FO context", ex);
+			}						
+		}
+		return jcXslFo;		
+	}
+
+	public static JAXBContext getFopConfigContext() {
+		if (jcFopConfig==null) {
+			try {	
+				Context tmp = new Context();
+				java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
+
+				jcFopConfig = JAXBContext.newInstance("org.docx4j.convert.out.fopconf",classLoader );
+				
+			} catch (JAXBException ex) {
+				log.error("Cannot determine FOP Config context", ex);
+			}						
+		}
+		return jcFopConfig;		
 	}
 	
 	public static void searchManifestsForJAXBImplementationInfo(ClassLoader loader) {

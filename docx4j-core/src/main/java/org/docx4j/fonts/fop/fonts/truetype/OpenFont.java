@@ -57,6 +57,8 @@ import org.docx4j.fonts.fop.fonts.CMapSegment;
 import org.docx4j.fonts.fop.fonts.FontUtil;
 import org.docx4j.fonts.fop.fonts.MultiByteFont;
 
+import org.docx4j.fonts.foray.font.format.Panose;
+
 public abstract class OpenFont {
 
     static final byte NTABS = 24;
@@ -156,6 +158,9 @@ public abstract class OpenFont {
 
     private static final String ENCODING = "WinAnsiEncoding";    // Default encoding
 
+    /** Array containing the Panose information. */
+	private Panose panose;
+	
     private static final short FIRST_CHAR = 0;
 
     protected boolean useKerning;
@@ -1490,8 +1495,15 @@ public abstract class OpenFont {
             strikeoutThickness = fontFile.readTTFShort();
             strikeoutPosition = fontFile.readTTFShort();
             fontFile.skip(2);
-            fontFile.skip(10); //panose array
-            fontFile.skip(4 * 4); //unicode ranges
+            
+            //in.skip(10); //panose array            
+            final byte[] panoseArray = new byte[10];
+			for (int i = 0; i < panoseArray.length; i++) {
+				panoseArray[i] = fontFile.read();
+			}
+			this.panose = Panose.makeInstance(panoseArray);
+			
+			fontFile.skip(4 * 4); //unicode ranges
             fontFile.skip(4);
             fontFile.skip(3 * 2);
             int v;
@@ -1947,6 +1959,10 @@ public abstract class OpenFont {
         }
     }
 
+    public Panose getPanose() {
+		return panose;
+	}  
+    
     /*
      * Helper classes, they are not very efficient, but that really
      * doesn't matter...

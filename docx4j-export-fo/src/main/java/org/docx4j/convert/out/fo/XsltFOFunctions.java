@@ -23,6 +23,7 @@ import java.util.List;
 
 import jakarta.xml.bind.Unmarshaller;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.ConversionSectionWrapper;
@@ -186,7 +187,10 @@ public class XsltFOFunctions {
 			block.setAttribute("text-align-last", "justify");
     	}
 
-		block.setAttribute("hyphenate", "true");
+    	// Hyphenation defaults to off
+    	if (Docx4jProperties.getProperty("docx4j.convert.out.fo.hyphenate", false)) {
+    		block.setAttribute("hyphenate", "true");
+    	}
     	
     	
     	return df;

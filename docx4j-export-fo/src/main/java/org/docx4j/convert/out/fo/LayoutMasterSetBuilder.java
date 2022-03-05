@@ -28,6 +28,7 @@ import org.docx4j.convert.out.common.preprocess.PartialDeepCopy;
 import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -134,7 +135,8 @@ public class LayoutMasterSetBuilder {
 			
 			FOPAreaTreeHelper.trimContent(hfPkg);
 			
-			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT);
+			FOSettings foSettings = (FOSettings)context.getConversionSettings();
+			org.w3c.dom.Document areaTree = FOPAreaTreeHelper.getAreaTreeViaFOP( hfPkg, useXSLT, foSettings);
 			
 			log.debug(XmlUtils.w3CDomNodeToString(areaTree));
 			

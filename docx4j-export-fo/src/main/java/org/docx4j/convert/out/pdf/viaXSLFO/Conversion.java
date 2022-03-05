@@ -70,7 +70,7 @@ public class Conversion extends PdfConversion {
 		Docx4J.toPDF(wordMLPackage, os);
 	}
 	
-	protected void setupSettings(FOSettings settings, String mime) {
+	protected void setupSettings(FOSettings settings, String mime) throws Docx4JException {
 		if ((wordMLPackage != null) && (settings.getOpcPackage() == null)) {
 			settings.setOpcPackage(wordMLPackage);
 		}

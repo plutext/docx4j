@@ -48,6 +48,7 @@ module org.docx4j.core {
     exports org.docx4j.convert.out.common.wrappers;
     exports org.docx4j.convert.out.common.writer;
     exports org.docx4j.convert.out.flatOpcXml;
+    exports org.docx4j.convert.out.fopconf;
     exports org.docx4j.convert.out.html;
     exports org.docx4j.document.wordprocessingml;
     exports org.docx4j.events;

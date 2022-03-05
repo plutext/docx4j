@@ -38,10 +38,14 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopConfParser;
 import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import org.apache.fop.apps.FormattingResults;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.apps.PageSequenceResults;
+import org.apache.xmlgraphics.io.ResourceResolver;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.FORenderer;
 import org.docx4j.convert.out.FOSettings;
@@ -51,6 +55,7 @@ import org.docx4j.events.EventFinished;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.fonts.fop.util.FopConfigUtil;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.utils.XmlSerializerUtil;
@@ -68,7 +73,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 	
 	private static final String FO_USER_AGENT = "foUserAgent";
-	private static final String FOP_FACTORY = "fopFactory";
+	public static final String FOP_FACTORY = "fopFactory";
 	
 	
 	protected static class FopPlaceholderLookup extends AbstractPlaceholderLookup {
@@ -109,23 +114,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			List<SectionPageInformation> pageNumberInformation,
 			OutputStream outputStream) throws Docx4JException {
 		
-		String apacheFopConfiguration = setupApacheFopConfiguration(settings);
-		log.debug(apacheFopConfiguration);
-		/* for example:
-
-			<fop version="1.0">
-				<strict-configuration>true</strict-configuration>
-				<renderers>
-					<renderer mime="application/pdf">
-						<fonts>
-							<font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/cour.ttf">
-								<font-triplet name="Courier New" style="normal" weight="normal"/>
-							</font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/courbd.ttf"><font-triplet name="Courier New" style="normal" weight="bold"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/courbi.ttf"><font-triplet name="Courier New" style="italic" weight="bold"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/couri.ttf"><font-triplet name="Courier New" style="italic" weight="normal"/></font><font embed-url="file:/usr/share/fonts/truetype/msttcorefonts/Arial_Black.ttf"><font-triplet name="Arial Black" style="normal" weight="normal"/></font>
-						</fonts>
-					</renderer>
-				</renderers>
-			</fop>		 
-		*/
 		
 		String apacheFopMime = setupApacheFopMime(settings);
 		StreamSource foDocumentSrc = new StreamSource(new StringReader(foDocument));
@@ -133,11 +121,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		FormattingResults formattingResults = null;
 		FopFactory fopFactory = null;
 		if (settings.getSettings().get(FOP_FACTORY)==null) {
-			try {
-				fopFactory = getFopFactory(apacheFopConfiguration);				
-			} catch (FOPException e) {
-				throw new Docx4JException("Exception creating fop factory for rendering: " + e.getMessage(), e);
-			}
+			throw new Docx4JException("You must invoke FORendererApacheFOP.getFOUserAgent");
 		} else {
 			fopFactory = (FopFactory)settings.getSettings().get(FOP_FACTORY);
 		}
@@ -183,28 +167,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		new EventFinished(startEvent).publish();
 	}
 
-	/**
-	 * Generate a Fop configuration (unless FOSettings already has it)
-	 * based on fonts used in the document.
-	 * 
-	 * @param settings
-	 * @return
-	 * @throws Docx4JException
-	 */
-	private static String setupApacheFopConfiguration(FOSettings settings) throws Docx4JException {
-
-		if (settings==null) throw new Docx4JException("FOSettings was null");
-		String ret = settings.getApacheFopConfiguration();
-		if (ret == null) {
-			
-			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)settings.getOpcPackage();
-			if (wmlPackage==null) throw new Docx4JException("No WmlPackage in FOSettings");
-			
-			ret = FopConfigUtil.createDefaultConfiguration(wmlPackage.getFontMapper(), 
-					wmlPackage.getMainDocumentPart().fontsInUse());
-		}
-		return ret;
-	}
 
 	private String setupApacheFopMime(FOSettings settings) {
 	String ret = settings.getApacheFopMime();
@@ -274,12 +236,6 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		return fop.getResults();
 	}
 	
-	protected Fop createFop(String userConfiguration, String outputFormat, OutputStream outputStream) throws FOPException {
-		
-		FopFactory fopFactory = getFopFactory(userConfiguration);
-		return fopFactory.newFop(outputFormat != null ? outputFormat : MimeConstants.MIME_PDF, outputStream);
-	}
-
 	
 	/**
 	 * Allow user access to FOUserAgent, so they can setAccessibility(true).  Access to other settings
@@ -289,10 +245,11 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	 * @return
 	 * @throws FOPException
 	 */
-	public static FOUserAgent getFOUserAgent(FOSettings settings) throws Docx4JException, FOPException {
+	public static FOUserAgent getFOUserAgent(FOSettings settings, FopFactory fopFactory) throws Docx4JException, FOPException {
 		
-		FopFactory fopFactory = getFopFactory(
-				setupApacheFopConfiguration(settings)); // relies on the WordML package being there, for font info
+		if (fopFactory==null) {
+			throw new Docx4JException("FopFactory is null");
+		}
 		settings.getSettings().put(FOP_FACTORY, fopFactory);
 		
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
@@ -300,88 +257,74 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		
 		return foUserAgent;
 	}
-	
-	protected  static FopFactory getFopFactory(String userConfig) throws FOPException {
 
-		//The current implementation doesn't pass the user config to the fop factory 
-		//if there is only a factory per Thread, all documents rendered in that  
-		//Thread would use the configuration done for the first document.
-		//For this reason disable the reuse of the FopFactories until this issue 
-		//gets resolved.
-		return createFopFactory(userConfig);
-//		FopFactory fopFactory = fopFactories.get(Thread.currentThread().getId());
-//		if (fopFactory == null) {
-//			synchronized(fopFactories) {
-//				fopFactory = createFopFactory(userConfig);
-//				fopFactories.put(Thread.currentThread().getId(), fopFactory);
-//			}
-//		}
-//		fopFactory.setUserConfig(userConfig);
-//		return fopFactory;
-	}
-	
 	/**
-	 * Create and configure FopFactory.
+	 * Get a FopFactoryBuilder, automagically preconfigured with font info.
+	 * Uses default ResourceResolver.
+	 * defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
 	 * 
-	 * @param userConfig
-	 * @param defaultBaseURI
+	 * @param settings
 	 * @return
 	 * @throws FOPException
 	 */
-	protected static FopFactory createFopFactory(String userConfig) throws FOPException {
-		// This class won't compile unless you have some version of FOP on your path. 
+	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings) throws FOPException {
+		return getFopFactoryBuilder(settings, null); 
+	}	
+	/**
+	 * Get a FopFactoryBuilder, automagically preconfigured with font info.
+	 * Uses the specified ResourceResolver.
+	 * defaultBaseURI can be set at property "docx4j.Convert.Out.fop.FopConfParser.defaultBaseURI"
+	 * 
+	 * @param settings
+	 * @param resourceResolver  your custom resourceResolver 
+	 * @return
+	 * @throws FOPException
+	 */
+	public static FopFactoryBuilder getFopFactoryBuilder(FOSettings settings, ResourceResolver resourceResolver) throws FOPException {
 
-		/* 
-		 * Unfortunately, <=1.1 requires Configuration object,
-		 * and >1.1 requires InputStream.
-		 * 
-		 * So either we pass Configuration object into this method, 
-		 * and use DefaultConfigurationSerializer to get an input stream from it,
-		 * or we pass a string, and make it into a Configuration object in the case
-		 * where it is required. 
-		 * 
-		 * I've submitted a patch to FOP allowing configuration
-		 * using a Configuration object.  Let's see whether it is applied.
-		 * 
-		 * In the absence of that, passing a String (or an InputStream) seems better going forward.
-		 * So that's what the code accepts for now.
-		 */
+		org.docx4j.convert.out.fopconf.Fop fopConfig = settings.getFopConfig();
+		String userConfig = XmlUtils.marshaltoString(fopConfig, Context.getFopConfigContext());
+		if (log.isDebugEnabled()) {
+			log.debug(userConfig);
+		}
 		
 		InputStream is=null;
 		try {
 			is = IOUtils.toInputStream(userConfig, "UTF-8");
 		} catch (IOException e2) {
-			e2.printStackTrace();
-		}
-		FopFactory fopFactory = null;
+			throw new FOPException(e2.getMessage(), e2); 
+		}		
 		
-		// If FopConfParser is on path, it is post 1.1
 		try {
-			Class fopConfParserClass = Class.forName("org.apache.fop.apps.FopConfParser");
 			
-			URI defaultBaseURI = new URI("http://dummy.domain");
-				// Default base URI must not be null, but we don't need it.
-				// at org.apache.fop.apps.EnvironmentalProfileFactory$Profile (EnvironmentalProfileFactory.java:92)
+			// Default base URI must not be null
+			String baseUriProperty=Docx4jProperties.getProperty("docx4j.convert.out.fop.FopConfParser.defaultBaseURI");
+			
+			URI defaultBaseURI = null;
+			if (baseUriProperty==null) {
+				log.debug("Using defaultBaseURI");
+				defaultBaseURI = new java.io.File(".").toURI();
+			} else {
+				log.debug("Using baseURI " + baseUriProperty);
+				defaultBaseURI = new URI(baseUriProperty);
+			}
 
-			Object o = fopConfParserClass.getConstructor(InputStream.class, URI.class).newInstance(is, defaultBaseURI);
-			
-			Method method = fopConfParserClass.getDeclaredMethod("getFopFactoryBuilder", new Class[0] );
-			Object fopFactoryBuilder = method.invoke(o);
-			
-			Class fopFactoryBuilderClass = Class.forName("org.apache.fop.apps.FopFactoryBuilder");
-			method = fopFactoryBuilderClass.getDeclaredMethod("build", new Class[0] );
-			
-			fopFactory = (FopFactory)method.invoke(fopFactoryBuilder);
+			FopConfParser fopConfParser = null;
+			if (resourceResolver==null) {
+				fopConfParser = new FopConfParser(is, defaultBaseURI);
+			} else {
+				fopConfParser = new FopConfParser(is, defaultBaseURI, resourceResolver);
+			}
+			return fopConfParser.getFopFactoryBuilder();
 
-			log.debug("FOP configured OK." );
+//			log.debug("FOP configured OK." );
+//			return fopFactoryBuilder.build();
 			
 		} catch (Exception e) {
 			log.error("Can't set up FOP 2.x; " + e.getMessage() );
 			log.error(e.getMessage(), e);
-			e.printStackTrace();
-			// eg java.lang.ClassNotFoundException: org.apache.fop.apps.FopConfParser
+			throw new FOPException(e.getMessage(), e);
 		}
-		return fopFactory;
 	}
 
 

@@ -584,4 +584,27 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 @SimHei
 @SimSun -->
 
+
+<font name="Liberation Serif" filename="LiberationSerif-Regular.ttf">
+		<bold filename="LiberationSerif-Bold.ttf"/>
+		<italic filename="LiberationSerif-Italic.ttf"/>
+		<bolditalic filename="LiberationSerif-BoldItalic.ttf"/>
+	</font>
+	
+<font name="Liberation Sans" filename="LiberationSans-Regular.ttf">
+		<bold filename="LiberationSans-Bold.ttf"/>
+		<italic filename="LiberationSans-Italic.ttf"/>
+		<bolditalic filename="LiberationSans-BoldItalic.ttf"/>
+	</font>
+
+<font name="Liberation Sans Bold" filename="LiberationSans-Bold.ttf" >
+		<italic filename="LiberationSans-BoldItalic.ttf"/>
+	</font>
+	
+<font name="Liberation Mono" filename="LiberationMono-Regular.ttf">
+		<bold filename="LiberationMono-Bold.ttf"/>
+		<italic filename="LiberationMono-Italic.ttf"/>
+	</font>
+	
+
 </MicrosoftFonts>			

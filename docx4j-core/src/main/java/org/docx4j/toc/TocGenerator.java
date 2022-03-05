@@ -47,6 +47,7 @@ import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.toc.switches.SwitchProcessor;
@@ -742,7 +743,11 @@ public class TocGenerator {
         long start = System.currentTimeMillis();
     	
         FOSettings foSettings = Docx4J.createFOSettings();
-        foSettings.setOpcPackage(wordMLPackage);
+        try {
+  			foSettings.setOpcPackage(wordMLPackage);
+  		} catch (Docx4JException e1) {
+  			throw new TocException(e1.getMessage(), e1);
+  		};
         String MIME_FOP_AREA_TREE   = "application/X-fop-areatree"; // org.apache.fop.apps.MimeConstants
         foSettings.setApacheFopMime(MIME_FOP_AREA_TREE);
         

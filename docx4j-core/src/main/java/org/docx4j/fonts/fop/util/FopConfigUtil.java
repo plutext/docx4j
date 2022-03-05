@@ -30,22 +30,32 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
+import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.fopconf.Fop;
+import org.docx4j.convert.out.fopconf.Fop.Fonts;
+import org.docx4j.convert.out.fopconf.Fop.Renderers;
+import org.docx4j.convert.out.fopconf.Fop.Renderers.Renderer;
+import org.docx4j.convert.out.fopconf.Substitutions;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.utils.ResourceUtils;
 
 /**
- * The sole role of this class is to create an avalon configuration
- * (as a String)
- * which can be used to configure FOP 1.1 and earlier,
- * or FOP post 1.1
+ * The sole role of this class is to create a configuration
+ * which can be used to configure FOP.
+ * 
+ * As of 8.3.3, we have a JAXB representation of the FOP XML config. 
  * 
  * @author jharrop
  *
@@ -54,60 +64,64 @@ public class FopConfigUtil {
 	
 	protected static Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
 	
-	private static final String substitutions;
+	private static Substitutions substitutions=null;
+	
+	private static org.docx4j.convert.out.fopconf.ObjectFactory factory = null;
 	
 	static {
 		
+		factory = new org.docx4j.convert.out.fopconf.ObjectFactory(); 
+		
+		// See https://github.com/plutext/docx4j/issues/424 for motivations,
+		// and also https://github.com/plutext/docx4j/blob/master/docx4j-samples-resources/src/main/resources/fop-substitutions.xml
+		
 		String substitutionsPath = Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.substitutions");
-		String substitutionsTmp;
-		if (substitutionsPath==null) {
-			substitutionsTmp="";
-		} else {
+		if (substitutionsPath!=null) {
+		
+			java.io.InputStream is = null;
 			try {
-				substitutionsTmp=IOUtils.toString(ResourceUtils.getResource(substitutionsPath));
+				is = ResourceUtils.getResource(substitutionsPath);
+	
+				Unmarshaller u = Context.getFopConfigContext().createUnmarshaller();
+				Object o = u.unmarshal(is);
+				System.out.println(o.getClass().getName());
+				substitutions = (Substitutions)o;
 			} catch (IOException e) {
 				log.error("Problems with class path resource " + substitutionsPath);
 				log.error(e.getMessage(), e);
-				substitutionsTmp="";
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		substitutions = substitutionsTmp;
 	}
 
-	public static String createDefaultConfiguration(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
-//  public static Configuration createDefaultConfiguration(Mapper fontMapper, Map<String, String> fontsInUse) throws Docx4JException {
+	
+	public static Fop createConfigurationObject(Mapper fontMapper, Set<String> fontsInUse) throws Docx4JException {
 		
-		// This method now returns a String, since that works best
-		// with FOP going forward.  See comments in FopFactoryUtil. 
-		
-		StringBuilder buffer = new StringBuilder(10240);
+		log.debug("Config object");
 
-		buffer.append("<fop version=\"1.0\"><strict-configuration>true</strict-configuration>");
-		if (substitutions.length()>0) {
-			buffer.append("<fonts>");
-			buffer.append(substitutions);
-			buffer.append("</fonts>");			
+		Fop fopConfig = factory.createFop();
+		fopConfig.setVersion("1.0");
+		
+		fopConfig.setStrictConfiguration(true);
+
+		if (substitutions!=null) {
+			Fonts fonts = factory.createFopFonts();
+			fopConfig.setFonts(fonts);
+			fonts.setSubstitutions(substitutions);
+		} else {
+			log.debug("No font substitutions provided at " 
+					+ Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.substitutions"));
 		}
-		buffer.append("<renderers><renderer mime=\"application/pdf\">");
-		buffer.append("<fonts>");
-		declareFonts(fontMapper, fontsInUse, buffer);
-		buffer.append("</fonts></renderer></renderers></fop>");
+		Renderers renderers = factory.createFopRenderers();
+		fopConfig.setRenderers(renderers);
+		Renderer renderer = factory.createFopRenderersRenderer();
+		renderers.setRenderer(renderer);
+		renderer.setMime("application/pdf");
+
+		renderer.setFonts(declareRendererFonts(fontMapper, fontsInUse));
 		
-		if (log.isDebugEnabled()) {
-			log.debug("\nUsing fop config:\n " + buffer.toString() + "\n");
-		}
-
-		// See FOP's PrintRendererConfigurator
-		// String myConfig = "<fop
-		// version=\"1.0\"><strict-configuration>true</strict-configuration>"
-		// +
-		// "<renderers><renderer mime=\"application/pdf\">" +
-		// "<fonts><directory
-		// recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
-		// "<auto-detect/>" +
-		// "</fonts></renderer></renderers></fop>";
-
-		return buffer.toString();
+		return fopConfig;
 	}
 
 	/**
@@ -116,49 +130,59 @@ public class FopConfigUtil {
 	 * 
 	 * @return
 	 */
-	protected static void declareFonts(Mapper fontMapper, Set<String> fontsInUse, StringBuilder result) {
+	protected static org.docx4j.convert.out.fopconf.Fonts declareRendererFonts(Mapper fontMapper, Set<String> fontsInUse) {
+
+		org.docx4j.convert.out.fopconf.Fonts rendererFonts = factory.createFonts();
+		
+		if (fontsInUse.size()==0) {
+			log.error("No fonts detected in document!");
+			return rendererFonts;
+		}
+		
+		boolean haveSomeMappedPhysicalFonts = false;
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {
-
+		// <font simulate-style="true"	
 			for (String fontName : fontsInUse) {		    
 			    
 			    PhysicalFont pf = fontMapper.get(fontName);
-			    String subFontAtt = "";
 			    
 			    if (pf==null) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded, but ignore this for now
 			    } else {
+			    	haveSomeMappedPhysicalFonts = true;
 			    	
-			    	boolean mustSimulateStyle = false;
+			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+			    	rendererFont.setSimulateStyle(true);
+			    	rendererFonts.getFont().add(rendererFont);
+			    	
+				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
+				    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
+				    }
+				    	
 			    	if (fontMapper.getBoldForm(fontName, pf)==null
 			    			|| fontMapper.getItalicForm(fontName, pf)==null) {
-			    		mustSimulateStyle = true;
-			    	}
-			    	
-				    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
-
-			    	if (mustSimulateStyle) {
-					    result.append("<font simulate-style=\"true\" embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );	
-					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"normal\" /> "); 
-					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"italic\" weight=\"normal\" /> "); 
-					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"normal\" weight=\"bold\" /> "); 
-					    result.append(    "<font-triplet name=\"" + pf.getName() + "\" style=\"italic\" weight=\"bold\" /> "); 
-					    result.append("</font>" );
+			    		
+			    		rendererFont.setSimulateStyle(true);
+			    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
+			    		
+			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "normal"));
+			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "normal"));
+			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "bold"));
+			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
+			    		
 			    	} else {
 			    		// If we don't have to simulate-style, fall back to the old way of doing things
-			    		
-					    result.append("<font embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );			    					    		
+			    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
 			    
 				    	// now add the first font triplet
 					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-					    addFontTriplet(result, fontTriplet);
-					    
-					    
-					    result.append("</font>" );
-			    
-					    addVariations(fontMapper, result, fontName, pf, subFontAtt);
+			    		rendererFont.getFontTriplet().add(
+			    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
+			    						weightToCSS2FontWeight(fontTriplet.getWeight())));
+					    			    
+					    addVariations(fontMapper, rendererFonts, fontName, pf, rendererFont.getSubFont());
 			    	}
 			    }
 			}
@@ -166,68 +190,97 @@ public class FopConfigUtil {
 			
 		} else {
 
-		
+		// <font simulate-style="false"
 			for (String fontName : fontsInUse) {		    
 			    
 			    PhysicalFont pf = fontMapper.get(fontName);
-			    String subFontAtt = "";
 			    
 			    if (pf==null) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded
 			    } else {
-			    
-				    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-				    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+
+			    	haveSomeMappedPhysicalFonts = true;
+
+			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+			    	rendererFont.setSimulateStyle(false);
+			    	rendererFonts.getFont().add(rendererFont);
+			    	
+				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
+				    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
+				    }
+		    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
 				    
-				    result.append("<font embed-url=\"" +pf.getEmbeddedURI() + "\""+ subFontAtt +">" );
-				    	// now add the first font triplet
-					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-					    addFontTriplet(result, fontTriplet);
-				    result.append("</font>" );
+
+		    		// now add the first font triplet
+				    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+		    		rendererFont.getFontTriplet().add(
+		    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
+		    						weightToCSS2FontWeight(fontTriplet.getWeight())));
+
+				    addVariations(fontMapper, rendererFonts, fontName, pf, 
+				    		pf.getEmbedFontInfo().getSubFontName());
 			    }
-			    
-			    addVariations(fontMapper, result, fontName, pf, subFontAtt);
-				    
 			}
-		
 		}
+		if (!haveSomeMappedPhysicalFonts) log.warn("No fonts configured!");
+		return rendererFonts;
+	}
+	
+	private static org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet createFontTriplet(String name, String style, String weight) {
+
+		org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet triplet = factory.createFontsFontFontTriplet();
+		triplet.setName(name);
+		triplet.setStyle(style);
+		triplet.setWeight(weight);
+		return triplet;
 	}
 
-	private static void addVariations(Mapper fontMapper, StringBuilder result, String fontName, PhysicalFont pf,
+	private static void addVariations(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+			String fontName, PhysicalFont pf,
 			String subFontAtt) {
+		
+		
 		// bold, italic etc
 		PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-			addFontTriplet(result, pf.getName(), "normal", "bold");
-		    result.append("</font>" );
+	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "normal", "bold"));
 		}
 		pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold italic form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-			addFontTriplet(result, pf.getName(), "italic", "bold");
-		    result.append("</font>" );
+	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "italic", "bold"));
 		}
 		pfVariation = fontMapper.getItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no italic form");
 		} else {
-		    result.append("<font embed-url=\"" +pfVariation.getEmbeddedURI() + "\""+ subFontAtt +">" );
-			addFontTriplet(result, pf.getName(), "italic", "normal");
-		    result.append("</font>" );
+	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "italic", "normal"));
 		}
 	}
 		
-	protected static void addFontTriplet(StringBuilder result, FontTriplet fontTriplet) {
-		addFontTriplet(result, fontTriplet.getName(), 
-							   fontTriplet.getStyle(), 
-							   weightToCSS2FontWeight(fontTriplet.getWeight()));
+	private static org.docx4j.convert.out.fopconf.Fonts.Font createVariant(PhysicalFont pf, PhysicalFont pfVariation ,
+			String subFontAtt, String style, String weight) {
+
+		org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+    	rendererFont.setSimulateStyle(
+    			Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false));
+    	// name?
+    	rendererFont.setEmbedUrl(pfVariation.getEmbeddedURI().toString());
+    	rendererFont.setSubFont(subFontAtt);
+		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), style, weight));
+
+		return rendererFont;
 	}
+	
+//	protected static void addFontTriplet(StringBuilder result, FontTriplet fontTriplet) {
+//		addFontTriplet(result, fontTriplet.getName(), 
+//							   fontTriplet.getStyle(), 
+//							   weightToCSS2FontWeight(fontTriplet.getWeight()));
+//	}
 	
 	protected static void addFontTriplet(StringBuilder result, String familyName, String style, String weight) {
 	    result.append("<font-triplet name=\""); 

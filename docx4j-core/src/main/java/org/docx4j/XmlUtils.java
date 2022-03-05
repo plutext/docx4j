@@ -800,8 +800,13 @@ public class XmlUtils {
 
 		if (o instanceof org.docx4j.wml.Document) {
 			String ignorables = ((org.docx4j.wml.Document)o).getIgnorable();
+			
 			if (mcChoiceNamespace!=null) {
-				ignorables = ignorables + mcChoiceNamespace; 
+				if (ignorables==null) {
+					ignorables = mcChoiceNamespace; 					
+				} else {
+					ignorables = ignorables + mcChoiceNamespace; 					
+				}
 			}
 			if (ignorables!=null) {
 				prefixMapper.setMcIgnorable(ignorables);	
