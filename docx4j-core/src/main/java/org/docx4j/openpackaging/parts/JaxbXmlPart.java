@@ -1068,6 +1068,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				jaxbElement = (E) XmlUtils.unwrap(
 						u.unmarshal( xsr ));						
 			} catch (UnmarshalException ue) {
+				log.error(ue.getMessage(), ue);
 				
 				if (ue.getLinkedException()!=null 
 						&& ue.getLinkedException().getMessage().contains("entity")) {
