@@ -42,29 +42,29 @@
 		
 		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	 -->
-	<!-- docx4j 8 settings: log4j-slf4j-impl should be used with SLF4J 1.7.x releases or older. --> 
 	<property name="logback-version" value="1.3.0-alpha4"/>
-	<property name="log4j-slf4j-impl" value="log4j-slf4j-impl"/>
+	<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	
 	<!--.NET properties -->
 	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 
 	<!-- 
-		org.docx4j:docx4j-core
-		+- org.docx4j:docx4j-openxml-objects:jar:11.3.2
-		+- org.docx4j:docx4j-openxml-objects-pml:jar:11.3.2
-		+- org.docx4j:docx4j-openxml-objects-sml:jar:11.3.2
+		org.docx4j:docx4j-core:jar:11.4.4
 		
-		+- org.plutext:jaxb-svg11:jar:1.0.2
+		+- org.docx4j:docx4j-openxml-objects:jar:11.4.4
+		+- org.docx4j:docx4j-openxml-objects-pml:jar:11.4.4
+		+- org.docx4j:docx4j-openxml-objects-sml:jar:11.4.4
+		
+		+- org.plutext:jaxb-svg11:jar:11.4.0
 		+- net.engio:mbassador:jar:1.3.2
 		
-		+- org.slf4j:jcl-over-slf4j:jar:1.7.26
+		+- org.slf4j:jcl-over-slf4j:jar:2.0.0-alpha5
 		+- org.apache.commons:commons-lang3:jar:3.9
 		+- org.apache.commons:commons-compress:jar:1.21
 		+- commons-codec:commons-codec:jar:1.12
 		+- commons-io:commons-io:jar:2.7
-		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.4
+		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.7
 		
 		+- org.docx4j.org.apache:xalan-interpretive:jar:11.0.0
 		|  \- org.docx4j.org.apache:xalan-serializer:jar:11.0.0
@@ -77,20 +77,22 @@
 		+- com.google.errorprone:error_prone_annotations:jar:2.3.3
 		+- org.apache.pdfbox:fontbox:jar:2.0.24
 		+- com.thoughtworks.qdox:qdox:jar:1.12
-		+- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.2
-		|  \- jakarta.activation:jakarta.activation-api:jar:1.2.1
-		+- org.slf4j:slf4j-api:jar:1.8.0-beta4
+		
+		+- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1
+		|  \- com.sun.activation:jakarta.activation:jar:2.0.1
+		
+		+- org.slf4j:slf4j-api:jar:2.0.0-alpha6
 	 -->
 	<path id="MavenDeps">
 
-		<pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/11.4.0/jaxb-svg11-11.4.0.jar"/>
 		<pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
-		<pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/1.7.26/jcl-over-slf4j-1.7.26.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.0-alpha5/jcl-over-slf4j-2.0.0-alpha5.jar"/>
 		<pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"/>
 		<pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"/>
 		<pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
 		<pathelement location="${m2Repository}/commons-io/commons-io/2.7/commons-io-2.7.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.4/xmlgraphics-commons-2.4.jar"/>
+		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.7/xmlgraphics-commons-2.7.jar"/>
 
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/11.0.0/xalan-interpretive-11.0.0.jar"/>
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/11.0.0/xalan-serializer-11.0.0.jar"/>
@@ -105,18 +107,14 @@
         <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
 
     	<pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.24/fontbox-2.0.24.jar"/>
-        <!-- <pathelement location="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/> -->
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-events/2.6/fop-events-2.6.jar"/>
         
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>        
 
-		<pathelement location="${m2Repository}/org/slf4j/slf4j-api/1.8.0-beta4/slf4j-api-1.8.0-beta4.jar"/>
+        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/3.0.1/jakarta.xml.bind-api-3.0.1.jar"/>
+        <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/>
 		
-<!--
-		<pathelement location="${m2Repository}/junit/junit/4.12/junit-4.12.jar"/>
-		<pathelement location="${m2Repository}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
-		-->
-
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.0-alpha6/slf4j-api-2.0.0-alpha6.jar"/>
+		
 	</path>
 
 
@@ -136,15 +134,15 @@
 
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-export-fo/${version}/docx4j-export-fo-${version}.jar"/>
 
-		<pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/11.4.0/jaxb-xslfo-11.4.0.jar"/>
 
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.6/fop-2.6.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/2.7/fop-2.7.jar"/>
 		<!--
-        <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>
-        <pathelement location="${m2Repository}/org/apache/ant/ant/1.8.2/ant-1.8.2.jar"/>
-        <pathelement location="${m2Repository}/org/apache/ant/ant-launcher/1.8.2/ant-launcher-1.8.2.jar"/>
-		-->
-		
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-util/2.7/fop-util-2.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-events/2.7/fop-events-2.7.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-core/2.7/fop-core-2.7.jar"/>
+-->
+				
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.14/batik-anim-1.14.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.14/batik-css-1.14.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.14/batik-dom-1.14.jar"/>
@@ -163,8 +161,6 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.14/batik-gvt-1.14.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.14/batik-transcoder-1.14.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.14/batik-svggen-1.14.jar"/>
-        <!-- <pathelement location="${m2Repository}/javax/servlet/servlet-api/2.2/servlet-api-2.2.jar"/> -->
-        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.24/fontbox-2.0.24.jar"/>
 
 		<!--  FOP 2.6 FOP-2889: Make JAI optional  
         <pathelement location="${m2Repository}/javax/media/jai-core/1.1.3/jai-core-1.1.3.jar"/>
@@ -224,7 +220,6 @@
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.10/openhtmltopdf-core-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.10/openhtmltopdf-pdfbox-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.24/pdfbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/org/apache/pdfbox/fontbox/2.0.24/fontbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.24/xmpbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/de/rototor/pdfbox/graphics2d/0.32/graphics2d-0.32.jar" todir="${release.dir}/optional/ImportXHTML"/>
@@ -272,9 +267,10 @@
 		<mkdir dir="${releaseMOXy.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.4/org.eclipse.persistence.moxy-2.7.4.jar"/>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.7.4/org.eclipse.persistence.core-2.7.4.jar"/>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.7.4/org.eclipse.persistence.asm-2.7.4.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/3.0.2/org.eclipse.persistence.moxy-3.0.2.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.1.0/org.eclipse.persistence.asm-9.1.0.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/3.0.2/org.eclipse.persistence.core-3.0.2.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/mail/jakarta.mail/2.0.1/jakarta.mail-2.0.1.jar"/>
 			</path>
 		</copy>
 
@@ -294,13 +290,10 @@
 		<mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar"/>
-				<pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar"/>
-				<pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar"/>
-				<pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/3.0.2/jaxb-runtime-3.0.2.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/3.0.2/jaxb-core-3.0.2.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/3.0.2/txw2-3.0.2.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.0.1/istack-commons-runtime-4.0.1.jar"/>
 			</path>
 		</copy>
 
@@ -332,17 +325,17 @@
 		<!-- logging -->
 		<mkdir dir="${releaseSamplesDocx4j.dir}/logging"/>
 
-		<!-- log4j2 -->
+		<!-- log4j2
 		<mkdir dir="${releaseSamplesDocx4j.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesDocx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.17.1/${log4j-slf4j-impl}-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesDocx4j.dir}/logging/log4j2"/>
-		
+		 -->
 
 		<!-- logback -->
 		<mkdir dir="${releaseSamplesDocx4j.dir}/logging/logback"/>
@@ -386,9 +379,9 @@
 		<mkdir dir="${releaseSamplesPptx4j.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.17.1/${log4j-slf4j-impl}-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesPptx4j.dir}/logging/log4j2"/>
@@ -437,9 +430,9 @@
 		<mkdir dir="${releaseSamplesXlsx4j.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.17.1/${log4j-slf4j-impl}-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2"/>
@@ -555,9 +548,9 @@
 		<mkdir dir="${releaseDocuments4jLocal.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseDocuments4jLocal.dir}/logging/log4j2" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.17.1/${log4j-slf4j-impl}-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseDocuments4jLocal.dir}/logging/log4j2"/>
@@ -701,9 +694,9 @@
 		<mkdir dir="${releaseDocuments4jRemote.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseDocuments4jRemote.dir}/logging/log4j2" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.11.2/${log4j-slf4j-impl}-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.11.2/log4j-api-2.11.2.jar"/>
-		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.11.2/log4j-core-2.11.2.jar"/>
+				<pathelement location="${m2Repository}/org/apache/logging/log4j/${log4j-slf4j-impl}/2.17.1/${log4j-slf4j-impl}-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar"/>
+		        <pathelement location="${m2Repository}/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar"/>
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseDocuments4jRemote.dir}/logging/log4j2"/>
@@ -790,10 +783,14 @@
 			<pathelement location="${m2Repository}/org/docx4j/docx4j-openxml-objects-pml/${version}/docx4j-openxml-objects-pml-${version}.jar"/>
 			<pathelement location="${m2Repository}/org/docx4j/docx4j-openxml-objects-sml/${version}/docx4j-openxml-objects-sml-${version}.jar"/>
 			<pathelement location="${m2Repository}/org/docx4j/docx4j-core/${version}/docx4j-core-${version}.jar"/>
+
+	        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/3.0.1/jakarta.xml.bind-api-3.0.1.jar"/>
+	        <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/>
 			
-			<pathelement location="${m2Repository}/org/docx4j/docx4j-JAXB-Internal/${version}/docx4j-JAXB-Internal-${version}.jar"/>
-	        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
-	        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+	        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/3.0.2/jaxb-runtime-3.0.2.jar"/>
+	        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/3.0.2/jaxb-core-3.0.2.jar"/>
+	        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/3.0.2/txw2-3.0.2.jar"/>
+	        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.0.1/istack-commons-runtime-4.0.1.jar"/>
 			
 			<pathelement location="${m2Repository}/org/docx4j/docx4j-docx-anon/${version}/docx4j-docx-anon-${version}.jar"/>
 			<pathelement location="${m2Repository}/com/thedeanda/lorem/2.1/lorem-2.1.jar"/>
