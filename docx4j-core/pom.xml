@@ -51,13 +51,16 @@
 						<exclude>src/test/resources/**/*</exclude>
 						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
 					</excludes>
+					<archive>
+			            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+			          </archive>
 				</configuration>
 			</plugin>
 			
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.2</version>
+                <version>${version.maven-bundle-plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -170,6 +173,16 @@
                         </Export-Package>
                     </instructions>
                 </configuration>
+						<executions>
+							<execution>
+								<id>add-meta</id>
+								<phase>process-classes</phase><!-- or prepare-package -->
+								<goals>
+									<goal>manifest</goal>
+								</goals>
+								<!-- writes to bin/META-INF/MANIFEST.MF, where it is picked up by maven-jar-plugin -->
+							</execution>
+						</executions>
             </plugin>				
  			
  			<!--  mvn versions:display-dependency-updates --> 
