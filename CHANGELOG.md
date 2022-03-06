@@ -8,7 +8,7 @@ Version 11.4.5  (jakarta.xml.bind; parity with 8.3.4)
 Release date
 ------------
 ￼
-6 March 2022
+7 March 2022
 ￼
 ￼
 Contributors to this release

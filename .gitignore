@@ -11,3 +11,5 @@ bin-testOutput/
 tmp/
 release-zips/
 patches/
+xjc/
+docx4j-core-tests/scratch
