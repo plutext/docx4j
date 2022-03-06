@@ -2,6 +2,89 @@ CHANGELOG
 =========
 
 
+Version 11.4.5  (jakarta.xml.bind; parity with 8.3.4)
+==============
+￼
+Release date
+------------
+￼
+6 March 2022
+￼
+￼
+Contributors to this release
+----------------------------
+￼
+Jason Harrop
+￼
+￼
+Changes in Version 11.4.5 
+-------------------------
+
+Parity with 8.3.4￼
+
+Uses jakarta.xml.bind, rather than javax.xml.bind (hence the 11.4.x numbering); if you have existing code which imports javax.xml.bind, you'll need to search/replace across your code base, replacing javax.xml.bind  with jakarta.xml.bind
+
+Writes OSGi info to META-INF/MANIFEST.MF
+
+From hereon, changes will generally be made to this branch first.  
+
+
+
+Version 8.3.4  
+==============
+
+Release date
+------------
+
+3 March 2022
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.3.4
+-------------------------
+
+docx to PDF via XSL FO: Font configuration was ignored in 8.3.3, now fixed.
+
+Use FOP 2.7
+
+
+
+Version 8.3.3  
+==============
+
+Release date
+------------
+
+24 Feb 2022
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Significant Changes in Version 8.3.3
+-------------------------
+
+Reworked FOP configuration:
+- new property docx4j.convert.out.fo.hyphenate must be set to true for hyphenation to occur
+- baseURI can be configured at docx4j.convert.out.fop.FopConfParser.defaultBaseURI; it now defaults to the current directory (".")
+- you can set your own custom resource resolver if necessary 
+You may need to make some minor changes to how it is invoked; see the example
+at https://github.com/plutext/docx4j/blob/master/docx4j-samples-docx-export-fo/src/main/java/org/docx4j/samples/ConvertOutPDFviaXSLFO.java#L170
+
+Reinstate Panose support, required for best matching font mapper to work correctly.  To use this, you'll first need to delete .docx4j/fop-fonts.cache to force docx4j to re-read the fonts
+
+Bump various deps
+
+
+
 Version 11.3.2  parity with 8.3.2
 ==============
 ￼
