@@ -166,6 +166,10 @@ public class ConvertOutPDFviaXSLFO {
 //			fontMapper.put("Arial", font);
 //		}
 //		fontMapper.put("Libian SC Regular", PhysicalFonts.get("SimSun"));
+		
+		// Alternatively, use https://xmlgraphics.apache.org/fop/2.1/fonts.html#font_substitution
+		// Use docx4j property docx4j.fonts.fop.util.FopConfigUtil.substitutions to provide
+		// a file name (on your class path) containing these definitions 
 
 		// Config - step 1
 		// FO exporter setup (required)
