@@ -211,7 +211,12 @@
 
 		<!-- optional -->
 		<mkdir dir="${release.dir}/optional"/>
+		
+		<!-- Xerces -->
+		<copy file="${m2Repository}/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar" todir="${release.dir}/optional"/>
+		<copy file="${m2Repository}/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar" todir="${release.dir}/optional"/>
 
+		
 		<!-- ImportXHTML -->
 		<mkdir dir="${release.dir}/optional/ImportXHTML"/>
 		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>

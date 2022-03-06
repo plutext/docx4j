@@ -44,7 +44,7 @@
 	
 	<dependencies>
 
-		<!--  choose a docx4j-JAXB implementation, one ONLY of the 3 following :-->
+		<!--  choose a docx4j-JAXB implementation, one ONLY of the 2 following :-->
 
 		<dependency>
             <groupId>org.docx4j</groupId>
@@ -52,20 +52,28 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		
+<!-- 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-docx-anon</artifactId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
-<!-- 
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-MOXy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
- -->
- 
+	 -->
+
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-docx-anon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		 
 		<dependency>
 		  <groupId>xerces</groupId>
 		  <artifactId>xercesImpl</artifactId>

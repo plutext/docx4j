@@ -114,6 +114,9 @@ private static Logger LOG =LoggerFactory.getLogger(XMLHelper.class);
  @SuppressWarnings({"squid:S2755"})
  public static DocumentBuilderFactory getDocumentBuilderFactory() {
      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+     if (LOG.isInfoEnabled()) {
+    	 LOG.info("Using: " + factory.getClass().getName() );
+     }
      factory.setNamespaceAware(true);
      // this doesn't appear to work, and we still need to limit
      // entity expansions to 1 in trySet(XercesSecurityManager)
@@ -160,6 +163,9 @@ private static Logger LOG =LoggerFactory.getLogger(XMLHelper.class);
  public static SAXParserFactory getSaxParserFactory() {
      try {
          SAXParserFactory factory = SAXParserFactory.newInstance();
+         if (LOG.isInfoEnabled()) {
+        	 LOG.info("Using: " + factory.getClass().getName() );
+         }
          factory.setValidating(false);
          factory.setNamespaceAware(true);
          trySet(factory::setFeature, FEATURE_SECURE_PROCESSING, true);
