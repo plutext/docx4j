@@ -39,8 +39,8 @@ import org.docx4j.toc.TocGenerator;
  */
 public class TocSample  { 
 	
-	static boolean update = false;
-	static boolean createPDF = false;
+	static boolean update = true;
+	static boolean createPDF = true;
 	
 	static String outputDir = System.getProperty("user.dir");
 	
@@ -99,7 +99,7 @@ public class TocSample  {
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
         
-        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", true);
+        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
         
         wordMLPackage.save(new java.io.File(outputDir + "/OUT_TocSample_Generated.docx") );
         
@@ -115,7 +115,7 @@ public class TocSample  {
 	        documentPart.addStyledParagraphOfText("Heading3", "Hello 23");
 	        fillPageWithContent(documentPart, "Hello 23");
 	        
-	        tocGenerator.updateToc(true);
+	        tocGenerator.updateToc(false);
 	        
 	        wordMLPackage.save(new java.io.File(outputDir + "/OUT_TocSample_Updated.docx") );
         }

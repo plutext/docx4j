@@ -20,45 +20,46 @@
 package org.docx4j.samples;
 
 
-import java.io.File;
-
+import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.toc.TocGenerator;
 
 /**
  * This example uses docx4j's internal capabilities
- * to generate a ToC.  
+ * to update a ToC.  
  * 
- * To add indicative page numbers, put export-fo on your classpath;
- * see https://github.com/plutext/docx4j/tree/VERSION_11_4_6/docx4j-samples-docx-export-fo
+ * For page numbers, this example has export-fo on your classpath
  *  
  * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
  * That uses a different code path; please see the TocOperations example in 
  * docx4j-samples-export-documents4j-local
  * 
  */
-public class TocAdd  { 
+public class TocUpdateDemo  {
 	
-	static String inputfilepath = System.getProperty("user.dir") + "/input.docx";
-	static String outputfilepath = System.getProperty("user.dir") + "/OUT_TocAdd.docx";
-	
-    public static final String TOC_STYLE_MASK = "TOC%s";
-    
+	static boolean update = false;
+
     public static void main(String[] args) throws Exception{
     	
-        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new File(inputfilepath));
-
+		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/toc.docx";
+		
+		// Load input_template.docx
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
+				new java.io.File(input_DOCX));    	
+        MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
-        
-        //tocGenerator.generateToc( 0,    "TOC \\h \\z \\t \"comh1,1,comh2,2,comh3,3,comh4,4\" ", true);
-        
-        tocGenerator.generateToc( 0,    "TOC \\o \"1-3\" \\h \\z \\u ", true);
-        
-        wordMLPackage.save(new java.io.File(outputfilepath) );
-        
-        
 
+        // If you want to automatically fix any broken bookmarks
+        Docx4jProperties.setProperty("docx4j.toc.BookmarksIntegrity.remediate", true);
+        
+//        	Toc.setTocHeadingText("Sumário");
+        	tocGenerator.updateToc(false); 
+        		// false -> update page numbers using FOP
+	        
+	        wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TocUpdateDemo.docx") );
+        
     }
 
 

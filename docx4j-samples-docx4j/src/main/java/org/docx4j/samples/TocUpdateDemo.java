@@ -29,7 +29,8 @@ import org.docx4j.toc.TocGenerator;
  * This example uses docx4j's internal capabilities
  * to update a ToC.  
  * 
- * For page numbers, you'll need export-fo on your classpath.
+ * For page numbers, you'll need export-fo on your classpath;
+ * see https://github.com/plutext/docx4j/tree/VERSION_11_4_6/docx4j-samples-docx-export-fo
  *  
  * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
  * That uses a different code path; please see the TocOperations example in 
@@ -55,7 +56,7 @@ public class TocUpdateDemo  {
         Docx4jProperties.setProperty("docx4j.toc.BookmarksIntegrity.remediate", true);
         
 //        	Toc.setTocHeadingText("Sumário");
-        	tocGenerator.updateToc(); // including page numbers 
+        	tocGenerator.updateToc(true); // excluding page numbers 
 	        
 	        wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TocUpdateDemo.docx") );
         

@@ -41,6 +41,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.convert.out.FopReflective;
 import org.docx4j.finders.SectPrFindFirst;
 import org.docx4j.model.bookmarks.BookmarksIntegrity;
 import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
@@ -760,7 +761,9 @@ public class TocGenerator {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         try {
-        	if (foViaXSLT) {
+			FopReflective.invokeFORendererApacheFOP(foSettings);
+
+        	if (foViaXSLT) {        		
         		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
         	} else {
         		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        		
