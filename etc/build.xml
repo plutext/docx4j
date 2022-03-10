@@ -375,7 +375,7 @@
 		<!-- logging -->
 		<mkdir dir="${releaseSamplesPptx4j.dir}/logging"/>
 
-		<!-- log4j2 -->
+		<!-- log4j2 
 		<mkdir dir="${releaseSamplesPptx4j.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesPptx4j.dir}/logging/log4j2" flatten="true">
 			<path>
@@ -385,7 +385,7 @@
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesPptx4j.dir}/logging/log4j2"/>
-		
+		-->
 
 		<!-- logback -->
 		<mkdir dir="${releaseSamplesPptx4j.dir}/logging/logback"/>
@@ -426,7 +426,7 @@
 		<!-- logging -->
 		<mkdir dir="${releaseSamplesXlsx4j.dir}/logging"/>
 
-		<!-- log4j2 -->
+		<!-- log4j2 
 		<mkdir dir="${releaseSamplesXlsx4j.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2" flatten="true">
 			<path>
@@ -436,7 +436,7 @@
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseSamplesXlsx4j.dir}/logging/log4j2"/>
-		
+		-->
 
 		<!-- logback -->
 		<mkdir dir="${releaseSamplesXlsx4j.dir}/logging/logback"/>
@@ -544,7 +544,7 @@
 		<!-- logging -->
 		<mkdir dir="${releaseDocuments4jLocal.dir}/logging"/>
 
-		<!-- log4j2 -->
+		<!-- log4j2 
 		<mkdir dir="${releaseDocuments4jLocal.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseDocuments4jLocal.dir}/logging/log4j2" flatten="true">
 			<path>
@@ -554,7 +554,7 @@
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseDocuments4jLocal.dir}/logging/log4j2"/>
-		
+		-->
 
 		<!-- logback -->
 		<mkdir dir="${releaseDocuments4jLocal.dir}/logging/logback"/>
@@ -690,7 +690,7 @@
 		<!-- logging -->
 		<mkdir dir="${releaseDocuments4jRemote.dir}/logging"/>
 
-		<!-- log4j2 -->
+		<!-- log4j2 
 		<mkdir dir="${releaseDocuments4jRemote.dir}/logging/log4j2"/>
 		<copy includeemptydirs="false" todir="${releaseDocuments4jRemote.dir}/logging/log4j2" flatten="true">
 			<path>
@@ -700,7 +700,7 @@
 			</path>
 		</copy>
 		<copy file="docx4j-samples-resources/src/main/resources/log4j2.xml" todir="${releaseDocuments4jRemote.dir}/logging/log4j2"/>
-		
+		-->
 
 		<!-- logback -->
 		<mkdir dir="${releaseDocuments4jRemote.dir}/logging/logback"/>
