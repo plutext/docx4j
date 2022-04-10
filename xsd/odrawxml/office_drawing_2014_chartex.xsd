@@ -230,6 +230,9 @@
    <xsd:simpleType name="ST_AxisId">
      <xsd:restriction base="xsd:unsignedInt"/>
    </xsd:simpleType>
+   <xsd:complexType name="CT_AxisId">
+     <xsd:attribute name="val" type="ST_AxisId" use="required"/>
+   </xsd:complexType>   
    <xsd:simpleType name="ST_GapWidthRatio">
      <xsd:union>
        <xsd:simpleType>
@@ -752,7 +755,12 @@
        <xsd:element name="dataLabels" type="CT_DataLabels" minOccurs="0" maxOccurs="1"/>
        <xsd:element name="dataId" type="CT_DataId" minOccurs="0" maxOccurs="1"/>
        <xsd:element name="layoutPr" type="CT_SeriesLayoutProperties" minOccurs="0" maxOccurs="1"/>
+       <!--  Wrong, see #501
        <xsd:element name="axisId" type="ST_AxisId" minOccurs="0" maxOccurs="unbounded"/>
+        -->
+       <xsd:element name="axisId" type="CT_AxisId" minOccurs="0" maxOccurs="unbounded"/>
+       
+       
        <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
      </xsd:sequence>
      <xsd:attribute name="layoutId" type="ST_SeriesLayout" use="required"/>
@@ -761,6 +769,8 @@
      <xsd:attribute name="uniqueId" type="xsd:string" use="optional"/>
      <xsd:attribute name="formatIdx" type="xsd:unsignedInt" use="optional"/>
    </xsd:complexType>
+   
+   
    <xsd:complexType name="CT_Legend">
      <xsd:sequence>
        <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"/>

@@ -904,4 +904,12 @@ public class ObjectFactory {
         return new JAXBElement<CTStringLevel>(_CTNumericDimensionLvl_QNAME, CTStringLevel.class, CTStringDimension.class, value);
     }
 
+    /**
+     * Create an instance of {@link CTAxisId }
+     * 
+     */
+    public CTAxisId createCTAxisId() {
+        return new CTAxisId();
+    }
+    
 }
