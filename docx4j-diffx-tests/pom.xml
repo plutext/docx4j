@@ -53,6 +53,28 @@
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-diffx</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+				    <groupId>org.docx4j</groupId>
+				    <artifactId>docx4j-core</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.slf4j</groupId>
+				    <artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.apache.xmlgraphics</groupId>
+				    <artifactId>xmlgraphics-commons</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>commons-io</groupId>
+				    <artifactId>commons-io</artifactId>
+				</exclusion>
+				<exclusion>
+				    <groupId>org.docx4j</groupId>
+				    <artifactId>docx4j-openxml-objects</artifactId>
+				</exclusion>
+            		</exclusions>
 		</dependency>
 
 		<dependency>
