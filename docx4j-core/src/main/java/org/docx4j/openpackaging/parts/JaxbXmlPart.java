@@ -1066,7 +1066,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
-						u.unmarshal( xsr ));						
+						u.unmarshal( xsr ));
+				
+				// unmarshalled, so no need to flag for later.
+				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				
 			} catch (UnmarshalException ue) {
 				log.error(ue.getMessage(), ue);
 				
@@ -1099,6 +1103,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						
 						// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
 						// https://github.com/plutext/docx4j/issues/474
+						log.warn("Unmarshalling " + this.getClass().getName() + " without Docx4jUnmarshallerListener");
 						
 						jaxbElement = (E) XmlUtils.unwrap(
 								result.getResult() );	
@@ -1134,6 +1139,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
 						u.unmarshal( el ) );
+				
+				// unmarshalled, so no need to flag for later.
+				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				
 			} catch (UnmarshalException ue) {
 				log.info("encountered unexpected content; pre-processing");
 				try {
@@ -1152,8 +1161,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 					
-					// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+					// NB, no Docx4jUnmarshallerListener here, so mc namespaces and docPr/@id won't get detected!
 					// https://github.com/plutext/docx4j/issues/474
+					log.warn("Unmarshalling " + this.getClass().getName() + " without Docx4jUnmarshallerListener");
 					
 					jaxbElement = (E) XmlUtils.unwrap(
 							result.getResult() );	

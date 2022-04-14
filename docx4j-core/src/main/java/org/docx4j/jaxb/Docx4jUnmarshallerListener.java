@@ -2,6 +2,7 @@ package org.docx4j.jaxb;
 
 import jakarta.xml.bind.Unmarshaller;
 
+import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.mce.AlternateContent;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.slf4j.Logger;
@@ -42,7 +43,11 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 			if (choice.getMustUnderstand()!=null) {
 				part.addMcChoiceNamespace(choice.getMustUnderstand());
 			}
-		} 
+		} else if (target instanceof  CTNonVisualDrawingProps){
+			
+			CTNonVisualDrawingProps docPr = (CTNonVisualDrawingProps)target;
+			part.getPackage().getDrawingPropsIdTracker().registerId(docPr.getId());
+		}
 //		else if (log.isDebugEnabled() 
 //				) {
 //

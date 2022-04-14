@@ -456,6 +456,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		// leaving it until the Part is added to the Package.
 		part.setPackage( getPackage() );
 		
+		getPackage().getDrawingPropsIdTracker().registerPart(part);
+		
 	}
 
 	

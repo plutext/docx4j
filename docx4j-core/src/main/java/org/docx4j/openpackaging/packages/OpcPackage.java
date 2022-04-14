@@ -71,6 +71,7 @@ import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
+import org.docx4j.openpackaging.parts.WordprocessingML.DrawingPropsIdTracker;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.org.apache.poi.poifs.crypt.Decryptor;
 import org.docx4j.org.apache.poi.poifs.crypt.EncryptionInfo;
@@ -119,6 +120,16 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		return parts;		
 	}
 	
+	private DrawingPropsIdTracker drawingPropsIdTracker = null;
+	
+	public DrawingPropsIdTracker getDrawingPropsIdTracker() {
+		
+		if (drawingPropsIdTracker==null) {
+			drawingPropsIdTracker = new DrawingPropsIdTracker();
+		}
+		return drawingPropsIdTracker;
+	}
+
 	// Currently only external images are stored here
 	protected HashMap<ExternalTarget, Part> externalResources 
 		= new HashMap<ExternalTarget, Part>();
