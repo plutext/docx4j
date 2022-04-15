@@ -304,7 +304,7 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 Ideally you'd commit the branch with the actual released version number in the pom,
 then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
-Here, also do:  git push -u origin [the incremented version number]
+Here, also do:  git push -u origin [the incremented version number]  <--------- set up to track remote branch
 
 Switch branch if necessary, eg:
 

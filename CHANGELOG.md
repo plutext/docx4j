@@ -2,6 +2,35 @@ CHANGELOG
 =========
 
 
+Version 11.4.6
+==============
+￼
+Release date
+------------
+￼
+16 April 2022
+￼
+￼
+Contributors to this release
+----------------------------
+￼
+Jason Harrop
+
+Thor Åge Eldby
+￼
+￼
+Changes in Version 11.4.6 
+-------------------------
+
+This release is primarily to support a docx4j-ImportXHTML 11.4.6 release,
+by adding DrawingPropsIdTracker, which dispenses unique values for 
+wp:docPr/@id (must be unique across all parts in a docx).
+
+Other fixes:
+Issue 501: chartEx adjust object model to match actual Word output (cx:axisId)
+Issue 501: Correct encoding issue when writing version comment for non UTF-8 locale 
+
+
 Version 11.4.5  (jakarta.xml.bind; parity with 8.3.4)
 ==============
 ￼
