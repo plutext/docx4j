@@ -460,7 +460,10 @@ implements XPathEnabled<E> {
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
 					
 				} else {
-					log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
+					
+					if (log.isDebugEnabled()) {
+						log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
+					}
 					
 					// Guard against XXE
 			        XMLInputFactory xif = XMLInputFactory.newInstance();
