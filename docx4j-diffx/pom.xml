@@ -29,6 +29,49 @@
 					to execute the unit tests of an application -->
 				<version>2.6</version>
 			</plugin>
+
+<!-- TODO
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${version.maven-bundle-plugin}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Manifest-Version>2.0</Manifest-Version>
+						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+						<Bundle-Name>${project.artifactId}</Bundle-Name>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Import-Package>
+                            com.topologi.diffx.event;resolution:=optional,
+                            com.topologi.diffx.xml;resolution:=optional,
+                            com.topologi.diffx.xml.esc;resolution:=optional,
+
+                            org.xml.sax,
+                            org.xml.sax.ext,
+                            org.xml.sax.helpers,
+                        </Import-Package>
+						<Export-Package>
+                            com.topologi.diffx.xml,
+                            com.topologi.diffx.xml.esc,
+                            com.topologi.diffx.event,
+						    org.eclipse.compare,
+						    org.eclipse.compare.internal,
+						    org.eclipse.compare.rangedifferencer,                            
+                        </Export-Package>
+					</instructions>
+				</configuration>
+				<executions>
+					<execution>
+						<id>add-meta</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
+					</execution>
+				</executions>
+            </plugin>				
+-->
 			
 		</plugins>
         

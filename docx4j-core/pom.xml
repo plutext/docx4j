@@ -69,9 +69,6 @@
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Import-Package>
-                            com.topologi.diffx.event;resolution:=optional,
-                            com.topologi.diffx.xml;resolution:=optional,
-                            com.topologi.diffx.xml.esc;resolution:=optional,
                             net.engio.mbassy.bus,
                             net.engio.mbassy.bus.config,
                             org.antlr.runtime;resolution:=optional,
@@ -154,14 +151,7 @@
                             com.thedeanda.lorem
                         </Import-Package>
                         <Export-Package>
-                            com.topologi.diffx.xml,
-                            com.topologi.diffx.xml.esc,
-                            com.topologi.diffx.event,
-						    org.eclipse.compare,
-						    org.eclipse.compare.internal,
-						    org.eclipse.compare.rangedifferencer,                            
                             net.engio.mbassy.bus,
-                            org.apache.avalon.framework.configuration,
                             org.plutext.jaxb.*,
                             org.docx4j.*,
                             org.pptx4j.*,
