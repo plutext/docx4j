@@ -41,7 +41,6 @@ module org.docx4j.core {
     exports org.docx4j;
     exports org.docx4j.convert.in;
     exports org.docx4j.convert.in.word2003xml;
-    exports org.docx4j.convert.in.xhtml;
     exports org.docx4j.convert.out;
     exports org.docx4j.convert.out.common;
     exports org.docx4j.convert.out.common.preprocess;
