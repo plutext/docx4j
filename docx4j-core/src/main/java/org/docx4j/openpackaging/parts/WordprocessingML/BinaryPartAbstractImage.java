@@ -717,7 +717,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 */
 	@Deprecated
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2) throws Exception {
+			long id1, int id2) throws Exception {
 		
         return createImageInline(filenameHint, altText,
                 id1, id2, false);
@@ -740,7 +740,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws Exception
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, boolean link) throws Exception {
+			long id1, int id2, boolean link) throws Exception {
 				
         WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage) this.getPackage());
 		
@@ -765,7 +765,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @since 3.3.0
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, boolean link, int maxWidth) throws Exception {
+			long id1, int id2, boolean link, int maxWidth) throws Exception {
 		
 		// This signature can scale the image to specified maxWidth
 				
@@ -797,7 +797,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 */
 	@Deprecated
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, long cx) throws Exception {
+			long id1, int id2, long cx) throws Exception {
 		
         return createImageInline(filenameHint, altText,
                 id1, id2, cx, false);
@@ -819,7 +819,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws Exception
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, long cx, boolean link) throws Exception {
+			long id1, int id2, long cx, boolean link) throws Exception {
 		
 		ImageSize size = imageInfo.getSize();
 
@@ -864,7 +864,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws Exception
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, long cx, long cy, boolean link) throws Exception {
+			long id1, int id2, long cx, long cy, boolean link) throws Exception {
 		
         if (filenameHint == null) {
 			filenameHint = "";
@@ -888,7 +888,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
                 + "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" + //l=\"19050\"
                 "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
                 + "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
-                + "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>"
+                + "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr>"
+                + "<pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>"
                 + "<a:blip " + type + "=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
                 + "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"${cx}\" cy=\"${cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>"
                 + "</wp:inline>"; // +
@@ -901,7 +902,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         mappings.put("filenameHint", filenameHint);
         mappings.put("altText", altText);
         mappings.put("rEmbedId", this.getRelLast().getId());
-        mappings.put("id1", Integer.toString(id1));
+        mappings.put("id1", Long.toString(id1));
         mappings.put("id2", Integer.toString(id2));
 
         Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings);
