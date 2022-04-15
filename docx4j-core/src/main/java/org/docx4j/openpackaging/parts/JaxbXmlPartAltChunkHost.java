@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -234,11 +233,13 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				
 			} else if (type.equals(AltChunkType.Xhtml) ) {
 				
-				XHTMLImporter xHTMLImporter= null;
+				Object xHTMLImporter= null;
+				Method convertMethod = null;
 			    try {
 			    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
 				    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
-				    xHTMLImporter = (XHTMLImporter) ctor.newInstance(clonePkg);
+				    xHTMLImporter = ctor.newInstance(clonePkg);
+			        convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class );
 			    } catch (Exception e) {
 			        log.warn("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 					log.warn(e.getMessage(), e);
@@ -248,7 +249,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 	            List<Object> results = null;
 				try {
 					
-					results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
+					// results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
+			        results = (List<Object>)convertMethod.invoke(null, afip.getBuffer(), null);					
 					
 				} catch (Exception e) {
 					log.error(e.getMessage(), e);
