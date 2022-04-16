@@ -21,41 +21,20 @@ It uses JAXB to create the Java representation.
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
 
-docx4j for JAXB 3.0
--------------------
+docx4j for JAXB 3.0 and Java 11+
+--------------------------------
 
-See https://github.com/plutext/docx4j/tree/VERSION_11_4_0
-
-docx4j v11.4.0 uses Jakarta XML Binding API 3.0, as opposed to JAXB 2.x used in earlier versions (which import javax.xml.bind.*).
+docx4j v11.4.5 uses Jakarta XML Binding API 3.0, as opposed to JAXB 2.x used in earlier versions (which import javax.xml.bind.*).  Since this release uses jakarta.xml.bind, rather than javax.xml.bind, if you have existing code which imports javax.xml.bind, you'll need to search/replace across your code base, replacing javax.xml.bind with jakarta.xml.bind. You'll also need to replace your JAXB jars (which Maven will do for you automatically; otherwise get them from the relevant zip file).
 
 Being a JPMS modularised release, the jars also contain module-info.class entries.
 
-To use docx4j v11.4.0, you currently need to compile it yourself.
-
-Then, as with previous docx4j releases, add the dep corresponding to the JAXB implementation you wish to use
-
-* docx4j-JAXB-ReferenceImpl
-* docx4j-JAXB-MOXy
-
-docx4j for Java 11
-------------------
-
-See https://github.com/plutext/docx4j/tree/VERSION_11_3_2
-
-docx4j 11.1.x - for use with Java 11 or later - is available in Maven Central.
-
-Being a JPMS modularised release, the jars contain module-info.class entries.
-
-11.1.0 is compiled with Java 14, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.1.0.
-
-Aside from the use of named modules / module path, the releases pretty much track v8. 
-
-To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
+To use it, add the dep corresponding to the JAXB implementation you wish to use
 
 * [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-ReferenceImpl)
  docx4j-JAXB-ReferenceImpl
 * [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy)
  docx4j-JAXB-MOXy
+ 
 
 docx4j-8
 --------
