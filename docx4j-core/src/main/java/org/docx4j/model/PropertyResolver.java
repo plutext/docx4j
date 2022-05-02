@@ -495,7 +495,9 @@ public class PropertyResolver {
 				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
 				// .. and apply those
 				
-				log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
+				if (log.isDebugEnabled()) {
+				        log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
+                                }
 				
 				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
 			}
