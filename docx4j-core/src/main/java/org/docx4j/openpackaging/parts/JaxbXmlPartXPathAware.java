@@ -20,6 +20,7 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -28,13 +29,18 @@ import jakarta.xml.bind.Binder;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.util.JAXBResult;
+
 import javax.xml.namespace.QName;
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
@@ -365,6 +371,10 @@ implements XPathEnabled<E> {
 	private E unmarshal( java.io.InputStream is, boolean forceBinder ) throws JAXBException {
 		
 //		long start = System.currentTimeMillis();
+		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
+		boolean transformFirst = (transformParts!=null 
+				&& transformParts.contains(this.getClass().getSimpleName()));
+		
 		
 		try {
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -387,8 +397,13 @@ implements XPathEnabled<E> {
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
 					log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+
+			        if (transformFirst) {
+			        	log.info("Preprocessing (transforming) this part");
+						doc = transform(is);
 					
-					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
+			        } else /* no need for this if we've transformed already */ 
+			        	if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 						log.debug("MOXy: checking whether binder workaround is necessary");
 						/* Workaround for MOXy issue 
 
@@ -414,22 +429,7 @@ implements XPathEnabled<E> {
 								// Get object with mc content resolved
 								// could do super.unmarshal(is);
 								// but better
-								try {
-									Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-									DOMResult result = new DOMResult();
-									
-									// Guard against XXE
-							        XMLInputFactory xif = XMLInputFactory.newInstance();
-							        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-							        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-						        	XMLStreamReader xsr = xif.createXMLStreamReader(is2);
-									
-									XmlUtils.transform(new StAXSource(xsr), 
-											mcPreprocessorXslt, null, result);
-									doc = (org.w3c.dom.Document) result.getNode();
-								} catch (Exception e) {
-									throw new JAXBException("Preprocessing exception", e);
-								}
+								doc = transform(is2);
 								
 							} else {
 								// continue with a new is
@@ -440,7 +440,7 @@ implements XPathEnabled<E> {
 					}
 				
 					// InputStream to Document
-					if (doc==null) // we didn't do the MOXy workaround above 
+					if (doc==null) // we didn't apply the transform above 
 					{						
 						doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
 					}
@@ -471,6 +471,12 @@ implements XPathEnabled<E> {
 			        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 			        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
 				    
+			        if (transformFirst) {
+			        	log.info("Preprocessing (transforming) this part");
+						preprocess(xsr);  // TODO if there is an error here, no point trying to transform again below in the catch
+						return jaxbElement;
+			        }
+			        
 			        // XMLStreamReaderWrapper xsrw = new XMLStreamReaderWrapper(this, xsr)
 					Unmarshaller u = jc.createUnmarshaller();
 					
@@ -674,6 +680,28 @@ implements XPathEnabled<E> {
 			throw new JAXBException(e.getMessage(), e);
 		}
     }
+
+	private org.w3c.dom.Document transform(InputStream is2)
+			throws FactoryConfigurationError, JAXBException {
+		org.w3c.dom.Document doc = null;
+		try {
+			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+			DOMResult result = new DOMResult();
+			
+			// Guard against XXE
+		    XMLInputFactory xif = XMLInputFactory.newInstance();
+		    xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+		    xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+			XMLStreamReader xsr = xif.createXMLStreamReader(is2);
+			
+			XmlUtils.transform(new StAXSource(xsr), 
+					mcPreprocessorXslt, null, result);
+			doc = (org.w3c.dom.Document) result.getNode();
+		} catch (Exception e) {
+			throw new JAXBException("Preprocessing exception", e);
+		}
+		return doc;
+	}
 
     /**
      * @since 2.7.1

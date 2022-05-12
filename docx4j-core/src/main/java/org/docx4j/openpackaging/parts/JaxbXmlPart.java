@@ -193,7 +193,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				if (is==null) {
 					log.warn(name + " missing from part store");
 				} else {
-					log.debug("Lazily unmarshalling " + name);
+					log.info("Lazily unmarshalling " + name);
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
@@ -1030,7 +1030,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 *             If any unexpected errors occur while unmarshalling
 	 */
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
-    	    	
+
+		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
+		boolean transformFirst = (transformParts!=null 
+				&& transformParts.contains(this.getClass().getSimpleName()));
+    	
 		try {
 			/* To avoid possible XML External Entity Injection attack,
 			 * we need to configure the processor.
@@ -1052,6 +1056,12 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
 	        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
 		    
+	        if (transformFirst) {
+	        	log.info("Preprocessing (transforming) this part");
+				preprocess(xsr);  // TODO if there is an error here, no point trying to transform again below in the catch
+				return jaxbElement;
+	        }
+	        
 			Unmarshaller u = jc.createUnmarshaller();
 			
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -1063,7 +1073,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			
 			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
 			u.setListener(docx4jUnmarshallerListener);
-						
+									
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
 						u.unmarshal( xsr ));
@@ -1094,22 +1104,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					eventHandler.setContinue(true);
 										
 					try {
-						Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 						is.reset();
-						xsr = xif.createXMLStreamReader(is);
-						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
-						XmlUtils.transform(new StAXSource(xsr), 
-								mcPreprocessorXslt, null, result);
-						
-						// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
-						// https://github.com/plutext/docx4j/issues/474
-						log.warn("Unmarshalling " + this.getClass().getName() + " without Docx4jUnmarshallerListener");
-						
-						jaxbElement = (E) XmlUtils.unwrap(
-								result.getResult() );	
-					} catch (Exception e) {
+					} catch (IOException e) {
 						throw new JAXBException("Preprocessing exception", e);
 					}
+					preprocess(xif.createXMLStreamReader(is));
 											
 				} else {
 					throw new UnmarshalException("Mark not supported",ue);
@@ -1122,7 +1121,27 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 		return jaxbElement;
     	
-    }	
+    }
+
+	protected void preprocess(XMLStreamReader xsr) throws JAXBException {
+		;
+		try {
+			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+			JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+			XmlUtils.transform(new StAXSource(xsr), 
+					mcPreprocessorXslt, null, result);
+			
+			// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
+			// https://github.com/plutext/docx4j/issues/474
+			// TODO Better to transform to something we can use Docx4jUnmarshallerListener on
+			log.warn("Unmarshalling " + this.getClass().getName() + " without Docx4jUnmarshallerListener");
+			
+			jaxbElement = (E) XmlUtils.unwrap(
+					result.getResult() );	
+		} catch (Exception e) {
+			throw new JAXBException("Preprocessing exception", e);
+		}
+	}	
     
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
