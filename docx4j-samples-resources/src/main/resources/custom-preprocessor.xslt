@@ -202,25 +202,27 @@
    
   <xsl:template match="@w:gutter[not(string())]" />
 
+<!-- BIRT fixes -->
+
   <xsl:template match="w:pPr[parent::w:tc]" />  
   <xsl:template match="w:rPr[parent::w:p]" />  
   <xsl:template match="w:jc[parent::w:rPr]" />  
   <xsl:template match="w:unhidenWhenUsed[parent::w:style]" />  
 
-<!-- More BIRT fixes 2022 01 -->
-
   <xsl:template match="w:vAlign[@w:val='baseline']" >
 		<w:vAlign w:val="bottom"/>
 	</xsl:template>
 
-
-  <xsl:template match="w:tblHeader[@w:val='false']" >
-	<w:tblHeader w:val="off"/>
+ 
+  <xsl:template match="w:tblHeader" > <!--  Not a problem for docx4j; fix for OpenXML SDK validator  -->
+  	<xsl:choose>
+  		<xsl:when test="@w:val='true' or @w:val='on' or @w:val='1'">
+			<w:tblHeader/>
+  		</xsl:when>
+  		<!--  otherwise drop it -->
+  	</xsl:choose>
   </xsl:template>  
 
-  <xsl:template match="w:tblHeader[@w:val='true']" >
-	<w:tblHeader w:val="on"/>
-  </xsl:template>  
 
   <xsl:template match="w:tblOverlap[@w:val='Never']" >
 	 <w:tblOverlap w:val="never"/>
@@ -228,14 +230,15 @@
 
   <xsl:template match="w:footerReference[count(@w:type)=0]" >
 	<w:footerReference>
-		    <xsl:copy>
-		      <xsl:apply-templates select="@*"/>
-		    </xsl:copy>
 		  	<xsl:attribute name="w:type">default</xsl:attribute>
+		    <xsl:copy-of  select="@*"/>
    </w:footerReference>
   </xsl:template>  
 
-
+<!--  BIRT styles part -->
+  <xsl:template match="w:unhidenWhenUsed" > <!--  BIRT typo -->
+	<w:unhideWhenUsed/>
+  </xsl:template>  
 
 
 </xsl:stylesheet>
