@@ -375,7 +375,6 @@ implements XPathEnabled<E> {
 		boolean transformFirst = (transformParts!=null 
 				&& transformParts.contains(this.getClass().getSimpleName()));
 		
-		
 		try {
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			org.w3c.dom.Document doc = null;
@@ -400,7 +399,7 @@ implements XPathEnabled<E> {
 
 			        if (transformFirst) {
 			        	log.info("Preprocessing (transforming) this part");
-						doc = transform(is);
+						doc = transformToDom(inputStreamToXSR(is));
 					
 			        } else /* no need for this if we've transformed already */ 
 			        	if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
@@ -429,7 +428,7 @@ implements XPathEnabled<E> {
 								// Get object with mc content resolved
 								// could do super.unmarshal(is);
 								// but better
-								doc = transform(is2);
+								doc = transformToDom(inputStreamToXSR(is2));
 								
 							} else {
 								// continue with a new is
@@ -464,34 +463,15 @@ implements XPathEnabled<E> {
 					if (log.isDebugEnabled()) {
 						log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
 					}
-					
-					// Guard against XXE
-			        XMLInputFactory xif = XMLInputFactory.newInstance();
-			        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-			        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-			        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
 				    
 			        if (transformFirst) {
 			        	log.info("Preprocessing (transforming) this part");
-						preprocess(xsr);  // TODO if there is an error here, no point trying to transform again below in the catch
+						preprocess(is, true);  // try to continue, since we've transformed 
 						return jaxbElement;
 			        }
 			        
-			        // XMLStreamReaderWrapper xsrw = new XMLStreamReaderWrapper(this, xsr)
-					Unmarshaller u = jc.createUnmarshaller();
-					
-//					if (is.markSupported()) {
-//						// Only fail hard if we know we can restart
-//						eventHandler.setContinue(false);
-//					}
-					u.setEventHandler(eventHandler);
-					
-					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-					u.setListener(docx4jUnmarshallerListener);
-					
 					log.debug("Unmarshalling " + this.partName.getName());
-					
-					unwrapUsually(u.unmarshal( xsr ));						
+					unwrapUsually(getConfiguredUnmarshaller(false).unmarshal( inputStreamToXSR(is) ));						
 					
 				}
 			} catch (org.xml.sax.SAXParseException e) {
@@ -507,6 +487,16 @@ implements XPathEnabled<E> {
 					
 			} catch (Exception ue) {
 
+				if (transformFirst) {
+					
+					log.error("problem in " + this.getPartName() ); 					
+					log.error(ue.getMessage(), ue);
+					log.error(".. and transformed up-front already; giving up");
+					throw ue;
+					
+				}
+				
+				
 				if (ue instanceof UnmarshalException) {
 					// Usually..
 					
@@ -634,14 +624,7 @@ implements XPathEnabled<E> {
 						 */
 	
 						log.warn("Binder not available for this docx");
-						Unmarshaller u = jc.createUnmarshaller();
-						eventHandler.setContinue(true);
-						u.setEventHandler(eventHandler);
-						
-						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-						u.setListener(docx4jUnmarshallerListener);
-						
-						unwrapUsually(u.unmarshal( doc ));		
+						unwrapUsually(getConfiguredUnmarshaller(true).unmarshal( doc ));		
 						
 					}
 				} else {
@@ -680,28 +663,6 @@ implements XPathEnabled<E> {
 			throw new JAXBException(e.getMessage(), e);
 		}
     }
-
-	private org.w3c.dom.Document transform(InputStream is2)
-			throws FactoryConfigurationError, JAXBException {
-		org.w3c.dom.Document doc = null;
-		try {
-			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-			DOMResult result = new DOMResult();
-			
-			// Guard against XXE
-		    XMLInputFactory xif = XMLInputFactory.newInstance();
-		    xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-		    xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-			XMLStreamReader xsr = xif.createXMLStreamReader(is2);
-			
-			XmlUtils.transform(new StAXSource(xsr), 
-					mcPreprocessorXslt, null, result);
-			doc = (org.w3c.dom.Document) result.getNode();
-		} catch (Exception e) {
-			throw new JAXBException("Preprocessing exception", e);
-		}
-		return doc;
-	}
 
     /**
      * @since 2.7.1
@@ -771,14 +732,7 @@ implements XPathEnabled<E> {
 					jaxbElement = (E) XmlUtils.unwrap(binder.unmarshal(doc));
 				} catch (ClassCastException cce) {
 					log.warn("Binder not available for this docx");
-					Unmarshaller u = jc.createUnmarshaller();
-					eventHandler.setContinue(true);
-					u.setEventHandler(eventHandler);
-					
-					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-					u.setListener(docx4jUnmarshallerListener);
-					
-					jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
+					jaxbElement = (E) XmlUtils.unwrap(getConfiguredUnmarshaller(true).unmarshal( doc ));		
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}
