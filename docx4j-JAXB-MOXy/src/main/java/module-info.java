@@ -9,6 +9,7 @@ module org.docx4j.JAXB_MOXy {
 
 	requires org.eclipse.persistence.moxy;
 	requires org.eclipse.persistence.core;
+	requires jakarta.xml.bind;
 	
     exports org.docx4j.jaxb.moxy;
     

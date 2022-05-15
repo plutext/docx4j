@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import jakarta.xml.bind.Binder;
@@ -45,6 +46,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.BinderListenerUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JAXBAssociation;
@@ -395,7 +397,6 @@ implements XPathEnabled<E> {
 
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
-					log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
 
 			        if (transformFirst) {
 			        	log.info("Preprocessing (transforming) this part");
@@ -452,9 +453,15 @@ implements XPathEnabled<E> {
 //					eventHandler.setContinue(false);
 					binder.setEventHandler(eventHandler);
 
-					// TODO: binder doesn't support listener; warning is logged above
-//					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-//					((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+					// binder api doesn't support set listener, so workaround using reflection
+					// https://github.com/eclipse-ee4j/jaxb-ri/issues/1631
+					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+					try {
+						BinderListenerUtils.getBinderListener().setListener(binder, docx4jUnmarshallerListener);
+					} catch (Exception e1) {
+						log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+						log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+					}
 					
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
 					
@@ -672,7 +679,6 @@ implements XPathEnabled<E> {
 
 		try {
 			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				
-			log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
 
 			if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 				log.debug("MOXy: pre-emptively transforming");
@@ -691,14 +697,22 @@ implements XPathEnabled<E> {
 			}
 			
 			binder = jc.createBinder();
+
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			binder.setEventHandler(eventHandler);
 			
-			// TODO: binder doesn't support listener
-//			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-//			((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+			// binder api doesn't support set listener, so workaround using reflection
+			// https://github.com/eclipse-ee4j/jaxb-ri/issues/1631
+			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+			try {
+				BinderListenerUtils.getBinderListener().setListener(binder, docx4jUnmarshallerListener);
+			} catch (Exception e1) {
+				log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+				log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+			}
 			
+						
 			try {
 //				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
 				unwrapUsually(binder,  el);  // unlikely to need this in the code below
