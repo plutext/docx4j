@@ -13,5 +13,5 @@ module docx4j_samples_docx4j {
 //	requires org.eclipse.persistence.moxy;
 //	requires org.eclipse.persistence.core;
 	
-	
+	opens org.docx4j.samples; // required for mbassador	
 }
