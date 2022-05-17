@@ -195,7 +195,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				if (is==null) {
 					log.warn(name + " missing from part store");
 				} else {
-					log.info("Lazily unmarshalling " + name);
+					if (log.isDebugEnabled()) {
+						log.debug("Lazily unmarshalling " + name);
+					}
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
@@ -780,6 +782,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	
 	    	String mceIgnorable = "";
 	    	if (this.getMceIgnorable()!=null) {
+	    		// Be careful with this; unless getMceIgnorable() returns whatever is set by setMceIgnorable above,
+	    		// the value set by setMceIgnorable above is effectively ignored
+	    		// in NamespacePrefixMapperUtils.declareNamespaces and overwritten by setMcIgnorable below!
+	    		// Except for docx, you are more likely to want to use addMcChoiceNamespace
 	    		mceIgnorable = this.getMceIgnorable();
 	    	}
 	    	
@@ -839,7 +845,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		log.debug("Marshalling to " + os.getClass().getName());
 	    		
 				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(
-						mceIgnorable + getMcChoiceNamespaces());  
+						mceIgnorable + getMcChoiceNamespaces());  // careful here
 				
 				if (this instanceof MainDocumentPart) {
 					
