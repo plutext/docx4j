@@ -224,7 +224,7 @@
         <copy file="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.24/xmpbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/de/rototor/pdfbox/graphics2d/0.32/graphics2d-0.32.jar" todir="${release.dir}/optional/ImportXHTML"/>
 
-		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${importxhtml-dir}/docx4j-ImportXHTML-samples/src/main/resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 
 		<!-- export-fo -->
 		<mkdir dir="${release.dir}/optional/export-fo"/>
