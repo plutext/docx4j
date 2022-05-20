@@ -212,7 +212,9 @@ public class XmlUtils {
 		}
 		
 		log.warn("actual SAXParserFactory: " + SAXParserFactory.newInstance().getClass().getName() );
-		
+		// If the above is in a stack trace, 
+		// check your javax.xml.parsers.SAXParserFactory setting in docx4j.properties
+		// matches your classpath.  For example, you may need to put Xerces on your classpath.		
 		
 		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
 		// since we want to avoid Crimson being used for the life of the application.

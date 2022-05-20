@@ -78,7 +78,9 @@
 			<artifactId>docx4j-docx-anon</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		 
+		
+		<!-- required if specified by property javax.xml.parsers.SAXParserFactory
+			 in docx4j.properties --> 
 		<dependency>
 		  <groupId>xerces</groupId>
 		  <artifactId>xercesImpl</artifactId>
