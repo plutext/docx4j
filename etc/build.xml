@@ -14,7 +14,7 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.4.6"/>
+	<property name="version" value="11.4.7"/>
 	<property name="importxhtml-version" value="11.4.6"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
