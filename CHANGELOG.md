@@ -8,14 +8,14 @@ Version 11.4.7
 Release date
 ------------
 ￼
-16 May 2022
+21 May 2022
 
 Changes in Version 11.4.7 
 -------------------------
 
 New property docx4j.jaxb.preprocess.always, a list of parts to transform before unmarshalling is first attempted. Useful when you know your input docx always have issues owing to deficiencies in whatever application emitted them. Without this setting, the transformation does not happen until after an error is encountered (which is less efficient and results in log entries).
 
-Set Docx4jUnmarshallerListener when preprocessing (dixes #474). When transforming during unmarshalling, use DOMResult instead of JAXBResult
+Set Docx4jUnmarshallerListener when preprocessing (fixes #474). When transforming during unmarshalling, use DOMResult instead of JAXBResult
 
 Set Docx4jUnmarshallerListener via reflection when using binder.  Previously, there was no Docx4jUnmarshallerListener when a binder was used.
 
