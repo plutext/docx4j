@@ -46,7 +46,9 @@ public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 		} else if (target instanceof  CTNonVisualDrawingProps){
 			
 			CTNonVisualDrawingProps docPr = (CTNonVisualDrawingProps)target;
-			part.getPackage().getDrawingPropsIdTracker().registerId(docPr.getId());
+			if (part.getPackage()!=null) {
+				part.getPackage().getDrawingPropsIdTracker().registerId(docPr.getId());
+			}
 		}
 //		else if (log.isDebugEnabled() 
 //				) {
