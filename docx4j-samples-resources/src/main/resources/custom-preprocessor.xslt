@@ -209,10 +209,7 @@
   <xsl:template match="w:jc[parent::w:rPr]" />  
   <xsl:template match="w:unhidenWhenUsed[parent::w:style]" />  
 
-  <xsl:template match="w:vAlign[@w:val='baseline']" >
-		<w:vAlign w:val="bottom"/>
-	</xsl:template>
-
+  <xsl:template match="w:vAlign[@w:val='baseline']" />
  
   <xsl:template match="w:tblHeader" > <!--  Not a problem for docx4j; fix for OpenXML SDK validator  -->
   	<xsl:choose>
@@ -235,10 +232,16 @@
    </w:footerReference>
   </xsl:template>  
 
+  <xsl:template match="w:bidi[@w:val='off']" />
+  
+  <xsl:template match="w:b[@w:val='on']" >
+  	<w:b/>
+  </xsl:template>
+  
+
 <!--  BIRT styles part -->
   <xsl:template match="w:unhidenWhenUsed" > <!--  BIRT typo -->
 	<w:unhideWhenUsed/>
   </xsl:template>  
-
 
 </xsl:stylesheet>
