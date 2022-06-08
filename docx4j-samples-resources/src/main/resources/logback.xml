@@ -158,6 +158,8 @@
 
 	<logger name="com.plutext.merge.BlockRange" level="INFO" />
 
+	<logger name="com.plutext.merge.DocumentBuilder" level="INFO" />
+
 	<logger name="com.plutext.merge.HeaderFooterUtils" level="INFO" />
 
 	<logger name="com.plutext.merge.CustomXmlPartHandler" level="WARN" />
@@ -165,6 +167,9 @@
 	<logger name="com.plutext.merge.RFontsThemeResolver" level="INFO" />
 
 	<logger name="com.plutext.merge.altchunk" level="WARN" />
+
+	<logger name="com.plutext.merge.StyleUtils" level="INFO" />
+	<logger name="com.plutext.merge.TableStyleRespector" level="INFO" />
 
 	<logger name="com.plutext.merge.pptx" level="WARN" />
 
