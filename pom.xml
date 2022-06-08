@@ -10,10 +10,10 @@
 
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
-	<version>8.3.8-SNAPSHOT</version>
+	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.7-SNAPSHOT</revision>
+		<revision>8.3.7</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
