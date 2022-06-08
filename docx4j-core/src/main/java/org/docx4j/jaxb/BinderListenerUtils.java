@@ -43,7 +43,7 @@ public class BinderListenerUtils {
 		}
 		
 		if (testContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
-			log.info("Using MOXy NamespacePrefixMapper");
+			log.info("Using MOXy BinderListener");
 			try {
 				Class c = Class.forName("org.docx4j.jaxb.moxy.BinderListener");
 				binderListener = (BinderListenerInterface)c.newInstance();
@@ -52,6 +52,16 @@ public class BinderListenerUtils {
 				throw new JAXBException("Can't create org.docx4j.jaxb.moxy.BinderListener", e);
 			}
 		}
+		if (testContext.getClass().getName().equals("com.sun.xml.internal.bind.v2.runtime.JAXBContextImpl")) {
+			log.info("Using com.sun.xml.internal BinderListener");
+			try {
+				Class c = Class.forName("org.docx4j.jaxb.suninternal.BinderListener");
+				binderListener = (BinderListenerInterface)c.newInstance();
+				return binderListener;
+			} catch (Exception e) {
+				throw new JAXBException("Can't create org.docx4j.jaxb.suninternal.BinderListener", e);
+			}
+		}		
 		Marshaller m=testContext.createMarshaller();		
 		return tryUsingRI(m);			
 
@@ -68,7 +78,7 @@ public class BinderListenerUtils {
 			return binderListener;
 		} catch (Exception e) {
 			//log.error("JAXB: Can't instantiate JAXB Reference Implementation", e);
-			throw new JAXBException("JAXB: Can't instantiate JAXB Reference Implementation", e);
+			throw new JAXBException("Can't create org.docx4j.jaxb.ri.BinderListener", e);
 		}
 	}
 
