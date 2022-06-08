@@ -99,7 +99,7 @@ public class TocSample  {
         
         TocGenerator tocGenerator = new TocGenerator(wordMLPackage);
         
-        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", false);
+        tocGenerator.generateToc( 0, " TOC \\o \"1-3\" \\h \\z \\u ", true);
         
         wordMLPackage.save(new java.io.File(outputDir + "/OUT_TocSample_Generated.docx") );
         
@@ -115,7 +115,7 @@ public class TocSample  {
 	        documentPart.addStyledParagraphOfText("Heading3", "Hello 23");
 	        fillPageWithContent(documentPart, "Hello 23");
 	        
-	        tocGenerator.updateToc(false);
+	        tocGenerator.updateToc(true);
 	        
 	        wordMLPackage.save(new java.io.File(outputDir + "/OUT_TocSample_Updated.docx") );
         }

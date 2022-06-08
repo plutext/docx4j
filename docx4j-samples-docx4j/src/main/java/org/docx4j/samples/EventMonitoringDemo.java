@@ -26,7 +26,10 @@ import java.io.File;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;
 import net.engio.mbassy.bus.config.Feature;
+import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 import net.engio.mbassy.listener.Handler;
+import net.engio.mbassy.listener.Listener;
+import net.engio.mbassy.listener.References;
 
 import org.docx4j.Docx4J;
 import org.docx4j.events.Docx4jEvent;
@@ -41,9 +44,6 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * 
  * Uses the following library https://github.com/bennidi/mbassador 
  * to provide the event plumbing; see that page for more details about it.
- * 
- * Get the jar from http://search.maven.org/#artifactdetails%7Cnet.engio%7Cmbassador%7C1.1.10%7Cbundle
- * 
  * 
  * @author jharrop
  * @since 3.1.0
@@ -65,6 +65,7 @@ public class EventMonitoringDemo extends AbstractSample {
 			     .addFeature(Feature.SyncPubSub.Default()) // configure the synchronous message publication
 			     .addFeature(Feature.AsynchronousHandlerInvocation.Default()) // configure asynchronous invocation of handlers
 			     .addFeature(Feature.AsynchronousMessageDispatch.Default()) // configure asyncronous message publication (fire&forget)
+			     .addPublicationErrorHandler(new IPublicationErrorHandler.ConsoleLogger())			     
 			     );
 		Docx4jEvent.setEventNotifier(bus);
 		
@@ -105,17 +106,17 @@ public class EventMonitoringDemo extends AbstractSample {
 	 * Implement your net.engio.mbassy.listener.Handler 
 	 *
 	 */
+	@Listener(references = References.Strong)
 	static class ListeningBean {
 		
-		 // every message of type Docx4jEvent  will be delivered
-	    // to this handler; NPEs etc in this handler will be silently ignored.
+		 // every message of type Docx4jEvent  will be delivered to this handler
 	    @Handler
 	    public void handleMessage(Docx4jEvent message) {
 	    	
 	    	String state = (message instanceof StartEvent) ? "starting" : "finished";
 	    	
 	    	
-	    	
+	    	System.out.println("\n\n(received event " + message.getClass().getName() );
 	    	if (message.getPkgIdentifier()==null) {
 
 	    		System.out.println("\n\n\n\n ****  " + message.getProcessStep() + " " + state + " ***** \n\n");

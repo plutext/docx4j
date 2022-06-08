@@ -8,20 +8,8 @@ docx4j will use export-FO automatically if it finds it in your classpath.
 
 ## Alternatives
 
-The default PDF Converter is an eval version of Plutext's commercial renderer, which takes 
-a completely different approach, to offer much better fidelity and performance.  For more on this, please see https://converter-eval.plutext.com/client_java.html
+* documents4j: since 8.2.0, use Microsoft Word to do the conversion
 
-To use that, do not put docx4j-export-fo on your classpath. 
+* via-Microsoft-Graph: new in 8.2.3, use java-docx-to-pdf-using-Microsoft-Graph to do the conversion
 
-To avoid information leakage, the default configuration of  PDF Converter assumes local host.  So to 
-get it working, you either need to download/install it locally, or set docx4j property "com.plutext.converter.URL", 
-for example:
-
-```
-Docx4jProperties.setProperty(
-    "com.plutext.converter.URL", 
-    "https://converter-eval.plutext.com:443/v1/00000000-0000-0000-0000-000000000000/convert");
-```
-
-
-
+For comparison of approaches, please see https://www.docx4java.org/blog/2020/09/office-pptxxlsxdocx-to-pdf-to-in-docx4j-8-2-3/

@@ -132,7 +132,7 @@ public class Patcher {
 				}
 				
 				Part tmpPart = FlatOpcXmlImporter.getRawPart(otherPackage.getContentTypeManager(), 
-						a.getPart(), null); 
+						a.getPart(), null, null); 
 				
 				if (targetPart instanceof JaxbXmlPart) {
 					((JaxbXmlPart)targetPart).setJaxbElement(
@@ -186,7 +186,7 @@ public class Patcher {
 
 				Part parentPart = otherPackage.getParts().get(a.getSourcePartName());
 				Part newPart = FlatOpcXmlImporter.getRawPart(otherPackage.getContentTypeManager(), 
-						a.getPart(), null); 
+						a.getPart(), null, null); 
 				
 				// There will already be a rel for the new part,
 				// since we will already have modified or added the rels part

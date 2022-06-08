@@ -355,6 +355,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 			if (fontTablePart==null) {
 				log.warn("FontTable missing; creating default part.");
 				fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
+				fontTablePart.setPackage(this);
 				fontTablePart.unmarshalDefaultFonts();
 			}
 			

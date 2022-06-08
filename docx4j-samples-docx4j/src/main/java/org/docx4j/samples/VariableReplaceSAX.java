@@ -61,7 +61,7 @@ public class VariableReplaceSAX {
 		org.docx4j.wml.ObjectFactory foo = Context.getWmlObjectFactory();
 
 		// Input docx has variables in it: ${colour}, ${icecream}
-		String inputfilepath = System.getProperty("user.dir") + "/devicecount.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/unmarshallFromTemplateExample.docx";
 
 		boolean save = true;
 		String outputfilepath = System.getProperty("user.dir")

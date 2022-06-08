@@ -21,8 +21,8 @@ package org.docx4j.jaxb;
  * an Unmarshaller.Listener (Docx4jUnmarshallerListener) detects and records them.  
  * 
  * This works, except in 3 cases:
- * (i)  where binder is used
- * (ii) where we take the JAXBResult of a transformation (eg running the pre-processor) 
+ * (i)  where binder is used (should now work in 11.4.7 and later)
+ * (ii) where we take the JAXBResult of a transformation (so instead, use a DOMResult) 
  * since you can't register a listener in either of these cases, and
  * (iii)where you have added mc:Choice content to the docx yourself.
  * 

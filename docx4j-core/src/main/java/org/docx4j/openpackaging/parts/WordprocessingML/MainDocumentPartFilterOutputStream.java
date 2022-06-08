@@ -37,7 +37,7 @@ public class MainDocumentPartFilterOutputStream extends FilterOutputStream {
 			return;
     	}
 		
-		String text = new String(b, off, len);
+		String text = new String(b, off, len, "UTF-8");
 		int pos = text.indexOf("<w:body>");  // code assumes we don't receive a fragment
 		if (pos<0) {
 			super.write(b, off, len);

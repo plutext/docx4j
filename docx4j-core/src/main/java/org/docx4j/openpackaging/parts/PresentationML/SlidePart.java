@@ -73,7 +73,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
     protected void setMceIgnorable(McIgnorableNamespaceDeclarator namespacePrefixMapper) {
 		
 		/* Ensure we declare the namespace.  Otherwise Powerpoint 2010 treats the pptx as corrupt.
-		 * 2013 and Mac version might repair it, at leat..
+		 * 2013 and Mac version might repair it, at least..
 		 * 
             <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
               <mc:Choice xmlns:v="urn:schemas-microsoft-com:vml" Requires="v">
@@ -82,7 +82,8 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		
 		// Unlike MainDocumentPart, there is no this.getJaxbElement().getIgnorable()
 		
-		namespacePrefixMapper.setMcIgnorable("v");
+		//namespacePrefixMapper.setMcIgnorable("v");  // ineffective unless we also override getMceIgnorable()!
+		this.addMcChoiceNamespace("v");
 	}		
 	
 	

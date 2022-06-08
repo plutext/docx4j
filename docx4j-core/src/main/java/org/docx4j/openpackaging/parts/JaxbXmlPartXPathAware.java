@@ -20,25 +20,33 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
+
 import javax.xml.namespace.QName;
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.BinderListenerUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.Docx4jUnmarshallerListener;
 import org.docx4j.jaxb.JAXBAssociation;
@@ -365,6 +373,9 @@ implements XPathEnabled<E> {
 	private E unmarshal( java.io.InputStream is, boolean forceBinder ) throws JAXBException {
 		
 //		long start = System.currentTimeMillis();
+		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
+		boolean transformFirst = (transformParts!=null 
+				&& transformParts.contains(this.getClass().getSimpleName()));
 		
 		try {
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -386,9 +397,13 @@ implements XPathEnabled<E> {
 
 				if (wantBinder) {
 					log.debug("For " + this.getClass().getName() + ", unmarshall via binder");
-					log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+
+			        if (transformFirst) {
+			        	log.info("Preprocessing (transforming) this part");
+						doc = transformToDom(inputStreamToXSR(is));
 					
-					if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
+			        } else /* no need for this if we've transformed already */ 
+			        	if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 						log.debug("MOXy: checking whether binder workaround is necessary");
 						/* Workaround for MOXy issue 
 
@@ -414,22 +429,7 @@ implements XPathEnabled<E> {
 								// Get object with mc content resolved
 								// could do super.unmarshal(is);
 								// but better
-								try {
-									Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-									DOMResult result = new DOMResult();
-									
-									// Guard against XXE
-							        XMLInputFactory xif = XMLInputFactory.newInstance();
-							        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-							        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-						        	XMLStreamReader xsr = xif.createXMLStreamReader(is2);
-									
-									XmlUtils.transform(new StAXSource(xsr), 
-											mcPreprocessorXslt, null, result);
-									doc = (org.w3c.dom.Document) result.getNode();
-								} catch (Exception e) {
-									throw new JAXBException("Preprocessing exception", e);
-								}
+								doc = transformToDom(inputStreamToXSR(is2));
 								
 							} else {
 								// continue with a new is
@@ -440,7 +440,7 @@ implements XPathEnabled<E> {
 					}
 				
 					// InputStream to Document
-					if (doc==null) // we didn't do the MOXy workaround above 
+					if (doc==null) // we didn't apply the transform above 
 					{						
 						doc = XmlUtils.getNewDocumentBuilder().parse(is); // this also guards against XXE
 					}
@@ -453,34 +453,32 @@ implements XPathEnabled<E> {
 //					eventHandler.setContinue(false);
 					binder.setEventHandler(eventHandler);
 
-					// TODO: binder doesn't support listener; warning is logged above
-//					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-//					((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+					// binder api doesn't support set listener, so workaround using reflection
+					// https://github.com/eclipse-ee4j/jaxb-ri/issues/1631
+					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+					try {
+						BinderListenerUtils.getBinderListener().setListener(binder, docx4jUnmarshallerListener);
+					} catch (Exception e1) {
+						log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+						log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+					}
 					
 					unwrapUsually(binder,  doc);  // unlikely to need this in the code below
 					
 				} else {
-					log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
 					
-					// Guard against XXE
-			        XMLInputFactory xif = XMLInputFactory.newInstance();
-			        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-			        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-			        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
+					if (log.isDebugEnabled()) {
+						log.debug("For " + this.getClass().getName() + ", unmarshall (no binder)");
+					}
 				    
-			        // XMLStreamReaderWrapper xsrw = new XMLStreamReaderWrapper(this, xsr)
-					Unmarshaller u = jc.createUnmarshaller();
-					
-//					if (is.markSupported()) {
-//						// Only fail hard if we know we can restart
-//						eventHandler.setContinue(false);
-//					}
-					u.setEventHandler(eventHandler);
-					
-					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-					u.setListener(docx4jUnmarshallerListener);
-					
-					unwrapUsually(u.unmarshal( xsr ));						
+			        if (transformFirst) {
+			        	log.info("Preprocessing (transforming) this part");
+						preprocess(is, true);  // try to continue, since we've transformed 
+						return jaxbElement;
+			        }
+			        
+					log.debug("Unmarshalling " + this.partName.getName());
+					unwrapUsually(getConfiguredUnmarshaller(false).unmarshal( inputStreamToXSR(is) ));						
 					
 				}
 			} catch (org.xml.sax.SAXParseException e) {
@@ -496,6 +494,16 @@ implements XPathEnabled<E> {
 					
 			} catch (Exception ue) {
 
+				if (transformFirst) {
+					
+					log.error("problem in " + this.getPartName() ); 					
+					log.error(ue.getMessage(), ue);
+					log.error(".. and transformed up-front already; giving up");
+					throw ue;
+					
+				}
+				
+				
 				if (ue instanceof UnmarshalException) {
 					// Usually..
 					
@@ -606,7 +614,7 @@ implements XPathEnabled<E> {
 						 * See http://old.nabble.com/BinderImpl.associativeUnmarshal-ClassCastException-casting-to-JAXBElement-td32456585.html
 						 * and  http://java.net/jira/browse/JAXB-874
 						 * 
-						 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
+						 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to jakarta.xml.bind.JAXBElement
 							at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext.endElement(Unknown Source)
 							at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)
@@ -623,14 +631,7 @@ implements XPathEnabled<E> {
 						 */
 	
 						log.warn("Binder not available for this docx");
-						Unmarshaller u = jc.createUnmarshaller();
-						eventHandler.setContinue(true);
-						u.setEventHandler(eventHandler);
-						
-						Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-						u.setListener(docx4jUnmarshallerListener);
-						
-						unwrapUsually(u.unmarshal( doc ));		
+						unwrapUsually(getConfiguredUnmarshaller(true).unmarshal( doc ));		
 						
 					}
 				} else {
@@ -678,7 +679,6 @@ implements XPathEnabled<E> {
 
 		try {
 			log.debug("For " + this.getClass().getName() + ", unmarshall via binder");				
-			log.warn("Unmarshalling via binder, so no Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
 
 			if (Context.jaxbImplementation==JAXBImplementation.ECLIPSELINK_MOXy) {
 				log.debug("MOXy: pre-emptively transforming");
@@ -697,14 +697,22 @@ implements XPathEnabled<E> {
 			}
 			
 			binder = jc.createBinder();
+
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			binder.setEventHandler(eventHandler);
 			
-			// TODO: binder doesn't support listener
-//			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-//			((Unmarshaller) binder).setListener(docx4jUnmarshallerListener);
+			// binder api doesn't support set listener, so workaround using reflection
+			// https://github.com/eclipse-ee4j/jaxb-ri/issues/1631
+			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+			try {
+				BinderListenerUtils.getBinderListener().setListener(binder, docx4jUnmarshallerListener);
+			} catch (Exception e1) {
+				log.error("Unmarshalling via binder, couldn't set Docx4jUnmarshallerListener. McChoiceNamespace declarations will be affected.");
+				log.error("Couldn't set Docx4jUnmarshallerListener on binder", e1);
+			}
 			
+						
 			try {
 //				jaxbElement =  (E) XmlUtils.unwrap(binder.unmarshal( el ));
 				unwrapUsually(binder,  el);  // unlikely to need this in the code below
@@ -738,14 +746,7 @@ implements XPathEnabled<E> {
 					jaxbElement = (E) XmlUtils.unwrap(binder.unmarshal(doc));
 				} catch (ClassCastException cce) {
 					log.warn("Binder not available for this docx");
-					Unmarshaller u = jc.createUnmarshaller();
-					eventHandler.setContinue(true);
-					u.setEventHandler(eventHandler);
-					
-					Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-					u.setListener(docx4jUnmarshallerListener);
-					
-					jaxbElement = (E) XmlUtils.unwrap(u.unmarshal( doc ));		
+					jaxbElement = (E) XmlUtils.unwrap(getConfiguredUnmarshaller(true).unmarshal( doc ));		
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}

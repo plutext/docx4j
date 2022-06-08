@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -30,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
@@ -652,50 +652,85 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 		DocumentFragment docfrag = docContainer.createDocumentFragment();
 		
-		XHTMLImporter xHTMLImporter= null;
+		Object xHTMLImporter= null;
 		Class<?> xhtmlImporterClass = null;
 	    try {
 	    	xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
 		    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
-		    xHTMLImporter = (XHTMLImporter) ctor.newInstance(pkg);
+		    xHTMLImporter = ctor.newInstance(pkg);
 	    } catch (Exception e) {
 	        log.error("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 			log.error(e.getMessage(), e);
 			return xhtmlError(sdtParent, docContainer, docfrag, "Missing XHTML Handler!");
 	    }		
 	    
-	    xHTMLImporter.setSequenceCounters(sequenceCounters);
-	    
-	    /* Find setBookmarkIdNext method.
-	     * It's not part of the interface until 3.3.0, so use reflection
-	     */
 		Method[] methods = xhtmlImporterClass.getMethods(); 
-		Method method = null;
+		boolean setBookmarkIdNext = false;
+		boolean setSequenceCounters = false;
+		boolean setMaxWidth = false;
+		
+		Method xhtmlMaxWidthMethod = null;
+		
 		for (int j=0; j<methods.length; j++) {
+			
 			if (methods[j].getName().equals("setBookmarkIdNext")
 					&& methods[j].getParameterTypes().length==1) {
-				method = methods[j];
-				break;
+				try {
+				    //xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
+					methods[j].invoke(xHTMLImporter, bookmarkCounter.bookmarkId);
+					setBookmarkIdNext = true;
+				} catch (Exception e1) {
+					log.error(e1.getMessage(), e1);
+				}
 			}
+			
+			if (methods[j].getName().equals("setSequenceCounters")
+					&& methods[j].getParameterTypes().length==1) {
+				try {
+				    //xHTMLImporter.setSequenceCounters(sequenceCounters);
+					methods[j].invoke(xHTMLImporter, sequenceCounters);
+					setSequenceCounters = true;
+				} catch (Exception e1) {
+					log.error(e1.getMessage(), e1);
+				}
+			}
+			
+			if (methods[j].getName().equals("setMaxWidth")
+					&& methods[j].getParameterTypes().length==2) {
+				try {
+					// xHTMLImporter.setMaxWidth(-1, null); // re-init
+					xhtmlMaxWidthMethod = methods[j]; 
+					xhtmlMaxWidthMethod.invoke(xHTMLImporter, -1, null);
+					setMaxWidth = true;
+				} catch (Exception e1) {
+					log.error(e1.getMessage(), e1);
+				}
+			}
+			
+			
 		}			
-		if (method==null) {
-			log.info("setBookmarkIdNext method not found.  If you are using docx4j-ImportXHTML v3.2.1 or later, it should be present.");				
-		} else {
-			try {
-			    //xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
-				method.invoke(xHTMLImporter, bookmarkCounter.bookmarkId);
-			} catch (Exception e1) {
-				log.error(e1.getMessage(), e1);
-			}
-		}
+		if (!setBookmarkIdNext) {
+			log.error("setBookmarkIdNext method not found. ");				
+		} 
+		if (!setSequenceCounters) {
+			log.error("setSequenceCounters method not found. ");				
+		} 
+		if (!setMaxWidth) {
+			log.error("setMaxWidth method not found. ");				
+		} 
 		
 		// If we are in a table cell, ensure oversized images are scaled
-		xHTMLImporter.setMaxWidth(-1, null); // re-init
 		if (bindingTraverserState.tcStack.peek() != null) {
 		    log.debug("inserting in a tc" );
-		    BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(
-		    		bindingTraverserState.tblStack.peek(), 
-		    		bindingTraverserState.tcStack.peek(), xHTMLImporter);
+		    if (xhtmlMaxWidthMethod!=null) {
+			    try {
+					BindingTraverserTableHelper.setupMaxWidthAndStyleForTc(
+							bindingTraverserState.tblStack.peek(), 
+							bindingTraverserState.tcStack.peek(), xHTMLImporter, xhtmlMaxWidthMethod);
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+			    }
+		    }
 		} 
 
 		Xpath xpath = getXpathFromTag(sdtPr.getTag(), xpathsMap);
@@ -718,7 +753,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			r = r.trim();
 //			log.debug(r);
 			//String unescaped = StringEscapeUtils.unescapeHtml(r);
-			//log.info("Unescaped: " + unescaped);
+			if (log.isDebugEnabled()) {
+				log.debug("Input XHTML: " + r);
+			}
 			
 			// It comes to us unescaped, so the above is unnecessary.
 			
@@ -843,17 +880,17 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			}
 			
 			
-			xHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
-//	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
-//	        setHyperlinkStyleMethod.invoke(null, 
-//	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+			//xHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
+	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
+	        setHyperlinkStyleMethod.invoke(null, 
+	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 			
 			String baseUrl = null;
 			List<Object> results = null;
 			try {
-				results = xHTMLImporter.convert(r, baseUrl );
-//		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class, WordprocessingMLPackage.class );
-//		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl, pkg);
+//				results = xHTMLImporter.convert(r, baseUrl );
+		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class );
+		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl);
 		        
 			} catch (Exception e) {
 				if (e instanceof NullPointerException) {

@@ -29,7 +29,8 @@ import org.docx4j.toc.TocGenerator;
  * This example uses docx4j's internal capabilities
  * to generate a ToC.  
  * 
- * To add indicative page numbers, put export-fo on your classpath.
+ * To add indicative page numbers, put export-fo on your classpath;
+ * see https://github.com/plutext/docx4j/tree/VERSION_11_4_6/docx4j-samples-docx-export-fo
  *  
  * Note: If you have Word available, you can use it to populate (and/or update) the ToC.
  * That uses a different code path; please see the TocOperations example in 

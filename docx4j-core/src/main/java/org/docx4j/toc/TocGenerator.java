@@ -41,6 +41,7 @@ import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConversionFeatures;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.convert.out.FopReflective;
 import org.docx4j.finders.SectPrFindFirst;
 import org.docx4j.model.bookmarks.BookmarksIntegrity;
 import org.docx4j.model.bookmarks.BookmarksIntegrity.BookmarksStatus;
@@ -744,10 +745,10 @@ public class TocGenerator {
     	
         FOSettings foSettings = Docx4J.createFOSettings();
         try {
-			foSettings.setOpcPackage(wordMLPackage);
-		} catch (Docx4JException e1) {
-			throw new TocException(e1.getMessage(), e1);
-		}
+  			foSettings.setOpcPackage(wordMLPackage);
+  		} catch (Docx4JException e1) {
+  			throw new TocException(e1.getMessage(), e1);
+  		};
         String MIME_FOP_AREA_TREE   = "application/X-fop-areatree"; // org.apache.fop.apps.MimeConstants
         foSettings.setApacheFopMime(MIME_FOP_AREA_TREE);
         
@@ -760,7 +761,9 @@ public class TocGenerator {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         try {
-        	if (foViaXSLT) {
+			FopReflective.invokeFORendererApacheFOP(foSettings);
+
+        	if (foViaXSLT) {        		
         		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_XSL);
         	} else {
         		Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);        		

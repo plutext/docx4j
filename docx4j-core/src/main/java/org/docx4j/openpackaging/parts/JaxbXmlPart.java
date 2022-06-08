@@ -39,6 +39,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.Location;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLInputFactory;
@@ -49,6 +50,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stax.StAXSource;
 
 import org.apache.commons.io.IOUtils;
@@ -193,7 +195,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 				if (is==null) {
 					log.warn(name + " missing from part store");
 				} else {
-					log.debug("Lazily unmarshalling " + name);
+					if (log.isDebugEnabled()) {
+						log.debug("Lazily unmarshalling " + name);
+					}
 					unmarshal( is );
 				}
 			} catch (JAXBException e) {
@@ -778,6 +782,10 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    	
 	    	String mceIgnorable = "";
 	    	if (this.getMceIgnorable()!=null) {
+	    		// Be careful with this; unless getMceIgnorable() returns whatever is set by setMceIgnorable above,
+	    		// the value set by setMceIgnorable above is effectively ignored
+	    		// in NamespacePrefixMapperUtils.declareNamespaces and overwritten by setMcIgnorable below!
+	    		// Except for docx, you are more likely to want to use addMcChoiceNamespace
 	    		mceIgnorable = this.getMceIgnorable();
 	    	}
 	    	
@@ -837,7 +845,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	    		log.debug("Marshalling to " + os.getClass().getName());
 	    		
 				((McIgnorableNamespaceDeclarator) namespacePrefixMapper).setMcIgnorable(
-						mceIgnorable + getMcChoiceNamespaces());  
+						mceIgnorable + getMcChoiceNamespaces());  // careful here
 				
 				if (this instanceof MainDocumentPart) {
 					
@@ -1014,6 +1022,27 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		this.mcChoiceNamespaces.add(mcChoiceNamespace);
 	}
     
+	/**
+	 * An Unmarshaller configured with our event handler and listener.
+	 * 
+	 * @param eventHandlerContinue
+	 * @return
+	 * @throws JAXBException
+	 */
+	protected Unmarshaller getConfiguredUnmarshaller(boolean eventHandlerContinue) throws JAXBException {
+		
+		Unmarshaller u = jc.createUnmarshaller();
+		
+		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+		eventHandler.setContinue(eventHandlerContinue);
+		u.setEventHandler(eventHandler);
+		
+		Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
+		u.setListener(docx4jUnmarshallerListener);
+		
+		return u;		
+	}
+	
     /**
 	 * Unmarshal XML data from the specified InputStream and return the
 	 * resulting content tree. Validation event location information may be
@@ -1030,44 +1059,29 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 *             If any unexpected errors occur while unmarshalling
 	 */
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
-    	    	
+
+		String transformParts = Docx4jProperties.getProperty("docx4j.jaxb.preprocess.always");
+		boolean transformFirst = (transformParts!=null 
+				&& transformParts.contains(this.getClass().getSimpleName()));
+    	
 		try {
-			/* To avoid possible XML External Entity Injection attack,
-			 * we need to configure the processor.
-			 * 
-			 * We use STAX XMLInputFactory to do that.
-			 * 
-			 * createXMLStreamReader(is) is 40% slower than unmarshal(is).
-			 * 
-			 * But it seems to be the best we can do ... 
-			 * 
-			 *   org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is)
-			 *   unmarshal(doc)
-			 * 
-			 * ie DOM is 5x slower than unmarshal(is)
-			 * 
-			 */
-	        XMLInputFactory xif = XMLInputFactory.newInstance();
-	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
-	        XMLStreamReader xsr = xif.createXMLStreamReader(is);			
-		    
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
-//			if (is.markSupported()) {
-//				// Only fail hard if we know we can restart
-//				eventHandler.setContinue(false);
-//			}
-			u.setEventHandler(eventHandler);
-			
-			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-			u.setListener(docx4jUnmarshallerListener);
-						
+	        if (transformFirst) {
+	        	log.info("Preprocessing (transforming) this part");
+	        	
+				preprocess(is, true); // try to continue, since we've transformed
+				
+				return jaxbElement;
+	        }
+	        									
 			try {
-				jaxbElement = (E) XmlUtils.unwrap(
-						u.unmarshal( xsr ));						
+				jaxbElement = (E) XmlUtils.unwrap(						
+						getConfiguredUnmarshaller(false).unmarshal( inputStreamToXSR(is) ));
+				
+				// unmarshalled, so no need to flag for later.
+				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				
 			} catch (UnmarshalException ue) {
+				log.error(ue.getMessage(), ue);
 				
 				if (ue.getLinkedException()!=null 
 						&& ue.getLinkedException().getMessage().contains("entity")) {
@@ -1086,24 +1100,13 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 					// which does support this.
 				
 					log.info("encountered unexpected content; pre-processing");
-					eventHandler.setContinue(true);
 										
 					try {
-						Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 						is.reset();
-						xsr = xif.createXMLStreamReader(is);
-						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
-						XmlUtils.transform(new StAXSource(xsr), 
-								mcPreprocessorXslt, null, result);
-						
-						// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
-						// https://github.com/plutext/docx4j/issues/474
-						
-						jaxbElement = (E) XmlUtils.unwrap(
-								result.getResult() );	
-					} catch (Exception e) {
+					} catch (IOException e) {
 						throw new JAXBException("Preprocessing exception", e);
 					}
+					preprocess(is, true);
 											
 				} else {
 					throw new UnmarshalException("Mark not supported",ue);
@@ -1116,23 +1119,93 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		}
 		return jaxbElement;
     	
-    }	
+    }
+
+	/**
+	 * Transform the content through mcPreprocessorXslt 
+	 * @param is
+	 * @param eventHandlerContinue
+	 * @throws JAXBException
+	 */
+	protected void preprocess(InputStream is, boolean eventHandlerContinue) throws JAXBException {
+
+		// Internally here, we want to unmarshall a DOM node (as opposed to a JAXBResult), since we can set a listener on DOM input.
+		try {
+			jaxbElement = (E) XmlUtils.unwrap(
+					getConfiguredUnmarshaller(eventHandlerContinue).unmarshal( 
+							transformToDom(
+									inputStreamToXSR(is)) ));
+			// unmarshalled, so no need to flag for later.
+			this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+			
+		} catch (Exception e) {
+			throw new JAXBException("Preprocessing exception", e);
+		}
+	}	
+	
+	/**
+	 * Prepare input by transforming via mcPreprocessorXslt,
+	 * outputting a DOM node, which we can use docx4jUnmarshallerListener on.
+	 * 
+	 * @param xsr
+	 * @return
+	 * @throws FactoryConfigurationError
+	 * @throws JAXBException
+	 */
+	protected org.w3c.dom.Document transformToDom(XMLStreamReader xsr)
+			throws FactoryConfigurationError, JAXBException {
+		
+		org.w3c.dom.Document doc = null;
+		try {
+			Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+			DOMResult result = new DOMResult();
+			
+			XmlUtils.transform(new StAXSource(xsr), 
+					mcPreprocessorXslt, null, result);
+			doc = (org.w3c.dom.Document) result.getNode();
+		} catch (Exception e) {
+			throw new JAXBException("Preprocessing exception", e);
+		}
+		return doc;
+	}
+	
+	protected XMLStreamReader inputStreamToXSR(InputStream is) throws XMLStreamException {
+
+		/* To avoid possible XML External Entity Injection attack,
+		 * we need to configure the processor.
+		 * 
+		 * We use STAX XMLInputFactory to do that.
+		 * 
+		 * createXMLStreamReader(is) is 40% slower than unmarshal(is).
+		 * 
+		 * But it seems to be the best we can do ... 
+		 * 
+		 *   org.w3c.dom.Document doc = XmlUtils.getNewDocumentBuilder().parse(is)
+		 *   unmarshal(doc)
+		 * 
+		 * ie DOM is 5x slower than unmarshal(is)
+		 * 
+		 */
+
+		// Guard against XXE
+	    XMLInputFactory xif = XMLInputFactory.newInstance();
+	    xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	    xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+		return xif.createXMLStreamReader(is);
+		
+	}
     
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
-
-			Unmarshaller u = jc.createUnmarshaller();
-			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
-			eventHandler.setContinue(false);
-			u.setEventHandler(eventHandler);
-			
-			Unmarshaller.Listener docx4jUnmarshallerListener = new Docx4jUnmarshallerListener(this);
-			u.setListener(docx4jUnmarshallerListener);
 			
 			try {
 				jaxbElement = (E) XmlUtils.unwrap(
-						u.unmarshal( el ) );
+						getConfiguredUnmarshaller(false).unmarshal( el ) );
+				
+				// unmarshalled, so no need to flag for later.
+				this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+				
 			} catch (UnmarshalException ue) {
 				log.info("encountered unexpected content; pre-processing");
 				try {
@@ -1145,17 +1218,20 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 						// TODO: revisit
 						doc = el.getOwnerDocument();
 					}
-					eventHandler.setContinue(true);
-					JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+					// eventHandler.setContinue(true);
+					// JAXBResult result = XmlUtils.prepareJAXBResult(jc);
+					DOMResult result = new DOMResult();
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 					
-					// NB, no Docx4jUnmarshallerListener here, so mc namespaces won't get detected!
-					// https://github.com/plutext/docx4j/issues/474
-					
 					jaxbElement = (E) XmlUtils.unwrap(
-							result.getResult() );	
+							getConfiguredUnmarshaller(true).unmarshal(
+									(org.w3c.dom.Document) result.getNode() ));
+					
+					// unmarshalled, so no need to flag for later.
+					this.getPackage().getDrawingPropsIdTracker().deregisterPart(this);
+					
 				} catch (Exception e) {
 					throw new JAXBException("Preprocessing exception", e);
 				}

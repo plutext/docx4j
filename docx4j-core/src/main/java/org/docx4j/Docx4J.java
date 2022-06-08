@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.docx4j.convert.out.Documents4jConversionSettings;
 import org.docx4j.convert.out.FOSettings;
+import org.docx4j.convert.out.FopReflective;
 import org.docx4j.convert.out.HTMLSettings;
 import org.docx4j.convert.out.MicrosoftGraphConversionSettings;
 import org.docx4j.convert.out.common.Exporter;
@@ -738,28 +739,8 @@ public class Docx4J {
 			settings.setApacheFopMime("application/pdf");
 			
 			try {
-				/*
-				 *  FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings) ;
-				 */
-				Class foRendererApacheFOPClass = Class.forName("org.docx4j.convert.out.fo.renderers.FORendererApacheFOP");
-				Method method = foRendererApacheFOPClass.getMethod("getFopFactoryBuilder", FOSettings.class );
-	
-				Object fopFactoryBuilder = method.invoke(null, settings);
-				
-				/*
-				 * FopFactory fopFactory = fopFactoryBuilder.build();
-				 */
-				Class fopFactoryBuilderClass = Class.forName("org.apache.fop.apps.FopFactoryBuilder");
-				method = fopFactoryBuilderClass.getDeclaredMethod("build", new Class[0] );						
-				Object fopFactory = method.invoke(fopFactoryBuilder);
-				
-				/*
-				 * FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory); 			
-				 */
-				Method getFOUserAgent = foRendererApacheFOPClass.getMethod("getFOUserAgent", FOSettings.class, 
-						Class.forName("org.apache.fop.apps.FopFactory") );
-				getFOUserAgent.invoke(null, settings, fopFactory);
 
+				FopReflective.invokeFORendererApacheFOP(settings);
 				toFO(settings, outputStream, FLAG_NONE);
 				
 			} catch (Exception e) {

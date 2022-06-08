@@ -30,7 +30,7 @@ import org.docx4j.dml.CTShapeProperties;
  *         &lt;element name="dataLabels" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_DataLabels" minOccurs="0"/&gt;
  *         &lt;element name="dataId" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_DataId" minOccurs="0"/&gt;
  *         &lt;element name="layoutPr" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_SeriesLayoutProperties" minOccurs="0"/&gt;
- *         &lt;element name="axisId" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}ST_AxisId" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="axisId" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_AxisId" maxOccurs="unbounded" minOccurs="0"/&gt;
  *         &lt;element name="extLst" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}CT_ExtensionList" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *       &lt;attribute name="layoutId" use="required" type="{http://schemas.microsoft.com/office/drawing/2014/chartex}ST_SeriesLayout" /&gt;
@@ -68,9 +68,7 @@ public class CTSeries {
     protected CTDataLabels dataLabels;
     protected CTDataId dataId;
     protected CTSeriesLayoutProperties layoutPr;
-    @XmlElement(type = Long.class)
-    @XmlSchemaType(name = "unsignedInt")
-    protected List<Long> axisId;
+    protected List<CTAxisId> axisId;
     protected CTExtensionList extLst;
     @XmlAttribute(name = "layoutId", required = true)
     protected STSeriesLayout layoutId;
@@ -300,13 +298,13 @@ public class CTSeries {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Long }
+     * {@link CTAxisId }
      * 
      * 
      */
-    public List<Long> getAxisId() {
+    public List<CTAxisId> getAxisId() {
         if (axisId == null) {
-            axisId = new ArrayList<Long>();
+            axisId = new ArrayList<CTAxisId>();
         }
         return this.axisId;
     }

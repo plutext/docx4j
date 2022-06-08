@@ -24,7 +24,7 @@
 
 package org.docx4j.fonts.fop.fonts;
 
-import org.apache.fop.events.EventBroadcaster;
+import org.docx4j.org.apache.fop.events.EventBroadcaster;
 
 /**
  * Event listener interface for font-related events. This interface extends FontEventListener

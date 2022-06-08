@@ -12,6 +12,8 @@
 
 	<logger name="org.apache.commons" level="WARN" />
 	<logger name="org.apache.fop" level="INFO" />
+	<logger name="org.apache.fontbox" level="INFO" /> <!-- XHTML Import -->
+	<logger name="org.apache.pdfbox" level="INFO" /> <!-- XHTML Import -->
 
 <!--  o.a.x.i.loader.spi.ImageImplRegistry -->
 	<logger name="org.apache.xmlgraphics.image.loader" level="INFO" />
@@ -50,7 +52,7 @@
 	<!-- PDF output via XSL FO: change this to warn to hide messages -->
 	<logger
 		name="org.docx4j.convert.out.common.writer.AbstractMessageWriter"
-		level="INFO" />
+		level="DEBUG" />
 
 	<logger name="org.docx4j.convert.out.fo" level="WARN" />
 

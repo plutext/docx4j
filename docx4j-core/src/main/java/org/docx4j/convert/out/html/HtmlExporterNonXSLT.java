@@ -56,7 +56,8 @@ public class HtmlExporterNonXSLT {
 		try {
 			htmlSettings.setOpcPackage(wordMLPackage);
 		} catch (Docx4JException e) {
-			e.printStackTrace();
+			// Won't happen
+			log.error(e.getMessage(), e);
 		}
 		htmlSettings.setImageHandler(conversionImageHandler);
 	}

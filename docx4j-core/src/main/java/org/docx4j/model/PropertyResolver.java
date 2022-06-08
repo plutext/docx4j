@@ -491,11 +491,15 @@ public class PropertyResolver {
 					log.debug(XmlUtils.marshaltoString(pPr, true, true));
 				}
 			} else {
-				log.debug("pstyle:" + pPr.getPStyle().getVal());
+				if (log.isDebugEnabled()) {
+					log.debug("pstyle:" + pPr.getPStyle().getVal());
+				}
 				RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
 				// .. and apply those
 				
-				log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
+				if (log.isDebugEnabled()) {
+					log.debug("Resulting pPrLevelRunStyle: " + XmlUtils.marshaltoString(pPrLevelRunStyle));
+				}
 				
 				return getEffectiveRPrUsingPStyleRPr(expressRPr, pPrLevelRunStyle);
 			}

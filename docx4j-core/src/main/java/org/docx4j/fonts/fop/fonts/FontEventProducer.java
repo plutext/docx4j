@@ -24,8 +24,8 @@
 
 package org.docx4j.fonts.fop.fonts;
 
-import org.apache.fop.events.EventBroadcaster;
-import org.apache.fop.events.EventProducer;
+import org.docx4j.org.apache.fop.events.EventBroadcaster;
+import org.docx4j.org.apache.fop.events.EventProducer;
 
 /**
  * Event producer for fonts-related events.
