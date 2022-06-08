@@ -403,7 +403,7 @@ public class XmlUtils {
 //		if (o instanceof x) {
 //			
 //		}
-//		else if (o instanceof jakarta.xml.bind.JAXBElement) {
+//		else if (o instanceof javax.xml.bind.JAXBElement) {
 //			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 //			return ((JAXBElement)o).getValue();
 //		} else {
@@ -424,10 +424,10 @@ public class XmlUtils {
 		}
 		if (prefix!=null) {
 			return  prefix + ':' + o.getName().getLocalPart() 
-				+ " is a jakarta.xml.bind.JAXBElement; it has declared type " 
+				+ " is a javax.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 
 		} else {
-			return  o.getName() + " is a jakarta.xml.bind.JAXBElement; it has declared type " 
+			return  o.getName() + " is a javax.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 			
 		}
 		
