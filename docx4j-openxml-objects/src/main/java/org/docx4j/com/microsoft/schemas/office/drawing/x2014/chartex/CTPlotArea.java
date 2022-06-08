@@ -77,7 +77,7 @@ public class CTPlotArea {
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the Jakarta XML Binding object.
+     * returned list will be present inside the javax XML Binding object.
      * This is why there is not a <CODE>set</CODE> method for the axis property.
      * 
      * <p>
