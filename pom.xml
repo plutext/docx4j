@@ -13,7 +13,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.7</revision>
+		<revision>8.3.8-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->

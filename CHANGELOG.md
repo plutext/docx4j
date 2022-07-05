@@ -1,6 +1,30 @@
 CHANGELOG
 =========
 
+Version 8.3.5  (minor release)
+==============
+
+Release date
+------------
+
+6 July 2022
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 8.3.8 
+-------------------------
+
+convertAltChunks changes: this method now does the conversion in situ (ie rather than cloning the pkg),
+for efficiency (eg where the docx contains many altChunks including in its headers/footers). 
+Now supports .mht altChunks (as produced by BIRT) via docx4j-ImportXHTML.
+This method now does not convert docx altChunks.  Convert docx altChunks has always required the MergeDocx component
+of Docx4j Enterprise; users wishing to convert docx altChunks should use that directly.
+	 
+
 
 Version 8.3.4  (legacy update)
 ==============
