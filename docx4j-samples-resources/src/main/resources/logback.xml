@@ -35,6 +35,8 @@
 
 	<logger name="org.docx4j.convert.in.xhtml.ListHelper" level="WARN" />
 
+	<logger name="org.docx4j.convert.in.xhtml.MHTContentHandler" level="INFO" />
+
 	<logger name="org.docx4j.convert.out" level="WARN" />
 
 	<logger
