@@ -19,6 +19,7 @@
  */
 package org.docx4j.openpackaging.parts;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -191,37 +192,31 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		return afiPart;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface#processAltChunksOfTypeHTML()
-	 */
-	/**
-	 * To convert an altChunk of type XHTML, this method requires docx4j-XHTMLImport.jar (LGPL) and its dependencies.
-	 * */
-	@Override
-	public WordprocessingMLPackage convertAltChunks() throws Docx4JException {
 		
-		// TODO: Currently only processes AltChunks in main document part.
-
+	@SuppressWarnings("unchecked")
+	@Override
+	public void convertAltChunks() throws Docx4JException {
+		
 		if (!(this instanceof ContentAccessor)) {
 				throw new Docx4JException(this.getClass().getName() + " doesn't implement ContentAccessor");
 		}	
 		PartName partName = this.getPartName();
-				
-		WordprocessingMLPackage clonePkg = (WordprocessingMLPackage)this.getPackage().clone(); // consistent with MergeDocx approach
-		JaxbXmlPartAltChunkHost clonedPart = (JaxbXmlPartAltChunkHost)clonePkg.getParts().get(partName); 
-				
-		List<Object> contentList = ((ContentAccessor)clonedPart).getContent();
+		
+		List<Object> contentList = ((ContentAccessor)this).getContent();
 		
 	    AltChunkFinder bf = new AltChunkFinder();
 		new TraversalUtil(contentList, bf);
 
 		CTAltChunk altChunk;
 		boolean encounteredDocxAltChunk = false;
+		log.info("Detected " + bf.getAltChunks().size() );
 		for (LocatedChunk locatedChunk : bf.getAltChunks()) {
+			
+			boolean deleteThisAltChunk = false;
 			
 			altChunk = locatedChunk.getAltChunk();
 			AlternativeFormatInputPart afip 
-				=  (AlternativeFormatInputPart)clonedPart.getRelationshipsPart().getPart(
+				=  (AlternativeFormatInputPart)this.getRelationshipsPart().getPart(
 						altChunk.getId() );
 			
 			// Can we process it?
@@ -231,26 +226,35 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				
 				log.warn("Unrecognized type for part " + afip.getPartName().getName() );
 				
-			} else if (type.equals(AltChunkType.Xhtml) ) {
+			} else if (type.equals(AltChunkType.Xhtml)
+					|| type.equals(AltChunkType.Mht)  ) {
 				
 				Object xHTMLImporter= null;
 				Method convertMethod = null;
 			    try {
 			    	Class<?> xhtmlImporterClass = Class.forName("org.docx4j.convert.in.xhtml.XHTMLImporterImpl");
 				    Constructor<?> ctor = xhtmlImporterClass.getConstructor(WordprocessingMLPackage.class);
-				    xHTMLImporter = ctor.newInstance(clonePkg);
-			        convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class );
+				    xHTMLImporter = ctor.newInstance(this.getPackage()); // OpcPackage, but that's ok.
+				    if (type.equals(AltChunkType.Xhtml)) {
+				    	convertMethod = xhtmlImporterClass.getMethod("convert", InputStream.class, String.class );
+				    } else {
+				    	convertMethod = xhtmlImporterClass.getMethod("convertMHT", InputStream.class, String.class );				    	
+				    }
+			        
+			        if (convertMethod==null) {
+			        	throw new Docx4JException("XHTMLImporterImpl convertMethod not found");
+			        }
 			    } catch (Exception e) {
 			        log.warn("docx4j-XHTMLImport jar not found. Please add this to your classpath.");
 					log.warn(e.getMessage(), e);
-					return null;
+					return;
 			    }		
 				
 	            List<Object> results = null;
 				try {
-					
 					// results = xHTMLImporter.convert(toString(afip.getBuffer()), null);
-			        results = (List<Object>)convertMethod.invoke(null, afip.getBuffer(), null);					
+					ByteArrayInputStream bais = new ByteArrayInputStream(afip.getBytes());
+			        results = (List<Object>)convertMethod.invoke(xHTMLImporter, bais, null);					
 					
 				} catch (Exception e) {
 					log.error(e.getMessage(), e);
@@ -262,16 +266,16 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				locatedChunk.getContentList().remove(index); // handles case where it is nested eg in a tc
 				locatedChunk.getContentList().addAll(index, results);	
 				
-				log.info("Converted altChunk of type XHTML ");
+				log.info(afip.getPartName().getName() + "; Converted altChunk of type XHTML ");
 				
-			} else if (type.equals(AltChunkType.Mht) ) {
-				log.warn("Skipping altChunk of type MHT ");
-				continue;
+				deleteThisAltChunk = true;
+				
 			} else if (type.equals(AltChunkType.Xml) ) {
 //				log.warn("Skipping altChunk of type XML "); // what does Word do??
 				// Assume its Flat OPC XML
-				encounteredDocxAltChunk = true;
+				log.warn(afip.getPartName().getName() + " is AltChunkType.Xml; assuming this is Flat OPC XML, use Docx4j Enterprise MergeDocx to convert this." );				
 				continue;
+				
 			} else if (type.equals(AltChunkType.TextPlain) ) {
 				
 				String result= null;
@@ -299,81 +303,35 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 					run.getContent().add(t);		
 					
 					
-					log.info("Converted altChunk of type text ");
+					log.info(afip.getPartName().getName() + "; Converted altChunk of type text ");
+					deleteThisAltChunk = true;
 				}
 
 			} else if (type.equals(AltChunkType.WordprocessingML)
 					 || type.equals(AltChunkType.OfficeWordMacroEnabled)
 					 || type.equals(AltChunkType.OfficeWordTemplate)
 					 ||type.equals(AltChunkType.OfficeWordMacroEnabledTemplate) ) {
-				encounteredDocxAltChunk = true;
+				
+				log.warn(afip.getPartName().getName() + " is " + type.getContentType() + "; use Docx4j Enterprise MergeDocx to convert this." );				
 				continue;
 				
 			} else if (type.equals(AltChunkType.Rtf) ) {
-				log.warn("Skipping altChunk of type RTF ");
+				log.warn(afip.getPartName().getName() + "; skipping altChunk of type RTF ");
 				continue;
 			} else if (type.equals(AltChunkType.Html) ) {
-				log.warn("Skipping altChunk of type HTML ");
+				log.warn(afip.getPartName().getName() + "; skipping altChunk of type HTML ");
 				continue;
 				// if there was a pretty printer on class path,
 				// could use it via reflection?
 			}
-						
+					
+			
+			if (deleteThisAltChunk) {
+				// Now delete the original part				
+				this.getRelationshipsPart().removePart(afip.getPartName());
+			}
 		}
 		
-		if (encounteredDocxAltChunk) {
-			
-			// Docx AltChunks are handled by MergeDocx, if available
-			try {
-				// Use reflection, so docx4j can be built
-				// by users who don't have the MergeDocx utility
-				Class<?> documentBuilder = Class.forName("com.plutext.merge.altchunk.ProcessAltChunk");			
-				//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
-				Method[] methods = documentBuilder.getMethods(); 
-				Method method = null;
-				for (int j=0; j<methods.length; j++) {
-					//log.debug(methods[j].getName());
-					if (methods[j].getName().equals("process")
-							&& methods[j].getParameterTypes().length==1) {
-						method = methods[j];
-						break;
-					}
-				}			
-				if (method==null) {
-					// User doesn't have MergeDocx
-					throw new NoSuchMethodException();
-				}
-				
-				// User has MergeDocx
-				return (WordprocessingMLPackage)method.invoke(null, clonePkg);
-				
-			} catch (SecurityException e) {
-				log.error(e.getMessage(), e);
-				log.warn("Skipping altChunk of type docx ");
-				return clonePkg;
-			} catch (ClassNotFoundException e) {
-				extensionMissing(e);
-				return clonePkg;
-			} catch (IllegalArgumentException e) {
-				log.error(e.getMessage(), e);
-				log.warn("Skipping altChunk of type docx ");
-				return clonePkg;
-			} catch (NoSuchMethodException e) {
-				extensionMissing(e);
-				return clonePkg;
-			} catch (IllegalAccessException e) {
-				log.error(e.getMessage(), e);
-				log.warn("Skipping altChunk of type docx ");
-				return clonePkg;
-			} catch (InvocationTargetException e) {
-				log.error(e.getMessage(), e);
-				log.warn("Skipping altChunk of type docx ");
-				return clonePkg;
-			} 
-			
-		} else {
-			return clonePkg;
-		}
 	}
 	
 	private void extensionMissing(Exception e) {

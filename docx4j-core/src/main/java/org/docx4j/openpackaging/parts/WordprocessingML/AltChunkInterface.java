@@ -147,12 +147,14 @@ public interface AltChunkInterface {
 	
 	
 	/**
-	 * Convert the AltChunks to ordinary 
-	 * docx WordML content, returning result as
-	 * a new WordprocessingMLPackage.
+	 * Convert altChunks in this part to ordinary docx WordML content.
 	 * 
-	 */
-	public WordprocessingMLPackage convertAltChunks() throws Docx4JException;
+	 * To convert an altChunk of type XHTML, this method requires docx4j-XHTMLImport.jar (LGPL) and its dependencies.
+	 * 
+	 * Since 11.4.8, this method does the conversion in situ (ie rather than cloning the pkg), 
+	 * and does not convert docx altChunks.  To handle those, use the MergeDocx component of Docx4j Enterprise.
+	 * */
+	public void convertAltChunks() throws Docx4JException;
 		
 	
 }
