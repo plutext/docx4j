@@ -110,8 +110,7 @@ public class BinaryRC4Encryptor extends Encryptor {
 
     public OutputStream getDataStream(DirectoryNode dir)
     throws IOException, GeneralSecurityException {
-        OutputStream countStream = new BinaryRC4CipherOutputStream(dir);
-        return countStream;
+        return new BinaryRC4CipherOutputStream(dir);
     }
 
     protected int getKeySizeInBytes() {

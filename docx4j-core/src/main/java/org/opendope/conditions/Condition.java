@@ -157,11 +157,11 @@ public class Condition implements Evaluable {
 						// so fall through to default handling
 						
 					} else /* use the cached value */ {
-						boolean result = (tmpPath.equals("string(" + path + ")='"+val +"'"));
+						boolean result = (tmpPath.equals("string(" + path + ")='"+val + '\''));
 						
 						if (result==false) {
 							// try again ignoring whitespace (treat it as insignificant, matching particle.evaluate
-							result = (tmpPath.equals("string(" + path + ")='"+val.trim() +"'"));
+							result = (tmpPath.equals("string(" + path + ")='"+val.trim() + '\''));
 						}
 						
 						if (log.isDebugEnabled()) {
@@ -203,16 +203,16 @@ public class Condition implements Evaluable {
 					// or avoid OpenDoPEHandler.ENABLE_XPATH_CACHE
 					
 					String[] segments = path.split("/");
-					StringBuffer sb = new StringBuffer(); 
+					StringBuilder sb = new StringBuilder();
 				     for (int x=0; x<segments.length; x++) {
 				    	 if ("".equals(segments[x])) {
-				    	 } else if (segments[x].endsWith("]")) {
+				    	 } else if (!segments[x].isEmpty() && segments[x].charAt(segments[x].length() - 1) == ']') {
 				    		 sb.append(segments[x]);
 				    	 } else {
-				    		 sb.append(segments[x]+"[1]");			    		 
+				    		 sb.append(segments[x]).append("[1]");
 				    	 }
 				    	 if (x<segments.length-1) {
-				    		 sb.append("/");				    		 
+				    		 sb.append('/');
 				    	 }
 				     }
 //		    		 log.debug("Input:  " + path);
@@ -280,13 +280,13 @@ public class Condition implements Evaluable {
 	
 	private  String extractPath(String xpath) {
 		
-		int firstBracket = xpath.indexOf("(");
-		int lastBracket = xpath.indexOf(")");
+		int firstBracket = xpath.indexOf('(');
+		int lastBracket = xpath.indexOf(')');
 		
 		try {
 			return xpath.substring(firstBracket+1, lastBracket);
 		} catch (java.lang.StringIndexOutOfBoundsException e) {
-			log.error(xpath + ".substring(" + firstBracket+1 +", " + lastBracket + ")");
+			log.error(xpath + ".substring(" + firstBracket+1 +", " + lastBracket + ')');
 			throw e;
 			
 		}
@@ -373,7 +373,7 @@ public class Condition implements Evaluable {
 			newCondition = XmlUtils.deepCopy(this);			
 		}
 
-		String newConditionId = id + "_" + index;
+		String newConditionId = id + '_' + index;
 		newCondition.setId(newConditionId);
 
 		// Add it
@@ -389,8 +389,8 @@ public class Condition implements Evaluable {
 				log.debug("Duplicate identical Condition being added: " + newCondition.getId());
 			} else {
 				log.error("Duplicate Condition " + newCondition.getId() + ": "
-						+ "\n"+ newC + " overwriting "
-						+ "\n"+ preExisting);				
+						+ '\n' + newC + " overwriting "
+						+ '\n' + preExisting);
 			}
 		}
 		

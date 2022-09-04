@@ -292,7 +292,7 @@ public class Java2DFontMetrics {
         return width;
     }
 
-    private Font getBaseFont(String family, int style, float size) {
+    private static Font getBaseFont(String family, int style, float size) {
         Map atts = new java.util.HashMap();
         atts.put(TextAttribute.FAMILY, family);
         if ((style & Font.BOLD) != 0) {
@@ -324,7 +324,7 @@ public class Java2DFontMetrics {
             changed = true;
         } else {
             if ((this.style != style) || !this.family.equals(family)
-                    || this.size != s) {
+                    || Double.compare(this.size, s) != 0) {
                 if (family.equals(this.family)) {
                     f1 = f1.deriveFont(style, s);
                 } else {

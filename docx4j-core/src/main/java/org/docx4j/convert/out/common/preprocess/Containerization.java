@@ -101,14 +101,10 @@ public class Containerization {
 						.getJaxbElement().getContent();
 			} else if (Namespaces.ENDNOTES.equals(rs.getType())) {
 				//elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
-				elementList = new ArrayList();
-				elementList.addAll(
-						((EndnotesPart) relPart.getPart(rs)).getJaxbElement().getEndnote() );
+				elementList = new ArrayList(((EndnotesPart) relPart.getPart(rs)).getJaxbElement().getEndnote());
 			} else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
 				//elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
-				elementList = new ArrayList();
-				elementList.addAll(
-						((FootnotesPart) relPart.getPart(rs)).getJaxbElement().getFootnote() );
+				elementList = new ArrayList(((FootnotesPart) relPart.getPart(rs)).getJaxbElement().getFootnote());
 			} else if (Namespaces.COMMENTS.equals(rs.getType())) {
 				elementList = new ArrayList();
 				for (Comment comment : ((CommentsPart) relPart
@@ -324,12 +320,7 @@ public class Containerization {
 	}
 
 	private static RPr findBlockRPr(SdtBlock currentBlock) {
-		for (Object obj:currentBlock.getSdtPr().getRPrOrAliasOrLock()) {
-			if (obj instanceof RPr) {
-				return (RPr)obj;
-			}
-		}
-		return null;
+		return (RPr) currentBlock.getSdtPr().getRPrOrAliasOrLock().stream().filter(obj -> obj instanceof RPr).findFirst().orElse(null);
 	}
 
 	private static SdtBlock createSdt(String tagVal) {

@@ -171,12 +171,12 @@ public class CFFDataReader {
                     lastOperandLength += 1;
                     operandLengths.add(1);
                 } else if (readByte >= 247 && readByte <= 250) {
-                    operands.add((readByte - 247) * 256 + (dictData[i + 1] & 0xFF) + 108);
+                    operands.add(((readByte - 247) << 8) + (dictData[i + 1] & 0xFF) + 108);
                     lastOperandLength += 2;
                     operandLengths.add(2);
                     i++;
                 } else if (readByte >= 251 && readByte <= 254) {
-                    operands.add(-(readByte - 251) * 256 - (dictData[i + 1] & 0xFF) - 108);
+                    operands.add((-(readByte - 251) << 8) - (dictData[i + 1] & 0xFF) - 108);
                     lastOperandLength += 2;
                     operandLengths.add(2);
                     i++;
@@ -217,11 +217,11 @@ public class CFFDataReader {
             realNumber.append(nibble);
         } else {
             switch (nibble) {
-            case 0xa: realNumber.append("."); break;
-            case 0xb: realNumber.append("E"); break;
+            case 0xa: realNumber.append('.'); break;
+            case 0xb: realNumber.append('E'); break;
             case 0xc: realNumber.append("E-"); break;
             case 0xd: break;
-            case 0xe: realNumber.append("-"); break;
+            case 0xe: realNumber.append('-'); break;
             case 0xf: return true;
             default:  throw new AssertionError("Unexpected nibble value");
             }
@@ -359,7 +359,7 @@ public class CFFDataReader {
         int charsetFormat = cffData.readCard8();
         switch (charsetFormat) {
         case 0: //Adjust for .notdef character
-                 cffData.setPosition(cffData.getPosition() + (--gid * 2));
+                 cffData.setPosition(cffData.getPosition() + (--gid << 1));
                  return cffData.readSID();
         case 1: return getSIDFromGIDFormat(gid, 1);
         case 2: return getSIDFromGIDFormat(gid, 2);
@@ -442,13 +442,7 @@ public class CFFDataReader {
             }
         } else if (fontDictionary instanceof Format3FDSelect) {
             Format3FDSelect fdSelect = (Format3FDSelect)fontDictionary;
-            int index = 0;
-            for (int first : fdSelect.getRanges().keySet()) {
-                if (first > glyph) {
-                    break;
-                }
-                index++;
-            }
+            int index = (int) fdSelect.getRanges().keySet().stream().mapToInt(first -> first).takeWhile(first -> first <= glyph).count();
             FontDict font = getFDFonts().get(index);
             byte[] localSubrsData = font.getLocalSubrData().getByteData();
             if (localSubrsData != null) {

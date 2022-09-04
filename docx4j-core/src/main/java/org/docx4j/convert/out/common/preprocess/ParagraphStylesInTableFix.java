@@ -73,7 +73,7 @@ import java.util.Set;
  */
 public class ParagraphStylesInTableFix {
 	
-	protected static Logger log = LoggerFactory.getLogger(ParagraphStylesInTableFix.class);	
+	protected static final Logger log = LoggerFactory.getLogger(ParagraphStylesInTableFix.class);
 	
 	private static final CTCompatSetting defaultSetting; // see comments on overrideTableStyleFontSizeAndJustification at line 350 below
 	
@@ -96,8 +96,8 @@ public class ParagraphStylesInTableFix {
 		Throwable t = new Throwable();
 		StackTraceElement[] trace = t.getStackTrace();
 //		boolean inFOPAreaTreeHelper=false;
-		for (int i=0; i < trace.length; i++) {
-			if (trace[i].getClassName().contains("FOPAreaTreeHelper")) {
+		for (StackTraceElement stackTraceElement : trace) {
+			if (stackTraceElement.getClassName().contains("FOPAreaTreeHelper")) {
 				return;  // don't do this, especially changing overrideTableStyleFontSizeAndJustification!
 			}
 		}
@@ -168,7 +168,7 @@ public class ParagraphStylesInTableFix {
 	
 	public static class StyleRenamer extends CallbackImpl {
 		
-		protected static Logger log = LoggerFactory.getLogger(StyleRenamer.class);
+		protected static final Logger log = LoggerFactory.getLogger(StyleRenamer.class);
 		
 		CTCompatSetting overrideTableStyleFontSizeAndJustification=defaultSetting; // see comments on overrideTableStyleFontSizeAndJustification at line 350 below
 		
@@ -203,7 +203,7 @@ public class ParagraphStylesInTableFix {
 //	    private String docDefaultsCharacterStyle="DocDefaultsChar";
 	    
 		
-	    private LinkedList<Tbl> tblStack = new LinkedList<Tbl>();
+	    private final LinkedList<Tbl> tblStack = new LinkedList<>();
 	    // We don’t have to treat nested tables in any special way, 
 	    // since a nested table does not inherit any of the properties of its parent table.
 		
@@ -212,7 +212,7 @@ public class ParagraphStylesInTableFix {
 	    public void setStyles(Styles newStyles) {
 	    	
 //	    	this.newStyles = newStyles;
-	    	allStyles = new HashMap<String,Style>(); 
+	    	allStyles = new HashMap<>();
 //	    	cellPStyles = new HashSet<String>(); 
 	    	
 	    	for (Style s : newStyles.getStyle()) {
@@ -220,14 +220,14 @@ public class ParagraphStylesInTableFix {
 	    		allStyles.put(s.getStyleId(), s);
 	    	}
 	    }
-	    private Set<String> cellPStyles=new HashSet<String>(); 
+	    private final Set<String> cellPStyles = new HashSet<>();
 	    
 	    
 	    private boolean isFalse(CTCompatSetting overrideTableStyleFontSizeAndJustification) {
 	    	
 	    	return  ( overrideTableStyleFontSizeAndJustification.getVal().equals("0")
-					|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("false")
-					|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("no")
+					|| overrideTableStyleFontSizeAndJustification.getVal().equalsIgnoreCase("false")
+					|| overrideTableStyleFontSizeAndJustification.getVal().equalsIgnoreCase("no")
 					);
 	    }
 	    
@@ -262,7 +262,7 @@ public class ParagraphStylesInTableFix {
 				effectiveFontSize=effectiveRPr.getSz();
 			}
 			
-			String tableStyle=null;
+			String tableStyle;
 			TblPr tblPr = tblStack.peek().getTblPr(); 
 			if (tblPr!=null && tblPr.getTblStyle()!=null) {
 				tableStyle = tblPr.getTblStyle().getVal();
@@ -283,13 +283,13 @@ public class ParagraphStylesInTableFix {
 					if (tableStyle==null) {
                         if(log.isErrorEnabled()) {
                             log.error("Default table style has no ID!");
-                            log.error(XmlUtils.marshaltoString(tableStyle));
+                            log.error(XmlUtils.marshaltoString(null));
                         }
 						return null;						
 					}
 				}
 			}
-			String resultStyleID = styleVal+"-"+tableStyle;
+			String resultStyleID = styleVal+ '-' +tableStyle;
 			if (tableStyle.endsWith("-BR")) {
 				// don't want to add this twice
 			} else {
@@ -299,8 +299,7 @@ public class ParagraphStylesInTableFix {
 			if (cellPStyles.contains(resultStyleID)) return resultStyleID;
 			
 			List<Style> hierarchy = new ArrayList<Style>();
-			
-			Style basedOn = null;
+
 			String currentStyle = styleVal;
 			do {
 				Style thisStyle = allStyles.get(currentStyle);
@@ -335,56 +334,54 @@ public class ParagraphStylesInTableFix {
 			// Next, table style - first/temporarily in tableStyleContrib
 			Style tableStyleContrib = null;
 			List<Style> tblStyles = new ArrayList<Style>();
-			if (tableStyle!=null) {
-				currentStyle = tableStyle;
-	    		do {
-	    			log.debug(currentStyle);			    			
-	    			Style thisStyle = allStyles.get(currentStyle);
-	    			
-	    			if (thisStyle==null) {
-	    				log.info("Missing " + currentStyle);
-	    				currentStyle = null;
-	    			} else {
-	    			
-		    			if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element 
-		    					&& "Normal Table".equals(thisStyle.getName().getVal())) {
-		    				// Very surprising, but testing using Word 2010 SP1,
-		    				// it turns out that table style with name "Normal Table" 
-		    				// is IGNORED (whatever its ID, and whether default or not)!! 
-		    				// Change the name to something
-		    				// else, and it is given effect! GO figure..
-		    				//TBD how localisation affects this.
-		    				// In theory, this style could be based on
-		    				// another.  Haven't tested to see whether that is
-		    				// honoured or not. Assume not.
-		    				break;
-		    			}
-		    			
-		    			tblStyles.add(thisStyle);
-		    			
-		    			if (thisStyle.getBasedOn()!=null) {
-		    				currentStyle = thisStyle.getBasedOn().getVal();
-		    			} else {
-		    				currentStyle = null;
-		    			}
-	    			
-	    			}
-	    		} while (currentStyle != null);
+			currentStyle = tableStyle;
+			do {
+				log.debug(currentStyle);
+				Style thisStyle = allStyles.get(currentStyle);
 
-	    		for (int i = tblStyles.size()-1; i>=0; i--) {
-	    			styleToApply = tblStyles.get(i);
-                    if(log.isDebugEnabled()) {
-                        log.debug("Applying " + styleToApply.getStyleId() + "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+				if (thisStyle==null) {
+					log.info("Missing " + currentStyle);
+					currentStyle = null;
+				} else {
 
-                    }
-	    			
-	    			tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
-                    if(log.isDebugEnabled()) {
-                        log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
-                    }
-	    		}
+					if ( thisStyle.getName() !=null  // Google Docs Nov 2014 creates table styles without a w:name element
+							&& "Normal Table".equals(thisStyle.getName().getVal())) {
+						// Very surprising, but testing using Word 2010 SP1,
+						// it turns out that table style with name "Normal Table"
+						// is IGNORED (whatever its ID, and whether default or not)!!
+						// Change the name to something
+						// else, and it is given effect! GO figure..
+						//TBD how localisation affects this.
+						// In theory, this style could be based on
+						// another.  Haven't tested to see whether that is
+						// honoured or not. Assume not.
+						break;
+					}
+
+					tblStyles.add(thisStyle);
+
+					if (thisStyle.getBasedOn()!=null) {
+						currentStyle = thisStyle.getBasedOn().getVal();
+					} else {
+						currentStyle = null;
+					}
+
+				}
+			} while (currentStyle != null);
+
+			for (int i = tblStyles.size()-1; i>=0; i--) {
+				styleToApply = tblStyles.get(i);
+				if(log.isDebugEnabled()) {
+					log.debug("Applying " + styleToApply.getStyleId() + '\n' + XmlUtils.marshaltoString(styleToApply, true, true));
+
+				}
+
+				tableStyleContrib = StyleUtil.apply(styleToApply, tableStyleContrib);
+				if(log.isDebugEnabled()) {
+					log.debug(XmlUtils.marshaltoString(tableStyleContrib, true, true));
+				}
 			}
-			
+
 			if (tableStyleContrib==null) {
 				// will happen if the style was Normal Table, since we break above..
 				// .. so just make an empty object, to avoid having to do isNull tests below..
@@ -418,12 +415,12 @@ public class ParagraphStylesInTableFix {
 				styleToApply = hierarchy.get(i);
                 if(log.isDebugEnabled()) {
                     log.debug("Applying " + styleToApply.getStyleId() +
-                            "\n" + XmlUtils.marshaltoString(styleToApply, true, true));
+							'\n' + XmlUtils.marshaltoString(styleToApply, true, true));
                 }
 				StyleUtil.apply(styleToApply, newStyle);
                 if(log.isDebugEnabled()) {
                     log.debug("Result: " +
-                            "\n" + XmlUtils.marshaltoString(newStyle, true, true));
+							'\n' + XmlUtils.marshaltoString(newStyle, true, true));
                 }
 			}
 			

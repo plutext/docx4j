@@ -348,19 +348,19 @@ public final class StyleDefinitionsPart extends JaxbXmlPartXPathAware<Styles> {
     }
     
     
-	final static String wNamespaceDec = " xmlns:w=\"" + Namespaces.NS_WORD12 + "\""; 
+	final static String wNamespaceDec = " xmlns:w=\"" + Namespaces.NS_WORD12 + '"';
 
-	public final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + ">"
+	public final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + '>'
 		// Word 2007 still uses Times New Roman if there is no theme part, and we'd like to replicate that 
         // + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" />"
         + "<w:sz w:val=\"20\" />"  // was 11 prior to 3.01, but Word default in absence of this setting is 10.
         + "<w:szCs w:val=\"20\" />"
         + "<w:lang w:val=\"en-US\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\" />"
       + "</w:rPr>";
-	public final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + ">"
+	public final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + '>'
 	        + "<w:spacing w:after=\"200\" w:line=\"276\" w:lineRule=\"auto\" />"
 	      + "</w:pPr>";
-	public final static String docDefaultsString = "<w:docDefaults" + wNamespaceDec + ">"
+	public final static String docDefaultsString = "<w:docDefaults" + wNamespaceDec + '>'
 	    + "<w:rPrDefault>"
 	    + 	rPrDefaultsString
 	    + "</w:rPrDefault>"

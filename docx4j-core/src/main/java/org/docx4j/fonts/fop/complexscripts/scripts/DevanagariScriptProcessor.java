@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.docx4j.fonts.fop.complexscripts.util.CharAssociation;
 import org.docx4j.fonts.fop.complexscripts.util.GlyphSequence;
 
+import java.util.stream.IntStream;
+
 // CSOFF: LineLengthCheck
 
 /**
@@ -55,15 +57,7 @@ public class DevanagariScriptProcessor extends IndicScriptProcessor {
     // find rightmost pre-base matra
     protected int findPreBaseMatra(GlyphSequence gs) {
         int   ng = gs.getGlyphCount();
-        int   lk = -1;
-        for (int i = ng; i > 0; i--) {
-            int k = i - 1;
-            if (containsPreBaseMatra(gs, k)) {
-                lk = k;
-                break;
-            }
-        }
-        return lk;
+        return IntStream.iterate(ng, i -> i > 0, i -> i - 1).map(i -> i - 1).filter(k -> containsPreBaseMatra(gs, k)).findFirst().orElse(-1);
     }
 
     @Override
@@ -116,14 +110,7 @@ public class DevanagariScriptProcessor extends IndicScriptProcessor {
     @Override
     protected int findReph(GlyphSequence gs) {
         int   ng = gs.getGlyphCount();
-        int   li = -1;
-        for (int i = 0; i < ng; i++) {
-            if (containsReph(gs, i)) {
-                li = i;
-                break;
-            }
-        }
-        return li;
+        return IntStream.range(0, ng).filter(i -> containsReph(gs, i)).findFirst().orElse(-1);
     }
 
     @Override

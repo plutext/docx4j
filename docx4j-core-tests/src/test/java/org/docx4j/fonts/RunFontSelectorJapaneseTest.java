@@ -32,7 +32,7 @@ import org.w3c.dom.Element;
 
 public class RunFontSelectorJapaneseTest {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger
 	
 	static String[] expectedFont = { "MS Gothic", "MS Mincho"};
 	static String[] win10Base = { "MS Gothic", "Century"};

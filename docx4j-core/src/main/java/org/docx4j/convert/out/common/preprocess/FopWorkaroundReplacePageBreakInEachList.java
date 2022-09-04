@@ -147,7 +147,7 @@ public class FopWorkaroundReplacePageBreakInEachList {
 	}
 	
 	
-	private boolean isListItem(PPr pPr) {
+	private static boolean isListItem(PPr pPr) {
 
 		return (pPr!=null && pPr.getNumPr()!=null );
 		

@@ -23,6 +23,9 @@ import org.docx4j.com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * Static utility methods pertaining to {@code String} or {@code CharSequence} instances.
  *
@@ -94,12 +97,7 @@ public final class Strings {
     if (string.length() >= minLength) {
       return string;
     }
-    StringBuilder sb = new StringBuilder(minLength);
-    for (int i = string.length(); i < minLength; i++) {
-      sb.append(padChar);
-    }
-    sb.append(string);
-    return sb.toString();
+    return IntStream.range(string.length(), minLength).mapToObj(i -> String.valueOf(padChar)).collect(Collectors.joining("", "", string));
   }
 
   /**
@@ -125,12 +123,7 @@ public final class Strings {
     if (string.length() >= minLength) {
       return string;
     }
-    StringBuilder sb = new StringBuilder(minLength);
-    sb.append(string);
-    for (int i = string.length(); i < minLength; i++) {
-      sb.append(padChar);
-    }
-    return sb.toString();
+    return IntStream.range(string.length(), minLength).mapToObj(i -> String.valueOf(padChar)).collect(Collectors.joining("", string, ""));
   }
 
   /**
@@ -153,7 +146,7 @@ public final class Strings {
 
     // IF YOU MODIFY THE CODE HERE, you must update StringsRepeatBenchmark
     final int len = string.length();
-    final long longSize = (long) len * (long) count;
+    final long longSize = (long) len * count;
     final int size = (int) longSize;
     if (size != longSize) {
       throw new ArrayIndexOutOfBoundsException("Required array size too large: " + longSize);
@@ -309,7 +302,7 @@ public final class Strings {
           o.getClass().getName() + '@' + Integer.toHexString(System.identityHashCode(o));
       // TODO? Logger is created inline with fixed name to avoid forcing Proguard to create another class.
       log.warn("Exception during lenientFormat for " + objectToString, e);
-      return "<" + objectToString + " threw " + e.getClass().getName() + ">";
+      return '<' + objectToString + " threw " + e.getClass().getName() + '>';
     }
   }
 }

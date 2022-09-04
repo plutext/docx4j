@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.docx4j.com.google.common.annotations.GwtCompatible;
@@ -99,10 +101,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
     Cell[] as = cells;
     if (as != null) {
       int n = as.length;
-      for (int i = 0; i < n; ++i) {
-        Cell a = as[i];
-        if (a != null) sum += a.value;
-      }
+      sum += Arrays.stream(as).filter(Objects::nonNull).mapToLong(a -> a.value).sum();
     }
     return sum;
   }
@@ -131,8 +130,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
     base = 0L;
     if (as != null) {
       int n = as.length;
-      for (int i = 0; i < n; ++i) {
-        Cell a = as[i];
+      for (Cell a : as) {
         if (a != null) {
           sum += a.value;
           a.value = 0L;
@@ -171,13 +169,13 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
   /** Returns the {@link #sum} as a {@code float} after a widening primitive conversion. */
   @Override
   public float floatValue() {
-    return (float) sum();
+    return sum();
   }
 
   /** Returns the {@link #sum} as a {@code double} after a widening primitive conversion. */
   @Override
   public double doubleValue() {
-    return (double) sum();
+    return sum();
   }
 
   private void writeObject(ObjectOutputStream s) throws IOException {

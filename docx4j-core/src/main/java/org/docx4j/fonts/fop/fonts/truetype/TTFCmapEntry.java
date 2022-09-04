@@ -30,6 +30,8 @@
 
 package org.docx4j.fonts.fop.fonts.truetype;
 
+import java.util.Objects;
+
 /**
  * The CMap entry contains information of a Unicode range and the
  * the glyph indexes related to the range
@@ -58,13 +60,16 @@ public class TTFCmapEntry {
     public boolean equals(Object o) {
         if (o instanceof TTFCmapEntry) {
             TTFCmapEntry ce = (TTFCmapEntry)o;
-            if (ce.unicodeStart == this.unicodeStart
+            return ce.unicodeStart == this.unicodeStart
                     && ce.unicodeEnd == this.unicodeEnd
-                    && ce.glyphStartIndex == this.glyphStartIndex) {
-                return true;
-            }
+                    && ce.glyphStartIndex == this.glyphStartIndex;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(unicodeStart, unicodeEnd, glyphStartIndex);
     }
 
     /**

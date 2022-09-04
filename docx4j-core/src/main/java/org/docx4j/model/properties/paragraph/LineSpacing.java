@@ -33,7 +33,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class LineSpacing extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(LineSpacing.class);		
+	protected static final Logger log = LoggerFactory.getLogger(LineSpacing.class);
 	
 	public final static String CSS_NAME = "line-height"; //??  	
 	public final static String FO_NAME  = "line-height"; 
@@ -106,7 +106,7 @@ public class LineSpacing extends AbstractParagraphProperty {
 		return Math.round(MAGIC_NUMBER*fVal/100);		
 	}
 	private int twipToPercentage(int val) {		
-		return Math.round(100*val/MAGIC_NUMBER);		
+		return 100*val/MAGIC_NUMBER;
 	}
 	
 	@Override

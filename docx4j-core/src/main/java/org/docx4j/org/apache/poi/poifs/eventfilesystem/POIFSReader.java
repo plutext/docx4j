@@ -201,14 +201,13 @@ public class POIFSReader
         }
 
         // register for all
-        for (int j = 0; j < args.length; j++)
-        {
-            POIFSReader         reader   = new POIFSReader();
+        for (String arg : args) {
+            POIFSReader reader = new POIFSReader();
             POIFSReaderListener listener = new SampleListener();
 
             reader.registerListener(listener);
-            System.out.println("reading " + args[ j ]);
-            FileInputStream istream = new FileInputStream(args[ j ]);
+            System.out.println("reading " + arg);
+            FileInputStream istream = new FileInputStream(arg);
 
             reader.read(istream);
             istream.close();
@@ -321,9 +320,9 @@ public class POIFSReader
 
                 for (int k = 0; k < pathLength; k++)
                 {
-                    System.out.print("/" + path.getComponent(k));
+                    System.out.print('/' + path.getComponent(k));
                 }
-                System.out.println("/" + name + ": " + data.length
+                System.out.println('/' + name + ": " + data.length
                                    + " bytes read");
             }
             catch (IOException ignored)

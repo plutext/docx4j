@@ -56,14 +56,8 @@ public abstract class SdtTagHandler {
 	}
 	
 	protected SdtPr.Alias getAlias(SdtPr sdtPr) {
-		
-		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-			
-			o = XmlUtils.unwrap(o);
-			if (o instanceof SdtPr.Alias) return (SdtPr.Alias)o; 
-			
-		}
-		return null;
+
+		return (SdtPr.Alias) sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof SdtPr.Alias).findFirst().orElse(null);
 	}
 	
 	protected Node attachContents(DocumentFragment docfrag, Node xhtmlDiv,

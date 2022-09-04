@@ -65,8 +65,8 @@ class PropertyFactory
     {
         List<Property> properties = new ArrayList<Property>();
 
-        for (int j = 0; j < blocks.length; j++) {
-            byte[] data = blocks[ j ].getData();
+        for (ListManagedBlock block : blocks) {
+            byte[] data = block.getData();
             convertToProperties(data, properties);
         }
         return properties;

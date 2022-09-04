@@ -168,7 +168,7 @@ public class Transforms extends SignatureElementProxy {
     public void addTransform(String transformURI) throws TransformationException {
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Transforms.addTransform(" + transformURI + ")");
+                log.debug("Transforms.addTransform(" + transformURI + ')');
             }
 
             Transform transform = new Transform(getDocument(), transformURI);
@@ -192,7 +192,7 @@ public class Transforms extends SignatureElementProxy {
        throws TransformationException {
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Transforms.addTransform(" + transformURI + ")");
+                log.debug("Transforms.addTransform(" + transformURI + ')');
             }
 
             Transform transform = new Transform(getDocument(), transformURI, contextElement);
@@ -230,7 +230,7 @@ public class Transforms extends SignatureElementProxy {
      */
     private void addTransform(Transform transform) {
         if (log.isDebugEnabled()) {
-            log.debug("Transforms.addTransform(" + transform.getURI() + ")");
+            log.debug("Transforms.addTransform(" + transform.getURI() + ')');
         }
 
         Element transformElement = transform.getElement();

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class Docx4jMarshallerListener extends Marshaller.Listener {
 	
-	protected static Logger log = LoggerFactory.getLogger(Docx4jMarshallerListener.class);
+	protected static final Logger log = LoggerFactory.getLogger(Docx4jMarshallerListener.class);
 
     private XMLStreamWriter xsw;
     

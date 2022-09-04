@@ -204,16 +204,13 @@ public class FontManager {
      * @param fontInfoList a font info list
      * @param matcher the font triplet matcher to use
      */
-    public void updateReferencedFonts(List<EmbedFontInfo> fontInfoList, Matcher matcher) {
+    public static void updateReferencedFonts(List<EmbedFontInfo> fontInfoList, Matcher matcher) {
         if (matcher == null) {
             return; //No referenced fonts
         }
         for (EmbedFontInfo fontInfo : fontInfoList) {
-            for (FontTriplet triplet : fontInfo.getFontTriplets()) {
-                if (matcher.matches(triplet)) {
-                    fontInfo.setEmbedded(false);
-                    break;
-                }
+            if (fontInfo.getFontTriplets().stream().anyMatch(matcher::matches)) {
+                fontInfo.setEmbedded(false);
             }
         }
     }

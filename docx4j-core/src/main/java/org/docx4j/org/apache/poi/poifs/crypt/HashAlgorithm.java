@@ -72,13 +72,13 @@ public enum HashAlgorithm {
         for (HashAlgorithm ha : values()) {
             if (ha.ecmaString.equals(ecmaString)) return ha;
         }
-        throw new EncryptedDocumentException("hash algorithm not found '" + ecmaString + "'");
+        throw new EncryptedDocumentException("hash algorithm not found '" + ecmaString + '\'');
     }
     
     public static HashAlgorithm fromString(String string) {
         for (HashAlgorithm ha : values()) {
             if (ha.ecmaString.equalsIgnoreCase(string) || ha.jceId.equalsIgnoreCase(string)) return ha;
         }
-        throw new EncryptedDocumentException("hash algorithm not found '" + string + "'");
+        throw new EncryptedDocumentException("hash algorithm not found '" + string + '\'');
     }
 }

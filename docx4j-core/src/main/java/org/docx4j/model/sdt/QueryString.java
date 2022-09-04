@@ -61,16 +61,16 @@ public class QueryString {
 	 */
 	public static String create(Map<String, String> map){
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
-		Iterator iterator = map.keySet().iterator();
+		Iterator<String> iterator = map.keySet().iterator();
 		int pos = 0;
 		while( iterator.hasNext() ) {
-			String key = (String)iterator.next();
+			String key = iterator.next();
 			if (pos>0) {
-				sb.append("&");
+				sb.append('&');
 			}
-			sb.append(key + "=" + (String)map.get(key) );
+			sb.append(key).append('=').append(map.get(key));
 			pos++;
 		}			
 		return sb.toString();
@@ -141,7 +141,7 @@ public class QueryString {
 				}
 			} else {
 				String key = parseName(pair.substring(0, pos) );
-				String val = pair.substring(pos + 1, pair.length());
+				String val = pair.substring(pos + 1);
 				map.put(key, val);
 			}
 		}
@@ -153,7 +153,7 @@ public class QueryString {
 	 */
 
 	static private String parseName(String s) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.setLength(0);
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);

@@ -158,7 +158,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {
-			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
+			throw new Docx4JException("Problems evaluating xpath '" + xpathString + '\'', e);
 		}
 	}
 	private NamespacePrefixMappings nsContext;

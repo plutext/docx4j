@@ -300,7 +300,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				try {
 				    fileInputStream.close();
 				} catch (final IOException e) {
-				    log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
+				    log.warn("Could not close fileInputStream of file {}: {}", docxFile, e.getMessage());
 				}
 			    }
 		} catch (final FileNotFoundException e) {
@@ -330,7 +330,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 				try {
 					fileInputStream.close();
 				} catch (final IOException e) {
-					log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
+					log.warn("Could not close fileInputStream of file {}: {}", docxFile, e.getMessage());
 				}
 			}
 		} catch (final FileNotFoundException e) {
@@ -535,7 +535,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 					try {
 						fileInputStream.close();
 					} catch (final IOException e) {
-						log.warn("Could not close fileInputStream of file {}: {}", file.toString(), e.getMessage());
+						log.warn("Could not close fileInputStream of file {}: {}", file, e.getMessage());
 					}
 				}
 			} catch (final FileNotFoundException e) {
@@ -982,7 +982,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		// No need to change it in this pkg object, so we don't!
 		//ContentType existing = this.contentType;
 		String mainPartNameString = PackageRelsUtil.getNameOfMainPart(this.getRelationshipsPart());
-		PartName mainPartName = new PartName("/" + mainPartNameString);
+		PartName mainPartName = new PartName('/' + mainPartNameString);
 //		String pkgContentType = this.contentTypeManager.getContentType(new PartName("/" + mainPartName));
 		this.contentTypeManager.removeOverrideContentType(mainPartName);
 		this.contentTypeManager.addOverrideContentType(mainPartName.getURI(), targetContentType);

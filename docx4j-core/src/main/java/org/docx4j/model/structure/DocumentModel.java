@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DocumentModel {
 	
-	protected static Logger log = LoggerFactory.getLogger(DocumentModel.class);		
+	protected static final Logger log = LoggerFactory.getLogger(DocumentModel.class);
 	
 	private List<SectionWrapper> sections; 	
 	private WordprocessingMLPackage wordMLPackage;

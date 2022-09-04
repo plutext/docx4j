@@ -628,7 +628,7 @@ public final class IntMath {
   private static final int[] factorials = {
     1,
     1,
-    1 * 2,
+          (1 << 1),
     1 * 2 * 3,
     1 * 2 * 3 * 4,
     1 * 2 * 3 * 4 * 5,

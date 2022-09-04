@@ -28,6 +28,7 @@ import org.docx4j.convert.out.common.writer.AbstractPictWriter;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.vml.CTShape;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
@@ -425,16 +426,8 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 	
 	private org.docx4j.vml.CTTextbox getTextBox(org.docx4j.wml.Pict pict) {
 
-		org.docx4j.vml.CTShape shape = null;
-		for (Object o2 : pict.getAnyAndAny() ) {
-			
-			o2 = XmlUtils.unwrap(o2);
-//			System.out.println(o.getClass().getName());
-			if (o2 instanceof org.docx4j.vml.CTShape) {
-				shape = (org.docx4j.vml.CTShape)o2;
-				break;
-			}
-		}
+		CTShape shape = (CTShape) pict.getAnyAndAny().stream().map(XmlUtils::unwrap).filter(o2 -> o2 instanceof CTShape).findFirst().orElse(null);
+		//			System.out.println(o.getClass().getName());
 		if (shape==null) {
 			log.warn("no shape in pict " );
 			return null;

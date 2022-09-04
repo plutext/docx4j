@@ -53,29 +53,31 @@ public class POIFSLister {
 
       boolean withSizes = false;
       boolean newPOIFS = true;
-      for (int j = 0; j < args.length; j++) {
-         if (args[j].equalsIgnoreCase("-size") || args[j].equalsIgnoreCase("-sizes")) {
+      for (String arg : args) {
+         if (arg.equalsIgnoreCase("-size") || arg.equalsIgnoreCase("-sizes")) {
             withSizes = true;
-         } else if (args[j].equalsIgnoreCase("-old") || args[j].equalsIgnoreCase("-old-poifs")) {
+         } else if (arg.equalsIgnoreCase("-old") || arg.equalsIgnoreCase("-old-poifs")) {
             newPOIFS = false;
          } else {
-            if(newPOIFS) {
-               viewFile(args[j], withSizes);
+            if (newPOIFS) {
+               viewFile(arg, withSizes);
             } else {
-               viewFileOld(args[j], withSizes);
+               viewFileOld(arg, withSizes);
             }
          }
       }
    }
 
    public static void viewFile(final String filename, boolean withSizes) throws IOException {
-      NPOIFSFileSystem fs = new NPOIFSFileSystem(new File(filename));
-      displayDirectory(fs.getRoot(), "", withSizes);
+      try (NPOIFSFileSystem fs = new NPOIFSFileSystem(new File(filename))) {
+         displayDirectory(fs.getRoot(), "", withSizes);
+      }
    }
 
    public static void viewFileOld(final String filename, boolean withSizes) throws IOException {
-      POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(filename));
-      displayDirectory(fs.getRoot(), "", withSizes);
+      try (POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(filename))) {
+         displayDirectory(fs.getRoot(), "", withSizes);
+      }
    }
 
    public static void displayDirectory(DirectoryNode dir, String indent, boolean withSizes) {
@@ -93,12 +95,12 @@ public class POIFSLister {
             String name = doc.getName();
             String size = "";
             if (name.charAt(0) < 10) {
-               String altname = "(0x0" + (int) name.charAt(0) + ")" + name.substring(1);
-               name = name.substring(1) + " <" + altname + ">";
+               String altname = "(0x0" + (int) name.charAt(0) + ')' + name.substring(1);
+               name = name.substring(1) + " <" + altname + '>';
             }
             if (withSizes) {
                size = " [" + doc.getSize() + " / 0x" + 
-                      Integer.toHexString(doc.getSize()) + "]";
+                      Integer.toHexString(doc.getSize()) + ']';
             }
             System.out.println(newIndent + name + size);
          }

@@ -113,14 +113,14 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 			if (border.getColor().equals("auto")) {
 				color = composeCss(CSS_NAME__COLOR, "#000000"  );
 			} else {
-				color = composeCss(CSS_NAME__COLOR, "#" + border.getColor() );
+				color = composeCss(CSS_NAME__COLOR, '#' + border.getColor() );
 			}
 		}
 		
 		return val + sz + color; 
 	}
 
-	public float eighthsToMM(int eighths ) {		
+	public static float eighthsToMM(int eighths) {
 		// 72 points per inch
 		float inches = eighths/(8*72.00f);
 		return inches/0.0394f;
@@ -169,7 +169,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 			if (border.getColor().equals("auto")) {
 				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
 			} else {
-				foElement.setAttribute(CSS_NAME__COLOR, "#" + border.getColor() );
+				foElement.setAttribute(CSS_NAME__COLOR, '#' + border.getColor() );
 			}
 		}
 		

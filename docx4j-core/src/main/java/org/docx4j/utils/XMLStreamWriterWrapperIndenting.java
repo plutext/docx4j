@@ -18,7 +18,7 @@ public class XMLStreamWriterWrapperIndenting extends XMLStreamWriterWrapper {
 	
 	// TODO: write newline before element with self-closing tag. 
 	
-	protected static Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapperIndenting.class);
+	protected static final Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapperIndenting.class);
 		
     private int depth = 0;
     
@@ -32,7 +32,7 @@ public class XMLStreamWriterWrapperIndenting extends XMLStreamWriterWrapper {
     
     
     public void indent() throws XMLStreamException {
-        char[] indent = new char[depth * 2];
+        char[] indent = new char[(depth << 1)];
         Arrays.fill(indent, ' ');
         underlying.writeCharacters(indent, 0, indent.length);
     }    

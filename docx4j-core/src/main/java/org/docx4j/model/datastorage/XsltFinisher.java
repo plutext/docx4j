@@ -155,7 +155,7 @@ public class XsltFinisher {
 	 * @return
 	 * @throws JAXBException
 	 */
-	private Object unmarshal(Node n, boolean continu) throws JAXBException {
+	private static Object unmarshal(Node n, boolean continu) throws JAXBException {
 			
 		Unmarshaller u = Context.jc.createUnmarshaller();		
 		

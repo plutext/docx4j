@@ -41,13 +41,13 @@ public abstract class AbstractMessageWriter {
 	public DocumentFragment notImplemented(AbstractConversionContext context, NodeIterator nodes, String message) {
 
 		Node n = nodes.nextNode();
-		context.getLog().warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "; " + message);
+		AbstractConversionContext.getLog().warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "; " + message);
 		
-		if (context.getLog().isDebugEnabled() ) {
+		if (AbstractConversionContext.getLog().isDebugEnabled() ) {
 			
 			if (message==null) message="";
 			
-			context.getLog().debug( XmlUtils.w3CDomNodeToString(n)  );
+			AbstractConversionContext.getLog().debug( XmlUtils.w3CDomNodeToString(n)  );
 
 			// Return something which will show up in the HTML
 			return message(context, "NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
@@ -61,13 +61,13 @@ public abstract class AbstractMessageWriter {
 	
 	public DocumentFragment message(AbstractConversionContext context, String message) {
 		
-		if (!context.getLog().isDebugEnabled()) return null;
+		if (!AbstractConversionContext.getLog().isDebugEnabled()) return null;
 
 		String documentFragment = getOutputPrefix() 
 			+ message
 			+ getOutputSuffix();  
 		
-		context.getLog().debug(documentFragment);
+		AbstractConversionContext.getLog().debug(documentFragment);
 
 		StringReader reader = new StringReader(documentFragment);
 		InputSource inputSource = new InputSource(reader);
@@ -75,7 +75,7 @@ public abstract class AbstractMessageWriter {
 		try {
 			doc = XmlUtils.getNewDocumentBuilder().parse(inputSource);
 		} catch (Exception e) {
-			context.getLog().error(e.getMessage(),e);
+			AbstractConversionContext.getLog().error(e.getMessage(),e);
 		}
 		reader.close();
 

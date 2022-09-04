@@ -620,10 +620,9 @@ public class GlyphPositioningTable extends GlyphTable {
                     int[] iga = ps.getGlyphs(0, 2, null, counts);
                     if ((iga != null) && (iga.length == 2)) {
                         // int gi1 = gi;
-                        int ci1 = ci;
                         int gi2 = iga [ 1 ];
                         int ci2 = getCoverageIndex(gi2);
-                        Anchor[] aa = getExitEntryAnchors(ci1, ci2);
+                        Anchor[] aa = getExitEntryAnchors(ci, ci2);
                         if (aa != null) {
                             Anchor exa = aa [ 0 ];
                             Anchor ena = aa [ 1 ];
@@ -683,8 +682,8 @@ public class GlyphPositioningTable extends GlyphTable {
         /** {@inheritDoc} */
         public Anchor[] getExitEntryAnchors(int ci1, int ci2) {
             if ((ci1 >= 0) && (ci2 >= 0)) {
-                int ai1 = (ci1 * 2) + 1; // ci1 denotes glyph with exit anchor
-                int ai2 = (ci2 * 2) + 0; // ci2 denotes glyph with entry anchor
+                int ai1 = (ci1 << 1) + 1; // ci1 denotes glyph with exit anchor
+                int ai2 = (ci2 << 1) + 0; // ci2 denotes glyph with entry anchor
                 if ((aa != null) && (ai1 < aa.length) && (ai2 < aa.length)) {
                     Anchor exa = aa [ ai1 ];
                     Anchor ena = aa [ ai2 ];
@@ -1320,7 +1319,7 @@ public class GlyphPositioningTable extends GlyphTable {
                     for (Rule r : ra) {
                         if ((r != null) && (r instanceof ChainedClassSequenceRule)) {
                             ChainedClassSequenceRule cr = (ChainedClassSequenceRule) r;
-                            int[] ca = cr.getClasses(cdt.getClassIndex(gi, ps.getClassMatchSet(gi)));
+                            int[] ca = cr.getClasses(cdt.getClassIndex(gi, GlyphProcessingState.getClassMatchSet(gi)));
                             if (matches(ps, cdt, ca, 0, rv)) {
                                 return r.getLookups();
                             }
@@ -1345,7 +1344,7 @@ public class GlyphPositioningTable extends GlyphTable {
                     int[] ga = ps.getGlyphs(offset, ngm, reverse, ignores, null, counts);
                     for (int k = 0; k < ngm; k++) {
                         int gi = ga [ k ];
-                        int ms = ps.getClassMatchSet(gi);
+                        int ms = GlyphProcessingState.getClassMatchSet(gi);
                         int gc = cdt.getClassIndex(gi, ms);
                         if ((gc < 0) || (gc >= cdt.getClassSize(ms))) {
                             return false;               // none or invalid class fails mat ch
@@ -1573,7 +1572,7 @@ public class GlyphPositioningTable extends GlyphTable {
             }
             return null;
         }
-        private boolean matches(GlyphPositioningState ps, int[] glyphs, int offset, int[] rv) {
+        private static boolean matches(GlyphPositioningState ps, int[] glyphs, int offset, int[] rv) {
             return ContextualSubtableFormat1.matches(ps, glyphs, offset, rv);
         }
         private void populate(List entries) {
@@ -1632,7 +1631,7 @@ public class GlyphPositioningTable extends GlyphTable {
                     for (Rule r : ra) {
                         if ((r != null) && (r instanceof ChainedClassSequenceRule)) {
                             ChainedClassSequenceRule cr = (ChainedClassSequenceRule) r;
-                            int[] ica = cr.getClasses(icdt.getClassIndex(gi, ps.getClassMatchSet(gi)));
+                            int[] ica = cr.getClasses(icdt.getClassIndex(gi, GlyphProcessingState.getClassMatchSet(gi)));
                             if (matches(ps, icdt, ica, 0, rv)) {
                                 int[] bca = cr.getBacktrackClasses();
                                 if (matches(ps, bcdt, bca, -1, null)) {
@@ -1648,7 +1647,7 @@ public class GlyphPositioningTable extends GlyphTable {
             }
             return null;
         }
-        private boolean matches(GlyphPositioningState ps, GlyphClassTable cdt, int[] classes, int offset, int[] rv) {
+        private static boolean matches(GlyphPositioningState ps, GlyphClassTable cdt, int[] classes, int offset, int[] rv) {
             return ContextualSubtableFormat2.matches(ps, cdt, classes, offset, rv);
         }
         private void populate(List entries) {
@@ -1738,7 +1737,7 @@ public class GlyphPositioningTable extends GlyphTable {
             }
             return null;
         }
-        private boolean matches(GlyphPositioningState ps, GlyphCoverageTable[] gca, int offset, int[] rv) {
+        private static boolean matches(GlyphPositioningState ps, GlyphCoverageTable[] gca, int offset, int[] rv) {
             return ContextualSubtableFormat3.matches(ps, gca, offset, rv);
         }
         private void populate(List entries) {
@@ -1817,7 +1816,7 @@ public class GlyphPositioningTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            return "{ start = " + startSize + ", end = " + endSize + ", deltas = " + Arrays.toString(deltas) + "}";
+            return "{ start = " + startSize + ", end = " + endSize + ", deltas = " + Arrays.toString(deltas) + '}';
         }
 
     }
@@ -1997,7 +1996,7 @@ public class GlyphPositioningTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             boolean first = true;
             sb.append("{ ");
             if (xPlacement != 0) {
@@ -2006,7 +2005,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xPlacement = " + xPlacement);
+                sb.append("xPlacement = ").append(xPlacement);
             }
             if (yPlacement != 0) {
                 if (!first) {
@@ -2014,7 +2013,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("yPlacement = " + yPlacement);
+                sb.append("yPlacement = ").append(yPlacement);
             }
             if (xAdvance != 0) {
                 if (!first) {
@@ -2022,7 +2021,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xAdvance = " + xAdvance);
+                sb.append("xAdvance = ").append(xAdvance);
             }
             if (yAdvance != 0) {
                 if (!first) {
@@ -2030,7 +2029,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("yAdvance = " + yAdvance);
+                sb.append("yAdvance = ").append(yAdvance);
             }
             if (xPlaDevice != null) {
                 if (!first) {
@@ -2038,7 +2037,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xPlaDevice = " + xPlaDevice);
+                sb.append("xPlaDevice = ").append(xPlaDevice);
             }
             if (yPlaDevice != null) {
                 if (!first) {
@@ -2046,7 +2045,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xPlaDevice = " + yPlaDevice);
+                sb.append("xPlaDevice = ").append(yPlaDevice);
             }
             if (xAdvDevice != null) {
                 if (!first) {
@@ -2054,7 +2053,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xAdvDevice = " + xAdvDevice);
+                sb.append("xAdvDevice = ").append(xAdvDevice);
             }
             if (yAdvDevice != null) {
                 if (!first) {
@@ -2062,7 +2061,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("xAdvDevice = " + yAdvDevice);
+                sb.append("xAdvDevice = ").append(yAdvDevice);
             }
             sb.append(" }");
             return sb.toString();
@@ -2110,7 +2109,7 @@ public class GlyphPositioningTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             boolean first = true;
             sb.append("{ ");
             if (glyph != 0) {
@@ -2119,7 +2118,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("glyph = " + glyph);
+                sb.append("glyph = ").append(glyph);
             }
             if (value1 != null) {
                 if (!first) {
@@ -2127,7 +2126,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("value1 = " + value1);
+                sb.append("value1 = ").append(value1);
             }
             if (value2 != null) {
                 if (!first) {
@@ -2135,7 +2134,7 @@ public class GlyphPositioningTable extends GlyphTable {
                 } else {
                     first = false;
                 }
-                sb.append("value2 = " + value2);
+                sb.append("value2 = ").append(value2);
             }
             sb.append(" }");
             return sb.toString();
@@ -2242,16 +2241,16 @@ public class GlyphPositioningTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("{ [" + x + "," + y + "]");
+            StringBuilder sb = new StringBuilder();
+            sb.append("{ [").append(x).append(',').append(y).append(']');
             if (anchorPoint != -1) {
-                sb.append(", anchorPoint = " + anchorPoint);
+                sb.append(", anchorPoint = ").append(anchorPoint);
             }
             if (xDevice != null) {
-                sb.append(", xDevice = " + xDevice);
+                sb.append(", xDevice = ").append(xDevice);
             }
             if (yDevice != null) {
-                sb.append(", yDevice = " + yDevice);
+                sb.append(", yDevice = ").append(yDevice);
             }
             sb.append(" }");
             return sb.toString();

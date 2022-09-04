@@ -123,7 +123,7 @@ public class ListNumberingDefinition {
 		return numNode;
 	}
 	
-	protected static Logger log = LoggerFactory.getLogger(ListNumberingDefinition.class);
+	protected static final Logger log = LoggerFactory.getLogger(ListNumberingDefinition.class);
 	
     /**
      * @param numNode
@@ -211,7 +211,7 @@ public class ListNumberingDefinition {
 						String overrideLevelId = overrideNode.getIlvl().toString(); 
 						log.debug(".. " + overrideLevelId);
 
-						if (!overrideLevelId.equals("")) {
+						if (!overrideLevelId.isEmpty()) {
 							// Is there a w:startOverride?
 							// This is only given effect the first time the instance
 							// is encountered in the document
@@ -230,7 +230,7 @@ public class ListNumberingDefinition {
 
 						Lvl lvl = overrideNode.getLvl();
 						if (lvl != null && this.levels.get(overrideLevelId) != null) {
-							this.levels.get(overrideLevelId).SetOverrides(lvl);
+							this.levels.get(overrideLevelId).setOverrides(lvl);
 						}
 						
 					}
@@ -290,7 +290,7 @@ public class ListNumberingDefinition {
         while (this.levels.containsKey(otherLevelStr))
         {
         	log.debug("Reset level " + otherLevelInt);
-            this.levels.get(otherLevelStr).ResetCounter();
+            this.levels.get(otherLevelStr).resetCounter();
             otherLevelInt++;
             otherLevelStr = Integer.toString(otherLevelInt);
         }
@@ -432,7 +432,7 @@ public class ListNumberingDefinition {
     /// <returns></returns>
     public boolean IsBullet(String level)
     {
-        return this.levels.get(level).IsBullet();
+        return this.levels.get(level).isBullet();
     }
 
     /// <summary>

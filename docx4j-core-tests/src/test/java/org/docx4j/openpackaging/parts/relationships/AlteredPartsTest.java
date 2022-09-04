@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public class AlteredPartsTest {
 
-	protected static Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
+	protected static final Logger log = LoggerFactory.getLogger(AlteredPartsTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
 	/* All of the docx in resourceDir have had their docprops parts stripped

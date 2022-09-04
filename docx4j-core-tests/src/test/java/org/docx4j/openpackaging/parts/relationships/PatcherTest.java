@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class PatcherTest {
 
-	protected static Logger log = LoggerFactory.getLogger(PatcherTest.class);
+	protected static final Logger log = LoggerFactory.getLogger(PatcherTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
 	

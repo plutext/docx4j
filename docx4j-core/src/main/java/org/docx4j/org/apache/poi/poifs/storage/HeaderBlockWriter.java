@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.stream.IntStream;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSBigBlockSize;
 import org.docx4j.org.apache.poi.poifs.common.POIFSConstants;
@@ -81,23 +82,16 @@ public class HeaderBlockWriter implements HeaderBlockConstants, BlockWritable
 
         // Set the BAT locations
         int limit  = Math.min(blockCount, _max_bats_in_header);
-        int[] bat_blocks = new int[limit];
-        for (int j = 0; j < limit; j++) {
-           bat_blocks[j] = startBlock + j;
-        }
+        int[] bat_blocks = IntStream.range(0, limit).map(j -> startBlock + j).toArray();
         _header_block.setBATArray(bat_blocks);
         
         // Now do the XBATs
         if (blockCount > _max_bats_in_header)
         {
             int   excess_blocks      = blockCount - _max_bats_in_header;
-            int[] excess_block_array = new int[ excess_blocks ];
+            int[] excess_block_array = IntStream.range(0, excess_blocks).map(j -> startBlock + j
+                    + _max_bats_in_header).toArray();
 
-            for (int j = 0; j < excess_blocks; j++)
-            {
-                excess_block_array[ j ] = startBlock + j
-                                          + _max_bats_in_header;
-            }
             rvalue = BATBlock.createXBATBlocks(bigBlockSize, excess_block_array,
                                                startBlock + blockCount);
             _header_block.setXBATStart(startBlock + blockCount);

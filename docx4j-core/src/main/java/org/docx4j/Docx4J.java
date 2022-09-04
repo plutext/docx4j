@@ -642,8 +642,8 @@ public class Docx4J {
 			}
 		}
 		if (!partsToRemove.isEmpty()) {
-			for (int i=0; i<partsToRemove.size(); i++) {
-				relationshipsPart.removePart(partsToRemove.get(i));
+			for (PartName partName : partsToRemove) {
+				relationshipsPart.removePart(partName);
 			}
 		}
 	}

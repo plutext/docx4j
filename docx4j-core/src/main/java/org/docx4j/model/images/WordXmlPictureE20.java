@@ -149,7 +149,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	
-	protected static Logger log = LoggerFactory.getLogger(WordXmlPictureE20.class);
+	protected static final Logger log = LoggerFactory.getLogger(WordXmlPictureE20.class);
 
 	// It'll be one or the other of these
 	private Inline inline;
@@ -425,7 +425,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
     
     
-    private final int extentToPixelConversionFactor = 12700;
+    private static final int extentToPixelConversionFactor = 12700;
     
     private void readHyperlink() {
     	if (getDocPr()!=null
@@ -433,7 +433,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		
     		String linkRelId = getDocPr().getHlinkClick().getId();
     		
-            if ( linkRelId!=null && !linkRelId.equals("") ) 
+            if ( linkRelId!=null && !linkRelId.isEmpty())
             {
             	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(linkRelId);
             	

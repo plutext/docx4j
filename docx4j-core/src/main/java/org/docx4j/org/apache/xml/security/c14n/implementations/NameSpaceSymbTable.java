@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 import org.w3c.dom.Attr;
@@ -339,13 +341,7 @@ class SymbMap implements Cloneable {
     }
 
     List<NameSpaceSymbEntry> entrySet() {
-        List<NameSpaceSymbEntry> a = new ArrayList<NameSpaceSymbEntry>();
-        for (int i = 0;i < entries.length;i++) {
-            if (entries[i] != null && !"".equals(entries[i].uri)) {
-                a.add(entries[i]);
-            }
-        }
-        return a;		
+        return IntStream.range(0, entries.length).filter(i -> entries[i] != null && !"".equals(entries[i].uri)).mapToObj(i -> entries[i]).collect(Collectors.toList());
     }
 
     protected int index(Object obj) {		

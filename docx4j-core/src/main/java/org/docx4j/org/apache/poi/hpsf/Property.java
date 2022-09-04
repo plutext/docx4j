@@ -242,7 +242,7 @@ public class Property
                 o += LittleEndian.INT_SIZE;
 
                 /* Read the string. */
-                final StringBuffer b = new StringBuffer();
+                final StringBuilder b = new StringBuilder();
                 switch (codepage)
                 {
                     case -1:
@@ -256,7 +256,7 @@ public class Property
                     {
                         /* The length is the number of characters, i.e. the number
                          * of bytes is twice the number of the characters. */
-                        final int nrBytes = (int) (sLength * 2);
+                        final int nrBytes = (int) (sLength << 1);
                         final byte[] h = new byte[nrBytes];
                         for (int i2 = 0; i2 < nrBytes; i2 += 2)
                         {
@@ -404,8 +404,7 @@ public class Property
         hashCode += type;
         if (value != null)
             hashCode += value.hashCode();
-        final int returnHashCode = (int) (hashCode & 0x0ffffffffL );
-        return returnHashCode;
+        return (int) (hashCode & 0x0ffffffffL );
 
     }
 
@@ -416,7 +415,7 @@ public class Property
      */
     public String toString()
     {
-        final StringBuffer b = new StringBuffer();
+        final StringBuilder b = new StringBuilder();
         b.append(getClass().getName());
         b.append('[');
         b.append("id: ");
@@ -427,24 +426,24 @@ public class Property
         b.append(", value: ");
         if (value instanceof String)
         {
-            b.append(value.toString());
+            b.append(value);
             final String s = (String) value;
             final int l = s.length();
-            final byte[] bytes = new byte[l * 2];
+            final byte[] bytes = new byte[(l << 1)];
             for (int i = 0; i < l; i++)
             {
                 final char c = s.charAt(i);
                 final byte high = (byte) ((c & 0x00ff00) >> 8);
                 final byte low  = (byte) ((c & 0x0000ff) >> 0);
-                bytes[i * 2]     = high;
-                bytes[i * 2 + 1] = low;
+                bytes[(i << 1)]     = high;
+                bytes[(i << 1) + 1] = low;
             }
             b.append(" [");
             if(bytes.length > 0) {
                 final String hex = HexDump.dump(bytes, 0L, 0);
                 b.append(hex);
             }
-            b.append("]");
+            b.append(']');
         }
         else if (value instanceof byte[])
         {

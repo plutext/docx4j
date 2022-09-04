@@ -92,12 +92,12 @@ public class StyleBasedOnHelper {
 	
 	
 	
-    private int getLvlFromHeadingStyle(String style){
+    private static int getLvlFromHeadingStyle(String style){
     	// Note that this is done using the style ID, not its OutlineLevel,
     	// since Word does it purely on the name of the style!
         int level = -1;
         try {
-            level = Integer.parseInt(style.substring(HEADING_STYLE.length(), style.length()).trim());
+            level = Integer.parseInt(style.substring(HEADING_STYLE.length()).trim());
             if (level <1 || level >9) {
             	// there are only heading 1 to 9 in Word
             	level=-1;

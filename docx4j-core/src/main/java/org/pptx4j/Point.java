@@ -48,7 +48,7 @@ public class Point {
 	}
 
 	public String debug() {
-		return "(" + x + ", "  + y + ")";
+		return "(" + x + ", "  + y + ')';
 	}
 	
 }

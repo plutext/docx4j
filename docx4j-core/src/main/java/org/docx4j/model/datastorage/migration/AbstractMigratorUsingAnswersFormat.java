@@ -94,7 +94,7 @@ public class AbstractMigratorUsingAnswersFormat extends AbstractMigrator {
 		// answer
 		Answer a = new Answer();
 		a.setId(key);
-		a.setValue("${" + key + "}");
+		a.setValue("${" + key + '}');
 		standardisedAnswersPart.getJaxbElement().getAnswerOrRepeat().add(a);
 		
 		// XPath
@@ -114,7 +114,7 @@ public class AbstractMigratorUsingAnswersFormat extends AbstractMigrator {
 		// question
 		Question q = new Question();
 		q.setId(key);
-		q.setText(key + "?");
+		q.setText(key + '?');
 		Response r = new Response();
 		r.setFree( new Response.Free() );
 		q.setResponse(r);

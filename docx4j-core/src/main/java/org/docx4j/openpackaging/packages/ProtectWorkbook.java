@@ -44,7 +44,7 @@ import org.xlsx4j.sml.Worksheet;
  */
 public class ProtectWorkbook extends ProtectionSettings {
 	
-	protected static Logger log = LoggerFactory.getLogger(ProtectWorkbook.class);
+	protected static final Logger log = LoggerFactory.getLogger(ProtectWorkbook.class);
 	
 	
 	public ProtectWorkbook(SpreadsheetMLPackage pkg) {
@@ -295,11 +295,11 @@ public class ProtectWorkbook extends ProtectionSettings {
         } 
             
         SecureRandom random = new SecureRandom();
-        byte salt[] = random.generateSeed(16);
+        byte[] salt = random.generateSeed(16);
 
         int spinCount = 100000;
         
-        byte hash[] = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount, false);
+        byte[] hash = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount, false);
 
 // The code commented out below works fine, but the CryptoFunctions API is neater.
         
@@ -381,7 +381,7 @@ public class ProtectWorkbook extends ProtectionSettings {
             }
             
             HashAlgorithm hashAlgo = HashAlgorithm.fromString(algoName);         
-            byte hash2[] = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount.intValue(), false);
+            byte[] hash2 = CryptoFunctions.hashPassword(password, hashAlgo, salt, spinCount.intValue(), false);
             return Arrays.equals(hash1, hash2);
         }
     }

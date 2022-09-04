@@ -19,26 +19,20 @@
  */
 package org.docx4j.toc.switches;
 
-import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
 
-import org.docx4j.TextUtils;
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
 import org.docx4j.finders.RangeFinder;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.structure.PageDimensions;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.toc.StyleBasedOnHelper;
 import org.docx4j.toc.TocEntry;
@@ -47,17 +41,15 @@ import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.R;
 import org.docx4j.wml.STTabTlc;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Text;
 import org.docx4j.wml.PPrBase.PStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SwitchProcessor {
 	
-	private static Logger log = LoggerFactory.getLogger(SwitchProcessor.class);				
+	private static final Logger log = LoggerFactory.getLogger(SwitchProcessor.class);
 
     protected PropertyResolver propertyResolver;
     protected StyleBasedOnHelper styleBasedOnHelper;
@@ -228,17 +220,11 @@ public class SwitchProcessor {
     }
 
     private void bookmarkStyleText(P p, String anchorValue, AtomicInteger id, TocEntry te){
-        CTBookmark bookmark = null;
+        CTBookmark bookmark = (CTBookmark) p.getContent().stream().filter(o -> o instanceof CTBookmark).findFirst().orElse(null);
 //        R r = null;
 //        Text t;
-        
-        for(Object o : p.getContent()){
-            if(o instanceof CTBookmark){
-                bookmark = (CTBookmark)o;
-                break;
-            } 
-        }
-//            else if(o instanceof R){
+
+        //            else if(o instanceof R){
 //                r = (R)o;
 //                Object o2= XmlUtils.unwrap(r.getContent().get(0));
 //                if (o2 instanceof Text) {

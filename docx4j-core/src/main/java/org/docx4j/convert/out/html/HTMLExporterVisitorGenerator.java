@@ -83,7 +83,6 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 	
 	@Override
 	protected Element handlePPr(HTMLConversionContext conversionContext, PPr pPrDirect, boolean sdt, Element currentParent) {
-		Element ret = currentParent;
 
 		if ( pPrDirect!=null ) {
 			
@@ -105,7 +104,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			boolean ignoreBorders = true;
 			StringBuilder inlineStyle =  new StringBuilder();
 			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPrDirect, inlineStyle, ignoreBorders, false);				
-			if (!inlineStyle.toString().equals("") ) {
+			if (!inlineStyle.toString().isEmpty()) {
 				currentParent.setAttribute("style", inlineStyle.toString() );
 			}
 			
@@ -132,16 +131,16 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 					getLog().error("computed NumString was null!");
 					numberText = ("?");
 				} else {
-					numberText = (triple.getNumString() + " ");
+					numberText = (triple.getNumString() + ' ');
 				}
         	}
 			if (numberText!=null) {
 				currentParent.appendChild(document.createTextNode(
-						numberText + " "));				
+						numberText + ' '));
 			}
 		}
 		
-		return ret;
+		return currentParent;
 	}
 
     @Override
@@ -167,7 +166,7 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		// Does our rPr contain anything else?
 		StringBuilder inlineStyle =  new StringBuilder();
 		HtmlCssHelper.createCss(conversionContext.getWmlPackage(), rPrDirect, inlineStyle);				
-		if (!inlineStyle.toString().equals("") ) {
+		if (!inlineStyle.toString().isEmpty()) {
 			currentParent.setAttribute("style", inlineStyle.toString() );
 		}
 			

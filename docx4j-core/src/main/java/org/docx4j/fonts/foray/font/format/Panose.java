@@ -338,11 +338,10 @@ public final class Panose implements Serializable {
     private static String toString(final byte[] panoseArray) {
         final StringBuilder sb = new StringBuilder(30);
         sb.append("[ ");
-        for (int i = 0; i < panoseArray.length; i++) {
-            final byte theByte = panoseArray[i];
-            sb.append(theByte + " ");
+        for (final byte theByte : panoseArray) {
+            sb.append(theByte).append(' ');
         }
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

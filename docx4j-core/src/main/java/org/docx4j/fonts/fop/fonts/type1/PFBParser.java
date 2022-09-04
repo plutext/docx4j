@@ -28,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -133,13 +134,8 @@ public class PFBParser {
 
 
     private static boolean byteCmp(byte[] src, int srcOffset, byte[] cmp) {
-        for (int i = 0; i < cmp.length; i++) {
-            // System.out.println("Compare: " + src[srcOffset + i] + " " + cmp[i]);
-            if (src[srcOffset + i] != cmp[i]) {
-                return false;
-            }
-        }
-        return true;
+        // System.out.println("Compare: " + src[srcOffset + i] + " " + cmp[i]);
+        return IntStream.range(0, cmp.length).noneMatch(i -> src[srcOffset + i] != cmp[i]);
     }
 
     private void calcLengths(PFBData pfb, byte[] originalData) {

@@ -21,7 +21,7 @@ public abstract class AbstractTraversalUtilVisitorCallback extends TraversalUtil
     Map<Type, Type> resolvedTypes = new HashMap<Type, Type>();
     Type type = childClass;
 	    // start walking up the inheritance hierarchy until we hit baseClass
-	    while (! getTypeClass(type).equals(TraversalUtilVisitor.class)) {
+	    while (getTypeClass(type) != TraversalUtilVisitor.class) {
 	    	if (type instanceof Class) {
 	    		// there is no useful information for us in raw types, so just keep going.
 	    		type = ((Class) type).getGenericSuperclass();
@@ -35,7 +35,7 @@ public abstract class AbstractTraversalUtilVisitorCallback extends TraversalUtil
 		          resolvedTypes.put(typeParameters[i], actualTypeArguments[i]);
 		        }
 		  
-		        if (!rawType.equals(TraversalUtilVisitor.class)) {
+		        if (rawType != TraversalUtilVisitor.class) {
 		          type = rawType.getGenericSuperclass();
 		        }
 	    	}

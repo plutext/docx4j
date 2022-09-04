@@ -28,6 +28,8 @@ import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.fontbox.cff.CFFCIDFont;
 import org.apache.fontbox.cff.CFFFont;
@@ -62,19 +64,15 @@ public final class Type1FontFormatter {
 
     private void printFont(CFFFont font, DataOutput output, String iStr)
             throws IOException {
-        output.println("%!FontType1-1.0 " + font.getName() + iStr + " "
+        output.println("%!FontType1-1.0 " + font.getName() + iStr + ' '
                 + font.getTopDict().get("version"));
 
         printFontDictionary(font, output, iStr);
 
         for (int i = 0; i < 8; i++) {
-            StringBuilder sb = new StringBuilder();
+            String sb = IntStream.range(0, 64).mapToObj(j -> "0").collect(Collectors.joining());
 
-            for (int j = 0; j < 64; j++) {
-                sb.append("0");
-            }
-
-            output.println(sb.toString());
+            output.println(sb);
         }
 
         output.println("cleartomark");
@@ -189,7 +187,7 @@ public final class Type1FontFormatter {
                 type1Bytes = formatter.format(((CFFType1Font)font).getType1CharString(mapping).getType1Sequence());
             }
             byte[] charstringBytes = Type1FontUtil.charstringEncrypt(type1Bytes, 4);
-            output.print("/" + mapping + " " + charstringBytes.length + " RD ");
+            output.print('/' + mapping + ' ' + charstringBytes.length + " RD ");
             output.write(charstringBytes);
             output.print(" ND");
             output.println();
@@ -209,7 +207,7 @@ public final class Type1FontFormatter {
     }
 
     private static String formatArray(Object object, NumberFormat format, boolean executable) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         sb.append(executable ? "{" : "[");
 

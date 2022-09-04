@@ -120,7 +120,7 @@ final class NormalisedDecimal {
 				break;
 
 			default:
-				throw new IllegalStateException("Bad binary exp " + cc.get64BitNormalisedExponent() + ".");
+				throw new IllegalStateException("Bad binary exp " + cc.get64BitNormalisedExponent() + '.');
 		}
 		cc.normalise64bit();
 
@@ -269,9 +269,9 @@ final class NormalisedDecimal {
 		sb.append(ws.substring(1));
 		sb.append(' ');
 		sb.append(getFractionalDigits());
-		sb.append("E");
+		sb.append('E');
 		sb.append(getDecimalExponent());
-		sb.append("]");
+		sb.append(']');
 		return sb.toString();
 	}
 }

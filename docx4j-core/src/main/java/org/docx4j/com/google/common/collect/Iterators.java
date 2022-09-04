@@ -801,7 +801,7 @@ public final class Iterators {
               + position
               + ") must be less than the number of elements that remained ("
               + skipped
-              + ")");
+              + ')');
     }
     return iterator.next();
   }

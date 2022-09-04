@@ -201,12 +201,12 @@ public class FlatOpcXmlImporter  {
 		}
 		Relationship r = tmpRp.getRelationshipByType(Namespaces.DOCUMENT);
 		String target = r.getTarget();
-		if (target.startsWith("/")) {
+		if (!target.isEmpty() && target.charAt(0) == '/') {
 			// Word Online as at November 2018.  Buggy?!
 			// eg <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1" />
 			log.debug("target " + target + " already starts with '/'.  Word Online docx? " );
 		} else {
-			target = "/" + target;
+			target = '/' + target;
 		}
 		org.docx4j.xmlPackage.Part officeDocument = parts.get(target);
 		if (officeDocument==null) {
@@ -285,8 +285,6 @@ public class FlatOpcXmlImporter  {
 	private void addPartsFromRelationships( Base source, RelationshipsPart rp)
 		throws Docx4JException {
 		
-		OpcPackage pkg = source.getPackage();				
-		
 //		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 //			Relationship r = (Relationship)it.next();
 //			log.info("For Relationship Id=" + r.getId() + " Source is " 
@@ -333,8 +331,8 @@ public class FlatOpcXmlImporter  {
 	private void getPart( RelationshipsPart rp, Relationship r)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
-		Base source = null;
-		String resolvedPartUri = null;
+		Base source;
+		String resolvedPartUri;
 		
 		if (r.getTargetMode() == null
 				|| !r.getTargetMode().equals("External") ) {

@@ -105,7 +105,7 @@ public class ConfiguredFontCollection implements FontCollection {
                 }
             } catch (Exception e) {
                 log.warn("Unable to load custom font from file '" + configFontInfo.getEmbedURI()
-                        + "'", e);
+                        + '\'', e);
             }
         }
         return num;

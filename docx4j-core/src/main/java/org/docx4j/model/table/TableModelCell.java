@@ -125,7 +125,7 @@ public class TableModelCell {
 
 	      if(tcPr !=null && logger.isDebugEnabled()) {
 	    	  
-		      logger.debug("Cell props for row " + row + ", col " + col + "\n" 
+		      logger.debug("Cell props for row " + row + ", col " + col + '\n'
 		      		+ XmlUtils.marshaltoString(tcPr, true, true, Context.jc, 
 		      				"http://schemas.openxmlformats.org/wordprocessingml/2006/main", "tcPr", 
 		      				org.docx4j.wml.TcPr.class));
@@ -161,8 +161,7 @@ public class TableModelCell {
 			// real cell
 			// colspan
 			try {
-				int gridSpan = tc.getTcPr().getGridSpan().getVal().intValue();
-				colspan = gridSpan;
+				colspan = tc.getTcPr().getGridSpan().getVal().intValue();
 			} catch (NullPointerException ne) {
 				// no gridSpan
 			}
@@ -226,10 +225,10 @@ public class TableModelCell {
 			s = "d";
 		else
 			s = "r";
-		s += "(" + row + "," + col + ")";
+		s += "(" + row + ',' + col + ')';
 		s += getColspan();
 		s += rowspan;
-		return s + " ";
+		return s + ' ';
 	}
 
 	/*

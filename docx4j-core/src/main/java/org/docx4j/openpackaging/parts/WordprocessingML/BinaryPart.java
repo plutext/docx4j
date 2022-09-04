@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BinaryPart extends Part {
 	
-	protected static Logger log = LoggerFactory.getLogger(BinaryPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(BinaryPart.class);
 	
 	
 	public BinaryPart(PartName partName) throws InvalidFormatException {

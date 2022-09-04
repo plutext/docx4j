@@ -89,42 +89,41 @@ public abstract class AbstractVisitorExporterDelegate<CS extends AbstractConvers
     	}
     	
     	List<ConversionSectionWrapper> sectionWrappers = conversionContext.getSections().getList();
-    	for (int secindex=0; secindex < sectionWrappers.size(); secindex++) {
-    		ConversionSectionWrapper sectionWrapper = sectionWrappers.get(secindex);
-    		conversionContext.getSections().next();
-    		
-    		sectionRoot = createSectionRoot(conversionContext, document, sectionWrapper, currentParent);
-    		if (sectionRoot != null) {
-    			currentParent.appendChild(sectionRoot);
-    			currentParent = sectionRoot;
-    		}
-    		appendSectionHeader(conversionContext, document, sectionWrapper, currentParent);
-    		sectionRootBody = createSectionBody(conversionContext, document, sectionWrapper, currentParent);
-    		if (sectionRootBody != null) {
-    			currentParent.appendChild(sectionRootBody);
-    			currentParent = sectionRootBody;
-    		}
-    		
-    		generateBodyContent(conversionContext, 
-    				document, 
-    				sectionWrapper.getContent(), 
-    				currentParent);
-    		
-    		currentParent = sectionRoot;
-    		if (currentParent == null) {
-    			currentParent = documentRootBody;
-    			if (currentParent == null) {
-    				currentParent = documentRoot;
-    			}
-    		}
-    		
-    		appendSectionFooter(conversionContext, document, sectionWrapper, currentParent);
-    		
-    		currentParent = documentRootBody;
-    		if (currentParent == null) {
+		for (ConversionSectionWrapper sectionWrapper : sectionWrappers) {
+			conversionContext.getSections().next();
+
+			sectionRoot = createSectionRoot(conversionContext, document, sectionWrapper, currentParent);
+			if (sectionRoot != null) {
+				currentParent.appendChild(sectionRoot);
+				currentParent = sectionRoot;
+			}
+			appendSectionHeader(conversionContext, document, sectionWrapper, currentParent);
+			sectionRootBody = createSectionBody(conversionContext, document, sectionWrapper, currentParent);
+			if (sectionRootBody != null) {
+				currentParent.appendChild(sectionRootBody);
+				currentParent = sectionRootBody;
+			}
+
+			generateBodyContent(conversionContext,
+					document,
+					sectionWrapper.getContent(),
+					currentParent);
+
+			currentParent = sectionRoot;
+			if (currentParent == null) {
+				currentParent = documentRootBody;
+				if (currentParent == null) {
+					currentParent = documentRoot;
+				}
+			}
+
+			appendSectionFooter(conversionContext, document, sectionWrapper, currentParent);
+
+			currentParent = documentRootBody;
+			if (currentParent == null) {
 				currentParent = documentRoot;
-    		}
-    	}
+			}
+		}
     	
     	appendDocumentFooter(conversionContext, document, documentRoot); 
     	

@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ResolvedLayout implements Cloneable {
 	
-	protected static Logger log = LoggerFactory.getLogger(ResolvedLayout.class);
+	protected static final Logger log = LoggerFactory.getLogger(ResolvedLayout.class);
 	
 	private CTBackground bg;
 	/**
@@ -135,7 +135,7 @@ public class ResolvedLayout implements Cloneable {
 	
 	/**
 	 * Create a ResolvedLayout for a SlidePart.
-	 * @param slideLayoutPart
+	 * @param slidePart
 	 * @return
 	 */
 	public static ResolvedLayout resolveSlideLayout(SlidePart slidePart) {

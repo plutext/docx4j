@@ -230,16 +230,14 @@ public class UnzippedPartStore implements PartStore {
 
 		String targetName = part.getPartName().getName().substring(1);
 
-		String filePath = dir.getPath() + dir.separator + targetName;
+		String filePath = dir.getPath() + File.separator + targetName;
 
 		File file = new File(filePath);
 		file.getParentFile().mkdirs();
 
-		try {
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 
-			FileOutputStream fos = new FileOutputStream(file);
 	        part.getData().writeDocument( fos );
-	        fos.close();
 
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling CustomXmlDataStoragePart " + part.getPartName(), e);
@@ -251,13 +249,11 @@ public class UnzippedPartStore implements PartStore {
 
 		String targetName = part.getPartName().getName().substring(1);
 
-		String filePath = dir.getPath() + dir.separator + targetName;
+		String filePath = dir.getPath() + File.separator + targetName;
 		File file = new File(filePath);
 		file.getParentFile().mkdirs();
 
-		try {
-
-			FileOutputStream fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 
 		   Document doc =  part.getDocument();
 
@@ -278,8 +274,6 @@ public class UnzippedPartStore implements PartStore {
 			 XmlUtils.getTransformerFactory().newTransformer().transform(source,
 					 new StreamResult(fos) );
 
-		    fos.close();
-
 		} catch (Exception e) {
 			throw new Docx4JException("Error marshalling XmlPart " + part.getPartName(), e);
 		}
@@ -297,14 +291,11 @@ public class UnzippedPartStore implements PartStore {
 		file.getParentFile().mkdirs();
 
 
-		try {
-			FileOutputStream fos;
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 
 	        if (((BinaryPart)part).isLoaded() ) {
 
-	        	fos = new FileOutputStream(file);
 		        fos.write( ((BinaryPart)part).getBytes() );
-			    fos.close();
 
 	        } else {
 
@@ -323,8 +314,6 @@ public class UnzippedPartStore implements PartStore {
 	        		InputStream is = sourcePartStore.loadPart(part.getPartName().getName().substring(1));
 	        		int read = 0;
 	        		byte[] bytes = new byte[1024];
-
-		        	fos = new FileOutputStream(file);
 
 	        		while ((read = is.read(bytes)) != -1) {
 	        			fos.write(bytes, 0, read);

@@ -223,10 +223,10 @@ public class PFMFile {
             log.trace(i + " kerning pairs");
         }
         while (i > 0) {
-            int g1 = (int) inStream.readByte();
+            int g1 = inStream.readByte();
             i--;
 
-            int g2 = (int) inStream.readByte();
+            int g2 = inStream.readByte();
 
             int adj = inStream.readShort();
             if (adj > 0x8000) {

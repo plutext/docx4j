@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ProtectionSettings {
 	
-	protected static Logger log = LoggerFactory.getLogger(ProtectionSettings.class);	
+	protected static final Logger log = LoggerFactory.getLogger(ProtectionSettings.class);
 	
 	protected OpcPackage pkg;
 	

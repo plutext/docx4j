@@ -216,7 +216,7 @@ public class CryptoFunctions {
         
         try {
             // Ensure the JCE policies files allow for this sized key
-            if (Cipher.getMaxAllowedKeyLength(cipherAlgorithm.jceId) < keySizeInBytes*8) {
+            if (Cipher.getMaxAllowedKeyLength(cipherAlgorithm.jceId) < keySizeInBytes << 3) {
                 throw new EncryptedDocumentException("Export Restrictions in place - please install JCE Unlimited Strength Jurisdiction Policy files");
             }
 
@@ -225,9 +225,9 @@ public class CryptoFunctions {
                 cipher = Cipher.getInstance(cipherAlgorithm.jceId);
             } else if (cipherAlgorithm.needsBouncyCastle) {
                 registerBouncyCastle();
-                cipher = Cipher.getInstance(cipherAlgorithm.jceId + "/" + chain.jceId + "/" + padding, "BC");
+                cipher = Cipher.getInstance(cipherAlgorithm.jceId + '/' + chain.jceId + '/' + padding, "BC");
             } else {
-                cipher = Cipher.getInstance(cipherAlgorithm.jceId + "/" + chain.jceId + "/" + padding);
+                cipher = Cipher.getInstance(cipherAlgorithm.jceId + '/' + chain.jceId + '/' + padding);
             }
             
             if (vec == null) {
@@ -235,7 +235,7 @@ public class CryptoFunctions {
             } else {
                 AlgorithmParameterSpec aps;
                 if (cipherAlgorithm == CipherAlgorithm.rc2) {
-                    aps = new RC2ParameterSpec(key.getEncoded().length*8, vec);
+                    aps = new RC2ParameterSpec(key.getEncoded().length << 3, vec);
                 } else {
                     aps = new IvParameterSpec(vec);
                 }
@@ -368,7 +368,7 @@ public class CryptoFunctions {
         //Maximum length of the password is 15 chars.
         final int maxPasswordLength = 15; 
         
-        if (!"".equals(password)) {
+        if (password == null || !password.isEmpty()) {
             // Truncate the password to 15 characters
             password = password.substring(0, Math.min(password.length(), maxPasswordLength));
 
@@ -539,7 +539,6 @@ public class CryptoFunctions {
         /*
          *  SET Intermediate3 TO Intermediate1 BITWISE OR Intermediate2
          */
-        short intermediate3 = (short)(intermediate1 | intermediate2);
-        return intermediate3;
+        return (short)(intermediate1 | intermediate2);
     }
 }

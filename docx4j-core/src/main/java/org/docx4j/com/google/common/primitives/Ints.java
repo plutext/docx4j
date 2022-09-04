@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.Beta;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
@@ -131,12 +134,7 @@ public final class Ints {
    * @return {@code true} if {@code array[i] == target} for some value of {@code i}
    */
   public static boolean contains(int[] array, int target) {
-    for (int value : array) {
-      if (value == target) {
-        return true;
-      }
-    }
-    return false;
+    return Arrays.stream(array).anyMatch(value -> value == target);
   }
 
   /**
@@ -153,12 +151,7 @@ public final class Ints {
 
   // TODO(kevinb): consider making this public
   private static int indexOf(int[] array, int target, int start, int end) {
-    for (int i = start; i < end; i++) {
-      if (array[i] == target) {
-        return i;
-      }
-    }
-    return -1;
+    return IntStream.range(start, end).filter(i -> array[i] == target).findFirst().orElse(-1);
   }
 
   /**
@@ -204,12 +197,7 @@ public final class Ints {
 
   // TODO(kevinb): consider making this public
   private static int lastIndexOf(int[] array, int target, int start, int end) {
-    for (int i = end - 1; i >= start; i--) {
-      if (array[i] == target) {
-        return i;
-      }
-    }
-    return -1;
+    return IntStream.iterate(end - 1, i -> i >= start, i -> i - 1).filter(i -> array[i] == target).findFirst().orElse(-1);
   }
 
   /**
@@ -277,10 +265,7 @@ public final class Ints {
    * @return a single array containing all the values from the source arrays, in order
    */
   public static int[] concat(int[]... arrays) {
-    int length = 0;
-    for (int[] array : arrays) {
-      length += array.length;
-    }
+    int length = Arrays.stream(arrays).mapToInt(array -> array.length).sum();
     int[] result = new int[length];
     int pos = 0;
     for (int[] array : arrays) {
@@ -407,12 +392,7 @@ public final class Ints {
     }
 
     // For pre-sizing a builder, just get the right order of magnitude
-    StringBuilder builder = new StringBuilder(array.length * 5);
-    builder.append(array[0]);
-    for (int i = 1; i < array.length; i++) {
-      builder.append(separator).append(array[i]);
-    }
-    return builder.toString();
+    return IntStream.range(1, array.length).mapToObj(i -> separator + array[i]).collect(Collectors.joining("", String.valueOf(array[0]), ""));
   }
 
   /**
@@ -526,12 +506,8 @@ public final class Ints {
 
     Object[] boxedArray = collection.toArray();
     int len = boxedArray.length;
-    int[] array = new int[len];
-    for (int i = 0; i < len; i++) {
-      // checkNotNull for GWT (do not optimize)
-      array[i] = ((Number) checkNotNull(boxedArray[i])).intValue();
-    }
-    return array;
+    // checkNotNull for GWT (do not optimize)
+    return Arrays.stream(boxedArray).mapToInt(o -> ((Number) checkNotNull(o)).intValue()).toArray();
   }
 
   /**
@@ -654,12 +630,7 @@ public final class Ints {
         if (that.size() != size) {
           return false;
         }
-        for (int i = 0; i < size; i++) {
-          if (array[start + i] != that.array[that.start + i]) {
-            return false;
-          }
-        }
-        return true;
+        return IntStream.range(0, size).noneMatch(i -> array[start + i] != that.array[that.start + i]);
       }
       return super.equals(object);
     }

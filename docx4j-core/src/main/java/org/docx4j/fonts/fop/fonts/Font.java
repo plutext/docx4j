@@ -27,6 +27,7 @@ package org.docx4j.fonts.fop.fonts;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -331,7 +332,7 @@ public class Font implements Substitutable, Positionable {
      */
     @Override
     public String toString() {
-        StringBuffer sbuf = new StringBuffer(super.toString());
+        StringBuilder sbuf = new StringBuilder(super.toString());
         sbuf.append('{');
         /*
         sbuf.append(fontFamily);
@@ -405,7 +406,7 @@ public class Font implements Substitutable, Positionable {
                 } else if (c == '\u2060') {
                     width = 0;
                 } else if (c == '\u3000') {
-                    width = getCharWidth(' ') * 2;
+                    width = getCharWidth(' ') << 1;
                 } else if (c == '\ufeff') {
                     width = 0;
                 } else {
@@ -449,12 +450,10 @@ public class Font implements Substitutable, Positionable {
             return 0;
         }
         int wordLength = word.length();
-        int width = 0;
+        int width;
         char[] characters = new char[wordLength];
         word.getChars(0, wordLength, characters, 0);
-        for (int i = 0; i < wordLength; i++) {
-            width += getCharWidth(characters[i]);
-        }
+        width = IntStream.range(0, wordLength).map(i -> getCharWidth(characters[i])).sum();
         return width;
     }
 

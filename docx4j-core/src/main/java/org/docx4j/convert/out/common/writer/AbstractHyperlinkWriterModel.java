@@ -285,7 +285,7 @@ public class AbstractHyperlinkWriterModel implements ConversionHyperlinkHandler.
 	public String toString() {
 		return "HyperlinkModel [target=" + target + ", external=" + external
 				+ ", anchor=" + anchor + ", docLocation=" + docLocation
-				+ ", rId=" + rId + ", tgtFrame=" + tgtFrame + "]";
+				+ ", rId=" + rId + ", tgtFrame=" + tgtFrame + ']';
 	}
 
 }

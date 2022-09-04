@@ -25,6 +25,9 @@
 
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * Class DocumentDescriptor
  *
@@ -110,14 +113,8 @@ public class DocumentDescriptor
 
     public String toString()
     {
-        StringBuffer buffer = new StringBuffer(40 * (path.length() + 1));
 
-        for (int j = 0; j < path.length(); j++)
-        {
-            buffer.append(path.getComponent(j)).append("/");
-        }
-        buffer.append(name);
-        return buffer.toString();
+        return IntStream.range(0, path.length()).mapToObj(j -> path.getComponent(j) + '/').collect(Collectors.joining("", "", name));
     }
 }   // end public class DocumentDescriptor
 

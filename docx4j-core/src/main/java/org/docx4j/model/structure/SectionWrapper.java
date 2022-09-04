@@ -28,7 +28,7 @@ import org.docx4j.wml.SectPr;
 
 public class SectionWrapper {
 	
-	protected static Logger log = LoggerFactory.getLogger(SectionWrapper.class);		
+	protected static final Logger log = LoggerFactory.getLogger(SectionWrapper.class);
 	
 	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) {
 		// This should work even if sectPr is null

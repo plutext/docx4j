@@ -197,13 +197,13 @@ public class GlyphMappingTable {
                     int ge = r.getEnd();
                     int mi = r.getIndex();
                     if ((gs < 0) || (gs > 65535)) {
-                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + "," + ge + "]: bad start index");
+                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + ',' + ge + "]: bad start index");
                     } else if ((ge < 0) || (ge > 65535)) {
-                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + "," + ge + "]: bad end index");
+                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + ',' + ge + "]: bad end index");
                     } else if (gs > ge) {
-                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + "," + ge + "]: start index exceeds end index");
+                        throw new AdvancedTypographicTableFormatException("illegal glyph range: [" + gs + ',' + ge + "]: start index exceeds end index");
                     } else if (gs < gidMax) {
-                        throw new AdvancedTypographicTableFormatException("out of order glyph range: [" + gs + "," + ge + "]");
+                        throw new AdvancedTypographicTableFormatException("out of order glyph range: [" + gs + ',' + ge + ']');
                     } else if (mi < 0) {
                         throw new AdvancedTypographicTableFormatException("illegal mapping index: " + mi);
                     } else {
@@ -231,7 +231,7 @@ public class GlyphMappingTable {
         }
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append('{');
             for (int i = 0, n = sa.length; i < n; i++) {
                 if (i > 0) {

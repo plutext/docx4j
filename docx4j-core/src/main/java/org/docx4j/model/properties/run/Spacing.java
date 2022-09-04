@@ -39,7 +39,7 @@ import org.w3c.dom.css.CSSValue;
  */
 public class Spacing extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Spacing.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Spacing.class);
 	
 	public final static String CSS_NAME = "letter-spacing"; 
 	public final static String FO_NAME  = "letter-spacing"; 

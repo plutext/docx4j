@@ -21,6 +21,7 @@ package org.docx4j.toc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.JAXBElement;
 
@@ -71,13 +72,11 @@ public class TocHelper {
         	obj = ((SdtElement)obj).getSdtContent(); // implements ContentAccessor    			
         }
 
-        if (obj.getClass().equals(toSearch)) {
+        if (obj.getClass() == toSearch) {
             result.add(obj);
         } else if (obj instanceof ContentAccessor) {
             List<?> children = ((ContentAccessor) obj).getContent();
-            for (Object child : children) {
-                result.addAll(getAllElementsFromObject(child, toSearch));
-            }
+            result = children.stream().flatMap(child -> getAllElementsFromObject(child, toSearch).stream()).collect(Collectors.toList());
         } 
         
         

@@ -62,7 +62,7 @@ public class DomToXPathMap {
         walkTree(document);
     }
 
-    private String getLocalName(Node sourceNode) {
+    private static String getLocalName(Node sourceNode) {
     	
     	if (sourceNode.getLocalName()==null) {
     		// eg element was created using createElement() 
@@ -127,8 +127,7 @@ public class DomToXPathMap {
                 int childrenLength = children.getLength();
 
                 
-                if (children == null 
-                		|| childrenLength==0) {
+                if (childrenLength == 0) {
                 	
                 	// Record the fact this is an empty leaf node
                 	pathMap.put(nxpath, "");                	
@@ -202,17 +201,11 @@ public class DomToXPathMap {
             	// better than doing getTextContent() at the element level??
             	            	
             	String xpath = getXPath();
-            	String existing = pathMap.get(xpath);
-            	if (existing==null) {
-//            		if (sourceNode.getNodeValue().endsWith("\n")
-//            				|| sourceNode.getNodeValue().endsWith("\r")) {
-            			pathMap.put(xpath, sourceNode.getNodeValue());  // some whitespace is significant
-            	} else {
-            		// Happens a lot
-            		//log.debug("concat..");
-            		pathMap.put(xpath, existing + sourceNode.getNodeValue());
-            		
-            	}
+				//            		if (sourceNode.getNodeValue().endsWith("\n")
+				//            				|| sourceNode.getNodeValue().endsWith("\r")) {
+				// Happens a lot
+				//log.debug("concat..");
+				pathMap.merge(xpath, sourceNode.getNodeValue(), (a, b) -> a + b);  // some whitespace is significant
 //            	log.debug("Put " + xpath + "=" + sourceNode.getNodeValue());
             	
                 break;

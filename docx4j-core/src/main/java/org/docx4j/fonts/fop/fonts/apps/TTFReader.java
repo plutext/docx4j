@@ -124,7 +124,7 @@ public class TTFReader extends AbstractFontReader {
 
         TTFReader app = new TTFReader();
 
-        log.info("TTF Reader for Apache FOP " + Version.getVersion() + "\n");
+        log.info("TTF Reader for Apache FOP " + Version.getVersion() + '\n');
 
         if (options.get("-enc") != null) {
             String enc = (String)options.get("-enc");
@@ -408,7 +408,7 @@ public class TTFReader extends AbstractFontReader {
         }
     }
 
-    private void generateDOM4SingleByteExtras(Element parent, TTFFile ttf, boolean isCid) {
+    private static void generateDOM4SingleByteExtras(Element parent, TTFFile ttf, boolean isCid) {
         Element el;
         Document doc = parent.getOwnerDocument();
 
@@ -438,7 +438,7 @@ public class TTFReader extends AbstractFontReader {
         }
     }
 
-    private void generateDOM4Kerning(Element parent, TTFFile ttf, boolean isCid) {
+    private static void generateDOM4Kerning(Element parent, TTFFile ttf, boolean isCid) {
         Element el;
         Document doc = parent.getOwnerDocument();
 
@@ -495,11 +495,11 @@ public class TTFReader extends AbstractFontReader {
                 if (version < METRICS_VERSION) {
                     err = "Incompatible " + METRICS_VERSION_ATTR
                         + " value (" + version + ", should be " + METRICS_VERSION
-                        + ")";
+                        + ')';
                 }
             } catch (NumberFormatException e) {
                 err = "Invalid " + METRICS_VERSION_ATTR
-                    + " attribute value (" + str + ")";
+                    + " attribute value (" + str + ')';
             }
         }
 

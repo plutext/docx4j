@@ -42,7 +42,7 @@ public final class CharMirror {
      * @return the resulting string
      */
     public static String mirror(String s) {
-        StringBuffer sb = new StringBuffer(s);
+        StringBuilder sb = new StringBuilder(s);
         for (int i = 0, n = sb.length(); i < n; ++i) {
             sb.setCharAt(i, (char) mirror(sb.charAt(i)));
         }

@@ -47,7 +47,7 @@ import org.w3c.dom.Node;
 
 public abstract class DocumentPart<E> extends JaxbXmlPartAltChunkHost<E> {
 	
-	protected static Logger log = LoggerFactory.getLogger(DocumentPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(DocumentPart.class);
 	
 	
 	/** Parts which can be the target of a relationship from either

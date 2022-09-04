@@ -29,7 +29,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PBorderRight extends AbstractPBorder {
 	
-	protected static Logger log = LoggerFactory.getLogger(PBorderRight.class);		
+	protected static final Logger log = LoggerFactory.getLogger(PBorderRight.class);
 	
 	private final static String CSS_NAME_BASE = "border-right"; 	
 	public final static String FO_NAME  = "border-right";

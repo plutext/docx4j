@@ -572,14 +572,8 @@ public class NPOIFSFileSystem extends BlockStore
        // Now store a reference to the BAT in the required place 
        if(_header.getBATCount() >= 109) {
           // Needs to come from an XBAT
-          BATBlock xbat = null;
-          for(BATBlock x : _xbat_blocks) {
-             if(x.hasFreeSectors()) {
-                xbat = x;
-                break;
-             }
-          }
-          if(xbat == null) {
+          BATBlock xbat = _xbat_blocks.stream().filter(BATBlock::hasFreeSectors).findFirst().orElse(null);
+           if(xbat == null) {
              // Oh joy, we need a new XBAT too...
              xbat = createBAT(offset+1, false);
              // Allocate our new BAT as the first block in the XBAT
@@ -923,7 +917,7 @@ public class NPOIFSFileSystem extends BlockStore
         {
             return (( POIFSViewable ) getRoot()).getViewableIterator();
         }
-        return Collections.emptyList().iterator();
+        return Collections.emptyIterator();
     }
 
     /**

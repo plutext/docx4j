@@ -110,7 +110,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 			String key = model.getFldArgument();
 			
 			try {
-				String value = dpr.getValue(key).toString();
+				String value = dpr.getValue(key);
 				log.debug("= " + value);
 				return FormattingSwitchHelper.applyFormattingSwitch(context.getWmlPackage(), model, value);
 			} catch (FieldValueException e) {
@@ -160,7 +160,7 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 		handlers.put(handler.getName(), handler);
 	}
 	
-	protected FldSimpleNodeWriterHandler createDefaultHandler() {
+	protected static FldSimpleNodeWriterHandler createDefaultHandler() {
 		return new FldSimpleNodeWriterHandler() {
 			@Override
 			public String getName() {
@@ -297,10 +297,10 @@ public abstract class AbstractFldSimpleWriter extends AbstractSimpleWriter {
 				doc.createElement(elementName));
 	}
 
-	private RPr getRPr(List<Object> content) {
-		for (int i=0; i<content.size(); i++) {
-			if (content.get(i) instanceof R) {
-				return ((R)content.get(i)).getRPr();
+	private static RPr getRPr(List<Object> content) {
+		for (Object o : content) {
+			if (o instanceof R) {
+				return ((R) o).getRPr();
 			}
 		}
 		return null;

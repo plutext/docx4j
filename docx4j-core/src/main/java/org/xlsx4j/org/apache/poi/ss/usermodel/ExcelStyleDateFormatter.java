@@ -192,7 +192,7 @@ public class ExcelStyleDateFormatter extends SimpleDateFormat {
         }
         
         ExcelStyleDateFormatter other = (ExcelStyleDateFormatter) o;
-        return dateToBeFormatted == other.dateToBeFormatted;
+        return Double.compare(dateToBeFormatted, other.dateToBeFormatted) == 0;
     }
     
     @Override

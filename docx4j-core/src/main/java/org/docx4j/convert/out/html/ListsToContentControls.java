@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ListsToContentControls {
 	
-	public static Logger log = LoggerFactory.getLogger(ListsToContentControls.class);		
+	public static final Logger log = LoggerFactory.getLogger(ListsToContentControls.class);
 	
 	public ListsToContentControls(WordprocessingMLPackage wmlPackage) {
 		this.wmlPackage = wmlPackage;
@@ -197,12 +197,12 @@ public class ListsToContentControls {
 		ListLevel level = ald.getListLevels().get(ilvl.toString());
 		if (level==null) {
 			// Default to UL
-			log.warn("Couldn't find level " + ilvl.toString() + " in instance list ");
+			log.warn("Couldn't find level " + ilvl + " in instance list ");
 			tag.setVal("HTML_ELEMENT=OL");
 			return;			
 		}
 		
-		if (level.IsBullet()) {
+		if (level.isBullet()) {
 			tag.setVal("HTML_ELEMENT=UL");			
 		} else {
 			tag.setVal("HTML_ELEMENT=OL");						

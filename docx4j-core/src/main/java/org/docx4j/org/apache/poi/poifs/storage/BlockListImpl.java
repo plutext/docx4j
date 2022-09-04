@@ -24,6 +24,7 @@
 package org.docx4j.org.apache.poi.poifs.storage;
 
 import java.io.IOException;
+import java.util.stream.IntStream;
 
 /**
  * A simple implementation of BlockList
@@ -155,10 +156,6 @@ abstract class BlockListImpl implements BlockList {
      * Returns the number of remaining blocks
      */
     protected int remainingBlocks() {
-       int c = 0;
-       for(int i=0; i<_blocks.length; i++) {
-          if(_blocks[i] != null) c++;
-       }
-       return c;
+        return (int) IntStream.range(0, _blocks.length).filter(i -> _blocks[i] != null).count();
     }
 }

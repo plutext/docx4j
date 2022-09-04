@@ -150,7 +150,7 @@ final class TimeoutFuture<V> extends FluentFuture.TrustedFuture<V> {
     ListenableFuture<? extends V> localInputFuture = delegateRef;
     ScheduledFuture<?> localTimer = timer;
     if (localInputFuture != null) {
-      String message = "inputFuture=[" + localInputFuture + "]";
+      String message = "inputFuture=[" + localInputFuture + ']';
       if (localTimer != null) {
         final long delay = localTimer.getDelay(TimeUnit.MILLISECONDS);
         // Negative delays look confusing in an error message

@@ -26,7 +26,7 @@ public class BrokenStyleRemediator {
 		  
   	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(BrokenStyleRemediator.class);
+	protected static final Logger log = LoggerFactory.getLogger(BrokenStyleRemediator.class);
 	
     public static void remediate(Style s) {
     	

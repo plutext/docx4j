@@ -48,7 +48,7 @@ public class Bidi extends AbstractParagraphProperty {
 	 *                
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(Bidi.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Bidi.class);
 		
 	
 	

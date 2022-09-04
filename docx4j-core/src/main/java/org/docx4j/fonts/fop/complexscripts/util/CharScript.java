@@ -732,8 +732,7 @@ public final class CharScript {
         Map m = new HashMap();
         for (int i = 0, n = cs.length(); i < n; i++) {
             int c = cs.charAt(i);
-            int s = scriptOf(c);
-            Integer k = s;
+            Integer k = scriptOf(c);
             Integer v = (Integer) m.get(k);
             if (v != null) {
                 m.put(k, v + 1);
@@ -745,8 +744,7 @@ public final class CharScript {
         int cMax = -1;
         for (Object o : m.entrySet()) {
             Map.Entry e = (Map.Entry) o;
-            Integer k = (Integer) e.getKey();
-            int s = k;
+            int s = (Integer) e.getKey();
             switch (s) {
                 case SCRIPT_UNDETERMINED:
                 case SCRIPT_UNCODED:

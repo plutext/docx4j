@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.CustomFont;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -58,7 +57,7 @@ import org.docx4j.fonts.fop.fonts.truetype.TTFFile;
 public class FontInfoFinder {
 
     /** logging instance */
-    public final  Logger log = LoggerFactory.getLogger(FontInfoFinder.class);
+    public static final Logger log = LoggerFactory.getLogger(FontInfoFinder.class);
 
     private FontEventListener eventListener;
 
@@ -94,10 +93,9 @@ public class FontInfoFinder {
 
         String style = guessStyle(customFont, searchName);
         int weight; //= customFont.getWeight();
-        int guessedWeight = FontUtil.guessWeight(searchName);
         //We always take the guessed weight for now since it yield much better results.
         //OpenType's OS/2 usWeightClass value proves to be unreliable.
-        weight = guessedWeight;
+        weight = FontUtil.guessWeight(searchName);
 
         //Full Name usually includes style/weight info so don't use these traits
         //If we still want to use these traits, we have to make FontInfo.fontLookup() smarter
@@ -127,7 +125,7 @@ public class FontInfoFinder {
         return quotePattern.matcher(name).replaceAll("");
     }
 
-    private String guessStyle(CustomFont customFont, String fontName) {
+    private static String guessStyle(CustomFont customFont, String fontName) {
         // style
         String style = Font.STYLE_NORMAL;
         if (customFont.getItalicAngle() > 0) {
@@ -249,12 +247,10 @@ public class FontInfoFinder {
                 }
                 EmbedFontInfo fi = getFontInfoFromCustomFont(fontURI, customFont, fontCache,
                         resourceResolver);
-                if (fi != null) {
-                    embedFontInfoList.add(fi);
-                }
+                embedFontInfoList.add(fi);
             }
             return embedFontInfoList.toArray(
-                    new EmbedFontInfo[embedFontInfoList.size()]);
+                    new EmbedFontInfo[0]);
         } else {
             // The normal case
             try {
@@ -275,11 +271,7 @@ public class FontInfoFinder {
                 return null;
             }
             EmbedFontInfo fi = getFontInfoFromCustomFont(fontURI, customFont, fontCache, resourceResolver);
-            if (fi != null) {
-                return new EmbedFontInfo[] {fi};
-            } else {
-                return null;
-            }
+            return new EmbedFontInfo[] {fi};
         }
 
     }

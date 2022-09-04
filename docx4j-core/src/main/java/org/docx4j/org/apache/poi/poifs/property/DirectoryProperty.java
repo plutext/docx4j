@@ -268,7 +268,7 @@ public class DirectoryProperty extends Property implements Parent, Iterable<Prop
 
         if (_children_names.contains(name))
         {
-            throw new IOException("Duplicate name \"" + name + "\"");
+            throw new IOException("Duplicate name \"" + name + '"');
         }
         _children_names.add(name);
         _children.add(property);

@@ -57,7 +57,7 @@ import java.io.InputStream;
  */
 public class SpreadsheetMLPackage extends OpcPackage {
 	
-	protected static Logger log = LoggerFactory.getLogger(SpreadsheetMLPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(SpreadsheetMLPackage.class);
 		
 	
 	/**

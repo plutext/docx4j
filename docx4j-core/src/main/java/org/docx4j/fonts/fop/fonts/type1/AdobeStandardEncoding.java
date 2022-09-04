@@ -414,12 +414,7 @@ public enum AdobeStandardEncoding {
     }
 
     public static String getCharFromCodePoint(int codePoint) {
-        for (AdobeStandardEncoding encoding : CACHE.values()) {
-            if (encoding.getAdobeCodePoint() == codePoint) {
-                return encoding.getAdobeName();
-            }
-        }
-        return "";
+        return CACHE.values().stream().filter(encoding -> encoding.getAdobeCodePoint() == codePoint).findFirst().map(AdobeStandardEncoding::getAdobeName).orElse("");
     }
 
     public static char getUnicodeFromCodePoint(int codePoint) {

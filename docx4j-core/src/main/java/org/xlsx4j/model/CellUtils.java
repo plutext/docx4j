@@ -38,7 +38,7 @@ import org.xlsx4j.sml.Cell;
 
 public class CellUtils {
 
-	protected static Logger log = LoggerFactory.getLogger(CellUtils.class);
+	protected static final Logger log = LoggerFactory.getLogger(CellUtils.class);
 	
 	protected CellUtils() {
 		// no instances of this class
@@ -148,7 +148,7 @@ public class CellUtils {
     public static RuntimeException typeMismatch(int expectedTypeCode, int actualTypeCode, boolean isFormulaCell) {
         String msg = "Cannot get a "
             + getCellTypeName(expectedTypeCode) + " value from a "
-            + getCellTypeName(actualTypeCode) + " " + (isFormulaCell ? "formula " : "") + "cell";
+            + getCellTypeName(actualTypeCode) + ' ' + (isFormulaCell ? "formula " : "") + "cell";
         return new IllegalStateException(msg);
     }    
     

@@ -176,23 +176,22 @@ public class NPOIFSMiniStore extends BlockStore
        
        // First up, do we have any spare ones?
        int offset = 0;
-       for(int i=0; i<_sbat_blocks.size(); i++) {
-          // Check this one
-          BATBlock sbat = _sbat_blocks.get(i);
-          if(sbat.hasFreeSectors()) {
-             // Claim one of them and return it
-             for(int j=0; j<sectorsPerSBAT; j++) {
-                int sbatValue = sbat.getValueAt(j);
-                if(sbatValue == POIFSConstants.UNUSED_BLOCK) {
-                   // Bingo
-                   return offset + j;
+        for (BATBlock sbat : _sbat_blocks) {
+            // Check this one
+            if (sbat.hasFreeSectors()) {
+                // Claim one of them and return it
+                for (int j = 0; j < sectorsPerSBAT; j++) {
+                    int sbatValue = sbat.getValueAt(j);
+                    if (sbatValue == POIFSConstants.UNUSED_BLOCK) {
+                        // Bingo
+                        return offset + j;
+                    }
                 }
-             }
-          }
-          
-          // Move onto the next SBAT
-          offset += sectorsPerSBAT;
-       }
+            }
+
+            // Move onto the next SBAT
+            offset += sectorsPerSBAT;
+        }
        
        // If we get here, then there aren't any
        //  free sectors in any of the SBATs

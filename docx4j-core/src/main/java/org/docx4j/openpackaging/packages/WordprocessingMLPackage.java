@@ -54,10 +54,7 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.*;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTSettings;
 import org.docx4j.wml.Document;
@@ -100,7 +97,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 	 * word/document.xml
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(WordprocessingMLPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(WordprocessingMLPackage.class);
 		
 	
 	// Main document
@@ -250,7 +247,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 		
-		ContentTypeManager ctm = new ContentTypeManager();
+		//ContentTypeManager ctm = new ContentTypeManager();
 		
 		WordprocessingMLPackage tmpPkg = (WordprocessingMLPackage)xmlPackage.get(); 
 		
@@ -453,9 +450,9 @@ public class WordprocessingMLPackage extends OpcPackage {
 		wmlPack.addTargetPart(wordDocumentPart);
 				
 		// Create a styles part
-		Part stylesPart = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
+		StyleDefinitionsPart stylesPart = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
 		try {
-			((org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart) stylesPart)
+			stylesPart
 					.unmarshalDefaultStyles();
 			
 			// Add the styles part to the main document part relationships
@@ -525,27 +522,27 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		Boolean removeProofErrors = Boolean.FALSE;		
 		public void setRemoveProofErrors(boolean val) {
-			removeProofErrors = new Boolean(val);
+			removeProofErrors = val;
 		}
 
 		Boolean removeContentControls = Boolean.FALSE;		
 		public void setRemoveContentControls(boolean val) {
-			removeContentControls = new Boolean(val);
+			removeContentControls = val;
 		}
 		
 		Boolean removeRsids = Boolean.FALSE;		
 		public void setRemoveRsids(boolean val) {
-			removeRsids = new Boolean(val);
+			removeRsids = val;
 		}
 		
 		Boolean tidyForDocx4all = Boolean.FALSE;		
 		public void setTidyForDocx4all(boolean val) {
-			tidyForDocx4all = new Boolean(val);
+			tidyForDocx4all = val;
 		}
 		
 		Boolean removeBookmarks = Boolean.FALSE;		
 		public void setRemoveBookmarks(boolean val) {
-			removeBookmarks = new Boolean(val);
+			removeBookmarks = val;
 		}
 
 		

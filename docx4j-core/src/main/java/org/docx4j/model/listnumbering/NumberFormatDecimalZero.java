@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NumberFormatDecimalZero extends NumberFormat {
 	
-	protected static Logger log = LoggerFactory.getLogger(NumberFormatDecimalZero.class);
+	protected static final Logger log = LoggerFactory.getLogger(NumberFormatDecimalZero.class);
 	
 	public String format( int in ) {
 

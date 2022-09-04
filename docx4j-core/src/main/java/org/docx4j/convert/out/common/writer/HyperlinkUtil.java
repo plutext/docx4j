@@ -80,9 +80,9 @@ public class HyperlinkUtil {
 		if (model.isExternal()) {
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {
-				location = location + "#" + internalTarget;
+				location = location + '#' + internalTarget;
 			}
-			location = "url(" + location + ")";
+			location = "url(" + location + ')';
 			ret.setAttribute("external-destination", location);
 		}
 		else {
@@ -104,12 +104,12 @@ public class HyperlinkUtil {
 		if (model.isExternal()) {
 			location = externalTarget;
 			if ((internalTarget != null) && (internalTarget.length() > 0)) {
-				location = location + "#" + internalTarget;
+				location = location + '#' + internalTarget;
 			}
 			ret.setAttribute("href", location);
 		}
 		else {
-			ret.setAttribute("href", "#" + internalTarget);
+			ret.setAttribute("href", '#' + internalTarget);
 		}
 		if ((model.getTgtFrame() != null) && (model.getTgtFrame().length() > 0)) {
 			ret.setAttribute("target", model.getTgtFrame());

@@ -125,8 +125,7 @@ public class StandardEncryptor extends Encryptor {
     throws IOException, GeneralSecurityException {
         createEncryptionInfoEntry(dir);
         DataSpaceMapUtils.addDefaultDataSpace(dir);
-        OutputStream countStream = new StandardCipherOutputStream(dir);
-        return countStream;
+        return new StandardCipherOutputStream(dir);
     }
     
     protected class StandardCipherOutputStream extends FilterOutputStream implements POIFSWriterListener {
@@ -151,9 +150,8 @@ public class StandardEncryptor extends Encryptor {
             // KeyData.blockSize value. Any padding bytes can be used. Note that the StreamSize
             // field of the EncryptedPackage field specifies the number of bytes of 
             // unencrypted data as specified in section 2.3.4.4.
-            CipherOutputStream cryptStream = new CipherOutputStream(rawStream, getCipher(getSecretKey(), "PKCS5Padding"));
-            
-            this.out = cryptStream;
+
+            this.out = new CipherOutputStream(rawStream, getCipher(getSecretKey(), "PKCS5Padding"));
         }
         
         @Override

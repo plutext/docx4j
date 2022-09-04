@@ -57,7 +57,7 @@ import java.util.HashMap;
 
 public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Numbering> {
 	
-	private static Logger log = LoggerFactory.getLogger(NumberingDefinitionsPart.class);	
+	private static final Logger log = LoggerFactory.getLogger(NumberingDefinitionsPart.class);
 	
 	public NumberingDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -186,7 +186,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
         	// Get the target abstract num
         	ListNumberingDefinition lnd = getInstanceListDefinitions().get(concreteListId.toString());
         	if (lnd==null) {
-        		log.warn("No ListNumberingDefinition entry with ID " + concreteListId.toString());
+        		log.warn("No ListNumberingDefinition entry with ID " + concreteListId);
         	}
         	Numbering.AbstractNum linkedNum = lnd.getAbstractListDefinition().getAbstractNumNode();
 
@@ -363,9 +363,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		// Now do the same for the abstract definition
 		log.debug("Looking at abstract definition..");
 		Lvl abstractLvl = ll.getJaxbAbstractLvl();
-		Ind ind = getIndFromLvl(abstractLvl);
-		
-		return ind;
+
+		return getIndFromLvl(abstractLvl);
 	}
 	
 	private Ind getIndFromLvl(Lvl lvl) {

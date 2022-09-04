@@ -189,8 +189,7 @@ public class GlyphSubstitutionState extends GlyphProcessingState {
     public boolean apply(GlyphSubstitutionSubtable st) {
         assert st != null;
         updateSubtableState(st);
-        boolean applied = st.substitute(this);
-        return applied;
+        return st.substitute(this);
     }
 
     /**
@@ -248,7 +247,7 @@ public class GlyphSubstitutionState extends GlyphProcessingState {
 
     private static IntBuffer growBuffer(IntBuffer ib) {
         int capacity = ib.capacity();
-        int capacityNew = capacity * 2;
+        int capacityNew = capacity << 1;
         IntBuffer ibNew = IntBuffer.allocate(capacityNew);
         ib.rewind();
         return ibNew.put(ib);

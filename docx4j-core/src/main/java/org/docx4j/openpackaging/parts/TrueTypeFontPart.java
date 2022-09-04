@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TrueTypeFontPart extends AbstractFontPart {
 
-	private static Logger log = LoggerFactory.getLogger(TrueTypeFontPart.class);		
+	private static final Logger log = LoggerFactory.getLogger(TrueTypeFontPart.class);
 	
 
 	public TrueTypeFontPart(PartName partName) throws InvalidFormatException {
@@ -95,17 +95,14 @@ public class TrueTypeFontPart extends AbstractFontPart {
 				
 		
 		// Save the result
-		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
+		setF(new File(getTmpFontDir(), filenamePrefix + '-' +fontFileName +".ttf"));
 		getF().deleteOnExit();
 		String path = null; 
-		
-		java.io.FileOutputStream fos = null; 
-		try {
+
+		try (java.io.FileOutputStream fos = new java.io.FileOutputStream(getF());) {
 			path = getF().getCanonicalPath();
-			fos = new java.io.FileOutputStream(getF());
 			fos.write(fontData);
 			log.debug("wrote: " + fontData.length);
-			fos.close();
 		} catch (IOException e) {
 			log.error("Problem with " + path);
 			log.error(e.getMessage(), e);

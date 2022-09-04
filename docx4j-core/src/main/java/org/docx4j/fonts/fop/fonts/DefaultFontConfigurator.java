@@ -101,7 +101,7 @@ public class DefaultFontConfigurator implements FontConfigurator<EmbedFontInfo> 
             if (referencedFonts.size() > 0) {
                 FontTriplet.Matcher matcher = FontManagerConfigurator.createFontsMatcher(
                         referencedFonts, strict);
-                fontManager.updateReferencedFonts(fontInfoList, matcher);
+                FontManager.updateReferencedFonts(fontInfoList, matcher);
             }
             // Update font cache if it has changed
             fontManager.saveCache();

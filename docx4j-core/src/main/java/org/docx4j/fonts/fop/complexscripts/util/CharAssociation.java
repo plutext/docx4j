@@ -130,18 +130,17 @@ public class CharAssociation implements Cloneable {
      * @return true if this association is contained within [offset,offset+count)
      */
     public boolean contained(int offset, int count) {
-        int s = offset;
         int e = offset + count;
         if (!isDisjoint()) {
             int s0 = getStart();
             int e0 = getEnd();
-            return (s0 >= s) && (e0 <= e);
+            return (s0 >= offset) && (e0 <= e);
         } else {
             int ns = getSubIntervalCount();
             for (int i = 0; i < ns; i++) {
                 int s0 = subIntervals [ 2 * i + 0 ];
                 int e0 = subIntervals [ 2 * i + 1 ];
-                if ((s0 >= s) && (e0 <= e)) {
+                if ((s0 >= offset) && (e0 <= e)) {
                     return true;
                 }
             }
@@ -188,8 +187,7 @@ public class CharAssociation implements Cloneable {
         if (predications != null) {
             if (predications.containsKey(key)) {
                 Object v1 = predications.get(key);
-                Object v2 = value;
-                predications.put(key, mergePredicationValues(key, v1, v2));
+                predications.put(key, mergePredicationValues(key, v1, value));
             } else {
                 predications.put(key, value);
             }
@@ -406,12 +404,12 @@ public class CharAssociation implements Cloneable {
         int ni = sa.length;
         int[] incr = (ni < 21) ? SORT_INCREMENTS_03 : SORT_INCREMENTS_16;
         for (int anIncr : incr) {
-            for (int h = anIncr, i = h, n = ni, j; i < n; i++) {
+            for (int i = anIncr, j; i < ni; i++) {
                 int s1 = sa[i];
                 int e1 = ea[i];
-                for (j = i; j >= h; j -= h) {
-                    int s2 = sa[j - h];
-                    int e2 = ea[j - h];
+                for (j = i; j >= anIncr; j -= anIncr) {
+                    int s2 = sa[j - anIncr];
+                    int e2 = ea[j - anIncr];
                     if (s2 > s1) {
                         sa[j] = s2;
                         ea[j] = e2;
@@ -426,10 +424,10 @@ public class CharAssociation implements Cloneable {
                 ea[j] = e1;
             }
         }
-        int[] ia = new int [ ni * 2 ];
+        int[] ia = new int [(ni << 1)];
         for (int i = 0; i < ni; i++) {
-            ia [ (i * 2) + 0 ] = sa [ i ];
-            ia [ (i * 2) + 1 ] = ea [ i ];
+            ia [ (i << 1) + 0 ] = sa [ i ];
+            ia [ (i << 1) + 1 ] = ea [ i ];
         }
         return ia;
     }
@@ -458,12 +456,12 @@ public class CharAssociation implements Cloneable {
                 }
             }
         }
-        int[] mi = new int [ nm * 2 ];
+        int[] mi = new int [(nm << 1)];
         // populate merged sub-intervals
         for (i = 0, n = ni, nm = 0, is = ie = -1; i < n; i += 2) {
             int s = ia [ i + 0 ];
             int e = ia [ i + 1 ];
-            int k = nm * 2;
+            int k = nm << 1;
             if ((ie < 0) || (s > ie)) {
                 is = s;
                 ie = e;
@@ -482,7 +480,7 @@ public class CharAssociation implements Cloneable {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append('[');
         sb.append(offset);
         sb.append(',');

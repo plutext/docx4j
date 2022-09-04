@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GloxPackage  extends OpcPackage {
 	
-	protected static Logger log = LoggerFactory.getLogger(GloxPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(GloxPackage.class);
 		
 	
 	/**

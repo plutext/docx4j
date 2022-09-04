@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
@@ -197,8 +198,8 @@ public class UpdateXmlFromDocumentSurface {
 	private CustomXmlPart getCustomXmlPart(Xpath xpath) {
 
 		String storeItemId = xpath.getDataBinding().getStoreItemID();
-		String xpathExp = xpath.getDataBinding().getXpath();
-		String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+		//String xpathExp = xpath.getDataBinding().getXpath();
+		//String prefixMappings = xpath.getDataBinding().getPrefixMappings();
 					
 //			if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {
 //				
@@ -309,15 +310,13 @@ public class UpdateXmlFromDocumentSurface {
 						        
 								// List the parts by walking the rels tree
 								//debugListParts(blockPkg);
-								
-								if (blockPkg!=null) {
-									// FlatOPC
-									ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-									blockPkg.save(baos, Docx4J.FLAG_SAVE_FLAT_XML);
-										// unused namespaces are trimmed in there
-									
-									value = baos.toString("UTF-8");
-								}
+
+								// FlatOPC
+								ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								blockPkg.save(baos, Docx4J.FLAG_SAVE_FLAT_XML);
+								// unused namespaces are trimmed in there
+
+								value = baos.toString("UTF-8");
 							} catch (Docx4JException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -435,7 +434,7 @@ public class UpdateXmlFromDocumentSurface {
 		}
 	}
 
-	private void findSdtsInPart(ContentAccessor content, SdtFinder sdtFinder) throws Docx4JException {
+	private static void findSdtsInPart(ContentAccessor content, SdtFinder sdtFinder) throws Docx4JException {
 		
 		new TraversalUtil(content.getContent(), sdtFinder);
 	}	
@@ -509,16 +508,9 @@ public class UpdateXmlFromDocumentSurface {
 		}		
 	}
 
-	private boolean isMultiline(SdtPr sdtPr) {
+	private static boolean isMultiline(SdtPr sdtPr) {
 
-		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-			
-			o = XmlUtils.unwrap(o);
-			if (o instanceof CTSdtText) {
-				return ((CTSdtText)o).isMultiLine();
-			}
-		}
-		return false;
+		return sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof CTSdtText).findFirst().filter(o -> ((CTSdtText) o).isMultiLine()).isPresent();
 	}
 
 	
@@ -547,15 +539,8 @@ public class UpdateXmlFromDocumentSurface {
 		//log.debug(clone.getMainDocumentPart().getXML());
 		
 		// remove CXPs
-		List<Relationship> relsToRemove = new ArrayList<Relationship>();
-		for (Relationship rel : clone.getMainDocumentPart().getRelationshipsPart().getJaxbElement().getRelationship() ) {
-		
-//	        /word/document.xml's rId4 is /customXml/item4.xml [org.docx4j.openpackaging.parts.opendope.QuestionsPart] http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml containing:org.opendope.questions.Questionnaire
-			if (rel.getType().contains("customXml")) {
-				relsToRemove.add(rel);
-			}
-			
-		}
+		List<Relationship> relsToRemove = clone.getMainDocumentPart().getRelationshipsPart().getJaxbElement().getRelationship().stream().filter(rel -> rel.getType().contains("customXml")).collect(Collectors.toList());
+		//	        /word/document.xml's rId4 is /customXml/item4.xml [org.docx4j.openpackaging.parts.opendope.QuestionsPart] http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml containing:org.opendope.questions.Questionnaire
 		for (Relationship rel : relsToRemove) {
 			clone.getMainDocumentPart().getRelationshipsPart().removeRelationship(rel);
 		}		
@@ -572,10 +557,10 @@ public class UpdateXmlFromDocumentSurface {
 			//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
 			Method[] methods = documentBuilder.getMethods(); 
 			Method method = null;
-			for (int j=0; j<methods.length; j++) {
+			for (Method value : methods) {
 				//System.out.println(methods[j].getName());
-				if (methods[j].getName().equals("merge")) {
-					method = methods[j];
+				if (value.getName().equals("merge")) {
+					method = value;
 					break;
 				}
 			}			

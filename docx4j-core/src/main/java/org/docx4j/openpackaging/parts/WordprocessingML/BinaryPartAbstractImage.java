@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
-	protected static Logger log = LoggerFactory.getLogger(BinaryPartAbstractImage.class);
+	protected static final Logger log = LoggerFactory.getLogger(BinaryPartAbstractImage.class);
 	final static String IMAGE_DIR_PREFIX = "/word/media/";
 	final static String IMAGE_NAME_PREFIX = "image";
 	
@@ -84,7 +84,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Common binary parts should extend this class to 
 		// provide that information.
 	
-		this.getOwningRelationshipPart();
+		//this.getOwningRelationshipPart(); //has no effect
 		
 	}
 	
@@ -116,7 +116,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	// it would be better to have getOwningRelationship(),
 	// and if required, to get OwningRelationshipPart from that
 	// This is a temp workaround	
-	private List<Relationship> rels = new ArrayList<Relationship>();
+	private final List<Relationship> rels = new ArrayList<>();
 	public List<Relationship> getRels() {
 		return rels;
 	}
@@ -143,7 +143,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	}
 	
 	private static ImageManager imageManagerInstance;
-	private static Object imageManagerMutex = new Object();
+	private static final Object imageManagerMutex = new Object();
 
 	protected static ImageManager getImageManager() {
 		if (imageManagerInstance == null) {
@@ -161,7 +161,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * docx main document part, and return it.
 	 * 
 	 * @param wordMLPackage
-	 * @param sourcePart
 	 * @param bytes
 	 * @return
 	 * @throws Exception
@@ -262,10 +261,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// So first, write the bytes to a temp file		
 		File tmpImageFile = File.createTempFile("img", ".img");
 		
-		FileOutputStream fos = new FileOutputStream(tmpImageFile);
-		fos.write(bytes);
-		fos.close();
-        log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
+		try (FileOutputStream fos = new FileOutputStream(tmpImageFile)) {
+			fos.write(bytes);
+			log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
+		}
 				
 		ImageInfo info = ensureFormatIsSupported(tmpImageFile, bytes, true);
 		
@@ -281,7 +280,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 				
-        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf('/') + 1);
 		
 //		System.out.println(ext);
 		
@@ -292,7 +291,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
         log.debug("created part " + imagePart.getClass().getName()
                 + " with name " + imagePart.getPartName().toString());
-		
+		// TODO is fis closed anywhere?
 		FileInputStream fis = new FileInputStream(tmpImageFile); 		
         imagePart.setBinaryData(fis);
 				
@@ -304,7 +303,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// As per http://stackoverflow.com/questions/991489/i-cant-delete-a-file-in-java
 		// the following 3 lines are necessary, at least on Win 7 x64
 		// Also reported on Win XP, but in my testing, the files were deleting OK anyway.
-		fos = null;
 		fis = null;
 		if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.TempFiles.ForceGC", true)) {
 			System.gc();
@@ -493,7 +491,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
         String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 
-        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf('/') + 1);
 
         BinaryPartAbstractImage imagePart =
                 (BinaryPartAbstractImage) ctm.newPartForContentType(
@@ -503,6 +501,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         log.debug("created part " + imagePart.getClass().getName()
                 + " with name " + imagePart.getPartName().toString());
 
+		// TODO is fis closed anywhere?
         FileInputStream fis = new FileInputStream(imageFile);
         imagePart.setBinaryData(fis);
 
@@ -670,7 +669,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique
-        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf('/') + 1);
 		
 		BinaryPartAbstractImage imagePart = 
                 (BinaryPartAbstractImage) ctm.newPartForContentType(
@@ -883,7 +882,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         String ml =
 //        	"<w:p ><w:r>" +
 //        "<w:drawing>" +
-                "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"" + namespaces + ">"
+                "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"" + namespaces + '>'
                 + "<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>"
                 + "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" + //l=\"19050\"
                 "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
@@ -906,9 +905,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         mappings.put("id2", Integer.toString(id2));
 
         Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings);
-        Inline inline = (Inline) ((JAXBElement) o).getValue();
-        
-		return inline;		
+
+		return (Inline) ((JAXBElement) o).getValue();
 	}
     final static String namespaces = " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
             + "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
@@ -923,7 +921,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		ImageSessionContext sessionContext = new DefaultImageSessionContext(
 				getImageManager().getImageContext(), null);
 
-		ImageInfo info = getImageManager().getImageInfo(url.toString(), sessionContext);
 		//getImageManager().closeImage(url.toString(), sessionContext); // until we can use xmlgraphics-commons 2.0.1
 		
 		// Note that these figures do not appear to be reliable for EPS
@@ -952,7 +949,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			it is finding the Dimension child, but not "HorizontalPixelSize" or VerticalPixelSize (these are null).
 		 * */
 		
-		return info;
+		return getImageManager().getImageInfo(url.toString(), sessionContext);
 		
 	}
 	
@@ -976,11 +973,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		  Dimension2D dPt = size.getDimensionPt();
 		  Dimension dPx = size.getDimensionPx();
 
-		  log.debug(info.getOriginalURI() + " " + info.getMimeType() 
-                + " " + Math.round(dPx.getWidth()) + "x" + Math.round(dPx.getHeight()));
+		  log.debug(info.getOriginalURI() + ' ' + info.getMimeType()
+                + ' ' + Math.round(dPx.getWidth()) + 'x' + Math.round(dPx.getHeight()));
 		  		  
-        log.debug("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()));
-        log.debug("Print size: " + Math.round(dPt.getWidth() / 72) + "\" x" + Math.round(dPt.getHeight() / 72) + "\"");
+        log.debug("Resolution:" + Math.round(size.getDpiHorizontal()) + 'x' + Math.round(size.getDpiVertical()));
+        log.debug("Print size: " + Math.round(dPt.getWidth() / 72) + "\" x" + Math.round(dPt.getHeight() / 72) + '"');
 		
 	}
 	

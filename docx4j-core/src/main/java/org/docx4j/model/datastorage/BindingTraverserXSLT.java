@@ -84,7 +84,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	
 	private static Logger log = LoggerFactory.getLogger(BindingTraverserXSLT.class);		
 	
-	public static boolean ENABLE_XPATH_CACHE = true;
+	public static final boolean ENABLE_XPATH_CACHE = true;
 
 	static Templates xslt;			
 	static {
@@ -323,7 +323,6 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	 * all we do here is return the w:r element.
 	 * 
 	 * @param rPr
-	 * @param sdtParent
 	 * @return
 	 * @throws Exception
 	 */
@@ -571,7 +570,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 			RPr rPrSDT = (RPr)sdtPr.getByClass(RPr.class);
 			
-			if (r==null || r.trim().equals("")) {
+			if (r==null || r.trim().isEmpty()) {
 				// sdtPr.setShowingPlcHdr(true); altering here doesn't work; must do it in XSLT.				
 				return createPlaceholder(rPrSDT, sdtParent);
 			}
@@ -670,44 +669,44 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		boolean setMaxWidth = false;
 		
 		Method xhtmlMaxWidthMethod = null;
-		
-		for (int j=0; j<methods.length; j++) {
-			
-			if (methods[j].getName().equals("setBookmarkIdNext")
-					&& methods[j].getParameterTypes().length==1) {
+
+		for (Method method : methods) {
+
+			if (method.getName().equals("setBookmarkIdNext")
+					&& method.getParameterTypes().length == 1) {
 				try {
-				    //xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
-					methods[j].invoke(xHTMLImporter, bookmarkCounter.bookmarkId);
+					//xHTMLImporter.setBookmarkIdNext(bookmarkCounter.bookmarkId);
+					method.invoke(xHTMLImporter, bookmarkCounter.bookmarkId);
 					setBookmarkIdNext = true;
 				} catch (Exception e1) {
 					log.error(e1.getMessage(), e1);
 				}
 			}
-			
-			if (methods[j].getName().equals("setSequenceCounters")
-					&& methods[j].getParameterTypes().length==1) {
+
+			if (method.getName().equals("setSequenceCounters")
+					&& method.getParameterTypes().length == 1) {
 				try {
-				    //xHTMLImporter.setSequenceCounters(sequenceCounters);
-					methods[j].invoke(xHTMLImporter, sequenceCounters);
+					//xHTMLImporter.setSequenceCounters(sequenceCounters);
+					method.invoke(xHTMLImporter, sequenceCounters);
 					setSequenceCounters = true;
 				} catch (Exception e1) {
 					log.error(e1.getMessage(), e1);
 				}
 			}
-			
-			if (methods[j].getName().equals("setMaxWidth")
-					&& methods[j].getParameterTypes().length==2) {
+
+			if (method.getName().equals("setMaxWidth")
+					&& method.getParameterTypes().length == 2) {
 				try {
 					// xHTMLImporter.setMaxWidth(-1, null); // re-init
-					xhtmlMaxWidthMethod = methods[j]; 
+					xhtmlMaxWidthMethod = method;
 					xhtmlMaxWidthMethod.invoke(xHTMLImporter, -1, null);
 					setMaxWidth = true;
 				} catch (Exception e1) {
 					log.error(e1.getMessage(), e1);
 				}
 			}
-			
-			
+
+
 		}			
 		if (!setBookmarkIdNext) {
 			log.error("setBookmarkIdNext method not found. ");				
@@ -745,7 +744,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 
 			RPr rPrSDT = (RPr)sdtPr.getByClass(RPr.class);
 			
-			if (r==null || r.trim().equals("")) {
+			if (r==null || r.trim().isEmpty()) {
 				// sdtPr.setShowingPlcHdr(true); altering here doesn't work; must do it in XSLT.				
 				return createPlaceholder(rPrSDT, sdtParent);
 			}
@@ -798,7 +797,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 					StringBuilder result = new StringBuilder();
 					HtmlCssHelper.createCss(pkg, rPrSDT, result);
 					css = result.toString();
-					if (css.equals("")) {
+					if (css.isEmpty()) {
 						css =null;
 					}
 				}
@@ -863,7 +862,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 							StringBuilder result = new StringBuilder();
 							HtmlCssHelper.createCss(pkg, rPrSDT, result);
 							css = result.toString();
-							if (css.equals("")) {
+							if (css.isEmpty()) {
 								css =null;
 							}
 						}
@@ -1222,18 +1221,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		}
 		
 		try {
-			log.info(xpath + "\n yielded result '" + r + "'");
+			log.info(xpath + "\n yielded result '" + r + '\'');
 			
-			RPr rPr = null;
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				o = XmlUtils.unwrap(o); // Sun/Oracle JAXB (recent versions?) wraps RPR in JAXBElement 
-				if (o instanceof RPr) {					
-					rPr = (RPr)o;
-					break;
-				}
-			}
+			RPr rPr = (RPr) sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof RPr).findFirst().orElse(null);
+			// Sun/Oracle JAXB (recent versions?) wraps RPR in JAXBElement
 
-			
+
 			Xpaths.Xpath.DataBinding dataBinding = new Xpaths.Xpath.DataBinding();
 			dataBinding.setXpath(xpath);
 			dataBinding.setPrefixMappings(prefixMappings);
@@ -1379,12 +1372,12 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	        	log.debug("image size - from content control size");
                 // Respect aspect ratio of injected image
                 ImageSize size = imagePart.getImageInfo().getSize();
-                double ratio = (double) size.getHeightPx() / (double) size.getWidthPx();
+                double ratio = (double) size.getHeightPx() / size.getWidthPx();
                 log.debug("fit ratio: " + ratio);
                 if (ratio > 1) {
-                    cxl =  (long)((double) cyl / ratio);
+                    cxl =  (long)(cyl / ratio);
                 } else {
-                    cyl =  (long)((double) cxl * ratio);
+                    cyl =  (long)(cxl * ratio);
                 }
 		        inline = imagePart.createImageInline( filenameHint, altText, 
 		    			id1, id2, cxl, cyl, false);		        	
@@ -1647,14 +1640,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		} catch (JAXBException e) {
 			log.error(e.getMessage(), e);
 		}
-		RPr rPr = null;
-		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-			o = XmlUtils.unwrap(o); 
-			if (o instanceof RPr) {					
-				rPr = (RPr)o;
-				break;
-			}
-		}
+		RPr rPr = (RPr) sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof RPr).findFirst().orElse(null);
 
 		String storeItemId = sdtPr.getDataBinding().getStoreItemID();
 		String xpath = sdtPr.getDataBinding().getXpath();
@@ -1693,8 +1679,8 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		        
 			 */
 			// Drop the Z
-			if (r.indexOf("Z")>0) {
-				r = r.substring(0, r.indexOf("Z")-1);
+			if (r.indexOf('Z')>0) {
+				r = r.substring(0, r.indexOf('Z')-1);
 				log.warn("date now " + r);
 			}
 			
@@ -2033,15 +2019,9 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		log.debug(dataBinding.getXpath() + " yielded result " + r);
 		
 		if (r==null) return null;
-		
-		if (r.equals("true") || r.equals("1")) {
 
-			return true;
-			
-		} else { // Word treats everything else as false
-
-			return false;
-		}
+		// Word treats everything else as false
+		return r.equals("true") || r.equals("1");
 	}
 
 	/**
@@ -2085,7 +2065,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			Boolean checkBoxResult = getCheckboxResult(dataBinding, part);
 			if (checkBoxResult==null) {
 				return "0";
-			} else if (checkBoxResult.booleanValue()) {
+			} else if (checkBoxResult) {
 				return "1";				
 			} else {
 				return "0";				
@@ -2102,7 +2082,7 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 	private static PartName getNewPartName(String prefix, String suffix,
 			RelationshipsPart rp) throws InvalidFormatException {
 
-		PartName proposed = null;
+		PartName proposed;
 		int i = 1;
 		do {
 
@@ -2116,7 +2096,6 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 		} while (rp.getRel(proposed) != null);
 
 		return proposed;
-
 	}
-	
+
 }

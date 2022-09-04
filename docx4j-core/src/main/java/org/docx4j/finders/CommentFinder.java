@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public  class CommentFinder extends CallbackImpl {
 	
-	protected static Logger log = LoggerFactory.getLogger(CommentFinder.class);	
+	protected static final Logger log = LoggerFactory.getLogger(CommentFinder.class);
 	
 
     List<Child> commentElements = new ArrayList<Child>();

@@ -218,13 +218,7 @@ public class AgileDecryptor extends Decryptor {
         CipherAlgorithm cipherAlgo = header.getCipherAlgorithm();
         int blockSize = header.getBlockSize();
         
-        AgileCertificateEntry ace = null;
-        for (AgileCertificateEntry aceEntry : ver.getCertificates()) {
-            if (x509.equals(aceEntry.x509)) {
-                ace = aceEntry;
-                break;
-            }
-        }
+        AgileCertificateEntry ace = ver.getCertificates().stream().filter(aceEntry -> x509.equals(aceEntry.x509)).findFirst().orElse(null);
         if (ace == null) return false;
         
         Cipher cipher = Cipher.getInstance("RSA");
@@ -289,9 +283,8 @@ public class AgileDecryptor extends Decryptor {
     public InputStream getDataStream(DirectoryNode dir) throws IOException, GeneralSecurityException {
         DocumentInputStream dis = dir.createDocumentInputStream(DEFAULT_POIFS_ENTRY);
         _length = dis.readLong();
-        
-        ChunkedCipherInputStream cipherStream = new AgileCipherInputStream(dis, _length);
-        return cipherStream;
+
+        return new AgileCipherInputStream(dis, _length);
     }
 
     public long getLength(){
@@ -316,7 +309,7 @@ public class AgileDecryptor extends Decryptor {
 
         AlgorithmParameterSpec aps;
         if (header.getCipherAlgorithm() == CipherAlgorithm.rc2) {
-            aps = new RC2ParameterSpec(skey.getEncoded().length*8, iv);
+            aps = new RC2ParameterSpec(skey.getEncoded().length << 3, iv);
         } else {
             aps = new IvParameterSpec(iv);
         }

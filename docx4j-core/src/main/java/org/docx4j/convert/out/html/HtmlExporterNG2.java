@@ -86,7 +86,7 @@ import org.xml.sax.SAXException;
  */
 public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	protected static final int DEFAULT_OUTPUT_SIZE = 102400;
-	protected static Logger log = LoggerFactory.getLogger(HtmlExporterNG2.class);
+	protected static final Logger log = LoggerFactory.getLogger(HtmlExporterNG2.class);
 	
 	WordprocessingMLPackage wmlPackage;
 	public void setWmlPackage(WordprocessingMLPackage wmlPackage) {

@@ -22,6 +22,7 @@ package org.docx4j.convert.out.common.wrappers;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,15 +50,15 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 public class ConversionSectionWrapperFactory {
 	
-	protected static Logger log = LoggerFactory.getLogger(ConversionSectionWrapperFactory.class);
+	protected static final Logger log = LoggerFactory.getLogger(ConversionSectionWrapperFactory.class);
 	
 	protected static class SdtBlockFinder extends CallbackImpl {
 
-		List<SdtBlock> sdtBlocks = new ArrayList<SdtBlock>();
+		List<SdtBlock> sdtBlocks = new ArrayList<>();
 		
 		// Need a stack of these; only if we encounter a sectPr,
 		// then copy contents of stack to list we remove.
-		LinkedList<SdtBlock> ll = new LinkedList<SdtBlock>();
+		LinkedList<SdtBlock> ll = new LinkedList<>();
 		
 		@Override
 		public List<Object> apply(Object o) {
@@ -116,7 +117,7 @@ public class ConversionSectionWrapperFactory {
 	
 	public static ConversionSectionWrappers process(WordprocessingMLPackage wmlPackage, boolean dummySections, boolean dummyPageNumbering) throws Docx4JException {
 		
-		List<ConversionSectionWrapper> conversionSections = null;
+		List<ConversionSectionWrapper> conversionSections;
 		Document document = wmlPackage.getMainDocumentPart().getContents();
 		RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 		BooleanDefaultTrue evenAndOddHeaders = null;
@@ -150,8 +151,8 @@ public class ConversionSectionWrapperFactory {
 		
 		log.debug("starting");
 		
-		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
-		ConversionSectionWrapper currentSectionWrapper = null;
+		List<ConversionSectionWrapper> conversionSections = new ArrayList<>();
+		ConversionSectionWrapper currentSectionWrapper;
 		HeaderFooterPolicy previousHF =
 				new HeaderFooterPolicy(document.getBody().getSectPr(), null, rels, evenAndOddHeaders);
 	
@@ -182,7 +183,7 @@ public class ConversionSectionWrapperFactory {
 		
 		ConversionSectionWrapper csw = 
 					new ConversionSectionWrapper(sectPr, headerFooterPolicy, rels, evenAndOddHeaders,
-					"s" + Integer.toString(conversionSectionIndex), content);
+					"s" + conversionSectionIndex, content);
 		
 		PageNumberInformation pageNumberInformation = 
 				PageNumberInformationCollector.process(csw, dummyPageNumbering);
@@ -201,11 +202,11 @@ public class ConversionSectionWrapperFactory {
 		List<SectPr> sectPrs =  getSectPrs(document);
 
 		// Local vars
-		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
-		ConversionSectionWrapper currentSectionWrapper = null;
+		List<ConversionSectionWrapper> conversionSections = new ArrayList<>();
+		ConversionSectionWrapper currentSectionWrapper;
 		HeaderFooterPolicy previousHF = null;
 		int conversionSectionIndex = 0;
-		List<Object> sectionContent = new ArrayList<Object>();
+		List<Object> sectionContent = new ArrayList<>();
 		
 		// Now go through the document content,
 		
@@ -376,19 +377,8 @@ public class ConversionSectionWrapperFactory {
 		
 		// Make a list, so it is easy to look at the following sectPr,
 		// which we need to do to handle continuous sections properly
-		List<SectPr> sectPrs = new ArrayList<SectPr>();
-		for (Object o : document.getBody().getContent() ) {
-			
-			if (o instanceof org.docx4j.wml.P) {
-				if (((org.docx4j.wml.P)o).getPPr() != null ) {
-					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
-					if (ppr.getSectPr()!=null) {
-						sectPrs.add(ppr.getSectPr());
-					}
-				}				
-			} 
-		}
-		
+		List<SectPr> sectPrs = document.getBody().getContent().stream().filter(o -> o instanceof P).filter(o -> ((P) o).getPPr() != null).map(o -> ((P) o).getPPr()).map(PPr::getSectPr).filter(sectPr -> sectPr != null).collect(Collectors.toList());
+
 		if (document.getBody().getSectPr()!=null) {
 			// usual case
 			sectPrs.add(document.getBody().getSectPr()); 
@@ -402,10 +392,9 @@ public class ConversionSectionWrapperFactory {
 	    	if (all.size()>0) {
 	    		last = all.get( all.size()-1 );
 	    	}
-	    	if (last !=null
-	    			&& last instanceof P 
-	    			&& ((P) last).getPPr()!=null 
-	    				&& ((P) last).getPPr().getSectPr() !=null) {
+	    	if (last instanceof P
+					&& ((P) last).getPPr() != null
+					&& ((P) last).getPPr().getSectPr() != null) {
 	    			// ok
 				log.debug(".. but last p contains sectPr .. move it"); // so our assumption later about there being a following section is correct
 

@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import jakarta.xml.bind.Binder;
 import jakarta.xml.bind.JAXBContext;
@@ -85,11 +87,7 @@ import org.docx4j.utils.XPathFactoryUtil;
 import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -100,7 +98,7 @@ public class XmlUtils {
 	// See http://www.edankert.com/jaxpimplementations.html for
 	// a helpful list.
 		
-	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.docx4j.org.apache.xalan.processor.TransformerFactoryImpl";
+	public static final String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.docx4j.org.apache.xalan.processor.TransformerFactoryImpl";
 	// TRANSFORMER_FACTORY_PROCESSOR_SUN .. JDK/JRE does not include anything like com.sun.org.apache.xalan.TransformerFactoryImpl
 	
 //	public static String TRANSFORMER_FACTORY_SAXON = "net.sf.saxon.TransformerFactoryImpl";
@@ -440,14 +438,8 @@ public class XmlUtils {
 	 * @since 3.2.0
 	 */
 	public static JAXBElement<?> getListItemByQName(List<JAXBElement<?>> list, QName name) {
-		
-		for(JAXBElement<?> el : list) {
-			
-			if (el.getName().equals(name)) {
-				return el;
-			}
-		}
-		return null;
+
+		return list.stream().filter(el -> el.getName().equals(name)).findFirst().map(el -> el).orElse(null);
 	}
 	
 
@@ -473,7 +465,7 @@ public class XmlUtils {
 			throw new JAXBException(e);
 		}			
 		
-		Object o = null;
+		Object o;
 		Unmarshaller u = jc.createUnmarshaller();
 		
 		JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
@@ -564,7 +556,7 @@ public class XmlUtils {
 			throw new JAXBException(e);
 		}
 		
-		if (o instanceof JAXBElement) {
+		if (o != null) {
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;
@@ -574,7 +566,7 @@ public class XmlUtils {
 
 	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
 		if (log.isDebugEnabled()) {
-			log.debug("Unmarshalling '" + str + "'");
+			log.debug("Unmarshalling '" + str + '\'');
 //			log.debug("using context '" + jc.getClass().getName() + "'"); // which JAXB implementation?
 		}
 		// Uncomment the following if you are being screwed by a byte order marker
@@ -689,10 +681,10 @@ public class XmlUtils {
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 		Object o = u.unmarshal(n,
 				declaredType);
-		if ( o instanceof jakarta.xml.bind.JAXBElement) {
+		if (o != null) {
 			return ((JAXBElement)o).getValue();
 		} else {
-			return o;
+			return null;
 		}
 	}
 	
@@ -733,7 +725,7 @@ public class XmlUtils {
 			if (startKey == -1)
 				return strB.append(wmlTemplateString.substring(offset));
 			else {
-				strB.append(wmlTemplateString.substring(offset, startKey));
+				strB.append(wmlTemplateString, offset, startKey);
 				int keyEnd = wmlTemplateString.indexOf('}', startKey);
 				String key = wmlTemplateString.substring(startKey + 2, keyEnd);
 				Object val = mappings.get(key);
@@ -741,7 +733,7 @@ public class XmlUtils {
 					log.warn("Invalid key '" + key + "' or key not mapped to a value");
 					strB.append(key);
 				} else {
-					strB.append(val.toString());
+					strB.append(val);
 				}
 				offset = keyEnd + 1;
 			}
@@ -1351,7 +1343,7 @@ public class XmlUtils {
     
     
     private static final String S_BUILTIN_EXTENSIONS_UNIVERSAL =
-            "{" + S_BUILTIN_EXTENSIONS_URL + "}";
+			'{' + S_BUILTIN_EXTENSIONS_URL + '}';
     
     
     private static final String S_KEY_CONTENT_HANDLER =
@@ -1616,13 +1608,8 @@ public class XmlUtils {
 		}
 		
 		//log.debug("XPath will execute against: " + XmlUtils.w3CDomNodeToString(node));
-		
-        List<JAXBAssociation> resultList = new ArrayList<JAXBAssociation>();
-        
-        for( Node n : xpath(node, xpathExpr) ) {
-        	resultList.add(new JAXBAssociation(n, binder.getJAXBNode(n)));
-        }
-        return resultList;
+
+		return xpath(node, xpathExpr).stream().map(n -> new JAXBAssociation(n, binder.getJAXBNode(n))).collect(Collectors.toList());
     }
 	
     public static List<Node> xpath(Node node, String xpathExpression) {
@@ -1641,7 +1628,7 @@ public class XmlUtils {
         XPath xpath = XPathFactoryUtil.newXPath();
         
         try {
-            List<Node> result = new ArrayList<Node>();
+            List<Node> result;
             
     		xpath.setNamespaceContext(nsContext);
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
@@ -1653,13 +1640,11 @@ public class XmlUtils {
             if (nl.getLength()==0) {
             	log.info("no results for xpath " + xpathExpression );
             }
-            
-            for( int i=0; i<nl.getLength(); i++ ) {
-                result.add(nl.item(i));
-            }
+
+			result = IntStream.range(0, nl.getLength()).mapToObj(nl::item).collect(Collectors.toList());
             return result;
         } catch (XPathExpressionException e) {
-            throw new RuntimeException("Problem with '" + xpathExpression + "'",e);
+            throw new RuntimeException("Problem with '" + xpathExpression + '\'',e);
         }
     }	
 
@@ -1756,19 +1741,17 @@ public class XmlUtils {
         		
                 // recurse on each child
                 NodeList nodes = sourceNode.getChildNodes();
-                if (nodes != null) {
-                    for (int i=0; i<nodes.getLength(); i++) {
-                    	log.debug("child " + i + "of DOCUMENT_NODE");
-                    	//treeCopy((DTMNodeProxy)nodes.item(i), destParent);
-                    	treeCopy((Node)nodes.item(i), destParent);
-                    }
-                }
-                break;
+				for (int i=0; i<nodes.getLength(); i++) {
+					log.debug("child " + i + "of DOCUMENT_NODE");
+					//treeCopy((DTMNodeProxy)nodes.item(i), destParent);
+					treeCopy((Node)nodes.item(i), destParent);
+				}
+				break;
             case Node.ELEMENT_NODE:
                 
                 // Copy of the node itself
         		log.debug("copying: " + sourceNode.getNodeName() );
-        		Node newChild;
+        		Element newChild;
         		if ( destParent instanceof Document ) {
         			newChild = ((Document)destParent).createElementNS(
         				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );
@@ -1807,44 +1790,39 @@ public class XmlUtils {
                 		// this is a namespace declaration. not our problem
             		} else if (attr.getNamespaceURI()==null) {
                 		//log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
-            			((org.w3c.dom.Element)newChild).setAttribute(
+            			newChild.setAttribute(
                 				attr.getName(), attr.getValue() );
             		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
                 		; // this is a namespace declaration. not our problem
-            		} else if ( attr.getNodeName()!=null ) {
+            		} else {
             				// && attr.getNodeName().equals("xml:space")) {
             				// restrict this fix to xml:space only, if necessary
 
             			// Necessary when invoked from BindingTraverserXSLT,
             			// com.sun.org.apache.xerces.internal.dom.AttrNSImpl
             			// otherwise it was becoming w:space="preserve"!
-            			
+
 						/* eg xml:space
-						 * 
+						 *
 							attr.getNodeName(): xml:space
 							attr.getNamespaceURI(): http://www.w3.org/XML/1998/namespace
 							attr.getLocalName(): space
 							attr.getPrefix(): xml
 						 */
-            			
-                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-                				attr.getNodeName(), attr.getValue() );	                			
-            		} else  {
-                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-                				attr.getLocalName(), attr.getValue() );	                			
+
+                		newChild.setAttributeNS(attr.getNamespaceURI(),
+                				attr.getNodeName(), attr.getValue() );
             		}
             	}
 
                 // recurse on each child
                 NodeList children = sourceNode.getChildNodes();
-                if (children != null) {
-                    for (int i=0; i<children.getLength(); i++) {
-                    	//treeCopy( (DTMNodeProxy)children.item(i), newChild);
-                    	treeCopy( (Node)children.item(i), newChild);
-                    }
-                }
+				for (int i=0; i<children.getLength(); i++) {
+					//treeCopy( (DTMNodeProxy)children.item(i), newChild);
+					treeCopy( (Node)children.item(i), newChild);
+				}
 
-                break;
+				break;
 
             case Node.TEXT_NODE:
             	

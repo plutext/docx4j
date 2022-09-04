@@ -35,7 +35,7 @@ import java.math.BigInteger;
 
 public class Indent extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Indent.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Indent.class);
 		
 	public final static String CSS_NAME = "margin-left";  // Use 'margin-left' instead of 'left' for CSS.
 	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.
@@ -173,7 +173,7 @@ public class Indent extends AbstractParagraphProperty {
 		BigInteger firstline = ((Ind)this.getObject()).getFirstLine();		
 		BigInteger hanging = ((Ind)this.getObject()).getHanging();		
 		if (hanging!=null) {
-			prop  = prop  + composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue()) );
+			prop  = prop  + composeCss("text-indent", '-' + UnitsOfMeasurement.twipToBest(hanging.intValue()) );
 		} 
 		else if (firstline!=null) {
 			prop  = prop  + composeCss("text-indent", UnitsOfMeasurement.twipToBest(firstline.intValue()) );
@@ -298,7 +298,7 @@ public class Indent extends AbstractParagraphProperty {
 			}
 			
 			foElement.setAttribute("provisional-distance-between-starts",  UnitsOfMeasurement.twipToBest(pdbs));
-			System.out.println("Using pdbs " + pdbs + "=" + UnitsOfMeasurement.twipToBest(pdbs));
+			System.out.println("Using pdbs " + pdbs + '=' + UnitsOfMeasurement.twipToBest(pdbs));
 			
 			// start = left - pdbs
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest( leftInt-pdbs) );	

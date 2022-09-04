@@ -70,7 +70,7 @@ class UnicodeString {
             return;
         }
 
-        _value = LittleEndian.getByteArray( data, dataOffset, length * 2 );
+        _value = LittleEndian.getByteArray( data, dataOffset, length << 1);
     }
     
     /**
@@ -83,7 +83,7 @@ class UnicodeString {
             return true;
         }
 
-        int endOffset = offset + (length * 2);
+        int endOffset = offset + (length << 1);
         if (endOffset <= data.length) {
             // Data Length is OK, ensure it's null terminated too
             if (data[endOffset-1] == 0 && data[endOffset-2] == 0) {

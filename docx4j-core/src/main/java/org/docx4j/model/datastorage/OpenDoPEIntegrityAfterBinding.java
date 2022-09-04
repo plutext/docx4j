@@ -104,8 +104,8 @@ public class OpenDoPEIntegrityAfterBinding {
 			
 			log.info("/n Processing " + part.getPartName().getName() );
 			
-			org.docx4j.openpackaging.packages.OpcPackage pkg 
-				= part.getPackage();		
+			//org.docx4j.openpackaging.packages.OpcPackage pkg
+			//	= part.getPackage();
 				// Binding is a concept which applies more broadly
 				// than just Word documents.
 			
@@ -145,7 +145,7 @@ public class OpenDoPEIntegrityAfterBinding {
 
 					if (log.isDebugEnabled()) {
 						
-						org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
+						//org.w3c.dom.Document docResult = ((org.w3c.dom.Document)result.getNode());
 						
 						//log.debug("After ODI: " + XmlUtils.w3CDomNodeToString(docResult));
 						

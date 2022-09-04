@@ -37,7 +37,7 @@ import org.w3c.dom.css.CSSValue;
  */
 public class VerticalAlignment extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(VerticalAlignment.class);		
+	protected static final Logger log = LoggerFactory.getLogger(VerticalAlignment.class);
 
 	public final static String CSS_NAME = "vertical-align"; 
 	public final static String FO_NAME  = "vertical-align"; 
@@ -57,14 +57,14 @@ public class VerticalAlignment extends AbstractRunProperty {
 		
 		CTVerticalAlignRun vAlign = Context.getWmlObjectFactory().createCTVerticalAlignRun();
 		
-		if (value.getCssText().toLowerCase().equals("top")) {			
+		if (value.getCssText().equalsIgnoreCase("top")) {
 			vAlign.setVal(STVerticalAlignRun.SUPERSCRIPT);			
 			this.setObject( vAlign );
-		} else if (value.getCssText().toLowerCase().equals("super")) {			
+		} else if (value.getCssText().equalsIgnoreCase("super")) {
 			vAlign.setVal(STVerticalAlignRun.SUPERSCRIPT);			
 			this.setObject( vAlign );
-		} else if (value.getCssText().toLowerCase().equals("bottom")
-		        || value.getCssText().toLowerCase().equals("sub")) {
+		} else if (value.getCssText().equalsIgnoreCase("bottom")
+		        || value.getCssText().equalsIgnoreCase("sub")) {
 		    vAlign.setVal(STVerticalAlignRun.SUBSCRIPT);			
 		    this.setObject( vAlign );
 		} else {

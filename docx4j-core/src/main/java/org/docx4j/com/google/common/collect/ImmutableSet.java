@@ -34,6 +34,8 @@ import java.util.SortedSet;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.Beta;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
@@ -443,13 +445,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
     for (int i = 0; i < n; i++) {
       Object e = elements[i];
       int j0 = Hashing.smear(e.hashCode());
-      for (int j = j0; ; j++) {
-        int index = j & mask;
-        if (hashTable[index] == null) {
-          hashTable[index] = e;
-          break;
-        }
-      }
+      IntStream.iterate(j0, j -> j + 1).map(j -> j & mask).filter(index -> hashTable[index] == null).findFirst().ifPresent(index -> hashTable[index] = e);
     }
     return hashTable;
   }
@@ -773,7 +769,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
 
     void ensureTableCapacity(int minCapacity) {
       if (minCapacity > expandTableThreshold && hashTable.length < MAX_TABLE_SIZE) {
-        int newTableSize = hashTable.length * 2;
+        int newTableSize = hashTable.length << 1;
         hashTable = rebuildHashTable(newTableSize, dedupedElements, distinct);
         maxRunBeforeFallback = maxRunBeforeFallback(newTableSize);
         expandTableThreshold = (int) (DESIRED_LOAD_FACTOR * newTableSize);
@@ -811,7 +807,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
     @Override
     SetBuilderImpl<E> review() {
       int targetTableSize = chooseTableSize(distinct);
-      if (targetTableSize * 2 < hashTable.length) {
+      if (targetTableSize << 1 < hashTable.length) {
         hashTable = rebuildHashTable(targetTableSize, dedupedElements, distinct);
       }
       return hashFloodingDetected(hashTable) ? new JdkBackedSetBuilderImpl<E>(this) : this;

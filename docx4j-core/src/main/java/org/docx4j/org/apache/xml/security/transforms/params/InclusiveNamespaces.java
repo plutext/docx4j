@@ -88,7 +88,7 @@ public class InclusiveNamespaces extends ElementProxy implements TransformParam 
                 sb.append("#default ");
             } else {
                 sb.append(prefix);
-                sb.append(" ");
+                sb.append(' ');
             }
         }
         

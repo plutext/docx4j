@@ -34,7 +34,6 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.docx4j.fonts.fop.fonts.CodePointMapping;
 import org.apache.xmlgraphics.fonts.Glyphs;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.fonts.truetype.OpenFont.PostScriptVersion;
@@ -380,9 +379,9 @@ public class SingleByteFont extends CustomFont {
      */
     public int[] getAdditionalWidths(int index) {
         SimpleSingleByteEncoding enc = getAdditionalEncoding(index);
-        int[] arr = new int[enc.getLastChar() - enc.getFirstChar() + 1];
+        int[] arr = new int[enc.getLastChar() - SimpleSingleByteEncoding.getFirstChar() + 1];
         for (int i = 0, c = arr.length; i < c; i++) {
-            NamedCharacter nc = enc.getCharacterForIndex(enc.getFirstChar() + i);
+            NamedCharacter nc = enc.getCharacterForIndex(SimpleSingleByteEncoding.getFirstChar() + i);
             UnencodedCharacter uc = this.unencodedCharacters.get(
                     nc.getSingleUnicodeValue());
             arr[i] = uc.getWidth();

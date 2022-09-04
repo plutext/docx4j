@@ -45,7 +45,7 @@ public class CryptoAPIEncryptionInfoBuilder implements EncryptionInfoBuilder {
     public void initialize(EncryptionInfo info, LittleEndianInput dis)
     throws IOException {
         this.info = info;
-        int hSize = dis.readInt();
+        int hSize = dis.readInt(); // variable is unused
         header = new CryptoAPIEncryptionHeader(dis);
         verifier = new CryptoAPIEncryptionVerifier(dis, header);
         decryptor = new CryptoAPIDecryptor(this);

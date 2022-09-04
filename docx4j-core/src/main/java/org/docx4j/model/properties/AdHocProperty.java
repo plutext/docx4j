@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 
 public class AdHocProperty extends Property {
 	
-	protected static Logger log = LoggerFactory.getLogger(AdHocProperty.class);	
+	protected static final Logger log = LoggerFactory.getLogger(AdHocProperty.class);
 	
 	private String cssName;
 	private String cssValue;

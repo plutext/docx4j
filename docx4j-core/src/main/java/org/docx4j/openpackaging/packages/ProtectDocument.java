@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProtectDocument extends ProtectionSettings {
 	
-	protected static Logger log = LoggerFactory.getLogger(ProtectDocument.class);
+	protected static final Logger log = LoggerFactory.getLogger(ProtectDocument.class);
 	
 	
 	public ProtectDocument(WordprocessingMLPackage pkg) {

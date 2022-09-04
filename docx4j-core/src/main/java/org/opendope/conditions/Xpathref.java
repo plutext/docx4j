@@ -14,11 +14,9 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
-import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,9 +168,9 @@ public class Xpathref implements Evaluable {
 				if (tail.contains("/")) {
 					// There are deeper bits to thisXPath than xpathBase, so enhance normally..
 					log.debug("deeper bits in count");
-				} else if (tail.startsWith("[")) {
+				} else if (!tail.isEmpty() && tail.charAt(0) == '[') {
 					log.debug("index needs enhancement"); // if you want to count the elements in a repeat, you won't have [1]; having that means something different.					
-				} else if (tail.startsWith(")")) {
+				} else if (!tail.isEmpty() && tail.charAt(0) == ')') {
 					log.debug("retaining (repeat count): " + thisXPath); // we want to count elements in the repeat, so don't add an index!
 					return null;
 				} else {
@@ -204,13 +202,13 @@ public class Xpathref implements Evaluable {
 		return null;
 	}	
 	
-	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
-			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
+	private static org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap,
+																		 String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 		
 //		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils.deepCopy(xpathObj);
 		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
 		
-		String newXPathId = xpathObj.getId() + "_" + index;
+		String newXPathId = xpathObj.getId() + '_' + index;
 		newXPathObj.setId(newXPathId);
 		
 		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();
@@ -229,8 +227,8 @@ public class Xpathref implements Evaluable {
 				log.debug("Duplicate identical XPath being added: " + newXPathId);
 			} else {
 				log.error("Duplicate XPath " + newXPathId + ": "
-						+ "\n"+ newXPathObj.getDataBinding().getXpath() + " overwriting "
-						+ "\n"+ preExistingSanity.getDataBinding().getXpath());				
+						+ '\n' + newXPathObj.getDataBinding().getXpath() + " overwriting "
+						+ '\n' + preExistingSanity.getDataBinding().getXpath());
 			}
 		}
 		

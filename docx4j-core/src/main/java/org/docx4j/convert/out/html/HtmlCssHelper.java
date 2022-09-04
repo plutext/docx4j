@@ -94,7 +94,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "table."+ s.getStyleId()  + " {display:table;" );
+    		result.append("table.").append(s.getStyleId()).append(" {display:table;");
     		
     		// TblPr
     		if (s.getTblPr()==null) {
@@ -156,7 +156,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );  // not just p, also inherit on ul|ol
+    		result.append('.').append(s.getStyleId()).append(" {display:block;");  // not just p, also inherit on ul|ol
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
@@ -188,7 +188,7 @@ public class HtmlCssHelper {
     		
     		Style s = n.getData().getStyle();
 
-    		result.append( "span."+ s.getStyleId()  + " {display:inline;" );
+    		result.append("span.").append(s.getStyleId()).append(" {display:inline;");
         	if (s.getRPr()==null) {
         		log.warn("! null rPr for character style " + s.getStyleId());
         	} else {
@@ -281,7 +281,7 @@ public class HtmlCssHelper {
     	    	// To do that, we add a border the same color as 
     	    	// the background color				
 				String fill = ((CTShd)p.getObject()).getFill();				
-				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
+				result.append("border-color: #").append(fill).append("; border-style:solid; border-width:1px;");
 			}
     		
     		appendNonNull(result, p);
@@ -311,8 +311,8 @@ public class HtmlCssHelper {
 			tempAttributeMap = getTempMap();
 			if ((properties != null) && (!properties.isEmpty())) {
 				buffer = new StringBuilder();
-				for (int i=0; i<properties.size(); i++) {
-					tempAttributeMap.put(properties.get(i).getCssName(), properties.get(i));
+				for (Property value : properties) {
+					tempAttributeMap.put(value.getCssName(), value);
 				}
 				for (Property property : tempAttributeMap.values()) {
 					buffer.append(property.getCssProperty());

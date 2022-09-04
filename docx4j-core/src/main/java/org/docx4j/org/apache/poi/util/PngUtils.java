@@ -24,6 +24,8 @@
 package org.docx4j.org.apache.poi.util;
 
 
+import java.util.stream.IntStream;
+
 public final class PngUtils {
 
     /**
@@ -48,12 +50,6 @@ public final class PngUtils {
             return false;
         }
 
-        for (int i = 0; i < PNG_FILE_HEADER.length; i++) {
-            if (PNG_FILE_HEADER[i] != data[i + offset]) {
-                return false;
-            }
-        }
-
-        return true;
+        return IntStream.range(0, PNG_FILE_HEADER.length).noneMatch(i -> PNG_FILE_HEADER[i] != data[i + offset]);
     }
 }

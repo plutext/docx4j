@@ -61,7 +61,7 @@ public class BestMatchingMapper extends Mapper {
 	
 	
 	
-	protected static Logger log = LoggerFactory.getLogger(BestMatchingMapper.class);
+	protected static final Logger log = LoggerFactory.getLogger(BestMatchingMapper.class);
 
 	public BestMatchingMapper() {
 		super();
@@ -316,7 +316,7 @@ public class BestMatchingMapper extends Mapper {
 					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 				}
 				if (documentFontPanose!=null) {
-					log.debug(".. " + documentFontPanose.toString() );
+					log.debug(".. " + documentFontPanose);
 				}
 				
 			} else {
@@ -369,7 +369,7 @@ public class BestMatchingMapper extends Mapper {
 
 					// Out of interest, is this match in font substitutions table?
 					FontSubstitutions.Replace rtmp 
-						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(documentFontName);
+						= explicitSubstitutionsMap.get(documentFontName);
 					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
 						if (rtmp.getSubstFonts().contains(panoseKey) ) {
 							log.debug("(consistent with explicit substitutes)");
@@ -450,32 +450,32 @@ public class BestMatchingMapper extends Mapper {
 				String[] tokens = StringUtils.stripAll(replacement.getSubstFonts().split(";"));
 				
 	        	boolean foundMapping = false;
-				for (int x = 0; x < tokens.length; x++) {
+				for (String token : tokens) {
 					// log.debug(tokens[x]);
-                    fontMatched = getPhysicalFontByKey(tokens[x]);
+					fontMatched = getPhysicalFontByKey(token);
 					if (fontMatched != null) {
 
 						String physicalFontFile = fontMatched.getEmbeddedURI().toString();
 						log.debug("PDF: " + documentFontName + " --> "
 								+ physicalFontFile);
 						foundMapping = true;
-						
+
 						// Out of interest, does this have a Panose value?
 						// And what is the distance?
-						if (fontMatched.getPanose() == null ) {
-							log.debug(".. as expected, lacking Panose");					
-						} else if (documentFontPanose!=null  ) {
+						if (fontMatched.getPanose() == null) {
+							log.debug(".. as expected, lacking Panose");
+						} else if (documentFontPanose != null) { // TODO condition is always false, can the entire branch be removed?
 							org.docx4j.fonts.foray.font.format.Panose physicalFontPanose = null;
 							try {
 								physicalFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(fontMatched
-												.getPanose()
-												.getPanoseArray());
-							} catch (IllegalArgumentException e) {					
+										.getPanose()
+										.getPanoseArray());
+							} catch (IllegalArgumentException e) {
 								log.error(e.getMessage());
 								// For example:
 								// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 							}
-							
+
 							if (physicalFontPanose != null) {
 								long pd = documentFontPanose
 										.difference(physicalFontPanose,
@@ -491,13 +491,10 @@ public class BestMatchingMapper extends Mapper {
 											.error(".. with a low panose distance (! How did we get here?) : "
 													+ pd);
 								}
-							} 
-						} 										        	
+							}
+						}
 						break;
-					} else {
-						// log.debug("no match on token " + x + ":"
-						// + tokens[x]);
-					}	
+					}
 				}
 				
 				if (!foundMapping) {
@@ -582,21 +579,19 @@ public class BestMatchingMapper extends Mapper {
 		// documentFontName enables us to use a name match to break a tie;
 		// otherwise it would not be required
 		String keywordToMatch = documentFontName.toLowerCase();		 
-		if (documentFontName.indexOf(" ")>-1 ) {
-			keywordToMatch = keywordToMatch.substring(0, keywordToMatch.indexOf(" "));
+		if (documentFontName.contains(" ")) {
+			keywordToMatch = keywordToMatch.substring(0, keywordToMatch.indexOf(' '));
 		}
 		
-		String physicalFontKey = null;
+		String physicalFontKey;
 		String panoseKey = null;
-		
-		Iterator it = physicalFontSpace.entrySet().iterator();
+
 		long bestPanoseMatchValue = -1;		
 		String matchingPanoseString = null;
-	    while (it.hasNext()) {
-	        Map.Entry mapPairs = (Map.Entry)it.next();
+		for (Map.Entry<String, PhysicalFont> entry : physicalFontSpace.entrySet()) {
 	        			        
-	        physicalFontKey = (String)mapPairs.getKey();
-	        PhysicalFont physicalFont = (PhysicalFont)mapPairs.getValue();
+	        physicalFontKey = entry.getKey();
+	        PhysicalFont physicalFont = entry.getValue();
 	        	        
 	        if (physicalFont.getPanose() == null ) {
 //	        	if (log.isDebugEnabled()) {
@@ -607,7 +602,7 @@ public class BestMatchingMapper extends Mapper {
 //        	if (log.isDebugEnabled()) {
 //        		log.debug(physicalFontKey + " Panose data found.");
 //        	}
-			org.docx4j.fonts.foray.font.format.Panose physicalFontPanose = null;
+			org.docx4j.fonts.foray.font.format.Panose physicalFontPanose;
 	        long panoseMatchValue = MATCH_THRESHOLD + 1; // initialize to a non-match
 			try {
 				physicalFontPanose = org.docx4j.fonts.foray.font.format.Panose.makeInstance(physicalFont.getPanose().getPanoseArray() );
@@ -627,9 +622,9 @@ public class BestMatchingMapper extends Mapper {
 			boolean trump = false;
 			if (panoseMatchValue == bestPanoseMatchValue) {
 				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
-				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>-1) {
+				if (physicalFont.getName().toLowerCase().contains(keywordToMatch)) {
 					trump = true;
-					log.debug("trumped previous best (which was " + panoseKey + ")");
+					log.debug("trumped previous best (which was " + panoseKey + ')');
 				}
 			}
 			
@@ -711,7 +706,7 @@ public class BestMatchingMapper extends Mapper {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 				
 		FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();		
-		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
+		org.docx4j.wml.Fonts fonts = fontTablePart.getJaxbElement();
 	
 		BestMatchingMapper s = new BestMatchingMapper();
 				
@@ -733,32 +728,24 @@ public class BestMatchingMapper extends Mapper {
 	}
 	
 	private static void panoseDebugReportOnPhysicalFonts( Map<String, PhysicalFont>physicalFontMap ) {
-		Iterator fontIterator = physicalFontMap.entrySet().iterator();
-	    while (fontIterator.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)fontIterator.next();
+		for (Map.Entry<String, PhysicalFont> entry : physicalFontMap.entrySet()) {
 	        
-	        if(pairs.getKey()==null) {
+	        if(entry.getKey() == null) {
 	        	log.info("Skipped null key");
-	        	if (pairs.getValue()!=null) {
-	        		log.error(((PhysicalFont)pairs.getValue()).getEmbeddedURI().toString());
-	        	}
-	        	
-	        	if (fontIterator.hasNext() ) {
-	        		pairs = (Map.Entry)fontIterator.next();
-	        	} else {
-	        		return;
+	        	if (entry.getValue()!=null) {
+	        		log.error(entry.getValue().getEmbeddedURI().toString());
 	        	}
 	        }
 	        
-	        String fontName = (String)pairs.getKey();
+	        String fontName = entry.getKey();
 
-			PhysicalFont pf = (PhysicalFont)pairs.getValue();
+			PhysicalFont pf = entry.getValue();
 			
 			org.docx4j.fonts.foray.font.format.Panose fopPanose = pf.getPanose();
 			
 				if (fopPanose == null ) {
 					log.warn(fontName + " .. lacks Panose!");					
-				} else if (fopPanose!=null ) {
+				} else {
 					log.debug(fontName + " .. " + fopPanose);
 				}
 //				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());

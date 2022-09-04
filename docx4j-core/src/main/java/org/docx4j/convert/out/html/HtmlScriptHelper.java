@@ -8,7 +8,7 @@ public class HtmlScriptHelper {
 		result.append("document.getElementById(divid).style.display = 'block';");
 		result.append("}else{");
 		result.append("document.getElementById(divid).style.display = 'none';");
-		result.append("}");
+		result.append('}');
 		result.append("}\n");
 	}
 	

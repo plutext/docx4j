@@ -25,6 +25,7 @@
 package org.docx4j.fonts.fop.complexscripts.scripts;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.docx4j.fonts.fop.complexscripts.fonts.GlyphDefinitionTable;
 import org.docx4j.fonts.fop.complexscripts.fonts.GlyphTable;
@@ -91,12 +92,7 @@ public class KhmerScriptProcessor extends IndicScriptProcessor {
                                 int flags) {
                 CharAssociation charAssociation = (CharAssociation) associations.get(index);
                 char vowelSignU = '\u17BB';
-                for (int i = charAssociation.getStart(); i < charAssociation.getEnd(); i++) {
-                    if (chars[i] == vowelSignU) {
-                        return false;
-                    }
-                }
-                return true;
+                return IntStream.range(charAssociation.getStart(), charAssociation.getEnd()).noneMatch(i -> chars[i] == vowelSignU);
             }
         };
         public GlyphContextTester getTester(String feature) {

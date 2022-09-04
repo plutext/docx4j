@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 	
-	protected static Logger log = LoggerFactory.getLogger(JaxbPmlPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(JaxbPmlPart.class);
 	
 	
 	public final static String COMMON_SLIDE_DATA = 
@@ -60,17 +60,15 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 	
 	protected final static String COLOR_MAPPING = "<p:clrMap xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" bg1=\"lt1\" tx1=\"dk1\" bg2=\"lt2\" tx2=\"dk2\" accent1=\"accent1\" accent2=\"accent2\" accent3=\"accent3\" accent4=\"accent4\" accent5=\"accent5\" accent6=\"accent6\" hlink=\"hlink\" folHlink=\"folHlink\"/>";
 	
-	protected static Random random = new Random();
+	protected static final Random random = new Random();
 	
 	public static long getSlideLayoutOrMasterId() {
 		// See spec 4.8.18 (ST_SlideLayoutId) and 4.8.20 (ST_SlideMasterId)
-		long val = random.nextInt(2147483647) + 2147483648l;
-		return val;
+		return random.nextInt(2147483647) + 2147483648L;
 	}
-	protected long getSlideId() {
+	protected static long getSlideId() {
 		// See spec 4.8.17 (ST_SlideId)
-		long val = random.nextInt(2147483392) + 256;
-		return val;
+		return random.nextInt(2147483392) + 256;
 	}
 	
 	public JaxbPmlPart(PartName partName) throws InvalidFormatException {
@@ -85,40 +83,40 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPartXPathAware<E>  {
 
 	public static Part newPartForContentType(String contentType, String partName)
 	throws InvalidFormatException, PartUnrecognisedException {
-		
-		if (contentType.equals(ContentTypes.PRESENTATIONML_MAIN)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_MACROENABLED)
-				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED)
-				) {
-			return new MainPresentationPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE)) {
-			return new SlidePart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE_MASTER)) {
-			return new SlideMasterPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE_LAYOUT)) {
-			return new SlideLayoutPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENTS)) {
-			return new CommentsPart(new PartName(partName));			
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_TABLE_STYLES)) {
-			return new TableStylesPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_PRES_PROPS)) {
-			return new PresentationPropertiesPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_VIEW_PROPS)) {
-			return new ViewPropertiesPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_TAGS)) {
-			return new TagsPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_HANDOUT_MASTER)) {
-			return new HandoutMasterPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_MASTER)) {
-			return new NotesMasterPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_SLIDE)) {
-			return new NotesSlidePart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.PRESENTATIONML_COMMENT_AUTHORS)) {
-			return new CommentAuthorsPart(new PartName(partName));			
-		} else {
-			throw new PartUnrecognisedException("No subclass found for " 
-					+ partName + " (content type '" + contentType + "')");					
+
+		switch (contentType) {
+			case ContentTypes.PRESENTATIONML_MAIN:
+			case ContentTypes.PRESENTATIONML_TEMPLATE:
+			case ContentTypes.PRESENTATIONML_MACROENABLED:
+			case ContentTypes.PRESENTATIONML_TEMPLATE_MACROENABLED:
+				return new MainPresentationPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_SLIDE:
+				return new SlidePart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_SLIDE_MASTER:
+				return new SlideMasterPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_SLIDE_LAYOUT:
+				return new SlideLayoutPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_COMMENTS:
+				return new CommentsPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_TABLE_STYLES:
+				return new TableStylesPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_PRES_PROPS:
+				return new PresentationPropertiesPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_VIEW_PROPS:
+				return new ViewPropertiesPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_TAGS:
+				return new TagsPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_HANDOUT_MASTER:
+				return new HandoutMasterPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_NOTES_MASTER:
+				return new NotesMasterPart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_NOTES_SLIDE:
+				return new NotesSlidePart(new PartName(partName));
+			case ContentTypes.PRESENTATIONML_COMMENT_AUTHORS:
+				return new CommentAuthorsPart(new PartName(partName));
+			default:
+				throw new PartUnrecognisedException("No subclass found for "
+						+ partName + " (content type '" + contentType + "')");
 		}
 	}	
 	

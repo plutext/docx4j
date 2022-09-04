@@ -26,6 +26,7 @@ package org.docx4j.org.apache.xml.security.utils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.stream.IntStream;
 
 public class RFC2253Parser {
     
@@ -74,7 +75,7 @@ public class RFC2253Parser {
      */
     public static String normalize(String dn, boolean toXml) {
         //if empty string
-        if (dn == null || dn.equals("")) {
+        if (dn == null || dn.isEmpty()) {
             return "";
         }
 
@@ -90,7 +91,7 @@ public class RFC2253Parser {
                 l += countQuotes(DN, j, k);
 
                 if (k > 0 && DN.charAt(k - 1) != '\\' && (l % 2) == 0) {
-                    sb.append(parseRDN(DN.substring(i, k).trim(), toXml)).append(",");
+                    sb.append(parseRDN(DN.substring(i, k).trim(), toXml)).append(',');
 
                     i = k + 1;
                     l = 0;
@@ -123,7 +124,7 @@ public class RFC2253Parser {
             l += countQuotes(str, j, k);
 
             if (k > 0 && str.charAt(k - 1) != '\\' && (l % 2) == 0) {
-                sb.append(parseATAV(trim(str.substring(i, k)), toXml)).append("+");
+                sb.append(parseATAV(trim(str.substring(i, k)), toXml)).append('+');
 
                 i = k + 1;
                 l = 0;
@@ -158,7 +159,7 @@ public class RFC2253Parser {
             attrValue = normalizeV(str.substring(i + 1), toXml);
         }
 
-        return attrType + "=" + attrValue;
+        return attrType + '=' + attrValue;
 
     }
 
@@ -190,7 +191,7 @@ public class RFC2253Parser {
     static String normalizeV(String str, boolean toXml) throws IOException {
         String value = trim(str);
 
-        if (value.startsWith("\"")) {
+        if (!value.isEmpty() && value.charAt(0) == '\"') {
             StringBuilder sb = new StringBuilder();
             StringReader sr = new StringReader(value.substring(1, value.length() - 1));
             int i = 0;
@@ -212,7 +213,7 @@ public class RFC2253Parser {
         }
 
         if (toXml) {
-            if (value.startsWith("#")) {
+            if (!value.isEmpty() && value.charAt(0) == '#') {
                 value = '\\' + value;
             }
         } else {
@@ -441,15 +442,8 @@ public class RFC2253Parser {
      * @return number of quotes
      */
     private static int countQuotes(String s, int i, int j) {
-        int k = 0;
 
-        for (int l = i; l < j; l++) {
-            if (s.charAt(l) == '"') {
-                k++;
-            }
-        }
-
-        return k;
+        return (int) IntStream.range(i, j).filter(l -> s.charAt(l) == '"').count();
     }
 
     //only for the end of a space character occurring at the end of the string from rfc2253
@@ -465,9 +459,9 @@ public class RFC2253Parser {
         String trimed = str.trim();
         int i = str.indexOf(trimed) + trimed.length();
 
-        if (str.length() > i && trimed.endsWith("\\")
-            && !trimed.endsWith("\\\\") && str.charAt(i) == ' ') {
-            trimed = trimed + " ";
+        if (str.length() > i && !trimed.isEmpty() && trimed.charAt(trimed.length() - 1) == '\\'
+                && !trimed.endsWith("\\\\") && str.charAt(i) == ' ') {
+            trimed = trimed + ' ';
         }
 
         return trimed;

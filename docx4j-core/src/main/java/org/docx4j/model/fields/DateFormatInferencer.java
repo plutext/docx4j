@@ -98,14 +98,12 @@ public class DateFormatInferencer {
 	 * @see SimpleDateFormat
 	 */
 	public static String determineDateFormat(String dateString) {
-				
-	    for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
-	        if (dateString.toLowerCase().matches(regexp)) {
-	            return DATE_FORMAT_REGEXPS.get(regexp);
-	        }
-	    }
-	    return null; // Unknown format.
-	}	
+
+		return DATE_FORMAT_REGEXPS.entrySet().stream()
+				.filter(entry -> dateString.toLowerCase().matches(entry.getKey()))
+				.findFirst().map(Map.Entry::getValue)
+				.orElse(null);
+	}
 
     public static void main(String[] args) 
             throws Exception {

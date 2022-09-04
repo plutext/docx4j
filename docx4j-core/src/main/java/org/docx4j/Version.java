@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class Version {
 
-	protected static Logger log = LoggerFactory.getLogger(Version.class);
+	protected static final Logger log = LoggerFactory.getLogger(Version.class);
 	
 	private static Properties properties;
 	

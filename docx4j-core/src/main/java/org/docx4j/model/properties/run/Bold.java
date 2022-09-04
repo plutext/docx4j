@@ -30,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Bold extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Bold.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Bold.class);
 	
 	public final static String CSS_NAME = "font-weight"; 
 	public final static String FO_NAME  = "font-weight"; 

@@ -929,7 +929,7 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
 		// according to the spec, whitespace is the delimiter
 		
-		if (prefixMappings==null || prefixMappings.equals("") ) return;
+		if (prefixMappings==null || prefixMappings.isEmpty()) return;
 		
 		// we get one of these each time we encounter a w:dataBinding
 		// element in a content control; pity it is not done just
@@ -940,10 +940,10 @@ public class NamespacePrefixMappings implements NamespaceContext, org.docx4j.org
 		while (tokens.hasNext() ) {
 			String token = tokens.nextToken();
 			//log.debug("Got: " + token);
-			int pos = token.indexOf("=");
+			int pos = token.indexOf('=');
 			String prefix = token.substring(6, pos); // drop xmlns:
 			//log.debug("Got: " + prefix);
-			String uri = token.substring(pos+2, token.lastIndexOf("'"));
+			String uri = token.substring(pos+2, token.lastIndexOf('\''));
 			//log.debug("Got: " + uri);
 			namespaces.put(prefix, uri);
 		}

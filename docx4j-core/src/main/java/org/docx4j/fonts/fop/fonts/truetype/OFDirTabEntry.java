@@ -69,7 +69,7 @@ public class OFDirTabEntry {
 
     @Override
     public String toString() {
-        return "Read dir tab [" + Arrays.toString(tag) + "]"
+        return "Read dir tab [" + Arrays.toString(tag) + ']'
             + " offset: " + offset
             + " length: " + length
             + " name: " + getTagString();

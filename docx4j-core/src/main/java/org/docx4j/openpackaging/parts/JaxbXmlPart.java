@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -109,7 +110,7 @@ import org.xml.sax.XMLReader;
 public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Rels part, FontTablePart */ 
 	extends Part {
 	
-	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(JaxbXmlPart.class);
 	
 	// This class is abstract
 	// Most applications ought to be able to instantiate
@@ -997,12 +998,8 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	public String getMcChoiceNamespaces() {
 		
 		if (mcChoiceNamespaces.isEmpty() ) return "";
-		
-		StringBuilder sb = new StringBuilder();
-		for (String s : mcChoiceNamespaces) {
-			sb.append(" " + s);
-		}
-		return sb.toString();
+
+		return mcChoiceNamespaces.stream().map(s -> ' ' + s).collect(Collectors.joining());
 	}
 
 	/**
@@ -1152,7 +1149,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 	 * @throws FactoryConfigurationError
 	 * @throws JAXBException
 	 */
-	protected org.w3c.dom.Document transformToDom(XMLStreamReader xsr)
+	protected static org.w3c.dom.Document transformToDom(XMLStreamReader xsr)
 			throws FactoryConfigurationError, JAXBException {
 		
 		org.w3c.dom.Document doc = null;
@@ -1169,7 +1166,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		return doc;
 	}
 	
-	protected XMLStreamReader inputStreamToXSR(InputStream is) throws XMLStreamException {
+	protected static XMLStreamReader inputStreamToXSR(InputStream is) throws XMLStreamException {
 
 		/* To avoid possible XML External Entity Injection attack,
 		 * we need to configure the processor.

@@ -74,7 +74,7 @@ public class PostscriptParser {
                 char c = (char)cur;
                 if (!lastWasSpecial) {
                     specialDelimiter = (c == '{' || c == '}' || c == '[' || c == ']'
-                            || (!token.toString().equals("") && c == '/'));
+                            || (!token.toString().isEmpty() && c == '/'));
                     boolean isNotBreak = !(c == ' ' || c == '\r' || cur == 15 || cur == 12
                             || cur == 10);
                     if (isNotBreak && !specialDelimiter) {
@@ -144,16 +144,11 @@ public class PostscriptParser {
     }
 
     private boolean hasMatch(String operator, List<PSElement> elements) {
-        for (PSElement element : elements) {
-            if (element.getOperator().equals(operator)) {
-                return true;
-            }
-        }
-        return false;
+        return elements.stream().anyMatch(element -> element.getOperator().equals(operator));
     }
 
     public PSElement createElement(String operator, String elementID, int startPoint) {
-        if (operator.equals("")) {
+        if (operator.isEmpty()) {
             return null;
         }
         if (elementID.equals(FIXED_ARRAY)) {
@@ -358,9 +353,9 @@ public class PostscriptParser {
                 tokens.clear();
             }
             if (!token.equals(READ_ONLY)) {
-                entry += token + " ";
+                entry += token + ' ';
             }
-            if (!token.trim().equals("")) {
+            if (!token.trim().isEmpty()) {
                 tokens.add(token);
             }
             if (tokens.size() == 4 && tokens.get(0).equals("dup") && isInteger(tokens.get(2))) {
@@ -372,7 +367,7 @@ public class PostscriptParser {
         private boolean checkForEnd(String checkToken) {
             boolean subFound = false;
             //Check for a subroutine matching that of an array end definition
-            PSSubroutine sub = subroutines.get("/" + checkToken);
+            PSSubroutine sub = subroutines.get('/' + checkToken);
             if (sub != null && sub.getSubroutine().contains("def")) {
                 subFound = true;
             }
@@ -394,7 +389,7 @@ public class PostscriptParser {
         }
 
         private void addEntry(String entry) {
-            if (!entry.equals("")) {
+            if (!entry.isEmpty()) {
                 if (entry.indexOf('/') != -1 && entry.charAt(entry.indexOf('/') - 1) != ' ') {
                     entry = entry.replace("/", " /");
                 }
@@ -457,7 +452,7 @@ public class PostscriptParser {
 
         @Override
         public void parseToken(String token, int curPos) {
-            entry += token + " ";
+            entry += token + ' ';
             if (level <= 0 && token.length() > 0 && token.charAt(0) == ']') {
                 hasMore = false;
                 endPoint = curPos;
@@ -469,7 +464,7 @@ public class PostscriptParser {
                 level++;
             } else if (token.equals("}")) {
                 level--;
-                if (!entry.equals("") && level == 0) {
+                if (!entry.isEmpty() && level == 0) {
                     arrayItems.add(entry);
                     entry = "";
                 }
@@ -514,7 +509,7 @@ public class PostscriptParser {
             } else if (token.equals("}")) {
                 level--;
             }
-            entry += token + " ";
+            entry += token + ' ';
         }
 
         /**
@@ -556,18 +551,18 @@ public class PostscriptParser {
                 endPoint = curPos;
                 return;
             }
-            if (token.startsWith("/")) {
-                if (entry.trim().startsWith("/")) {
+            if (!token.isEmpty() && token.charAt(0) == '/') {
+                if (!entry.trim().isEmpty() && entry.trim().charAt(0) == '/') {
                     tokens.clear();
                     addEntry(entry);
                 }
                 entry = "";
             }
-            if (tokens.size() >= 1 || token.startsWith("/")) {
+            if (tokens.size() >= 1 || !token.isEmpty() && token.charAt(0) == '/') {
                 tokens.add(token);
             }
-            entry += token + " ";
-            if (tokens.size() == 3 && tokens.get(0).startsWith("/") && !tokens.get(2).equals("def")
+            entry += token + ' ';
+            if (tokens.size() == 3 && !tokens.get(0).isEmpty() && tokens.get(0).charAt(0) == '/' && !tokens.get(2).equals("def")
                     && isInteger(tokens.get(1))) {
                 binaryLength = Integer.parseInt(tokens.get(1));
                 readBinary = true;
@@ -595,8 +590,7 @@ public class PostscriptParser {
             } else {
                 if (readBinary) {
                     int start = pos - Integer.parseInt(tokens.get(1));
-                    int end = pos;
-                    binaryEntries.put(tokens.get(0), new int[] {start, end});
+                    binaryEntries.put(tokens.get(0), new int[] {start, pos});
                     readBinary = false;
                 } else {
                     tokens.add(token);

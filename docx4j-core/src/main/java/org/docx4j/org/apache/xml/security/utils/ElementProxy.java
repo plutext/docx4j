@@ -132,7 +132,7 @@ public abstract class ElementProxy {
                 result = doc.createElementNS(namespace, localName);
                 result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns", namespace);
             } else {
-                result = doc.createElementNS(namespace, prefix + ":" + localName);
+                result = doc.createElementNS(namespace, prefix + ':' + localName);
                 result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix, namespace);
             }
         }	      
@@ -163,7 +163,7 @@ public abstract class ElementProxy {
                 result = doc.createElementNS(namespace, localName);
                 result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns", namespace);
             } else {
-                result = doc.createElementNS(namespace, prefix + ":" + localName);
+                result = doc.createElementNS(namespace, prefix + ':' + localName);
                 result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix, namespace);
             }
         }
@@ -184,7 +184,7 @@ public abstract class ElementProxy {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("setElement(" + element.getTagName() + ", \"" + baseURI + "\"");
+            log.debug("setElement(" + element.getTagName() + ", \"" + baseURI + '"');
         }
 
         setElement(element);
@@ -256,8 +256,8 @@ public abstract class ElementProxy {
 
         if(!expectedNamespaceUri.equals(actualNamespaceUri) 
             && !expectedLocalName.equals(actualLocalName)) {      
-            Object exArgs[] = { actualNamespaceUri + ":" + actualLocalName, 
-                                expectedNamespaceUri + ":" + expectedLocalName};
+            Object exArgs[] = { actualNamespaceUri + ':' + actualLocalName,
+                                expectedNamespaceUri + ':' + expectedLocalName};
             throw new XMLSecurityException("xml.WrongElement", exArgs);
         }
     }
@@ -323,7 +323,7 @@ public abstract class ElementProxy {
         if (bytes != null) {
             Text t = XMLUtils.ignoreLineBreaks() 
                 ? createText(Base64.encode(bytes))
-                : createText("\n" + Base64.encode(bytes) + "\n");
+                : createText('\n' + Base64.encode(bytes) + '\n');
             appendSelf(t);
         }
     }

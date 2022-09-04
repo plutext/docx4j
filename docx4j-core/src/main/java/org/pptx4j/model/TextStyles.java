@@ -168,17 +168,22 @@ public class TextStyles {
 			Jc jc = factory.createJc();
 			String algn = lvlPPr.getAlgn().value();
 			log.debug("algn: " + algn);
-			if (  algn.equals("l")) {
-				jc.setVal(JcEnumeration.LEFT);
-			} else if (algn.equals("ctr")) {
-				jc.setVal(JcEnumeration.CENTER);
-			} else if (algn.equals("r")) {
-				jc.setVal(JcEnumeration.RIGHT);
-	//		} else if (value.getCssText().toLowerCase().equals("justify")) {
-	//			jc.setVal(JcEnumeration.BOTH);
-			} else {
-				log.warn("How to handle algn: " + algn);
-			}		
+			switch (algn) {
+				case "l":
+					jc.setVal(JcEnumeration.LEFT);
+					break;
+				case "ctr":
+					jc.setVal(JcEnumeration.CENTER);
+					break;
+				case "r":
+					jc.setVal(JcEnumeration.RIGHT);
+					//		} else if (value.getCssText().toLowerCase().equals("justify")) {
+					//			jc.setVal(JcEnumeration.BOTH);
+					break;
+				default:
+					log.warn("How to handle algn: " + algn);
+					break;
+			}
 			pPr.setJc( jc );
 		}
 		
@@ -233,7 +238,7 @@ public class TextStyles {
 	private static HpsMeasure convertFontSize(Integer in) {
 		ObjectFactory factory = Context.getWmlObjectFactory();
 		HpsMeasure sz = factory.createHpsMeasure();
-		int halfPts = Math.round(in/50); 
+		int halfPts = Math.round((float)in/50);
 		sz.setVal( BigInteger.valueOf(halfPts) );
 		return sz;
 	}
@@ -352,17 +357,15 @@ public class TextStyles {
 		ThemePart tp = (ThemePart)presentationMLPackage.getParts().getParts().get(
 				new PartName("/ppt/theme/theme1.xml"));
 		FontScheme fontScheme = tp.getFontScheme();
-		List<Style> styles = new ArrayList<Style>();
-		
+
 		TextStyles.generateDocDefaults(fontScheme);
 		
 		// presentation.xml
 		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
 				new PartName("/ppt/presentation.xml"));
-		styles.addAll(
-				TextStyles.generateWordStylesFromPresentationPart(
-						pp.getJaxbElement().getDefaultTextStyle(),
-						"", fontScheme));
+		List<Style> styles = new ArrayList<Style>(TextStyles.generateWordStylesFromPresentationPart(
+				pp.getJaxbElement().getDefaultTextStyle(),
+				"", fontScheme));
 
 		// master
 		SlideMasterPart master = (SlideMasterPart)presentationMLPackage.getParts().getParts().get(

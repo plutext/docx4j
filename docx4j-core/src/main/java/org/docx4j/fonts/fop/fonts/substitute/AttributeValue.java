@@ -52,7 +52,7 @@ public class AttributeValue extends java.util.ArrayList {
             }
         } else {
             String token = stringTokenizer.nextToken().trim();
-            Object value = null;
+            Object value;
             try {
                 value = Integer.valueOf(token);
             } catch (NumberFormatException ex) {
@@ -61,9 +61,7 @@ public class AttributeValue extends java.util.ArrayList {
                     value = token;
                 }
             }
-            if (value != null) {
-                attribute.add(value);
-            }
+            attribute.add(value);
         }
         return attribute;
     }

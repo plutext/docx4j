@@ -98,7 +98,7 @@ public class StandardEncryptionInfoBuilder implements EncryptionInfoBuilder {
             found |= (ks == keyBits);
         }
         if (!found) {
-            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+cipherAlgorithm.toString());
+            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+ cipherAlgorithm);
         }
         header = new StandardEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
         verifier = new StandardEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);

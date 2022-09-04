@@ -32,6 +32,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
+
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.base.Objects;
@@ -213,25 +215,11 @@ public final class HashBiMap<K, V> extends IteratorBasedAbstractMap<K, V>
   }
 
   private BiEntry<K, V> seekByKey(@Nullable Object key, int keyHash) {
-    for (BiEntry<K, V> entry = hashTableKToV[keyHash & mask];
-        entry != null;
-        entry = entry.nextInKToVBucket) {
-      if (keyHash == entry.keyHash && Objects.equal(key, entry.key)) {
-        return entry;
-      }
-    }
-    return null;
+    return Stream.iterate(hashTableKToV[keyHash & mask], java.util.Objects::nonNull, entry -> entry.nextInKToVBucket).filter(entry -> keyHash == entry.keyHash && Objects.equal(key, entry.key)).findFirst().orElse(null);
   }
 
   private BiEntry<K, V> seekByValue(@Nullable Object value, int valueHash) {
-    for (BiEntry<K, V> entry = hashTableVToK[valueHash & mask];
-        entry != null;
-        entry = entry.nextInVToKBucket) {
-      if (valueHash == entry.valueHash && Objects.equal(value, entry.value)) {
-        return entry;
-      }
-    }
-    return null;
+    return Stream.iterate(hashTableVToK[valueHash & mask], java.util.Objects::nonNull, entry -> entry.nextInVToKBucket).filter(entry -> valueHash == entry.valueHash && Objects.equal(value, entry.value)).findFirst().orElse(null);
   }
 
   @Override
@@ -343,7 +331,7 @@ public final class HashBiMap<K, V> extends IteratorBasedAbstractMap<K, V>
   private void rehashIfNecessary() {
     BiEntry<K, V>[] oldKToV = hashTableKToV;
     if (Hashing.needsResizing(size, oldKToV.length, LOAD_FACTOR)) {
-      int newTableSize = oldKToV.length * 2;
+      int newTableSize = oldKToV.length << 1;
 
       this.hashTableKToV = createTable(newTableSize);
       this.hashTableVToK = createTable(newTableSize);

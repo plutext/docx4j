@@ -24,6 +24,9 @@
 package org.xlsx4j.org.apache.poi.ss.util;
 
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * Excel converts numbers to text with different rules to those of java, so
  *  <code>Double.toString(value)</tt> won't do.
@@ -206,11 +209,7 @@ public final class NumberToTextConverter {
 			appendExp(sb, -decExponent);
 			return;
 		}
-		sb.append("0.");
-		for (int i=nLeadingZeros; i>0; i--) {
-			sb.append('0');
-		}
-		sb.append(decimalDigits.subSequence(0, countSigDigits));
+		sb.append(IntStream.iterate(nLeadingZeros, i -> i > 0, i -> i - 1).mapToObj(i -> "0").collect(Collectors.joining("", "0.", decimalDigits.subSequence(0, countSigDigits))));
 	}
 
 	private static void formatGreaterThanOne(StringBuilder sb, String decimalDigits, int decExponent, int countSigDigits) {
@@ -233,10 +232,7 @@ public final class NumberToTextConverter {
 			sb.append(decimalDigits.subSequence(decExponent+1, countSigDigits));
 			return;
 		}
-		sb.append(decimalDigits.subSequence(0, countSigDigits));
-		for (int i=-nFractionalDigits; i>0; i--) {
-			sb.append('0');
-		}
+		sb.append(IntStream.iterate(-nFractionalDigits, i -> i > 0, i -> i - 1).mapToObj(i -> "0").collect(Collectors.joining("", decimalDigits.subSequence(0, countSigDigits), "")));
 	}
 
 	private static boolean needsScientificNotation(int nDigits) {

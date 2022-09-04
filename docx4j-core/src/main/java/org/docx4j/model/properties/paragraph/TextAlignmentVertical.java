@@ -29,7 +29,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class TextAlignmentVertical extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(TextAlignmentVertical.class);		
+	protected static final Logger log = LoggerFactory.getLogger(TextAlignmentVertical.class);
 	
 	public final static String CSS_NAME = "vertical-align"; 
 	public final static String FO_NAME  = "vertical-align"; 
@@ -51,11 +51,11 @@ public class TextAlignmentVertical extends AbstractParagraphProperty {
 		
 		TextAlignment textAlignment = Context.getWmlObjectFactory().createPPrBaseTextAlignment();
 		
-		if (value.getCssText().toLowerCase().equals("top")) {
+		if (value.getCssText().equalsIgnoreCase("top")) {
 			textAlignment.setVal("top");
-		} else if (value.getCssText().toLowerCase().equals("middle")) {
+		} else if (value.getCssText().equalsIgnoreCase("middle")) {
 			textAlignment.setVal("center");
-		} else if (value.getCssText().toLowerCase().equals("baseline")) {
+		} else if (value.getCssText().equalsIgnoreCase("baseline")) {
 			textAlignment.setVal("auto");
 		} else {
 			log.warn("How to handle vertical-align: " + value.getCssText());

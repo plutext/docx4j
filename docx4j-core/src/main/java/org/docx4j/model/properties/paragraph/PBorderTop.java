@@ -29,7 +29,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PBorderTop extends AbstractPBorder {
 	
-	protected static Logger log = LoggerFactory.getLogger(PBorderTop.class);		
+	protected static final Logger log = LoggerFactory.getLogger(PBorderTop.class);
 	
 	private final static String CSS_NAME_BASE = "border-top"; 
 	

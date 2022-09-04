@@ -25,6 +25,8 @@ package org.docx4j.org.apache.poi.hpsf;
 import org.docx4j.org.apache.poi.util.Internal;
 import org.docx4j.org.apache.poi.util.LittleEndian;
 
+import java.util.Arrays;
+
 @Internal
 class Array
 {
@@ -74,15 +76,12 @@ class Array
 
         long getNumberOfScalarValues()
         {
-            long result = 1;
-            for ( ArrayDimension dimension : _dimensions )
-                result *= dimension._size;
-            return result;
+            return Arrays.stream(_dimensions).mapToLong(dimension -> dimension._size).reduce(1, (a, b) -> a * b);
         }
 
         int getSize()
         {
-            return LittleEndian.INT_SIZE * 2 + _dimensions.length
+            return (LittleEndian.INT_SIZE << 1) + _dimensions.length
                     * ArrayDimension.SIZE;
         }
 

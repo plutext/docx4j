@@ -42,13 +42,13 @@ public class ConversionSectionWrappers {
 		ObjectFactory factory = new ObjectFactory();
 		
 		Sections ret = factory.createSections();
-		for (int i=0; i<conversionSections.size(); i++) {
-			ret.getSection().add(createSection(factory, conversionSections.get(i)));
+		for (ConversionSectionWrapper conversionSection : conversionSections) {
+			ret.getSection().add(createSection(factory, conversionSection));
 		}
 		return ret;
 	}
     
-	private Section createSection(ObjectFactory factory, ConversionSectionWrapper conversionSectionWrapper) {
+	private static Section createSection(ObjectFactory factory, ConversionSectionWrapper conversionSectionWrapper) {
 		
 		Section ret = factory.createSectionsSection();
 		ret.setName(conversionSectionWrapper.getId());

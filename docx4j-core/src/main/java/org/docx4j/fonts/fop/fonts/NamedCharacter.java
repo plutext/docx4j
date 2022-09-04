@@ -132,7 +132,7 @@ public class NamedCharacter {
 
     /** {@inheritDoc} */
     public String toString() {
-        StringBuffer sb = new StringBuffer(this.unicodeSequence);
+        StringBuilder sb = new StringBuilder(this.unicodeSequence);
         sb.append(" (");
         if (this.unicodeSequence != null) {
             for (int i = 0, c = this.unicodeSequence.length(); i < c; i++) {

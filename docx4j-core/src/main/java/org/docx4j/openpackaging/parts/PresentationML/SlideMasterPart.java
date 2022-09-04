@@ -200,11 +200,11 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		String xmlString = XmlUtils.marshaltoString( getJaxbElement(), false, true, jc ); 
 			// include the XML declaration; it'll be UTF-8
 		int pos = xmlString.indexOf(":sldMaster "); //11
-		int closeTagPos = xmlString.indexOf(">", pos);
+		int closeTagPos = xmlString.indexOf('>', pos);
 		if (xmlString.substring(pos, closeTagPos).contains(VML_DECL)) {
 			// nothing to do; vml namespace is already declared
 		} else {
-			xmlString = xmlString.substring(0, pos + 11 ) +  VML_DECL + " " + xmlString.substring(pos + 11 );
+			xmlString = xmlString.substring(0, pos + 11 ) +  VML_DECL + ' ' + xmlString.substring(pos + 11 );
 		}
 		
 		try {

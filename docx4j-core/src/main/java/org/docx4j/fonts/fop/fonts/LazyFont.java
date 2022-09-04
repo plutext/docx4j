@@ -89,12 +89,12 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
 
     /** {@inheritDoc} */
     public String toString() {
-        StringBuffer sbuf = new StringBuffer(super.toString());
+        StringBuilder sbuf = new StringBuilder(super.toString());
         sbuf.append('{');
-        sbuf.append("metrics-url=" + fontUris.getMetrics());
-        sbuf.append(",embed-url=" + fontUris.getEmbed());
-        sbuf.append(",kerning=" + useKerning);
-        sbuf.append(",advanced=" + useAdvanced);
+        sbuf.append("metrics-url=").append(fontUris.getMetrics());
+        sbuf.append(",embed-url=").append(fontUris.getEmbed());
+        sbuf.append(",kerning=").append(useKerning);
+        sbuf.append(",advanced=").append(useAdvanced);
         sbuf.append('}');
         return sbuf.toString();
     }
@@ -127,10 +127,10 @@ public class LazyFont extends Typeface implements FontDescriptor, Substitutable,
                     realFontDescriptor = (FontDescriptor) realFont;
                 }
             } catch (RuntimeException e) {
-                String error = "Failed to read font file " + fontUris.getEmbed() + " " + e.getMessage();
+                String error = "Failed to read font file " + fontUris.getEmbed() + ' ' + e.getMessage();
                 throw new RuntimeException(error, e);
             } catch (Exception e) {
-                String error = "Failed to read font file " + fontUris.getEmbed() + " " + e.getMessage();
+                String error = "Failed to read font file " + fontUris.getEmbed() + ' ' + e.getMessage();
                 log.error(error, e);
                 if (fail) {
                     throw new RuntimeException(error, e);

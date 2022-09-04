@@ -49,16 +49,15 @@ public class POIFSViewer
 
     public static void main(final String args[])
     {
-        if (args.length < 0)
+        if (args.length == 0)
         {
             System.err.println("Must specify at least one file to view");
             System.exit(1);
         }
         boolean printNames = (args.length > 1);
 
-        for (int j = 0; j < args.length; j++)
-        {
-            viewFile(args[ j ], printNames);
+        for (String arg : args) {
+            viewFile(arg, printNames);
         }
     }
 
@@ -69,14 +68,11 @@ public class POIFSViewer
         {
             StringBuffer flowerbox = new StringBuffer();
 
-            flowerbox.append(".");
-            for (int j = 0; j < filename.length(); j++)
-            {
-                flowerbox.append("-");
-            }
-            flowerbox.append(".");
+            flowerbox.append('.');
+            flowerbox.append("-".repeat(filename.length()));
+            flowerbox.append('.');
             System.out.println(flowerbox);
-            System.out.println("|" + filename + "|");
+            System.out.println('|' + filename + '|');
             System.out.println(flowerbox);
         }
         try
@@ -85,11 +81,9 @@ public class POIFSViewer
                 new NPOIFSFileSystem(new File(filename));
             List<String>  strings = POIFSViewEngine.inspectViewable(fs, true,
                                         0, "  ");
-            Iterator<String> iter = strings.iterator();
 
-            while (iter.hasNext())
-            {
-                System.out.print(iter.next());
+            for (String string : strings) {
+                System.out.print(string);
             }
         }
         catch (IOException e)

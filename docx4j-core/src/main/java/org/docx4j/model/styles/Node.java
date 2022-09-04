@@ -127,16 +127,16 @@ public class Node<T> {
      
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{").append(getData().toString()).append(",[");
+        sb.append('{').append(getData().toString()).append(",[");
         int i = 0;
         for (Node<T> e : getChildren()) {
             if (i > 0) {
-                sb.append(",");
+                sb.append(',');
             }
             sb.append(e.getData().toString());
             i++;
         }
-        sb.append("]").append("}");
+        sb.append(']').append('}');
         return sb.toString();
     }
 

@@ -106,7 +106,7 @@ public class TagClass extends SdtTagHandler {
 		xhtmlDiv.setAttribute("class", tagMap.get("@class"));
 					
 		if (classVal.equals("collapse") ) {
-			xhtmlDiv.setAttribute("id", "t" + sdtId);
+			xhtmlDiv.setAttribute("id", 't' + sdtId);
 			if (tagMap.get("display")!=null
 					&& tagMap.get("display").equals("block")) {
 				xhtmlDiv.setAttribute("style", "display: block;");					

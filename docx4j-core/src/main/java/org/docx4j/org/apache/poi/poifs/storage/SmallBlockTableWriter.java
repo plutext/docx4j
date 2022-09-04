@@ -70,10 +70,7 @@ public class SmallBlockTableWriter
             if (blocks.length != 0)
             {
                 doc.setStartBlock(_sbat.allocateSpace(blocks.length));
-                for (int j = 0; j < blocks.length; j++)
-                {
-                    _small_blocks.add(blocks[ j ]);
-                }
+                _small_blocks.addAll(Arrays.asList(blocks));
             } else {
             	doc.setStartBlock(POIFSConstants.END_OF_CHAIN);
             }

@@ -172,8 +172,7 @@ public class GlyphPositioningState extends GlyphProcessingState {
     public boolean apply(GlyphPositioningSubtable st) {
         assert st != null;
         updateSubtableState(st);
-        boolean applied = st.position(this);
-        return applied;
+        return st.position(this);
     }
 
     /**

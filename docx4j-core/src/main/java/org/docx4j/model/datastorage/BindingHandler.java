@@ -335,11 +335,11 @@ public class BindingHandler {
 			
 			try {
 				
-				if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {
+				if (storeItemId.equalsIgnoreCase(CORE_PROPERTIES_STOREITEMID)  ) {
 					
 					return pkg.getDocPropsCorePart().xpathGetString(xpath, prefixMappings);
 					
-				} else if (storeItemId.toUpperCase().equals(EXTENDED_PROPERTIES_STOREITEMID) ) {
+				} else if (storeItemId.equalsIgnoreCase(EXTENDED_PROPERTIES_STOREITEMID) ) {
 					
 					return pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings);
 				} 
@@ -362,12 +362,12 @@ public class BindingHandler {
 					// never expect null, since an empty result set is converted to an empty string
 					log.error(xpath + " unexpectedly null!");
 					return r;
-				} else if (r.equals("")) {
+				} else if (r.isEmpty()) {
 					log.debug("XML element is missing (or empty) for xpath: " + xpath);
 					// if WARN is enabled for org.docx4j.openpackaging.parts.XmlPart, logs will tell you which
 					return r;
 				} else if (log.isDebugEnabled() ) {
-					log.debug(xpath + " yielded result '" + r + "'");
+					log.debug(xpath + " yielded result '" + r + '\'');
 					return r;
 				} else {
 					return r;

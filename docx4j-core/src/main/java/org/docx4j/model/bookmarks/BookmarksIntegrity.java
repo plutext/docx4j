@@ -2,10 +2,7 @@ package org.docx4j.model.bookmarks;
 import java.io.IOException;
 import java.io.Writer;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -25,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BookmarksIntegrity {
 		
-	protected static Logger log = LoggerFactory.getLogger(BookmarksIntegrity.class);
+	protected static final Logger log = LoggerFactory.getLogger(BookmarksIntegrity.class);
 	
 	
 	public BookmarksIntegrity() {}
@@ -169,7 +166,7 @@ public class BookmarksIntegrity {
 			} else if (name!=null && id != null) {
 				
 				if (!names.add(name)) {
-					write("Already have name '" + name + "'");
+					write("Already have name '" + name + '\'');
 					faulty.add(bm);
 				}
 				if (!startIds.add(id)) {
@@ -186,7 +183,7 @@ public class BookmarksIntegrity {
 					faulty.add(bm);
 				}
 				
-			} else if (id==null)  {
+			} else {
 				write("ID missing for name " + name);
 				if (!names.add(name)) {
 					write(".. and already have name " + name);
@@ -206,7 +203,7 @@ public class BookmarksIntegrity {
 				write("ID missing!");
 				faulty.add(bm);
 				
-			} else if (id != null) {
+			} else {
 				
 				if (!endIds.add(id)) {
 					write("Already have " + id.longValue());
@@ -242,27 +239,19 @@ public class BookmarksIntegrity {
 	}
 	
 	private CTBookmark find(List<CTBookmark> starts, BigInteger id) {
-		
-		for (CTBookmark bm : starts) {
-			if (bm.getId()==id) {
-				return bm;
-			}
-		}
-		return null; //shouldn't happen
+
+		return starts.stream().filter(bm -> Objects.equals(bm.getId(), id)).findFirst().orElse(null);
+
 	}
 
 	private CTMarkupRange findEnds(List<CTMarkupRange> ends, BigInteger id) {
-		
-		for (CTMarkupRange bm : ends) {
-			if (bm.getId()==id) {
-				return bm;
-			}
-		}
-		return null; //shouldn't happen
+
+		return ends.stream().filter(bm -> Objects.equals(bm.getId(), id)).findFirst().orElse(null);
+
 	}
 
 	private void write(String s) throws IOException {
-		if (this.writer!=null) writer.write(s + "\n");
+		if (this.writer!=null) writer.write(s + '\n');
 	}
 	
 	public enum  BookmarksStatus {

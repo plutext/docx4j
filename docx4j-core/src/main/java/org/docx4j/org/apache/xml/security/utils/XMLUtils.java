@@ -30,11 +30,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -323,7 +322,7 @@ public final class XMLUtils {
         if (dsPrefix == null || dsPrefix.length() == 0) {
             return doc.createElementNS(Constants.SignatureSpecNS, elementName);
         } 
-        return doc.createElementNS(Constants.SignatureSpecNS, dsPrefix + ":" + elementName);
+        return doc.createElementNS(Constants.SignatureSpecNS, dsPrefix + ':' + elementName);
     }
     
     /**
@@ -341,7 +340,7 @@ public final class XMLUtils {
         if (ds11Prefix == null || ds11Prefix.length() == 0) {
             return doc.createElementNS(Constants.SignatureSpec11NS, elementName);
         } 
-        return doc.createElementNS(Constants.SignatureSpec11NS, ds11Prefix + ":" + elementName);
+        return doc.createElementNS(Constants.SignatureSpec11NS, ds11Prefix + ':' + elementName);
     }
 
     /**
@@ -361,7 +360,7 @@ public final class XMLUtils {
         }
         return 
             doc.createElementNS(
-                EncryptionConstants.EncryptionSpecNS, xencPrefix + ":" + elementName
+                EncryptionConstants.EncryptionSpecNS, xencPrefix + ':' + elementName
             );
     }
     
@@ -382,7 +381,7 @@ public final class XMLUtils {
         }
         return 
             doc.createElementNS(
-                EncryptionConstants.EncryptionSpec11NS, xenc11Prefix + ":" + elementName
+                EncryptionConstants.EncryptionSpec11NS, xenc11Prefix + ':' + elementName
             );
     }
 
@@ -474,7 +473,7 @@ public final class XMLUtils {
         } catch (NullPointerException npe) {
             throw new NullPointerException(I18n.translate("endorsed.jdk1.4.0")
                                            + " Original message was \""
-                                           + npe.getMessage() + "\"");
+                                           + npe.getMessage() + '"');
         }
     }
 
@@ -506,7 +505,7 @@ public final class XMLUtils {
         
         throw new NullPointerException(I18n.translate("endorsed.jdk1.4.0")
                                        + " Original message was \""
-                                       + (npe == null ? "" : npe.getMessage()) + "\"");
+                                       + (npe == null ? "" : npe.getMessage()) + '"');
     }
 
     /**
@@ -566,13 +565,8 @@ public final class XMLUtils {
         }
 
         int length = xpathNodeSet.getLength();
-        Set<Node> set = new HashSet<Node>(length);
 
-        for (int i = 0; i < length; i++) {
-            set.add(xpathNodeSet.item(i));
-        }
-
-        return set;
+        return IntStream.range(0, length).mapToObj(xpathNodeSet::item).collect(Collectors.toCollection(() -> new HashSet<>(length)));
     }
 
     /**
@@ -869,17 +863,8 @@ public final class XMLUtils {
         if (xpathnode.getNodeType() == Node.TEXT_NODE) {
             // we iterate over all siblings of the context node because eventually,
             // the text is "polluted" with pi's or comments
-            StringBuilder sb = new StringBuilder();
 
-            for (Node currentSibling = xpathnode.getParentNode().getFirstChild();
-                currentSibling != null;
-                currentSibling = currentSibling.getNextSibling()) {
-                if (currentSibling.getNodeType() == Node.TEXT_NODE) {
-                    sb.append(((Text) currentSibling).getData());
-                }
-            }
-
-            return sb.toString();
+            return Stream.iterate(xpathnode.getParentNode().getFirstChild(), Objects::nonNull, Node::getNextSibling).filter(currentSibling -> currentSibling.getNodeType() == Node.TEXT_NODE).map(currentSibling -> ((Text) currentSibling).getData()).collect(Collectors.joining());
         } else if (xpathnode.getNodeType() == Node.ATTRIBUTE_NODE) {
             return xpathnode.getNodeValue();
         } else if (xpathnode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {

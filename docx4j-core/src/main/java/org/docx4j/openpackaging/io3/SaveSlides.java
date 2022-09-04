@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SaveSlides extends Save {
 	
-	protected static Logger log = LoggerFactory.getLogger(PresentationMLPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(PresentationMLPackage.class);
 
 	private SaveSlides(OpcPackage p) {
 		super(p);
@@ -50,7 +50,7 @@ public class SaveSlides extends Save {
 	*/		
 		
         MainPresentationPart presentation = pmlPkg.getMainPresentationPart();
-        RelationshipsPart rels = presentation.getRelationshipsPart();
+        //RelationshipsPart rels = presentation.getRelationshipsPart();
         existingldIdLst = presentation.getJaxbElement().getSldIdLst();
 
         // First, create a new SldIdLst, containing just the slides we want

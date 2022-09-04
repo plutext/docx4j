@@ -30,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PBorderBottom extends AbstractPBorder {
 	
-	protected static Logger log = LoggerFactory.getLogger(PBorderBottom.class);	
+	protected static final Logger log = LoggerFactory.getLogger(PBorderBottom.class);
 	
 	
 	private final static String CSS_NAME_BASE = "border-bottom"; 

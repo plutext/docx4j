@@ -30,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Italics extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Italics.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Italics.class);
 
 	public final static String CSS_NAME = "font-style"; 
 	public final static String FO_NAME  = "font-style"; 
@@ -48,7 +48,7 @@ public class Italics extends AbstractRunProperty {
 	
 	public Italics(CSSValue value) {
         BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();
-		if (!value.getCssText().toLowerCase().equals("italic")) {
+		if (!value.getCssText().equalsIgnoreCase("italic")) {
 			bdt.setVal(Boolean.FALSE);
 		}
         this.setObject( bdt  );

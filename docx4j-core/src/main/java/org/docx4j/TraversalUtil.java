@@ -44,6 +44,7 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
 import org.docx4j.utils.TraversalUtilVisitor;
+import org.docx4j.vml.CTShape;
 import org.docx4j.wml.Br;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
@@ -353,13 +354,12 @@ public class TraversalUtil {
 			
 		} else if (o instanceof org.docx4j.wml.Document) {
 			// since 3.3.4, so traverse visits Body as well.  This is more correct, and potentially useful.
-            List<Object> artificialList = new ArrayList<Object>();
+            List<Object> artificialList = new ArrayList<>();
             artificialList.add( ((org.docx4j.wml.Document)o).getBody() );
             return artificialList;
 			
         } else if (o instanceof Br
-        		|| o instanceof CTBookmark
-        		|| o instanceof CTMarkupRange) {			
+				|| o instanceof CTMarkupRange) {
         	return null;
         } else if (o instanceof R.Tab
         		|| o instanceof R.LastRenderedPageBreak) {			
@@ -401,7 +401,7 @@ public class TraversalUtil {
                 	if (handledGraphicData==null) {
 //                		log.info("handleGraphicData returned an empty list");
                 		if (log.isDebugEnabled()) {
-                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc, 
+                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc,
                 					"http://schemas.openxmlformats.org/drawingml/2006/main", "graphic", org.docx4j.dml.Graphic.class));
                 		}
                 	} else {
@@ -411,7 +411,7 @@ public class TraversalUtil {
             }
             if (!artificialList.isEmpty())
                 return artificialList;
-            
+
         } else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
             org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline) o;
             List<Object> artificialList = new ArrayList<Object>();
@@ -427,7 +427,7 @@ public class TraversalUtil {
                 	if (handledGraphicData==null) {
 //                		log.info("handleGraphicData returned an empty list");
                 		if (log.isDebugEnabled()) {
-                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc, 
+                			log.debug(XmlUtils.marshaltoString(graphic, true, true, Context.jc,
                 					"http://schemas.openxmlformats.org/drawingml/2006/main", "graphic", org.docx4j.dml.Graphic.class));
                 		}
                 	} else {
@@ -471,12 +471,8 @@ public class TraversalUtil {
 			
 		} else if (o instanceof org.docx4j.vml.CTShape) {				
 //			return ((org.docx4j.vml.CTShape)o).getAny();
-			List<Object> artificialList = new ArrayList<Object>();
-			for (JAXBElement<?> j : ((org.docx4j.vml.CTShape)o).getPathOrFormulasOrHandles() ) {
-//				System.out.println(XmlUtils.unwrap(j).getClass().getName() );
-				artificialList.add(j);				
-			}
-			return artificialList;
+			//				System.out.println(XmlUtils.unwrap(j).getClass().getName() );
+			return new ArrayList<Object>(((CTShape) o).getPathOrFormulasOrHandles());
 		} else if (o instanceof CTDataModel) {
 			CTDataModel dataModel = (CTDataModel)o;
 			List<Object> artificialList = new ArrayList<Object>();
@@ -500,8 +496,7 @@ public class TraversalUtil {
 		} else if (o instanceof CTObject) {
 			
 			CTObject ctObject = (CTObject)o;
-			List<Object> artificialList = new ArrayList<Object>();
-			artificialList.addAll(ctObject.getAnyAndAny());
+			List<Object> artificialList = new ArrayList<Object>(ctObject.getAnyAndAny());
 			if (ctObject.getControl()!=null) {
 				artificialList.add(ctObject.getControl() ); // CTControl
 			}
@@ -513,14 +508,9 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.dml.CTGvmlShape) {
 			
 			org.docx4j.dml.CTGvmlShape sp = (org.docx4j.dml.CTGvmlShape)o; 
-			if (sp!=null
-					&& sp.getTxSp()!=null
-					&& sp.getTxSp().getTxBody()!=null) {
+			if (sp.getTxSp() != null && sp.getTxSp().getTxBody() != null) {
 
-				List<Object> artificialList = new ArrayList<Object>();
-				artificialList.addAll(sp.getTxSp().getTxBody().getP());
-				
-				return artificialList;				
+				return new ArrayList<>(sp.getTxSp().getTxBody().getP());
 			}
 			return null;
 			
@@ -541,15 +531,12 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.mce.AlternateContent) {
 			// we also want to traverse the fallback
 			AlternateContent ac = (AlternateContent)o;
-			List<Object> artificialList = new ArrayList<Object>();
-			artificialList.addAll(ac.getChoice());
+			List<Object> artificialList = new ArrayList<Object>(ac.getChoice());
 			artificialList.add(ac.getFallback());
 			return artificialList;
 		} else if (o instanceof org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape) {
 			org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape sp = (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape)o;
-			if (sp!=null
-					&& sp.getTxbx()!=null
-					&& sp.getTxbx().getTxbxContent()!=null) {
+			if (sp.getTxbx() != null && sp.getTxbx().getTxbxContent() != null) {
 
 				return sp.getTxbx().getTxbxContent().getContent();
 			}
@@ -562,10 +549,9 @@ public class TraversalUtil {
 		log.debug(o.getClass().getName() + " .. looking for method which returns list "  );
 		try {
 			Method[] methods = o.getClass().getDeclaredMethods();
-			for (int i = 0; i<methods.length; i++) {
-				Method m = methods[i];
-				if (m.getReturnType().getName().equals("java.util.List") ) {					
-					return (List<Object>)m.invoke(o);					
+			for (Method m : methods) {
+				if (m.getReturnType().getName().equals("java.util.List")) {
+					return (List<Object>) m.invoke(o);
 				}
 			}
 			
@@ -575,7 +561,7 @@ public class TraversalUtil {
 		log.debug(".. no list member");
 		return null;
 	}
-	
+
 
 
 	public static void replaceChildren(Object o, List<Object> newChildren) {
@@ -640,19 +626,12 @@ public class TraversalUtil {
 			((org.docx4j.wml.SdtElement) o).getSdtContent().getContent().clear();
 			((org.docx4j.wml.SdtElement) o).getSdtContent().getContent().addAll(newChildren);
 			
-		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {
-			
-			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().clear();
-			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().addAll(newChildren);			
-
 		} else {
 			
 			log.info("Don't know how to replaceChildren in " + o.getClass().getName() ); 
 
 			if (o instanceof org.w3c.dom.Node) {
 				log.warn(" IGNORED " + ((org.w3c.dom.Node) o).getNodeName());
-			} else {
-//				log.warn(" IGNORED " + o.getClass().getName());
 			}
 
 		}
@@ -776,12 +755,10 @@ public class TraversalUtil {
 								.getJaxbElement().getContent();
 					} else if (Namespaces.ENDNOTES.equals(rs.getType())) {
 						//elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
-						elementList = new ArrayList();
 						elementList.addAll(
 								((EndnotesPart) relPart.getPart(rs)).getJaxbElement().getEndnote() );
 					} else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
 						//elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
-						elementList = new ArrayList();
 						elementList.addAll(
 								((FootnotesPart) relPart.getPart(rs)).getJaxbElement().getFootnote() );
 					} else if (Namespaces.COMMENTS.equals(rs.getType())) {

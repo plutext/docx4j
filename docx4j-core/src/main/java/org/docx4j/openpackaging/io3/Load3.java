@@ -84,7 +84,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Load3 extends Load {
 		
-	private static Logger log = LoggerFactory.getLogger(Load3.class);
+	private static final Logger log = LoggerFactory.getLogger(Load3.class);
 
 
 	private PartStore partStore;	
@@ -158,12 +158,12 @@ public class Load3 extends Load {
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
 		PartName mainPartNameObj;
-		if (mainPartName.startsWith("/")) {
+		if (!mainPartName.isEmpty() && mainPartName.charAt(0) == '/') {
 			// OpenXML SDK 2.0 writes Target="/word/document.xml" (note leading "/")
 			mainPartNameObj = new PartName(mainPartName);
 		} else { 
 			// Microsoft Word, docx4j etc write Target="word/document.xml" 
-			mainPartNameObj = new PartName("/" + mainPartName);
+			mainPartNameObj = new PartName('/' + mainPartName);
 		}
 		String pkgContentType = ctm.getContentType(mainPartNameObj);
 
@@ -203,7 +203,7 @@ public class Load3 extends Load {
 		existingPkg = null;
 		
 		long endTime = System.currentTimeMillis();
-		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );
+		log.info("package read;  elapsed time: " + (endTime-startTime) + " ms" );
 		 
 		 return p;
 	}
@@ -357,7 +357,7 @@ public class Load3 extends Load {
 			
 			// The source Part (or Package) might have a convenience
 			// method for this
-			part = pkg.getParts().getParts().get(new PartName("/" + resolvedPartUri));
+			part = pkg.getParts().getParts().get(new PartName('/' + resolvedPartUri));
 			if (source.setPartShortcut(part, relationshipType ) ) {
 				log.debug("Convenience method established from " + source.getPartName() 
 						+ " to " + part.getPartName());
@@ -468,7 +468,7 @@ public class Load3 extends Load {
 				// This will throw UnrecognisedPartException in the absence of
 				// specific knowledge. Hence it is important to get the is
 				// first, as we do above.
-				part = ctm.getPart("/" + resolvedPartUri, rel);				
+				part = ctm.getPart('/' + resolvedPartUri, rel);
 
 				if (log.isDebugEnabled() && part !=null) {
 					log.debug("ctm returned " + part.getClass().getName() );
@@ -623,7 +623,7 @@ public class Load3 extends Load {
 		}
 		
         if (part == null) {
-            throw new Docx4JException("For source " + rp.getSourceP().getPartName() +  ", cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + "=" + rel.getTarget());
+            throw new Docx4JException("For source " + rp.getSourceP().getPartName() +  ", cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + '=' + rel.getTarget());
         }
 		
 		return part;
@@ -638,12 +638,12 @@ public class Load3 extends Load {
 		try {
 			is = partStore.loadPart(resolvedPartUri);
 			//in = partByteArrays.get(resolvedPartUri).getInputStream();
-			part = new BinaryPart( new PartName("/" + resolvedPartUri));
+			part = new BinaryPart( new PartName('/' + resolvedPartUri));
 			
 			// Set content type
 			part.setContentType(
 					new ContentType(
-							ctm.getContentType(new PartName("/" + resolvedPartUri)) ) );
+							ctm.getContentType(new PartName('/' + resolvedPartUri)) ) );
 			
 			((BinaryPart)part).setBinaryData(is);
 			log.info("Stored as BinaryData" );

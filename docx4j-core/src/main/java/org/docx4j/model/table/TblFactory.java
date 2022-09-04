@@ -53,7 +53,7 @@ public class TblFactory {
 		Tbl tbl = Context.getWmlObjectFactory().createTbl();		
 		
 		// w:tblPr
-		String strTblPr =  "<w:tblPr " + Namespaces.W_NAMESPACE_DECLARATION + ">"
+		String strTblPr =  "<w:tblPr " + Namespaces.W_NAMESPACE_DECLARATION + '>'
 			+ "<w:tblStyle w:val=\"TableGrid\"/>"
 			+ 	"<w:tblW w:w=\"0\" w:type=\"auto\"/>"
 			+   "<w:tblLook w:val=\"04A0\"/>"

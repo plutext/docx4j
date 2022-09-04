@@ -31,7 +31,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class RBorder extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(RBorder.class);		
+	protected static final Logger log = LoggerFactory.getLogger(RBorder.class);
 	
 	public static final String CSS_NAME_STYLE = "border-style"; 
 	public static final String CSS_NAME_WIDTH = "border-width"; 
@@ -116,7 +116,7 @@ public class RBorder extends AbstractRunProperty {
 			if (border.getColor().equals("auto")) {
 				color = "#000000";
 			} else {
-				color = "#" + border.getColor();
+				color = '#' + border.getColor();
 			}
 			color = composeCss(CSS_NAME_COLOR, color);
 		}
@@ -175,7 +175,7 @@ public class RBorder extends AbstractRunProperty {
 			if (border.getColor().equals("auto")) {
 				val = "#000000";
 			} else {
-				val = "#" + border.getColor();
+				val = '#' + border.getColor();
 			}
 			foElement.setAttribute(CSS_NAME_COLOR, val);
 		}

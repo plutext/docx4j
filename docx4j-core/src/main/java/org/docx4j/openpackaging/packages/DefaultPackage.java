@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultPackage extends OpcPackage {
 
-	protected static Logger log = LoggerFactory.getLogger(DefaultPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(DefaultPackage.class);
 		
 	
 	/**

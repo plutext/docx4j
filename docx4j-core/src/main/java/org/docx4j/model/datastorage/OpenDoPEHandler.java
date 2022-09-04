@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -470,7 +471,7 @@ public class OpenDoPEHandler {
 		public void walkJAXBElements(Object parent) {
 			// Breadth first
 
-			List<Object> newChildren = new ArrayList<Object>();
+			List<Object> newChildren;
 
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
 			List<Object> children = getChildren(parentUnwrapped);
@@ -478,9 +479,7 @@ public class OpenDoPEHandler {
 //				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
 			} else {
-				for (Object o : children) {
-					newChildren.addAll(this.apply(o));
-				}
+				newChildren = children.stream().flatMap(o -> this.apply(o).stream()).collect(Collectors.toList());
 			}
 			// Replace list, so we'll traverse all the new sdts we've just
 			// created
@@ -577,7 +576,7 @@ public class OpenDoPEHandler {
 			
 			if (log.isDebugEnabled() 
 					&& duration>750) {
-				conditionTiming.append(c.toString(conditionsMap, xpathsMap) + "," + duration + "\n");				
+				conditionTiming.append(c.toString(conditionsMap, xpathsMap)).append(',').append(duration).append('\n');
 			}
 			
 			if ( cResult ) {
@@ -675,7 +674,7 @@ public class OpenDoPEHandler {
 			log.error("Cannot find condition tag in sdtPr/tag while setting conditionFalse; something is wrong with " + tagVal);
 			return newContent;
 		}
-		final String emptyConditionValue = BINDING_RESULT_CONDITION_FALSE + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		final String emptyConditionValue = BINDING_RESULT_CONDITION_FALSE + '=' + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyConditionValue);	
 		
 		// Lock it
@@ -881,7 +880,7 @@ public class OpenDoPEHandler {
 		// if (xpath.endsWith("/*")) {
 		// xpathBase = xpath.substring(0, xpath.length()-2);
 		// } else
-		if (xpath.endsWith("/")) {
+		if (!xpath.isEmpty() && xpath.charAt(xpath.length() - 1) == '/') {
 			xpathBase = xpath.substring(0, xpath.length() - 1);
 
 		} else 
@@ -945,10 +944,10 @@ public class OpenDoPEHandler {
 				log.debug("-> " + countPath);
 			}
 			
-			if (countPath.endsWith("*")) {				
+			if (!countPath.isEmpty() && countPath.charAt(countPath.length() - 1) == '*') {
 				// experimental, 6.1.0
 				log.debug("ends with * in " + countPath );
-				String tmpPath2 = countPath.substring(0,countPath.lastIndexOf("/")); // parent
+				String tmpPath2 = countPath.substring(0,countPath.lastIndexOf('/')); // parent
 				log.debug("so lookup " + tmpPath2 );
 				numRepeats = domToXPathMap.getCountMap().get(DomToXPathMap.PREFIX_ALL_NODES + tmpPath2);
 				log.debug(" .. result " + numRepeats);
@@ -1006,7 +1005,7 @@ public class OpenDoPEHandler {
 
 		// Count siblings
 		if (log.isDebugEnabled() ) {
-			log.debug("yields REPEATS: "  + xpathBase + ":" + numRepeats);
+			log.debug("yields REPEATS: "  + xpathBase + ':' + numRepeats);
 		}
 		
 		if (numRepeats == 0) {
@@ -1111,7 +1110,7 @@ public class OpenDoPEHandler {
 			log.error("Cannot find repeat tag in sdtPr/tag while processing repeat; something is wrong with " + tagVal);
 			return newContent;
 		}
-		final String emptyRepeatValue = BINDING_RESULT_RPTD_ZERO + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		final String emptyRepeatValue = BINDING_RESULT_RPTD_ZERO + '=' + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyRepeatValue);	
 		
 		// Lock it
@@ -1151,8 +1150,7 @@ public class OpenDoPEHandler {
 		
 		return newContent;
 	}
-	
-	private int DEBUG_REPEAT_CAP = -1; // should be -1, except when developing!
+
 	private int totalRepeated = 0;
 	
 	private List<Object> cloneRepeatSdt(Object sdt, String xpathBase,
@@ -1174,8 +1172,10 @@ public class OpenDoPEHandler {
 		}
 
 		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
-		
-		if (DEBUG_REPEAT_CAP>0 && DEBUG_REPEAT_CAP<numRepeats) {
+
+		// should be -1, except when developing!
+		int DEBUG_REPEAT_CAP = -1;
+		if (DEBUG_REPEAT_CAP >0 && DEBUG_REPEAT_CAP <numRepeats) {
 			log.warn("Capping repeats at " + DEBUG_REPEAT_CAP + "(down from " + numRepeats);
 			numRepeats = DEBUG_REPEAT_CAP;
 		}
@@ -1224,7 +1224,7 @@ public class OpenDoPEHandler {
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
 //				+ stripPatternMatcher.group(3);
-		final String emptyRepeatValue = BINDING_RESULT_RPTD + "=" + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
+		final String emptyRepeatValue = BINDING_RESULT_RPTD + '=' + stripPatternMatcher.group(2) + stripPatternMatcher.group(3);
 		tag.setVal(emptyRepeatValue);
 	}
 
@@ -1493,7 +1493,7 @@ public class OpenDoPEHandler {
 		
 		org.opendope.xpaths.Xpaths.Xpath newXPathObj = new org.opendope.xpaths.Xpaths.Xpath();		
 		
-		String newXPathId = xpathObj.getId() + "_" + index;
+		String newXPathId = xpathObj.getId() + '_' + index;
 		newXPathObj.setId(newXPathId);
 		
 		org.opendope.xpaths.Xpaths.Xpath.DataBinding dataBinding = new org.opendope.xpaths.Xpaths.Xpath.DataBinding();

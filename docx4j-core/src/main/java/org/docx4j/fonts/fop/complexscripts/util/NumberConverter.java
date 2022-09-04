@@ -25,8 +25,10 @@
 package org.docx4j.fonts.fop.complexscripts.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 // CSOFF: LineLengthCheck
 
@@ -262,11 +264,11 @@ public class NumberConverter {
             int s = token[0];
             switch (s) {
             case (int) '1':
-                fn = formatNumberAsDecimal(number, (int) '1', 1);
+                fn = formatNumberAsDecimal(number, '1', 1);
             break;
             case (int) 'W':
             case (int) 'w':
-                fn = formatNumberAsWord(number, (s == (int) 'W') ? Character.UPPERCASE_LETTER : Character.LOWERCASE_LETTER);
+                fn = formatNumberAsWord(number, (s == 'W') ? Character.UPPERCASE_LETTER : Character.LOWERCASE_LETTER);
             break;
             case (int) 'A': // handled as numeric sequence
             case (int) 'a': // handled as numeric sequence
@@ -284,13 +286,13 @@ public class NumberConverter {
                 }
                 break;
             }
-        } else if ((token.length == 2) && (token[0] == (int) 'W') && (token[1] == (int) 'w')) {
+        } else if ((token.length == 2) && (token[0] == 'W') && (token[1] == 'w')) {
             fn = formatNumberAsWord(number, Character.TITLECASE_LETTER);
         } else if (isPaddedOne(token)) {
             int s = token[token.length - 1];
             fn = formatNumberAsDecimal(number, s, token.length);
         } else {
-            throw new IllegalArgumentException("invalid format token: \"" + UTF32.fromUTF32(token) + "\"");
+            throw new IllegalArgumentException("invalid format token: \"" + UTF32.fromUTF32(token) + '"');
         }
         if (fn == null) {
             fn = formatNumber(number, DEFAULT_TOKEN);
@@ -367,7 +369,7 @@ public class NumberConverter {
         } else {
             long n = number;
             while (n > 0) {
-                int d = (int) ((n - 1) % (long) base);
+                int d = (int) ((n - 1) % base);
                 int s = (map != null) ? map [ d ] : (one + d);
                 sl.add(0, s);
                 n = (n - 1) / base;
@@ -434,12 +436,7 @@ public class NumberConverter {
         for (String[] el : equivalentLanguages) {
             assert el.length >= 2;
             if (el[0].equals(i3c)) {
-                for (String anEl : el) {
-                    if (anEl.equals(lc)) {
-                        return true;
-                    }
-                }
-                return false;
+                return Arrays.stream(el).anyMatch(anEl -> anEl.equals(lc));
             }
         }
         return false;
@@ -571,29 +568,29 @@ public class NumberConverter {
     }
 
     private SpecialNumberFormatter getSpecialFormatter(int one, int letterValue, String features, String language, String country) {
-        if (one == (int) 'I') {
+        if (one == 'I') {
             return new RomanNumeralsFormatter();
-        } else if (one == (int) 'i') {
+        } else if (one == 'i') {
             return new RomanNumeralsFormatter();
-        } else if (one == (int) '\u0391') {
+        } else if (one == '\u0391') {
             return new IsopsephryNumeralsFormatter();
-        } else if (one == (int) '\u03B1') {
+        } else if (one == '\u03B1') {
             return new IsopsephryNumeralsFormatter();
-        } else if (one == (int) '\u05D0') {
+        } else if (one == '\u05D0') {
             return new GematriaNumeralsFormatter();
-        } else if (one == (int) '\u0623') {
+        } else if (one == '\u0623') {
             return new ArabicNumeralsFormatter();
-        } else if (one == (int) '\u0627') {
+        } else if (one == '\u0627') {
             return new ArabicNumeralsFormatter();
-        } else if (one == (int) '\u0E01') {
+        } else if (one == '\u0E01') {
             return new ThaiNumeralsFormatter();
-        } else if (one == (int) '\u3042') {
+        } else if (one == '\u3042') {
             return new KanaNumeralsFormatter();
-        } else if (one == (int) '\u3044') {
+        } else if (one == '\u3044') {
             return new KanaNumeralsFormatter();
-        } else if (one == (int) '\u30A2') {
+        } else if (one == '\u30A2') {
             return new KanaNumeralsFormatter();
-        } else if (one == (int) '\u30A4') {
+        } else if (one == '\u30A4') {
             return new KanaNumeralsFormatter();
         } else {
             return null;
@@ -629,11 +626,7 @@ public class NumberConverter {
     */
 
     private static List<String> convertWordCase(List<String> words, int caseType) {
-        List<String> wl = new ArrayList<String>();
-        for (String w : words) {
-            wl.add(convertWordCase(w, caseType));
-        }
-        return wl;
+        return words.stream().map(w -> convertWordCase(w, caseType)).collect(Collectors.toList());
     }
 
     private static String convertWordCase(String word, int caseType) {
@@ -642,7 +635,7 @@ public class NumberConverter {
         } else if (caseType == Character.LOWERCASE_LETTER) {
             return word.toLowerCase();
         } else if (caseType == Character.TITLECASE_LETTER) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0, n = word.length(); i < n; i++) {
                 String s = word.substring(i, i + 1);
                 if (i == 0) {
@@ -658,7 +651,7 @@ public class NumberConverter {
     }
 
     private static String joinWords(List<String> words, String separator) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String w : words) {
             if (sb.length() > 0) {
                 sb.append(separator);
@@ -884,7 +877,7 @@ public class NumberConverter {
                         wl.add("et");
                         wl.add(frenchWordOnes [ ones ]);
                     } else {
-                        StringBuffer sb = new StringBuffer();
+                        StringBuilder sb = new StringBuilder();
                         sb.append(frenchWordTens [ tens ]);
                         if (ones > 0) {
                             sb.append('-');
@@ -898,14 +891,14 @@ public class NumberConverter {
                         wl.add("et");
                         wl.add(frenchWordTeens [ ones ]);
                     } else {
-                        StringBuffer sb = new StringBuffer();
+                        StringBuilder sb = new StringBuilder();
                         sb.append(frenchWordTens [ 6 ]);
                         sb.append('-');
                         sb.append(frenchWordTeens [ ones ]);
                         wl.add(sb.toString());
                     }
                 } else if (tens == 8) {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     sb.append(frenchWordTens [ tens ]);
                     if (ones > 0) {
                         sb.append('-');
@@ -915,7 +908,7 @@ public class NumberConverter {
                     }
                     wl.add(sb.toString());
                 } else if (tens == 9) {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     sb.append(frenchWordTens [ 8 ]);
                     sb.append('-');
                     sb.append(frenchWordTeens [ ones ]);
@@ -1174,9 +1167,9 @@ public class NumberConverter {
                             }
                         }
                     }
-                    if (one == (int) 'I') {
+                    if (one == 'I') {
                         return toUpperCase(sl.toArray(new Integer [ sl.size() ]));
-                    } else if (one == (int) 'i') {
+                    } else if (one == 'i') {
                         return toLowerCase(sl.toArray(new Integer [ sl.size() ]));
                     } else {
                         return null;

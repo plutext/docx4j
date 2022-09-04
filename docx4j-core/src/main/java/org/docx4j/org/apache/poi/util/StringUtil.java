@@ -78,13 +78,13 @@ public class StringUtil {
 		final int len)
 		throws ArrayIndexOutOfBoundsException, IllegalArgumentException {
 		if ((offset < 0) || (offset >= string.length)) {
-			throw new ArrayIndexOutOfBoundsException("Illegal offset " + offset + " (String data is of length " + string.length + ")");
+			throw new ArrayIndexOutOfBoundsException("Illegal offset " + offset + " (String data is of length " + string.length + ')');
 		}
 		if ((len < 0) || (((string.length - offset) / 2) < len)) {
 			throw new IllegalArgumentException("Illegal length " + len);
 		}
 
-		return new String(string, offset, len * 2, UTF16LE);
+		return new String(string, offset, len << 1, UTF16LE);
 	}
 
 	/**
@@ -266,7 +266,7 @@ public class StringUtil {
 	}
 
 	public static String readUnicodeLE(LittleEndianInput in, int nChars) {
-        byte[] bytes = new byte[nChars*2];
+        byte[] bytes = new byte[(nChars << 1)];
         in.readFully(bytes);
         return new String(bytes, UTF16LE);
 	}
@@ -420,13 +420,13 @@ public class StringUtil {
     * @see <a href="http://www.alanwood.net/demos/symbol.html">Symbol font - Unicode alternatives for Greek and special characters in HTML</a>
     */
    public static String mapMsCodepointString(String string) {
-       if (string == null || "".equals(string)) return string;
+       if (string == null || string.isEmpty()) return string;
        initMsCodepointMap();
        
        StringBuilder sb = new StringBuilder();
        final int length = string.length();
        for (int offset = 0; offset < length; ) {
-          Integer msCodepoint = string.codePointAt(offset);
+          int msCodepoint = string.codePointAt(offset);
           Integer uniCodepoint = msCodepointToUnicode.get(msCodepoint);
           sb.appendCodePoint(uniCodepoint == null ? msCodepoint : uniCodepoint);
           offset += Character.charCount(msCodepoint);

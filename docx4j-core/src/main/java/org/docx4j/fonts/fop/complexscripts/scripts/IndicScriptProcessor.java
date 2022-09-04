@@ -227,7 +227,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
         return Syllabizer.getSyllabizer(script, language, getSyllabizerClass()).syllabize(gs);
     }
 
-    private GlyphSequence unsyllabize(GlyphSequence gs, GlyphSequence[] sa) {
+    private static GlyphSequence unsyllabize(GlyphSequence gs, GlyphSequence[] sa) {
         return GlyphSequence.join(gs, sa);
     }
 
@@ -251,7 +251,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
         basicShapingFeatures = new HashSet<String>();
         Collections.addAll(basicShapingFeatures, BASIC_SHAPING_FEATURE_STRINGS);
     }
-    private boolean isBasicShapingUse(GlyphTable.UseSpec us) {
+    private static boolean isBasicShapingUse(GlyphTable.UseSpec us) {
         assert us != null;
         if (basicShapingFeatures != null) {
             return basicShapingFeatures.contains(us.getFeature());
@@ -274,7 +274,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
         presentationFeatures = new HashSet<String>();
         Collections.addAll(presentationFeatures, PRESENTATION_FEATURE_STRINGS);
     }
-    private boolean isPresentationUse(GlyphTable.UseSpec us) {
+    private static boolean isPresentationUse(GlyphTable.UseSpec us) {
         assert us != null;
         if (presentationFeatures != null) {
             return presentationFeatures.contains(us.getFeature());
@@ -347,15 +347,14 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
         return -1;
     }
 
-    private GlyphSequence reorder(GlyphSequence gs, int source, int target) {
+    private static GlyphSequence reorder(GlyphSequence gs, int source, int target) {
         return GlyphSequence.reorder(gs, source, 1, target);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean position(GlyphSequence gs, String script, String language, int fontSize, GlyphTable.UseSpec[] usa, int[] widths, int[][] adjustments, ScriptContextTester sct) {
-        boolean adjusted = super.position(gs, script, language, fontSize, usa, widths, adjustments, sct);
-        return adjusted;
+        return super.position(gs, script, language, fontSize, usa, widths, adjustments, sct);
     }
 
     /** Abstract syllabizer. */
@@ -420,7 +419,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
             return s;
         }
         static String makeSyllabizerId(String script, String language) {
-            return script + ":" + language;
+            return script + ':' + language;
         }
         static Syllabizer makeSyllabizer(String script, String language, Class<? extends Syllabizer> syllabizerClass) {
             Syllabizer s;
@@ -464,33 +463,33 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
          */
         protected Segment[] segmentize(int[] ca, int nc) {
             Vector<Segment> sv = new Vector<Segment>(nc);
-            for (int s = 0, e = nc; s < e; ) {
+            for (int s = 0; s < nc; ) {
                 int i;
-                if ((i = findStartOfSyllable(ca, s, e)) < e) {
+                if ((i = findStartOfSyllable(ca, s, nc)) < nc) {
                     if (s < i) {
                         // from s to i is non-syllable segment
                         sv.add(new Segment(s, i, Segment.OTHER));
                     }
                     s = i; // move s to start of syllable
                 } else {
-                    if (s < e) {
+                    if (s < nc) {
                         // from s to e is non-syllable segment
-                        sv.add(new Segment(s, e, Segment.OTHER));
+                        sv.add(new Segment(s, nc, Segment.OTHER));
                     }
-                    s = e; // move s to end of input sequence
+                    s = nc; // move s to end of input sequence
                 }
-                if ((i = findEndOfSyllable(ca, s, e)) > s) {
+                if ((i = findEndOfSyllable(ca, s, nc)) > s) {
                     if (s < i) {
                         // from s to i is syllable segment
                         sv.add(new Segment(s, i, Segment.SYLLABLE));
                     }
                     s = i; // move s to end of syllable
                 } else {
-                    if (s < e) {
+                    if (s < nc) {
                         // from s to e is non-syllable segment
-                        sv.add(new Segment(s, e, Segment.OTHER));
+                        sv.add(new Segment(s, nc, Segment.OTHER));
                     }
-                    s = e; // move s to end of input sequence
+                    s = nc; // move s to end of input sequence
                 }
             }
             return sv.toArray(new Segment [ sv.size() ]);
@@ -501,7 +500,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
          * @param sa segment array
          * @return array of glyph sequences each belonging to an (ordered) segment in SA
          */
-        protected GlyphSequence[] segmentize(GlyphSequence gs, Segment[] sa) {
+        protected static GlyphSequence[] segmentize(GlyphSequence gs, Segment[] sa) {
             int   ng = gs.getGlyphCount();
             int[] ga = gs.getGlyphArray(false);
             CharAssociation[] aa = gs.getAssociations(0, -1);
@@ -549,7 +548,7 @@ public class IndicScriptProcessor extends DefaultScriptProcessor {
         private static int[] toIntArray(Vector<Integer> iv) {
             int ni = iv.size();
             int[] ia = new int [ iv.size() ];
-            for (int i = 0, n = ni; i < n; i++) {
+            for (int i = 0; i < ni; i++) {
                 ia [ i ] = (int) iv.get(i);
             }
             return ia;

@@ -21,6 +21,8 @@ package org.docx4j.convert.out.html;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 import jakarta.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -91,11 +93,7 @@ public class TagSingleBox extends SdtTagHandler {
 		}
 		
 		NodeList list = n.getChildNodes();
-		for (int i=0; i<list.getLength(); i++) {
-			Node c = getNodeByName(name, list.item(i));
-			if (c!=null) return c;
-		}
-		return null;
+		return IntStream.range(0, list.getLength()).mapToObj(i -> getNodeByName(name, list.item(i))).filter(Objects::nonNull).findFirst().orElse(null);
 	}
 	
 	@Override
@@ -134,15 +132,14 @@ public class TagSingleBox extends SdtTagHandler {
 				// Create a DOM builder and parse the fragment
 				Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 				DocumentFragment docfrag = document.createDocumentFragment();
-				
-				Node contents = resultSoFar;
-				Node firstP = getNodeByName("p", contents );
+
+				Node firstP = getNodeByName("p", resultSoFar);
 				// NB, this first p could be one which another Handler inserted;
 				// caveat emptor.
 				
 				Element xhtmlDiv = this.createDiv(document, docfrag, firstP );
 				
-				return attachContents(docfrag, xhtmlDiv, contents);
+				return attachContents(docfrag, xhtmlDiv, resultSoFar);
 				
 			} catch (Exception e) {
 				throw new TransformerException(e);

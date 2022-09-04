@@ -38,7 +38,7 @@ public class HexRead
 {
     /**
      * This method reads hex data from a filename and returns a byte array.
-     * The file may contain line comments that are preceeded with a # symbol.
+     * The file may contain line comments that are preceded with a # symbol.
      *
      * @param filename  The filename to read
      * @return The bytes read from the file.
@@ -47,14 +47,8 @@ public class HexRead
     public static byte[] readData( String filename ) throws IOException
     {
         File file = new File( filename );
-        FileInputStream stream = new FileInputStream( file );
-        try
-        {
-            return readData( stream, -1 );
-        }
-        finally
-        {
-            stream.close();
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return readData(stream, -1);
         }
     }
 
@@ -69,37 +63,30 @@ public class HexRead
      */
     public static byte[] readData(InputStream stream, String section ) throws IOException {
 
-        try
-        {
-            StringBuffer sectionText = new StringBuffer();
+        try (stream) {
+            StringBuilder sectionText = new StringBuilder();
             boolean inSection = false;
             int c = stream.read();
-            while ( c != -1 )
-            {
-                switch ( c )
-                {
+            while (c != -1) {
+                switch (c) {
                     case '[':
                         inSection = true;
                         break;
                     case '\n':
                     case '\r':
                         inSection = false;
-                        sectionText = new StringBuffer();
+                        sectionText = new StringBuilder();
                         break;
                     case ']':
                         inSection = false;
-                        if ( sectionText.toString().equals( section ) ) return readData( stream, '[' );
-                        sectionText = new StringBuffer();
+                        if (sectionText.toString().equals(section)) return readData(stream, '[');
+                        sectionText = new StringBuilder();
                         break;
                     default:
-                        if ( inSection ) sectionText.append( (char) c );
+                        if (inSection) sectionText.append((char) c);
                 }
                 c = stream.read();
             }
-        }
-        finally
-        {
-            stream.close();
         }
         throw new IOException( "Section '" + section + "' not found" );
     }
@@ -114,7 +101,7 @@ public class HexRead
             throws IOException
     {
         int characterCount = 0;
-        byte b = (byte) 0;
+        byte b = 0;
         List<Byte> bytes = new ArrayList<Byte>();
         boolean done = false;
         while ( !done )
@@ -134,9 +121,9 @@ public class HexRead
                     characterCount++;
                     if ( characterCount == 2 )
                     {
-                        bytes.add( Byte.valueOf( b ) );
+                        bytes.add(b);
                         characterCount = 0;
-                        b = (byte) 0;
+                        b = 0;
                     }
                     break;
                 case 'A':
@@ -157,9 +144,9 @@ public class HexRead
                     characterCount++;
                     if ( characterCount == 2 )
                     {
-                        bytes.add( Byte.valueOf( b ) );
+                        bytes.add(b);
                         characterCount = 0;
-                        b = (byte) 0;
+                        b = 0;
                     }
                     break;
                 case -1:
@@ -173,7 +160,7 @@ public class HexRead
         byte[] rval = new byte[polished.length];
         for ( int j = 0; j < polished.length; j++ )
         {
-            rval[j] = polished[j].byteValue();
+            rval[j] = polished[j];
         }
         return rval;
     }

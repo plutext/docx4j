@@ -76,7 +76,7 @@ public class ExcelGeneralNumberFormat extends Format {
         final double abs = Math.abs(value);
         if (abs >= 1E11 || (abs <= 1E-10 && abs > 0)) {
             return scientificFormat.format(number, toAppendTo, pos);
-        } else if (Math.floor(value) == value || abs >= 1E10) {
+        } else if ( Double.compare(Math.floor(value), value) == 0 || abs >= 1E10) {
             // integer, or integer portion uses all 11 allowed digits
             return integerFormat.format(number, toAppendTo, pos);
         }

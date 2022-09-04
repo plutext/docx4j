@@ -108,7 +108,7 @@ public class ListLevel {
 	 * 
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(ListLevel.class);
+	protected static final Logger log = LoggerFactory.getLogger(ListLevel.class);
 	
 	private Lvl jaxbAbstractLvl;
 	public Lvl getJaxbAbstractLvl() {
@@ -205,7 +205,7 @@ public class ListLevel {
      * Get overridden values
      * @param levelNode
      */
-    public void SetOverrides(Lvl levelNode)
+    public void setOverrides(Lvl levelNode)
     {
     	this.jaxbOverrideLvl = levelNode;
     	
@@ -356,7 +356,7 @@ public class ListLevel {
      */
     public void IncrementCounter()
     {
-    	if (startAtUsed==false
+    	if (!startAtUsed
     			|| (!counter.encounteredAlready)) {
     		// Defer setting the startValue until the list
     		// is actually encountered in the main document part,
@@ -367,7 +367,7 @@ public class ListLevel {
         	counter.encounteredAlready = true;
         	startAtUsed = true;
     	}
-        counter.IncrementCounter();
+        counter.incrementCounter();
     }
     
 	protected boolean startAtUsed = true;
@@ -376,7 +376,7 @@ public class ListLevel {
     /**
      * resets the counter to the start value
      */
-    public void ResetCounter()
+    public void resetCounter()
     {
         counter.setCurrentValue(this.startValue);
     }
@@ -421,12 +421,12 @@ public class ListLevel {
      * 
      * @return
      */
-    public boolean IsBullet()
+    public boolean isBullet()
     {
             return this.isBullet;
     }
     
-    protected class Counter {
+    protected static class Counter {
     	
     	protected boolean encounteredAlready = false;
     	
@@ -458,7 +458,7 @@ public class ListLevel {
         /**
          * increments the current count of list items of that level 
          */
-        public void IncrementCounter()
+        public void incrementCounter()
         {
         	setCurrentValue( currentValue.add(BigInteger.ONE)); 
             

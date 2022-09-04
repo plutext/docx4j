@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProtectPresentation extends ProtectionSettings {
 	
-	protected static Logger log = LoggerFactory.getLogger(ProtectPresentation.class);
+	protected static final Logger log = LoggerFactory.getLogger(ProtectPresentation.class);
 	
 	
 	public ProtectPresentation(PresentationMLPackage pkg) {

@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSBigBlockSize;
 
@@ -149,19 +150,12 @@ public final class SmallDocumentBlock implements BlockWritable, ListManagedBlock
     {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        for (int j = 0; j < store.length; j++)
-        {
-            store[ j ].writeBlocks(stream);
+        for (BlockWritable blockWritable : store) {
+            blockWritable.writeBlocks(stream);
         }
         byte[]               data = stream.toByteArray();
-        SmallDocumentBlock[] rval =
-            new SmallDocumentBlock[ convertToBlockCount(size) ];
 
-        for (int index = 0; index < rval.length; index++)
-        {
-            rval[ index ] = new SmallDocumentBlock(bigBlockSize, data, index);
-        }
-        return rval;
+        return IntStream.range(0, convertToBlockCount(size)).mapToObj(index -> new SmallDocumentBlock(bigBlockSize, data, index)).toArray(SmallDocumentBlock[]::new);
     }
 
     /**
@@ -179,12 +173,10 @@ public final class SmallDocumentBlock implements BlockWritable, ListManagedBlock
         
         List<SmallDocumentBlock> sdbs = new ArrayList<SmallDocumentBlock>();
 
-        for (int j = 0; j < blocks.length; j++)
-        {
-            byte[] data = blocks[ j ].getData();
+        for (ListManagedBlock block : blocks) {
+            byte[] data = block.getData();
 
-            for (int k = 0; k < _blocks_per_big_block; k++)
-            {
+            for (int k = 0; k < _blocks_per_big_block; k++) {
                 sdbs.add(new SmallDocumentBlock(bigBlockSize, data, k));
             }
         }

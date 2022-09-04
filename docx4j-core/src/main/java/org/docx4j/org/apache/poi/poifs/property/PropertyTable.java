@@ -92,9 +92,8 @@ public final class PropertyTable extends PropertyTableBase implements BlockWrita
         _blocks = PropertyBlock.createPropertyBlockArray(_bigBigBlockSize, _properties);
 
         // prepare each property for writing
-        for (int k = 0; k < properties.length; k++)
-        {
-            properties[ k ].preWrite();
+        for (Property property : properties) {
+            property.preWrite();
         }
     }
     
@@ -123,9 +122,8 @@ public final class PropertyTable extends PropertyTableBase implements BlockWrita
     {
         if (_blocks != null)
         {
-            for (int j = 0; j < _blocks.length; j++)
-            {
-                _blocks[ j ].writeBlocks(stream);
+            for (BlockWritable block : _blocks) {
+                block.writeBlocks(stream);
             }
         }
     }

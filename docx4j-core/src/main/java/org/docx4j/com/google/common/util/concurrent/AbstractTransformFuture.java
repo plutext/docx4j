@@ -190,7 +190,7 @@ abstract class AbstractTransformFuture<I, O, F, T> extends FluentFuture.TrustedF
       resultString = "inputFuture=[" + localInputFuture + "], ";
     }
     if (localFunction != null) {
-      return resultString + "function=[" + localFunction + "]";
+      return resultString + "function=[" + localFunction + ']';
     } else if (superString != null) {
       return resultString + superString;
     }

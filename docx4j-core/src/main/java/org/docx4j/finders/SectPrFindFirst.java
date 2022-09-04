@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class SectPrFindFirst  extends CallbackImpl {
 	
-	protected static Logger log = LoggerFactory.getLogger(SectPrFindFirst.class);
+	protected static final Logger log = LoggerFactory.getLogger(SectPrFindFirst.class);
 	
 	public SectPr firstSectPr = null; 
 	public P enclosingP;

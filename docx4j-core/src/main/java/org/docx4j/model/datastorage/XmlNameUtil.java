@@ -118,7 +118,7 @@ public class XmlNameUtil
     }
 
     private static void escapeChar(StringBuilder sb, char c) {
-    	sb.append("_x" + String.format("%04x", (int) c) + "_");
+    	sb.append("_x").append(String.format("%04x", (int) c)).append('_');
     }
 
     private static char descape(String hexString) {

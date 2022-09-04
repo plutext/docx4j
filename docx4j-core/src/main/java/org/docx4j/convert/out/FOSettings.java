@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FOSettings extends AbstractConversionSettings {
 	
-	protected static Logger log = LoggerFactory.getLogger(FOSettings.class);
+	protected static final Logger log = LoggerFactory.getLogger(FOSettings.class);
 	
 	/** There is no MIME that explicitly defines fo, only application/xml. If you want
 	 *  as the result of the conversion process the fo document then you should 

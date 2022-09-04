@@ -60,11 +60,11 @@ public class TextDir extends AbstractTcProperty {
 		
 		TextDirection textDirection = Context.getWmlObjectFactory().createTextDirection();
 		
-		if (value.getCssText().toLowerCase().equals("rotate(0deg)")) {
+		if (value.getCssText().equalsIgnoreCase("rotate(0deg)")) {
 			textDirection.setVal(DEFAULT_LEFT_TO_RIGHT);
-		} else if (value.getCssText().toLowerCase().equals("rotate(270deg)")) {
+		} else if (value.getCssText().equalsIgnoreCase("rotate(270deg)")) {
 			textDirection.setVal("btLr");
-		} else if (value.getCssText().toLowerCase().equals("rotate(90deg)")) {
+		} else if (value.getCssText().equalsIgnoreCase("rotate(90deg)")) {
 			textDirection.setVal("tbRl");
 		} else {
 			log.warn("How to handle transform: " + value.getCssText()); 

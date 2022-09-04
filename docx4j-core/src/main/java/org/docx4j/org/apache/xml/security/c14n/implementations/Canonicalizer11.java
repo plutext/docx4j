@@ -453,7 +453,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
             String NName = e.getPrefix();
             String NValue = e.getNamespaceURI();
             String Name;
-            if (NName == null || NName.equals("")) {
+            if (NName == null || NName.isEmpty()) {
                 NName = "xmlns";
                 Name = "xmlns";
             } else {
@@ -474,7 +474,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
         // pre-parse the baseURI
         if (baseURI != null) {
             if (baseURI.endsWith("..")) {
-                baseURI = baseURI + "/";
+                baseURI = baseURI + '/';
             }
             URI base = new URI(baseURI);
             bscheme = base.getScheme();
@@ -512,11 +512,11 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
                         tquery = bquery;
                     }
                 } else {
-                    if (rpath.startsWith("/")) {
+                    if (!rpath.isEmpty() && rpath.charAt(0) == '/') {
                         tpath = removeDotSegments(rpath);
                     } else {
                         if (bauthority != null && bpath.length() == 0) {
-                            tpath = "/" + rpath;
+                            tpath = '/' + rpath;
                         } else { 
                             int last = bpath.lastIndexOf('/');
                             if (last == -1) {
@@ -545,7 +545,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
         // components then replace occurrences of "//" in the input buffer
         // with "/" until no more occurrences of "//" are in the input buffer.
         String input = path;
-        while (input.indexOf("//") > -1) {
+        while (input.contains("//")) {
             input = input.replaceAll("//", "/");
         }
 
@@ -555,7 +555,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
         // If the input buffer starts with a root slash "/" then move this
         // character to the output buffer.
         if (input.charAt(0) == '/') {
-            output.append("/");
+            output.append('/');
             input = input.substring(1);
         }
 
@@ -601,7 +601,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
             } else if (input.startsWith("/../")) {
                 input = input.substring(3);
                 if (output.length() == 0) {
-                    output.append("/");
+                    output.append('/');
                 } else if (output.toString().endsWith("../")) {
                     output.append("..");
                 } else if (output.toString().endsWith("..")) {
@@ -622,7 +622,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
                 // FIXME: what is complete path segment?
                 input = input.replaceFirst("/..", "/");
                 if (output.length() == 0) {
-                    output.append("/");
+                    output.append('/');
                 } else if (output.toString().endsWith("../")) {
                     output.append("..");
                 } else if (output.toString().endsWith("..")) {
@@ -684,7 +684,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
         // then append a slash "/". The output buffer is returned as the result
         // of remove_dot_segments
         if (output.toString().endsWith("..")) {
-            output.append("/");
+            output.append('/');
             printStep("3 ", output.toString(), input);
         }
 
@@ -693,7 +693,7 @@ public abstract class Canonicalizer11 extends CanonicalizerBase {
 
     private static void printStep(String step, String output, String input) {
         if (log.isDebugEnabled()) {
-            log.debug(" " + step + ":   " + output);
+            log.debug(' ' + step + ":   " + output);
             if (output.length() == 0) {
                 log.debug("\t\t\t\t" + input);
             } else {

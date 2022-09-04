@@ -263,13 +263,15 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 		        String altText = null;
 		        int id1 = 0;
 		        int id2 = 1;		        		
-		        Inline inline = null;
+		        Inline inline;
 		        long cxl = 0;
 		        long cyl = 0;
 		        try {
 		        	cxl = ef.getExtent().getCx();
 		        	cyl = ef.getExtent().getCy();
-		        } catch (Exception e) {}
+		        } catch (Exception e) {
+					log.error("exception caught", e);
+				}
 		        if (cxl==0 || cyl==0) {
 		        	// Let BPAI work out size
 		        	log.debug("image size - from image");
@@ -282,12 +284,12 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 		        	log.debug("image size - from content control size");
 	                // Respect aspect ratio of injected image
 	                ImageSize size = imagePart.getImageInfo().getSize();
-	                double ratio = (double) size.getHeightPx() / (double) size.getWidthPx();
+	                double ratio = (double) size.getHeightPx() / size.getWidthPx();
 	                log.debug("fit ratio: " + ratio);
 	                if (ratio > 1) {
-	                    cxl =  (long)((double) cyl / ratio);
+	                    cxl =  (long)(cyl / ratio);
 	                } else {
-	                    cyl =  (long)((double) cxl * ratio);
+	                    cyl =  (long)(cxl * ratio);
 	                }
 			        inline = imagePart.createImageInline( filenameHint, altText, 
 			    			id1, id2, cxl, cyl, false);		        	
@@ -370,33 +372,18 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 		
 		
 		private SdtPr.Picture getPicture(SdtPr sdtPr) {
-			
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				o = XmlUtils.unwrap(o);
-				if (o instanceof SdtPr.Picture) return (SdtPr.Picture)o;
-			}
-			return null;
+
+			return (SdtPr.Picture) sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof SdtPr.Picture).findFirst().orElse(null);
 		}
 
 		private  boolean isRichText(SdtPr sdtPr) {
-			
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				o = XmlUtils.unwrap(o);
-				if (o instanceof SdtPr.RichText) return true;
-			}
-			return false;
+
+			return sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).anyMatch(o -> o instanceof SdtPr.RichText);
 		}
 		
 		private boolean isMultiline(SdtPr sdtPr) {
 
-			for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
-				
-				o = XmlUtils.unwrap(o);
-				if (o instanceof CTSdtText) {
-					return ((CTSdtText)o).isMultiLine();
-				}
-			}
-			return false;
+			return sdtPr.getRPrOrAliasOrLock().stream().map(XmlUtils::unwrap).filter(o -> o instanceof CTSdtText).findFirst().filter(o -> ((CTSdtText) o).isMultiLine()).isPresent();
 		}
 
 		
@@ -429,8 +416,6 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			
 			try {
 				log.info(dataBinding.getXpath() + " yielded result " + r);
-				
-				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 				
 				StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
 				
@@ -510,7 +495,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 			}
 			
 			if (pos==0) {
-				int spacePos = text.indexOf(" ");
+				int spacePos = text.indexOf(' ');
 				if (spacePos==-1) {
 					addHyperlinkToDocFrag(sourcePart, contents,  text);
 					return;					
@@ -579,7 +564,7 @@ public class BindingTraverserNonXSLT extends BindingTraverserCommonImpl {
 	        "</w:r>" +
 	        "</w:hyperlink>";
 					
-			contents.add((Hyperlink)XmlUtils.unmarshalString(hpl));
+			contents.add(XmlUtils.unmarshalString(hpl));
 		}
 		
 		

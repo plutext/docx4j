@@ -46,16 +46,14 @@ public final class Version {
         }
         if (version == null) {
             //Fallback if FOP is used in a development environment
-            String headURL
-                = "$HeadURL: http://svn.apache.org/repos/asf/xmlgraphics/fop/trunk/src/java/org/apache/fop/Version.java $";
-            version = headURL;
+            version = "$HeadURL: http://svn.apache.org/repos/asf/xmlgraphics/fop/trunk/src/java/org/apache/fop/Version.java $";
             final String pathPrefix = "/xmlgraphics/fop/";
             int pos = version.indexOf(pathPrefix);
             if (pos >= 0) {
                 version = version.substring(pos + pathPrefix.length() - 1, version.length() - 2);
                 pos = version.indexOf("/src/");
                 version = version.substring(1, pos);
-                version = " " + version;
+                version = ' ' + version;
             } else {
                 version = "";
             }

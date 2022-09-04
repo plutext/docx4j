@@ -25,10 +25,7 @@
 package org.docx4j.fonts.fop.fonts.truetype;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * This "glyf" table in a TrueType font file contains information that describes the glyphs. This
@@ -102,11 +99,7 @@ public class GlyfTable {
          * @return offset to the next glyph if any, or 0
          */
         static int getOffsetToNextComposedGlyf(int flags) {
-            int offset = 0;
-            for (GlyfFlags flag : GlyfFlags.values()) {
-                offset += (flags & flag.bitMask) > 0 ? flag.argsCountIfSet : flag.argsCountIfNotSet;
-            }
-            return offset;
+            return Arrays.stream(GlyfFlags.values()).mapToInt(flag -> (flags & flag.bitMask) > 0 ? flag.argsCountIfSet : flag.argsCountIfNotSet).sum();
         }
 
         /**

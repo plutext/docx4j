@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,7 +170,7 @@ public class FontInfo {
                     + fonts.get(triplets.get(triplet)).getFullName()
                     + " (priority=" + oldPriority + ") by "
                     + fonts.get(newKey).getFullName()
-                    + " (priority=" + newPriority + ")");
+                    + " (priority=" + newPriority + ')');
         }
     }
 
@@ -203,7 +204,7 @@ public class FontInfo {
      */
     private FontTriplet fontLookup(String family, String style, int weight, boolean substitutable) {
         if (log.isTraceEnabled()) {
-            log.trace("Font lookup: " + family + " " + style + " " + weight
+            log.trace("Font lookup: " + family + ' ' + style + ' ' + weight
                     + (substitutable ? " substitutable" : ""));
         }
 
@@ -269,16 +270,12 @@ public class FontInfo {
         }
 
         // last resort: use default
-        if (key == null && internalFontKey == null) {
+        if (key == null && internalFontKey == null) { // TODO condition is always false
             key = Font.DEFAULT_FONT;
             internalFontKey = getInternalFontKey(key);
         }
 
-        if (internalFontKey != null) {
-            return key;
-        } else {
-            return null;
-        }
+        return key;
     }
 
     /**
@@ -304,11 +301,7 @@ public class FontInfo {
      * @return the requested Font instance
      */
     public Font getFontInstance(FontTriplet triplet, int fontSize) {
-        Map<Integer, Font> sizes = getFontInstanceCache().get(triplet);
-        if (sizes == null) {
-            sizes = new HashMap<Integer, Font>();
-            getFontInstanceCache().put(triplet, sizes);
-        }
+        Map<Integer, Font> sizes = getFontInstanceCache().computeIfAbsent(triplet, k -> new HashMap<>());
         Integer size = fontSize;
         Font font = sizes.get(size);
         if (font == null) {
@@ -325,7 +318,7 @@ public class FontInfo {
         List<FontTriplet> matchedTriplets = new ArrayList<FontTriplet>();
         for (FontTriplet triplet : triplets.keySet()) {
             String tripletName = triplet.getName();
-            if (tripletName.toLowerCase().equals(fontName.toLowerCase())) {
+            if (tripletName.equalsIgnoreCase(fontName)) {
                 matchedTriplets.add(triplet);
             }
         }
@@ -424,7 +417,7 @@ public class FontInfo {
 
         // no matching font triplets found!
         if (matchedTriplets.size() == 0) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0, c = families.length; i < c; i++) {
                 if (i > 0) {
                     sb.append(", ");
@@ -586,13 +579,7 @@ public class FontInfo {
      * @return A list of matching font triplets
      */
     public List<FontTriplet> getTripletsFor(String fontName) {
-        List<FontTriplet> foundTriplets = new ArrayList<FontTriplet>();
-        for (Map.Entry<FontTriplet, String> tripletEntry : triplets.entrySet()) {
-            if (fontName.equals((tripletEntry.getValue()))) {
-                foundTriplets.add(tripletEntry.getKey());
-            }
-        }
-        return foundTriplets;
+        return triplets.entrySet().stream().filter(tripletEntry -> fontName.equals((tripletEntry.getValue()))).map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     /**
@@ -653,12 +640,12 @@ public class FontInfo {
         for (FontTriplet triplet : this.triplets.keySet()) {
             String key = getInternalFontKey(triplet);
             FontMetrics metrics = getMetricsFor(key);
-            entries.add(triplet.toString() + " -> " + key + " -> " + metrics.getFontName() + "\n");
+            entries.add(triplet.toString() + " -> " + key + " -> " + metrics.getFontName() + '\n');
         }
         StringBuffer stringBuffer = new StringBuffer();
         for (String str : entries) {
             stringBuffer.append(str);
         }
-        System.out.println(stringBuffer.toString());
+        System.out.println(stringBuffer);
     }
 }

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PStyle12PtInTableGridOverrideFalseTest extends PStyleTableAbstract {
 	
-	protected static Logger log = LoggerFactory.getLogger(ParagraphStylesInTableFix.class);	
+	protected static Logger final log = LoggerFactory.getLogger(ParagraphStylesInTableFix.class);
 	
 /* Test cases:
  * 

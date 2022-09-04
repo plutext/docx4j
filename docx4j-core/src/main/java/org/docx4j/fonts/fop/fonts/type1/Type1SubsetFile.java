@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -226,8 +227,8 @@ public class Type1SubsetFile {
                 for (int glyph : glyphs) {
                     //Retrieve the character name and alternates for the given glyph
                     String name = sbfont.getGlyphName(glyph);
-                    if (glyph != 0 && name != null && !name.trim().equals("")) {
-                        sbfont.mapUsedGlyphName(glyph, "/" + name);
+                    if (glyph != 0 && name != null && !name.trim().isEmpty()) {
+                        sbfont.mapUsedGlyphName(glyph, '/' + name);
                     }
                 }
             } else {
@@ -367,8 +368,8 @@ public class Type1SubsetFile {
                                 first, charFirst));
                         subsetEncodingEntries.add(String.format("dup %d /%s put",
                                 second, charSecond));
-                        sbfont.mapUsedGlyphName(first, "/" + charFirst);
-                        sbfont.mapUsedGlyphName(second, "/" + charSecond);
+                        sbfont.mapUsedGlyphName(first, '/' + charFirst);
+                        sbfont.mapUsedGlyphName(second, '/' + charSecond);
                     } else if (next == OP_CALLOTHERSUBR) {
                         /* Search for a specific operator chain which results in a referenced
                          * subroutine being returned from a postscript method. If it's found then
@@ -399,10 +400,10 @@ public class Type1SubsetFile {
             } else if (cur <= 246) {
                 operands.add(new BytesNumber(cur - 139, 1));
             } else if (cur <= 250) {
-                operands.add(new BytesNumber((cur - 247) * 256 + (data[i + 1] & 0xFF) + 108, 2));
+                operands.add(new BytesNumber(((cur - 247) << 8) + (data[i + 1] & 0xFF) + 108, 2));
                 i++;
             } else if (cur <= 254) {
-                operands.add(new BytesNumber(-(cur - 251) * 256 - (data[i + 1] & 0xFF) - 108, 2));
+                operands.add(new BytesNumber((-(cur - 251) << 8) - (data[i + 1] & 0xFF) - 108, 2));
                 i++;
             } else if (cur == 255) {
                 int b1 = data[i + 1] & 0xFF;
@@ -470,7 +471,7 @@ public class Type1SubsetFile {
             for (Entry<Integer, byte[]> entry : uniqueSubs.entrySet()) {
                 writeString(eol + String.format("dup %d %d %s ", count++, entry.getValue().length, rd), main);
                 main.write(entry.getValue());
-                writeString(" " + np, main);
+                writeString(' ' + np, main);
             }
             writeString(eol + nd, main);
         } else {
@@ -486,7 +487,7 @@ public class Type1SubsetFile {
                     entry.getValue().length, rd),
                     main);
             main.write(entry.getValue());
-            writeString(" " + nd, main);
+            writeString(' ' + nd, main);
         }
         writeString(eol + "end", main);
         main.write(decoded, charStrings.getEndPoint(), decoded.length - charStrings.getEndPoint());
@@ -504,7 +505,7 @@ public class Type1SubsetFile {
                 String found = readVariableContents(new String(var, "ASCII")).trim();
                 for (String match : matches) {
                     if (match.equals(found)) {
-                        return element.getOperator().substring(1, element.getOperator().length());
+                        return element.getOperator().substring(1);
                     }
                 }
             }
@@ -626,22 +627,14 @@ public class Type1SubsetFile {
     }
 
     int getOpPosition(int opNum, List<BytesNumber> operands) {
-        int byteCount = 0;
-        for (int i = 0; i < opNum - 1; i++) {
-            byteCount += operands.get(i).getNumBytes();
-        }
-        return byteCount;
+        return IntStream.range(0, opNum - 1).map(i -> operands.get(i).getNumBytes()).sum();
     }
 
-    int getOperandsLength(List<BytesNumber> operands) {
-        int length = 0;
-        for (BytesNumber number : operands) {
-            length += number.getNumBytes();
-        }
-        return length;
+    static int getOperandsLength(List<BytesNumber> operands) {
+        return operands.stream().mapToInt(BytesNumber::getNumBytes).sum();
     }
 
-    private byte[] createNewRef(int newRef, int forceLength) {
+    private static byte[] createNewRef(int newRef, int forceLength) {
         byte[] newRefBytes;
         if ((forceLength == -1 && newRef <= 107) || forceLength == 1) {
             newRefBytes = new byte[1];
@@ -675,7 +668,7 @@ public class Type1SubsetFile {
      * @param b The second array
      * @return The concatenated array
      */
-    byte[] concatArray(byte[] a, byte[] b) {
+    static byte[] concatArray(byte[] a, byte[] b) {
         int aLen = a.length;
         int bLen = b.length;
         byte[] c = new byte[aLen + bLen];
@@ -692,7 +685,7 @@ public class Type1SubsetFile {
      * @param decoded The array from which to copy a section of data
      * @return Returns the copy of the data section
      */
-    protected byte[] getBinaryEntry(int[] position, byte[] decoded) {
+    protected static byte[] getBinaryEntry(int[] position, byte[] decoded) {
         int start = position[0];
         int finish = position[1];
         byte[] line = new byte[finish - start];
@@ -700,7 +693,7 @@ public class Type1SubsetFile {
         return line;
     }
 
-    protected String getEntryPart(String entry, int part) {
+    protected static String getEntryPart(String entry, int part) {
         Scanner s = new Scanner(entry).useDelimiter(" ");
         for (int i = 1; i < part; i++) {
             s.next();
@@ -709,12 +702,7 @@ public class Type1SubsetFile {
     }
 
     protected PSElement getElement(String elementID, List<PSElement> elements) {
-        for (PSElement element : elements) {
-            if (element.getOperator().equals(elementID)) {
-                return element;
-            }
-        }
-        return null;
+        return elements.stream().filter(element -> element.getOperator().equals(elementID)).findFirst().orElse(null);
     }
 
     /**

@@ -109,7 +109,7 @@ public abstract class AbstractExporter<CS extends AbstractConversionSettings, CC
 		} 
 	}
 
-	protected long logDebugStep(Logger log, String stepLabel, long startTime) {
+	protected static long logDebugStep(Logger log, String stepLabel, long startTime) {
 	long currentTime = 0;
 		if (log.isDebugEnabled()) {
 			currentTime = System.currentTimeMillis();

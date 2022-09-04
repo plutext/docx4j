@@ -33,7 +33,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PShading extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(PShading.class);		
+	protected static final Logger log = LoggerFactory.getLogger(PShading.class);
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
@@ -102,7 +102,7 @@ public class PShading extends AbstractParagraphProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			return composeCss(CSS_NAME, "#" + shd.getFill() );
+			return composeCss(CSS_NAME, '#' + shd.getFill() );
 		} else {
 			return CSS_NULL;
 		}
@@ -126,7 +126,7 @@ public class PShading extends AbstractParagraphProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			foElement.setAttribute(FO_NAME, "#" + shd.getFill() );
+			foElement.setAttribute(FO_NAME, '#' + shd.getFill() );
 		} 
 	}
 

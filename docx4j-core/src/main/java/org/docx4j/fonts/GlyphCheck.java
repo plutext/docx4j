@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
  */
 public class GlyphCheck {
 	
-	protected static Logger log = LoggerFactory.getLogger(GlyphCheck.class);	
+	protected static final Logger log = LoggerFactory.getLogger(GlyphCheck.class);
 	
-	private static LoadingCache<PhysicalFont, Typeface> cache = CacheBuilder.newBuilder()
+	private static final LoadingCache<PhysicalFont, Typeface> cache = CacheBuilder.newBuilder()
 		       .maximumSize(1000)
 		       .build(new CacheLoader<PhysicalFont, Typeface>() {
 		             public Typeface load(PhysicalFont key)  {
@@ -49,7 +49,7 @@ public class GlyphCheck {
 		return exists;
 	}
 
-	private static HashSet<String> warnedAlready = new HashSet<String>();
+	private static final HashSet<String> warnedAlready = new HashSet<>();
 
 	public static boolean hasChar(String fontName, char c) throws ExecutionException {
 		

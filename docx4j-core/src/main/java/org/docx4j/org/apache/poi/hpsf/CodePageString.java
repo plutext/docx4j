@@ -101,7 +101,7 @@ class CodePageString
     void setJavaValue( String string, int codepage )
             throws UnsupportedEncodingException
     {
-        String stringNT = string + "\0";
+        String stringNT = string + '\0';
         if ( codepage == -1 )
             _value = stringNT.getBytes();
         else

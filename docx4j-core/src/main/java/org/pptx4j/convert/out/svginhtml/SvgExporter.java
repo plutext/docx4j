@@ -63,9 +63,9 @@ public class SvgExporter {
 	
 	// NB: file suffix must end with .xhtml in order to see the SVG in a browser
 	
-	protected static Logger log = LoggerFactory.getLogger(SvgExporter.class);	
+	protected static final Logger log = LoggerFactory.getLogger(SvgExporter.class);
 
-	public static JAXBContext jcSVG;	
+	public static JAXBContext jcSVG;
     static ObjectFactory oFactory;
 	static Templates xslt;			
 	static {
@@ -190,12 +190,12 @@ public class SvgExporter {
     	
 		System.out.println("cNvPrName: " + cNvPrName + "; " + "phType: " + phType );
 		
-		if (cNvPrName.toLowerCase().indexOf("subtitle")>-1
-				|| phType.toLowerCase().indexOf("subtitle")>-1) {
+		if (cNvPrName.toLowerCase().contains("subtitle")
+				|| phType.toLowerCase().contains("subtitle")) {
 			// Subtitle on first page in default layout is styled as a Body.
 				pStyleVal = "Lvl" + level + "Master" + context.getResolvedLayout().getMasterNumber() + "Body";
-		} else if (cNvPrName.toLowerCase().indexOf("title")>-1
-			|| phType.toLowerCase().indexOf("title")>-1) {
+		} else if (cNvPrName.toLowerCase().contains("title")
+			|| phType.toLowerCase().contains("title")) {
 			pStyleVal = "Lvl" + level + "Master" + context.getResolvedLayout().getMasterNumber() + "Title";
 		} else {
 			// eg cNvPrName: TextBox 2; phType:
@@ -246,7 +246,7 @@ public class SvgExporter {
 			// Not tested elsewhere...
 			inlineStyle.append("margin-left:3px; margin-top:3px;");
 			
-			if (!inlineStyle.toString().equals("") ) {
+			if (!inlineStyle.toString().isEmpty()) {
 				((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 			}
 			
@@ -266,7 +266,7 @@ public class SvgExporter {
 					log.debug("handling DOCUMENT_NODE");
 					// Do just enough of the handling here
 	                NodeList nodes = n.getChildNodes();
-	                if (nodes != null) {
+	                if (nodes != null) { // condition is always true
 	                    for (int i=0; i<nodes.getLength(); i++) {
 	                    	
 	        				if (((Node)nodes.item(i)).getLocalName().equals("span")
@@ -341,7 +341,7 @@ public class SvgExporter {
 //						CTTextParagraphProperties.class);
 //			}
 			
-			if (!str.equals("")) {
+			if (!str.isEmpty()) {
 				return  (CTTextParagraphProperties)XmlUtils.unmarshalString(str, Context.jcPML, 
 						CTTextParagraphProperties.class);
 			}
@@ -378,7 +378,7 @@ public class SvgExporter {
 			// Does our rPr contain anything else?
 			StringBuilder inlineStyle = new StringBuilder();
 			HtmlCssHelper.createCss(context.getPmlPackage(), rPr, inlineStyle);
-			if (!inlineStyle.toString().equals("")) {
+			if (!inlineStyle.toString().isEmpty()) {
 				span.setAttribute("style", inlineStyle.toString());
 			}
 
@@ -441,7 +441,7 @@ public class SvgExporter {
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
     		Style s = n.getData().getStyle();
 
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );
+    		result.append('.').append(s.getStyleId()).append(" {display:block;");
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
@@ -458,8 +458,7 @@ public class SvgExporter {
     	if (log.isDebugEnabled()) {
     		return result.toString();
     	} else {
-    		String debug = result.toString();
-    		return debug;
+			return result.toString();
     	}
     }
     
@@ -482,11 +481,11 @@ public class SvgExporter {
 	    			if (n.getNodeName().equals("p:cxnSp") ) {
 	    				
 	    				shape = nodeToObjectModel(n, CxnSp.class);    				
-	    				d = CxnSpToSVG( (CxnSp)shape);
+	    				d = cxnSpToSVG( (CxnSp)shape);
 	    				
 	    			} else {    			
 		    			log.info("** TODO " + n.getNodeName() );
-	    				d=makeErr( "[" + n.getNodeName() + "]" );
+	    				d=makeErr('[' + n.getNodeName() + ']');
 	    			}
     			}
     		}
@@ -505,7 +504,7 @@ public class SvgExporter {
     /**
      * Connection (line)
      */
-    public static Document CxnSpToSVG(CxnSp cxnSp) {
+    public static Document cxnSpToSVG(CxnSp cxnSp) {
     	
     	// Geometrical transforms
     	CTTransform2D xfrm = cxnSp.getSpPr().getXfrm();

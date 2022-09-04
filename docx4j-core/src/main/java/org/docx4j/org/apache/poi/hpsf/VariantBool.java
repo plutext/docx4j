@@ -49,15 +49,15 @@ class VariantBool
             return;
         }
 
-        if ( value == 0xffff )
+        if ( value == 0xffff ) // condition is always false because variable's type is short
         {
             _value = true;
             return;
         }
 
-        logger.warn(  "VARIANT_BOOL value '",
-                Short.valueOf( value ), "' is incorrect" );
-        _value = value != 0;
+        logger.warn(  "VARIANT_BOOL value '" +
+                value + "' is incorrect" );
+        _value = true;
     }
 
     boolean getValue()

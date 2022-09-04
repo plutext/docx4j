@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSBigBlockSize;
 import org.docx4j.org.apache.poi.poifs.common.POIFSConstants;
@@ -96,14 +97,7 @@ public final class BATBlock extends BigBlock {
     }
     
     private void recomputeFree() {
-       boolean hasFree = false;
-       for(int k=0; k<_values.length; k++) {
-          if(_values[k] == POIFSConstants.UNUSED_BLOCK) {
-             hasFree = true;
-             break;
-          }
-       }
-       _has_free_sectors = hasFree;
+        _has_free_sectors = IntStream.range(0, _values.length).anyMatch(k -> _values[k] == POIFSConstants.UNUSED_BLOCK);
     }
 
     /**
@@ -253,7 +247,7 @@ public final class BATBlock extends BigBlock {
        // The header has up to 109 BATs, and extra ones are referenced
        //  from XBATs
        // However, all BATs can contain 128/1024 blocks
-       size += (numBATs * bigBlockSize.getBATEntriesPerBlock());
+       size += ((long) numBATs * bigBlockSize.getBATEntriesPerBlock());
        
        // So far we've been in sector counts, turn into bytes
        return size * bigBlockSize.getBigBlockSize();
@@ -310,14 +304,10 @@ public final class BATBlock extends BigBlock {
      * Note that calling {@link #hasFreeSectors()} is much quicker
      */
     public int getUsedSectors(boolean isAnXBAT) {
-        int usedSectors = 0;
+        int usedSectors;
         int toCheck = _values.length;
         if (isAnXBAT) toCheck--; // Last is a chain location
-        for(int k=0; k<toCheck; k++) {
-            if(_values[k] != POIFSConstants.UNUSED_BLOCK) {
-                usedSectors ++;
-            }
-        }
+        usedSectors = (int) IntStream.range(0, toCheck).filter(k -> _values[k] != POIFSConstants.UNUSED_BLOCK).count();
         return usedSectors;
     }
     
@@ -389,10 +379,10 @@ public final class BATBlock extends BigBlock {
        
        // Fill in the values
        int offset = 0;
-       for(int i=0; i<_values.length; i++) {
-          LittleEndian.putInt(data, offset, _values[i]);
-          offset += LittleEndian.INT_SIZE;
-       }
+        for (int value : _values) {
+            LittleEndian.putInt(data, offset, value);
+            offset += LittleEndian.INT_SIZE;
+        }
        
        // Done
        return data;

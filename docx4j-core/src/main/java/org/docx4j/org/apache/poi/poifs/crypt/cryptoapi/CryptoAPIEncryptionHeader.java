@@ -24,8 +24,7 @@
 package org.docx4j.org.apache.poi.poifs.crypt.cryptoapi;
 
 import java.io.IOException;
-
-
+import java.util.Arrays;
 
 
 //import org.docx4j.org.apache.poi.EncryptedDocumentException;
@@ -52,13 +51,7 @@ public class CryptoAPIEncryptionHeader extends StandardEncryptionHeader {
     public void setKeySize(int keyBits) {
         // Microsoft Base Cryptographic Provider is limited up to 40 bits
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375599(v=vs.85).aspx
-        boolean found = false;
-        for (int size : getCipherAlgorithm().allowedKeySize) {
-            if (size == keyBits) {
-                found = true;
-                break;
-            }
-        }
+        boolean found = Arrays.stream(getCipherAlgorithm().allowedKeySize).anyMatch(size -> size == keyBits);
         if (!found) {
             throw new EncryptedDocumentException("invalid keysize "+keyBits+" for cipher algorithm "+getCipherAlgorithm());
         }

@@ -31,8 +31,8 @@ import org.docx4j.fonts.fop.fonts.Typeface;
  *
  */
 public class PhysicalFont {
-	protected static Logger log = LoggerFactory.getLogger(PhysicalFont.class);		
-	protected InternalResourceResolver fontResolver = null;
+	protected static final Logger log = LoggerFactory.getLogger(PhysicalFont.class);
+	protected InternalResourceResolver fontResolver;
 	protected boolean loadTypefaceFailed = false;
 	protected Typeface typeface = null;
 	
@@ -117,7 +117,7 @@ public class PhysicalFont {
 	}
 
 	public Typeface getTypeface() {
-		LazyFont lazyFont = null;
+		LazyFont lazyFont;
 		if (typeface == null) {
 			if (!loadTypefaceFailed) {
 				lazyFont = new LazyFont(embedFontInfo, fontResolver, false); // TODO: useComplexScripts

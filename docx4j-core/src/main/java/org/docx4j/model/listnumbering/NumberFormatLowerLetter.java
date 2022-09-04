@@ -5,21 +5,21 @@ import org.slf4j.LoggerFactory;
 
 public class NumberFormatLowerLetter extends NumberFormat
 {
-	protected static Logger log = LoggerFactory.getLogger(NumberFormatLowerLetter.class);
+	protected static final Logger log = LoggerFactory.getLogger(NumberFormatLowerLetter.class);
 	
 	
 	// from https://stackoverflow.com/questions/11969840/how-to-convert-a-base-10-number-to-alphabetic-like-ordered-list-in-html
 	public String format( int num ) {
 
-	    String result = "";
+	    StringBuilder result = new StringBuilder();
 	    while (num > 0) {
 	      num--; // 1 => a, not 0 => a
 	      int remainder = num % 26;
 	      char digit = (char) (remainder + 97);
-	      result = digit + result;
+	      result.insert(0, digit);
 	      num = (num - remainder) / 26;
 	    }
 
-	    return result;
+	    return result.toString();
 	  }
 }

@@ -26,6 +26,7 @@ package org.docx4j.fonts.fop.fonts.truetype;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.fontbox.cff.CFFDataInput;
 import org.apache.fontbox.cff.CFFFont;
@@ -59,10 +60,7 @@ public class OTFFile extends OpenFont {
         Object bbox = fileFont.getTopDict().get("FontBBox");
         if (bbox != null) {
             List bboxList = (List) bbox;
-            int[] bboxInt = new int[4];
-            for (int i = 0; i < bboxInt.length; i++) {
-                bboxInt[i] = (Integer) bboxList.get(i);
-            }
+            int[] bboxInt = IntStream.range(0, 4).map(i -> (Integer) bboxList.get(i)).toArray();
             for (OFMtxEntry o : mtxTab) {
                 o.setBoundingBox(bboxInt);
             }

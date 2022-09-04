@@ -48,6 +48,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.SpreadsheetML.Styles;
@@ -187,9 +189,7 @@ public class DataFormatter implements Observer {
       */
      private static final String invalidDateTimeString;
      static {
-         StringBuilder buf = new StringBuilder();
-         for(int i = 0; i < 255; i++) buf.append('#');
-         invalidDateTimeString = buf.toString();
+         invalidDateTimeString = IntStream.range(0, 255).mapToObj(i -> "#").collect(Collectors.joining());
      }
 
     /**
@@ -243,7 +243,7 @@ public class DataFormatter implements Observer {
     private final LocaleChangeObservable localeChangedObservable = new LocaleChangeObservable();
     
     /** For logging any problems we find */
-	protected static Logger logger = LoggerFactory.getLogger(DataFormatter.class);
+	protected static final Logger logger = LoggerFactory.getLogger(DataFormatter.class);
     
     /**
      * Creates a formatter using the {@link Locale#getDefault() default locale}.
@@ -427,7 +427,7 @@ public class DataFormatter implements Observer {
             if (symbol.indexOf('$') > -1) {
                 symbol = symbol.substring(0, symbol.indexOf('$')) +
                         '\\' +
-                        symbol.substring(symbol.indexOf('$'), symbol.length());
+                        symbol.substring(symbol.indexOf('$'));
             }
             formatStr = m.replaceAll(symbol);
             m = localePatternGroup.matcher(formatStr);
@@ -575,7 +575,7 @@ public class DataFormatter implements Observer {
                 if(mIsMonth) {
                     sb.append('M');
                     ms.add(
-                            Integer.valueOf(sb.length() -1)
+                            sb.length() - 1
                     );
                 } else {
                     sb.append('m');
@@ -800,7 +800,7 @@ public class DataFormatter implements Observer {
         if (numberFormat == null) {
             return String.valueOf(d);
         }
-        String formatted = numberFormat.format(new Double(d));
+        String formatted = numberFormat.format(d);
         return formatted.replaceFirst("E(\\d)", "E+$1"); // to match Excel's E-notation
     }
 
@@ -851,7 +851,7 @@ public class DataFormatter implements Observer {
         String result;
         final String textValue = NumberToTextConverter.toText(value);
         if (textValue.indexOf('E') > -1) {
-            result = numberFormat.format(new Double(value));
+            result = numberFormat.format(value);
         }
         else {
             result = numberFormat.format(new BigDecimal(textValue));
@@ -907,7 +907,7 @@ public class DataFormatter implements Observer {
             	//return FormulaError.forInt(cell.getErrorCellValue()).getString();
             	throw new RuntimeException("TODO: FormulaError");
         }
-        throw new RuntimeException("Unexpected celltype (" + cellType + ")");
+        throw new RuntimeException("Unexpected celltype (" + cellType + ')');
     }
     
     private String getCellStringValue(Cell c) {
@@ -934,13 +934,9 @@ public class DataFormatter implements Observer {
     	}
     	
     	// build value
-    	StringBuilder sb = new StringBuilder();
-    	for (CTRElt rElt : rst.getR()) {
-    		
-    		sb.append(rElt.getT().getValue() ); // TODO worry about whitespace
-    	}
-    	
-    	return sb.toString();    	
+        // TODO worry about whitespace
+
+        return rst.getR().stream().map(rElt -> rElt.getT().getValue()).collect(Collectors.joining());
     }
 
     /**

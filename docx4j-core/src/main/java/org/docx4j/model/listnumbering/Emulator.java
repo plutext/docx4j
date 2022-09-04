@@ -113,7 +113,7 @@ public class Emulator {
 	 * 
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(Emulator.class);
+	protected static final Logger log = LoggerFactory.getLogger(Emulator.class);
 			
     public Emulator()
     {
@@ -181,10 +181,10 @@ public class Emulator {
     	// is it provided by the style?
     	// (ie does this style have a list associated with it?)
     	if (numId == null 
-    			|| numId.equals("")) {
+    			|| numId.isEmpty()) {
     		
-    		org.docx4j.wml.Style style = null;
-    		if (pStyleVal==null || pStyleVal.equals("") ) {
+
+    		if (pStyleVal==null || pStyleVal.isEmpty()) {
         		log.debug("no explicit numId; no style either");
     			return null;
     		}
@@ -221,13 +221,13 @@ public class Emulator {
     		}
     		
     		numId = numPr.getNumId().getVal().toString();
-    		if (numId.equals("")) {
+    		if (numId.isEmpty()) {
     			log.error("numId was empty!");
     			return null;
     		} 
     		
     		if (levelId == null 
-    				|| levelId.equals("") ) {
+    				|| levelId.isEmpty()) {
     			
     			if (numPr.getIlvl() != null ) {
     				
@@ -242,7 +242,7 @@ public class Emulator {
 
 		log.debug("Using numId: " + numId);    		
     	
-		if (levelId == null || levelId.equals("")) {
+		if (levelId == null || levelId.isEmpty()) {
 			// String numId = getAttributeValue(numIdNode, ValAttrName);
 			log.warn("No level id?! Default to 0.");
 			levelId="0";
@@ -263,7 +263,7 @@ public class Emulator {
 			String font = numberingPart.getInstanceListDefinitions().get(numId)
 					.GetFont(levelId);
 
-			if (font != null && !font.equals("")) {
+			if (font != null && !font.isEmpty()) {
 				triple.numFont = font;
 			}
 
@@ -328,10 +328,10 @@ public class Emulator {
     	// is it provided by the style?
     	// (ie does this style have a list associated with it?)
     	if (numId == null 
-    			|| numId.equals("")) {
+    			|| numId.isEmpty()) {
     		
     		org.docx4j.wml.Style style = null;
-    		if (pStyleVal==null || pStyleVal.equals("") ) {
+    		if (pStyleVal==null || pStyleVal.isEmpty()) {
         		log.debug("no explicit numId; no style either");
     			return null;
     		}
@@ -340,7 +340,7 @@ public class Emulator {
 			style = propertyResolver.getStyle(pStyleVal); 
 			
 	    	if (style == null) {
-	    		log.debug("Couldn't find style '" + pStyleVal + "'");
+	    		log.debug("Couldn't find style '" + pStyleVal + '\'');
 	    		return null;
 	    	} 
 	    	
@@ -395,13 +395,13 @@ public class Emulator {
     		}
     		
     		numId = numPr.getNumId().getVal().toString();
-    		if (numId.equals("")) {
+    		if (numId.isEmpty()) {
     			log.error("numId was empty!");
     			return null;
     		} 
     		
     		if (levelId == null 
-    				|| levelId.equals("") ) {
+    				|| levelId.isEmpty()) {
     			
     			if (numPr.getIlvl() != null ) {
     				
@@ -416,7 +416,7 @@ public class Emulator {
 
 		log.debug("Using numId: " + numId);    		
     	
-		if (levelId == null || levelId.equals("")) {
+		if (levelId == null || levelId.isEmpty()) {
 			// String numId = getAttributeValue(numIdNode, ValAttrName);
 			log.warn("No level id?! Default to 0.");
 			levelId="0";

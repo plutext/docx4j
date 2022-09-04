@@ -159,17 +159,13 @@ public class TypeWriter
 
         /* Write the property list. This is a list containing pairs of property
          * ID and offset into the stream. */
-        for (int i = 0; i < properties.length; i++)
-        {
-            final Property p = properties[i];
+        for (final Property p : properties) {
             writeUIntToStream(out, p.getID());
             writeUIntToStream(out, p.getSize());
         }
 
         /* Write the properties themselves. */
-        for (int i = 0; i < properties.length; i++)
-        {
-            final Property p = properties[i];
+        for (final Property p : properties) {
             long type = p.getType();
             writeUIntToStream(out, type);
             VariantSupport.write(out, (int) type, p.getValue(), codepage);

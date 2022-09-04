@@ -31,7 +31,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Strike extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Strike.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Strike.class);
 
 	public final static String CSS_NAME = "text-decoration"; 
 	public final static String FO_NAME  = "text-decoration"; 
@@ -49,8 +49,8 @@ public class Strike extends AbstractRunProperty {
 	
 	public Strike(CSSValue value) {
         BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();
-        if (!(value.getCssText().toLowerCase().equals("line-through")
-                || value.getCssText().toLowerCase().equals("[line-through]"))) {
+        if (!(value.getCssText().equalsIgnoreCase("line-through")
+                || value.getCssText().equalsIgnoreCase("[line-through]"))) {
 			bdt.setVal(Boolean.FALSE);
 		}
         this.setObject( bdt  );

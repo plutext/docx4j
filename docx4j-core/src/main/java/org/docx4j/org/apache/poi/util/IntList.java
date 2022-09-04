@@ -132,7 +132,7 @@ public class IntList
             // index < limit -- insert into the middle
             if (_limit == _array.length)
             {
-                growArray(_limit * 2);
+                growArray(_limit << 1);
             }
             System.arraycopy(_array, index, _array, index + 1,
                              _limit - index);
@@ -154,7 +154,7 @@ public class IntList
     {
         if (_limit == _array.length)
         {
-            growArray(_limit * 2);
+            growArray(_limit << 1);
         }
         _array[ _limit++ ] = value;
         return true;
@@ -261,9 +261,9 @@ public class IntList
 
         for (int j = 0; !rval && (j < _limit); j++)
         {
-            if (_array[ j ] == o)
-            {
+            if (_array[j] == o) {
                 rval = true;
+                break;
             }
         }
         return rval;

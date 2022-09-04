@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public final class NotesSlidePart extends JaxbPmlPart<Notes> {  // p:notes
 
-	protected static Logger log = LoggerFactory.getLogger(NotesSlidePart.class);	
+	protected static final Logger log = LoggerFactory.getLogger(NotesSlidePart.class);
 	
 	private static final String COMMON_SLIDE_NOTES = 
 		"<p:notes xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"\n" + 

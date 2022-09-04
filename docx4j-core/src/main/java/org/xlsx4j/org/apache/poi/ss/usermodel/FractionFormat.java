@@ -88,7 +88,7 @@ public class FractionFormat extends Format {
                 }
             } else if (m.group(1) != null) {
                 int len = m.group(1).length();
-                len = len > MAX_DENOM_POW ? MAX_DENOM_POW : len;
+                len = Math.min(len, MAX_DENOM_POW);
                 tmpMax = (int)Math.pow(10, len);
             } else {
                 tmpExact = 100;
@@ -106,7 +106,7 @@ public class FractionFormat extends Format {
 
         final double doubleValue = num.doubleValue();
         
-        final boolean isNeg = (doubleValue < 0.0f) ? true : false;
+        final boolean isNeg = doubleValue < 0.0f;
         final double absDoubleValue = Math.abs(doubleValue);
         
         final double wholePart = Math.floor(absDoubleValue);
@@ -128,13 +128,13 @@ public class FractionFormat extends Format {
             
             StringBuilder sb = new StringBuilder();
             if (isNeg){
-                sb.append("-");
+                sb.append('-');
             }
             sb.append((int)wholePart);
             return sb.toString();
         }
         
-        SimpleFraction fract = null;
+        SimpleFraction fract;
         try{
             //this should be the case because of the constructor
             if (exactDenom > 0){
@@ -151,30 +151,30 @@ public class FractionFormat extends Format {
         
         //now format the results
         if (isNeg){
-            sb.append("-");
+            sb.append('-');
         }
         
         //if whole part has to go into the numerator
         if ("".equals(wholePartFormatString)){
             int trueNum = (fract.getDenominator()*(int)wholePart)+fract.getNumerator();
-            sb.append(trueNum).append("/").append(fract.getDenominator());
+            sb.append(trueNum).append('/').append(fract.getDenominator());
             return sb.toString();
         }
         
         
         //short circuit if fraction is 0 or 1
         if (fract.getNumerator() == 0){
-            sb.append(Integer.toString((int)wholePart));
+            sb.append((int) wholePart);
             return sb.toString();
         } else if (fract.getNumerator() == fract.getDenominator()){
-            sb.append(Integer.toString((int)wholePart+1));
+            sb.append((int) wholePart + 1);
             return sb.toString();
         }
        //as mentioned above, this ignores the exact space formatting in Excel
         if (wholePart > 0){
-            sb.append(Integer.toString((int)wholePart)).append(" ");
+            sb.append((int) wholePart).append(' ');
         }
-        sb.append(fract.getNumerator()).append("/").append(fract.getDenominator());
+        sb.append(fract.getNumerator()).append('/').append(fract.getDenominator());
         return sb.toString();
     }
 

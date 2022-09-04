@@ -58,9 +58,9 @@ import org.slf4j.LoggerFactory;
  */
 public class DiagramDataUnflatten {
 	
-	private static Logger log = LoggerFactory.getLogger(DiagramDataUnflatten.class);	
+	private static final Logger log = LoggerFactory.getLogger(DiagramDataUnflatten.class);
 	
-	protected static String PRESNAME_FOR_IMAGE = "image"; 
+	protected static final String PRESNAME_FOR_IMAGE = "image";
 
 	/* Generating SmartArtDataHierarchy xml from
 	 * a real SmartArt drawing is an easy way for
@@ -86,7 +86,7 @@ public class DiagramDataUnflatten {
 		texts = factory.createSmartArtDataHierarchyTexts();
 		images = factory.createSmartArtDataHierarchyImages();
 		
-		textFormats = new ArrayList<JAXBElement<CTTextBody>>();
+		textFormats = new ArrayList<>();
 		
 		dmlFactory = new org.docx4j.dml.ObjectFactory();
 		diagramFactory = new org.docx4j.dml.diagram.ObjectFactory();
@@ -298,29 +298,17 @@ public class DiagramDataUnflatten {
 	}
 
 	public CTPt getPoint(String modelId) {
-		
-		for (CTPt pt : ptList.getPt()) {
-			
-			if (pt.getModelId().equals(modelId)) {
-				return pt;
-			}			
-		}
-		return null;
+
+		return ptList.getPt().stream().filter(pt -> pt.getModelId().equals(modelId)).findFirst().orElse(null);
 	}
 	
 	public CTPt getAssociatedPres(String modelId, String presNamePrefix) {
-		
-		for (CTPt pt : ptList.getPt()) {
-			
-			if (pt.getType().equals(STPtType.PRES) 
-					&& pt.getPrSet()!=null
-					&& pt.getPrSet().getPresName()!=null 
-					&& pt.getPrSet().getPresName().startsWith(presNamePrefix)
-					&& pt.getPrSet().getPresAssocID().equals(modelId)) {
-				return pt;
-			}			
-		}
-		return null;
+
+		return ptList.getPt().stream().filter(pt -> pt.getType().equals(STPtType.PRES)
+				&& pt.getPrSet() != null
+				&& pt.getPrSet().getPresName() != null
+				&& pt.getPrSet().getPresName().startsWith(presNamePrefix)
+				&& pt.getPrSet().getPresAssocID().equals(modelId)).findFirst().orElse(null);
 	}
 	
 	public List<org.opendope.SmartArt.dataHierarchy.ListItem> createListItemsForChildren(CTPt parent) {
@@ -359,14 +347,7 @@ public class DiagramDataUnflatten {
 						+ "/sample-docs/glox/extracted/apes.pptx"));
 		
 
-		DiagramDataPart thisPart = null;
-		for (Entry<PartName,Part> entry : pkg.getParts().getParts().entrySet() ) {
-			
-			if (entry.getValue().getContentType().equals( ContentTypes.DRAWINGML_DIAGRAM_DATA )) {
-				thisPart = (DiagramDataPart)entry.getValue();
-				break;
-			}
-		}
+		DiagramDataPart thisPart = pkg.getParts().getParts().entrySet().stream().filter(entry -> entry.getValue().getContentType().equals(ContentTypes.DRAWINGML_DIAGRAM_DATA)).findFirst().map(entry -> (DiagramDataPart) entry.getValue()).orElse(null);
 		if (thisPart==null) {
 			System.out.println("No SmartArt found in this docx.");
 			return;	

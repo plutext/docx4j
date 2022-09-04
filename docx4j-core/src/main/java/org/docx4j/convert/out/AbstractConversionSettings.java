@@ -55,8 +55,8 @@ public abstract class AbstractConversionSettings { //implements ConversionFeatur
 	
 	public void addFeatures(String[] featuresArray) {
 		if ((featuresArray != null) && (featuresArray.length > 0)) {
-			for (int i=0; i<featuresArray.length; i++) {
-				getFeatures().add(featuresArray[i]);
+			for (String s : featuresArray) {
+				getFeatures().add(s);
 			}
 		}
 	}

@@ -29,6 +29,7 @@ package org.docx4j.openpackaging.parts;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.stream.IntStream;
 
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
@@ -185,7 +186,7 @@ public final class PartName implements Comparable<PartName> {
 		return partUri.getPath().matches(
 				".*" + URIHelper.RELATIONSHIP_PART_SEGMENT_NAME + ".*"
 						+ URIHelper.RELATIONSHIP_PART_EXTENSION_NAME
-						+ "$");
+						+ '$');
 	}
 
 	/**
@@ -285,7 +286,7 @@ public final class PartName implements Comparable<PartName> {
 
 		// Split the URI into several part and analyze each
 		String[] segments = partUri.toASCIIString().split("/");
-		if (segments.length <= 1 || !segments[0].equals("")) {
+		if (segments.length <= 1 || !segments[0].isEmpty()) {
 			log.error( "" );
 			throw new InvalidFormatException(
 					"A part name shall not have empty segments [M1.3]: "
@@ -293,21 +294,21 @@ public final class PartName implements Comparable<PartName> {
 		}
 		for (int i = 1; i < segments.length; ++i) {
 			String seg = segments[i];
-			if (seg == null || "".equals(seg)) {
+			if (seg == null || seg.isEmpty()) {
 				log.error( "" );
 				throw new InvalidFormatException(
 						"A part name shall not have empty segments [M1.3]: "
 								+ partUri.getPath());
 			}
 
-			if (seg.endsWith(".")) {
+			if (!seg.isEmpty() && seg.charAt(seg.length() - 1) == '.') {
 				log.error( "" );
 				throw new InvalidFormatException(
 						"A segment shall not end with a dot ('.') character [M1.9]: "
 								+ partUri.getPath());
 			}
 
-			if ("".equals(seg.replaceAll("\\\\.", ""))) {
+			if (seg.replaceAll("\\\\.", "").isEmpty()) {
 				// Normally will never been invoked with the previous
 				// implementation rule [M1.9]
 				log.error( "" );
@@ -351,11 +352,8 @@ public final class PartName implements Comparable<PartName> {
 				errorFlag = false;
 			} else {
 				// Check "-", ".", "_", "~"
-				for (int j = 0; j < RFC3986_PCHAR_UNRESERVED_SUP.length; ++j) {
-					if (c == RFC3986_PCHAR_UNRESERVED_SUP[j].charAt(0)) {
-						errorFlag = false;
-						break;
-					}
+				if (IntStream.range(0, RFC3986_PCHAR_UNRESERVED_SUP.length).anyMatch(j -> c == RFC3986_PCHAR_UNRESERVED_SUP[j].charAt(0))) {
+					errorFlag = false;
 				}
 
 				// Check ":", "@"
@@ -363,6 +361,7 @@ public final class PartName implements Comparable<PartName> {
 						&& j < RFC3986_PCHAR_AUTHORIZED_SUP.length; ++j) {
 					if (c == RFC3986_PCHAR_AUTHORIZED_SUP[j].charAt(0)) {
 						errorFlag = false;
+						break;
 					}
 				}
 
@@ -371,6 +370,7 @@ public final class PartName implements Comparable<PartName> {
 						&& j < RFC3986_PCHAR_SUB_DELIMS.length; ++j) {
 					if (c == RFC3986_PCHAR_SUB_DELIMS[j].charAt(0)) {
 						errorFlag = false;
+						break;
 					}
 				}
 			}
@@ -517,7 +517,7 @@ public final class PartName implements Comparable<PartName> {
 	public String getExtension() {
 		String fragment = this.partNameURI.getPath();
 		if (fragment.length() > 0) {
-			int i = fragment.lastIndexOf(".");
+			int i = fragment.lastIndexOf('.');
 			if (i > -1)
 				return fragment.substring(i + 1);
 		}
@@ -544,9 +544,8 @@ public final class PartName implements Comparable<PartName> {
 		if (otherPartName == null
 				|| !(otherPartName instanceof PartName))
 			return false;
-		return this.partNameURI.toASCIIString().toLowerCase().equals(
-				((PartName) otherPartName).partNameURI.toASCIIString()
-						.toLowerCase());
+		return this.partNameURI.toASCIIString().equalsIgnoreCase(
+				((PartName) otherPartName).partNameURI.toASCIIString());
 	}
 
 	@Override
@@ -578,12 +577,12 @@ public final class PartName implements Comparable<PartName> {
 		
 		// Also need partName, since images for different parts are stored in a common dir
 		String sourcepartName = sourcePart.getPartName().getName();
-		int beginIndex = sourcepartName.lastIndexOf("/")+1;
-		int endIndex = sourcepartName.lastIndexOf(".");
+		int beginIndex = sourcepartName.lastIndexOf('/')+1;
+		int endIndex = sourcepartName.lastIndexOf('.');
 		String partPrefix = sourcepartName.substring(beginIndex, endIndex);
 		
 		
-		return directoryPrefix + partPrefix + "_" + after_ + "_" +  proposedRelId + "." + ext;
+		return directoryPrefix + partPrefix + '_' + after_ + '_' +  proposedRelId + '.' + ext;
 	}
 	
 	
@@ -618,7 +617,7 @@ public final class PartName implements Comparable<PartName> {
 			String rightBit = partName; 
 			
 			// Split partName at its last "/"
-			int pos = partName.lastIndexOf("/");
+			int pos = partName.lastIndexOf('/');
 			if (pos>0) {
 				String leftBit = partName.substring(0, pos);
 				rightBit = partName.substring(pos);
@@ -626,8 +625,8 @@ public final class PartName implements Comparable<PartName> {
 				return leftBit + "/_rels" + rightBit + ".rels" ;
 			} else {
 				// eg partname: foo.ext (ie in root)
-				if (!rightBit.startsWith("/"))
-					rightBit="/" + rightBit;
+				if (!(!rightBit.isEmpty() && rightBit.charAt(0) == '/'))
+					rightBit= '/' + rightBit;
 //				log.info("**" + "/_rels" + rightBit + ".rels" );
 				return "/_rels" + rightBit + ".rels" ;				
 			}

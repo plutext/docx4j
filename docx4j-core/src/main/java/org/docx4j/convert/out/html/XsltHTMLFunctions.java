@@ -22,12 +22,14 @@ package org.docx4j.convert.out.html;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.AbstractConversionContext;
 import org.docx4j.convert.out.common.XsltCommonFunctions;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -293,7 +295,7 @@ public class XsltHTMLFunctions {
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
-    	context.getLog().debug("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);    	
+    	AbstractConversionContext.getLog().debug("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
     	
         try {
         	        	
@@ -302,13 +304,11 @@ public class XsltHTMLFunctions {
         	
 
 			if (triple==null) {
-				context.getLog().debug("computed number ResultTriple was null");
+				AbstractConversionContext.getLog().debug("computed number ResultTriple was null");
         		return null;
         	}
-			
-			String styleVal = "";
-			
-    		if (triple.getBullet()!=null ) {
+
+			if (triple.getBullet()!=null ) {
     			//return (triple.getBullet() + " " );  
     			// The old code did that:-
     			// https://github.com/plutext/docx4j/commit/7627863e47c5dc7b3c91290b8d993ae5a7cd9fab#docx4j/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java
@@ -318,17 +318,17 @@ public class XsltHTMLFunctions {
 				// see notes in docx2xhtmlNG2.xslt as to why we don't use &bull;
     			
     		} else if (triple.getNumString()==null) {
-	    		context.getLog().debug("computed NumString was null (which may be ok)");
+	    		AbstractConversionContext.getLog().debug("computed NumString was null (which may be ok)");
 	    		return " ";
 	    		
 	    	} else {
-				return triple.getNumString() + " " ;
+				return triple.getNumString() + ' ';
 	    	}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			// System.out.println(e.toString() );
-			context.getLog().error(e.getMessage(), e);
+			AbstractConversionContext.getLog().error(e.getMessage(), e);
 		} 
     	
 		return "?  ";
@@ -339,22 +339,21 @@ public class XsltHTMLFunctions {
     public static String getCssForStyles(HTMLConversionContext context) {
     	StringBuilder result = new StringBuilder();
     	
-    	StyleTree styleTree = null;
+    	StyleTree styleTree;
 		try {
 			styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
 		} catch (Exception e) {
-			context.getLog().error("Couldn't getStyleTree", e);
+			AbstractConversionContext.getLog().error("Couldn't getStyleTree", e);
     		return result.toString();			
 		}
 
 		HtmlCssHelper.createCssForStyles(context.getWmlPackage(), styleTree, result);
 		
     	
-    	if (context.getLog().isDebugEnabled()) {
+    	if (AbstractConversionContext.getLog().isDebugEnabled()) {
     		return result.toString();
     	} else {
-    		String debug = result.toString();
-    		return debug;
+			return result.toString();
     	}
     }
     
@@ -365,7 +364,7 @@ public class XsltHTMLFunctions {
     	// apply to all the cells in a particular table
     	
     	Tbl tbl;
-    	StringBuffer result = new StringBuffer();		
+    	StringBuilder result = new StringBuilder();
     	
 		//DTMNodeProxy n = (DTMNodeProxy)tables.nextNode();
     	Element n = (Element)tables.nextNode();
@@ -389,13 +388,13 @@ public class XsltHTMLFunctions {
     				result.append(getCssForTableCells(context, tbl,  idx) );
     				
 				} catch (JAXBException e1) {
-					context.getLog().error("JAXB error", e1);
+					AbstractConversionContext.getLog().error("JAXB error", e1);
     			} catch (ClassCastException e) {
-    				context.getLog().error("Couldn't cast to Tbl!");
+    				AbstractConversionContext.getLog().error("Couldn't cast to Tbl!");
     			}        	        			
 				
 			} else {
-				context.getLog().warn("Expected table but encountered: " + n.getNodeName() );
+				AbstractConversionContext.getLog().warn("Expected table but encountered: " + n.getNodeName() );
 			}
 			// next 
 			idx++;
@@ -410,11 +409,11 @@ public class XsltHTMLFunctions {
     private static String getCssForTableCells(HTMLConversionContext context, 
     		Tbl tbl, int idx) {
     	
-    	StringBuffer result = new StringBuffer();		
+    	StringBuilder result = new StringBuilder();
 		PropertyResolver pr = context.getPropertyResolver();
 		Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
 		
-		result.append("#" + TableWriter.getId(idx) + " td { ");
+		result.append('#').append(TableWriter.getId(idx)).append(" td { ");
     	List<Property> properties =  new ArrayList<Property>();
     	if (s.getTblPr()!=null
     			&& s.getTblPr().getTblBorders()!=null ) {
@@ -422,7 +421,7 @@ public class XsltHTMLFunctions {
     		if (tblBorders.getInsideH()!=null) {
     			if (tblBorders.getInsideH().getVal()==STBorder.NONE
     					|| tblBorders.getInsideH().getVal()==STBorder.NIL
-    					|| tblBorders.getInsideH().getSz()==BigInteger.ZERO ) {
+    					|| Objects.equals(tblBorders.getInsideH().getSz(), BigInteger.ZERO)) {
     				properties.add( new AdHocProperty("border-top-style", "none", null, null));
     				properties.add( new AdHocProperty("border-top-width", "0mm", null, null));
     				properties.add( new AdHocProperty("border-bottom-style", "none", null, null));
@@ -435,7 +434,7 @@ public class XsltHTMLFunctions {
     		if (tblBorders.getInsideV()!=null) { 
     			if (tblBorders.getInsideV().getVal()==STBorder.NONE
     					|| tblBorders.getInsideV().getVal()==STBorder.NIL
-    					|| tblBorders.getInsideV().getSz()==BigInteger.ZERO ) {
+    					|| Objects.equals(tblBorders.getInsideV().getSz(), BigInteger.ZERO)) {
     				properties.add( new AdHocProperty("border-left-style", "none", null, null));
     				properties.add( new AdHocProperty("border-left-width", "0mm", null, null));
     				properties.add( new AdHocProperty("border-right-style", "none", null, null));
@@ -475,13 +474,11 @@ public class XsltHTMLFunctions {
     		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults, String tag) {
-    	
-    	DocumentFragment docfrag = createBlock( context,
-        		 pPrNodeIt,
-        		 pStyleVal,  childResults,
-        		 "div");
-    	    	    
-    	return docfrag;
+
+		return createBlock( context,
+				 pPrNodeIt,
+				 pStyleVal,  childResults,
+				 "div");
     }	    
 
     public static DocumentFragment createBlockForPPr( 
@@ -534,11 +531,11 @@ public class XsltHTMLFunctions {
     		defaultParagraphStyleId = "Normal";
     	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
     	
-		if ( pStyleVal ==null || pStyleVal.equals("") ) {
+		if ( pStyleVal ==null || pStyleVal.isEmpty()) {
 //			pStyleVal = "Normal";
 			pStyleVal = defaultParagraphStyleId;
 		}
-    	context.getLog().debug("style '" + pStyleVal );     		
+    	AbstractConversionContext.getLog().debug("style '" + pStyleVal );
     	
 //    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
@@ -561,7 +558,7 @@ public class XsltHTMLFunctions {
         			try {
         				pPr =  (PPr)jaxb;
         			} catch (ClassCastException e) {
-        				context.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+        				AbstractConversionContext.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
         			}        	        			
         		}
         	}
@@ -572,12 +569,12 @@ public class XsltHTMLFunctions {
 			Element xhtmlBlock = document.createElement(htmlElementName);			
 			document.appendChild(xhtmlBlock);
 							
-			if (context.getLog().isDebugEnabled() && pPr!=null) {					
-				context.getLog().debug(XmlUtils.marshaltoString(pPr, true, true));					
+			if (AbstractConversionContext.getLog().isDebugEnabled() && pPr!=null) {
+				AbstractConversionContext.getLog().debug(XmlUtils.marshaltoString(pPr, true, true));
 			}				
 		    
 			// Set @class
-			context.getLog().debug(pStyleVal);
+			AbstractConversionContext.getLog().debug(pStyleVal);
 			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
 			String classVal = StyleTree.getHtmlClassAttributeValue(pTree, asn);			
@@ -606,7 +603,7 @@ public class XsltHTMLFunctions {
 				StringBuilder inlineStyle =  new StringBuilder();
 				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders,
 						xhtmlBlock.getNodeName().equals("li"));	
-				if (!inlineStyle.toString().equals("") ) {
+				if (!inlineStyle.toString().isEmpty()) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
 			}
@@ -644,7 +641,7 @@ public class XsltHTMLFunctions {
 					
 					// What we actually get is a document node
 					if (n.getNodeType()==Node.DOCUMENT_NODE) {
-						context.getLog().debug("handling DOCUMENT_NODE");
+						AbstractConversionContext.getLog().debug("handling DOCUMENT_NODE");
 						
 						// Do just enough of the handling here
 		                NodeList nodes = n.getChildNodes();
@@ -654,7 +651,7 @@ public class XsltHTMLFunctions {
 		        				if (((Node)nodes.item(i)).getLocalName().equals("span")
 		        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
 		        					// ignore
-		        					context.getLog().debug(".. ignoring <span/> ");
+		        					AbstractConversionContext.getLog().debug(".. ignoring <span/> ");
 		        				} else {
 		        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
 		        				}
@@ -702,7 +699,7 @@ public class XsltHTMLFunctions {
 			return docfrag;
 						
 		} catch (Exception e) {
-			context.getLog().error(e.getMessage(), e);
+			AbstractConversionContext.getLog().error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -739,15 +736,11 @@ public class XsltHTMLFunctions {
     		// should work for anything with @class, @style
     	
     	// Can't reuse existing span, since we'll get org.apache.xml.dtm.DTMDOMException
-		Element newSpan = document.createElement("span");	
-		if (currentClass!=null) {
-			newSpan.setAttribute("class", currentClass);
-		}
-		if (currentStyle!=null) {
-			newSpan.setAttribute("style", currentStyle);
-		}
+		Element newSpan = document.createElement("span");
+		newSpan.setAttribute("class", currentClass);
+		newSpan.setAttribute("style", currentStyle);
 
-    	XmlUtils.treeCopy( currentSpan.getChildNodes(),  newSpan );
+		XmlUtils.treeCopy( currentSpan.getChildNodes(),  newSpan );
     	xhtmlBlock.appendChild(newSpan);
     	
     	//System.out.println(XmlUtils.w3CDomNodeToString(xhtmlBlock));
@@ -765,13 +758,9 @@ public class XsltHTMLFunctions {
             	// Get read for next span
         		newSpan = document.createElement("span");	
             	xhtmlBlock.appendChild(newSpan); // might end up with an empty span
-        		if (currentClass!=null) {
-        			newSpan.setAttribute("class", currentClass);
-        		}
-        		if (currentStyle!=null) {
-        			newSpan.setAttribute("style", currentStyle);
-        		}
-        		continue;
+				newSpan.setAttribute("class", currentClass);
+				newSpan.setAttribute("style", currentStyle);
+				continue;
         	}
         	
         	// Handle span
@@ -780,10 +769,8 @@ public class XsltHTMLFunctions {
         	String thisClass = thisSpan.getAttribute("class");
         	String thisStyle = thisSpan.getAttribute("style");
     		
-        	boolean classSame = (currentClass==null && thisClass==null)
-        			|| (currentClass!=null && currentClass.equals(thisClass));
-        	boolean styleSame = (currentStyle==null && thisStyle==null)
-        			|| (currentStyle!=null && currentStyle.equals(thisStyle));
+        	boolean classSame = currentClass.equals(thisClass);
+        	boolean styleSame = currentStyle.equals(thisStyle);
         		// TODO handle case where only difference is "white-space:pre-wrap;"
         	
         	if (classSame && styleSame) {
@@ -791,15 +778,11 @@ public class XsltHTMLFunctions {
 				XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
         		
         	} else {
-        		newSpan = document.createElement("span");	
-        		if (thisClass!=null) {
-        			newSpan.setAttribute("class", thisClass);
-        		}
-        		if (thisStyle!=null) {
-        			newSpan.setAttribute("style", thisStyle);
-        		}
-            	
-            	XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
+        		newSpan = document.createElement("span");
+				newSpan.setAttribute("class", thisClass);
+				newSpan.setAttribute("style", thisStyle);
+
+				XmlUtils.treeCopy( thisSpan.getChildNodes(),  newSpan );
             	xhtmlBlock.appendChild(newSpan);
             	currentClass = thisClass;
             	currentStyle = thisStyle;
@@ -854,7 +837,7 @@ public class XsltHTMLFunctions {
         			try {
         				rPr =  (RPr)jaxb;
         			} catch (ClassCastException e) {
-        				context.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
+        				AbstractConversionContext.getLog().error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
         			}        	        			
         		}
         	}
@@ -901,7 +884,7 @@ public class XsltHTMLFunctions {
         	
 						
 		} catch (Exception e) {
-			context.getLog().error(e.getMessage(), e);
+			AbstractConversionContext.getLog().error(e.getMessage(), e);
 		} 
     	
     	return null;
@@ -927,33 +910,32 @@ public class XsltHTMLFunctions {
 		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
 		org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
 		if (asn==null) {
-			context.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
+			AbstractConversionContext.getLog().warn("Can't set @class; No style node for: " + rStyleVal);
 		} else {
 			String classVal = StyleTree.getHtmlClassAttributeValue(cTree, asn);
-			if (classVal!=null && !classVal.equals("")) {
+			if (classVal!=null && !classVal.isEmpty()) {
 				((Element)span).setAttribute("class", classVal);
 			}
 		}
 		
 		if (rPr!=null) {
 			
-			if (context.getLog().isDebugEnabled()) {					
-				context.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));					
+			if (AbstractConversionContext.getLog().isDebugEnabled()) {
+				AbstractConversionContext.getLog().debug(XmlUtils.marshaltoString(rPr, true, true));
 			}
 			
 			// Does our rPr contain anything else?
 			StringBuilder inlineStyle =  new StringBuilder();
 			HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
-			if (inlineStyle.toString().equals("") ) {
+			if (inlineStyle.toString().isEmpty()) {
 				// Do nothing here - just keep existing style
 				// (which if present, is a font definition obtained at w:t level)
 			} else {
 				String existingStyle = span.getAttribute("style");
-				if (existingStyle==null
-						|| existingStyle.trim().equals("")) {
+				if (existingStyle.trim().isEmpty()) {
 					span.setAttribute("style", inlineStyle.toString() );
 				} else {
-					span.setAttribute("style", inlineStyle.toString() + ";" + existingStyle );					
+					span.setAttribute("style", inlineStyle + ";" + existingStyle );
 				}
 			}
 		}

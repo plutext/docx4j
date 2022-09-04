@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 
 public class RunFontSelectorRussian2Test {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger
 	
 	static String[] expectedFont = { "Times New Roman"};
 	

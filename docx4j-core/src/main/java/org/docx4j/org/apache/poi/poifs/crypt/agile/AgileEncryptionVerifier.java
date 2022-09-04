@@ -72,7 +72,7 @@ public class AgileEncryptionVerifier extends EncryptionVerifier {
         
         int keyBits = (int)keyData.getKeyBits();
         
-        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm().toString(), keyBits);
+        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm(), keyBits);
         setCipherAlgorithm(ca);
 
         int hashSize = (int)keyData.getHashSize();

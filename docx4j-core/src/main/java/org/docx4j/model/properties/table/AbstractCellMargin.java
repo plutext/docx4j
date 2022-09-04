@@ -115,17 +115,17 @@ public abstract class AbstractCellMargin extends AbstractTableProperty {
 		return ret;
 	}
 
-	protected String formatTwips(int twips) {		
+	protected static String formatTwips(int twips) {
 		return UnitsOfMeasurement.format2DP.format(UnitsOfMeasurement.twipToMm(twips)) + "mm";
 	}
 
-	protected void ensureMargin(TcPrInner tcPr) {
+	protected static void ensureMargin(TcPrInner tcPr) {
 		if (tcPr.getTcMar() == null) {
 			tcPr.setTcMar(Context.getWmlObjectFactory().createTcMar());
 		}
 	}
 
-	public void ensureMargin(TblPr tblPr) {
+	public static void ensureMargin(TblPr tblPr) {
 		if (tblPr.getTblCellMar() == null) {
 			tblPr.setTblCellMar(Context.getWmlObjectFactory().createCTTblCellMar());
 		}

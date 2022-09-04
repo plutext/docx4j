@@ -103,7 +103,7 @@ public class FontTriplet implements Comparable<FontTriplet>, Serializable {
     private String getKey() {
         if (this.key == null) {
             //This caches the combined key
-            this.key = getName() + "," + getStyle() + "," + getWeight();
+            this.key = getName() + ',' + getStyle() + ',' + getWeight();
         }
         return this.key;
     }

@@ -238,10 +238,10 @@ public class MailMerger {
 			lastP.getPPr().setSectPr(thisSection);
 			
 			if (processHeadersAndFooters) {
-				for( CTRel ctRel : hfTemplates.keySet()) {
+				for(Map.Entry<CTRel, JaxbXmlPart> entry : hfTemplates.entrySet()) {
 					
 					// Create a suitable part
-					JaxbXmlPart part = hfTemplates.get(ctRel);
+					JaxbXmlPart part = entry.getValue();
 					JaxbXmlPart clonedPart = null;
 					if (part instanceof HeaderPart) {
 						clonedPart = new HeaderPart();
@@ -261,7 +261,7 @@ public class MailMerger {
 					Relationship rel = target.getMainDocumentPart().addTargetPart(clonedPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
 					
 					// Now add CTRel!
-					CTRel newHfRef = XmlUtils.deepCopy(ctRel);
+					CTRel newHfRef = XmlUtils.deepCopy(entry.getKey());
 					newHfRef.setId(rel.getId());
 					
 					thisSection.getEGHdrFtrReferences().add(newHfRef);
@@ -413,14 +413,14 @@ public class MailMerger {
 
                     if(log.isDebugEnabled()) {
                         log.debug("\n\n BEFORE " + part.getPartName().getName() + "\n\n"
-                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + '\n');
                     }
 					
 					FieldsPreprocessor.complexifyFields(part );
 
                     if(log.isDebugEnabled()) {
                         log.debug("\n\n COMPLEXIFIED " + part.getPartName().getName() + "\n\n"
-                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + '\n');
                     }
 					
 					List<Object> results = performOnInstance(input,
@@ -430,7 +430,7 @@ public class MailMerger {
 
                     if(log.isDebugEnabled()) {
                         log.debug("\n\n AFTER " + part.getPartName().getName() + "\n\n"
-                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+                                + XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + '\n');
                     }
 					
 				}			
@@ -512,7 +512,7 @@ public class MailMerger {
 				String gFormat = null; // required only for FORMTEXT conversion
 				
 				if (StringUtils.isBlank(val)) {
-					log.warn("Couldn't find value for key: '" + datafieldName + "'");
+					log.warn("Couldn't find value for key: '" + datafieldName + '\'');
                     if (fieldFate.equals(OutputField.REMOVED)) {
                         // Remove the mergefield from the document
                         removeSimpleField(fr);
@@ -685,18 +685,18 @@ public class MailMerger {
 		tmp = tmp.trim();
 		String datafieldName  = null;
 		// A data field name will be quoted if it contains spaces
-		if (tmp.startsWith("\"")) {
-			if (tmp.indexOf("\"",1)>-1) {
-				datafieldName = tmp.substring(1, tmp.indexOf("\"",1));				
+		if (!tmp.isEmpty() && tmp.charAt(0) == '\"') {
+			if (tmp.indexOf('"',1)>-1) {
+				datafieldName = tmp.substring(1, tmp.indexOf('"',1));
 			} else {
 				log.warn("Quote mismatch in " + instr);
 				// hope for the best
-				datafieldName = tmp.indexOf(" ") >-1 ? tmp.substring(1, tmp.indexOf(" ")) : tmp.substring(1) ;				
+				datafieldName = tmp.contains(" ") ? tmp.substring(1, tmp.indexOf(' ')) : tmp.substring(1) ;
 			}
 		} else {
-			datafieldName = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
+			datafieldName = tmp.contains(" ") ? tmp.substring(0, tmp.indexOf(' ')) : tmp ;
 		}
-		log.info("Key: '" + datafieldName + "'");
+		log.info("Key: '" + datafieldName + '\'');
 
 		return datafieldName;
 		
@@ -725,7 +725,7 @@ public class MailMerger {
 					}
 				}
 			 */
-			StringBuffer sb = new StringBuffer(); 
+			StringBuilder sb = new StringBuilder();
 			for (Object i : instructions) {
 				i = XmlUtils.unwrap(i);
 				if (i instanceof Text) {
@@ -761,9 +761,9 @@ public class MailMerger {
     protected static void removeSimpleField(FieldRef fr) {
         int end = fr.getParent().getContent().indexOf(fr.getEndRun());
         int begin = fr.getParent().getContent().indexOf(fr.getBeginRun());
-        for (int i = end; i >= begin; i--) {
-            fr.getParent().getContent().remove(i);
-        }
+		if (end >= begin) {
+			fr.getParent().getContent().subList(begin, end + 1).clear();
+		}
     }
 
     /**
@@ -956,9 +956,9 @@ public class MailMerger {
 			// Ensure it starts with a letter
 			char c = unpunctuated.charAt(0);
 			if('0'<=c && c<='9') {
-				unpunctuated = "z" + unpunctuated;
+				unpunctuated = 'z' + unpunctuated;
 			} else if(c=='_') {
-				unpunctuated = "z" + unpunctuated;
+				unpunctuated = 'z' + unpunctuated;
 			}
 			
 			if (names.contains(unpunctuated)) {
@@ -987,7 +987,7 @@ public class MailMerger {
 
 		    @Override
 		    public boolean add(String key) {
-		       log.debug("Added '" + key.toLowerCase() + "'");	
+		       log.debug("Added '" + key.toLowerCase() + '\'');
 		       return super.add(key.toLowerCase());
 		    }
 

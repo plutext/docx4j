@@ -146,7 +146,7 @@ public class And implements Evaluable {
     		}
     	}
 		
-		return "(" + sb.toString() + ")";
+		return "(" + sb + ')';
 	}
 	
 	public Condition repeat(String xpathBase,

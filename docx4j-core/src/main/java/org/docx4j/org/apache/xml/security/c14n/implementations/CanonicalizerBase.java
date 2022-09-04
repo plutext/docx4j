@@ -600,11 +600,11 @@ public abstract class CanonicalizerBase extends CanonicalizerSpi {
             String NName = e.getPrefix();
             String NValue = e.getNamespaceURI();
             String Name;
-            if (NName == null || NName.equals("")) {
+            if (NName == null || NName.isEmpty()) {
                 NName = XMLNS;
                 Name = XMLNS;
             } else {
-                Name = XMLNS + ":" + NName;
+                Name = XMLNS + ':' + NName;
             }
             Attr n = e.getOwnerDocument().createAttributeNS("http://www.w3.org/2000/xmlns/", Name);
             n.setValue(NValue);

@@ -73,9 +73,9 @@ public class FieldUpdater {
 					
 					JaxbXmlPart part = (JaxbXmlPart)rp.getPart(r);
 					
-					report.append("\n" + part.getPartName() + "\n");
+					report.append('\n').append(part.getPartName()).append('\n');
 										
-					log.debug("\n" + part.getPartName() + "\n");
+					log.debug("\n" + part.getPartName() + '\n');
 					updatePart(part );
 //						performOnInstance(
 //								((ContentAccessor)part).getContent() );
@@ -103,9 +103,9 @@ public class FieldUpdater {
 		SimpleFieldLocator fl = new SimpleFieldLocator();
 		new TraversalUtil(contentList, fl);
 		
-		report.append("\n\nSimple Fields in " + part.getPartName() + "\n");
+		report.append("\n\nSimple Fields in ").append(part.getPartName()).append('\n');
 		report.append("============= \n");
-		report.append("Found " + fl.simpleFields.size() + " simple fields \n ");
+		report.append("Found ").append(fl.simpleFields.size()).append(" simple fields \n ");
 		
 		for( CTSimpleField simpleField : fl.simpleFields ) {
 			
@@ -131,23 +131,23 @@ public class FieldUpdater {
 						val = docVariableResolver.getValue(key);
 					}
 				} catch (FieldValueException e) {
-					report.append( simpleField.getInstr() + "\n");
-					report.append( key + " -> NOT FOUND! \n");	
+					report.append(simpleField.getInstr()).append('\n');
+					report.append(key).append(" -> NOT FOUND! \n");
 					continue;
 				}
 				
 				if (val==null) {
 					
-					report.append( simpleField.getInstr() + "\n");
-					report.append( key + " -> NOT FOUND! \n");	
+					report.append(simpleField.getInstr()).append('\n');
+					report.append(key).append(" -> NOT FOUND! \n");
 					
 				} else {
 							//docPropsCustomPart.getProperty(key);
 	//				System.out.println(val);
 					val = FormattingSwitchHelper.applyFormattingSwitch(wmlPackage, fsm, val);
 	//				System.out.println("--> " + val);
-					report.append( simpleField.getInstr() + "\n");
-					report.append( "--> " + val + "\n");
+					report.append(simpleField.getInstr()).append('\n');
+					report.append("--> ").append(val).append('\n');
 					
 					R r=null;
 					if (simpleField.getInstr().toUpperCase().contains("MERGEFORMAT")) {					
@@ -171,26 +171,23 @@ public class FieldUpdater {
 								
 			} else {
 				
-				report.append("Ignoring " + simpleField.getInstr() + "\n");
+				report.append("Ignoring ").append(simpleField.getInstr()).append('\n');
 				
 			}
 		}
 		
 	}
 	
-	protected void setSimpleFieldConent(R r, String val) {
+	protected static void setSimpleFieldConent(R r, String val) {
 		Text t = Context.getWmlObjectFactory().createText();
 		t.setValue(val);
 		// t.setSpace(value) //TODO
 		r.getContent().add(t);
 	}
 
-	private R getFirstRun(List<Object> content) {
-		
-		for (Object o : content) {
-			if (o instanceof R) return (R)o;
-		}
-		return null;
+	private static R getFirstRun(List<Object> content) {
+
+		return (R) content.stream().filter(o -> o instanceof R).findFirst().orElse(null);
 	}
 
 	public void updateComplex(JaxbXmlPart part) throws Docx4JException {
@@ -202,10 +199,10 @@ public class FieldUpdater {
 		ComplexFieldLocator fl = new ComplexFieldLocator();
 		new TraversalUtil(contentList, fl);
 		
-		report.append("\n Complex Fields in "+ part.getPartName() + "\n");
+		report.append("\n Complex Fields in ").append(part.getPartName()).append('\n');
 		report.append("============== \n");
 		
-		report.append("Found " + fl.getStarts().size() + " fields \n");
+		report.append("Found ").append(fl.getStarts().size()).append(" fields \n");
 		
 		
 		// canonicalise and setup fieldRefs 
@@ -269,23 +266,23 @@ public class FieldUpdater {
 						log.warn("FldParameters null or empty");
 					}
 				} catch (FieldValueException e) {
-					report.append( instr + "\n");
-					report.append( key + " -> NOT FOUND! \n");	
+					report.append(instr).append('\n');
+					report.append(key).append(" -> NOT FOUND! \n");
 					continue;
 				}
 				
 				if (val==null) {
 					
-					report.append( instr + "\n");
-					report.append( key + " -> NOT FOUND! \n");
+					report.append(instr).append('\n');
+					report.append(key).append(" -> NOT FOUND! \n");
 					
 				} else {
 				
 	//				System.out.println(val);
 					val = FormattingSwitchHelper.applyFormattingSwitch(wmlPackage, fsm, val);
 	//				System.out.println("--> " + val);
-					report.append( instr + "\n");
-					report.append( "--> " + val + "\n");
+					report.append(instr).append('\n');
+					report.append("--> ").append(val).append('\n');
 	
 					fr.setResult(val);
 					
@@ -297,12 +294,12 @@ public class FieldUpdater {
 //							fr.getParent(), true, true));
 				}				
 			} else {
-				report.append("Ignoring " + fr.getFldName() + "\n");				
+				report.append("Ignoring ").append(fr.getFldName()).append('\n');
 			}
 		}	
 	}
 	
-	private String extractInstr(List<Object> instructions) {
+	private static String extractInstr(List<Object> instructions) {
 		// For DOCPROPERTY, expect the list to contain a simple string
 		
 		if (instructions.size()!=1) {
