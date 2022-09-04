@@ -111,6 +111,8 @@ import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 
 /*
  *  @author Alberto Zerolo
@@ -119,7 +121,7 @@ import java.util.List;
 */
 public class StyleUtil {
 	
-	protected static Logger log = LoggerFactory.getLogger(StyleUtil.class);	
+	protected static final Logger log = LoggerFactory.getLogger(StyleUtil.class);
 	
 	
 	public static final String CHARACTER_STYLE = "character";
@@ -394,15 +396,12 @@ public class StyleUtil {
 	public static boolean areEqual(List<CTTblStylePr> tblStylePrList1, List<CTTblStylePr> tblStylePrList2) {
 		if (tblStylePrList1 == tblStylePrList2)
 			return true;
-		if (((tblStylePrList1 == null) && (tblStylePrList2 != null)) || ((tblStylePrList1 != null) && (tblStylePrList2 == null)))
+		if (tblStylePrList1 == null || tblStylePrList2 == null)
 			return false;
 		if (tblStylePrList1.size() != tblStylePrList2.size())
 			return false;
-		
-		for (int i=0; i<tblStylePrList1.size(); i++)
-			if (!areEqual(tblStylePrList1.get(i), tblStylePrList2.get(i)))
-				return false;
-		return true;
+
+		return IntStream.range(0, tblStylePrList1.size()).allMatch(i -> areEqual(tblStylePrList1.get(i), tblStylePrList2.get(i)));
 	}
 
 	public static boolean areEqual(CTTblStylePr ctTblStylePr1, CTTblStylePr ctTblStylePr2) {
@@ -437,7 +436,7 @@ public class StyleUtil {
 	public static boolean areEqual(TextAlignment textAlignment1, TextAlignment textAlignment2) {
 		return (textAlignment1 == textAlignment2) ||
 	       ((textAlignment1 != null) && (textAlignment2 != null) &&
-	    	((textAlignment1.getVal() == textAlignment2.getVal()) ||
+	    	((Objects.equals(textAlignment1.getVal(), textAlignment2.getVal())) ||
 	    	 ((textAlignment1.getVal() != null) &&
 	    	   (textAlignment1.getVal().equals(textAlignment2.getVal()))
 	    	 ) 		
@@ -495,16 +494,13 @@ public class StyleUtil {
 	public static boolean areEqual(Tabs tabs1, Tabs tabs2) {
 		if (tabs1 == tabs2)
 			return true;
-		if (((tabs1 != null) && (tabs2 == null)) || ((tabs1 == null) && (tabs2 != null)))
+		if (tabs1 == null || tabs2 == null)
 			return false;
 		if (tabs1.getTab() == tabs2.getTab())
 			return true;
 		if (tabs1.getTab().size() != tabs2.getTab().size())
 			return false;
-		for (int i=0; i<tabs1.getTab().size(); i++)
-			if (!areEqual(tabs1.getTab().get(i), tabs2.getTab().get(i)))
-				return false;
-		return true;
+		return IntStream.range(0, tabs1.getTab().size()).allMatch(i -> areEqual(tabs1.getTab().get(i), tabs2.getTab().get(i)));
 	}
 
 	public static boolean areEqual(CTTabStop ctTabStop1, CTTabStop ctTabStop2) {
@@ -617,45 +613,31 @@ public class StyleUtil {
 	}
 
 	public static boolean areEqual(STHeightRule hRule1, STHeightRule hRule2) {
-		return (hRule1 == hRule2) ||
-		   ((hRule1 != null) && 
-		    (hRule1.equals(hRule2)));
+		return hRule1 == hRule2;
 	}
 
 	public static boolean areEqual(STYAlign yAlign1, STYAlign yAlign2) {
-		return (yAlign1 == yAlign2) ||
-		   ((yAlign1 != null) && 
-		    (yAlign1.equals(yAlign2)));
+		return yAlign1 == yAlign2;
 	}
 
 	public static boolean areEqual(STXAlign xAlign1, STXAlign xAlign2) {
-		return (xAlign1 == xAlign2) ||
-		   ((xAlign1 != null) && 
-		    (xAlign1.equals(xAlign2)));
+		return xAlign1 == xAlign2;
 	}
 
 	public static boolean areEqual(STVAnchor vAnchor1, STVAnchor vAnchor2) {
-		return (vAnchor1 == vAnchor2) ||
-		   ((vAnchor1 != null) && 
-		    (vAnchor1.equals(vAnchor2)));
+		return vAnchor1 == vAnchor2;
 	}
 
 	public static boolean areEqual(STHAnchor hAnchor1, STHAnchor hAnchor2) {
-		return (hAnchor1 == hAnchor2) ||
-		   ((hAnchor1 != null) && 
-		    (hAnchor1.equals(hAnchor2)));
+		return hAnchor1 == hAnchor2;
 	}
 
 	public static boolean areEqual(STWrap wrap1, STWrap wrap2) {
-		return (wrap1 == wrap2) ||
-		   ((wrap1 != null) && 
-		    (wrap1.equals(wrap2)));
+		return wrap1 == wrap2;
 	}
 
 	public static boolean areEqual(STDropCap dropCap1, STDropCap dropCap2) {
-		return (dropCap1 == dropCap2) ||
-		   ((dropCap1 != null) && 
-		    (dropCap1.equals(dropCap2)));
+		return dropCap1 == dropCap2;
 	}
 
 	public static boolean areEqual(PStyle pStyle1, PStyle pStyle2) {
@@ -890,7 +872,7 @@ public class StyleUtil {
 	String qNameLocal = null;
 		if (trPr1 == trPr2)
 			return true;
-		if (((trPr1 != null) && (trPr2 == null)) || ((trPr1 == null) && (trPr2 != null)))
+		if (trPr1 == null || trPr2 == null)
 			return false;
 		defs1 = trPr1.getCnfStyleOrDivIdOrGridBefore();
 		defs2 = trPr2.getCnfStyleOrDivIdOrGridBefore();
@@ -902,55 +884,45 @@ public class StyleUtil {
 		if (defs1.isEmpty())
 			return true;
 
-		for (int i=0; i<defs1.size(); i++) {
-			defs1element = defs1.get(i);
+		for (JAXBElement<?> jaxbElement : defs1) {
+			defs1element = jaxbElement;
 			qName = defs1element.getName();
 			defs2value = findTrValue(defs2, qName);
 			if (defs2value == null)
 				return false;
 			qNameLocal = qName.getLocalPart();
 			if ("gridAfter".equals(qNameLocal)) {
-				if (!areEqual((GridAfter)defs1element.getValue(), (GridAfter)defs2value))
+				if (!areEqual((GridAfter) defs1element.getValue(), (GridAfter) defs2value))
 					return false;
-			}
-			else if ("cantSplit".equals(qNameLocal)) {
-				if (!areEqual((BooleanDefaultTrue)defs1element.getValue(), (BooleanDefaultTrue)defs2value))
+			} else if ("cantSplit".equals(qNameLocal)) {
+				if (!areEqual((BooleanDefaultTrue) defs1element.getValue(), (BooleanDefaultTrue) defs2value))
 					return false;
-			}
-			else if ("wBefore".equals(qNameLocal)) {
-				if (!areEqual((TblWidth)defs1element.getValue(), (TblWidth)defs2value))
+			} else if ("wBefore".equals(qNameLocal)) {
+				if (!areEqual((TblWidth) defs1element.getValue(), (TblWidth) defs2value))
 					return false;
-			}
-			else if ("jc".equals(qNameLocal)) {
-				if (!areEqual((Jc)defs1element.getValue(), (Jc)defs2value))
+			} else if ("jc".equals(qNameLocal)) {
+				if (!areEqual((Jc) defs1element.getValue(), (Jc) defs2value))
 					return false;
-			}
-			else if ("cnfStyle".equals(qNameLocal)) {
-				if (!areEqual((CTCnf)defs1element.getValue(), (CTCnf)defs2value))
+			} else if ("cnfStyle".equals(qNameLocal)) {
+				if (!areEqual((CTCnf) defs1element.getValue(), (CTCnf) defs2value))
 					return false;
-			}
-			else if ("gridBefore".equals(qNameLocal)) {
-				if (!areEqual((GridBefore)defs1element.getValue(), (GridBefore)defs2value))
+			} else if ("gridBefore".equals(qNameLocal)) {
+				if (!areEqual((GridBefore) defs1element.getValue(), (GridBefore) defs2value))
 					return false;
-			}
-			else if ("hidden".equals(qNameLocal)) {
-				if (!areEqual((BooleanDefaultTrue)defs1element.getValue(), (BooleanDefaultTrue)defs2value))
+			} else if ("hidden".equals(qNameLocal)) {
+				if (!areEqual((BooleanDefaultTrue) defs1element.getValue(), (BooleanDefaultTrue) defs2value))
 					return false;
-			}
-			else if ("trHeight".equals(qNameLocal)) {
-				if (!areEqual((CTHeight)defs1element.getValue(), (CTHeight)defs2value))
+			} else if ("trHeight".equals(qNameLocal)) {
+				if (!areEqual((CTHeight) defs1element.getValue(), (CTHeight) defs2value))
 					return false;
-			}
-			else if ("wAfter".equals(qNameLocal)) {
-				if (!areEqual((TblWidth)defs1element.getValue(), (TblWidth)defs2value))
+			} else if ("wAfter".equals(qNameLocal)) {
+				if (!areEqual((TblWidth) defs1element.getValue(), (TblWidth) defs2value))
 					return false;
-			}
-			else if ("tblHeader".equals(qNameLocal)) {
-				if (!areEqual((BooleanDefaultTrue)defs1element.getValue(), (BooleanDefaultTrue)defs2value))
+			} else if ("tblHeader".equals(qNameLocal)) {
+				if (!areEqual((BooleanDefaultTrue) defs1element.getValue(), (BooleanDefaultTrue) defs2value))
 					return false;
-			}
-			else if ("tblCellSpacing".equals(qNameLocal)) {
-				if (!areEqual((TblWidth)defs1element.getValue(), (TblWidth)defs2value))
+			} else if ("tblCellSpacing".equals(qNameLocal)) {
+				if (!areEqual((TblWidth) defs1element.getValue(), (TblWidth) defs2value))
 					return false;
 			}
 		}
@@ -958,9 +930,9 @@ public class StyleUtil {
 	}
 
 	private static Object findTrValue(List<JAXBElement<?>> defs, QName qName) {
-		for (int i=0; i<defs.size(); i++)
-			if (qName.equals(defs.get(i).getName())) 
-				return defs.get(i).getValue();
+		for (JAXBElement<?> def : defs)
+			if (qName.equals(def.getName()))
+				return def.getValue();
 		return null;
 	}
 
@@ -1002,74 +974,62 @@ public class StyleUtil {
 	}
 
 	public static boolean areEqual(STTblOverlap val1, STTblOverlap val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STTblStyleOverrideType val1, STTblStyleOverrideType val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STTblLayoutType val1, STTblLayoutType val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(UnderlineEnumeration val1, UnderlineEnumeration val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STTextEffect val1, STTextEffect val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STEm val1, STEm val2) {
-		return (val1 == val2) ||
-		       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STVerticalAlignRun val1, STVerticalAlignRun val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STVerticalJc val1, STVerticalJc val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return val1 == val2;
 	}
 
 	public static boolean areEqual(STThemeColor themeColor1, STThemeColor themeColor2) {
-		return (themeColor1 == themeColor2) ||
-			   ((themeColor1 != null) && 
-			    (themeColor1.equals(themeColor2)));
+		return themeColor1 == themeColor2;
 	}
 
 	public static boolean areEqual(BooleanDefaultTrue booleanDefaultTrue1, BooleanDefaultTrue booleanDefaultTrue2) {
-		return (booleanDefaultTrue1 != null ? booleanDefaultTrue1.isVal() : false) ==
-			   (booleanDefaultTrue2 != null ? booleanDefaultTrue2.isVal() : false);
+		return (booleanDefaultTrue1 != null && booleanDefaultTrue1.isVal()) ==
+			   (booleanDefaultTrue2 != null && booleanDefaultTrue2.isVal());
 	}
 
 	public static boolean areEqual(Boolean bool1, Boolean bool2) {
-		return (bool1 != null ? bool1.booleanValue() : false) ==
-			   (bool2 != null ? bool2.booleanValue() : false);
+		return (bool1 != null && bool1) ==
+			   (bool2 != null ? bool2 : false);
 	}
 
 	public static boolean areEqual(BigInteger val1, BigInteger val2) {
-		return (val1 == val2) ||
+		return (Objects.equals(val1, val2)) ||
 		       ((val1 != null) && (val1.equals(val2)));
 	}
 
 	protected static boolean areEqual(Integer val1, Integer val2) {
-		return (val1 == val2) ||
-	       ((val1 != null) && (val1.equals(val2)));
+		return Objects.equals(val1, val2);
 	}
 
 	protected static boolean areEqual(String val1, String val2) {
-		return (val1 == val2) ||
-		       ((val1 != null) && (val1.equals(val2)));
+		return Objects.equals(val1, val2);
 	}
 	
 
@@ -1293,11 +1253,8 @@ public class StyleUtil {
 	public static boolean isEmpty(List<CTTblStylePr> tblStylePrList) {
 		if ((tblStylePrList == null) || (tblStylePrList.isEmpty()))
 			return true;
-		
-		for (int i=0; i<tblStylePrList.size(); i++)
-			if (!isEmpty(tblStylePrList.get(i)))
-				return false;
-		return true;
+
+		return IntStream.range(0, tblStylePrList.size()).allMatch(i -> isEmpty(tblStylePrList.get(i)));
 	}
 
 	public static boolean isEmpty(CTTblStylePr ctTblStylePr) {
@@ -1360,11 +1317,8 @@ public class StyleUtil {
 	public static boolean isEmpty(Tabs tabs) {
 		if ((tabs == null) || (tabs.getTab() == null) || (tabs.getTab().isEmpty()))
 			return true;
-		
-		for (int i=0; i<tabs.getTab().size(); i++)
-			if (!isEmpty(tabs.getTab().get(i)))
-				return false;
-		return true;
+
+		return IntStream.range(0, tabs.getTab().size()).allMatch(i -> isEmpty(tabs.getTab().get(i)));
 	}
 
 	public static boolean isEmpty(CTTabStop ctTabStop) {
@@ -1665,7 +1619,7 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(Boolean bool) {
-		return (bool == null) || (!bool.booleanValue());
+		return (bool == null) || (!bool);
 	}
 
 	protected static boolean isEmpty(BigInteger val) {
@@ -2167,8 +2121,8 @@ public class StyleUtil {
 			// not sure about this, but if the source defines a content model it should
 			// replace the destination as a whole, and not parts of it.
 			destination.clear();
-			for (int i=0; i<source.size(); i++) {
-				destinationTblStylePr = apply(source.get(i), null);
+			for (CTTblStylePr ctTblStylePr : source) {
+				destinationTblStylePr = apply(ctTblStylePr, null);
 				if (destinationTblStylePr != null) {
 					destination.add(destinationTblStylePr);
 				}
@@ -2307,10 +2261,8 @@ public class StyleUtil {
 				destinationTabStop.setLeader(sourceTabStop.getLeader()); //enum
 				destinationTabStop.setPos(sourceTabStop.getPos()); //atomic
 				destinationTabStop.setVal(sourceTabStop.getVal()); //enum
-				
-				if (destinationTabStop != null) {
-					destination.getTab().add(destinationTabStop);
-				}
+
+				destination.getTab().add(destinationTabStop);
 			}
 		}
 		return destination;
@@ -2776,10 +2728,10 @@ public class StyleUtil {
 			defsSource = source.getCnfStyleOrDivIdOrGridBefore();
 			defsDestination = destination.getCnfStyleOrDivIdOrGridBefore();
 
-			for (int i=0; i<defsSource.size(); i++) {
-				defsSourceElement = defsSource.get(i);
+			for (JAXBElement<?> jaxbElement : defsSource) {
+				defsSourceElement = jaxbElement;
 				// If there's an element with this name already, remove it
-				for (int j=0; j<defsDestination.size(); j++) {
+				for (int j = 0; j < defsDestination.size(); j++) {
 					if (defsSourceElement.getName().equals(defsDestination.get(j).getName())) {
 						defsDestination.remove(j);
 						break;

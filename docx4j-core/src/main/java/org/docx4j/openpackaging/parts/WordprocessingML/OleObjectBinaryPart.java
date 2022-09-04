@@ -176,14 +176,14 @@ public class OleObjectBinaryPart extends BinaryPart {
               String name = doc.getName();
               String size = "";
               if (name.charAt(0) < 10) {
-                 String altname = "(0x0" + (int) name.charAt(0) + ")" + name.substring(1);
-                 name = name.substring(1) + " <" + altname + ">";
+                 String altname = "(0x0" + (int) name.charAt(0) + ')' + name.substring(1);
+                 name = name.substring(1) + " <" + altname + '>';
               }
               if (withSizes) {
                  size = " [" + doc.getSize() + " / 0x" + 
-                        Integer.toHexString(doc.getSize()) + "]";
+                        Integer.toHexString(doc.getSize()) + ']';
               }
-              os.write((newIndent + name + size + "\n").getBytes() );
+              os.write((newIndent + name + size + '\n').getBytes() );
            }
         }
         if (!hadChildren) {

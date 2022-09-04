@@ -173,7 +173,7 @@ public class KhmerRenderer {
     private static final char TRIISAP = '\u17CA';
     private static final char YO = '\u1799';
 
-    private char strEcombining(final char chrInput) {
+    private static char strEcombining(final char chrInput) {
         char retChar = ' ';
         if (chrInput == SRAOE) {
             retChar = SRAII;
@@ -367,7 +367,7 @@ public class KhmerRenderer {
                 cluster = vowelBefore + coengBefore + base + robat + shifter1 + coeng1 + coeng2 + shifter2
                         + vowelBelow + vowelAbove + vowelAfter + signAbove + signAfter;
             }
-            result.append(cluster + reserved);
+            result.append(cluster).append(reserved);
             state = 0;
             //end of while
         }

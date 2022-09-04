@@ -30,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class HighlightColor extends AbstractRunProperty {
 
-	protected static Logger log = LoggerFactory.getLogger(HighlightColor.class);	
+	protected static final Logger log = LoggerFactory.getLogger(HighlightColor.class);
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 

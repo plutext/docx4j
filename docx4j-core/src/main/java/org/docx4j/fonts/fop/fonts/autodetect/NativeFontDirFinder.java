@@ -25,7 +25,9 @@
 package org.docx4j.fonts.fop.fonts.autodetect;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Native font finder base class
@@ -41,12 +43,7 @@ public abstract class NativeFontDirFinder implements FontDirFinder {
         List<File> fontDirList = new java.util.ArrayList<File>();
         String[] searchableDirectories = getSearchableDirectories();
         if (searchableDirectories != null) {
-            for (String searchableDirectory : searchableDirectories) {
-                File fontDir = new File(searchableDirectory);
-                if (fontDir.exists() && fontDir.canRead()) {
-                    fontDirList.add(fontDir);
-                }
-            }
+            fontDirList = Arrays.stream(searchableDirectories).map(File::new).filter(fontDir -> fontDir.exists() && fontDir.canRead()).collect(Collectors.toList());
         }
         return fontDirList;
     }

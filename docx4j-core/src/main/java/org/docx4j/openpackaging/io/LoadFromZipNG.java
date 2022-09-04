@@ -177,8 +177,8 @@ public class LoadFromZipNG extends Load {
 		Enumeration entries = zf.entries();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
-			log.info( "\n\n" + entry.getName() + "\n" );
-			InputStream in = null;
+			log.info( "\n\n" + entry.getName() + '\n');
+			//InputStream in = null;
 			try {			
 				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry), entry.getSize() );
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
@@ -245,7 +245,7 @@ public class LoadFromZipNG extends Load {
 		populatePackageRels(partByteArrays, rp);
 		
 		String mainPartName = PackageRelsUtil.getNameOfMainPart(rp);
-		String pkgContentType = ctm.getContentType(new PartName("/" + mainPartName));
+		String pkgContentType = ctm.getContentType(new PartName('/' + mainPartName));
 
 		// 2. Create a new Package; this'll return the appropriate subclass
 		OpcPackage p = ctm.createPackage(pkgContentType);
@@ -274,12 +274,12 @@ public class LoadFromZipNG extends Load {
 		registerCustomXmlDataStorageParts(p);
 		 
 		long endTime = System.currentTimeMillis();				
-		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );
+		log.info("package read;  elapsed time: " + (endTime-startTime) + " ms" );
 		
 		 return p;
 	}
 	
-	private void populatePackageRels(HashMap<String, ByteArray> partByteArrays, RelationshipsPart rp) 
+	private void populatePackageRels(HashMap<String, ByteArray> partByteArrays, RelationshipsPart rp)
 			throws Docx4JException {
 		
 		InputStream is = null;
@@ -458,7 +458,7 @@ public class LoadFromZipNG extends Load {
 			
 			// The source Part (or Package) might have a convenience
 			// method for this
-			part = pkg.getParts().getParts().get(new PartName("/" + resolvedPartUri));
+			part = pkg.getParts().getParts().get(new PartName('/' + resolvedPartUri));
 			if (source.setPartShortcut(part, relationshipType ) ) {
 				log.debug("Convenience method established from " + source.getPartName() 
 						+ " to " + part.getPartName());
@@ -564,7 +564,7 @@ public class LoadFromZipNG extends Load {
 				// This will throw UnrecognisedPartException in the absence of
 				// specific knowledge. Hence it is important to get the is
 				// first, as we do above.
-				part = ctm.getPart("/" + resolvedPartUri, rel);				
+				part = ctm.getPart('/' + resolvedPartUri, rel);
 
 				log.info("ctm returned " + part.getClass().getName() );
 				
@@ -745,7 +745,7 @@ public class LoadFromZipNG extends Load {
 		}
 		
         if (part == null) {
-            throw new Docx4JException("cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + "=" + rel.getTarget());
+            throw new Docx4JException("cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + '=' + rel.getTarget());
         }
 		
 		return part;
@@ -761,12 +761,12 @@ public class LoadFromZipNG extends Load {
 		try {			
 			//in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
 			in = partByteArrays.get(resolvedPartUri).getInputStream();
-			part = new BinaryPart( new PartName("/" + resolvedPartUri));
+			part = new BinaryPart( new PartName('/' + resolvedPartUri));
 			
 			// Set content type
 			part.setContentType(
 					new ContentType(
-							ctm.getContentType(new PartName("/" + resolvedPartUri)) ) );
+							ctm.getContentType(new PartName('/' + resolvedPartUri)) ) );
 			
 			((BinaryPart)part).setBinaryData(in);
 			log.info("Stored as BinaryData" );

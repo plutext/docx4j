@@ -305,7 +305,7 @@ public final class Maps {
       // This is the calculation used in JDK8 to resize when a putAll
       // happens; it seems to be the most conservative calculation we
       // can make.  0.75 is the default load factor.
-      return (int) ((float) expectedSize / 0.75F + 1.0F);
+      return (int) (expectedSize / 0.75F + 1.0F);
     }
     return Integer.MAX_VALUE; // any large value
   }
@@ -3651,9 +3651,7 @@ public final class Maps {
 
   /** An implementation of {@link Map#putAll}. */
   static <K, V> void putAllImpl(Map<K, V> self, Map<? extends K, ? extends V> map) {
-    for (Entry<? extends K, ? extends V> entry : map.entrySet()) {
-      self.put(entry.getKey(), entry.getValue());
-    }
+    self.putAll(map);
   }
 
   static class KeySet<K, V> extends Sets.ImprovedAbstractSet<K> {

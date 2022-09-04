@@ -27,6 +27,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -77,7 +81,7 @@ public class DefaultConfiguration implements Configuration {
     private Element element;
 
     public DefaultConfiguration(String key) {
-        DocumentBuilder builder = null;
+        DocumentBuilder builder;
         try {
             builder = DBF.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -114,13 +118,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public Configuration getChild(String key) {
         NodeList nl = element.getElementsByTagName(key);
-        for (int i = 0; i < nl.getLength(); ++i) {
-            Node n = nl.item(i);
-            if (n.getNodeName().equals(key)) {
-                return new DefaultConfiguration((Element) n);
-            }
-        }
-        return NullConfiguration.INSTANCE;
+        return IntStream.range(0, nl.getLength()).mapToObj(nl::item).filter(n -> n.getNodeName().equals(key)).findFirst().<Configuration>map(n -> new DefaultConfiguration((Element) n)).orElse(NullConfiguration.INSTANCE);
     }
 
     @Override
@@ -170,7 +168,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public String getAttribute(String key, String defaultValue) {
         String result = getAttribute(key);
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             result = defaultValue;
         }
         return result;
@@ -179,7 +177,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public boolean getAttributeAsBoolean(String key, boolean defaultValue) {
         String result = getAttribute(key);
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             return defaultValue;
         }
         return "true".equalsIgnoreCase(result) || "yes".equalsIgnoreCase(result);
@@ -193,7 +191,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public float getAttributeAsFloat(String key, float defaultValue) {
         String result = getAttribute(key);
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             return defaultValue;
         }
         return Float.parseFloat(result);
@@ -202,7 +200,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public int getAttributeAsInteger(String key, int defaultValue) {
         String result = getAttribute(key);
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             return defaultValue;
         }
         return Integer.parseInt(result);
@@ -211,7 +209,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public String getValue() throws ConfigurationException {
         String result = getValue0();
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             throw new ConfigurationException("No value in " + element.getNodeName());
         }
         return result;
@@ -220,7 +218,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public String getValue(String defaultValue) {
         String result = getValue0();
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             result = defaultValue;
         }
         return result;
@@ -252,7 +250,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public int getValueAsInteger(int defaultValue) {
         String result = getValue0();
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             return defaultValue;
         }
         return Integer.parseInt(result);
@@ -270,7 +268,7 @@ public class DefaultConfiguration implements Configuration {
     @Override
     public float getValueAsFloat(float defaultValue) {
         String result = getValue0();
-        if (result == null || "".equals(result)) {
+        if (result == null || result.isEmpty()) {
             return defaultValue;
         }
         return Float.parseFloat(getValue0());
@@ -278,7 +276,7 @@ public class DefaultConfiguration implements Configuration {
 
     @Override
     public String getLocation() {
-        List<String> path = new ArrayList<String>();
+        List<String> path = new ArrayList<>();
         for (Node el = element; el != null; el = el.getParentNode()) {
             if (el instanceof Element) {
                 path.add(((Element) el).getTagName());
@@ -286,13 +284,6 @@ public class DefaultConfiguration implements Configuration {
         }
         Collections.reverse(path);
 
-        StringBuilder sb = new StringBuilder();
-        for (String s : path) {
-            if (sb.length() > 0) {
-                sb.append("/");
-            }
-            sb.append(s);
-        }
-        return sb.toString();
+        return String.join("/", path);
     }
 }

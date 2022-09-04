@@ -132,8 +132,7 @@ public class InternalResourceResolver {
         }
         String fixedUri = uriStr.replace('\\', '/');
         fixedUri = fixedUri.replace(" ", "%20");
-        URI baseURI = new URI(fixedUri);
-        return baseURI;
+        return new URI(fixedUri);
     }
 
     /**
@@ -145,7 +144,7 @@ public class InternalResourceResolver {
      * @throws URISyntaxException if the given String was too erroneous to validate
      */
     public static URI getBaseURI(String base) throws URISyntaxException {
-        String path = base + (base.endsWith("/") ? "" : "/");
+        String path = base + (!base.isEmpty() && base.charAt(base.length() - 1) == '/' ? "" : "/");
         return cleanURI(path);
     }
 

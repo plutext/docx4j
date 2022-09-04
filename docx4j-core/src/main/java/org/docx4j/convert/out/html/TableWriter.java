@@ -126,7 +126,7 @@ public class TableWriter extends AbstractTableWriter {
 			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "separate"));
 			tableRoot.setAttribute("cellspacing", 
 					//WW seems only to store cellSpacing/2 but displays and applies cellSpacing * 2
-					convertToPixels(cellSpacing * 2));
+					convertToPixels(cellSpacing << 1));
 		}
 		else {
 			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "collapse"));
@@ -180,7 +180,7 @@ public class TableWriter extends AbstractTableWriter {
 	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, AbstractTableWriterModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
 		if ((table.getTableWidth() > 0) && (columnWidth > -1)) {
 			HtmlCssHelper.appendStyle(column, Property.composeCss("width", 
-					UnitsOfMeasurement.format2DP.format((100f * columnWidth)/table.getTableWidth()) + "%"));
+					UnitsOfMeasurement.format2DP.format((100f * columnWidth)/table.getTableWidth()) + '%'));
 		}
 	}
   	

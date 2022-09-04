@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,7 +196,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
         writeBytes(cffReader.getHeader());
 
         //Name Index
-        writeIndex(Arrays.asList(embedFontName.getBytes("UTF-8")));
+        writeIndex(List.of(embedFontName.getBytes("UTF-8")));
 
         Offsets offsets = new Offsets();
 
@@ -336,7 +337,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
         }
         byte[] topDictIndex = cffReader.getTopDictIndex().getByteData();
         int offSize = topDictIndex[2];
-        return writeIndex(Arrays.asList(dict.toByteArray()), offSize) - dict.size();
+        return writeIndex(List.of(dict.toByteArray()), offSize) - dict.size();
     }
 
     private byte[] writeROSEntry(DICTEntry dictEntry) throws IOException {
@@ -372,9 +373,8 @@ public class OTFSubSetFile extends OTFSubSetWriter {
         if (sid > 391) {
             stringIndexData.add(cffReader.getStringIndex().getValue(sid - 391));
         }
-        byte[] newDictEntry = createNewRef(stringIndexData.size() + 390, dictEntry.getOperator(),
+        return createNewRef(stringIndexData.size() + 390, dictEntry.getOperator(),
                 dictEntry.getOperandLength(), true);
-        return newDictEntry;
     }
 
     private void writeStringIndex() throws IOException {
@@ -458,10 +458,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
 
             subsetFDSelect = new LinkedHashMap<Integer, FDIndexReference>();
 
-            List<List<Integer>> foundLocalUniques = new ArrayList<List<Integer>>();
-            for (int u : uniqueGroups) {
-                foundLocalUniques.add(new ArrayList<Integer>());
-            }
+            List<List<Integer>> foundLocalUniques = uniqueGroups.stream().mapToInt(u -> u).mapToObj(u -> new ArrayList<Integer>()).collect(Collectors.toList());
             Map<Integer, Integer> gidHintMaskLengths = new HashMap<Integer, Integer>();
             for (Entry<Integer, Integer> subsetGlyph : subsetGlyphs.entrySet()) {
                 int gid = subsetGlyph.getKey();
@@ -488,10 +485,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
             for (List<Integer> foundLocalUnique : foundLocalUniques) {
                 fdSubrs.add(new ArrayList<byte[]>());
             }
-            List<List<Integer>> foundLocalUniquesB = new ArrayList<List<Integer>>();
-            for (int u : uniqueGroups) {
-                foundLocalUniquesB.add(new ArrayList<Integer>());
-            }
+            List<List<Integer>> foundLocalUniquesB = uniqueGroups.stream().mapToInt(u -> u).mapToObj(u -> new ArrayList<Integer>()).collect(Collectors.toList());
             for (Entry<Integer, Integer> subsetGlyph : subsetGlyphs.entrySet()) {
                 int gid = subsetGlyph.getKey();
                 int value = subsetGlyph.getValue();
@@ -548,14 +542,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
     }
 
     protected List<Integer> getUsedFDFonts() {
-        List<Integer> uniqueNewRefs = new ArrayList<Integer>();
-        for (FDIndexReference e : subsetFDSelect.values()) {
-            int fdIndex = e.getOldFDIndex();
-            if (!uniqueNewRefs.contains(fdIndex)) {
-                uniqueNewRefs.add(fdIndex);
-            }
-        }
-        return uniqueNewRefs;
+        return subsetFDSelect.values().stream().mapToInt(FDIndexReference::getOldFDIndex).distinct().boxed().collect(Collectors.toList());
     }
 
     protected List<Integer> writeCIDDictsAndSubrs(List<Integer> uniqueNewRefs)
@@ -787,15 +774,15 @@ public class OTFSubSetFile extends OTFSubSetWriter {
             if (b0 == 28) {
                 int b1 = input.read();
                 int b2 = input.read();
-                return new BytesNumber((int) (short) (b1 << 8 | b2), 3);
+                return new BytesNumber((short) (b1 << 8 | b2), 3);
             } else if (b0 >= 32 && b0 <= 246) {
                 return new BytesNumber(b0 - 139, 1);
             } else if (b0 >= 247 && b0 <= 250) {
                 int b1 = input.read();
-                return new BytesNumber((b0 - 247) * 256 + b1 + 108, 2);
+                return new BytesNumber(((b0 - 247) << 8) + b1 + 108, 2);
             } else if (b0 >= 251 && b0 <= 254) {
                 int b1 = input.read();
-                return new BytesNumber(-(b0 - 251) * 256 - b1 - 108, 2);
+                return new BytesNumber((-(b0 - 251) << 8) - b1 - 108, 2);
             } else if (b0 == 255) {
                 int b1 = input.read();
                 int b2 = input.read();
@@ -975,9 +962,7 @@ public class OTFSubSetFile extends OTFSubSetWriter {
 
     protected int writeIndex(List<byte[]> dataArray) {
         int totLength = 1;
-        for (byte[] data : dataArray) {
-            totLength += data.length;
-        }
+        totLength += dataArray.stream().mapToInt(data -> data.length).sum();
         int offSize = getOffSize(totLength);
         return writeIndex(dataArray, offSize);
     }
@@ -1230,12 +1215,12 @@ public class OTFSubSetFile extends OTFSubSetWriter {
             break;
         case 3:
             assert replacement <= 32767;
-            out[position] = (byte)28;
+            out[position] = 28;
             out[position + 1] = (byte)((replacement >> 8) & 0xFF);
             out[position + 2] = (byte)(replacement & 0xFF);
             break;
         case 5:
-            out[position] = (byte)29;
+            out[position] = 29;
             out[position + 1] = (byte)((replacement >> 24) & 0xFF);
             out[position + 2] = (byte)((replacement >> 16) & 0xFF);
             out[position + 3] = (byte)((replacement >> 8) & 0xFF);

@@ -82,6 +82,7 @@ import org.w3c.dom.css.CSSValue;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PropertyFactory {
 	
@@ -92,7 +93,7 @@ public class PropertyFactory {
 	 * a Property object is paragraph or run level.
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(PropertyFactory.class);
+	protected static final Logger log = LoggerFactory.getLogger(PropertyFactory.class);
 	
 	public static List<Property> createProperties(CTTblPrBase  tblPr) {
 		
@@ -140,7 +141,7 @@ public class PropertyFactory {
 		if (tblPr.getTblW()!=null ){
     		// @w:w
     		if (tblPr.getTblW().getW()!=null 
-    				&& tblPr.getTblW().getW() != BigInteger.ZERO) {
+    				&& !Objects.equals(tblPr.getTblW().getW(), BigInteger.ZERO)) {
     			properties.add(new AdHocProperty("table-layout", "fixed", "table-layout", "fixed") );
     		} else if (tblPr.getTblW().getType()!=null
     				&& tblPr.getTblW().getType().equals("auto") ) {
@@ -551,16 +552,16 @@ public class PropertyFactory {
 				// font-style
 				return new Italics(value);
 			} else if (name.equals("text-decoration")) {
-				if (value.getCssText().toLowerCase().equals("line-through")
-				        || value.getCssText().toLowerCase().equals("[line-through]")) {
+				if (value.getCssText().equalsIgnoreCase("line-through")
+				        || value.getCssText().equalsIgnoreCase("[line-through]")) {
 					return new Strike(value);
-				} else if (value.getCssText().toLowerCase().equals("underline")
-						|| value.getCssText().toLowerCase().equals("[underline]")) {
+				} else if (value.getCssText().equalsIgnoreCase("underline")
+						|| value.getCssText().equalsIgnoreCase("[underline]")) {
 					return new Underline(value);
-				} else if (value.getCssText().toLowerCase().equals("none")) {
+				} else if (value.getCssText().equalsIgnoreCase("none")) {
 					return null;
 				} else {
-					log.error("What to do for " + name + ":" + value.getCssText());
+					log.error("What to do for " + name + ':' + value.getCssText());
 				}
 			} else if (name.equals(FontColor.CSS_NAME )) {
 				// color
@@ -576,7 +577,7 @@ public class PropertyFactory {
 			    		) {
 			    	log.warn("Ignoring CSS property " + name + " with null or empty value");
 			        return null;			    	
-			    } else if ( value.getCssText().toLowerCase().equals("transparent")){
+			    } else if ( value.getCssText().equalsIgnoreCase("transparent")){
 			        return null;
 			    }
 			    
@@ -639,10 +640,10 @@ public class PropertyFactory {
 		} catch (java.lang.UnsupportedOperationException uoe) {
 			// TODO: consider whether it is right to catch this,
 			// or whether calling code should handle a docx4j exception wrapping this
-			log.error("Can't create property from: " + name + ":" + value.getCssText() );
+			log.error("Can't create property from: " + name + ':' + value.getCssText() );
 			return null;
 		}
-		log.debug("How to handle: " + name + "?");
+		log.debug("How to handle: " + name + '?');
 		return null;
 	}
 	
@@ -653,7 +654,7 @@ public class PropertyFactory {
 	    try {
 	        if (name.equals(PShading.CSS_NAME )) {
 	            // background color
-	            if(value.getCssText().toLowerCase().equals("transparent")){
+	            if(value.getCssText().equalsIgnoreCase("transparent")){
 	                return null;
 	            }
 	            if(simpleRGBCheck(value.getCssText())){
@@ -663,10 +664,10 @@ public class PropertyFactory {
 	    } catch (java.lang.UnsupportedOperationException uoe) {
 	        // TODO: consider whether it is right to catch this,
 	        // or whether calling code should handle a docx4j exception wrapping this
-	        log.error("Can't create property from: " + name + ":" + value.getCssText() );
+	        log.error("Can't create property from: " + name + ':' + value.getCssText() );
 	        return null;
 	    }
-	    log.debug("How to handle: " + name + "?");
+	    log.debug("How to handle: " + name + '?');
 	    return null;
 	}
 	

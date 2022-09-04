@@ -65,9 +65,9 @@ public class BindingHyperlinkResolver {
 		log.debug("processing " + text);		
 		
 		int NOT_FOUND = 99999; // Since we'll calculate min, we don't want -1 for no match
-		int pos1 = text.indexOf("http://")==-1 ? NOT_FOUND : text.indexOf("http://");
-		int pos2 = text.indexOf("https://")==-1 ? NOT_FOUND : text.indexOf("https://");
-		int pos3 = text.indexOf("mailto:")==-1 ? NOT_FOUND : text.indexOf("mailto:");
+		int pos1 = !text.contains("http://") ? NOT_FOUND : text.indexOf("http://");
+		int pos2 = !text.contains("https://") ? NOT_FOUND : text.indexOf("https://");
+		int pos3 = !text.contains("mailto:") ? NOT_FOUND : text.indexOf("mailto:");
 		
 		int pos = Math.min(pos1,  Math.min(pos2, pos3));	
 		

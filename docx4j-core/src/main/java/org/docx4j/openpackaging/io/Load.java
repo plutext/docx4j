@@ -140,7 +140,7 @@ public class Load {
 						
 			try {
 				
-				part = ctm.getPart("/" + resolvedPartUri, rel);
+				part = ctm.getPart('/' + resolvedPartUri, rel);
 								
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
@@ -268,7 +268,7 @@ public class Load {
 			} catch (PartUnrecognisedException e) {
 				
 				// Try to get it as a binary part				
-				part = new BinaryPart(new PartName("/" + resolvedPartUri));
+				part = new BinaryPart(new PartName('/' + resolvedPartUri));
 				((BinaryPart) part).setBinaryData(is);
 					
 			}

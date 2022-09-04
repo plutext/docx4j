@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class XSLTUtils {
 
-	public static Logger log = LoggerFactory.getLogger(XSLTUtils.class);	
+	public static final Logger log = LoggerFactory.getLogger(XSLTUtils.class);
 	
 	public static void logDebug(String message) {
 		log.debug(message);

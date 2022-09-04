@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.docx4j.org.apache.poi.util.CodePageUtil;
 //import org.docx4j.org.apache.poi.util.POILogFactory;
@@ -139,10 +140,7 @@ public class VariantSupport extends Variant
      */
     public boolean isSupportedType(final int variantType)
     {
-        for (int i = 0; i < SUPPORTED_TYPES.length; i++)
-            if (variantType == SUPPORTED_TYPES[i])
-                return true;
-        return false;
+        return IntStream.range(0, SUPPORTED_TYPES.length).anyMatch(i -> variantType == SUPPORTED_TYPES[i]);
     }
 
 
@@ -342,14 +340,13 @@ public class VariantSupport extends Variant
                 final int nrOfChars = ( (String) value ).length() + 1;
                 length += TypeWriter.writeUIntToStream( out, nrOfChars );
                 char[] s = ( (String) value ).toCharArray();
-                for ( int i = 0; i < s.length; i++ )
-                {
-                    final int high = ( ( s[i] & 0x0000ff00 ) >> 8 );
-                    final int low = ( s[i] & 0x000000ff );
+                for (char c : s) {
+                    final int high = ((c & 0x0000ff00) >> 8);
+                    final int low = (c & 0x000000ff);
                     final byte highb = (byte) high;
                     final byte lowb = (byte) low;
-                    out.write( lowb );
-                    out.write( highb );
+                    out.write(lowb);
+                    out.write(highb);
                     length += 2;
                 }
                 // NullTerminator
@@ -381,9 +378,9 @@ public class VariantSupport extends Variant
                 if (!(value instanceof Integer))
                 {
                     throw new ClassCastException("Could not cast an object to "
-                            + Integer.class.toString() + ": "
+                            + Integer.class + ": "
                             + value.getClass().toString() + ", "
-                            + value.toString());
+                            + value);
                 }
                 length += TypeWriter.writeToStream(out,
                           ((Integer) value).intValue());

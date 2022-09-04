@@ -60,7 +60,7 @@ public class TTFFile extends OpenFont {
         int i = fontFile.getCurrentPos();
         int n = fontFile.readTTFUShort();
         int j = fontFile.readTTFUShort() + i - 2;
-        i += 2 * 2;
+        i += 2 << 1;
 
         while (n-- > 0) {
             // getLogger().debug("Iteration: " + n);
@@ -84,9 +84,9 @@ public class TTFFile extends OpenFont {
 
                 if (log.isDebugEnabled()) {
                     log.debug(platformID + " "
-                            + encodingID + " "
-                            + languageID + " "
-                            + k + " " + txt);
+                            + encodingID + ' '
+                            + languageID + ' '
+                            + k + ' ' + txt);
                 }
                 switch (k) {
                 case 0:
@@ -117,7 +117,7 @@ public class TTFFile extends OpenFont {
                     break;
                 }
             }
-            i += 6 * 2;
+            i += 6 << 1;
         }
     }
 

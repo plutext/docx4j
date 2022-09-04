@@ -32,7 +32,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Underline extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Underline.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Underline.class);
 
 	public final static String CSS_NAME = "text-decoration"; 
 	public final static String FO_NAME  = "text-decoration"; 
@@ -54,13 +54,13 @@ public class Underline extends AbstractRunProperty {
 		
 		U u = Context.getWmlObjectFactory().createU();
 		
-		if (value.getCssText().toLowerCase().equals("underline")
-				|| value.getCssText().toLowerCase().equals("[underline]")) {
+		if (value.getCssText().equalsIgnoreCase("underline")
+				|| value.getCssText().equalsIgnoreCase("[underline]")) {
 			u.setVal(UnderlineEnumeration.SINGLE);
 //		} else if (value.getCssText().toLowerCase().equals("underline")) {
 //			u.setVal(UnderlineEnumeration.NONE);
 		} else {
-			log.error("How to handle " + CSS_NAME + " " + value.getCssText().toLowerCase());
+			log.error("How to handle " + CSS_NAME + ' ' + value.getCssText().toLowerCase());
 		}
 
 		this.setObject( u );

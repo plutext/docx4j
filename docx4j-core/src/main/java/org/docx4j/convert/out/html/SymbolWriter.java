@@ -78,14 +78,14 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	    Element span = doc.createElement("span");
 	    docfrag.appendChild(span);
 		
-	    span.setAttribute("style", "font-family: '" + pf.getName() + "'" );
+	    span.setAttribute("style", "font-family: '" + pf.getName() + '\'');
 	    span.appendChild( theChar );
 	}
     
     return docfrag;
   }
   
-	protected byte[] hexStringToByteArray(String s) {
+	protected static byte[] hexStringToByteArray(String s) {
 		// From http://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
 	    int len = s.length();
 	    byte[] data = new byte[len / 2];

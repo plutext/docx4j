@@ -32,7 +32,7 @@ import java.io.OutputStream;
  * @author raul
  */
 public class UnsyncBufferedOutputStream extends OutputStream {
-    static final int size = 8*1024;
+    static final int size = 8 << 10;
     
     private int pointer = 0;
     private final OutputStream out;

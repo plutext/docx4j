@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
 
 public class RunFontSelectorCalibriCheckBoxTest {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger
 	
 	final static String FONT_WORD_2016_USES = "Segoe UI Symbol";
 		

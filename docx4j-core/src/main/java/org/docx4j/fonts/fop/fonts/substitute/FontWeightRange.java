@@ -25,6 +25,7 @@
 package org.docx4j.fonts.fop.fonts.substitute;
 
 import java.util.StringTokenizer;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,14 +107,7 @@ public class FontWeightRange {
      * @return an integer array containing the weight ranges
      */
     public int[] toArray() {
-        int cnt = 0;
-        for (int i = start; i <= end; i += 100) {
-            cnt++;
-        }
-        int[] range = new int[cnt];
-        for (int i = 0; i < cnt; i++) {
-            range[i] = start + (i * 100);
-        }
-        return range;
+        int cnt = (int) IntStream.iterate(start, i -> i <= end, i -> i + 100).count();
+        return IntStream.range(0, cnt).map(i -> start + (i * 100)).toArray();
     }
 }

@@ -71,7 +71,7 @@ import org.w3c.dom.traversal.NodeIterator;
  */
 public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	
-	protected static Logger log = LoggerFactory.getLogger(WordXmlPictureE10.class);
+	protected static final Logger log = LoggerFactory.getLogger(WordXmlPictureE10.class);
 	
 	Pict pict;
 	    
@@ -183,7 +183,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 //        		new QName("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));   
     	
     	String imgRelId = converter.imageData.getId();
-        if (imgRelId!=null && !imgRelId.equals("")) {
+        if (imgRelId!=null && !imgRelId.isEmpty()) {
         	log.debug("Handling " + imgRelId);
         	converter.handleImageRel(imageHandler, imgRelId, sourcePart);
         } else {
@@ -383,7 +383,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		// TODO
     	}
     	String val;
-    	int endIndex = style.indexOf(";", beginIndex);
+    	int endIndex = style.indexOf(';', beginIndex);
     	if (endIndex<0) {
     		// Last entry
     		val = style.substring(beginIndex);
@@ -393,14 +393,12 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	log.debug("val: " + val);
     	
     	String unit;
-    	float f=0;
+    	float f = Float.parseFloat(val.substring(0, val.length()-2));
     	
     	if (val.endsWith("pt") ) {
-    		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="pt";
     		log.debug(f +"pt");    		
     	} else if (val.endsWith("in") ) {
-    		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="in";
     		log.debug(f + "in");    		
 

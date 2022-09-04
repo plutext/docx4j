@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class LanguageTagToScriptMapping {
 
-	protected static Logger log = LoggerFactory.getLogger(LanguageTagToScriptMapping.class);	
+	protected static final Logger log = LoggerFactory.getLogger(LanguageTagToScriptMapping.class);
 	
 	/* The purpose of this class is to map an attribute value
 	 * from w:themeFontLang in the settings part,  

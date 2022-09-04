@@ -85,7 +85,7 @@ public class SimpleFraction {
         double r0 = value;
         long a0 = (long)Math.floor(r0);
         if (a0 > overflow) {
-            throw new IllegalArgumentException("Overflow trying to convert "+value+" to fraction ("+a0+"/"+1l+")");
+            throw new IllegalArgumentException("Overflow trying to convert "+value+" to fraction ("+a0+ '/' +1l+ ')');
         }
 
         // check for (almost) integer arguments, which should not go
@@ -117,10 +117,10 @@ public class SimpleFraction {
                 return new SimpleFraction((int)p1, (int)q1);
             }
             if ((p2 > overflow) || (q2 > overflow)) {
-                throw new RuntimeException("Overflow trying to convert "+value+" to fraction ("+p2+"/"+q2+")");
+                throw new RuntimeException("Overflow trying to convert "+value+" to fraction ("+p2+ '/' +q2+ ')');
             }
 
-            double convergent = (double)p2 / (double)q2;
+            double convergent = (double)p2 / q2;
             if (n < maxIterations && Math.abs(convergent - value) > epsilon && q2 < maxDenominator) {
                 p0 = p1;
                 p1 = p2;

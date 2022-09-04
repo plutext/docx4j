@@ -41,6 +41,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+import java.util.stream.IntStream;
+
 /**
  * Adapter to turn a StAX {@link XMLStreamReader} into a {@link SAXSource}.
  */
@@ -180,7 +182,7 @@ public class StAX2SAXSource extends SAXSource implements XMLReader {
         if (prefix == null || prefix.length() == 0) {
             return localName;
         }
-        return prefix + ":" + localName;
+        return prefix + ':' + localName;
     }
 
     private String nullToEmpty(String s) {
@@ -252,22 +254,12 @@ public class StAX2SAXSource extends SAXSource implements XMLReader {
 
         @Override
         public int getIndex(String searchUri, String searchLocalName) {
-            for (int i = 0; i < attributeCount; i++) {
-                if (getURI(i).equals(searchUri) && getLocalName(i).equals(searchLocalName)) {
-                    return i;
-                }
-            }
-            return -1;
+            return IntStream.range(0, attributeCount).filter(i -> getURI(i).equals(searchUri) && getLocalName(i).equals(searchLocalName)).findFirst().orElse(-1);
         }
 
         @Override
         public int getIndex(String searchQName) {
-            for (int i = 0; i < attributeCount; i++) {
-                if (getQName(i).equals(searchQName)) {
-                    return i;
-                }
-            }
-            return -1;
+            return IntStream.range(0, attributeCount).filter(i -> getQName(i).equals(searchQName)).findFirst().orElse(-1);
         }
 
         @Override

@@ -30,7 +30,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class Justification extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Justification.class);	
+	protected static final Logger log = LoggerFactory.getLogger(Justification.class);
 	
 	
 	public final static String CSS_NAME = "text-align"; 

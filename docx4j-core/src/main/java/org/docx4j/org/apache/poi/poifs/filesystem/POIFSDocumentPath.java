@@ -26,6 +26,7 @@
 package org.docx4j.org.apache.poi.poifs.filesystem;
 
 import java.io.File;
+import java.util.stream.IntStream;
 
 //import org.docx4j.org.apache.poi.util.POILogFactory;
 //import org.docx4j.org.apache.poi.util.POILogger;
@@ -183,14 +184,9 @@ public class POIFSDocumentPath
                 if (path.components.length == this.components.length)
                 {
                     rval = true;
-                    for (int j = 0; j < this.components.length; j++)
-                    {
-                        if (!path.components[ j ]
-                                .equals(this.components[ j ]))
-                        {
-                            rval = false;
-                            break;
-                        }
+                    if (IntStream.range(0, this.components.length).anyMatch(j -> !path.components[j]
+                            .equals(this.components[j]))) {
+                        rval = false;
                     }
                 }
             }
@@ -208,9 +204,8 @@ public class POIFSDocumentPath
     {
         if (hashcode == 0)
         {
-            for (int j = 0; j < components.length; j++)
-            {
-                hashcode += components[ j ].hashCode();
+            for (String component : components) {
+                hashcode += component.hashCode();
             }
         }
         return hashcode;
@@ -276,7 +271,7 @@ public class POIFSDocumentPath
 
     public String toString()
     {
-        final StringBuffer b = new StringBuffer();
+        final StringBuilder b = new StringBuilder();
         final int          l = length();
 
         b.append(File.separatorChar);

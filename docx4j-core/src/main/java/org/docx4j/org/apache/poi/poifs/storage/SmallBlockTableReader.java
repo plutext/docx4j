@@ -44,10 +44,9 @@ public final class SmallBlockTableReader {
                 blockList.fetchBlocks(root.getStartBlock(), -1);
         
        // Turn that into a list
-        BlockList list =new SmallDocumentBlockList(
-                SmallDocumentBlock.extract(bigBlockSize, smallBlockBlocks));
 
-        return list;
+        return new SmallDocumentBlockList(
+                SmallDocumentBlock.extract(bigBlockSize, smallBlockBlocks));
     }
     private static BlockAllocationTableReader prepareReader(
             final POIFSBigBlockSize bigBlockSize,

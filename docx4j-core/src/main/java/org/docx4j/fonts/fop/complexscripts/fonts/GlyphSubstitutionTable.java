@@ -24,10 +24,7 @@
 
 package org.docx4j.fonts.fop.complexscripts.fonts;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -847,7 +844,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
                     for (Rule r : ra) {
                         if ((r != null) && (r instanceof ChainedClassSequenceRule)) {
                             ChainedClassSequenceRule cr = (ChainedClassSequenceRule) r;
-                            int[] ca = cr.getClasses(cdt.getClassIndex(gi, ss.getClassMatchSet(gi)));
+                            int[] ca = cr.getClasses(cdt.getClassIndex(gi, GlyphProcessingState.getClassMatchSet(gi)));
                             if (matches(ss, cdt, ca, 0, rv)) {
                                 return r.getLookups();
                             }
@@ -872,7 +869,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
                     int[] ga = ss.getGlyphs(offset, ngm, reverse, ignores, null, counts);
                     for (int k = 0; k < ngm; k++) {
                         int gi = ga [ k ];
-                        int ms = ss.getClassMatchSet(gi);
+                        int ms = GlyphProcessingState.getClassMatchSet(gi);
                         int gc = cdt.getClassIndex(gi, ms);
                         if ((gc < 0) || (gc >= cdt.getClassSize(ms))) {
                             return false;               // none or invalid class fails mat ch
@@ -1156,7 +1153,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
                     for (Rule r : ra) {
                         if ((r != null) && (r instanceof ChainedClassSequenceRule)) {
                             ChainedClassSequenceRule cr = (ChainedClassSequenceRule) r;
-                            int[] ica = cr.getClasses(icdt.getClassIndex(gi, ss.getClassMatchSet(gi)));
+                            int[] ica = cr.getClasses(icdt.getClassIndex(gi, GlyphProcessingState.getClassMatchSet(gi)));
                             if (matches(ss, icdt, ica, 0, rv)) {
                                 int[] bca = cr.getBacktrackClasses();
                                 if (matches(ss, bcdt, bca, -1, null)) {
@@ -1390,7 +1387,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{components={");
             for (int i = 0, n = components.length; i < n; i++) {
                 if (i > 0) {
@@ -1400,7 +1397,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
             }
             sb.append("},ligature=");
             sb.append(Integer.toString(ligature));
-            sb.append("}");
+            sb.append('}');
             return sb.toString();
         }
 
@@ -1459,7 +1456,7 @@ public class GlyphSubstitutionTable extends GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ligs={");
             for (int i = 0, n = ligatures.length; i < n; i++) {
                 if (i > 0) {

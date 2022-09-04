@@ -235,7 +235,7 @@ public class Base64 {
         String encodedInt = encode(biginteger);
 
         if (!XMLUtils.ignoreLineBreaks() && encodedInt.length() > BASE64DEFAULTLENGTH) {
-            encodedInt = "\n" + encodedInt + "\n";
+            encodedInt = '\n' + encodedInt + '\n';
         }
 
         Document doc = element.getOwnerDocument();
@@ -387,7 +387,7 @@ public class Base64 {
         int numberLines = (numberQuartet - 1) / quartesPerLine;
         char encodedData[] = null;
 
-        encodedData = new char[numberQuartet * 4 + numberLines];
+        encodedData = new char[(numberQuartet << 2) + numberLines];
 
         byte k = 0, l = 0, b1 = 0, b2 = 0, b3 = 0;
         int encodedIndex = 0;
@@ -523,7 +523,7 @@ public class Base64 {
         int dataIndex = 0;
 
         //decodedData = new byte[ (numberQuadruple)*3];
-        dataIndex = (numberQuadruple - 1) * 4;
+        dataIndex = (numberQuadruple - 1) << 2;
         encodedIndex = (numberQuadruple - 1) * 3;
         //first last bits.
         b1 = base64Alphabet[base64Data[dataIndex++]];

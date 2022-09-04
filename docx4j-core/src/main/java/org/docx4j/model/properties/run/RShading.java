@@ -34,7 +34,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class RShading extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(RShading.class);		
+	protected static final Logger log = LoggerFactory.getLogger(RShading.class);
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
@@ -103,7 +103,7 @@ public class RShading extends AbstractRunProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			return composeCss(CSS_NAME, "#" + shd.getFill() );
+			return composeCss(CSS_NAME, '#' + shd.getFill() );
 		} else {
 			return CSS_NULL;
 		}
@@ -127,7 +127,7 @@ public class RShading extends AbstractRunProperty {
 		// We just support fill color right now
 		if (shd.getFill()!=null &&
 				!shd.getFill().equals("auto")) {
-			foElement.setAttribute(FO_NAME, "#" + shd.getFill() );
+			foElement.setAttribute(FO_NAME, '#' + shd.getFill() );
 		} 
 	}
 

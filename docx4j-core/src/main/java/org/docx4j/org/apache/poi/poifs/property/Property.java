@@ -47,7 +47,7 @@ import org.docx4j.org.apache.poi.util.ShortField;
  */
 
 public abstract class Property implements Child, POIFSViewable {
-    static final private byte   _default_fill             = ( byte ) 0x00;
+    static final private byte   _default_fill             = 0x00;
     static final private int    _name_size_offset         = 0x40;
     static final private int    _max_name_length          =
         (_name_size_offset / LittleEndianConsts.SHORT_SIZE) - 1;
@@ -483,7 +483,7 @@ public abstract class Property implements Child, POIFSViewable {
     {
         Object[] results = new Object[ 5 ];
 
-        results[ 0 ] = "Name          = \"" + getName() + "\"";
+        results[ 0 ] = "Name          = \"" + getName() + '"';
         results[ 1 ] = "Property Type = " + _property_type.get();
         results[ 2 ] = "Node Color    = " + _node_color.get();
         long time = _days_1.get();
@@ -507,7 +507,7 @@ public abstract class Property implements Child, POIFSViewable {
      */
     public Iterator<Object> getViewableIterator()
     {
-        return Collections.emptyList().iterator();
+        return Collections.emptyIterator();
     }
 
     /**
@@ -530,9 +530,9 @@ public abstract class Property implements Child, POIFSViewable {
      */
     public String getShortDescription()
     {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
-        buffer.append("Property: \"").append(getName()).append("\"");
+        buffer.append("Property: \"").append(getName()).append('"');
         return buffer.toString();
     }
 }

@@ -48,9 +48,9 @@ import org.slf4j.LoggerFactory;
 public final class NPropertyTable extends PropertyTableBase {
 //    private static final POILogger _logger =
 //       POILogFactory.getLogger(NPropertyTable.class);
-	private static Logger _logger = LoggerFactory.getLogger(NPropertyTable.class);
+	private static final Logger _logger = LoggerFactory.getLogger(NPropertyTable.class);
 	
-    private POIFSBigBlockSize _bigBigBlockSize;
+    private final POIFSBigBlockSize _bigBigBlockSize;
 
     public NPropertyTable(HeaderBlock headerBlock)
     {
@@ -109,7 +109,7 @@ public final class NPropertyTable extends PropertyTableBase {
                 // Looks to be a truncated block
                 // This isn't allowed, but some third party created files
                 //  sometimes do this, and we can normally read anyway
-                _logger.warn( "Short Property Block, ", bb.remaining(),
+                _logger.warn( "Short Property Block, " + bb.remaining() +
                             " bytes instead of the expected " + bigBlockSize.getBigBlockSize());
                 toRead = bb.remaining();
              }

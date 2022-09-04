@@ -66,13 +66,12 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 			//textcontentitems != null -> split [literal,] # marker [, literal]
 			if (textcontentitems != null) {
 				docFrag = doc.createDocumentFragment();
-				for (int i=0; i<textcontentitems.size(); i++) {
-					textcontentitem = textcontentitems.get(i);
+				for (String s : textcontentitems) {
+					textcontentitem = s;
 					if ("#".equals(textcontentitem)) {
 						docFrag.appendChild(createPageref(context, doc, bookmarkId));
-					}
-					else {
-						
+					} else {
+
 						literalNode = doc.createDocumentFragment();
 						XmlUtils.treeCopy(content, literalNode);
 						literalNode = literalNode.getFirstChild();

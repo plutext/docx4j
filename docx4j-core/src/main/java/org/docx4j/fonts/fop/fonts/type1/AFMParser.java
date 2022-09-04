@@ -310,7 +310,7 @@ public class AFMParser {
             double version = Double.parseDouble(line.substring(startpos, endpos));
             if (version < 2) {
                 throw new IOException(
-                        "AFM version must be at least 2.0 but it is " + version + "!");
+                        "AFM version must be at least 2.0 but it is " + version + '!');
             }
             AFMFile afm = new AFMFile();
             stack.push(afm);

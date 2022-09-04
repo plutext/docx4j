@@ -395,8 +395,7 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
       throws InterruptedException, TimeoutException, ExecutionException {
     // NOTE: if timeout < 0, remainingNanos will be < 0 and we will fall into the while(true) loop
     // at the bottom and throw a timeoutexception.
-    final long timeoutNanos = unit.toNanos(timeout); // we rely on the implicit null check on unit.
-    long remainingNanos = timeoutNanos;
+    long remainingNanos = unit.toNanos(timeout);
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
@@ -460,7 +459,7 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
 
     String futureToString = toString();
     final String unitString = unit.toString().toLowerCase(Locale.ROOT);
-    String message = "Waited " + timeout + " " + unit.toString().toLowerCase(Locale.ROOT);
+    String message = "Waited " + timeout + ' ' + unit.toString().toLowerCase(Locale.ROOT);
     // Only report scheduling delay if larger than our spin threshold - otherwise it's just noise
     if (remainingNanos + SPIN_THRESHOLD_NANOS < 0) {
       // We over-waited for our timeout.
@@ -621,7 +620,7 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
               // does nothing but delegate to this method.
               AbstractFuture<?> trusted = (AbstractFuture<?>) futureToPropagateTo;
               localValue = trusted.value;
-              if (localValue == null | localValue instanceof SetFuture) {
+              if (localValue == null | localValue instanceof SetFuture) { // non short-circuit OR - was it planned?
                 abstractFuture = trusted;
                 continue; // loop back up and try to complete the new future
               }
@@ -1074,14 +1073,14 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
       // The future may complete during or before the call to getPendingToString, so we use null
       // as a signal that we should try checking if the future is done again.
       if (pendingDescription != null && !pendingDescription.isEmpty()) {
-        builder.append("PENDING, info=[").append(pendingDescription).append("]");
+        builder.append("PENDING, info=[").append(pendingDescription).append(']');
       } else if (isDone()) {
         addDoneString(builder);
       } else {
         builder.append("PENDING");
       }
     }
-    return builder.append("]").toString();
+    return builder.append(']').toString();
   }
 
   /**
@@ -1093,7 +1092,7 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
   protected @Nullable String pendingToString() {
     Object localValue = value;
     if (localValue instanceof SetFuture) {
-      return "setFuture=[" + userObjectToString(((SetFuture) localValue).future) + "]";
+      return "setFuture=[" + userObjectToString(((SetFuture) localValue).future) + ']';
     } else if (this instanceof ScheduledFuture) {
       return "remaining delay=["
           + ((ScheduledFuture) this).getDelay(TimeUnit.MILLISECONDS)
@@ -1105,9 +1104,9 @@ public abstract class AbstractFuture<V> extends InternalFutureFailureAccess
   private void addDoneString(StringBuilder builder) {
     try {
       V value = getUninterruptibly(this);
-      builder.append("SUCCESS, result=[").append(userObjectToString(value)).append("]");
+      builder.append("SUCCESS, result=[").append(userObjectToString(value)).append(']');
     } catch (ExecutionException e) {
-      builder.append("FAILURE, cause=[").append(e.getCause()).append("]");
+      builder.append("FAILURE, cause=[").append(e.getCause()).append(']');
     } catch (CancellationException e) {
       builder.append("CANCELLED"); // shouldn't be reachable
     } catch (RuntimeException e) {

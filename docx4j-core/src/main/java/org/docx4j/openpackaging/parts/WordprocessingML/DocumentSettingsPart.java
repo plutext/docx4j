@@ -155,16 +155,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		 * w:uri="http://schemas.microsoft.com/office/word" 
 		 * w:val="1"
 		 */
-		CTCompatSetting theSetting = null;
-		for (CTCompatSetting setting : compat.getCompatSetting() ) {
-			if (setting.getUri().equals("http://schemas.microsoft.com/office/word")
-					&& setting.getName().equals(name)) {
-				theSetting = setting;
-				break;
-			}
-		}
-		
-		return theSetting;
+
+		return compat.getCompatSetting().stream().filter(setting -> setting.getUri().equals("http://schemas.microsoft.com/office/word")
+				&& setting.getName().equals(name)).findFirst().orElse(null);
 	}
 
 	public void setWordCompatSetting(String name, String val) { 
@@ -176,15 +169,9 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 		compat = Context.getWmlObjectFactory().createCTCompat();
 		this.getJaxbElement().setCompat(compat);
 		
-		CTCompatSetting theSetting = null;
-		for (CTCompatSetting setting : compat.getCompatSetting() ) {
-			if (setting.getUri().equals("http://schemas.microsoft.com/office/word")
-					&& setting.getName().equals(name)) {
-				theSetting = setting;
-				break;
-			}
-		}
-		
+		CTCompatSetting theSetting = compat.getCompatSetting().stream().filter(setting -> setting.getUri().equals("http://schemas.microsoft.com/office/word")
+				&& setting.getName().equals(name)).findFirst().orElse(null);
+
 		if (theSetting==null) {
 			theSetting = Context.getWmlObjectFactory().createCTCompatSetting();
 			theSetting.setUri("http://schemas.microsoft.com/office/word");
@@ -209,8 +196,8 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
 				|| overrideTableStyleFontSizeAndJustification.getVal()==null) return false;
     	
     	return  ( overrideTableStyleFontSizeAndJustification.getVal().equals("1")
-				|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("true")
-				|| overrideTableStyleFontSizeAndJustification.getVal().toLowerCase().equals("yes")
+				|| overrideTableStyleFontSizeAndJustification.getVal().equalsIgnoreCase("true")
+				|| overrideTableStyleFontSizeAndJustification.getVal().equalsIgnoreCase("yes")
 				);
     }		
 
@@ -394,9 +381,7 @@ public final class DocumentSettingsPart extends JaxbXmlPartXPathAware<CTSettings
             // iteration's result as the input for the next iteration).
             int spinCount = 100000;
 
-            if (hashAlgo == null) hashAlgo = HashAlgorithm.sha512;
-
-            String legacyHash = CryptoFunctions.xorHashPasswordReversed(password);
+			String legacyHash = CryptoFunctions.xorHashPasswordReversed(password);
             // Implementation Notes List:
             // --> In this third stage, the reversed byte order legacy hash from the second stage shall
             //     be converted to Unicode hex string representation

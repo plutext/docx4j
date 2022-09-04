@@ -123,7 +123,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AbstractListNumberingDefinition {
 	
-	protected static Logger log = LoggerFactory.getLogger(AbstractListNumberingDefinition.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractListNumberingDefinition.class);
 	
         private HashMap<String, ListLevel> listLevels;
 
@@ -149,7 +149,7 @@ public class AbstractListNumberingDefinition {
 //            String abstractNumString = getAttributeValue(abstractNumNode, "w:abstractNumId");
             String abstractNumString = abstractNumNode.getAbstractNumId().toString();
 
-            if (abstractNumString!=null && !abstractNumString.equals("") )
+            if (abstractNumString!=null && !abstractNumString.isEmpty())
             {
                 this.abstractNumDefId = abstractNumString;
 
@@ -211,7 +211,7 @@ public class AbstractListNumberingDefinition {
 
         public boolean hasLinkedStyle()
         {
-        	if (this.linkedStyleId!=null && !this.linkedStyleId.equals("")  ) {
+        	if (this.linkedStyleId!=null && !this.linkedStyleId.isEmpty()) {
         		return true;
         	} else {
         		return false;

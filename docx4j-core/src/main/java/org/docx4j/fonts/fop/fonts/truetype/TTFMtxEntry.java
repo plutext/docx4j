@@ -54,9 +54,9 @@ class TTFMtxEntry {
      */
     public String toString(TTFFile t) {
         return "Glyph " + name + " index: " + getIndexAsString() + " bbox ["
-             + t.convertTTFUnit2PDFUnit(boundingBox[0]) + " "
-             + t.convertTTFUnit2PDFUnit(boundingBox[1]) + " "
-             + t.convertTTFUnit2PDFUnit(boundingBox[2]) + " "
+             + t.convertTTFUnit2PDFUnit(boundingBox[0]) + ' '
+             + t.convertTTFUnit2PDFUnit(boundingBox[1]) + ' '
+             + t.convertTTFUnit2PDFUnit(boundingBox[2]) + ' '
              + t.convertTTFUnit2PDFUnit(boundingBox[3]) + "] wx: "
              + t.convertTTFUnit2PDFUnit(wx);
     }

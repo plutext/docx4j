@@ -48,7 +48,7 @@ ValidationEventHandler{
 		shouldContinue = val;
 	}
 	
-	public final static String UNEXPECTED_MC_ALTERNATE_CONTENT = "unexpected element (uri:\"http://schemas.openxmlformats.org/markup-compatibility/2006\", local:\"AlternateContent\")";
+	//public final static String UNEXPECTED_MC_ALTERNATE_CONTENT = "unexpected element (uri:\"http://schemas.openxmlformats.org/markup-compatibility/2006\", local:\"AlternateContent\")";
 	
 	static Templates mcPreprocessorXslt;	
 	
@@ -113,9 +113,9 @@ ValidationEventHandler{
 	        	  if (node.getParentNode()!=null) {
 		        	  log.warn("in parent node: " + XmlUtils.w3CDomNodeToString(node.getParentNode()));
 		        	  Node parent = node.getParentNode();
-		        	  String path = "";
+		        	  StringBuilder path = new StringBuilder();
 		        	  while (parent!=null) {
-		        		  path = getLocalName(parent) + "/" + path;
+		        		  path.insert(0, getLocalName(parent) + '/');
 		        		  parent = parent.getParentNode();
 		        	  }
 		        	  log.warn(path + getLocalName(node));
@@ -192,7 +192,7 @@ ValidationEventHandler{
              
      }
     
-    private String getLocalName(Node sourceNode) {
+    private static String getLocalName(Node sourceNode) {
     	
     	if (sourceNode.getLocalName()==null) {
     		// eg element was created using createElement() 
@@ -204,7 +204,7 @@ ValidationEventHandler{
     	
     }    
     
-    public String printSeverity(ValidationEvent ve) {
+    public static String printSeverity(ValidationEvent ve) {
     	
     	String errorLevel;
     	
@@ -215,10 +215,10 @@ ValidationEventHandler{
     			break; } 
     		case ValidationEvent.ERROR: { errorLevel="ERROR"; break; }
     		case ValidationEvent.WARNING: { errorLevel="WARNING"; break; }
-    		default: errorLevel = new Integer (ve.getSeverity()).toString() ;
+    		default: errorLevel = Integer.toString(ve.getSeverity());
     	}
     	
-    	return "[" + errorLevel + "] ";
+    	return '[' + errorLevel + "] ";
     	
     }
   

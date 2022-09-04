@@ -231,7 +231,7 @@ public class TableModel {
 
 	protected void addDummyCell(int colSpan, boolean isBefore, boolean isAfter) {
 		
-		log.debug("gridSpan, so addDummyCell " + colSpan + " " + isBefore + " " + isAfter);
+		log.debug("gridSpan, so addDummyCell " + colSpan + ' ' + isBefore + ' ' + isAfter);
 		TableModelCell cell; 
 		if (colSpan>1) {
 			for (int i=1; i<colSpan; i++) {
@@ -588,8 +588,8 @@ public class TableModel {
 	protected JAXBElement<?> getElement(List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore, String localName) {
 		JAXBElement<?> element = null;
 		if ((cnfStyleOrDivIdOrGridBefore != null) && (!cnfStyleOrDivIdOrGridBefore.isEmpty())) {
-			for (int i=0; i<cnfStyleOrDivIdOrGridBefore.size(); i++) {
-				element = cnfStyleOrDivIdOrGridBefore.get(i);
+			for (JAXBElement<?> jaxbElement : cnfStyleOrDivIdOrGridBefore) {
+				element = jaxbElement;
 				if (localName.equals(element.getName().getLocalPart())) {
 					return element;
 				}
@@ -606,21 +606,21 @@ public class TableModel {
 	    //as cell-widths may override column widths.
     	if ((gridCols != null) && (!gridCols.isEmpty())) {
     		ret = 0;
-	    	for(int i=0; i<gridCols.size(); i++) {  
-	    		
-	    		if (gridCols.get(i).getW()==null) {
-	    			log.warn("Missing width " + XmlUtils.marshaltoString(getTblGrid()));
-	    			continue;
-	    		}
-	    		
-	    		ret += gridCols.get(i).getW().intValue();
-	    	}
+			for (TblGridCol gridCol : gridCols) {
+
+				if (gridCol.getW() == null) {
+					log.warn("Missing width " + XmlUtils.marshaltoString(getTblGrid()));
+					continue;
+				}
+
+				ret += gridCol.getW().intValue();
+			}
     	}
     	return ret;
 	}
 
 	public String debugStr() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		for (TableModelRow row : rows) {
 			List<TableModelCell> rowContents = row.getRowContents();
 			for (TableModelCell c : rowContents) {
@@ -630,7 +630,7 @@ public class TableModel {
 					buf.append(c.debugStr());
 				}
 			}
-			buf.append("\n");
+			buf.append('\n');
 		}
 		return buf.toString();
 	}

@@ -39,12 +39,8 @@ public final class UtfHelpper {
      * XML document.
      */
     private static final boolean OLD_UTF8 =
-        AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-            public Boolean run() {
-                return Boolean.getBoolean
-                    ("org.docx4j.org.apache.xml.security.c14n.oldUtf8");
-            }
-        });
+        AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> Boolean.getBoolean
+            ("org.docx4j.org.apache.xml.security.c14n.oldUtf8"));
 
     private UtfHelpper() {
         // complete
@@ -101,7 +97,7 @@ public final class UtfHelpper {
             // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
             // already outside valid Character range, just for completeness
             extraByte = 4;
-        } else if (c <= 0x7FFFFFFF) {
+        } else if (c <= 0x7FFFFFFF) { // condition is always true
             // 0x04000000 - 0x7FFFFFFF
             // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
             // already outside valid Character range, just for completeness
@@ -166,7 +162,7 @@ public final class UtfHelpper {
                 // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                 // already outside valid Character range, just for completeness
                 extraByte = 4;
-            } else if (c <= 0x7FFFFFFF) {
+            } else if (c <= 0x7FFFFFFF) { // condition is always true
                 // 0x04000000 - 0x7FFFFFFF
                 // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                 // already outside valid Character range, just for completeness
@@ -203,13 +199,13 @@ public final class UtfHelpper {
             i += Character.charCount(c);
             if (!Character.isValidCodePoint(c) || c >= 0xD800 && c <= 0xDBFF || c >= 0xDC00 && c <= 0xDFFF) {
                 // valid code point: c >= 0x0000 && c <= 0x10FFFF
-                result[out++] = (byte)0x3f;
+                result[out++] = 0x3f;
                 continue;
             }
             if (OLD_UTF8 && c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) {
                 // version 2 or before output 2 question mark characters for 32 bit chars
-                result[out++] = (byte)0x3f;
-                result[out++] = (byte)0x3f;
+                result[out++] = 0x3f;
+                result[out++] = 0x3f;
                 continue;
             }
             if (c < 0x80) {
@@ -240,7 +236,7 @@ public final class UtfHelpper {
                 // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                 // already outside valid Character range, just for completeness
                 extraByte = 4;
-            } else if (c <= 0x7FFFFFFF) {
+            } else if (c <= 0x7FFFFFFF) { // condition is always true
                 // 0x04000000 - 0x7FFFFFFF
                 // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                 // already outside valid Character range, just for completeness

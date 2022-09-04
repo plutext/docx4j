@@ -52,7 +52,7 @@ public class NumberExtractor {
 		
 		if (".".equals(groupingSeparator)) {
 			// for example, as may be used in Germany.
-			string = string.replaceAll("\\" + groupingSeparator, "");  // escape it, since otherwise '.' matches all characters of the string
+			string = string.replaceAll('\\' + groupingSeparator, "");  // escape it, since otherwise '.' matches all characters of the string
 		} else {
 			string = string.replaceAll(groupingSeparator, ""); // assume it isn't set to be some other regex wildcard.
 		}
@@ -77,10 +77,8 @@ public class NumberExtractor {
 			Matcher makeMatch = pattern.matcher(
 					prepare(string));
 			if (makeMatch.find() ) {
-				
-				String matchingSubstring = makeMatch.group();
-				
-				// Check that there is no 
+
+				// Check that there is no
 //				int pos = string.indexOf(matchingSubstring) + matchingSubstring.length()-1;
 //				int pos2 = string.indexOf(' ', pos);
 //				
@@ -89,7 +87,7 @@ public class NumberExtractor {
 //					// there are alpha chars on the end of the number
 //					throw new java.lang.IllegalStateException("Not a number");
 //				} 
-				return matchingSubstring;
+				return makeMatch.group();
 			} else {
 				throw new java.lang.IllegalStateException( string + " does not contain a number");				
 			}

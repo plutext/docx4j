@@ -48,7 +48,7 @@ import org.w3c.dom.Document;
  */
 public abstract class AbstractXsltExporterDelegate<CS extends AbstractConversionSettings, CC extends AbstractWmlConversionContext> extends AbstractExporterDelegate<CS, CC> {
 	protected String defaultTemplatesResource = null;
-	protected Templates defaultTemplates = null;
+	protected volatile Templates defaultTemplates = null;
 
 	protected AbstractXsltExporterDelegate(String defaultTemplatesResource) {
 		this.defaultTemplatesResource = defaultTemplatesResource;

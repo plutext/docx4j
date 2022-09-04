@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.JAXBException;
 
@@ -330,14 +331,8 @@ public class StyleTree {
     		return null;
     	}
         List<Node<AugmentedStyle>> classVals =  tree.climb(n);
-    	StringBuffer sb = new StringBuffer();
-        for (Node<AugmentedStyle> valNode : classVals) { 
-        	// Avoid including root node (eg dummy character root node)
-        	if (valNode.getData()!=null) {
-        		sb.append(valNode.name + " ");
-        	}
-        }
-        return sb.toString();
+		// Avoid including root node (eg dummy character root node)
+		return classVals.stream().filter(valNode -> valNode.getData() != null).map(valNode -> valNode.name + ' ').collect(Collectors.joining());
 	}
 	
 	
@@ -522,7 +517,7 @@ public class StyleTree {
 		
 
         if(log.isDebugEnabled()) {
-            log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '" + styleDocDefaults.getName().getVal() + "'");
+            log.debug("Set virtual style, id '" + styleDocDefaults.getStyleId() + "', name '" + styleDocDefaults.getName().getVal() + '\'');
             log.debug(XmlUtils.marshaltoString(styleDocDefaults, true, true));
         }
 		

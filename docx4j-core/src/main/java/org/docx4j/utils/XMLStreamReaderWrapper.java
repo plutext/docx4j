@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class XMLStreamReaderWrapper implements XMLStreamReader {
 	
-	protected static Logger log = LoggerFactory.getLogger(XMLStreamReaderWrapper.class);
+	protected static final Logger log = LoggerFactory.getLogger(XMLStreamReaderWrapper.class);
 	
 
 	XMLStreamReader underlying;

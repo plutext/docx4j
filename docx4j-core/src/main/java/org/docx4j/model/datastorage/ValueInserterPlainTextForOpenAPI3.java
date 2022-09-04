@@ -3,7 +3,6 @@ package org.docx4j.model.datastorage;
 
 import java.math.BigInteger;
 
-import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
@@ -15,7 +14,6 @@ import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Text;
-import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.R;
 import org.opendope.xpaths.Xpaths;
 import org.slf4j.Logger;
@@ -48,7 +46,7 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 			JaxbXmlPart sourcePart) throws Docx4JException {
 				
 		try {
-			if (val==null || val.equals("")) {
+			if (val==null || val.isEmpty()) {
 				return BindingTraverserXSLT.createPlaceholder(rPr, "p");
 			}
 		} catch (Exception e) {
@@ -110,8 +108,8 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 		return docfrag;
 	}
 
-	private void addRun(String val, 
-			DocumentFragment docfrag) {
+	private static void addRun(String val,
+							   DocumentFragment docfrag) {
 
 		R r = new R();
 		Text t = new Text();
@@ -123,12 +121,12 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 		
 	}
 	
-	private void addBookmarkStart(String bookmarkName, int id, 
-			DocumentFragment docfrag) {
+	private static void addBookmarkStart(String bookmarkName, int id,
+										 DocumentFragment docfrag) {
 		
 	    CTBookmark bookmark = Context.getWmlObjectFactory().createCTBookmark(); 
-	    JAXBElement<org.docx4j.wml.CTBookmark> bookmarkWrapped 
-	    	= Context.getWmlObjectFactory().createPBookmarkStart(bookmark);
+	    //JAXBElement<org.docx4j.wml.CTBookmark> bookmarkWrapped
+	    //	= Context.getWmlObjectFactory().createPBookmarkStart(bookmark);
 
         bookmark.setName( bookmarkName ); 
         bookmark.setId( BigInteger.valueOf( id) ); 
@@ -138,7 +136,7 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 		
 	}
 
-	private void addBookmarkEnd(int id, DocumentFragment docfrag) {
+	private static void addBookmarkEnd(int id, DocumentFragment docfrag) {
 		
 		CTMarkupRange markuprange = Context.getWmlObjectFactory().createCTMarkupRange(); 
 	    markuprange.setId( BigInteger.valueOf(id ) ); 
@@ -149,7 +147,7 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 	
 
 	private final static String COMPONENT_SCHEMAS = "local-name(/yaml/components[1]/schemas[1]/"; 
-	private String getBookmarkName(String xpath, String val) {
+	private static String getBookmarkName(String xpath, String val) {
 
 		// Given:
 		//   local-name(/yaml/components[1]/schemas[1]/*[2][1])
@@ -188,7 +186,7 @@ public class ValueInserterPlainTextForOpenAPI3 extends ValueInserterPlainTextImp
 
 	}
 	
-	private String refToBookmarkName(String ref) {
+	private static String refToBookmarkName(String ref) {
 		
 		// INPUT eg: "#/components/schemas/Pets"
 		// OUTPUTS   components_schemas_Pets

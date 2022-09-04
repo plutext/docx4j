@@ -526,18 +526,16 @@ public class FieldRef {
 		
 		// our docfrag may contain several runs
 		boolean firsttoken = true;
-		for (int i = 0; i < splitted.length; i++) {						
-			String line = splitted[i];
-			
+		for (String line : splitted) {
 			if (firsttoken) {
 				firsttoken = false;
 			} else {
 				resultsSlot.getContent().add(Context.getWmlObjectFactory().createBr());
 			}
-			
-			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+
+			Text text = Context.getWmlObjectFactory().createText();
 			resultsSlot.getContent().add(text);
-			if (line.startsWith(" ") || line.endsWith(" ") ) {
+			if (!line.isEmpty() && line.charAt(0) == ' ' || !line.isEmpty() && line.charAt(line.length() - 1) == ' ') {
 				// TODO: tab character?
 				text.setSpace("preserve");
 			}

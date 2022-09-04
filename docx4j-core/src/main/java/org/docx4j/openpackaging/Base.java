@@ -43,7 +43,7 @@ import org.docx4j.relationships.Relationship;
 
 public abstract class Base {
 
-	protected static Logger log = LoggerFactory.getLogger(Base.class);
+	protected static final Logger log = LoggerFactory.getLogger(Base.class);
 
 	public abstract OpcPackage getPackage(); 
 	

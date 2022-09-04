@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ResourceUtils {
 	
-	protected static Logger log = LoggerFactory.getLogger(ResourceUtils.class);	
+	protected static final Logger log = LoggerFactory.getLogger(ResourceUtils.class);
 
     /**
      * Get this resource from the location specified in docx4j.properties;
@@ -102,8 +102,7 @@ public class ResourceUtils {
         
         // Get the jar file
 //      JarURLConnection conn = (JarURLConnection) url.openConnection();
-        java.io.InputStream is = url.openConnection().getInputStream();
-        return is;
+		return url.openConnection().getInputStream();
     }
 	
 //    public static void main(String[] args)

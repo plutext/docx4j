@@ -84,7 +84,7 @@ public abstract class BlockStore {
      *  spinning away for ever... 
      */
     protected class ChainLoopDetector {
-       private boolean[] used_blocks;
+       private final boolean[] used_blocks;
        protected ChainLoopDetector(long rawSize) {
           int numBlocks = (int)Math.ceil( rawSize / getBlockStoreBlockSize() );
           used_blocks = new boolean[numBlocks];

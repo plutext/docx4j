@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DrawingPropsIdTracker {
 	
-	protected static Logger log = LoggerFactory.getLogger(DrawingPropsIdTracker.class);
+	protected static final Logger log = LoggerFactory.getLogger(DrawingPropsIdTracker.class);
 	
 	/*
  		<w:drawing>

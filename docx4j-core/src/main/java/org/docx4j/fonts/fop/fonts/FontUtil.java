@@ -25,6 +25,8 @@
 package org.docx4j.fonts.fop.fonts;
 
 
+import java.util.Arrays;
+
 /**
  * Font utilities.
  */
@@ -73,7 +75,7 @@ public final class FontUtil {
      */
     public static String stripWhiteSpace(String str) {
         if (str != null) {
-            StringBuffer stringBuffer = new StringBuffer(str.length());
+            StringBuilder stringBuffer = new StringBuilder(str.length());
             for (int i = 0, strLen = str.length(); i < strLen; i++) {
                 final char ch = str.charAt(i);
                 if (ch != ' ' && ch != '\r' && ch != '\n' && ch != '\t') {
@@ -110,7 +112,7 @@ public final class FontUtil {
     public static String guessStyle(String fontName) {
         if (fontName != null) {
             for (String word : ITALIC_WORDS) {
-                if (fontName.indexOf(word) != -1) {
+                if (fontName.contains(word)) {
                     return Font.STYLE_ITALIC;
                 }
             }
@@ -125,39 +127,21 @@ public final class FontUtil {
      */
     public static int guessWeight(String fontName) {
         // weight
-        int weight = Font.WEIGHT_NORMAL;
+        int weight = Arrays.stream(BOLD_WORDS).anyMatch(word -> fontName.contains(word)) ? Font.WEIGHT_BOLD : Font.WEIGHT_NORMAL;
 
-        for (String word : BOLD_WORDS) {
-            if (fontName.indexOf(word) != -1) {
-                weight = Font.WEIGHT_BOLD;
-                break;
-            }
-        }
-        for (String word : MEDIUM_WORDS) {
-            if (fontName.indexOf(word) != -1) {
-                weight = Font.WEIGHT_NORMAL + 100; //500
-                break;
-            }
+        if (Arrays.stream(MEDIUM_WORDS).anyMatch(word -> fontName.contains(word))) {
+            weight = Font.WEIGHT_NORMAL + 100; //500
         }
         //Search for "semi/demi" before "light", but after "bold"
         //(normally semi/demi-bold is meant, but it can also be semi/demi-light)
-        for (String word : DEMI_WORDS) {
-            if (fontName.indexOf(word) != -1) {
-                weight = Font.WEIGHT_BOLD - 100; //600
-                break;
-            }
+        if (Arrays.stream(DEMI_WORDS).anyMatch(word -> fontName.contains(word))) {
+            weight = Font.WEIGHT_BOLD - 100; //600
         }
-        for (String word : EXTRA_BOLD_WORDS) {
-            if (fontName.indexOf(word) != -1) {
-                weight = Font.WEIGHT_EXTRA_BOLD;
-                break;
-            }
+        if (Arrays.stream(EXTRA_BOLD_WORDS).anyMatch(word -> fontName.contains(word))) {
+            weight = Font.WEIGHT_EXTRA_BOLD;
         }
-        for (String word : LIGHT_WORDS) {
-            if (fontName.indexOf(word) != -1) {
-                weight = Font.WEIGHT_LIGHT;
-                break;
-            }
+        if (Arrays.stream(LIGHT_WORDS).anyMatch(word -> fontName.contains(word))) {
+            weight = Font.WEIGHT_LIGHT;
         }
         return weight;
     }

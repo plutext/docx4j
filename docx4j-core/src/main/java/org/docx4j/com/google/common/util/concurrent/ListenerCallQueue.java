@@ -118,9 +118,9 @@ final class ListenerCallQueue<L> {
    */
   public void dispatch() {
     // iterate by index to avoid concurrent modification exceptions
-    for (int i = 0; i < listeners.size(); i++) {
-      listeners.get(i).dispatch();
-    }
+      for (PerListenerQueue<L> listener : listeners) {
+          listener.dispatch();
+      }
   }
 
   /**
@@ -209,7 +209,7 @@ final class ListenerCallQueue<L> {
             // Log it and keep going.
             logger.log(
                 Level.SEVERE,
-                "Exception while executing callback: " + listener + " " + nextLabel,
+                "Exception while executing callback: " + listener + ' ' + nextLabel,
                 e);
           }
         }

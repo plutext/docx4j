@@ -47,7 +47,7 @@ import java.util.List;
  */
 public class CustomXmlDataStoragePartSelector {
 	
-	protected static Logger log = LoggerFactory.getLogger(CustomXmlDataStoragePartSelector.class);
+	protected static final Logger log = LoggerFactory.getLogger(CustomXmlDataStoragePartSelector.class);
 	
 	
 	/**

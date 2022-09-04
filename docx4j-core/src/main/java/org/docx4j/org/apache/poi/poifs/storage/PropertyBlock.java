@@ -26,6 +26,7 @@ package org.docx4j.org.apache.poi.poifs.storage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.docx4j.org.apache.poi.poifs.common.POIFSBigBlockSize;
 import org.docx4j.org.apache.poi.poifs.property.Property;
@@ -96,14 +97,9 @@ public final class PropertyBlock extends BigBlock {
                 }
             };
         }
-        BlockWritable[] rvalue = new BlockWritable[ block_count ];
 
-        for (int j = 0; j < block_count; j++)
-        {
-            rvalue[ j ] = new PropertyBlock(bigBlockSize, to_be_written,
-                                            j * _properties_per_block);
-        }
-        return rvalue;
+        return IntStream.range(0, block_count).mapToObj(j -> new PropertyBlock(bigBlockSize, to_be_written,
+                j * _properties_per_block)).toArray(BlockWritable[]::new);
     }
 
     /* ********** START extension of BigBlock ********** */

@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class Patcher {
 
-	private static Logger log = LoggerFactory.getLogger(Patcher.class);
+	private static final Logger log = LoggerFactory.getLogger(Patcher.class);
 	
 	
 	public static void apply(WordprocessingMLPackage otherPackage, 
@@ -73,7 +73,7 @@ public class Patcher {
 			
 			// It might have already been deleted as a consequence
 			// of recursive deletion...
-			if (removedParts.contains(xmlpart.getName())) continue;
+			if (removedParts.contains(xmlpart.getName())) continue; // TODO list of PartName can't contain Strings
 						
 			
 			// Design decision: how to find owning rels part?

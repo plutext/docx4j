@@ -53,7 +53,7 @@ public class BookmarkRenumber {
             
              */
 	
-	protected static Logger log = LoggerFactory.getLogger(BookmarkRenumber.class);	
+	protected static final Logger log = LoggerFactory.getLogger(BookmarkRenumber.class);
 	
 	private BookmarkRenumber() {}
 	
@@ -121,13 +121,7 @@ public class BookmarkRenumber {
 						theList = ((ContentAccessor)(bm.getParent())).getContent();
 					}
 					
-					Object deleteMe = null;
-					for (Object ox : theList) {
-						if (XmlUtils.unwrap(ox).equals(bm)) {
-							deleteMe = ox;
-							break;
-						}
-					}
+					Object deleteMe = theList.stream().filter(ox -> XmlUtils.unwrap(ox).equals(bm)).findFirst().orElse(null);
 					if (deleteMe!=null) {
 						theList.remove(deleteMe);						
 					}
@@ -157,13 +151,7 @@ public class BookmarkRenumber {
 									theList = ((ContentAccessor)(mr.getParent())).getContent();
 								}
 								
-								Object deleteMe = null;
-								for (Object ox : theList) {
-									if (XmlUtils.unwrap(ox).equals(mr)) {
-										deleteMe = ox;
-										break;
-									}
-								}
+								Object deleteMe = theList.stream().filter(ox -> XmlUtils.unwrap(ox).equals(mr)).findFirst().orElse(null);
 								if (deleteMe!=null) {
 									theList.remove(deleteMe);
 								}
@@ -246,13 +234,13 @@ public class BookmarkRenumber {
 //					} 
 					
 					String oldName = ((CTBookmark)o).getName();
-					String newName = oldName + "_" + instanceNumber ; // can't start with a number
+					String newName = oldName + '_' + instanceNumber ; // can't start with a number
 					((CTBookmark)o).setName(newName);
 					for (Object ref : rt.refs) {
 						Text fieldInstr = (Text)ref;
 						String fieldVal = fieldInstr.getValue();
 						if (fieldVal.contains("REF ")
-								&& fieldVal.contains(" " + oldName + " ") ) {
+								&& fieldVal.contains(' ' + oldName + ' ') ) {
 							fieldInstr.setValue(fieldVal.replace(oldName, newName));
 						}
 					}
@@ -486,13 +474,13 @@ public class BookmarkRenumber {
         	// doesn't find inherited methods, and for bookmarks,
         	// its inherited
         	Method[] methods = o.getClass().getMethods();
-        	
-        	for (int i=0; i<methods.length; i++) {
-        		
-        		if (methods[i].getName().equals("getId")) {
-        			return methods[i];
-        		}
-        	}
+
+			for (Method method : methods) {
+
+				if (method.getName().equals("getId")) {
+					return method;
+				}
+			}
         	log.error("Couldn't find getId for " + o.getClass().getName() );
         	//(new Throwable()).printStackTrace();
         	return null;
@@ -501,13 +489,13 @@ public class BookmarkRenumber {
         private Method findSetIdMethod(Object o) throws Exception {
         	
         	Method[] methods = o.getClass().getMethods();
-        	
-        	for (int i=0; i<methods.length; i++) {
-        		
-        		if (methods[i].getName().equals("setId")) {
-        			return methods[i];
-        		}
-        	}
+
+			for (Method method : methods) {
+
+				if (method.getName().equals("setId")) {
+					return method;
+				}
+			}
         	log.error("Couldn't find setId for " + o.getClass().getName() );
         	return null;
         }

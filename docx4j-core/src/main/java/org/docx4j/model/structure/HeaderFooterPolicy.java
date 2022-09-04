@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class HeaderFooterPolicy {
 
-	protected static Logger log = LoggerFactory.getLogger(HeaderFooterPolicy.class);	
+	protected static final Logger log = LoggerFactory.getLogger(HeaderFooterPolicy.class);
 	
 	private HeaderPart firstHeaderActive;
 	private HeaderPart firstHeader;  // Need this so it can be copied in next section, even if not used in this one

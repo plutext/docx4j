@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.docx4j.org.apache.poi.hpsf.ClassID;
 
@@ -122,13 +123,7 @@ public class FilteringDirectoryNode implements DirectoryEntry
    }
    
    public Set<String> getEntryNames() {
-       Set<String> names = new HashSet<String>();
-       for (String name : directory.getEntryNames()) {
-           if (!excludes.contains(name)) {
-               names.add(name);
-           }
-       }
-       return names;
+      return directory.getEntryNames().stream().filter(name -> !excludes.contains(name)).collect(Collectors.toSet());
    }
 
    public boolean isEmpty() {

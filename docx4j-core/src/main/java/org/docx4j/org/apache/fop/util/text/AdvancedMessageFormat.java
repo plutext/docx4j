@@ -172,7 +172,7 @@ public class AdvancedMessageFormat {
         String[] parts = COMMA_SEPARATOR_REGEX.split(field, 3);
         String fieldName = parts[0];
         if (parts.length == 1) {
-            if (fieldName.startsWith("#")) {
+            if (!fieldName.isEmpty() && fieldName.charAt(0) == '#') {
                 return new FunctionPart(fieldName.substring(1));
             } else {
                 return new SimpleFieldPart(fieldName);
@@ -344,7 +344,7 @@ public class AdvancedMessageFormat {
 
         /** {@inheritDoc} */
         public String toString() {
-            return "{" + this.fieldName + "}";
+            return '{' + this.fieldName + '}';
         }
     }
 
@@ -397,7 +397,7 @@ public class AdvancedMessageFormat {
 
         /** {@inheritDoc} */
         public String toString() {
-            return "{#" + this.function.getName() + "}";
+            return "{#" + this.function.getName() + '}';
         }
     }
 
@@ -441,12 +441,7 @@ public class AdvancedMessageFormat {
 
         public void write(StringBuffer sb, Map<String, Object> params) {
             if (hasSections) {
-                for (Part part : this.parts) {
-                    if (part.isGenerated(params)) {
-                        part.write(sb, params);
-                        break;
-                    }
-                }
+                this.parts.stream().filter(part -> part.isGenerated(params)).findFirst().ifPresent(part -> part.write(sb, params));
             } else {
                 if (isGenerated(params)) {
                     for (Part part : this.parts) {
@@ -458,19 +453,10 @@ public class AdvancedMessageFormat {
 
         public boolean isGenerated(Map<String, Object> params) {
             if (hasSections) {
-                for (Part part : this.parts) {
-                    if (part.isGenerated(params)) {
-                        return true;
-                    }
-                }
-                return false;
+                return this.parts.stream().anyMatch(part -> part.isGenerated(params));
             } else {
                 if (conditional) {
-                    for (Part part : this.parts) {
-                        if (!part.isGenerated(params)) {
-                            return false;
-                        }
-                    }
+                    return this.parts.stream().allMatch(part -> part.isGenerated(params));
                 }
                 return true;
             }

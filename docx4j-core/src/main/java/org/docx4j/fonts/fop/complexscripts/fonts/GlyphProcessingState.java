@@ -216,7 +216,7 @@ public class GlyphProcessingState {
      * @param gi glyph index that may be used to determine which match set applies
      * @return class match set (zero may indicate unset or no set)
      */
-    public int getClassMatchSet(int gi) {
+    public static int getClassMatchSet(int gi) {
         return 0;
     }
 
@@ -506,7 +506,7 @@ public class GlyphProcessingState {
         if (glyphs == null) {
             glyphs = new int [ count ];
         } else if (glyphs.length != count) {
-            throw new IllegalArgumentException("glyphs array is non-null, but its length (" + glyphs.length + "), is not equal to count (" + count + ")");
+            throw new IllegalArgumentException("glyphs array is non-null, but its length (" + glyphs.length + "), is not equal to count (" + count + ')');
         }
         if (!reverseOrder) {
             return getGlyphsForward(start, count, ignoreTester, glyphs, counts);
@@ -778,7 +778,7 @@ public class GlyphProcessingState {
         if (associations == null) {
             associations = new CharAssociation [ count ];
         } else if (associations.length != count) {
-            throw new IllegalArgumentException("associations array is non-null, but its length (" + associations.length + "), is not equal to count (" + count + ")");
+            throw new IllegalArgumentException("associations array is non-null, but its length (" + associations.length + "), is not equal to count (" + count + ')');
         }
         if (!reverseOrder) {
             return getAssociationsForward(start, count, ignoreTester, associations, counts);
@@ -936,7 +936,7 @@ public class GlyphProcessingState {
             gb.put(gs.getGlyph(i));
             al.add(gs.getAssociation(i));
         }
-        for (int i = position + count, n = nig; i < n; i++) {
+        for (int i = position + count; i < nig; i++) {
             gb.put(igs.getGlyph(i));
             al.add(igs.getAssociation(i));
         }
@@ -1152,7 +1152,7 @@ public class GlyphProcessingState {
      * @param ngt number of glyph testers present in specified array
      * @return a combined OR glyph tester
      */
-    public GlyphTester getCombinedOrTester(GlyphTester[] gta, int ngt) {
+    public static GlyphTester getCombinedOrTester(GlyphTester[] gta, int ngt) {
         if (ngt > 0) {
             return new CombinedOrGlyphTester(gta, ngt);
         } else {
@@ -1166,7 +1166,7 @@ public class GlyphProcessingState {
      * @param ngt number of glyph testers present in specified array
      * @return a combined AND glyph tester
      */
-    public GlyphTester getCombinedAndTester(GlyphTester[] gta, int ngt) {
+    public static GlyphTester getCombinedAndTester(GlyphTester[] gta, int ngt) {
         if (ngt > 0) {
             return new CombinedAndGlyphTester(gta, ngt);
         } else {

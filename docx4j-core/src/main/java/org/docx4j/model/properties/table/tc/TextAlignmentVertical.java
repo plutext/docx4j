@@ -57,11 +57,11 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 		
 		CTVerticalJc textAlignment = Context.getWmlObjectFactory().createCTVerticalJc();
 		
-		if (value.getCssText().toLowerCase().equals("top")) {
+		if (value.getCssText().equalsIgnoreCase("top")) {
 			textAlignment.setVal(STVerticalJc.TOP);
-		} else if (value.getCssText().toLowerCase().equals("middle")) {
+		} else if (value.getCssText().equalsIgnoreCase("middle")) {
 			textAlignment.setVal(STVerticalJc.CENTER);
-		} else if (value.getCssText().toLowerCase().equals("bottom")) {
+		} else if (value.getCssText().equalsIgnoreCase("bottom")) {
 			textAlignment.setVal(STVerticalJc.BOTTOM);
 		} else {
 			log.warn("How to handle vertical-align: " + value.getCssText()); // eg baseline

@@ -50,10 +50,10 @@ public class DOMNamespaceContext implements NamespaceContext {
     }
 
     public String getPrefix(String arg0) {
-        for (String key : namespaceMap.keySet()) {
-            String value = namespaceMap.get(key);
+        for (Map.Entry<String, String> entry : namespaceMap.entrySet()) {
+            String value = entry.getValue();
             if (value.equals(arg0)) {
-                return key;
+                return entry.getKey();
             }
         }
         return null;

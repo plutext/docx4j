@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FontAdder {
 	
-	protected static Logger log = LoggerFactory.getLogger(FontAdder.class);
+	protected static final Logger log = LoggerFactory.getLogger(FontAdder.class);
 	
     private final FontEventListener listener;
     private final InternalResourceResolver resourceResolver;
@@ -73,9 +73,9 @@ public class FontAdder {
             EmbedFontInfo[] embedFontInfos = finder.find(fontURL.toURI(), resourceResolver, cache);
             if (embedFontInfos == null) {
     			if (finder.log.isDebugEnabled()) {
-    				log.warn("Aborting: " + fontURL.toString() );				
+    				log.warn("Aborting: " + fontURL);
     			} else {
-    				log.warn("Aborting: " + fontURL.toString() +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
+    				log.warn("Aborting: " + fontURL +  " (to investigate, set org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder to DEBUG)");
     			}
                 continue;
             }

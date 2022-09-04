@@ -62,7 +62,7 @@ import org.docx4j.utils.ResourceUtils;
  */
 public class FopConfigUtil {
 	
-	protected static Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
+	protected static final Logger log = LoggerFactory.getLogger(FopConfigUtil.class);
 	
 	private static Substitutions substitutions=null;
 	

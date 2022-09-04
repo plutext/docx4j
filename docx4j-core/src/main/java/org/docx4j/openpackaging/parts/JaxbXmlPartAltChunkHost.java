@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E> implements AltChunkInterface {
 	
-	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPartAltChunkHost.class);
+	protected static final Logger log = LoggerFactory.getLogger(JaxbXmlPartAltChunkHost.class);
 
 	public JaxbXmlPartAltChunkHost(PartName partName)
 			throws InvalidFormatException {
@@ -331,14 +331,14 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 				//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
 				Method[] methods = documentBuilder.getMethods(); 
 				Method method = null;
-				for (int j=0; j<methods.length; j++) {
-					//log.debug(methods[j].getName());
-					if (methods[j].getName().equals("process")
-							&& methods[j].getParameterTypes().length==1) {
-						method = methods[j];
-						break;
-					}
-				}			
+                for (Method value : methods) {
+                    //log.debug(methods[j].getName());
+                    if (value.getName().equals("process")
+                            && value.getParameterTypes().length == 1) {
+                        method = value;
+                        break;
+                    }
+                }
 				if (method==null) {
 					// User doesn't have MergeDocx
 					throw new NoSuchMethodException();
@@ -376,8 +376,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		}
 	}
 	
-	private void extensionMissing(Exception e) {
-		log.warn("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+	private static void extensionMissing(Exception e) {
+		log.warn('\n' + e.getClass().getName() + ": " + e.getMessage() + '\n');
 		log.warn("* Skipping altChunk of type docx ");
 		log.warn("* You don't appear to have the MergeDocx extension,");
 		log.warn("* which is necessary to merge docx, or process altChunk.");
@@ -385,7 +385,7 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		log.warn("* Please email sales@plutext.com or visit www.plutext.com if you want to try it.");
 	}
 	
-	private String toString(ByteBuffer bb) throws UnsupportedEncodingException {
+	private static String toString(ByteBuffer bb) throws UnsupportedEncodingException {
 
 		byte[] bytes = null;
         bytes = new byte[bb.limit()];

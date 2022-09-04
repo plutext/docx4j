@@ -55,6 +55,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
@@ -145,8 +146,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @since 3.2.0, at which time related constructor was made private
 	 */
 	public static RelationshipsPart createPackageRels() throws InvalidFormatException {
-		RelationshipsPart rp = new RelationshipsPart(new PartName("/_rels/.rels"));
-		return rp;
+		return new RelationshipsPart(new PartName("/_rels/.rels"));
 	}
 	private RelationshipsPart(PartName partname) throws InvalidFormatException {
 		super(partname);
@@ -268,14 +268,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @return The package relationship identified by the specified id.
 	 */
 	public Relationship getRelationshipByID(String id) {
-		
-		for ( Relationship r : jaxbElement.getRelationship()  ) {
-			
-			if (r.getId().equals(id) ) {
-				return r;
-			}			
-		}		
-		return null;
+
+		return jaxbElement.getRelationship().stream().filter(r -> r.getId().equals(id)).findFirst().orElse(null);
 	}
 
 	/**
@@ -285,14 +279,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @return
 	 */
 	public Relationship getRelationshipByType(String type) {
-		
-		for ( Relationship r : jaxbElement.getRelationship()  ) {
-			
-			if (r.getType().equals(type) ) {
-				return r;
-			}			
-		}		
-		return null;
+
+		return jaxbElement.getRelationship().stream().filter(r -> r.getType().equals(type)).findFirst().orElse(null);
 	}
 
 	/**
@@ -301,16 +289,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @since 3.3.0
 	 */
 	public List<Relationship> getRelationshipsByType(String type) {
-		
-		List<Relationship> rels = new ArrayList<Relationship>();
-		
-		for ( Relationship r : jaxbElement.getRelationship()  ) {
-			
-			if (r.getType().equals(type) ) {
-				rels.add(r);
-			}			
-		}		
-		return rels;
+
+		return jaxbElement.getRelationship().stream().filter(r -> r.getType().equals(type)).collect(Collectors.toList());
 	}
 	
 
@@ -517,11 +497,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 				String proposedName = part.getPartName().getName();
 				log.debug("Detected duplicate partname: " + proposedName );
-				if (proposedName.indexOf(".")>0) {
+				if (proposedName.indexOf('.')>0) {
 					// TODO: strip trailing numerals off prefix
 					// eg footer1 should become footer
-					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf(".")), 
-							"." + part.getPartName().getExtension(), 
+					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf('.')),
+							'.' + part.getPartName().getExtension(),
 							this.getPackage().getParts().getParts() );				
 				} else {
 					newPartName = getNewPartName( proposedName, 
@@ -555,7 +535,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				tobeRelativized).toString(); 
 		
 		if (relativizeAgainst.getPath().equals("/")
-				&& target.startsWith("/")) {
+				&& !target.isEmpty() && target.charAt(0) == '/') {
 			
 			/*
 			 * Relativising target /word/document.xml against source / 
@@ -720,10 +700,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		List<PartName> removedParts = new ArrayList<PartName>();
 		
 		// Make a list in order to avoid concurrent modification exception
-		java.util.ArrayList<Relationship> relationshipsToGo = new java.util.ArrayList<Relationship>();
-		for (Relationship r : jaxbElement.getRelationship() ) {
-			relationshipsToGo.add(r);
-		}
+		ArrayList<Relationship> relationshipsToGo = new ArrayList<Relationship>(jaxbElement.getRelationship());
 
 		for (Relationship r : relationshipsToGo ) {
 			
@@ -809,24 +786,13 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 */
 	public Relationship getRel(PartName partName) { // introduced after 2.6.0
 
-		
-		for (Relationship rel : jaxbElement.getRelationship() ) {
-			
-			if (rel.getTargetMode() !=null && rel.getTargetMode().equals("External")) {
-				// This method can't be used to get external relationships
-				continue;
-			}
-				
-			// TODO 20110902: it would be more efficient to relativise the partName
-			// just once, and compare using that (see addPart, which
-			// works this way).
-			
-			if (isTarget(partName, rel) ) {
-				return rel;
-			}
-		}
-		return null;		
-	}	
+
+		// This method can't be used to get external relationships
+		// TODO 20110902: it would be more efficient to relativise the partName
+		// just once, and compare using that (see addPart, which
+		// works this way).
+		return jaxbElement.getRelationship().stream().filter(rel -> rel.getTargetMode() == null || !rel.getTargetMode().equals("External")).filter(rel -> isTarget(partName, rel)).findFirst().orElse(null);
+	}
 	
 	/**
 	 * Is partName the target of the specified rel?
@@ -877,7 +843,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		if (jaxbElement.getRelationship().remove(rel)) {
 			// removed ok
 		} else {
-			log.warn("Couldn't find rel " + rel.getId() + " " + rel.getTarget());
+			log.warn("Couldn't find rel " + rel.getId() + ' ' + rel.getTarget());
 		}
 
 	}
@@ -924,12 +890,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 */
 	public void removeRelationshipsByType(String type) {
 		
-		List<Relationship> relsToClear = new ArrayList<Relationship>();
-		for (Relationship r : this.getRelationships().getRelationship()) {
-			if (r.getType().equals(type)) {
-				relsToClear.add(r);
-			}
-		}
+		List<Relationship> relsToClear = this.getRelationships().getRelationship().stream().filter(r -> r.getType().equals(type)).collect(Collectors.toList());
 		for (Relationship r : relsToClear) {
 			this.getRelationships().getRelationship().remove(r);
 		}	
@@ -979,7 +940,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		resetIdAllocator();
 		
 		// @since 8.1.0, so we can get from a Rel to source part.
-		if (this instanceof RelationshipsPart) {
+		if (this instanceof RelationshipsPart) { // condition is always true
 			((Relationships)jaxbElement).setParent(this); 			
 		}
 		    	
@@ -1007,7 +968,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		resetIdAllocator();
 		
 		// @since 8.1.0, so we can get from a Rel to source part.
-		if (this instanceof RelationshipsPart) {
+		if (this instanceof RelationshipsPart) { // condition is always true
 			((Relationships)jaxbElement).setParent(this); 			
 		}
 		
@@ -1052,15 +1013,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
      * @param otherRP the other RelationshipsPart
      */
     public List<Relationship> uniqueToOther(RelationshipsPart otherRP) {
-    	
-    	List<Relationship> results = new ArrayList<Relationship>();
-    	    	
-		for ( Relationship r : otherRP.jaxbElement.getRelationship()  ) {
-			if (getRelationshipByTarget(this, r.getTarget())==null ) {
-				results.add(r);
-			}			
-		}		
-    	return results;
+
+		return otherRP.jaxbElement.getRelationship().stream().filter(r -> getRelationshipByTarget(this, r.getTarget()) == null).collect(Collectors.toList());
     }
     
     /**
@@ -1108,13 +1062,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
     }    
     
 	public static Relationship getRelationshipByTarget(RelationshipsPart rp, String relativeTarget) {
-		
-		for ( Relationship r : rp.jaxbElement.getRelationship()  ) {			
-			if (r.getTarget().equals(relativeTarget) ) {
-				return r;
-			}			
-		}		
-		return null;
+
+		return rp.jaxbElement.getRelationship().stream().filter(r -> r.getTarget().equals(relativeTarget)).findFirst().orElse(null);
 	}
 	
 	/**

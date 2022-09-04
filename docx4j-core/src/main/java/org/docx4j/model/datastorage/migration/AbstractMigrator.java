@@ -76,7 +76,7 @@ public class AbstractMigrator {
 		org.docx4j.customXmlProperties.ObjectFactory of = new org.docx4j.customXmlProperties.ObjectFactory();
 
 		DatastoreItem dsi = of.createDatastoreItem();
-		String newItemId = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
+		String newItemId = '{' + UUID.randomUUID().toString().toUpperCase() + '}';
 		dsi.setItemID(newItemId);
 		
 		if (ns!=null) {

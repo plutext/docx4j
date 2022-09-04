@@ -32,6 +32,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * dump data in hexadecimal format; derived from a HexDump utility I
@@ -92,7 +94,7 @@ public class HexDump {
         }
 
         long         display_offset = offset + index;
-        StringBuffer buffer         = new StringBuffer(74);
+        StringBuilder buffer         = new StringBuilder(74);
 
 
         int data_length = Math.min(data.length,index+length);
@@ -178,7 +180,7 @@ public class HexDump {
 
     public static String dump(final byte [] data, final long offset,
                             final int index) {
-        StringBuffer buffer;
+        StringBuilder buffer;
         if ((index < 0) || (index >= data.length))
         {
             throw new ArrayIndexOutOfBoundsException(
@@ -186,7 +188,7 @@ public class HexDump {
                 + data.length);
         }
         long         display_offset = offset + index;
-        buffer         = new StringBuffer(74);
+        buffer         = new StringBuilder(74);
 
         for (int j = index; j < data.length; j += 16)
         {
@@ -229,7 +231,7 @@ public class HexDump {
 
     private static String dump(final long value)
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.setLength(0);
         for (int j = 0; j < 8; j++)
         {
@@ -240,7 +242,7 @@ public class HexDump {
 
     private static String dump(final byte value)
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.setLength(0);
         for (int j = 0; j < 2; j++)
         {
@@ -257,17 +259,7 @@ public class HexDump {
      */
     public static String toHex(final byte[] value)
     {
-        StringBuffer retVal = new StringBuffer();
-        retVal.append('[');
-        for(int x = 0; x < value.length; x++)
-        {
-            if (x>0) {
-                retVal.append(", ");
-            }
-            retVal.append(toHex(value[x]));
-        }
-        retVal.append(']');
-        return retVal.toString();
+        return IntStream.range(0, value.length).mapToObj(x -> toHex(value[x])).collect(Collectors.joining(", ", "[", "]"));
     }
 
     /**
@@ -278,17 +270,7 @@ public class HexDump {
      */
     public static String toHex(final short[] value)
     {
-        StringBuffer retVal = new StringBuffer();
-        retVal.append('[');
-        for(int x = 0; x < value.length; x++)
-        {
-            if (x>0) {
-                retVal.append(", ");
-            }
-            retVal.append(toHex(value[x]));
-        }
-        retVal.append(']');
-        return retVal.toString();
+        return IntStream.range(0, value.length).mapToObj(x -> toHex(value[x])).collect(Collectors.joining(", ", "[", "]"));
     }
 
     /**
@@ -304,12 +286,9 @@ public class HexDump {
     {
         final int digits =
             (int) Math.round(Math.log(value.length) / Math.log(10) + 0.5);
-        final StringBuffer formatString = new StringBuffer();
-        for (int i = 0; i < digits; i++)
-            formatString.append('0');
-        formatString.append(": ");
-        final DecimalFormat format = new DecimalFormat(formatString.toString());
-        StringBuffer retVal = new StringBuffer();
+        final String formatString = IntStream.range(0, digits).mapToObj(i -> "0").collect(Collectors.joining("", "", ": "));
+        final DecimalFormat format = new DecimalFormat(formatString);
+        StringBuilder retVal = new StringBuilder();
         retVal.append(format.format(0));
         int i = -1;
         for(int x = 0; x < value.length; x++)
@@ -374,12 +353,7 @@ public class HexDump {
 
     private static String toHex(final long value, final int digits)
     {
-        StringBuffer result = new StringBuffer(digits);
-        for (int j = 0; j < digits; j++)
-        {
-            result.append( _hexcodes[ (int) ((value >> _shifts[ j + (16 - digits) ]) & 15)]);
-        }
-        return result.toString();
+        return IntStream.range(0, digits).mapToObj(j -> String.valueOf(_hexcodes[(int) ((value >> _shifts[j + (16 - digits)]) & 15)])).collect(Collectors.joining());
     }
 
     /**
@@ -422,7 +396,7 @@ public class HexDump {
      * @return char array of uppercase hex chars, zero padded and prefixed with '0x'
      */
     private static char[] toHexChars(long pValue, int nBytes) {
-        int charPos = 2 + nBytes*2;
+        int charPos = 2 + (nBytes << 1);
         // The return type is char array because most callers will probably append the value to a
         // StringBuffer, or write it to a Stream / Writer so there is no need to create a String;
         char[] result = new char[charPos];

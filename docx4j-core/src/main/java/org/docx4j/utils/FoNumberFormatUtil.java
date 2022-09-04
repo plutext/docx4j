@@ -57,7 +57,7 @@ public class FoNumberFormatUtil {
         };
 
         int i = 0;
-        StringBuffer romanNumber = new StringBuffer();
+        StringBuilder romanNumber = new StringBuilder();
 
         while (num > 0) {
             while (num >= arabic[i]) {
@@ -71,7 +71,7 @@ public class FoNumberFormatUtil {
 
     private static String makeAlpha(int num) {
         String letters = "abcdefghijklmnopqrstuvwxyz";
-        StringBuffer alphaNumber = new StringBuffer();
+        StringBuilder alphaNumber = new StringBuilder();
 
         int base = 26;
         int rem = 0;

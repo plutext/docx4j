@@ -394,19 +394,19 @@ public class XsltCommonFunctions {
 	// Logging support
 	//=======================================================
 	public static boolean isLoggingEnabled(AbstractConversionContext context) {
-		return context.getLog().isDebugEnabled();
+		return AbstractConversionContext.getLog().isDebugEnabled();
 	}
 
 	public static void logDebug(AbstractConversionContext context, String message) {
-		context.getLog().debug(message);
+		AbstractConversionContext.getLog().debug(message);
 	}	
 	
 	public static void logInfo(AbstractConversionContext context, String message) {
-		context.getLog().info(message);
+		AbstractConversionContext.getLog().info(message);
 	}	
 	
 	public static void logWarn(AbstractConversionContext context, String message) {
-		context.getLog().warn(message);
+		AbstractConversionContext.getLog().warn(message);
 	}
 	
 }

@@ -57,25 +57,25 @@ public class EncryptionInfo {
      * A flag that specifies whether CryptoAPI RC4 or ECMA-376 encryption
      * ECMA-376 is used. It MUST be 1 unless flagExternal is 1. If flagExternal is 1, it MUST be 0.
      */
-    public static BitField flagCryptoAPI = BitFieldFactory.getInstance(0x04);
+    public static final BitField flagCryptoAPI = BitFieldFactory.getInstance(0x04);
 
     /**
      * A value that MUST be 0 if document properties are encrypted.
      * The encryption of document properties is specified in section 2.3.5.4.
      */
-    public static BitField flagDocProps = BitFieldFactory.getInstance(0x08);
+    public static final BitField flagDocProps = BitFieldFactory.getInstance(0x08);
     
     /**
      * A value that MUST be 1 if extensible encryption is used. If this value is 1,
      * the value of every other field in this structure MUST be 0.
      */
-    public static BitField flagExternal = BitFieldFactory.getInstance(0x10);
+    public static final BitField flagExternal = BitFieldFactory.getInstance(0x10);
     
     /**
      * A value that MUST be 1 if the protected content is an ECMA-376 document
      * ECMA-376. If the fAES bit is 1, the fCryptoAPI bit MUST also be 1.
      */
-    public static BitField flagAES = BitFieldFactory.getInstance(0x20);
+    public static final BitField flagAES = BitFieldFactory.getInstance(0x20);
     
     
     /**

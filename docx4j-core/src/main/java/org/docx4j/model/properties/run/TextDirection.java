@@ -49,7 +49,7 @@ public class TextDirection extends AbstractRunProperty {
 	 * This is now handled properly in PDF output
 	 */
 	
-	protected static Logger log = LoggerFactory.getLogger(TextDirection.class);		
+	protected static final Logger log = LoggerFactory.getLogger(TextDirection.class);
 	
 	public final static String CSS_NAME = "direction"; 
 	public final static String FO_NAME  = "direction";  // ?? writing-mode="rl-tb"
@@ -64,7 +64,7 @@ public class TextDirection extends AbstractRunProperty {
 	
 	public TextDirection(CSSValue value) {	
 		
-		if (value.getCssText().toLowerCase().equals("rtl")) {
+		if (value.getCssText().equalsIgnoreCase("rtl")) {
 			this.setObject( Context.getWmlObjectFactory().createBooleanDefaultTrue()  );
 		} else {
 			BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();

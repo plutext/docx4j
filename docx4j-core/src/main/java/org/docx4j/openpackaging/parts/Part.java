@@ -57,7 +57,7 @@ public abstract class Part extends Base {
 	/**
 	 * Logger.
 	 */
-	protected static Logger log = LoggerFactory.getLogger(Part.class);
+	protected static final Logger log = LoggerFactory.getLogger(Part.class);
 
 	
 	protected OpcPackage pack;
@@ -279,7 +279,7 @@ public abstract class Part extends Base {
 					+ " against source " + relativizeAgainst);
 			String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
 			if (relativizeAgainst.getPath().equals("/")
-					&& result.startsWith("/")) {
+					&& !result.isEmpty() && result.charAt(0) == '/') {
 				result = result.substring(1);
 			}
 			log.debug("Result " + result);

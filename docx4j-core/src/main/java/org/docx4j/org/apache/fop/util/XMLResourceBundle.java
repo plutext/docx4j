@@ -136,7 +136,7 @@ public class XMLResourceBundle extends ResourceBundle {
             return bundle;
         }
         throw new MissingResourceException(
-                baseName + " (" + locale + ")", baseName + '_' + locale, null);
+                baseName + " (" + locale + ')', baseName + '_' + locale, null);
     }
 
     static class MissingBundle extends ResourceBundle {
@@ -250,7 +250,7 @@ public class XMLResourceBundle extends ResourceBundle {
                 }
                 country = name.substring(index + 1, nextIndex);
                 if (nextIndex + 1 < name.length()) {
-                    variant = name.substring(nextIndex + 1, name.length());
+                    variant = name.substring(nextIndex + 1);
                 }
             }
         }
@@ -344,7 +344,7 @@ public class XMLResourceBundle extends ResourceBundle {
         private String currentKey;
 
         private boolean isOwnNamespace(String uri) {
-            return ("".equals(uri));
+            return (uri != null && uri.isEmpty());
         }
 
         private QName getParentElementName() {

@@ -59,10 +59,10 @@ public final class UTF32 {
             Integer[] sa = new Integer [ n ];
             int k = 0;
             for (int i = 0; i < n; i++) {
-                int c = (int) s.charAt(i);
+                int c = s.charAt(i);
                 if ((c >= 0xD800) && (c < 0xE000)) {
                     int s1 = c;
-                    int s2 = ((i + 1) < n) ? (int) s.charAt(i + 1) : 0;
+                    int s2 = ((i + 1) < n) ? s.charAt(i + 1) : 0;
                     if (s1 < 0xDC00) {
                         if ((s2 >= 0xDC00) && (s2 < 0xE000)) {
                             c = ((s1 - 0xD800) << 10) + (s2 - 0xDC00) + 65536;
@@ -104,7 +104,7 @@ public final class UTF32 {
      *   e.g., a surrogate or out of range
      */
     public static String fromUTF32(Integer[] sa) throws IllegalArgumentException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int s : sa) {
             if (s < 65535) {
                 if ((s < 0xD800) || (s > 0xDFFF)) {

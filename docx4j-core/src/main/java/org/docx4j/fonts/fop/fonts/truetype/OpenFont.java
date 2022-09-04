@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.IntStream;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -154,7 +155,7 @@ public abstract class OpenFont {
     protected FontFileReader fontFile;
 
     /** Set to true to get even more debug output than with level DEBUG */
-    public static final boolean TRACE_ENABLED = false;
+    //public static final boolean TRACE_ENABLED = false;
 
     private static final String ENCODING = "WinAnsiEncoding";    // Default encoding
 
@@ -553,10 +554,10 @@ public abstract class OpenFont {
                         // may have a range offset
                         if (cmapRangeOffsets[i] != 0 && j != 65535) {
                             int glyphOffset = glyphIdArrayOffset
-                                + ((cmapRangeOffsets[i] / 2)
+                                + (((cmapRangeOffsets[i] / 2)
                                     + (j - cmapStartCounts[i])
                                     + (i)
-                                    - cmapSegCountX2 / 2) * 2;
+                                    - cmapSegCountX2 / 2) << 1);
                             fontFile.seekSet(glyphOffset);
                             glyphIdx = (fontFile.readTTFUShort() + cmapDeltas[i])
                                        & 0xffff;
@@ -1050,7 +1051,6 @@ public abstract class OpenFont {
      * @return String The ItalicAngle
      */
     public String getItalicAngle() {
-        String ia = Short.toString((short)(italicAngle / 0x10000));
 
         // This is the correct italic angle, however only int italic
         // angles are supported at the moment so this is commented out.
@@ -1058,7 +1058,7 @@ public abstract class OpenFont {
          * if ((italicAngle % 0x10000) > 0 )
          * ia=ia+(comma+Short.toString((short)((short)((italicAngle % 0x10000)*1000)/0x10000)));
          */
-        return ia;
+        return Short.toString((short)(italicAngle / 0x10000));
     }
 
     /**
@@ -1079,8 +1079,7 @@ public abstract class OpenFont {
      * @return An array of bounding box values
      */
     public int[] getBBoxRaw() {
-        int[] bbox = {fontBBox1, fontBBox2, fontBBox3, fontBBox4};
-        return bbox;
+        return new int[]{fontBBox1, fontBBox2, fontBBox3, fontBBox4};
     }
 
     /**
@@ -1121,11 +1120,7 @@ public abstract class OpenFont {
      * @return int[] The character widths
      */
     public int[] getWidths() {
-        int[] wx = new int[mtxTab.length];
-        for (int i = 0; i < wx.length; i++) {
-            wx[i] = convertTTFUnit2PDFUnit(mtxTab[i].getWx());
-        }
-        return wx;
+        return Arrays.stream(mtxTab).mapToInt(ofMtxEntry -> convertTTFUnit2PDFUnit(ofMtxEntry.getWx())).toArray();
     }
 
     public Rectangle[] getBoundingBoxes() {
@@ -1151,9 +1146,7 @@ public abstract class OpenFont {
         int[] bbox = new int[4];
         if (glyphIndex < mtxTab.length) {
             int[] bboxInTTFUnits = mtxTab[glyphIndex].getBoundingBox();
-            for (int i = 0; i < 4; i++) {
-                bbox[i] = convertTTFUnit2PDFUnit(bboxInTTFUnits[i]);
-            }
+            bbox = IntStream.range(0, 4).map(i -> convertTTFUnit2PDFUnit(bboxInTTFUnits[i])).toArray();
         }
         return bbox;
     }
@@ -1278,7 +1271,7 @@ public abstract class OpenFont {
      * @throws IOException in case of an I/O problem
      */
     protected void readFontHeader() throws IOException {
-        seekTab(fontFile, OFTableName.HEAD, 2 * 4 + 2 * 4);
+        seekTab(fontFile, OFTableName.HEAD, (2 << 2) + (2 << 2));
         int flags = fontFile.readTTFUShort();
         if (log.isDebugEnabled()) {
             log.debug("flags: " + flags + " - " + Integer.toString(flags, 2));
@@ -1328,7 +1321,7 @@ public abstract class OpenFont {
         hheaAscender = fontFile.readTTFShort();
         hheaDescender = fontFile.readTTFShort();
 
-        fontFile.skip(2 + 2 + 3 * 2 + 8 * 2);
+        fontFile.skip(2 + 2 + (3 << 1) + (8 << 1));
         nhmtx = fontFile.readTTFUShort();
 
         if (log.isDebugEnabled()) {
@@ -1364,7 +1357,7 @@ public abstract class OpenFont {
 
             if (log.isTraceEnabled()) {
                 log.trace("   width[" + i + "] = "
-                          + convertTTFUnit2PDFUnit(mtxTab[i].getWx()) + ";");
+                          + convertTTFUnit2PDFUnit(mtxTab[i].getWx()) + ';');
             }
         }
 
@@ -1392,7 +1385,7 @@ public abstract class OpenFont {
         isFixedPitch = fontFile.readTTFULong();
 
         //Skip memory usage values
-        fontFile.skip(4 * 4);
+        fontFile.skip(4 << 2);
 
         log.debug("PostScript format: 0x" + Integer.toHexString(postFormat));
         switch (postFormat) {
@@ -1491,7 +1484,7 @@ public abstract class OpenFont {
             } else {
                 isEmbeddable = true;
             }
-            fontFile.skip(8 * 2);
+            fontFile.skip(8 << 1);
             strikeoutThickness = fontFile.readTTFShort();
             strikeoutPosition = fontFile.readTTFShort();
             fontFile.skip(2);
@@ -1503,9 +1496,9 @@ public abstract class OpenFont {
 			}
 			this.panose = Panose.makeInstance(panoseArray);
 			
-			fontFile.skip(4 * 4); //unicode ranges
+			fontFile.skip(4 << 2); //unicode ranges
             fontFile.skip(4);
-            fontFile.skip(3 * 2);
+            fontFile.skip(3 << 1);
             int v;
             os2Ascender = fontFile.readTTFShort(); //sTypoAscender
             os2Descender = fontFile.readTTFShort(); //sTypoDescender
@@ -1529,8 +1522,8 @@ public abstract class OpenFont {
             }
 
             //version 1 OS/2 table might end here
-            if (os2Entry.getLength() >= 78 + (2 * 4) + (2 * 2)) {
-                fontFile.skip(2 * 4);
+            if (os2Entry.getLength() >= 78 + (2 << 2) + (2 << 1)) {
+                fontFile.skip(2 << 2);
                 this.os2xHeight = fontFile.readTTFShort(); //sxHeight
                 this.os2CapHeight = fontFile.readTTFShort(); //sCapHeight
                 if (log.isDebugEnabled()) {
@@ -1554,7 +1547,7 @@ public abstract class OpenFont {
             fontFile.seekSet(dirTab.getOffset() + 4 + 4 + 2);
             xHeight = fontFile.readTTFUShort();
             log.debug("xHeight from PCLT: " + formatUnitsForDebug(xHeight));
-            fontFile.skip(2 * 2);
+            fontFile.skip(2 << 1);
             capHeight = fontFile.readTTFUShort();
             log.debug("capHeight from PCLT: " + formatUnitsForDebug(capHeight));
             fontFile.skip(2 + 16 + 8 + 6 + 1 + 1);
@@ -1699,7 +1692,7 @@ public abstract class OpenFont {
         if (dirTab != null) {
             seekTab(fontFile, OFTableName.KERN, 2);
             for (int n = fontFile.readTTFUShort(); n > 0; n--) {
-                fontFile.skip(2 * 2);
+                fontFile.skip(2 << 1);
                 int k = fontFile.readTTFUShort();
                 if (!((k & 1) != 0) || (k & 2) != 0 || (k & 4) != 0) {
                     return;
@@ -1709,7 +1702,7 @@ public abstract class OpenFont {
                 }
 
                 k = fontFile.readTTFUShort();
-                fontFile.skip(3 * 2);
+                fontFile.skip(3 << 1);
                 while (k-- > 0) {
                     int i = fontFile.readTTFUShort();
                     int j = fontFile.readTTFUShort();
@@ -1968,13 +1961,7 @@ public abstract class OpenFont {
      * doesn't matter...
      */
     private Integer[] unicodeToWinAnsi(int unicode) {
-        List<Integer> ret = new ArrayList<Integer>();
-        for (int i = 32; i < Glyphs.WINANSI_ENCODING.length; i++) {
-            if (unicode == Glyphs.WINANSI_ENCODING[i]) {
-                ret.add(i);
-            }
-        }
-        return ret.toArray(new Integer[ret.size()]);
+        return IntStream.range(32, Glyphs.WINANSI_ENCODING.length).filter(i -> unicode == Glyphs.WINANSI_ENCODING[i]).boxed().toArray(Integer[]::new);
     }
 
     /**
@@ -2001,9 +1988,9 @@ public abstract class OpenFont {
         System.out.println("Ascender:    " + convertTTFUnit2PDFUnit(ascender));
         System.out.println("Descender:   " + convertTTFUnit2PDFUnit(descender));
         System.out.println("FontBBox:    [" + convertTTFUnit2PDFUnit(fontBBox1)
-                           + " " + convertTTFUnit2PDFUnit(fontBBox2) + " "
-                           + convertTTFUnit2PDFUnit(fontBBox3) + " "
-                           + convertTTFUnit2PDFUnit(fontBBox4) + "]");
+                           + ' ' + convertTTFUnit2PDFUnit(fontBBox2) + ' '
+                           + convertTTFUnit2PDFUnit(fontBBox3) + ' '
+                           + convertTTFUnit2PDFUnit(fontBBox4) + ']');
     }
 
     private String formatUnitsForDebug(int units) {
@@ -2113,7 +2100,7 @@ public abstract class OpenFont {
             otfFile.printStuff();
 
         } catch (IOException ioe) {
-            System.err.println("Problem reading font: " + ioe.toString());
+            System.err.println("Problem reading font: " + ioe);
             ioe.printStackTrace(System.err);
         } finally {
             IOUtils.closeQuietly(stream);

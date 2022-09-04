@@ -680,7 +680,7 @@ public class PropertySet
      */
     public String toString()
     {
-        final StringBuffer b = new StringBuffer();
+        final StringBuilder b = new StringBuilder();
         final int sectionCount = getSectionCount();
         b.append(getClass().getName());
         b.append('[');

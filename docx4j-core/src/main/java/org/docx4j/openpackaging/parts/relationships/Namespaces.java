@@ -356,7 +356,7 @@ public class Namespaces {
 	public final static String NS_WORD12 = 
 		"http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
-	public final static String W_NAMESPACE_DECLARATION = "xmlns:w=\"" + NS_WORD12 + "\""; 
+	public final static String W_NAMESPACE_DECLARATION = "xmlns:w=\"" + NS_WORD12 + '"';
 		
 	public final static String HYPERLINK  = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";

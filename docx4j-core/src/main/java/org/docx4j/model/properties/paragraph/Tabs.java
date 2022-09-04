@@ -36,7 +36,7 @@ import org.w3c.dom.css.CSSValue;
 public class Tabs extends AbstractParagraphProperty {
 	
 	
-	protected static Logger log = LoggerFactory.getLogger(Tabs.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Tabs.class);
 		
 	
 	

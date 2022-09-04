@@ -51,7 +51,7 @@ import org.docx4j.wml.P;
  */
 public class BookmarkMover {
 	
-	protected static Logger log = LoggerFactory.getLogger(BookmarkMover.class);	
+	protected static final Logger log = LoggerFactory.getLogger(BookmarkMover.class);
 	
 	
 	/** Move bookmarks into a paragraph
@@ -76,34 +76,29 @@ public class BookmarkMover {
 		Object child = null;
 			if ((srcChildren != null) && (!srcChildren.isEmpty())) {
 				destChildren = new ArrayList<Object>(srcChildren.size());
-				for (int c=0; c<srcChildren.size(); c++) {
-					child = srcChildren.get(c);
+				for (Object srcChild : srcChildren) {
+					child = srcChild;
 					if (isBookmarkStart(child)) {
 						if (currentParagraph == null) {
 							appendBookmarksToMove(child);
-						}
-						else {
+						} else {
 							destChildren.add(child);
 						}
-					}
-					else if (isBookmarkEnd(child)) {
+					} else if (isBookmarkEnd(child)) {
 						if (!removeBookmarkEnd(child)) {
 							destChildren.add(child);
 						}
-					}
-					else {
+					} else {
 						destChildren.add(child);
 						if (isParagraph(child)) {
 							try {
-								currentParagraph = (P)child;
+								currentParagraph = (P) child;
 								walkJAXBElements(child);
 								moveBookmarks(child);
-							}
-							finally {
+							} finally {
 								currentParagraph = null;
 							}
-						}
-						else {
+						} else {
 							walkJAXBElements(child);
 						}
 					}

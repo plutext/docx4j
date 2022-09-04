@@ -15,7 +15,7 @@ import java.util.List;
  * @author alberto */
 public class SingleTraversalUtilVisitorCallback extends AbstractTraversalUtilVisitorCallback {
 	
-	protected static Logger log = LoggerFactory.getLogger(SingleTraversalUtilVisitorCallback.class);
+	protected static final Logger log = LoggerFactory.getLogger(SingleTraversalUtilVisitorCallback.class);
 	
 	
 	protected TraversalUtilVisitor visitor = null;

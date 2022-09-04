@@ -27,7 +27,7 @@ package org.docx4j.jaxb;
  */
 public class WmlSchema {
 
-	public static javax.xml.validation.Schema schema;
+	public static javax.xml.validation.Schema schema; // TODO unused?
 	
 	static {
 		
@@ -36,6 +36,9 @@ public class WmlSchema {
 				javax.xml.validation.SchemaFactory.newInstance(
 				      javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
+			// TODO local var schema is unused. OK to remove this line?
+			// Why there is a user specific path in FS?
+			// How it intersects with static var schema?
 			javax.xml.validation.Schema schema = sf.newSchema(new java.io.File("/home/jharrop/workspace200711/docx4j-001/src/main/resources/wml-local-subset.xsd"));			
 		} catch (Exception ex) {
 			ex.printStackTrace();

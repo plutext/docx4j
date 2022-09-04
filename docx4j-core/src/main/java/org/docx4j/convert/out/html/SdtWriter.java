@@ -230,7 +230,7 @@ public class SdtWriter {
 			return emptyFragment();
 		}
 		
-		private DocumentFragment emptyFragment() throws TransformerException {
+		private static DocumentFragment emptyFragment() throws TransformerException {
 			
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			return document.createDocumentFragment();

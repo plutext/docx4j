@@ -181,7 +181,7 @@ public final class URIHelper {
 
 		return partUri.getPath().matches(
 				".*" + RELATIONSHIP_PART_SEGMENT_NAME + ".*"
-						+ RELATIONSHIP_PART_EXTENSION_NAME + "$");
+						+ RELATIONSHIP_PART_EXTENSION_NAME + '$');
 	}
 
 	/**
@@ -206,7 +206,7 @@ public final class URIHelper {
 	 */
 	public static String getFilenameWithoutExtension(URI uri) {
 		String filename = getFilename(uri);
-		int dotIndex = filename.lastIndexOf(".");
+		int dotIndex = filename.lastIndexOf('.');
 		if (dotIndex == -1)
 			return filename;
 		return filename.substring(0, dotIndex);
@@ -218,8 +218,7 @@ public final class URIHelper {
 	public static URI getPath(URI uri) {
 		if (uri != null) {
 			String path = uri.getPath();
-			int len = path.length();
-			int num2 = len;
+			int num2 = path.length();
 			while (--num2 >= 0) {
 				char ch1 = path.charAt(num2);
 				if (ch1 == URIHelper.FORWARD_SLASH_CHAR) {
@@ -317,17 +316,17 @@ public final class URIHelper {
 		}
 
 		// If we didn't have a good match or at least except a first empty element
-		if ((segmentsTheSame == 0 || segmentsTheSame == 1) && 
-				segmentsSource[0].equals("") && segmentsTarget[0].equals("")) {
+		if ((segmentsTheSame == 0 || segmentsTheSame == 1) &&
+				segmentsSource[0].isEmpty() && segmentsTarget[0].isEmpty()) {
 			for (int i = 0; i < segmentsSource.length - 2; i++) {
 				retVal.append("../");
 			}
 			for (int i = 0; i < segmentsTarget.length; i++) {
-				if (segmentsTarget[i].equals(""))
+				if (segmentsTarget[i].isEmpty())
 					continue;
 				retVal.append(segmentsTarget[i]);
 				if (i != segmentsTarget.length - 1)
-					retVal.append("/");
+					retVal.append('/');
 			}
 
 			try {
@@ -341,7 +340,6 @@ public final class URIHelper {
 		// Special case for where the two are the same
 		if (segmentsTheSame == segmentsSource.length
 				&& segmentsTheSame == segmentsTarget.length) {
-			retVal.append("");
 		} else {
 			// Matched for so long, but no more
 
@@ -349,7 +347,7 @@ public final class URIHelper {
 			// the source to get here?
 			// (If it's all the way up, then don't bother!)
 			if (segmentsTheSame == 1) {
-				retVal.append("/");
+				retVal.append('/');
 			} else {
 				for (int j = segmentsTheSame; j < segmentsSource.length - 1; j++) {
 					retVal.append("../");
@@ -360,7 +358,7 @@ public final class URIHelper {
 			for (int j = segmentsTheSame; j < segmentsTarget.length; j++) {
 				if (retVal.length() > 0
 						&& retVal.charAt(retVal.length() - 1) != '/') {
-					retVal.append("/");
+					retVal.append('/');
 				}
 				retVal.append(segmentsTarget[j]);
 			}
@@ -395,7 +393,7 @@ public final class URIHelper {
 			log.error("targetUri was null");
 			throw new IllegalArgumentException("targetUri");			
 		} else if (targetUri.isAbsolute()) {			
-			log.error("targetUri " + targetUri.toString() + " is absolute!");
+			log.error("targetUri " + targetUri + " is absolute!");
 			throw new IllegalArgumentException("targetUri");
 		}
 
@@ -527,7 +525,7 @@ public final class URIHelper {
 	 *         characters.
 	 */
 	public static String decodeURI(URI uri) {
-		StringBuffer retVal = new StringBuffer();
+		StringBuilder retVal = new StringBuilder();
 		String uriStr = uri.toASCIIString();
 		char c;
 		for (int i = 0; i < uriStr.length(); ++i) {

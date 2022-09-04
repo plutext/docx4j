@@ -108,7 +108,7 @@ public class XPathEnhancerParser extends Parser {
         return this;
       }
       public STAttrMap put(String attrName, int value) {
-        super.put(attrName, new Integer(value));
+        super.put(attrName, value);
         return this;
       }
     }
@@ -139,9 +139,8 @@ public class XPathEnhancerParser extends Parser {
       } catch (RecognitionException e) {
         throw new IllegalArgumentException(xpath + " is no valid XPath expression", e);
       }
-      
-      final String enhanced = trs.toString();
-      return enhanced;     
+
+        return trs.toString();
     }
 
     public XPathEnhancerParser(TokenStream input, final int index, final String prefix) {
@@ -225,10 +224,8 @@ public class XPathEnhancerParser extends Parser {
                 alt1=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 1, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 1, 0, input);
             }
             switch (alt1) {
                 case 1 :
@@ -341,10 +338,8 @@ public class XPathEnhancerParser extends Parser {
                 alt2=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 2, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 2, 0, input);
             }
             switch (alt2) {
                 case 1 :
@@ -427,8 +422,7 @@ public class XPathEnhancerParser extends Parser {
             	        state.errorRecovery=false;
             	    }
             	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
+                        throw new MismatchedSetException(null,input);
             	    }
 
             	    pushFollow(FOLLOW_step_in_relativeLocationPath597);
@@ -485,10 +479,8 @@ public class XPathEnhancerParser extends Parser {
                 alt5=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 5, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 5, 0, input);
             }
             switch (alt5) {
                 case 1 :
@@ -589,20 +581,16 @@ public class XPathEnhancerParser extends Parser {
                     alt7=2;
                 }
                 else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 7, 1, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 7, 1, input);
                 }
             }
             else if ( (LA7_0==MUL||LA7_0==AT||LA7_0==NodeType||LA7_0==NCName||LA7_0==37) ) {
                 alt7=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 7, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 7, 0, input);
             }
             switch (alt7) {
                 case 1 :
@@ -686,10 +674,8 @@ public class XPathEnhancerParser extends Parser {
                 }
                 break;
             default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 8, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 8, 0, input);
             }
 
             switch (alt8) {
@@ -798,8 +784,7 @@ public class XPathEnhancerParser extends Parser {
                 state.errorRecovery=false;
             }
             else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
+                throw new MismatchedSetException(null,input);
             }
 
 
@@ -898,10 +883,8 @@ public class XPathEnhancerParser extends Parser {
                 }
                 break;
             default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 9, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 9, 0, input);
             }
 
             switch (alt9) {
@@ -1090,17 +1073,13 @@ public class XPathEnhancerParser extends Parser {
                     alt13=1;
                 }
                 else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 13, 2, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 13, 2, input);
                 }
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 13, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 13, 0, input);
             }
             switch (alt13) {
                 case 1 :
@@ -1227,17 +1206,13 @@ public class XPathEnhancerParser extends Parser {
                             alt15=2;
                         }
                         else {
-                            NoViableAltException nvae =
-                                new NoViableAltException("", 15, 6, input);
 
-                            throw nvae;
+                            throw new NoViableAltException("", 15, 6, input);
                         }
                     }
                     else {
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 15, 5, input);
 
-                        throw nvae;
+                        throw new NoViableAltException("", 15, 5, input);
                     }
                     }
                     break;
@@ -1247,10 +1222,8 @@ public class XPathEnhancerParser extends Parser {
                     }
                     break;
                 default:
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 15, 1, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 15, 1, input);
                 }
 
                 }
@@ -1287,17 +1260,13 @@ public class XPathEnhancerParser extends Parser {
                             alt15=2;
                         }
                         else {
-                            NoViableAltException nvae =
-                                new NoViableAltException("", 15, 6, input);
 
-                            throw nvae;
+                            throw new NoViableAltException("", 15, 6, input);
                         }
                     }
                     else {
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 15, 5, input);
 
-                        throw nvae;
+                        throw new NoViableAltException("", 15, 5, input);
                     }
                     }
                     break;
@@ -1332,10 +1301,8 @@ public class XPathEnhancerParser extends Parser {
                     }
                     break;
                 default:
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 15, 3, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 15, 3, input);
                 }
 
                 }
@@ -1349,10 +1316,8 @@ public class XPathEnhancerParser extends Parser {
                 }
                 break;
             default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 15, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 15, 0, input);
             }
 
             switch (alt15) {
@@ -1656,8 +1621,7 @@ public class XPathEnhancerParser extends Parser {
             	        state.errorRecovery=false;
             	    }
             	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
+                        throw new MismatchedSetException(null,input);
             	    }
 
             	    pushFollow(FOLLOW_relationalExpr_in_equalityExpr992);
@@ -1731,8 +1695,7 @@ public class XPathEnhancerParser extends Parser {
             	        state.errorRecovery=false;
             	    }
             	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
+                        throw new MismatchedSetException(null,input);
             	    }
 
             	    pushFollow(FOLLOW_additiveExpr_in_relationalExpr1072);
@@ -1806,8 +1769,7 @@ public class XPathEnhancerParser extends Parser {
             	        state.errorRecovery=false;
             	    }
             	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        throw mse;
+                        throw new MismatchedSetException(null,input);
             	    }
 
             	    pushFollow(FOLLOW_multiplicativeExpr_in_additiveExpr1132);
@@ -1870,17 +1832,13 @@ public class XPathEnhancerParser extends Parser {
                     alt24=2;
                 }
                 else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 24, 2, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 24, 2, input);
                 }
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 24, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 24, 0, input);
             }
             switch (alt24) {
                 case 1 :
@@ -1907,8 +1865,7 @@ public class XPathEnhancerParser extends Parser {
                                 state.errorRecovery=false;
                             }
                             else {
-                                MismatchedSetException mse = new MismatchedSetException(null,input);
-                                throw mse;
+                                throw new MismatchedSetException(null,input);
                             }
 
                             pushFollow(FOLLOW_multiplicativeExpr_in_multiplicativeExpr1202);
@@ -1945,8 +1902,7 @@ public class XPathEnhancerParser extends Parser {
                                 state.errorRecovery=false;
                             }
                             else {
-                                MismatchedSetException mse = new MismatchedSetException(null,input);
-                                throw mse;
+                                throw new MismatchedSetException(null,input);
                             }
 
                             pushFollow(FOLLOW_multiplicativeExpr_in_multiplicativeExpr1253);
@@ -2208,27 +2164,21 @@ public class XPathEnhancerParser extends Parser {
                         alt27=3;
                     }
                     else {
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 27, 3, input);
 
-                        throw nvae;
+                        throw new NoViableAltException("", 27, 3, input);
                     }
                 }
                 else if ( (LA27_2==EOF||(LA27_2>=PATHSEP && LA27_2<=ABRPATH)||(LA27_2>=RPAR && LA27_2<=PLUS)||LA27_2==MUL||(LA27_2>=COMMA && LA27_2<=GE)||(LA27_2>=38 && LA27_2<=43)) ) {
                     alt27=3;
                 }
                 else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 27, 2, input);
 
-                    throw nvae;
+                    throw new NoViableAltException("", 27, 2, input);
                 }
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 27, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 27, 0, input);
             }
             switch (alt27) {
                 case 1 :
@@ -2298,8 +2248,7 @@ public class XPathEnhancerParser extends Parser {
                 state.errorRecovery=false;
             }
             else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
+                throw new MismatchedSetException(null,input);
             }
 
 

@@ -108,7 +108,7 @@ public class Not implements Evaluable {
 	public String toString(Map<String, Condition> conditionsMap,
 			Map<String, org.opendope.xpaths.Xpaths.Xpath> xpathsMap) {
 		
-		return "not(" + particle.toString(conditionsMap, xpathsMap) + ")";
+		return "not(" + particle.toString(conditionsMap, xpathsMap) + ')';
 	}
     
     /**

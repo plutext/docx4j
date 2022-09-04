@@ -120,7 +120,7 @@ public abstract class AbstractSwitch implements SwitchInterface {
                 try{
                     level = Integer.parseInt(styleLevels[i + 1].trim());
                 } catch(NumberFormatException ex){
-                	log.error("TOC \t switch has invalid doublet containing '" + styleLevels[i + 1] + "'");
+                	log.error("TOC \t switch has invalid doublet containing '" + styleLevels[i + 1] + '\'');
                     //next is probably style too, so just put with level 1
                     styleLevelMap.put(styleLevels[i].trim(), 1);
                     continue;

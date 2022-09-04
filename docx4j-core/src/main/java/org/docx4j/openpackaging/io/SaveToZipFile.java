@@ -22,7 +22,6 @@ package org.docx4j.openpackaging.io;
 
 
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -90,25 +89,30 @@ public class SaveToZipFile {
 	private HashMap<String, String> handled;
 
 	/* Save a Package as a Zip file in the file system */
-	public boolean save(String filepath) throws Docx4JException  {
-		log.info("SAVING to " +  filepath );		
-		try {
-			if (filepath.toLowerCase().endsWith(".xml") ) {
-				return saveFlatOPC(new FileOutputStream(filepath));
-			} else return save(new FileOutputStream(filepath));
-		} catch (FileNotFoundException e) {
+	public boolean save(String filepath) throws Docx4JException {
+		log.info("SAVING to " + filepath);
+		try (FileOutputStream fos = new FileOutputStream(filepath)) {
+			if (filepath.toLowerCase().endsWith(".xml")) {
+				return saveFlatOPC(fos);
+			} else {
+				return save(fos);
+			}
+		} catch (IOException e) {
 			throw new Docx4JException("Failed to save package to path " + filepath, e);
 		}
+
 	}
 
 	/* Save a Package as a Zip file in the file system */
 	public boolean save(java.io.File docxFile) throws Docx4JException  {
 		log.info("Saving to" +  docxFile.getPath() );		
-		try {
+		try (FileOutputStream fos = new FileOutputStream(docxFile)) {
 			if (docxFile.getPath().toLowerCase().endsWith(".xml") ) {
-				return saveFlatOPC(new FileOutputStream(docxFile));
-			} else return save(new FileOutputStream(docxFile));
-		} catch (FileNotFoundException e) {
+				return saveFlatOPC(fos);
+			} else {
+				return save(fos);
+			}
+		} catch (IOException e) {
 			throw new Docx4JException("Failed to save package to path " + docxFile.getPath(), e);
 		}
 	}
@@ -117,7 +121,7 @@ public class SaveToZipFile {
 		
 		try {
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(p);
-			org.docx4j.xmlPackage.Package pkg = worker.get();
+			org.docx4j.xmlPackage.Package pkg = FlatOpcXmlCreator.get();
 			
 			// Now marshall it
 			JAXBContext jc = Context.jcXmlPackage;

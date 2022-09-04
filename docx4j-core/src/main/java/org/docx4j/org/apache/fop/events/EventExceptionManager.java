@@ -69,13 +69,7 @@ public final class EventExceptionManager {
         } else {
             String msg = EventFormatter.format(event);
             //Get original exception as cause if it is given as one of the parameters
-            Throwable t = null;
-            for (Object o : event.getParams().values()) {
-                if (o instanceof Throwable) {
-                    t = (Throwable) o;
-                    break;
-                }
-            }
+            Throwable t = (Throwable) event.getParams().values().stream().filter(o -> o instanceof Throwable).findFirst().orElse(null);
             if (t != null) {
                 throw new RuntimeException(msg, t);
             } else {

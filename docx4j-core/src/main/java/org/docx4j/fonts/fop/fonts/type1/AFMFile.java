@@ -418,7 +418,7 @@ public class AFMFile {
             return null;
         }
         Map<Integer, Map<Integer, Integer>> m
-                    = new java.util.HashMap<Integer, Map<Integer, Integer>>();
+                    = new java.util.HashMap<>();
         for (Map.Entry<String, Map<String, Dimension2D>> entryFrom : this.kerningMap.entrySet()) {
             String name1 = entryFrom.getKey();
             AFMCharMetrics chm1 = getChar(name1);
@@ -435,11 +435,7 @@ public class AFMFile {
                 }
                 if (container == null) {
                     Integer k1 = chm1.getCharCode();
-                    container = m.get(k1);
-                    if (container == null) {
-                        container = new java.util.HashMap<Integer, Integer>();
-                        m.put(k1, container);
-                    }
+                    container = m.computeIfAbsent(k1, k -> new java.util.HashMap<>());
                 }
                 Dimension2D dim = entryTo.getValue();
                 container.put(chm2.getCharCode(),
@@ -467,24 +463,34 @@ public class AFMFile {
                     if (mapped[codePoint] != null) {
                         if (log.isDebugEnabled()) {
                             AFMCharMetrics other = mapped[codePoint];
-                            String msg = "Not mapping character " + nc + " to code point "
-                                + codePoint + " (" + Integer.toHexString(codePoint) + ") in "
-                                + encoding + ". "
-                                + other + " has already been assigned that code point.";
+                            StringBuilder msgBuilder = new StringBuilder();
+                            msgBuilder.append("Not mapping character ")
+                                    .append(nc)
+                                    .append(" to code point ")
+                                    .append(codePoint)
+                                    .append(" (")
+                                    .append(Integer.toHexString(codePoint))
+                                    .append(") in ")
+                                    .append(encoding)
+                                    .append(". ")
+                                    .append(other)
+                                    .append(" has already been assigned that code point.");
                             if (other.getUnicodeSequence()
                                     .equals(nc.getUnicodeSequence())) {
-                                msg += " This is a specialized glyph for the"
-                                    + " same Unicode character.";
+                                msgBuilder.append(" This is a specialized glyph for the")
+                                        .append(" same Unicode character.");
                                 //TODO should these be mapped to a private Unicode area to make
                                 //them accessible?
                             } else {
-                                msg += " This is a similar character.";
+                                msgBuilder.append(" This is a similar character.");
                             }
-                            if (cm.getWidthX() != other.getWidthX()) {
-                                msg += " They have differing widths: "
-                                    + cm.getWidthX() + " vs. " + other.getWidthX();
+                            if (Double.compare(cm.getWidthX(), other.getWidthX()) != 0) {
+                                msgBuilder.append(" They have differing widths: ")
+                                        .append(cm.getWidthX())
+                                        .append(" vs. ")
+                                        .append(other.getWidthX());
                             }
-                            log.debug(msg);
+                            log.debug(msgBuilder.toString());
                         }
                     } else {
                         cm.setCharCode(codePoint);

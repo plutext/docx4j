@@ -19,7 +19,7 @@ public class ClassFinder extends CallbackImpl {
 		public List<Object> apply(Object o) {
 			
 			// Adapt as required
-			if (o.getClass().equals(typeToFind)) {
+			if (o.getClass() == typeToFind) {
 				results.add(o);
 			}
 			return null;

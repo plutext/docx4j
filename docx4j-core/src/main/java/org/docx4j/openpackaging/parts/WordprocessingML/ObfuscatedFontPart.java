@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class ObfuscatedFontPart extends AbstractFontPart {
 
-	private static Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);		
+	private static final Logger log = LoggerFactory.getLogger(ObfuscatedFontPart.class);
 	
 	public ObfuscatedFontPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -112,20 +112,20 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		// Make the font key into a byte array
 		byte[] guidByteArray = new byte[16];
 		for (int i = 0; i < guidByteArray.length; i++) {
-			guidByteArray[i] = fromHexString(guidString.substring(i * 2,
-					(i * 2) + 2));
+			guidByteArray[i] = fromHexString(guidString.substring(i << 1,
+					(i << 1) + 2));
 		}
 		
 		// XOR the reverse of the guidByteArray with 
 		// the first and second 16 bytes 
 		for (int j = 0; j < 2; j++) {
 			for (int i = 0; i < 16; i++) {
-				fontData[(j * 16) + i] ^= guidByteArray[15 - i];  // Reverse happens here
+				fontData[(j << 4) + i] ^= guidByteArray[15 - i];  // Reverse happens here
 			}
 		}
 		
 		// Save the result
-		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
+		setF(new File(getTmpFontDir(), filenamePrefix + '-' +fontFileName +".ttf"));
 		getF().deleteOnExit();
 		String path = null; 
 		
@@ -216,8 +216,8 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	}
 	
 	
-	static java.lang.CharSequence target = (new String("-")).subSequence(0, 1);
-    static java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);
+	static java.lang.CharSequence target = ("-").subSequence(0, 1);
+    static java.lang.CharSequence replacement = ("").subSequence(0, 0);
 	
     protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
     	

@@ -26,10 +26,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.parsers.SAXParser;
@@ -81,7 +78,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TocGenerator {
 	
-	private static Logger log = LoggerFactory.getLogger(TocGenerator.class);	
+	private static final Logger log = LoggerFactory.getLogger(TocGenerator.class);
 
 	private WordprocessingMLPackage wordMLPackage;
 	
@@ -148,7 +145,7 @@ public class TocGenerator {
      * It is an error if a ToC content control is already present; delete it or use updateToc.
      * 
      * To alter the ToC heading, use Toc.setTocHeadingText
-     * 
+     * Iterates infinitely (recursion). Can end up only with an exception.
      * @param body
      * @param index
      * @param instruction
@@ -246,8 +243,8 @@ public class TocGenerator {
     protected SdtBlock generateToc(SdtBlock sdt, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-        Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
-        Body body =  wmlDocumentEl.getBody();
+        //Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
+        //Body body =  wmlDocumentEl.getBody();
         
         SdtContentBlock sdtContent = (SdtContentBlock)sdt.getSdtContent();
         if(sdtContent == null){
@@ -283,8 +280,8 @@ public class TocGenerator {
     protected  SdtBlock generateToc(SdtBlock sdt, List<P> tocHeadingP, String instruction, STTabTlc leader, boolean skipPageNumbering) throws TocException {
     	
         MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-        Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
-        Body body =  wmlDocumentEl.getBody();
+        //Document wmlDocumentEl = (Document)documentPart.getJaxbElement();
+        //Body body =  wmlDocumentEl.getBody();
 
         SdtContentBlock sdtContent = (SdtContentBlock)sdt.getSdtContent();
         if(sdtContent == null){
@@ -360,10 +357,8 @@ public class TocGenerator {
     	} catch (RuntimeException e) {
     		throw new TocException("margins or page width not defined in \n" + XmlUtils.marshaltoString(sectPr));        		
     	}
-        
-        List<TocEntry> tocEntries = new ArrayList<TocEntry>();
 
-        @SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked")
         List<P> pList = (List<P>)(List<?>) TocHelper.getAllElementsFromObject(body, P.class);
         
         // Work out paragraph numbering
@@ -371,8 +366,7 @@ public class TocGenerator {
         
         SwitchProcessor sp = new SwitchProcessor(pageDimensions, leader);
         sp.setStartingIdForNewBookmarks(bookmarkId);
-        tocEntries.addAll(
-        		sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
+		List<TocEntry> tocEntries = new ArrayList<TocEntry>(sp.processSwitches(wordMLPackage, pList, toc.getSwitches(), pNumbersMap));
         
         
         if (tocEntries.size()==0) {
@@ -536,7 +530,7 @@ public class TocGenerator {
         return sdt;
     }
     
-    private STTabTlc getExistingTabLeader(List<Object> contents) {
+    private static STTabTlc getExistingTabLeader(List<Object> contents) {
     	
     	STTabTlc leader = null;
     	
@@ -567,7 +561,6 @@ public class TocGenerator {
     		if (o instanceof P) {
     			P sampleP = (P)o;
     			if (sampleP.getPPr()!=null
-    					&& sampleP.getPPr()!=null
     					&& sampleP.getPPr().getTabs()!=null) {
     				
     				Tabs sampleTabs = sampleP.getPPr().getTabs();
@@ -602,7 +595,7 @@ public class TocGenerator {
      * @return SdtBlock control, or null if no TOC was founds
      */
     @Deprecated
-    public  SdtBlock updateToc(WordprocessingMLPackage wordMLPackage, boolean skipPageNumbering, boolean reuseExistingToCHeadingP) throws TocException{
+    public static SdtBlock updateToc(WordprocessingMLPackage wordMLPackage, boolean skipPageNumbering, boolean reuseExistingToCHeadingP) throws TocException{
     	return (new TocGenerator(wordMLPackage)).updateToc(  skipPageNumbering,  reuseExistingToCHeadingP);
     }
     
@@ -645,7 +638,7 @@ public class TocGenerator {
 			result = bm.check(wordMLPackage.getMainDocumentPart(), remediate);
 		} catch (Exception e) { /* won't happen */}
     	if (result==BookmarksStatus.BROKEN) {
-    		throw new TocException("Encountered broken bookmarks; not configured to remediate. \n" + sw.toString());
+    		throw new TocException("Encountered broken bookmarks; not configured to remediate. \n" + sw);
     	}
     	
     	if (Docx4J.pdfViaFO()) {
@@ -709,7 +702,7 @@ public class TocGenerator {
 			
 		} catch (Exception e) {
 			throw new TocException("Error in toc web service at " 
-						+ documentServicesEndpoint + "\n" + e.getMessage(),e);
+						+ documentServicesEndpoint + '\n' + e.getMessage(),e);
 		}
 		
 
@@ -725,7 +718,7 @@ public class TocGenerator {
 			log.debug("page number map size " + map.size());
 			return map;
 		} catch (Exception e) {
-			throw new TocException("Error reading toc json; \n" + json + "\n"+ e.getMessage(),e);
+			throw new TocException("Error reading toc json; \n" + Arrays.toString(json) + '\n' + e.getMessage(),e);
 		}
 
     }

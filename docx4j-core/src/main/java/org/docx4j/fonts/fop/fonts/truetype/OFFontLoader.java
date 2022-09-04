@@ -162,7 +162,7 @@ public class OFFontLoader extends FontLoader {
         font.setSimulateStyle(simulateStyle);
 
         returnFont.setFontURI(fontFileURI);
-        if (!otf.getEmbedFontName().equals("")) {
+        if (!otf.getEmbedFontName().isEmpty()) {
             returnFont.setFontName(otf.getEmbedFontName());
         } else {
             returnFont.setFontName(otf.getPostScriptName());
@@ -253,7 +253,7 @@ public class OFFontLoader extends FontLoader {
                         int glyphIndex = segment.getGlyphStartIndex() + u - segment.getUnicodeStart();
                         String glyphName = otf.getGlyphName(glyphIndex);
                         if (glyphName.length() == 0 && otf.getPostScriptVersion() != PostScriptVersion.V2) {
-                            glyphName = "u" + HexEncoder.encode(u);
+                            glyphName = 'u' + HexEncoder.encode(u);
                         }
                         if (glyphName.length() > 0) {
                             String unicode = Character.toString(u);

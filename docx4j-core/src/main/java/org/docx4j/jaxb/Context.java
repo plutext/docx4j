@@ -66,7 +66,7 @@ public class Context {
 	/** @since 3.0.1 */
 	public static JAXBContext jcMCE;
 	
-	private static Logger log = LoggerFactory.getLogger(Context.class);
+	private static final Logger log = LoggerFactory.getLogger(Context.class);
 	
 	
 	public static JAXBImplementation jaxbImplementation = null;

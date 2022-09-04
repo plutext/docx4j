@@ -160,15 +160,9 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 	
     
     public Property getProperty(String propName) {
-    	
-		for (org.docx4j.docProps.custom.Properties.Property prop: getJaxbElement().getProperty() ) {
-    	
-			if (prop.getName().equals(propName)) {
-				return prop;
-			}
-		}
-		return null;
-    }
+
+		return getJaxbElement().getProperty().stream().filter(prop -> prop.getName().equals(propName)).findFirst().orElse(null);
+	}
     
     
     public void setProperty(String propName, String propValue) {
@@ -236,14 +230,10 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
      */
     public int getNextPid() {
     	
-    	int highestSeen = 1; // Lowest number Word 2007 seems to like is 2 (!)
+    	int highestSeen; // Lowest number Word 2007 seems to like is 2 (!)
     	
     	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
-		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {			
-			if (prop.getPid()>highestSeen) {
-				highestSeen =prop.getPid();  				
-			}
-		}
+		highestSeen = customProps.getProperty().stream().mapToInt(Property::getPid).filter(prop -> prop >= 1).max().orElse(1);
 		log.debug("Returning " +  highestSeen+1);
 		return highestSeen+1;    	
     }

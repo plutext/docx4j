@@ -75,7 +75,7 @@ public final class DataInputBlock {
 		int b0 = _buf[i++] & 0xFF;
 		int b1 = _buf[i++] & 0xFF;
 		_readIndex = i;
-		return (b1 << 8) + (b0 << 0);
+		return (b1 << 8) + (b0);
 	}
 
 	/**
@@ -85,9 +85,9 @@ public final class DataInputBlock {
 		// simple case - will always be one byte in each block
 		int i = prevBlock._buf.length-1;
 		
-		int b0 = prevBlock._buf[i++] & 0xFF;
+		int b0 = prevBlock._buf[i] & 0xFF;
 		int b1 = _buf[_readIndex++] & 0xFF;
-		return (b1 << 8) + (b0 << 0);
+		return (b1 << 8) + (b0);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public final class DataInputBlock {
 		int b2 = _buf[i++] & 0xFF;
 		int b3 = _buf[i++] & 0xFF;
 		_readIndex = i;
-		return (b3 << 24) + (b2 << 16) + (b1 << 8) + (b0 << 0);
+		return (b3 << 24) + (b2 << 16) + (b1 << 8) + (b0);
 	}
 
 	/**
@@ -115,7 +115,7 @@ public final class DataInputBlock {
 		int b1 = buf[1] & 0xFF;
 		int b2 = buf[2] & 0xFF;
 		int b3 = buf[3] & 0xFF;
-		return (b3 << 24) + (b2 << 16) + (b1 << 8) + (b0 << 0);
+		return (b3 << 24) + (b2 << 16) + (b1 << 8) + (b0);
 	}
 
 	/**
@@ -140,7 +140,7 @@ public final class DataInputBlock {
 				((long)b3 << 24) +
 				(b2 << 16) +
 				(b1 <<  8) +
-				(b0 <<  0));
+				(b0));
 	}
 
 	/**
@@ -166,7 +166,7 @@ public final class DataInputBlock {
 				((long)b3 << 24) +
 				(b2 << 16) +
 				(b1 <<  8) +
-				(b0 <<  0));
+				(b0));
 	}
 
 	/**

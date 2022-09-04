@@ -155,7 +155,7 @@ public class DefaultEventBroadcaster implements EventBroadcaster {
                             throws Throwable {
                         String methodName = method.getName();
                         EventMethodModel methodModel = producerModel.getMethod(methodName);
-                        String eventID = producerModel.getInterfaceName() + "." + methodName;
+                        String eventID = producerModel.getInterfaceName() + '.' + methodName;
                         if (methodModel == null) {
                             throw new IllegalStateException(
                                     "Event model isn't consistent"

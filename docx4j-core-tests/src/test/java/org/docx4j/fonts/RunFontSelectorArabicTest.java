@@ -27,7 +27,7 @@ import org.w3c.dom.Element;
 
 public class RunFontSelectorArabicTest {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger
 	
 	static String[] expectedFont = { "Times New Roman", "Times New Roman" };
 	

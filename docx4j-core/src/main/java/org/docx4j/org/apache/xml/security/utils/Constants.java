@@ -47,7 +47,7 @@ public final class Constants {
 
     /** Field exceptionMessagesResourceBundleBase is the location of the <CODE>ResourceBundle</CODE> */
     public static final String exceptionMessagesResourceBundleBase =
-        exceptionMessagesResourceBundleDir + "/" + "xmlsecurity";
+        exceptionMessagesResourceBundleDir + '/' + "xmlsecurity";
 
     /**
      * The URL of the 

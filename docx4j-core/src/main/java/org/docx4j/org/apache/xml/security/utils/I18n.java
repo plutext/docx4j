@@ -99,7 +99,7 @@ public class I18n {
             if (org.docx4j.org.apache.xml.security.Init.isInitialized()) {
                 return "No message with ID \"" + msgID
                 + "\" found in resource bundle \""
-                + Constants.exceptionMessagesResourceBundleBase + "\"";
+                + Constants.exceptionMessagesResourceBundleBase + '"';
             } 
             return I18n.NOT_INITIALIZED_MSG;
         }
@@ -143,7 +143,7 @@ public class I18n {
             if (org.docx4j.org.apache.xml.security.Init.isInitialized()) {
                 return "No message with ID \"" + msgID
                 + "\" found in resource bundle \""
-                + Constants.exceptionMessagesResourceBundleBase + "\"";
+                + Constants.exceptionMessagesResourceBundleBase + '"';
             } 
             return I18n.NOT_INITIALIZED_MSG;
         }

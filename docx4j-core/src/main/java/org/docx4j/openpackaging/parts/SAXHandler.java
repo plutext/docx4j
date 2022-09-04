@@ -28,7 +28,7 @@ import org.xml.sax.XMLReader;
  */
 public class SAXHandler implements ContentHandler {
 	
-	protected static Logger log = LoggerFactory.getLogger(SAXHandler.class);	
+	protected static final Logger log = LoggerFactory.getLogger(SAXHandler.class);
 	
     static final private TransformerFactory tf = TransformerFactory.newInstance();
     private ContentHandler ch;

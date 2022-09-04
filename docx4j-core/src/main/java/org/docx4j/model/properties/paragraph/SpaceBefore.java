@@ -33,7 +33,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class SpaceBefore extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(SpaceBefore.class);	
+	protected static final Logger log = LoggerFactory.getLogger(SpaceBefore.class);
 	
 	public final static String CSS_NAME = "margin-top";  
 	public final static String FO_NAME  = "space-before"; 

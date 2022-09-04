@@ -74,11 +74,11 @@ public class Type1FontLoader extends FontLoader {
         this.fontUris = fontUris;
     }
 
-    private String getPFMURI(String pfbURI) {
-        String pfbExt = pfbURI.substring(pfbURI.length() - 3, pfbURI.length());
+    private static String getPFMURI(String pfbURI) {
+        String pfbExt = pfbURI.substring(pfbURI.length() - 3);
         String pfmExt = pfbExt.substring(0, 2)
                 + (Character.isUpperCase(pfbExt.charAt(2)) ? "M" : "m");
-        return pfbURI.substring(0, pfbURI.length() - 4) + "." + pfmExt;
+        return pfbURI.substring(0, pfbURI.length() - 4) + '.' + pfmExt;
     }
 
     private static final String[] AFM_EXTENSIONS = new String[] {".AFM", ".afm", ".Afm"};
@@ -219,7 +219,7 @@ public class Type1FontLoader extends FontLoader {
         }
     }
 
-    private Set<String> toGlyphSet(String[] glyphNames) {
+    private static Set<String> toGlyphSet(String[] glyphNames) {
         Set<String> glyphSet = new java.util.HashSet<String>();
         Collections.addAll(glyphSet, glyphNames);
         return glyphSet;
@@ -431,17 +431,13 @@ public class Type1FontLoader extends FontLoader {
         }
     }
 
-    private CodePointMapping buildCustomEncoding(String encodingName, AFMFile afm) {
-        int mappingCount = 0;
+    private static CodePointMapping buildCustomEncoding(String encodingName, AFMFile afm) {
+        int mappingCount;
         // Just count the first time...
         List<AFMCharMetrics> chars = afm.getCharMetrics();
-        for (AFMCharMetrics charMetrics : chars) {
-            if (charMetrics.getCharCode() >= 0) {
-                mappingCount++;
-            }
-        }
+        mappingCount = (int) chars.stream().filter(charMetrics -> charMetrics.getCharCode() >= 0).count();
         // ...and now build the table.
-        int[] table = new int[mappingCount * 2];
+        int[] table = new int[(mappingCount << 1)];
         String[] charNameMap = new String[256];
         int idx = 0;
         for (AFMCharMetrics charMetrics : chars) {

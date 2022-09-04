@@ -22,7 +22,7 @@ import org.w3c.dom.Text;
  */
 public abstract class AbstractWordXmlPicture {
 	
-	protected static Logger log = LoggerFactory.getLogger(AbstractWordXmlPicture.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractWordXmlPicture.class);
 	
 	WordprocessingMLPackage wmlPackage;
     protected Dimensions dimensions;
@@ -93,22 +93,22 @@ public abstract class AbstractWordXmlPicture {
             Document document = XmlUtils.getNewDocumentBuilder().newDocument();
             Element imageElement  = document.createElement("img");
 
-            if (src !=null && !src.equals(""))
+            if (src !=null && !src.isEmpty())
             {
             	imageElement.setAttribute("src", src);
             }
 
-            if (id !=null && !id.equals("") )
+            if (id !=null && !id.isEmpty())
             {
             	imageElement.setAttribute("id", id);
             }
 
-            if (alt !=null && !alt.equals("") )
+            if (alt !=null && !alt.isEmpty())
             {
             	imageElement.setAttribute("alt", alt);
             }
 
-            if (style !=null && !style.equals("") )
+            if (style !=null && !style.isEmpty())
             {
             	imageElement.setAttribute("style", style);
             }
@@ -123,18 +123,18 @@ public abstract class AbstractWordXmlPicture {
             	imageElement.setAttribute("height", Integer.toString(dimensions.height));
             }
 
-            if (hlinkRef !=null && !hlinkRef.equals(""))
+            if (hlinkRef !=null && !hlinkRef.isEmpty())
             {
             	Element linkElement = document.createElement("a");
 
                 linkElement.setAttribute( "href", hlinkRef);
 
-                if (targetFrame !=null && !targetFrame.equals(""))
+                if (targetFrame !=null && !targetFrame.isEmpty())
                 {
                 	linkElement.setAttribute( "target", targetFrame);
                 }
 
-                if (tooltip !=null && !tooltip.equals(""))
+                if (tooltip !=null && !tooltip.isEmpty())
                 {
                 	linkElement.setAttribute( "title", tooltip);
                 }
@@ -165,7 +165,7 @@ public abstract class AbstractWordXmlPicture {
             Element imageElement  = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
 			"fo:external-graphic"); 	
 
-            if (src !=null && !src.equals(""))
+            if (src !=null && !src.isEmpty())
             {
             	imageElement.setAttribute("src", src);
             } else {
@@ -268,10 +268,10 @@ public abstract class AbstractWordXmlPicture {
 		}
 		catch (Docx4JException de) {
 			if (relationship != null) {
-				log.error("Exception handling image id: " + relationship.getId() + ", target '" + relationship.getTarget() + "': " + de.toString(), de);
+				log.error("Exception handling image id: " + relationship.getId() + ", target '" + relationship.getTarget() + "': " + de, de);
 			}
 			else {
-				log.error("Exception handling image: " + de.toString(), de);
+				log.error("Exception handling image: " + de, de);
 			}
 		}
 		return uri;
@@ -301,7 +301,7 @@ public abstract class AbstractWordXmlPicture {
      * Values as parsed from E10 CSS.
      *
      */
-    public class Dimensions {
+    public static class Dimensions {
     	
     	public int height;
     	public String heightUnit;

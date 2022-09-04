@@ -195,8 +195,7 @@ public class CryptoAPIDecryptor extends Decryptor {
         MessageDigest hashAlg = CryptoFunctions.getMessageDigest(hashAlgo);
         hashAlg.update(ver.getSalt());
         byte hash[] = hashAlg.digest(StringUtil.getToUnicodeLE(password));
-        SecretKey skey = new SecretKeySpec(hash, ver.getCipherAlgorithm().jceId);
-        return skey;
+        return new SecretKeySpec(hash, ver.getCipherAlgorithm().jceId);
     }
 
     /**
@@ -211,14 +210,14 @@ public class CryptoAPIDecryptor extends Decryptor {
     throws IOException, GeneralSecurityException {
         NPOIFSFileSystem fsOut = new NPOIFSFileSystem();
         DocumentNode es = (DocumentNode) dir.getEntry("EncryptedSummary");
-        DocumentInputStream dis = dir.createDocumentInputStream(es);
+        DocumentInputStream dis = DirectoryNode.createDocumentInputStream(es);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         IOUtils.copy(dis, bos);
         dis.close();
         SeekableByteArrayInputStream sbis = new SeekableByteArrayInputStream(bos.toByteArray());
         LittleEndianInputStream leis = new LittleEndianInputStream(sbis);
         int streamDescriptorArrayOffset = (int) leis.readUInt();
-        int streamDescriptorArraySize = (int) leis.readUInt();
+        int streamDescriptorArraySize = (int) leis.readUInt(); // variable is unused
         sbis.skip(streamDescriptorArrayOffset - 8);
         sbis.setBlock(0);
         int encryptedStreamDescriptorCount = (int) leis.readUInt();
@@ -251,8 +250,7 @@ public class CryptoAPIDecryptor extends Decryptor {
         fsOut.writeFilesystem(bos);
         fsOut.close();
         _length = bos.size();
-        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        return bis;
+        return new ByteArrayInputStream(bos.toByteArray());
     }
 
     /**

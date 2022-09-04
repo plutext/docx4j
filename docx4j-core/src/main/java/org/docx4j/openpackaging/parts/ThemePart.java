@@ -258,13 +258,13 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
 		TextFont textFont = getTextFontFromTheme(type);
 		if (textFont==null) {
 			
-			log.warn("No font specified for " + type.toString() );
+			log.warn("No font specified for " + type);
 			return null;
 			
 		} else {
 			String typeface = textFont.getTypeface();
     		if (typeface==null) {
-    			log.warn("Missing typeface in font for " + type.toString() );
+    			log.warn("Missing typeface in font for " + type);
     			return null;
     		} else {
     			if (typeface.trim().length()==0) {
@@ -272,19 +272,19 @@ public final class ThemePart extends JaxbXmlPartXPathAware<Theme> {
     				if (type.equals(STTheme.MINOR_EAST_ASIA) ) {
     					
     					if (!reportedEmptyMINOR_EAST_ASIA) {
-    	        			log.info("Empty typeface in font for " + type.toString() ); 
+    	        			log.info("Empty typeface in font for " + type);
     	        			reportedEmptyMINOR_EAST_ASIA = true; // suppress extra warnings
     					}
     					
     				} else {
-            			log.info("Empty typeface in font for " + type.toString() );     					
+            			log.info("Empty typeface in font for " + type);
     				}
     				
         			// eg <a:ea typeface=""/>
         	        // or <a:cs typeface=""/>
         			return null;
     			}
-    			log.debug("'" + typeface + "'");
+    			log.debug('\'' + typeface + '\'');
     			return typeface;
     		}
 		}

@@ -5,12 +5,9 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -139,7 +136,7 @@ public class FormattingSwitchHelper {
 	 */
 	protected static final String DEFAULT_FORMAT_PAGE_TO_FO = "1";
 	//A marker for the NumberFormat.NONE - value
-	protected static final String NONE_STRING = new String();
+	protected static final String NONE_STRING = "";
 	protected static final Map<String, String> FORMAT_PAGE_TO_FO = new HashMap<String, String>();
 	
 	public static final int DECORATION_NONE = 0;
@@ -242,7 +239,7 @@ public class FormattingSwitchHelper {
 				
 				// TODO .. analyse what Word does
 				// for now, just leave as is
-			} else if (dtFormat.equals("")) {
+			} else if (dtFormat.isEmpty()) {
 				// Verified with Word 2010 sp1 for DOCPROPERTY (very likely others are the same)
 				return "Error! Switch argument not specified.";
 			} else {
@@ -274,7 +271,7 @@ public class FormattingSwitchHelper {
 			String nFormat = findFirstSwitchValue("\\#", model.getFldParameters(), true);
 			if (nFormat!=null) {
 				
-				if (nFormat.equals("") ) {
+				if (nFormat.isEmpty()) {
 					return "Error! Switch argument not specified.";
 					// Verified with Word 2010 sp1, for =, DOCPROPERTY, MERGEFIELD
 					// TODO unless it looks like a bookmark, eg {=AA \#} ?
@@ -330,7 +327,7 @@ public class FormattingSwitchHelper {
 		value = gFormat==null ? value : formatGeneral(model, gFormat, value );
 		
 		
-		log.debug("Result -> " + value + "\n");
+		log.debug("Result -> " + value + '\n');
 		
 		return value;
 	}
@@ -363,12 +360,11 @@ public class FormattingSwitchHelper {
 			return null;
 		} else {
 			log.debug("Parsing with format: " + inputFormat);
-			Date date = null;
 			try {
 				DateFormat dateTimeFormat = new SimpleDateFormat(inputFormat);
 					// is this threadsafe in static method?
 				
-				return (Date)dateTimeFormat.parse(dateStr);
+				return dateTimeFormat.parse(dateStr);
 			} catch (ParseException e) {
 				throw new FieldResultIsNotADateOrTimeException("Can't parse " + dateStr + " using format " + inputFormat,e);
 			}
@@ -376,13 +372,12 @@ public class FormattingSwitchHelper {
 	}
 
 	private static double getNumber(WordprocessingMLPackage wmlPackage, FldSimpleModel model, String value) throws FieldResultIsNotANumberException {
-		
-		WordprocessingMLPackage pkg = wmlPackage;
+
 		String decimalSymbol=null;
-		if (pkg!=null
-				&& pkg.getMainDocumentPart().getDocumentSettingsPart()!=null) {
+		if (wmlPackage !=null
+				&& wmlPackage.getMainDocumentPart().getDocumentSettingsPart()!=null) {
 			
-			DocumentSettingsPart docSettingsPart = pkg.getMainDocumentPart().getDocumentSettingsPart();
+			DocumentSettingsPart docSettingsPart = wmlPackage.getMainDocumentPart().getDocumentSettingsPart();
 			if (docSettingsPart.getJaxbElement().getDecimalSymbol()!=null) {
 				decimalSymbol = docSettingsPart.getJaxbElement().getDecimalSymbol().getVal();
 			}
@@ -462,7 +457,7 @@ public class FormattingSwitchHelper {
 				if (ch == '\'') {
 					if (inLiteral) {
 						// End literal
-						buffer.append(wordNumberPattern.substring(valueStart, idx)); //ignore closing '
+						buffer.append(wordNumberPattern, valueStart, idx); //ignore closing '
 						idx2 = idx + 1; //skip '
 						/*
 						 * Word treats the whitespace outside the right single quote as significant, 
@@ -704,7 +699,7 @@ public class FormattingSwitchHelper {
 		// are not handled here. It is the responsibility of the calling code
 		// to handle these.
 		
-		if ( format.equals("")) {
+		if (format.isEmpty()) {
 			return "Error! Switch argument not specified.";
 		}
 //		// so:
@@ -718,15 +713,9 @@ public class FormattingSwitchHelper {
 
 		if (format.toUpperCase().contains("CAPS") ) {
 			String[] bits = value.split(" ");
-			StringBuffer sb = new StringBuffer();
-			for (int i= 0; i<bits.length; i++) {
-//				System.out.println("'" + bits[i] + "'");
-				if (i>0) sb.append(" ");
-				sb.append(firstCap(bits[i]));
-				
-				// TODO: test what Word does with whitespace
-			}
-			return sb.toString();
+			//				System.out.println("'" + bits[i] + "'");
+			// TODO: test what Word does with whitespace
+			return Arrays.stream(bits).map(FormattingSwitchHelper::firstCap).collect(Collectors.joining(" "));
 		}
 		
 		if (format.toUpperCase().contains("FIRSTCAP") ) {
@@ -756,8 +745,8 @@ public class FormattingSwitchHelper {
 			return "";
 		} else if (value.length()==1) {
 			return value.substring(0, 1).toUpperCase();
-		} else if (value.startsWith("\"")) { 
-			return "\"" +  value.substring(1, 2).toUpperCase() + value.substring(2).toLowerCase();
+		} else if (!value.isEmpty() && value.charAt(0) == '\"') {
+			return '"' +  value.substring(1, 2).toUpperCase() + value.substring(2).toLowerCase();
 		} else { // (value.length()>1) 
 			return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
 		}
@@ -777,7 +766,7 @@ public class FormattingSwitchHelper {
 			if (ret == null) {
 				ret = DEFAULT_FORMAT_PAGE_TO_FO;
 			}
-			else if (ret == NONE_STRING) {
+			else if (NONE_STRING.equals(ret)) {
 				ret = null;
 			}
 		}
@@ -830,7 +819,7 @@ public class FormattingSwitchHelper {
 				ch = wordDatePattern.charAt(idx);
 				if (ch == '\'') {
 					if (inLiteral) {
-						buffer.append(wordDatePattern.substring(valueStart, idx)); //ignore closing '
+						buffer.append(wordDatePattern, valueStart, idx); //ignore closing '
 						idx2 = idx + 1; //skip '
 						while ((idx2 < wordDatePattern.length()) && 
 							   (wordDatePattern.charAt(idx2) == ' ')) {
@@ -915,7 +904,7 @@ public class FormattingSwitchHelper {
 			dateFormat = simpleDateFormat;
 		}
 		else {
-			dateFormat = (model.getFldName().indexOf("DATE") > -1 ? 
+			dateFormat = (model.getFldName().contains("DATE") ?
 						  SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT) :
 					      SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT)); 
 		}
@@ -977,11 +966,7 @@ public class FormattingSwitchHelper {
 	public static int findSwitch(String switchDef, int startPos, List<String> fldParameters) {
 	int ret = -1;
 		if ((fldParameters != null) && (!fldParameters.isEmpty())) {
-			for (int i=startPos; i<fldParameters.size(); i++) {
-				if (switchDef.equals(fldParameters.get(i))) {
-					return i;
-				}
-			}
+			return IntStream.range(startPos, fldParameters.size()).filter(i -> switchDef.equals(fldParameters.get(i))).findFirst().orElse(-1);
 		}
 		return -1;
 	}

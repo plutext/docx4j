@@ -56,19 +56,19 @@ public class ExternalResourceUtils {
 			targetURI = new URI(absoluteTarget.replace('\\', '/'));
 		}
 		catch (URISyntaxException use) {
-			throw new Docx4JException("Invalid absolute Target: '" + absoluteTarget + "'", use);
+			throw new Docx4JException("Invalid absolute Target: '" + absoluteTarget + '\'', use);
 		}
 		try {
 			targetURL = targetURI.toURL();
 		} catch (MalformedURLException mue) {
-			throw new Docx4JException("Invalid absolute Target: '" + absoluteTarget + "'", mue);
+			throw new Docx4JException("Invalid absolute Target: '" + absoluteTarget + '\'', mue);
 		}
 		try {
 			inStream = targetURL.openStream();
 			binaryPart = createBinaryPart(absoluteTarget, contentType);
 			binaryPart.setBinaryData(inStream);
 		} catch (IOException ioe) {
-			throw new Docx4JException("Could not load external resource: '" + absoluteTarget + "'", ioe);
+			throw new Docx4JException("Could not load external resource: '" + absoluteTarget + '\'', ioe);
 		}
 		return binaryPart;
 	}

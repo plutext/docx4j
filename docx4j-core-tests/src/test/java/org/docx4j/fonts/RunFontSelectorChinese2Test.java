@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
 
 public class RunFontSelectorChinese2Test {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class); // same logger
 	
 	static String[] expectedFont = { "SimSun", "SimSun","SimSun","SimSun","SimSun","SimSun","Times New Roman","SimSun","Times New Roman" };
 	

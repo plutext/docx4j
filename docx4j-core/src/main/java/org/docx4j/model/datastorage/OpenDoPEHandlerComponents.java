@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
@@ -181,7 +182,7 @@ public class OpenDoPEHandlerComponents {
 		// Convert any sdt with <w:tag w:val="od:component=comp1"/>
 		// to altChunk, and for MergeDocx users, to
 		// real WordML.
-		ContentAccessor part = srcPackage.getMainDocumentPart();
+		MainDocumentPart part = srcPackage.getMainDocumentPart();
 
 //			LinkedList<Integer> continuousBeforeIndex = new LinkedList<Integer>();
 //			List<Boolean> continuousBefore = new ArrayList<Boolean>();
@@ -190,11 +191,11 @@ public class OpenDoPEHandlerComponents {
 
 		FindComponentsTraversor t = new FindComponentsTraversor();
 		t.wordMLPackage = srcPackage;
-		if (part instanceof MainDocumentPart /* which it will be in this release */) {
+		if (part != null /* which it will be in this release */) {
 			// avoid invoking walkJAXBElements on a list,
 			// (docx4j 6.1.0 doesn't know how to replace children there,
 			//  which it needs to do if the component is a child of w:body)
-			Body b = ((MainDocumentPart)part).getJaxbElement().getBody();
+			Body b = part.getJaxbElement().getBody();
 			t.walkJAXBElements(b);
 		} else {
 			t.walkJAXBElements(part.getContent());			
@@ -221,11 +222,11 @@ public class OpenDoPEHandlerComponents {
 					.forName("com.plutext.merge.altchunk.ProcessAltChunk");
 			Method[] methods = documentBuilder.getMethods();
 			Method processMethod = null;
-			for (int j = 0; j < methods.length; j++) {
+			for (Method method : methods) {
 //				log.debug(methods[j].getName());
-				if (methods[j].getName().equals("process")
-						&& methods[j].getParameterCount()==5) {
-					processMethod = methods[j];
+				if (method.getName().equals("process")
+						&& method.getParameterCount() == 5) {
+					processMethod = method;
 				}
 			}
 			if (processMethod == null )
@@ -287,7 +288,7 @@ public class OpenDoPEHandlerComponents {
 //	}
 
 	public void extensionMissing(Exception e) {
-		log.error("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+		log.error('\n' + e.getClass().getName() + ": " + e.getMessage() + '\n');
 		log.error("* You don't appear to have the MergeDocx paid extension,");
 		log.error("* which is necessary to merge docx, or process altChunk.");
 		log.error("* Purchases of this extension support the docx4j project.");
@@ -298,7 +299,7 @@ public class OpenDoPEHandlerComponents {
 	private PartName getNewPartName(String prefix, String suffix,
 			RelationshipsPart rp) throws InvalidFormatException {
 
-		PartName proposed = null;
+		PartName proposed;
 		int i = 1;
 		do {
 
@@ -313,7 +314,7 @@ public class OpenDoPEHandlerComponents {
 
 		return proposed;
 
-	}
+    }
 
 	/**
 	 * This traversor finds components, taking note of their XPath context.
@@ -361,7 +362,7 @@ public class OpenDoPEHandlerComponents {
 		public void walkJAXBElements(Object parent) {
 			// Breadth first
 
-			List<Object> newChildren = new ArrayList<Object>();
+			List<Object> newChildren;
 
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
 			
@@ -388,10 +389,8 @@ public class OpenDoPEHandlerComponents {
 //				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
 			} else {
-				for (Object o : children) {
-					// apply
-					newChildren.addAll(this.apply(o));
-				}
+				// apply
+				newChildren = children.stream().flatMap(o -> this.apply(o).stream()).collect(Collectors.toList());
 			}
 			// Replace list, so we'll traverse all the new sdts we've just
 			// created

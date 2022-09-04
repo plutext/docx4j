@@ -34,7 +34,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class FontColor extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(FontColor.class);		
+	protected static final Logger log = LoggerFactory.getLogger(FontColor.class);
 
 	public final static String CSS_NAME = "color"; 
 	public final static String FO_NAME  = "color"; 
@@ -90,7 +90,7 @@ public class FontColor extends AbstractRunProperty {
 	public String getCssProperty() {
 		
 		if (((Color)this.getObject()).getVal()!=null ) {
-			return composeCss(CSS_NAME, "#" + ((Color)this.getObject()).getVal());
+			return composeCss(CSS_NAME, '#' + ((Color)this.getObject()).getVal());
 		} else {
 			return CSS_NULL;
 		}
@@ -105,7 +105,7 @@ public class FontColor extends AbstractRunProperty {
 				// set it to black
 				foElement.setAttribute(FO_NAME, "black");				
 			} else {
-				foElement.setAttribute(FO_NAME, "#" + ((Color)this.getObject()).getVal());
+				foElement.setAttribute(FO_NAME, '#' + ((Color)this.getObject()).getVal());
 			}
 		} else {
 			//

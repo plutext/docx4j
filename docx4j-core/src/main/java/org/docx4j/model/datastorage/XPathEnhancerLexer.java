@@ -74,8 +74,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "PATHSEP"
     public final void mPATHSEP() throws RecognitionException {
         try {
-            int _type = PATHSEP;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:7:9: ( '/' )
             // src\\main\\antlr\\XPathEnhancer.g:7:11: '/'
             {
@@ -83,8 +81,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = PATHSEP;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -94,8 +92,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "ABRPATH"
     public final void mABRPATH() throws RecognitionException {
         try {
-            int _type = ABRPATH;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:8:9: ( '//' )
             // src\\main\\antlr\\XPathEnhancer.g:8:11: '//'
             {
@@ -104,8 +100,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = ABRPATH;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -115,8 +111,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "LPAR"
     public final void mLPAR() throws RecognitionException {
         try {
-            int _type = LPAR;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:9:6: ( '(' )
             // src\\main\\antlr\\XPathEnhancer.g:9:8: '('
             {
@@ -124,8 +118,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = LPAR;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -135,8 +129,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "RPAR"
     public final void mRPAR() throws RecognitionException {
         try {
-            int _type = RPAR;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:10:6: ( ')' )
             // src\\main\\antlr\\XPathEnhancer.g:10:8: ')'
             {
@@ -144,8 +136,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = RPAR;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -155,8 +147,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "LBRAC"
     public final void mLBRAC() throws RecognitionException {
         try {
-            int _type = LBRAC;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:11:7: ( '[' )
             // src\\main\\antlr\\XPathEnhancer.g:11:9: '['
             {
@@ -164,8 +154,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = LBRAC;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -175,8 +165,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "RBRAC"
     public final void mRBRAC() throws RecognitionException {
         try {
-            int _type = RBRAC;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:12:7: ( ']' )
             // src\\main\\antlr\\XPathEnhancer.g:12:9: ']'
             {
@@ -184,8 +172,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = RBRAC;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -195,8 +183,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "MINUS"
     public final void mMINUS() throws RecognitionException {
         try {
-            int _type = MINUS;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:13:7: ( '-' )
             // src\\main\\antlr\\XPathEnhancer.g:13:9: '-'
             {
@@ -204,8 +190,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = MINUS;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -215,8 +201,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "PLUS"
     public final void mPLUS() throws RecognitionException {
         try {
-            int _type = PLUS;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:14:6: ( '+' )
             // src\\main\\antlr\\XPathEnhancer.g:14:8: '+'
             {
@@ -224,8 +208,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = PLUS;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -235,8 +219,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "DOT"
     public final void mDOT() throws RecognitionException {
         try {
-            int _type = DOT;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:15:5: ( '.' )
             // src\\main\\antlr\\XPathEnhancer.g:15:7: '.'
             {
@@ -244,8 +226,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = DOT;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -255,8 +237,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "MUL"
     public final void mMUL() throws RecognitionException {
         try {
-            int _type = MUL;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:16:5: ( '*' )
             // src\\main\\antlr\\XPathEnhancer.g:16:7: '*'
             {
@@ -264,8 +244,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = MUL;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -275,8 +255,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "DOTDOT"
     public final void mDOTDOT() throws RecognitionException {
         try {
-            int _type = DOTDOT;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:17:8: ( '..' )
             // src\\main\\antlr\\XPathEnhancer.g:17:10: '..'
             {
@@ -285,8 +263,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = DOTDOT;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -296,8 +274,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "AT"
     public final void mAT() throws RecognitionException {
         try {
-            int _type = AT;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:18:4: ( '@' )
             // src\\main\\antlr\\XPathEnhancer.g:18:6: '@'
             {
@@ -305,8 +281,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = AT;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -316,8 +292,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "COMMA"
     public final void mCOMMA() throws RecognitionException {
         try {
-            int _type = COMMA;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:19:7: ( ',' )
             // src\\main\\antlr\\XPathEnhancer.g:19:9: ','
             {
@@ -325,8 +299,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = COMMA;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -336,8 +310,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "PIPE"
     public final void mPIPE() throws RecognitionException {
         try {
-            int _type = PIPE;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:20:6: ( '|' )
             // src\\main\\antlr\\XPathEnhancer.g:20:8: '|'
             {
@@ -345,8 +317,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = PIPE;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -356,8 +328,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "LESS"
     public final void mLESS() throws RecognitionException {
         try {
-            int _type = LESS;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:21:6: ( '<' )
             // src\\main\\antlr\\XPathEnhancer.g:21:8: '<'
             {
@@ -365,8 +335,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = LESS;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -376,8 +346,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "MORE"
     public final void mMORE() throws RecognitionException {
         try {
-            int _type = MORE;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:22:6: ( '>' )
             // src\\main\\antlr\\XPathEnhancer.g:22:8: '>'
             {
@@ -385,8 +353,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = MORE;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -396,8 +364,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "LE"
     public final void mLE() throws RecognitionException {
         try {
-            int _type = LE;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:23:4: ( '<=' )
             // src\\main\\antlr\\XPathEnhancer.g:23:6: '<='
             {
@@ -406,8 +372,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = LE;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -417,8 +383,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "GE"
     public final void mGE() throws RecognitionException {
         try {
-            int _type = GE;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:24:4: ( '>=' )
             // src\\main\\antlr\\XPathEnhancer.g:24:6: '>='
             {
@@ -427,8 +391,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = GE;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -438,8 +402,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "COLON"
     public final void mCOLON() throws RecognitionException {
         try {
-            int _type = COLON;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:25:7: ( ':' )
             // src\\main\\antlr\\XPathEnhancer.g:25:9: ':'
             {
@@ -447,8 +409,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = COLON;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -458,8 +420,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "CC"
     public final void mCC() throws RecognitionException {
         try {
-            int _type = CC;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:26:4: ( '::' )
             // src\\main\\antlr\\XPathEnhancer.g:26:6: '::'
             {
@@ -468,8 +428,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = CC;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -479,8 +439,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "APOS"
     public final void mAPOS() throws RecognitionException {
         try {
-            int _type = APOS;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:27:6: ( '\\'' )
             // src\\main\\antlr\\XPathEnhancer.g:27:8: '\\''
             {
@@ -488,8 +446,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = APOS;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -499,8 +457,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "QUOT"
     public final void mQUOT() throws RecognitionException {
         try {
-            int _type = QUOT;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:28:6: ( '\\\"' )
             // src\\main\\antlr\\XPathEnhancer.g:28:8: '\\\"'
             {
@@ -508,8 +464,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = QUOT;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -519,8 +475,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__37"
     public final void mT__37() throws RecognitionException {
         try {
-            int _type = T__37;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:29:7: ( 'processing-instruction' )
             // src\\main\\antlr\\XPathEnhancer.g:29:9: 'processing-instruction'
             {
@@ -529,8 +483,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__37;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -540,8 +494,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__38"
     public final void mT__38() throws RecognitionException {
         try {
-            int _type = T__38;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:30:7: ( 'or' )
             // src\\main\\antlr\\XPathEnhancer.g:30:9: 'or'
             {
@@ -550,8 +502,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__38;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -561,8 +513,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__39"
     public final void mT__39() throws RecognitionException {
         try {
-            int _type = T__39;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:31:7: ( 'and' )
             // src\\main\\antlr\\XPathEnhancer.g:31:9: 'and'
             {
@@ -571,8 +521,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__39;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -582,8 +532,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__40"
     public final void mT__40() throws RecognitionException {
         try {
-            int _type = T__40;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:32:7: ( '=' )
             // src\\main\\antlr\\XPathEnhancer.g:32:9: '='
             {
@@ -591,8 +539,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__40;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -602,8 +550,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__41"
     public final void mT__41() throws RecognitionException {
         try {
-            int _type = T__41;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:33:7: ( '!=' )
             // src\\main\\antlr\\XPathEnhancer.g:33:9: '!='
             {
@@ -612,8 +558,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__41;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -623,8 +569,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__42"
     public final void mT__42() throws RecognitionException {
         try {
-            int _type = T__42;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:34:7: ( 'div' )
             // src\\main\\antlr\\XPathEnhancer.g:34:9: 'div'
             {
@@ -633,8 +577,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__42;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -644,8 +588,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__43"
     public final void mT__43() throws RecognitionException {
         try {
-            int _type = T__43;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:35:7: ( 'mod' )
             // src\\main\\antlr\\XPathEnhancer.g:35:9: 'mod'
             {
@@ -654,8 +596,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__43;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -665,8 +607,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "T__44"
     public final void mT__44() throws RecognitionException {
         try {
-            int _type = T__44;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:36:7: ( '$' )
             // src\\main\\antlr\\XPathEnhancer.g:36:9: '$'
             {
@@ -674,8 +614,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = T__44;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -685,8 +625,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "NodeType"
     public final void mNodeType() throws RecognitionException {
         try {
-            int _type = NodeType;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:298:3: ( 'comment' | 'text' | 'processing-instruction' | 'node' )
             int alt1=4;
             switch ( input.LA(1) ) {
@@ -711,10 +649,8 @@ public class XPathEnhancerLexer extends Lexer {
                 }
                 break;
             default:
-                NoViableAltException nvae =
-                    new NoViableAltException("", 1, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 1, 0, input);
             }
 
             switch (alt1) {
@@ -752,8 +688,8 @@ public class XPathEnhancerLexer extends Lexer {
                     break;
 
             }
-            state.type = _type;
-            state.channel = _channel;
+            state.type = NodeType;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -763,8 +699,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "Number"
     public final void mNumber() throws RecognitionException {
         try {
-            int _type = Number;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:306:3: ( Digits ( '.' ( Digits )? )? | '.' Digits )
             int alt4=2;
             int LA4_0 = input.LA(1);
@@ -776,10 +710,8 @@ public class XPathEnhancerLexer extends Lexer {
                 alt4=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 4, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 4, 0, input);
             }
             switch (alt4) {
                 case 1 :
@@ -835,8 +767,8 @@ public class XPathEnhancerLexer extends Lexer {
                     break;
 
             }
-            state.type = _type;
-            state.channel = _channel;
+            state.type = Number;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -872,9 +804,7 @@ public class XPathEnhancerLexer extends Lexer {
 
             	default :
             	    if ( cnt5 >= 1 ) break loop5;
-                        EarlyExitException eee =
-                            new EarlyExitException(5, input);
-                        throw eee;
+                    throw new EarlyExitException(5, input);
                 }
                 cnt5++;
             } while (true);
@@ -891,8 +821,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "AxisName"
     public final void mAxisName() throws RecognitionException {
         try {
-            int _type = AxisName;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:318:3: ( 'ancestor' | 'ancestor-or-self' | 'attribute' | 'child' | 'descendant' | 'descendant-or-self' | 'following' | 'following-sibling' | 'namespace' | 'parent' | 'preceding' | 'preceding-sibling' | 'self' )
             int alt6=13;
             alt6 = dfa6.predict(input);
@@ -1003,8 +931,8 @@ public class XPathEnhancerLexer extends Lexer {
                     break;
 
             }
-            state.type = _type;
-            state.channel = _channel;
+            state.type = AxisName;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -1014,8 +942,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "Literal"
     public final void mLiteral() throws RecognitionException {
         try {
-            int _type = Literal;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:335:3: ( '\"' (~ '\"' )* '\"' | '\\'' (~ '\\'' )* '\\'' )
             int alt9=2;
             int LA9_0 = input.LA(1);
@@ -1027,10 +953,8 @@ public class XPathEnhancerLexer extends Lexer {
                 alt9=2;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 9, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 9, 0, input);
             }
             switch (alt9) {
                 case 1 :
@@ -1117,8 +1041,8 @@ public class XPathEnhancerLexer extends Lexer {
                     break;
 
             }
-            state.type = _type;
-            state.channel = _channel;
+            state.type = Literal;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -1128,7 +1052,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "Whitespace"
     public final void mWhitespace() throws RecognitionException {
         try {
-            int _type = Whitespace;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:341:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
             // src\\main\\antlr\\XPathEnhancer.g:342:3: ( ' ' | '\\t' | '\\n' | '\\r' )+
@@ -1164,9 +1087,7 @@ public class XPathEnhancerLexer extends Lexer {
 
             	default :
             	    if ( cnt10 >= 1 ) break loop10;
-                        EarlyExitException eee =
-                            new EarlyExitException(10, input);
-                        throw eee;
+                    throw new EarlyExitException(10, input);
                 }
                 cnt10++;
             } while (true);
@@ -1177,7 +1098,7 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
+            state.type = Whitespace;
             state.channel = _channel;
         }
         finally {
@@ -1188,8 +1109,6 @@ public class XPathEnhancerLexer extends Lexer {
     // $ANTLR start "NCName"
     public final void mNCName() throws RecognitionException {
         try {
-            int _type = NCName;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
             // src\\main\\antlr\\XPathEnhancer.g:355:3: ( NCNameStartChar ( NCNameChar )* )
             // src\\main\\antlr\\XPathEnhancer.g:356:3: NCNameStartChar ( NCNameChar )*
             {
@@ -1222,8 +1141,8 @@ public class XPathEnhancerLexer extends Lexer {
 
             }
 
-            state.type = _type;
-            state.channel = _channel;
+            state.type = NCName;
+            state.channel = DEFAULT_TOKEN_CHANNEL;
         }
         finally {
         }
@@ -1283,10 +1202,8 @@ public class XPathEnhancerLexer extends Lexer {
                 alt12=15;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 12, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 12, 0, input);
             }
             switch (alt12) {
                 case 1 :
@@ -1464,10 +1381,8 @@ public class XPathEnhancerLexer extends Lexer {
                 alt13=7;
             }
             else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 13, 0, input);
 
-                throw nvae;
+                throw new NoViableAltException("", 13, 0, input);
             }
             switch (alt13) {
                 case 1 :
@@ -2258,11 +2173,10 @@ public class XPathEnhancerLexer extends Lexer {
             return "1:1: Tokens : ( PATHSEP | ABRPATH | LPAR | RPAR | LBRAC | RBRAC | MINUS | PLUS | DOT | MUL | DOTDOT | AT | COMMA | PIPE | LESS | MORE | LE | GE | COLON | CC | APOS | QUOT | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | NodeType | Number | AxisName | Literal | Whitespace | NCName );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
-            IntStream input = _input;
-        	int _s = s;
+            int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA14_17 = input.LA(1);
+                        int LA14_17 = _input.LA(1);
 
                         s = -1;
                         if ( ((LA14_17>='\u0000' && LA14_17<='\uFFFF')) ) {s = 45;}
@@ -2272,7 +2186,7 @@ public class XPathEnhancerLexer extends Lexer {
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA14_16 = input.LA(1);
+                        int LA14_16 = _input.LA(1);
 
                         s = -1;
                         if ( ((LA14_16>='\u0000' && LA14_16<='\uFFFF')) ) {s = 45;}
@@ -2283,7 +2197,7 @@ public class XPathEnhancerLexer extends Lexer {
                         break;
             }
             NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 14, _s, input);
+                new NoViableAltException(getDescription(), 14, _s, _input);
             error(nvae);
             throw nvae;
         }

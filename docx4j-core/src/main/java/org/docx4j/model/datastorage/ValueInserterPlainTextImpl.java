@@ -1,10 +1,8 @@
 package org.docx4j.model.datastorage;
 
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -29,7 +27,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 			JaxbXmlPart sourcePart) throws Docx4JException {
 		
 		try {
-			if (val==null || val.equals("")) {
+			if (val==null || val.isEmpty()) {
 				return BindingTraverserXSLT.createPlaceholder(rPr, "p");
 			}
 		} catch (Exception e) {
@@ -71,7 +69,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 	}
 
 	
-	protected void addBrRunToDocFrag(DocumentFragment docfrag, RPr rPr) throws Docx4JException {
+	protected static void addBrRunToDocFrag(DocumentFragment docfrag, RPr rPr) throws Docx4JException {
 		
 		// Not sure whether there is ever anything of interest in the rPr, 
 		// but add it anyway
@@ -106,7 +104,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 		// since sdtPr is in effect read only.  So it is done in bind.xslt
 		
 		if (pos==0) {
-			int spacePos = text.indexOf(" ");
+			int spacePos = text.indexOf(' ');
 			if (spacePos==-1) {
 				addHyperlinkToDocFrag(sourcePart, docfrag,  text);
 				return;					
@@ -130,7 +128,7 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 		processString(sourcePart,  docfrag,  rest, rPr);				
 	}
 	
-	private void addRunToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String string, RPr rPr) {
+	private static void addRunToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String string, RPr rPr) {
 		
 		org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
 		if (rPr!=null) {
@@ -138,9 +136,9 @@ public class ValueInserterPlainTextImpl implements ValueInserterPlainText {
 		}
 		org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
 		run.getRunContent().add(text);
-		if (string.startsWith(" ") || string.endsWith(" ") ) {
+		if (!string.isEmpty() && string.charAt(0) == ' ' || !string.isEmpty() && string.charAt(string.length() - 1) == ' ') {
 			// TODO: tab character?
-			log.debug("setting xml:space=preserve for '" + string + "'");
+			log.debug("setting xml:space=preserve for '" + string + '\'');
 			text.setSpace("preserve");
 		}
 		text.setValue(string);

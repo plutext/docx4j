@@ -100,7 +100,7 @@ public class AgileEncryptionInfoBuilder implements EncryptionInfoBuilder {
             found |= (ks == keyBits);
         }
         if (!found) {
-            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+cipherAlgorithm.toString());
+            throw new EncryptedDocumentException("KeySize "+keyBits+" not allowed for Cipher "+ cipherAlgorithm);
         }
         header = new AgileEncryptionHeader(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);
         verifier = new AgileEncryptionVerifier(cipherAlgorithm, hashAlgorithm, keyBits, blockSize, chainingMode);

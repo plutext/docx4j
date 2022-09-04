@@ -182,15 +182,9 @@ public class TocFinder  extends CallbackImpl {
 	private CTSdtDocPart getDocPartObj(SdtPr sdtPr) {
 		
 		if (sdtPr==null) return null;
-		
-    	for (Object o : sdtPr.getRPrOrAliasOrLock()) {
-    		
-    		if ( XmlUtils.unwrap(o) instanceof CTSdtDocPart) {
-    			return (CTSdtDocPart)XmlUtils.unwrap(o);
-    		} 
-    	}
-    	
-        return null;				
+
+		return sdtPr.getRPrOrAliasOrLock().stream().filter(o -> XmlUtils.unwrap(o) instanceof CTSdtDocPart).findFirst().map(o -> (CTSdtDocPart) XmlUtils.unwrap(o)).orElse(null);
+
 	}
 	
 	// Depth first

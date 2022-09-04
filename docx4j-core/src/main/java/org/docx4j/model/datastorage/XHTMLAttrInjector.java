@@ -75,8 +75,8 @@ public class XHTMLAttrInjector {
             			|| el.getLocalName().equals("ul")) {
             		            		
             		// don't do anything if @class or @style already present
-            		if (el.getAttribute("class").trim().equals("")
-            				&& el.getAttribute("style").trim().equals("") ) {
+            		if (el.getAttribute("class").trim().isEmpty()
+            				&& el.getAttribute("style").trim().isEmpty()) {
             		
             			// do it..
 	            		if (classVal!=null) {

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public final class DiagramColorsPart extends JaxbDmlPart<CTColorTransform> {
 	// <xsd:element name="colorsDef" type="CT_ColorTransform">
 	
-	private static Logger log = LoggerFactory.getLogger(DiagramColorsPart.class);			
+	private static final Logger log = LoggerFactory.getLogger(DiagramColorsPart.class);
 	
 	public DiagramColorsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -73,7 +73,7 @@ public final class DiagramColorsPart extends JaxbDmlPart<CTColorTransform> {
     	return unmarshal( is );    // side-effect is to set jaxbElement 	
     }
     
-    public void CreateMinimalContent(String uniqueId) {
+    public void createMinimalContent(String uniqueId) {
 
 		ObjectFactory factory = new ObjectFactory(); 
 		

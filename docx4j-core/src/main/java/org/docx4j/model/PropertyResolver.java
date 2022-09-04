@@ -1100,7 +1100,7 @@ public class PropertyResolver {
     	// since Word does it purely on the name of the style!
         int level = -1;
         try{
-            level = Integer.parseInt(style.substring(HEADING_STYLE.length(), style.length()).trim());
+            level = Integer.parseInt(style.substring(HEADING_STYLE.length()).trim());
         } catch (NumberFormatException ex){
             //log.debug(style + " - what level is this? ");
         }

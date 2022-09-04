@@ -351,8 +351,8 @@ public final class OPOIFSDocument implements BATManaged, BlockWritable, POIFSVie
 				blocks = _small_store.getBlocks();
 			}
 			if (blocks != null) {
-				for (int k = 0; k < blocks.length; k++) {
-					blocks[k].writeBlocks(output);
+				for (BlockWritable block : blocks) {
+					block.writeBlocks(output);
 				}
 				byte[] data = output.toByteArray();
 
@@ -382,7 +382,7 @@ public final class OPOIFSDocument implements BATManaged, BlockWritable, POIFSVie
 	 *		 store
 	 */
 	public Iterator<Object> getViewableIterator() {
-		return Collections.emptyList().iterator();
+		return Collections.emptyIterator();
 	}
 
 	/**
@@ -403,9 +403,9 @@ public final class OPOIFSDocument implements BATManaged, BlockWritable, POIFSVie
 	 * @return short description
 	 */
 	public String getShortDescription() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
-		buffer.append("Document: \"").append(_property.getName()).append("\"");
+		buffer.append("Document: \"").append(_property.getName()).append('"');
 		buffer.append(" size = ").append(getSize());
 		return buffer.toString();
 	}
@@ -548,8 +548,8 @@ public final class OPOIFSDocument implements BATManaged, BlockWritable, POIFSVie
 					dstream.writeFiller(countBlocks() * _bigBlockSize.getBigBlockSize(),
 							DocumentBlock.getFillByte());
 				} else {
-					for (int k = 0; k < bigBlocks.length; k++) {
-						bigBlocks[k].writeBlocks(stream);
+					for (DocumentBlock bigBlock : bigBlocks) {
+						bigBlock.writeBlocks(stream);
 					}
 				}
 			}

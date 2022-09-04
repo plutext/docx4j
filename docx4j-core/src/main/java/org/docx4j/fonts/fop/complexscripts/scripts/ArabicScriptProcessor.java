@@ -321,7 +321,7 @@ public class ArabicScriptProcessor extends DefaultScriptProcessor {
     private static boolean hasFinalSucceedingContext(int[] ca, int nc, int s, int e) {
         int chs = 0;    // succeeding non-NSM char in [e,nc) searching forward from e
         int cls = 0;
-        for (int i = e, n = nc; i < n; i++) {
+        for (int i = e; i < nc; i++) {
             chs = ca [ i ];
             cls = BidiClass.getBidiClass(chs);
             if (cls != BidiConstants.NSM) {
@@ -385,7 +385,7 @@ public class ArabicScriptProcessor extends DefaultScriptProcessor {
     private static boolean hasInitialSucceedingContext(int[] ca, int nc, int s, int e) {
         int chs = 0;    // succeeding non-NSM char in [e,nc) searching forward from e
         int cls = 0;
-        for (int i = e, n = nc; i < n; i++) {
+        for (int i = e; i < nc; i++) {
             chs = ca [ i ];
             cls = BidiClass.getBidiClass(chs);
             if (cls != BidiConstants.NSM) {
@@ -467,7 +467,7 @@ public class ArabicScriptProcessor extends DefaultScriptProcessor {
     private static boolean hasMedialSucceedingContext(int[] ca, int nc, int s, int e) {
         int chs = 0;    // succeeding non-NSM char in [e,nc) searching forward from e
         int cls = 0;
-        for (int i = e, n = nc; i < n; i++) {
+        for (int i = e; i < nc; i++) {
             chs = ca [ i ];
             cls = BidiClass.getBidiClass(chs);
             if (cls != BidiConstants.NSM) {
@@ -490,7 +490,7 @@ public class ArabicScriptProcessor extends DefaultScriptProcessor {
     private static boolean hasLigatureSucceedingContext(int[] ca, int nc, int s, int e) {
         int chs = 0;    // succeeding non-NSM char in [e,nc) searching forward from e
         int cls = 0;
-        for (int i = e, n = nc; i < n; i++) {
+        for (int i = e; i < nc; i++) {
             chs = ca [ i ];
             cls = BidiClass.getBidiClass(chs);
             // TBD - does ZWJ have impact here?

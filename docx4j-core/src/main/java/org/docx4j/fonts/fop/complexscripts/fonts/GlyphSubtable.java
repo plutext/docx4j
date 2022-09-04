@@ -25,6 +25,7 @@
 package org.docx4j.fonts.fop.complexscripts.fonts;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -276,12 +277,7 @@ public abstract class GlyphSubtable implements Comparable {
         if ((subtables == null) || (subtables.length == 0)) {
             return false;
         } else {
-            for (GlyphSubtable subtable : subtables) {
-                if (subtable.usesReverseScan()) {
-                    return true;
-                }
-            }
-            return false;
+            return Arrays.stream(subtables).anyMatch(GlyphSubtable::usesReverseScan);
         }
     }
 

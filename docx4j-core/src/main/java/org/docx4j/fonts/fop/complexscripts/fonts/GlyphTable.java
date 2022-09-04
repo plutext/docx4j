@@ -34,6 +34,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,12 +125,7 @@ public class GlyphTable {
      */
     public List<LookupTable> getLookupTables() {
         TreeSet<String> lids = new TreeSet<String>(lookupTables.keySet());
-        List<LookupTable> ltl = new ArrayList<LookupTable>(lids.size());
-        for (Object lid1 : lids) {
-            String lid = (String) lid1;
-            ltl.add(lookupTables.get(lid));
-        }
-        return ltl;
+        return lids.stream().map(lid1 -> (String) lid1).map(lid -> lookupTables.get(lid)).collect(Collectors.toCollection(() -> new ArrayList<>(lids.size())));
     }
 
     /**
@@ -265,7 +261,7 @@ public class GlyphTable {
      * @param lookups a mapping from lookup specifications to lists of look tables from which to select lookup tables according to the specified features
      * @return ordered array of assembled lookup table use specifications
      */
-    public UseSpec[] assembleLookups(String[] features, Map<LookupSpec, List<LookupTable>> lookups) {
+    public static UseSpec[] assembleLookups(String[] features, Map<LookupSpec, List<LookupTable>> lookups) {
         TreeSet<UseSpec> uss = new TreeSet<UseSpec>();
         for (String feature : features) {
             for (Object o : lookups.entrySet()) {
@@ -300,8 +296,8 @@ public class GlyphTable {
 
     /** {@inheritDoc} */
     public String toString() {
-        StringBuffer sb = new StringBuffer(super.toString());
-        sb.append("{");
+        StringBuilder sb = new StringBuilder(super.toString());
+        sb.append('{');
         sb.append("lookups={");
         sb.append(lookups.toString());
         sb.append("},lookupTables={");
@@ -455,11 +451,11 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer(super.toString());
-            sb.append("{");
-            sb.append("<'" + script + "'");
-            sb.append(",'" + language + "'");
-            sb.append(",'" + feature + "'");
+            StringBuilder sb = new StringBuilder(super.toString());
+            sb.append('{');
+            sb.append("<'").append(script).append('\'');
+            sb.append(",'").append(language).append('\'');
+            sb.append(",'").append(feature).append('\'');
             sb.append(">}");
             return sb.toString();
         }
@@ -604,7 +600,7 @@ public class GlyphTable {
             }
         }
 
-        private void resolveLookupReferences(GlyphSubtable[] subtables, Map<String, LookupTable> lookupTables) {
+        private static void resolveLookupReferences(GlyphSubtable[] subtables, Map<String, LookupTable> lookupTables) {
             if (subtables != null) {
                 for (GlyphSubtable st : subtables) {
                     if (st != null) {
@@ -741,10 +737,10 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("id = " + id);
-            sb.append(", subtables = " + subtables);
+            sb.append("id = ").append(id);
+            sb.append(", subtables = ").append(subtables);
             sb.append(" }");
             return sb.toString();
         }
@@ -999,10 +995,10 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", glyphs = " + Arrays.toString(glyphs));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", glyphs = ").append(Arrays.toString(glyphs));
             sb.append(" }");
             return sb.toString();
         }
@@ -1052,10 +1048,10 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", classes = " + Arrays.toString(classes));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", classes = ").append(Arrays.toString(classes));
             sb.append(" }");
             return sb.toString();
         }
@@ -1089,10 +1085,10 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", coverages = " + Arrays.toString(coverages));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", coverages = ").append(Arrays.toString(coverages));
             sb.append(" }");
             return sb.toString();
         }
@@ -1136,12 +1132,12 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", glyphs = " + Arrays.toString(getGlyphs()));
-            sb.append(", backtrackGlyphs = " + Arrays.toString(backtrackGlyphs));
-            sb.append(", lookaheadGlyphs = " + Arrays.toString(lookaheadGlyphs));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", glyphs = ").append(Arrays.toString(getGlyphs()));
+            sb.append(", backtrackGlyphs = ").append(Arrays.toString(backtrackGlyphs));
+            sb.append(", lookaheadGlyphs = ").append(Arrays.toString(lookaheadGlyphs));
             sb.append(" }");
             return sb.toString();
         }
@@ -1185,12 +1181,12 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", classes = " + Arrays.toString(getClasses()));
-            sb.append(", backtrackClasses = " + Arrays.toString(backtrackClasses));
-            sb.append(", lookaheadClasses = " + Arrays.toString(lookaheadClasses));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", classes = ").append(Arrays.toString(getClasses()));
+            sb.append(", backtrackClasses = ").append(Arrays.toString(backtrackClasses));
+            sb.append(", lookaheadClasses = ").append(Arrays.toString(lookaheadClasses));
             sb.append(" }");
             return sb.toString();
         }
@@ -1234,12 +1230,12 @@ public class GlyphTable {
 
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("{ ");
-            sb.append("lookups = " + Arrays.toString(getLookups()));
-            sb.append(", coverages = " + Arrays.toString(getCoverages()));
-            sb.append(", backtrackCoverages = " + Arrays.toString(backtrackCoverages));
-            sb.append(", lookaheadCoverages = " + Arrays.toString(lookaheadCoverages));
+            sb.append("lookups = ").append(Arrays.toString(getLookups()));
+            sb.append(", coverages = ").append(Arrays.toString(getCoverages()));
+            sb.append(", backtrackCoverages = ").append(Arrays.toString(backtrackCoverages));
+            sb.append(", lookaheadCoverages = ").append(Arrays.toString(lookaheadCoverages));
             sb.append(" }");
             return sb.toString();
         }

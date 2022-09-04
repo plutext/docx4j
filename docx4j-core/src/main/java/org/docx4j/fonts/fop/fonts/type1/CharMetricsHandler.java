@@ -50,7 +50,7 @@ abstract class CharMetricsHandler {
 
     private static final Pattern METRICS_REGEX = Pattern.compile(
              WHITE_SPACE + OPERATOR + WHITE_SPACE + OPERANDS + WHITE_SPACE);
-    private static final Pattern SPLIT_REGEX = Pattern.compile(WHITE_SPACE + ";" + WHITE_SPACE);
+    private static final Pattern SPLIT_REGEX = Pattern.compile(WHITE_SPACE + ';' + WHITE_SPACE);
 
     private CharMetricsHandler() {
     }
@@ -111,7 +111,7 @@ abstract class CharMetricsHandler {
                 String charName = namedChar.getName();
                 int codePoint = AdobeStandardEncoding.getAdobeCodePoint(charName);
                 if (chm.getCharCode() != codePoint && !Glyphs.NOTDEF.equals(charName)) {
-                    log.info(afmFileName + ": named character '" + charName + "'"
+                    log.info(afmFileName + ": named character '" + charName + '\''
                             + " has an incorrect code point: " + chm.getCharCode()
                             + ". Changed to " + codePoint);
                     chm.setCharCode(codePoint);

@@ -45,9 +45,8 @@ public class WmlXsltExporterDelegate<CS extends AbstractConversionSettings, CC e
 			CC conversionContext)
 			throws Docx4JException {
 		ConversionSectionWrappers conversionSectionWrappers = conversionContext.getSections();
-		Document ret = XmlUtils.marshaltoW3CDomDocument(conversionSectionWrappers.createSections(),
+		return XmlUtils.marshaltoW3CDomDocument(conversionSectionWrappers.createSections(),
 				Context.jcSectionModel);
-		return ret;
 	}
 
 }

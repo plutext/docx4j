@@ -45,9 +45,9 @@ import org.xlsx4j.sml.Worksheet;
 
 public class PartsList {
 	
-	private static Logger log = LoggerFactory.getLogger(PartsList.class);						
+	private static final Logger log = LoggerFactory.getLogger(PartsList.class);
 
-	private static List<WorksheetPart> worksheets = new ArrayList<WorksheetPart>();
+	private static final List<WorksheetPart> worksheets = new ArrayList<>();
 	
 	private static SharedStrings sharedStrings = null;
 	/**
@@ -93,7 +93,7 @@ public class PartsList {
 	}
 	
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
-		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " );		
+		sb.append("\n").append(indent).append("Part ").append(p.getPartName()).append(" [").append(p.getClass().getName()).append("] ");
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
 			if (o instanceof jakarta.xml.bind.JAXBElement) {
@@ -130,8 +130,7 @@ public class PartsList {
 			if (r.getTargetMode() != null
 					&& r.getTargetMode().equals("External") ) {
 				
-				sb.append("\n" + indent + "external resource " + r.getTarget() 
-						   + " of type " + r.getType() );
+				sb.append("\n").append(indent).append("external resource ").append(r.getTarget()).append(" of type ").append(r.getType());
 				continue;				
 			}
 			
@@ -144,9 +143,7 @@ public class PartsList {
 				continue;
 			}
 			handled.put(part, part);
-			if (part.getRelationshipsPart()==null) {
-				// sb.append(".. no rels" );						
-			} else {
+			if (part.getRelationshipsPart() != null) {
 				traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
 			}
 					

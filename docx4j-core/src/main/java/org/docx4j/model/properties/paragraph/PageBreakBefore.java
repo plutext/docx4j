@@ -29,7 +29,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class PageBreakBefore extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(PageBreakBefore.class);		
+	protected static final Logger log = LoggerFactory.getLogger(PageBreakBefore.class);
 	
 	public final static String CSS_NAME = "page-break-before"; 
 	public final static String FO_NAME  = "break-before"; 
@@ -49,7 +49,7 @@ public class PageBreakBefore extends AbstractParagraphProperty {
 		
 		debug(CSS_NAME, value);
 		
-		if (value.getCssText().toLowerCase().equals("always")) {
+		if (value.getCssText().equalsIgnoreCase("always")) {
 			this.setObject( Context.getWmlObjectFactory().createBooleanDefaultTrue()  );
 		} else {
 			BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();

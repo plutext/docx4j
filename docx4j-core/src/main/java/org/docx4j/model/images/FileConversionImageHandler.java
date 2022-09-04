@@ -71,7 +71,7 @@ public class FileConversionImageHandler extends AbstractConversionImageHandler {
 			uri = setupImageUri(imageFile);
 			log.info("Wrote @src='" + uri);
 		} catch (IOException ioe) {
-			throw new Docx4JException("Exception storing '" + filename + "', " + ioe.toString(), ioe);
+			throw new Docx4JException("Exception storing '" + filename + "', " + ioe, ioe);
 		} finally {
 			try {
 				out.close();

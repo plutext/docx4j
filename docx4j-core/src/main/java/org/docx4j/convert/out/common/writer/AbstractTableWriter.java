@@ -478,8 +478,8 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	protected JAXBElement<?> getElement(List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore, String localName) {
 		JAXBElement<?> element = null;
 		if ((cnfStyleOrDivIdOrGridBefore != null) && (!cnfStyleOrDivIdOrGridBefore.isEmpty())) {
-			for (int i=0; i<cnfStyleOrDivIdOrGridBefore.size(); i++) {
-				element = cnfStyleOrDivIdOrGridBefore.get(i);
+			for (JAXBElement<?> jaxbElement : cnfStyleOrDivIdOrGridBefore) {
+				element = jaxbElement;
 				if (localName.equals(element.getName().getLocalPart())) {
 					return element;
 				}
@@ -493,21 +493,20 @@ public abstract class AbstractTableWriter extends AbstractSimpleWriter {
 	int bgColor = 0xffffff; //the background color of the page is assumed as white
 	int fgColor = 0; //the default color of the font is assumed as black
 	int pctPattern = -1;
-		for (int i=0; i<properties.size(); i++) {
-			if (properties.get(i) instanceof Shading) {
-				shd = (CTShd)properties.get(i).getObject();
-				fgColor = extractColor(shd.getColor(), 0); 
+		for (Property property : properties) {
+			if (property instanceof Shading) {
+				shd = (CTShd) property.getObject();
+				fgColor = extractColor(shd.getColor(), 0);
 				if ((shd.getVal() != null) &&
-					("clear".equals(shd.getVal().value())) &&	
-					("auto".equals(shd.getFill()))
-					) {
+						("clear".equals(shd.getVal().value())) &&
+						("auto".equals(shd.getFill()))
+				) {
 					//This is a reset to the background color of the page, 
 					//it is treated as an special case, as the background color 
 					//isn't inherited
 					bgColor = 0xffffff;
 					pctPattern = -2;
-				}
-				else {
+				} else {
 					pctPattern = (shd.getVal() != null ? extractPattern(shd.getVal().value()) : -1);
 					bgColor = extractColor(shd.getFill(), bgColor);
 				}

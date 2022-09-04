@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 //import com.vdurmont.emoji.EmojiManager;
 
 import java.awt.font.NumericShaper;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -65,7 +66,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class RunFontSelector {
 	
-	protected static Logger log = LoggerFactory.getLogger(RunFontSelector.class);	
+	protected static final Logger log = LoggerFactory.getLogger(RunFontSelector.class);
 
 	private WordprocessingMLPackage wordMLPackage;
 	private RunFontCharacterVisitor vis;
@@ -672,7 +673,7 @@ public class RunFontSelector {
     		    	// For now, a quick n dirty check
 	       	    	
 	       	    	*/
-        	    	if (c=='\uD83D' || c=='\uD83D' || c=='\uD83E') {
+        	    	if (c=='\uD83D' || c=='\uD83E') {
         	    		
         	    		log.debug("assuming emoji " + Integer.toHexString(c));
         		    	
@@ -725,7 +726,7 @@ public class RunFontSelector {
     		     * @ascii (or @asciiTheme) is used to format all characters in the ASCII range 
     		     * (0 - 127)
     		     */
-        	    if (c>='\u0000' && c<='\u007F') 
+        	    if (c<='\u007F')
         	    {
         	    	vis.fontAction(ascii); 
         	    	vis.addCharacterToCurrent(c);
@@ -862,12 +863,9 @@ public class RunFontSelector {
         	    }
         	    else if (c>='\u1100' && c<='\u11FF') 
         	    {
-        	    	if (eastAsia==null) {
-        	    		vis.fontAction("Gungsuh"); // TODO what if not present?
-        	    			// Why is it not found?  Its in batang.ttc
-        	    	} else {        	    	
-        	    		vis.fontAction(eastAsia);
-        	    	}
+					// TODO what if not present?
+					// Why is it not found?  Its in batang.ttc
+					vis.fontAction(Objects.requireNonNullElse(eastAsia, "Gungsuh"));
         	    	vis.addCharacterToCurrent(c);
         	    	
         	    	currentRangeLower = '\u1100';
@@ -1016,14 +1014,14 @@ public class RunFontSelector {
     							For the range FB1D – FB4F, ascii (or asciiTheme if defined) is used.
     					*/
         	    	if (hint == STHint.EAST_ASIA) {
-    	    			if ( c>='\uFB00' && c<='\uFB1C') {
+    	    			if (c<='\uFB1C') {
     	    				vis.fontAction(eastAsia);
     	    			    vis.setMustCreateNewFlag(true);
     	    			} else {
     	    				vis.fontAction(hAnsi);
     	    			}
         	    			
-        	    	} else if ( c>='\uFB1D' && c<='\uFB4F') {
+        	    	} else if (c>='\uFB1D') {
         	    				
         				vis.fontAction(ascii);
         			    vis.setMustCreateNewFlag(true);
@@ -1121,7 +1119,7 @@ public class RunFontSelector {
 		String font = getPhysicalFont(fontName);
 		
 		if (font!=null) {					
-			return Property.composeCss(CSS_NAME, "'" + font + "'");
+			return Property.composeCss(CSS_NAME, '\'' + font + '\'');
 		} else {
 			// We don't have this font, so don't specify it in our CSS
 			log.info("No physical font for " + fontName);

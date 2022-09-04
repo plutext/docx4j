@@ -150,15 +150,8 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		+ "/sample-docs/glox/extracted/chevron1.glox";
 		
 		OpcPackage opcPackage = OpcPackage.load(new java.io.File(layoutSrcFilePath));
-		DiagramLayoutPart thisPart = null;
-		for (Entry<PartName,Part> entry : opcPackage.getParts().getParts().entrySet() ) {
-			
-			if (entry.getValue().getContentType().equals( 
-					ContentTypes.DRAWINGML_DIAGRAM_LAYOUT )) {
-				thisPart = (DiagramLayoutPart)entry.getValue();
-				break;
-			}
-		}
+		DiagramLayoutPart thisPart = opcPackage.getParts().getParts().entrySet().stream().filter(entry -> entry.getValue().getContentType().equals(
+				ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)).findFirst().map(entry -> (DiagramLayoutPart) entry.getValue()).orElse(null);
 		if (thisPart==null) {
 			System.out.println("No SmartArt found in " + layoutSrcFilePath);
 			return;	

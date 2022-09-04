@@ -210,7 +210,7 @@ public class NamespacePrefixMapperUtils {
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
-				log.warn("No mapping for prefix '" + prefix + "'");
+				log.warn("No mapping for prefix '" + prefix + '\'');
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
 				//entries.add(prefix);
@@ -236,7 +236,7 @@ public class NamespacePrefixMapperUtils {
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
-				log.warn("No mapping for prefix '" + prefix + "'");
+				log.warn("No mapping for prefix '" + prefix + '\'');
 			} else {
 		    	//  { "prefix1", "namespace1", "prefix2", "namespace2", ... }
 				//entries.add(prefix);
@@ -264,7 +264,7 @@ public class NamespacePrefixMapperUtils {
 			String uri = NamespacePrefixMappings.getNamespaceURIStatic(prefix);
 			
 			if (uri==null || uri.contentEquals(XMLConstants.NULL_NS_URI)) {
-				log.warn("No mapping for prefix '" + prefix + "'");
+				log.warn("No mapping for prefix '" + prefix + '\'');
 			} else {
 	    		doc.getDocumentElement().setAttributeNS("http://www.w3.org/2000/xmlns/" ,
 	    				"xmlns:" + prefix, uri);

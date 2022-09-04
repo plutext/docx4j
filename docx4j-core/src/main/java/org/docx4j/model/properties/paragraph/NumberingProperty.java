@@ -28,7 +28,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class NumberingProperty extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(NumberingProperty.class);		
+	protected static final Logger log = LoggerFactory.getLogger(NumberingProperty.class);
 	
 	public final static String CSS_NAME = "FIXME"; 
 	public final static String FO_NAME  = "FIXME"; 

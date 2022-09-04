@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PresentationMLPackage  extends OpcPackage {
 	
-	protected static Logger log = LoggerFactory.getLogger(PresentationMLPackage.class);
+	protected static final Logger log = LoggerFactory.getLogger(PresentationMLPackage.class);
 		
 	
 	/**
@@ -205,7 +205,7 @@ public class PresentationMLPackage  extends OpcPackage {
 			SlideMasterPart masterPart = new SlideMasterPart();
 			pp.addSlideMasterIdListEntry(masterPart);
 
-			masterPart.setJaxbElement(masterPart.createSldMaster() );
+			masterPart.setJaxbElement(SlideMasterPart.createSldMaster() );
 			masterPart.addSlideLayoutIdListEntry(layoutPart);
 			
 			layoutPart.addTargetPart(masterPart);
@@ -317,19 +317,15 @@ public class PresentationMLPackage  extends OpcPackage {
 		}
 		
 		// All this for the 16 possible things defined in STPlaceholderType!
-		globalPlaceHolders = new HashMap<String, ShapeWrapper>();
-		
-		Iterator partIterator = this.getParts().getParts().entrySet().iterator();
-	    while (partIterator.hasNext()) {
-	    	
-	        Map.Entry pairs = (Map.Entry)partIterator.next();
-	        
-	        Part p = (Part)pairs.getValue();
-	        if (p instanceof SlideLayoutPart) {
-	        	SldLayout sldLayout = ((SlideLayoutPart)p).getJaxbElement();	        	
-	        	globalPlaceHolders.putAll( ((SlideLayoutPart)p).getIndexedPlaceHolders()  );
-	        }
-	    }
+		globalPlaceHolders = new HashMap<>();
+
+		for (Map.Entry<PartName, Part> pairs : this.getParts().getParts().entrySet()) {
+			Part p = pairs.getValue();
+			if (p instanceof SlideLayoutPart) {
+				//SldLayout sldLayout = ((SlideLayoutPart) p).getJaxbElement();
+				globalPlaceHolders.putAll(((SlideLayoutPart) p).getIndexedPlaceHolders());
+			}
+		}
 	    return globalPlaceHolders;
 	}
 	
@@ -375,7 +371,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 */
 	public PresentationMLPackage partialClone(int[] slideNumbers) {
 		
-		OpcPackage result = null;
+		PresentationMLPackage result = null;
 		
 		// Zip it up
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -389,7 +385,7 @@ public class PresentationMLPackage  extends OpcPackage {
 			log.error(e.getMessage(), e);
 		}
 
-		return (PresentationMLPackage)result;
+		return result;
 		
 	}
 	

@@ -41,7 +41,7 @@ public class WindowsFontDirFinder implements FontDirFinder {
      * Attempts to read windir environment variable on windows
      * (disclaimer: This is a bit dirty but seems to work nicely)
      */
-    private String getWinDir(String osName) throws IOException {
+    private static String getWinDir(String osName) throws IOException {
         Process process = null;
         Runtime runtime = Runtime.getRuntime();
         if (osName.startsWith("Windows 9")) {
@@ -87,7 +87,7 @@ public class WindowsFontDirFinder implements FontDirFinder {
         File psFontsDir = null;
         if (windir != null) {
             // remove any trailing '/'
-            if (windir.endsWith("/")) {
+            if (!windir.isEmpty() && windir.charAt(windir.length() - 1) == '/') {
                 windir = windir.substring(0, windir.length() - 1);
             }
             osFontsDir = new File(windir + File.separator + "FONTS");

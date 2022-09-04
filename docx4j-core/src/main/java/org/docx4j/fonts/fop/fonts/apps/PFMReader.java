@@ -94,7 +94,7 @@ public class PFMReader extends AbstractFontReader {
 
         PFMReader app = new PFMReader();
 
-        log.info("PFM Reader for Apache FOP " + Version.getVersion() + "\n");
+        log.info("PFM Reader for Apache FOP " + Version.getVersion() + '\n');
 
         if (options.get("-ef") != null) {
             embFile = (String)options.get("-ef");
@@ -171,7 +171,7 @@ public class PFMReader extends AbstractFontReader {
             log.info("LowerCaseDescent: " + pfm.getLowerCaseDescent());
             log.info("Having widths for " + (pfm.getLastChar() - pfm.getFirstChar())
                         + " characters (" + pfm.getFirstChar()
-                        + "-" + pfm.getLastChar() + ").");
+                        + '-' + pfm.getLastChar() + ").");
             log.info("for example: Char " + pfm.getFirstChar()
                         + " has a width of " + pfm.getCharWidth(pfm.getFirstChar()));
             log.info("");
@@ -234,23 +234,23 @@ public class PFMReader extends AbstractFontReader {
 
         el = doc.createElement("cap-height");
         root.appendChild(el);
-        Integer value = pfm.getCapHeight();
-        el.appendChild(doc.createTextNode(value.toString()));
+        int value = pfm.getCapHeight();
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("x-height");
         root.appendChild(el);
         value = pfm.getXHeight();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("ascender");
         root.appendChild(el);
         value = pfm.getLowerCaseAscent();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("descender");
         root.appendChild(el);
         value = pfm.getLowerCaseDescent();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         Element bbox = doc.createElement("bbox");
         root.appendChild(bbox);
@@ -260,33 +260,33 @@ public class PFMReader extends AbstractFontReader {
             el = doc.createElement(names[i]);
             bbox.appendChild(el);
             value = bb[i];
-            el.appendChild(doc.createTextNode(value.toString()));
+            el.appendChild(doc.createTextNode(Integer.toString(value)));
         }
 
         el = doc.createElement("flags");
         root.appendChild(el);
         value = pfm.getFlags();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("stemv");
         root.appendChild(el);
         value = pfm.getStemV();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("italicangle");
         root.appendChild(el);
         value = pfm.getItalicAngle();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("first-char");
         root.appendChild(el);
         value = (int) pfm.getFirstChar();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         el = doc.createElement("last-char");
         root.appendChild(el);
         value = (int) pfm.getLastChar();
-        el.appendChild(doc.createTextNode(value.toString()));
+        el.appendChild(doc.createTextNode(Integer.toString(value)));
 
         Element widths = doc.createElement("widths");
         root.appendChild(widths);

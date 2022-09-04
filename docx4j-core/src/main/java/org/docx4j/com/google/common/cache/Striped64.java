@@ -11,6 +11,7 @@
 
 package org.docx4j.com.google.common.cache;
 
+import java.util.Arrays;
 import java.util.Random;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtIncompatible;
@@ -214,11 +215,11 @@ abstract class Striped64 extends Number {
         } else if (!wasUncontended) // CAS already known to fail
         wasUncontended = true; // Continue after rehash
         else if (a.cas(v = a.value, fn(v, x))) break;
-        else if (n >= NCPU || cells != as) collide = false; // At max size or stale
+        else if (n >= NCPU || !Arrays.equals(cells, as)) collide = false; // At max size or stale
         else if (!collide) collide = true;
         else if (busy == 0 && casBusy()) {
           try {
-            if (cells == as) { // Expand table unless stale
+            if (Arrays.equals(cells, as)) { // Expand table unless stale
               Cell[] rs = new Cell[n << 1];
               for (int i = 0; i < n; ++i) rs[i] = as[i];
               cells = rs;
@@ -233,10 +234,10 @@ abstract class Striped64 extends Number {
         h ^= h >>> 17;
         h ^= h << 5;
         hc[0] = h; // Record index for next time
-      } else if (busy == 0 && cells == as && casBusy()) {
+      } else if (busy == 0 && Arrays.equals(cells, as) && casBusy()) {
         boolean init = false;
         try { // Initialize table
-          if (cells == as) {
+          if (Arrays.equals(cells, as)) {
             Cell[] rs = new Cell[2];
             rs[h & 1] = new Cell(x);
             cells = rs;
@@ -256,10 +257,9 @@ abstract class Striped64 extends Number {
     base = initialValue;
     if (as != null) {
       int n = as.length;
-      for (int i = 0; i < n; ++i) {
-        Cell a = as[i];
-        if (a != null) a.value = initialValue;
-      }
+        for (Cell a : as) {
+            if (a != null) a.value = initialValue;
+        }
     }
   }
 

@@ -44,7 +44,7 @@ import org.w3c.dom.css.CSSValueList;
  */
 public abstract class Property {
 	
-	protected static Logger log = LoggerFactory.getLogger(Property.class);	
+	protected static final Logger log = LoggerFactory.getLogger(Property.class);
 	
 	protected Object object;
 	/**

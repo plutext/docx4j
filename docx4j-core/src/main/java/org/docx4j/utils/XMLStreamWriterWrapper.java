@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class XMLStreamWriterWrapper implements XMLStreamWriter {
 	
-	protected static Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapper.class);
+	protected static final Logger log = LoggerFactory.getLogger(XMLStreamWriterWrapper.class);
 	
 
 	XMLStreamWriter underlying;
@@ -33,7 +33,7 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 		this.underlying = underlying;
 	}
 	
-    class Event {
+    static class Event {
         Method m;
         Object[] args;
     }
@@ -156,10 +156,10 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
 	@Override
 	public void writeNamespace(String prefix, String namespaceURI) throws XMLStreamException {
 		if (namespaceURI==null) {
-			log.debug("Dropping null for prefix '" + prefix + "'");			
+			log.debug("Dropping null for prefix '" + prefix + '\'');
 		} else if (namespaceURI.trim().isEmpty()) {
 			if (log.isDebugEnabled()) {
-				log.debug("Dropping empty for prefix '" + prefix + "'");
+				log.debug("Dropping empty for prefix '" + prefix + '\'');
 			}
 		} else {
 			if (log.isDebugEnabled()) {
@@ -341,7 +341,7 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
         e.args = params;
         return e;
     }
-    Method m(String methodName,Class<?>...args) throws XMLStreamException {
+    static Method m(String methodName, Class<?>... args) throws XMLStreamException {
         try {
             return XMLStreamWriter.class.getMethod(methodName, args);
         } catch (Exception e) {
@@ -350,11 +350,9 @@ public class XMLStreamWriterWrapper implements XMLStreamWriter {
     }
     void fq() throws XMLStreamException
     {
-        for(int i = 0;i < queue.size();i++)
-        {
-            Event e = queue.get(i);
-            ex(e, e.args);
-        }
+		for (Event e : queue) {
+			ex(e, e.args);
+		}
         queue.clear();
     }
     void ex(Event e,Object...args) throws XMLStreamException

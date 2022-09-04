@@ -26,14 +26,8 @@ package org.docx4j.org.apache.poi.hpsf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 
 import org.docx4j.org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.docx4j.org.apache.poi.util.CodePageUtil;
@@ -98,9 +92,7 @@ public class MutableSection extends Section
     {
         setFormatID(s.getFormatID());
         final Property[] pa = s.getProperties();
-        final MutableProperty[] mpa = new MutableProperty[pa.length];
-        for (int i = 0; i < pa.length; i++)
-            mpa[i] = new MutableProperty(pa[i]);
+        final MutableProperty[] mpa = Arrays.stream(pa).map(MutableProperty::new).toArray(MutableProperty[]::new);
         setProperties(mpa);
         setDictionary(s.getDictionary());
     }
@@ -153,8 +145,7 @@ public class MutableSection extends Section
     {
         this.properties = properties;
         preprops = new LinkedList<Property>();
-        for (int i = 0; i < properties.length; i++)
-            preprops.add(properties[i]);
+        preprops.addAll(Arrays.asList(properties));
         dirty = true;
     }
 
@@ -445,9 +436,8 @@ public class MutableSection extends Section
 
         /* Write the properties and the property list into their respective
          * streams: */
-        for (final ListIterator<Property> i = preprops.listIterator(); i.hasNext();)
-        {
-            final MutableProperty p = (MutableProperty) i.next();
+        for (Property preprop : preprops) {
+            final MutableProperty p = (MutableProperty) preprop;
             final long id = p.getID();
 
             /* Write the property list entry. */
@@ -462,13 +452,12 @@ public class MutableSection extends Section
                 /* Write the property and update the position to the next
                  * property. */
                 position += p.write(propertyStream, getCodepage());
-            else
-            {
+            else {
                 if (codepage == -1)
                     throw new IllegalPropertySetDataException
-                        ("Codepage (property 1) is undefined.");
+                            ("Codepage (property 1) is undefined.");
                 position += writeDictionary(propertyStream, dictionary,
-                                            codepage);
+                        codepage);
             }
         }
         propertyStream.close();
@@ -479,7 +468,7 @@ public class MutableSection extends Section
         byte[] pb2 = propertyStream.toByteArray();
 
         /* Write the section's length: */
-        TypeWriter.writeToStream(out, LittleEndian.INT_SIZE * 2 +
+        TypeWriter.writeToStream(out, (LittleEndian.INT_SIZE << 1) +
                                       pb1.length + pb2.length);
 
         /* Write the section's number of properties: */
@@ -491,8 +480,7 @@ public class MutableSection extends Section
         /* Write the properties: */
         out.write(pb2);
 
-        int streamLength = LittleEndian.INT_SIZE * 2 + pb1.length + pb2.length;
-        return streamLength;
+        return (LittleEndian.INT_SIZE << 1) + pb1.length + pb2.length;
     }
 
 
@@ -511,13 +499,11 @@ public class MutableSection extends Section
         throws IOException
     {
         int length = TypeWriter.writeUIntToStream(out, dictionary.size());
-        for (final Iterator<Long> i = dictionary.keySet().iterator(); i.hasNext();)
-        {
-            final Long key = i.next();
-            final String value = dictionary.get(key);
+        for (final Map.Entry<Long, String> entry : dictionary.entrySet()) {
+            final Long key = entry.getKey();
+            final String value = entry.getValue();
 
-            if (codepage == CodePageUtil.CP_UNICODE)
-            {
+            if (codepage == CodePageUtil.CP_UNICODE) {
                 /* Write the dictionary item in Unicode. */
                 int sLength = value.length() + 1;
                 if (sLength % 2 == 1)
@@ -525,31 +511,26 @@ public class MutableSection extends Section
                 length += TypeWriter.writeUIntToStream(out, key.longValue());
                 length += TypeWriter.writeUIntToStream(out, sLength);
                 final byte[] ca = CodePageUtil.getBytesInCodePage(value, codepage);
-                for (int j = 2; j < ca.length; j += 2)
-                {
-                    out.write(ca[j+1]);
+                for (int j = 2; j < ca.length; j += 2) {
+                    out.write(ca[j + 1]);
                     out.write(ca[j]);
                     length += 2;
                 }
                 sLength -= value.length();
-                while (sLength > 0)
-                {
+                while (sLength > 0) {
                     out.write(0x00);
                     out.write(0x00);
                     length += 2;
                     sLength--;
                 }
-            }
-            else
-            {
+            } else {
                 /* Write the dictionary item in another codepage than
                  * Unicode. */
                 length += TypeWriter.writeUIntToStream(out, key.longValue());
                 length += TypeWriter.writeUIntToStream(out, value.length() + 1);
                 final byte[] ba = CodePageUtil.getBytesInCodePage(value, codepage);
-                for (int j = 0; j < ba.length; j++)
-                {
-                    out.write(ba[j]);
+                for (byte b : ba) {
+                    out.write(b);
                     length++;
                 }
                 out.write(0x00);
@@ -673,7 +654,7 @@ public class MutableSection extends Section
         else
             throw new HPSFRuntimeException(
                     "HPSF does not support properties of type " +
-                    value.getClass().getName() + ".");
+                    value.getClass().getName() + '.');
     }
 
 
@@ -685,9 +666,7 @@ public class MutableSection extends Section
     public void clear()
     {
         final Property[] properties = getProperties();
-        for (int i = 0; i < properties.length; i++)
-        {
-            final Property p = properties[i];
+        for (final Property p : properties) {
             removeProperty(p.getID());
         }
     }

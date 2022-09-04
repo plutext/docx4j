@@ -36,7 +36,7 @@ import org.w3c.dom.css.CSSValue;
  */
 public class Lang extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(Lang.class);		
+	protected static final Logger log = LoggerFactory.getLogger(Lang.class);
 	
 	public final static String CSS_NAME = null; 
 	public final static String FO_NAME  = "language"; 
@@ -68,8 +68,8 @@ public class Lang extends AbstractRunProperty {
 		
 		if (val!=null) {
 
-			String lang = val.substring(0, val.indexOf("-"));
-			String country = val.substring(val.indexOf("-")+1);
+			String lang = val.substring(0, val.indexOf('-'));
+			String country = val.substring(val.indexOf('-')+1);
 			
 			foElement.setAttribute(FO_NAME, lang );
 			foElement.setAttribute("country", country );

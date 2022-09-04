@@ -204,7 +204,7 @@ public class DirectoryNode
      * @exception IOException if the document does not exist or the
      *            name is that of a DirectoryEntry
      */
-    public DocumentInputStream createDocumentInputStream(
+    public static DocumentInputStream createDocumentInputStream(
             final Entry document)
         throws IOException
     {
@@ -565,11 +565,7 @@ public class DirectoryNode
         List<Object> components = new ArrayList<Object>();
 
         components.add(getProperty());
-        Iterator<Entry> iter = _entries.iterator();
-        while (iter.hasNext())
-        {
-            components.add(iter.next());
-        }
+        components.addAll(_entries);
         return components.iterator();
     }
 

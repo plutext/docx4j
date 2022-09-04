@@ -105,8 +105,7 @@ public class FontFileReader {
             throw new java.io.EOFException("Reached EOF, file size=" + fsize);
         }
 
-        final byte ret = file[current++];
-        return ret;
+        return file[current++];
     }
 
     /**
@@ -143,8 +142,7 @@ public class FontFileReader {
      */
     public final short readTTFShort() throws IOException {
         final int ret = (readTTFUByte() << 8) + readTTFUByte();
-        final short sret = (short)ret;
-        return sret;
+        return (short)ret;
     }
 
     /**
@@ -154,8 +152,7 @@ public class FontFileReader {
      * @throws IOException If EOF is reached
      */
     public final int readTTFUShort() throws IOException {
-        final int ret = (readTTFUByte() << 8) + readTTFUByte();
-        return ret;
+        return (readTTFUByte() << 8) + readTTFUByte();
     }
 
     /**

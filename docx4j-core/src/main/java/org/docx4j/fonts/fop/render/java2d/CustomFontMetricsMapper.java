@@ -127,7 +127,7 @@ public class CustomFontMetricsMapper extends Typeface implements FontMetricsMapp
 
     /** {@inheritDoc} */
     public final Font getFont(final int size) {
-        if (this.size == size) {
+        if ( Float.compare(this.size, size) == 0) {
             return font;
         }
 
@@ -182,7 +182,7 @@ public class CustomFontMetricsMapper extends Typeface implements FontMetricsMapp
     }
 
     /** {@inheritDoc} */
-    public final Map getKerningInfo() {
+    public final Map<Integer, Map <Integer, Integer>> getKerningInfo() {
         return typeface.getKerningInfo();
     }
 

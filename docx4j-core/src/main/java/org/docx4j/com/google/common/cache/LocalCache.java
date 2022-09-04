@@ -17,37 +17,23 @@ package org.docx4j.com.google.common.cache;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.docx4j.com.google.common.base.Preconditions.checkNotNull;
 import static org.docx4j.com.google.common.base.Preconditions.checkState;
-import static org.docx4j.com.google.common.cache.CacheBuilder.NULL_TICKER;
 import static org.docx4j.com.google.common.cache.CacheBuilder.UNSET_INT;
 import static org.docx4j.com.google.common.util.concurrent.Futures.transform;
 import static org.docx4j.com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.docx4j.com.google.common.util.concurrent.Uninterruptibles.getUninterruptibly;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.AbstractCollection;
-import java.util.AbstractMap;
-import java.util.AbstractQueue;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
@@ -55,6 +41,9 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
@@ -69,7 +58,6 @@ import org.docx4j.com.google.common.cache.CacheBuilder.NullListener;
 import org.docx4j.com.google.common.cache.CacheBuilder.OneWeigher;
 import org.docx4j.com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import org.docx4j.com.google.common.cache.CacheLoader.UnsupportedLoadingOperationException;
-import org.docx4j.com.google.common.cache.LocalCache.AbstractCacheSet;
 import org.docx4j.com.google.common.collect.AbstractSequentialIterator;
 import org.docx4j.com.google.common.collect.ImmutableMap;
 import org.docx4j.com.google.common.collect.ImmutableSet;
@@ -100,7 +88,7 @@ import org.slf4j.LoggerFactory;
 @GwtCompatible(emulated = true)
 class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> {
 
-	private static Logger log = LoggerFactory.getLogger(LocalCache.class);
+	private static final Logger log = LoggerFactory.getLogger(LocalCache.class);
 	
   /*
    * The basic strategy is to subdivide the table among Segments, each of which itself is a
@@ -594,7 +582,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
     }
 
     // Guarded By Segment.this
-    <K, V> void copyAccessEntry(ReferenceEntry<K, V> original, ReferenceEntry<K, V> newEntry) {
+    static <K, V> void copyAccessEntry(ReferenceEntry<K, V> original, ReferenceEntry<K, V> newEntry) {
       // TODO(fry): when we link values instead of entries this method can go
       // away, as can connectAccessOrder, nullifyAccessOrder.
       newEntry.setAccessTime(original.getAccessTime());
@@ -606,7 +594,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
     }
 
     // Guarded By Segment.this
-    <K, V> void copyWriteEntry(ReferenceEntry<K, V> original, ReferenceEntry<K, V> newEntry) {
+    static <K, V> void copyWriteEntry(ReferenceEntry<K, V> original, ReferenceEntry<K, V> newEntry) {
       // TODO(fry): when we link values instead of entries this method can go
       // away, as can connectWriteOrder, nullifyWriteOrder.
       newEntry.setWriteTime(original.getWriteTime());
@@ -2172,7 +2160,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
       try {
         V value = valueReference.waitForValue();
         if (value == null) {
-          throw new InvalidCacheLoadException("CacheLoader returned null for key " + key + ".");
+          throw new InvalidCacheLoadException("CacheLoader returned null for key " + key + '.');
         }
         // re-read ticker now that loading has completed
         long now = map.ticker.read();
@@ -2310,7 +2298,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
       try {
         value = getUninterruptibly(newValue);
         if (value == null) {
-          throw new InvalidCacheLoadException("CacheLoader returned null for key " + key + ".");
+          throw new InvalidCacheLoadException("CacheLoader returned null for key " + key + '.');
         }
         statsCounter.recordLoadSuccess(loadingValueReference.elapsedNanos());
         storeLoadedValue(key, hash, loadingValueReference, value);
@@ -2745,17 +2733,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
           long now = map.ticker.read();
           AtomicReferenceArray<ReferenceEntry<K, V>> table = this.table;
           int length = table.length();
-          for (int i = 0; i < length; ++i) {
-            for (ReferenceEntry<K, V> e = table.get(i); e != null; e = e.getNext()) {
-              V entryValue = getLiveValue(e, now);
-              if (entryValue == null) {
-                continue;
-              }
-              if (map.valueEquivalence.equivalent(value, entryValue)) {
-                return true;
-              }
-            }
-          }
+          return IntStream.range(0, length).anyMatch(i -> Stream.iterate(table.get(i), Objects::nonNull, ReferenceEntry::getNext).map(e -> getLiveValue(e, now)).filter(Objects::nonNull).anyMatch(entryValue -> map.valueEquivalence.equivalent(value, entryValue)));
         }
 
         return false;
@@ -3708,13 +3686,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
 
     @Override
     public int size() {
-      int size = 0;
-      for (ReferenceEntry<K, V> e = head.getNextInWriteQueue();
-          e != head;
-          e = e.getNextInWriteQueue()) {
-        size++;
-      }
-      return size;
+      return (int) Stream.iterate(head.getNextInWriteQueue(), e -> e != head, ReferenceEntry::getNextInWriteQueue).count();
     }
 
     @Override
@@ -3847,13 +3819,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
 
     @Override
     public int size() {
-      int size = 0;
-      for (ReferenceEntry<K, V> e = head.getNextInAccessQueue();
-          e != head;
-          e = e.getNextInAccessQueue()) {
-        size++;
-      }
-      return size;
+      return (int) Stream.iterate(head.getNextInAccessQueue(), e -> e != head, ReferenceEntry::getNextInAccessQueue).count();
     }
 
     @Override
@@ -3902,19 +3868,19 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
      */
     long sum = 0L;
     Segment<K, V>[] segments = this.segments;
-    for (int i = 0; i < segments.length; ++i) {
-      if (segments[i].count != 0) {
+    for (Segment<K, V> kvSegment : segments) {
+      if (kvSegment.count != 0) {
         return false;
       }
-      sum += segments[i].modCount;
+      sum += kvSegment.modCount;
     }
 
     if (sum != 0L) { // recheck unless no modifications
-      for (int i = 0; i < segments.length; ++i) {
-        if (segments[i].count != 0) {
+      for (Segment<K, V> segment : segments) {
+        if (segment.count != 0) {
           return false;
         }
-        sum -= segments[i].modCount;
+        sum -= segment.modCount;
       }
       if (sum != 0L) {
         return false;
@@ -3925,11 +3891,8 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
 
   long longSize() {
     Segment<K, V>[] segments = this.segments;
-    long sum = 0;
-    for (int i = 0; i < segments.length; ++i) {
-      sum += Math.max(0, segments[i].count); // see https://github.com/google/guava/issues/2108
-    }
-    return sum;
+    // see https://github.com/google/guava/issues/2108
+    return Arrays.stream(segments).mapToLong(segment -> Math.max(0, segment.count)).sum();
   }
 
   @Override
@@ -4155,13 +4118,8 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
         int unused = segment.count; // read-volatile
 
         AtomicReferenceArray<ReferenceEntry<K, V>> table = segment.table;
-        for (int j = 0; j < table.length(); j++) {
-          for (ReferenceEntry<K, V> e = table.get(j); e != null; e = e.getNext()) {
-            V v = segment.getLiveValue(e, now);
-            if (v != null && valueEquivalence.equivalent(value, v)) {
-              return true;
-            }
-          }
+        if (IntStream.range(0, table.length()).anyMatch(j -> Stream.iterate(table.get(j), Objects::nonNull, ReferenceEntry::getNext).map(e -> segment.getLiveValue(e, now)).anyMatch(v -> v != null && valueEquivalence.equivalent(value, v)))) {
+          return true;
         }
         sum += segment.modCount;
       }
@@ -4539,12 +4497,12 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
   boolean removeIf(BiPredicate<? super K, ? super V> filter) {
     checkNotNull(filter);
     boolean changed = false;
-    for (K key : keySet()) {
+    for (Map.Entry<K, V> entry : entrySet()) {
       while (true) {
-        V value = get(key);
-        if (value == null || !filter.test(key, value)) {
+        V value = entry.getValue();
+        if (value == null || !filter.test(entry.getKey(), value)) {
           break;
-        } else if (LocalCache.this.remove(key, value)) {
+        } else if (LocalCache.this.remove(entry.getKey(), value)) {
           changed = true;
           break;
         }

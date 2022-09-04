@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public final class SlidePart extends JaxbPmlPart<Sld> {
 	
-	protected static Logger log = LoggerFactory.getLogger(SlidePart.class);	
+	protected static final Logger log = LoggerFactory.getLogger(SlidePart.class);
 	
 	public SlidePart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -26,8 +26,10 @@ package org.docx4j.org.apache.poi.hpsf;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.stream.IntStream;
 
 /**
  * <p>Provides various static utility methods.</p>
@@ -61,10 +63,7 @@ public class Util
     {
         if (a.length != b.length)
             return false;
-        for (int i = 0; i < a.length; i++)
-            if (a[i] != b[i])
-                return false;
-        return true;
+        return IntStream.range(0, a.length).noneMatch(i -> a[i] != b[i]);
     }
 
 
@@ -98,14 +97,12 @@ public class Util
      */
     public static byte[] cat(final byte[][] byteArrays)
     {
-        int capacity = 0;
-        for (int i = 0; i < byteArrays.length; i++)
-            capacity += byteArrays[i].length;
+        int capacity = Arrays.stream(byteArrays).mapToInt(byteArray -> byteArray.length).sum();
         final byte[] result = new byte[capacity];
         int r = 0;
-        for (int i = 0; i < byteArrays.length; i++)
-            for (int j = 0; j < byteArrays[i].length; j++)
-                result[r++] = byteArrays[i][j];
+        for (byte[] byteArray : byteArrays)
+            for (int j = 0; j < byteArray.length; j++)
+                result[r++] = byteArray[j];
         return result;
     }
 
@@ -244,15 +241,11 @@ public class Util
 
     private static boolean internalEquals(Object[] o1, Object[] o2)
     {
-        for (int i1 = 0; i1 < o1.length; i1++)
-        {
-            final Object obj1 = o1[i1];
+        for (final Object obj1 : o1) {
             boolean matchFound = false;
-            for (int i2 = 0; !matchFound && i2 < o1.length; i2++)
-            {
+            for (int i2 = 0; !matchFound && i2 < o1.length; i2++) {
                 final Object obj2 = o2[i2];
-                if (obj1.equals(obj2))
-                {
+                if (obj1.equals(obj2)) {
                     matchFound = true;
                     o2[i2] = null;
                 }
@@ -351,8 +344,8 @@ public class Util
         }
         catch (IOException e)
         {
-            final StringBuffer b = new StringBuffer(t.getMessage());
-            b.append("\n");
+            final StringBuilder b = new StringBuilder(t.getMessage());
+            b.append('\n');
             b.append("Could not create a stacktrace. Reason: ");
             b.append(e.getMessage());
             return b.toString();

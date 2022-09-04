@@ -59,12 +59,12 @@ class ClipboardData
 
         _format = LittleEndian.getInt( data, offset + LittleEndian.INT_SIZE );
         _value = LittleEndian.getByteArray( data, offset
-                + LittleEndian.INT_SIZE * 2, size - LittleEndian.INT_SIZE );
+                + (LittleEndian.INT_SIZE << 1), size - LittleEndian.INT_SIZE );
     }
 
     int getSize()
     {
-        return LittleEndian.INT_SIZE * 2 + _value.length;
+        return (LittleEndian.INT_SIZE << 1) + _value.length;
     }
 
     byte[] getValue()

@@ -80,7 +80,7 @@ public class SimpleSingleByteEncoding implements SingleByteEncoding {
      * Returns the index of the first defined character.
      * @return the index of the first defined character (always 1 for this class)
      */
-    public int getFirstChar() {
+    public static int getFirstChar() {
         return 1;
     }
 

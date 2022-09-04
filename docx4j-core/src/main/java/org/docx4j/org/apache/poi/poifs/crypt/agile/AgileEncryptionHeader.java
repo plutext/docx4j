@@ -58,7 +58,7 @@ public class AgileEncryptionHeader extends EncryptionHeader {
 
         int keyBits = (int)keyData.getKeyBits();
         
-        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm().toString(), keyBits);
+        CipherAlgorithm ca = CipherAlgorithm.fromXmlId(keyData.getCipherAlgorithm(), keyBits);
         setCipherAlgorithm(ca);
         setCipherProvider(ca.provider);
 

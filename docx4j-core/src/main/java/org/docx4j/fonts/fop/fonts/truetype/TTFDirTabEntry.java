@@ -57,15 +57,14 @@ class TTFDirTabEntry {
 
         offset = in.readTTFULong();
         length = in.readTTFULong();
-        String tagStr = new String(tag, "ISO-8859-1");
 
-        return tagStr;
+        return new String(tag, "ISO-8859-1");
     }
 
 
     public String toString() {
         return "Read dir tab ["
-            + tag[0] + " " + tag[1] + " " + tag[2] + " " + tag[3] + "]"
+            + tag[0] + ' ' + tag[1] + ' ' + tag[2] + ' ' + tag[3] + ']'
             + " offset: " + offset
             + " length: " + length
             + " name: " + tag;

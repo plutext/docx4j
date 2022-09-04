@@ -146,7 +146,7 @@ public class DocPropertyResolver {
 		
 	}
 	
-	private String getFirstValue(SimpleLiteral simpleLiteral) {
+	private static String getFirstValue(SimpleLiteral simpleLiteral) {
 		
 		if (simpleLiteral.getContent().size()==0) {
 			return null;

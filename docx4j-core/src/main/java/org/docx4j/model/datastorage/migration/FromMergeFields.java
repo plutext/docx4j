@@ -108,14 +108,14 @@ public class FromMergeFields extends AbstractMigratorUsingAnswersFormat {
 				
 				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 				tmp = tmp.trim();
-				String key  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
-				log.info("Key: '" + key + "'");
+				String key  = tmp.contains(" ") ? tmp.substring(0, tmp.indexOf(' ')) : tmp ;
+				log.info("Key: '" + key + '\'');
 								
 				// Remove the field related runs
 				int end = fr.getParent().getContent().indexOf(fr.getEndRun());
 				int begin = fr.getParent().getContent().indexOf(fr.getBeginRun());
-				for (int i = end; i>=begin; i--) {
-					fr.getParent().getContent().remove(i);
+				if (end >= begin) {
+					fr.getParent().getContent().subList(begin, end + 1).clear();
 				}
 				
 				// Now add a content control

@@ -22,11 +22,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import jakarta.xml.bind.JAXBException;
 
@@ -332,7 +328,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		return fontsDiscovered;
     }
     
-	private class FontDiscoveryCharacterVisitor implements RunFontCharacterVisitor {
+	private static class FontDiscoveryCharacterVisitor implements RunFontCharacterVisitor {
 		
 		FontDiscoveryCharacterVisitor(Set<String> fontsDiscovered) {
 			this.fontsDiscovered = fontsDiscovered;
@@ -349,12 +345,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			}
 			
 			String englishFromCJK = CJKToEnglish.toEnglish( fontname);
-			if (englishFromCJK==null) {
-				fontsDiscovered.add(fontname); 
-			} else {
-				fontsDiscovered.add(englishFromCJK);
-				// No point adding the original CJK name
-			}
+			// No point adding the original CJK name
+			fontsDiscovered.add(Objects.requireNonNullElse(englishFromCJK, fontname));
 			
 		}
 
@@ -711,9 +703,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				org.docx4j.wml.Text  t = factory.createText();
 				t.setValue(s);
 				
-				if (s.startsWith(" ")) {
+				if (!s.isEmpty() && s.charAt(0) == ' ') {
 					t.setSpace("preserve");
-				} else if (s.endsWith(" ")) {
+				} else if (!s.isEmpty() && s.charAt(s.length() - 1) == ' ') {
 					t.setSpace("preserve");
 				}
 				
@@ -743,9 +735,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		
 		// If this object contains paragraphs, make sure any style used
 		// is activated
-    	Set<String> stylesInUse = new java.util.HashSet<String>();
+    	Set<String> stylesInUse = new java.util.HashSet<>();
 //    	Set<String> fontsDiscovered = new java.util.HashSet<String>(); 
-		List list = new java.util.ArrayList<Object>();
+		List<Object> list = new java.util.ArrayList<>();
 		list.add(o);
 		
 //		FontDiscoveryCharacterVisitor visitor = new FontDiscoveryCharacterVisitor(fontsDiscovered);

@@ -103,7 +103,7 @@ public abstract class AbstractConversionContext {
 		return handler;
 	}
 
-	protected ConversionHyperlinkHandler initializeHyperlinkHandler(AbstractConversionSettings settings, ConversionHyperlinkHandler handler) {
+	protected static ConversionHyperlinkHandler initializeHyperlinkHandler(AbstractConversionSettings settings, ConversionHyperlinkHandler handler) {
 		return (handler != null ? handler : DUMMY_HYPERLINK_HANDLER);
 	}
 
@@ -127,7 +127,7 @@ public abstract class AbstractConversionContext {
 		return ret;
 	}
 
-	protected AbstractMessageWriter initializeMessageWriter(AbstractMessageWriter writer) {
+	protected static AbstractMessageWriter initializeMessageWriter(AbstractMessageWriter writer) {
 		return (writer != null ? writer : DUMMY_WRITER);
 	}
 	
@@ -163,7 +163,7 @@ public abstract class AbstractConversionContext {
 	 * 
 	 * @return
 	 */
-	public Logger getLog() {
+	public static Logger getLog() {
 		return log;
 	}
 

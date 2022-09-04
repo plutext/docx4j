@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,13 +80,8 @@ public class Tree<T> {
      * @return the String representation of the Tree.
      */
     public String toString() {
-    	
-    	StringBuffer sb = new StringBuffer();
-    	for (Node<T> n : toList() ) {
-    		sb.append(n.name + "\n");	    		
-    	}
-    	
-        return sb.toString();
+
+        return toList().stream().map(n -> n.name + '\n').collect(Collectors.joining());
     }
      
     /**

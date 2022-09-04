@@ -24,11 +24,7 @@
 package org.docx4j.org.apache.poi.hpsf;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.docx4j.org.apache.poi.hpsf.wellknown.PropertyIDMap;
 import org.docx4j.org.apache.poi.hpsf.wellknown.SectionIDMap;
@@ -267,7 +263,7 @@ public class Section
                 if (type != Variant.VT_I2)
                     throw new HPSFRuntimeException
                         ("Value type of property ID 1 is not VT_I2 but " +
-                         type + ".");
+                         type + '.');
 
                 /* Read the codepage number. */
                 codepage = LittleEndian.getUShort(src, o);
@@ -277,9 +273,8 @@ public class Section
         /* Pass 2: Read all properties - including the codepage property,
          * if available. */
         int i1 = 0;
-        for (final Iterator<PropertyListEntry> i = propertyList.iterator(); i.hasNext();)
-        {
-            ple = i.next();
+        for (PropertyListEntry propertyListEntry : propertyList) {
+            ple = propertyListEntry;
             Property p = new Property(ple.id, src,
                     this.offset + ple.offset,
                     ple.length, codepage);
@@ -326,7 +321,7 @@ public class Section
 
         public String toString()
         {
-            final StringBuffer b = new StringBuffer();
+            final StringBuilder b = new StringBuilder();
             b.append(getClass().getName());
             b.append("[id=");
             b.append(id);
@@ -354,9 +349,9 @@ public class Section
     public Object getProperty(final long id)
     {
         wasNull = false;
-        for (int i = 0; i < properties.length; i++)
-            if (id == properties[i].getID())
-                return properties[i].getValue();
+        for (Property property : properties)
+            if (id == property.getID())
+                return property.getValue();
         wasNull = true;
         return null;
     }
@@ -383,7 +378,7 @@ public class Section
         if (!(o instanceof Long || o instanceof Integer))
             throw new HPSFRuntimeException
                 ("This property is not an integer type, but " +
-                 o.getClass().getName() + ".");
+                 o.getClass().getName() + '.');
         i = (Number) o;
         return i.intValue();
     }
@@ -454,7 +449,7 @@ public class Section
     {
         String s = null;
         if (dictionary != null)
-            s = dictionary.get(Long.valueOf(pid));
+            s = dictionary.get(pid);
         if (s == null)
             s = SectionIDMap.getPIDString(getFormatID().getBytes(), pid);
         if (s == null)
@@ -490,7 +485,7 @@ public class Section
      */
     public boolean equals(final Object o)
     {
-        if (o == null || !(o instanceof Section))
+        if (!(o instanceof Section))
             return false;
         final Section s = (Section) o;
         if (!s.getFormatID().equals(getFormatID()))
@@ -567,7 +562,7 @@ public class Section
      * @param i The index of the field to be removed.
      * @return the compactified array.
      */
-    private Property[] remove(final Property[] pa, final int i)
+    private static Property[] remove(final Property[] pa, final int i)
     {
         final Property[] h = new Property[pa.length - 1];
         if (i > 0)
@@ -586,10 +581,8 @@ public class Section
         long hashCode = 0;
         hashCode += getFormatID().hashCode();
         final Property[] pa = getProperties();
-        for (int i = 0; i < pa.length; i++)
-            hashCode += pa[i].hashCode();
-        final int returnHashCode = (int) (hashCode & 0x0ffffffffL);
-        return returnHashCode;
+        hashCode += Arrays.stream(pa).mapToLong(Property::hashCode).sum();
+        return (int) (hashCode & 0x0ffffffffL);
     }
 
 
@@ -599,7 +592,7 @@ public class Section
      */
     public String toString()
     {
-        final StringBuffer b = new StringBuffer();
+        final StringBuilder b = new StringBuilder();
         final Property[] pa = getProperties();
         b.append(getClass().getName());
         b.append('[');
@@ -612,9 +605,8 @@ public class Section
         b.append(", size: ");
         b.append(getSize());
         b.append(", properties: [\n");
-        for (int i = 0; i < pa.length; i++)
-        {
-            b.append(pa[i].toString());
+        for (Property property : pa) {
+            b.append(property.toString());
             b.append(",\n");
         }
         b.append(']');
@@ -652,8 +644,7 @@ public class Section
             (Integer) getProperty(PropertyIDMap.PID_CODEPAGE);
         if (codepage == null)
             return -1;
-        int cp = codepage.intValue();
-        return cp;
+        return codepage;
     }
 
 }

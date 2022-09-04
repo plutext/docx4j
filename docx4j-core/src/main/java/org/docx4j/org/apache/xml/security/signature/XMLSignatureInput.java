@@ -385,7 +385,7 @@ public class XMLSignatureInput {
         if (isElement()) {
             return "XMLSignatureInput/Element/" + subNode
                 + " exclude "+ excludeNode + " comments:" 
-                + excludeComments +"/" + getSourceURI();
+                + excludeComments + '/' + getSourceURI();
         }
         try {
             return "XMLSignatureInput/OctetStream/" + getBytes().length
@@ -487,7 +487,7 @@ public class XMLSignatureInput {
             c14nizer.setWriter(diOs);
             c14nizer.engineCanonicalize(this); 
         } else {
-            byte[] buffer = new byte[4 * 1024];
+            byte[] buffer = new byte[(4 << 10)];
             int bytesread = 0;
             try {
                 while ((bytesread = inputOctetStreamProxy.read(buffer)) != -1) {
@@ -559,8 +559,7 @@ public class XMLSignatureInput {
         try {
             db.setErrorHandler(new org.docx4j.org.apache.xml.security.utils.IgnoreAllErrorHandler());
 
-            Document doc = db.parse(this.getOctetStream());
-            this.subNode = doc;
+            this.subNode = db.parse(this.getOctetStream());
         } catch (SAXException ex) {
             // if a not-wellformed nodeset exists, put a container around it...
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

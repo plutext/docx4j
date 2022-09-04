@@ -57,7 +57,7 @@ public class Box {
 						Math.round(offset.x + 0.5f* extent.x),
 						Math.round(offset.y + 0.5f* extent.y)) ;
 		
-		float degree = -units/60000; // clockwise
+		float degree = (float)-units/60000; // clockwise
 		System.out.println("Rotating " + degree);
 		float radians = (float)Math.toRadians(degree);
 
@@ -71,9 +71,8 @@ public class Box {
 		// Offset
 		Point offsetDash = offset.subtract(centre);
 		Point offsetDash2 = rotate(offsetDash, radians);
-		Point offsetDash3 = offsetDash2.add(centre);	
-		
-		offset = offsetDash3;
+
+		offset = offsetDash2.add(centre);
 		extent = otherCornerDash3.subtract(offset);
 		
 		System.out.println("Rotated--> " + debug());
@@ -81,7 +80,7 @@ public class Box {
 	}
 	
 	
-	private Point rotate(Point p, float radians) {
+	private static Point rotate(Point p, float radians) {
 		
 		long xDash = Math.round((p.x*Math.cos(radians)) -(p.y*Math.sin(radians)));		
 		long yDash = Math.round((p.x*Math.sin(radians)) + (p.y*Math.cos(radians)));

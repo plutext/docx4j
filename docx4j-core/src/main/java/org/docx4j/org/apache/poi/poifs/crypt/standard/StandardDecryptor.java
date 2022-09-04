@@ -109,8 +109,7 @@ public class StandardDecryptor extends Decryptor {
         
         byte[] key = Arrays.copyOf(x3, keySize);
 
-        SecretKey skey = new SecretKeySpec(key, ver.getCipherAlgorithm().jceId);
-        return skey;
+        return new SecretKeySpec(key, ver.getCipherAlgorithm().jceId);
     }
 
     protected static byte[] fillAndXor(byte hash[], byte fillByte) {

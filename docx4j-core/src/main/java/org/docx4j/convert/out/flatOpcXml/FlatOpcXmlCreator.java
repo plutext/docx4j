@@ -21,7 +21,6 @@
 package org.docx4j.convert.out.flatOpcXml;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -29,12 +28,9 @@ import java.net.URI;
 import java.util.HashMap;
 
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.dom.DOMSource;
 
-import org.apache.commons.io.FileUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
@@ -51,7 +47,6 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.utils.XmlSerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -111,7 +106,7 @@ public class FlatOpcXmlCreator implements Output {
 	private org.docx4j.xmlPackage.Package pkgResult;
 		
 	@Deprecated
-	public org.docx4j.xmlPackage.Package get() throws Docx4JException {
+	public static org.docx4j.xmlPackage.Package get() throws Docx4JException {
 	
 			throw new Docx4JException("Deprecated.");
 	}
@@ -251,7 +246,7 @@ public class FlatOpcXmlCreator implements Output {
 		
 	}
 	
-	private byte[] marshalBytes(Object o, JAXBContext jc, String ignorables) {
+	private static byte[] marshalBytes(Object o, JAXBContext jc, String ignorables) {
 		try {
 
 			Marshaller marshaller = jc.createMarshaller();
@@ -302,10 +297,10 @@ public class FlatOpcXmlCreator implements Output {
 		String partName = part.getPartName().getName();
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         
-        if (partName.startsWith("/")) {       
+        if (!partName.isEmpty() && partName.charAt(0) == '/') {
         	partResult.setName(partName);
         } else {
-        	partResult.setName("/" + partName);
+        	partResult.setName('/' + partName);
 //        	log.error("@pkg:name must start with '/', or Word 2007 won't open it");
 //        	throw new Docx4JException("@pkg:name must start with '/', or Word 2007 won't open it");
         }
@@ -455,10 +450,10 @@ public class FlatOpcXmlCreator implements Output {
 		String partName = part.getPartName().getName();
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         
-        if (partName.startsWith("/")) {       
+        if (!partName.isEmpty() && partName.charAt(0) == '/') {
         	partResult.setName(partName);
         } else {
-        	partResult.setName("/" + partName);
+        	partResult.setName('/' + partName);
 //        	log.error("@pkg:name must start with '/', or Word 2007 won't open it");
 //        	throw new Docx4JException("@pkg:name must start with '/', or Word 2007 won't open it");
         }
@@ -551,7 +546,7 @@ public class FlatOpcXmlCreator implements Output {
 				if (!false) {
 					log.debug("Getting part /" + resolvedPartUri );
 					
-					Part part = packageIn.getParts().get(new PartName("/" + resolvedPartUri));
+					Part part = packageIn.getParts().get(new PartName('/' + resolvedPartUri));
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
@@ -656,8 +651,8 @@ public class FlatOpcXmlCreator implements Output {
 	/* It is sometimes useful to wrap a part in an appropriate pkg:part */
 	public static String wrapInXmlPart(String xml, String partName, String contentType) {
 		
-		return  "<pkg:part pkg:name=\"" + partName + "\""  
-			 				+ " pkg:contentType=\"" + contentType + "\"" 
+		return  "<pkg:part pkg:name=\"" + partName + '"'
+			 				+ " pkg:contentType=\"" + contentType + '"'
 			 				+ " xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\">"
 				  		+ "<pkg:xmlData>"
 				  			+ xml
@@ -671,10 +666,10 @@ public class FlatOpcXmlCreator implements Output {
 		try {
 			return "<pkg:part pkg:name=\""
 					+ partName
-					+ "\""
+					+ '"'
 					+ " pkg:contentType=\""
 					+ contentType
-					+ "\""
+					+ '"'
 					// + " pkg:compression=\"store\"" 
 					+ " xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\">"
 					+ "<pkg:binaryData>" + new String(base64, "UTF-8")

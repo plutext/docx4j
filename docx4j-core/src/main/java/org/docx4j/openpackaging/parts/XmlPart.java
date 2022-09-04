@@ -60,7 +60,7 @@ import org.w3c.dom.traversal.NodeIterator;
  * */
 public abstract class XmlPart extends Part {
 	
-	protected static Logger log = LoggerFactory.getLogger(XmlPart.class);	
+	protected static final Logger log = LoggerFactory.getLogger(XmlPart.class);
 	
 	public XmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -133,21 +133,21 @@ public abstract class XmlPart extends Part {
 				getNamespaceContext().registerPrefixMappings(prefixMappings);
 				result = xPath.evaluate(xpathString, doc );
 			}
-			if (result.equals("") && log.isWarnEnabled()) {
+			if (result.isEmpty() && log.isWarnEnabled()) {
 				// Provide diagnostics as to cause of '' result 
 				NodeList nl = (NodeList) xPath.evaluate(xpathString, doc, XPathConstants.NODESET );
 				if (nl.getLength()==0) {
 					// empty node-set is converted to empty string
 					log.warn("No match for " + xpathString + " so result is empty string");
 				} else {
-					log.debug(xpathString + " ---> '" + result + "'");
+					log.debug(xpathString + " ---> '" + result + '\'');
 				}
 			} else {
-				log.debug(xpathString + " ---> '" + result + "'");
+				log.debug(xpathString + " ---> '" + result + '\'');
 			}
 			return result;
 		} catch (Exception e) {
-			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
+			throw new Docx4JException("Problems evaluating xpath '" + xpathString + '\'', e);
 		}
 	}
 	
@@ -294,7 +294,7 @@ public abstract class XmlPart extends Part {
 						try {
 							double d = xo.num(cachedXPathAPI.getXPathContext());
 							if (xpath.trim().startsWith("count(")
-									&& /* it looks like it should be an integer */ d == Math.rint(d)) {
+									&& /* it looks like it should be an integer */ Double.compare(d, Math.rint(d)) == 0) {
 								return "" + Math.round(d); // convert eg 2.0
 								
 							} else {
@@ -359,7 +359,7 @@ public abstract class XmlPart extends Part {
 					log.debug("Fallback handling XPath of form: " + xpath  + " in case of " + e.getMessage() );
 					double d = xo.num(cachedXPathAPI.getXPathContext());
 					if (xpath.trim().startsWith("count(")
-							&& /* it looks like it should be an integer */ d == Math.rint(d)) {
+							&& /* it looks like it should be an integer */ Double.compare(d, Math.rint(d)) == 0) {
 						return "" + Math.round(d); // convert eg 2.0
 						
 					} else {

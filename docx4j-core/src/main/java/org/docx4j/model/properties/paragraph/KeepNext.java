@@ -29,7 +29,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class KeepNext extends AbstractParagraphProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(KeepNext.class);	
+	protected static final Logger log = LoggerFactory.getLogger(KeepNext.class);
 	
 	
 	public final static String CSS_NAME = "page-break-after"; 
@@ -50,7 +50,7 @@ public class KeepNext extends AbstractParagraphProperty {
 		
 		debug(CSS_NAME, value);
 		
-		if (value.getCssText().toLowerCase().equals("avoid")) {
+		if (value.getCssText().equalsIgnoreCase("avoid")) {
 			this.setObject( Context.getWmlObjectFactory().createBooleanDefaultTrue()  );
 		} else {
 			BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();

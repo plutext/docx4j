@@ -120,14 +120,14 @@ public class TTFSubSetFile extends TTFFile {
 
         // Create searchRange, entrySelector and rangeShift
         int maxPow = maxPow2(numTables);
-        int searchRange = (int) Math.pow(2, maxPow) * 16;
+        int searchRange = (int) Math.pow(2, maxPow) << 4;
         writeUShort(searchRange);
         realSize += 2;
 
         writeUShort(maxPow);
         realSize += 2;
 
-        writeUShort((numTables * 16) - searchRange);
+        writeUShort((numTables << 4) - searchRange);
         realSize += 2;
         // Create space for the table entries (these must be in ASCII alphabetical order[A-Z] then[a-z])
         writeTableName(OFTableName.OS2);
@@ -182,9 +182,9 @@ public class TTFSubSetFile extends TTFFile {
         locaOffset = currentPos;
         int dirTableOffset = offsets.get(OFTableName.LOCA);
         writeULong(dirTableOffset + 4, currentPos);
-        writeULong(dirTableOffset + 8, size * 4 + 4);
-        currentPos += size * 4 + 4;
-        realSize += size * 4 + 4;
+        writeULong(dirTableOffset + 8, (size << 2) + 4);
+        currentPos += (size << 2) + 4;
+        realSize += (size << 2) + 4;
     }
 
     private boolean copyTable(FontFileReader in, OFTableName tableName) throws IOException {
@@ -377,7 +377,7 @@ public class TTFSubSetFile extends TTFFile {
 
 
                 // Update loca table
-                writeULong(locaOffset + i * 4, currentPos - startPos);
+                writeULong(locaOffset + (i << 2), currentPos - startPos);
                 if ((currentPos - startPos + glyphLength) > endOffset1) {
                     endOffset1 = (currentPos - startPos + glyphLength);
                 }
@@ -399,8 +399,8 @@ public class TTFSubSetFile extends TTFFile {
             updateCheckSum(startPos, size + 12, glyf);
 
             // Update loca checksum and last loca index
-            writeULong(locaOffset + glyphs.size() * 4, endOffset);
-            int locaSize = glyphs.size() * 4 + 4;
+            writeULong(locaOffset + (glyphs.size() << 2), endOffset);
+            int locaSize = (glyphs.size() << 2) + 4;
             int checksum = getCheckSum(output, locaOffset, locaSize);
             writeULong(offsets.get(OFTableName.LOCA), checksum);
             int padSize = (locaOffset + locaSize) % 4;
@@ -411,7 +411,7 @@ public class TTFSubSetFile extends TTFFile {
         }
     }
 
-    protected int[] buildSubsetIndexToOrigIndexMap(Map<Integer, Integer> glyphs) {
+    protected static int[] buildSubsetIndexToOrigIndexMap(Map<Integer, Integer> glyphs) {
         int[] origIndexes = new int[glyphs.size()];
         for (Map.Entry<Integer, Integer> glyph : glyphs.entrySet()) {
             int origIndex = glyph.getKey();
@@ -434,8 +434,8 @@ public class TTFSubSetFile extends TTFFile {
         OFTableName hmtx = OFTableName.HMTX;
         OFDirTabEntry entry = dirTabs.get(hmtx);
 
-        int longHorMetricSize = glyphs.size() * 2;
-        int leftSideBearingSize = glyphs.size() * 2;
+        int longHorMetricSize = glyphs.size() << 1;
+        int leftSideBearingSize = glyphs.size() << 1;
         int hmtxSize = longHorMetricSize + leftSideBearingSize;
 
         if (entry != null) {
@@ -445,9 +445,9 @@ public class TTFSubSetFile extends TTFFile {
                 Integer origIndex = glyph.getKey();
                 Integer subsetIndex = glyph.getValue();
 
-                writeUShort(currentPos + subsetIndex * 4,
+                writeUShort(currentPos + (subsetIndex << 2),
                             mtxTab[origIndex].getWx());
-                writeUShort(currentPos + subsetIndex * 4 + 2,
+                writeUShort(currentPos + (subsetIndex << 2) + 2,
                             mtxTab[origIndex].getLsb());
             }
 
@@ -611,7 +611,7 @@ public class TTFSubSetFile extends TTFFile {
 
     protected void writeBytes(byte[] b) {
         if (b.length + currentPos > output.length) {
-            byte[] newoutput = new byte[output.length * 2];
+            byte[] newoutput = new byte[(output.length << 1)];
             System.arraycopy(output, 0, newoutput, 0, output.length);
             output = newoutput;
         }
@@ -673,7 +673,7 @@ public class TTFSubSetFile extends TTFFile {
     /**
      * Returns the maximum power of 2 <= max
      */
-    private int maxPow2(int max) {
+    private static int maxPow2(int max) {
         int i = 0;
         while (Math.pow(2, i) <= max) {
             i++;

@@ -51,7 +51,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 public class IdentityPlusMapper extends Mapper {
 	
 	
-	protected static Logger log = LoggerFactory.getLogger(IdentityPlusMapper.class);
+	protected static final Logger log = LoggerFactory.getLogger(IdentityPlusMapper.class);
 
 	public IdentityPlusMapper() {
 		super();
@@ -59,7 +59,7 @@ public class IdentityPlusMapper extends Mapper {
 		//log.debug(System.getProperty("os.name")); // eg Linux
 		//log.debug(System.getProperty("os.arch")); // eg i386
 		
-		if (System.getProperty("os.name").toLowerCase().indexOf("windows")<0) {
+		if (!System.getProperty("os.name").toLowerCase().contains("windows")) {
 			log.warn("WARNING! SubstituterWindowsPlatformImpl works best " +
 					"on Windows.  To get good results on other platforms, you'll probably  " +
 					"need to have installed Windows fonts.");

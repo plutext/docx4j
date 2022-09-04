@@ -140,7 +140,7 @@ public class FOPException extends SAXException {
      */
     public String getMessage() {
         if (isLocationSet()) {
-            return systemId + ":" + line + ":" + column + ": " + super.getMessage();
+            return systemId + ':' + line + ':' + column + ": " + super.getMessage();
         } else {
             return super.getMessage();
         }

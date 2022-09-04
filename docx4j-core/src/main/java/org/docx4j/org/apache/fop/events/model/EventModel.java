@@ -110,7 +110,7 @@ public class EventModel implements Serializable, XMLizable {
         handler.endElement("", elName, elName);
     }
 
-    private void writeXMLizable(XMLizable object, File outputFile) throws IOException {
+    private static void writeXMLizable(XMLizable object, File outputFile) throws IOException {
         //These two approaches do not seem to work in all environments:
         //Result res = new StreamResult(outputFile);
         //Result res = new StreamResult(outputFile.toURI().toURL().toExternalForm());

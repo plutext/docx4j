@@ -31,10 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.org.apache.poi.poifs.common.POIFSBigBlockSize;
@@ -302,9 +299,8 @@ public class OPOIFSFileSystem
 
         // create a list of BATManaged objects: the documents plus the
         // property table and the small block table
-        List<Object> bm_objects = new ArrayList<Object>();
 
-        bm_objects.addAll(_documents);
+        List<Object> bm_objects = new ArrayList<Object>(_documents);
         bm_objects.add(_property_table);
         bm_objects.add(sbtw);
         bm_objects.add(sbtw.getSBAT());
@@ -363,10 +359,7 @@ public class OPOIFSFileSystem
         writers.add(sbtw);
         writers.add(sbtw.getSBAT());
         writers.add(bat);
-        for (int j = 0; j < xbat_blocks.length; j++)
-        {
-            writers.add(xbat_blocks[ j ]);
-        }
+        writers.addAll(Arrays.asList(xbat_blocks));
 
         // now, write everything out
         iter = writers.iterator();
@@ -559,7 +552,7 @@ public class OPOIFSFileSystem
         {
             return (( POIFSViewable ) getRoot()).getViewableIterator();
         }
-        return Collections.emptyList().iterator();
+        return Collections.emptyIterator();
     }
 
     /**

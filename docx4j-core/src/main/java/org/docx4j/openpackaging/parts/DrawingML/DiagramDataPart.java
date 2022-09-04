@@ -88,7 +88,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		generateIdMap(jaxbElement);
 		
 		// Go through again, replacing
-		ReplaceIds(jaxbElement);
+		replaceIds(jaxbElement);
 		
 	}
 	
@@ -236,7 +236,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		return val;
 	}
 	
-	protected static void ReplaceIds(Object jaxbElement) {
+	protected static void replaceIds(Object jaxbElement) {
 		
 		new TraversalUtil(jaxbElement,
 

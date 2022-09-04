@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 public abstract class Mapper {
 	
 	
-	protected static Logger log = LoggerFactory.getLogger(Mapper.class);
+	protected static final Logger log = LoggerFactory.getLogger(Mapper.class);
 
 	// For embedded fonts, which we can't store in our system-wide PhysicalFonts,
 	// but we can and do put them in the local field fontMappings

@@ -143,9 +143,8 @@ public class CustomProperties extends HashMap<Object,CustomProperty>
         else
         {
             long max = 1;
-            for (final Iterator<Long> i = dictionaryIDToName.keySet().iterator(); i.hasNext();)
-            {
-                final long id = i.next().longValue();
+            for (Long aLong : dictionaryIDToName.keySet()) {
+                final long id = aLong.longValue();
                 if (id > max)
                     max = id;
             }
@@ -372,13 +371,8 @@ public class CustomProperties extends HashMap<Object,CustomProperty>
       if(value instanceof CustomProperty) {
          return super.containsValue(value);
       } else {
-         for(CustomProperty cp : super.values()) {
-            if(cp.getValue() == value) {
-               return true;
-            }
-         }
+          return super.values().stream().anyMatch(cp -> cp.getValue() == value);
       }
-      return false;
    }
 
 

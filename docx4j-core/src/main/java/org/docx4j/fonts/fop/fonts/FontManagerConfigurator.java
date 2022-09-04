@@ -26,6 +26,7 @@ package org.docx4j.fonts.fop.fonts;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -160,9 +161,8 @@ public class FontManagerConfigurator {
                 continue;
             }
         }
-        FontTriplet.Matcher orMatcher = new OrFontTripletMatcher(
+        return new OrFontTripletMatcher(
                 matcherList.toArray(new FontTriplet.Matcher[matcherList.size()]));
-        return orMatcher;
     }
 
     /**
@@ -174,13 +174,8 @@ public class FontManagerConfigurator {
      */
     public static FontTriplet.Matcher createFontsMatcher(
             List<String> fontFamilies, boolean strict) throws FOPException {
-        List<FontTriplet.Matcher> matcherList = new java.util.ArrayList<FontTriplet.Matcher>();
-        for (String fontFamily : fontFamilies) {
-                matcherList.add(new FontFamilyRegExFontTripletMatcher(fontFamily));
-        }
-        FontTriplet.Matcher orMatcher = new OrFontTripletMatcher(
-                matcherList.toArray(new FontTriplet.Matcher[matcherList.size()]));
-        return orMatcher;
+        return new OrFontTripletMatcher(
+                fontFamilies.stream().map(FontFamilyRegExFontTripletMatcher::new).toArray(FontTriplet.Matcher[]::new));
     }
 
     private static class OrFontTripletMatcher implements FontTriplet.Matcher {
@@ -193,12 +188,7 @@ public class FontManagerConfigurator {
 
         /** {@inheritDoc} */
         public boolean matches(FontTriplet triplet) {
-            for (FontTriplet.Matcher matcher : matchers) {
-                if (matcher.matches(triplet)) {
-                    return true;
-                }
-            }
-            return false;
+            return Arrays.stream(matchers).anyMatch(matcher -> matcher.matches(triplet));
         }
 
     }

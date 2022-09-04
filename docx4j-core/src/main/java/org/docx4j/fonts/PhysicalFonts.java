@@ -8,14 +8,12 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.xmlgraphics.io.ResourceResolver;
 import org.docx4j.fonts.fop.apps.io.InternalResourceResolver;
 import org.docx4j.fonts.fop.apps.io.ResourceResolverFactory;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
 import org.docx4j.fonts.fop.fonts.FontCache;
 import org.docx4j.fonts.fop.fonts.FontEventAdapter;
 //import org.docx4j.fonts.fop.fonts.FontResolver;
-import org.docx4j.fonts.fop.fonts.FontSetup;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
 import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
@@ -23,7 +21,6 @@ import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.org.apache.fop.events.DefaultEventBroadcaster;
 
 //import com.lowagie.text.pdf.BaseFont;
@@ -41,7 +38,7 @@ import org.docx4j.org.apache.fop.events.DefaultEventBroadcaster;
  */
 public class PhysicalFonts {
 
-	protected static Logger log = LoggerFactory.getLogger(PhysicalFonts.class);
+	protected static final Logger log = LoggerFactory.getLogger(PhysicalFonts.class);
 	
 	protected static FontCache fontCache;
 
@@ -96,12 +93,12 @@ public class PhysicalFonts {
 //     */ 
 //    public static final int MATCH_THRESHOLD = 30;
 
-    private static InternalResourceResolver fontResolver;        
+    private static final InternalResourceResolver fontResolver;
 	
     // parse font to ascertain font info
-    private static FontInfoFinder fontInfoFinder; 
+    private static final FontInfoFinder fontInfoFinder;
 
-    private static String osName;
+    private static final String osName;
     
     static {
 		
@@ -158,7 +155,7 @@ public class PhysicalFonts {
 	 * Autodetect fonts available on the system.
 	 * 
 	 */ 
-	public final static void discoverPhysicalFonts() throws Exception {
+	public static void discoverPhysicalFonts() throws Exception {
 		
 		// Currently we use FOP - inspired by org.apache.fop.render.PrintRendererConfigurator
 		// iText also has a font discoverer (which we could use
@@ -171,22 +168,20 @@ public class PhysicalFonts {
         
         // Automagically finds a list of font files on local system
         // based on os.name
-        List fontFileList = fontFileFinder.find();      
+        List<URL> fontFileList = fontFileFinder.find();
         
         
         if (regex==null) {
-            for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            	
-            	URI fontUrl = getURI(iter.next());
-                
+			for (URL url : fontFileList) {
+            	URI fontUrl = getURI(url);
                 // parse font to ascertain font info
             	addPhysicalFont( fontUrl);
             }
         } else {
         	Pattern pattern = Pattern.compile(regex);
-            for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+			for (URL url : fontFileList) {
             	
-            	URI fontUrl = getURI(iter.next());
+            	URI fontUrl = getURI(url);
                 
             	
                 // parse font to ascertain font info
@@ -264,7 +259,7 @@ public class PhysicalFonts {
 	    		String filename = pf.getEmbeddedURI().toString();
 	    		// eg on Windows:  file:/C:/Windows/FONTS/cour.ttf
 	    				    		
-	    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
+	    		filename = filename.substring( filename.lastIndexOf('/')+1).toLowerCase();
 	    		
 	    		if (osName.startsWith("Mac")) {
 	    			filename = filename.replace("%20", " "); 
@@ -315,7 +310,7 @@ public class PhysicalFonts {
 			return null;
 		}
 		
-		StringBuffer debug = new StringBuffer();
+		StringBuilder debug = new StringBuilder();
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
 			/* EmbedFontInfo has:
@@ -359,7 +354,7 @@ public class PhysicalFonts {
 			debug.append("------- \n");
 			
 			 try {
-				debug.append(fontInfo.getPostScriptName() + "\n" );
+				debug.append(fontInfo.getPostScriptName()).append('\n');
 				if (!fontInfo.isEmbeddable() ) {			        	
 //	        	log.info(tokens[x] + " is not embeddable; skipping.");
 					 
@@ -403,8 +398,7 @@ public class PhysicalFonts {
 		    	
 		        String lower = fontInfo.getEmbedURI().toString().toLowerCase();
 		        log.debug("Processing physical font: " + lower);
-				debug.append(".. triplet " + triplet.getName() 
-						+ " (priority " + triplet.getPriority() +"\n" );
+				debug.append(".. triplet ").append(triplet.getName()).append(" (priority ").append(triplet.getPriority()).append('\n');
 		        		        
 		        pf = null;
 		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont

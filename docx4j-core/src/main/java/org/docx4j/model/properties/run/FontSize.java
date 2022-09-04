@@ -34,7 +34,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class FontSize extends AbstractRunProperty {
 	
-	protected static Logger log = LoggerFactory.getLogger(FontSize.class);		
+	protected static final Logger log = LoggerFactory.getLogger(FontSize.class);
 
 	public final static String CSS_NAME = "font-size"; 
 	public final static String FO_NAME  = "font-size"; 
@@ -80,23 +80,32 @@ public class FontSize extends AbstractRunProperty {
 		if (cssPrimitiveValue.getPrimitiveType()==CSSPrimitiveValue.CSS_IDENT) {
 			
 			String adjective = cssPrimitiveValue.getStringValue();
-			if (adjective.equals("medium")) {
-				hpsMeasure.setVal( BigInteger.valueOf( mediumHP) ); 
-			} else if (adjective.equals("xx-small")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(0.6*mediumHP) )); 
-			} else if (adjective.equals("x-small")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(0.75*mediumHP) )); 
-			} else if (adjective.equals("small")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(0.89*mediumHP) )); 
-			} else if (adjective.equals("large")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(1.2*mediumHP) )); 
-			} else if (adjective.equals("x-large")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(1.5*mediumHP) )); 
-			} else if (adjective.equals("xx-large")) {
-				hpsMeasure.setVal( BigInteger.valueOf( Math.round(2*mediumHP) )); 
-			} else {
-				log.warn("TODO Handle FontSize units properly: " + adjective );							
-				hpsMeasure.setVal( BigInteger.valueOf( mediumHP) ); 
+			switch (adjective) {
+				case "medium":
+					hpsMeasure.setVal(BigInteger.valueOf(mediumHP));
+					break;
+				case "xx-small":
+					hpsMeasure.setVal(BigInteger.valueOf(Math.round(0.6 * mediumHP)));
+					break;
+				case "x-small":
+					hpsMeasure.setVal(BigInteger.valueOf(Math.round(0.75 * mediumHP)));
+					break;
+				case "small":
+					hpsMeasure.setVal(BigInteger.valueOf(Math.round(0.89 * mediumHP)));
+					break;
+				case "large":
+					hpsMeasure.setVal(BigInteger.valueOf(Math.round(1.2 * mediumHP)));
+					break;
+				case "x-large":
+					hpsMeasure.setVal(BigInteger.valueOf(Math.round(1.5 * mediumHP)));
+					break;
+				case "xx-large":
+					hpsMeasure.setVal(BigInteger.valueOf(2L * mediumHP));
+					break;
+				default:
+					log.warn("TODO Handle FontSize units properly: " + adjective);
+					hpsMeasure.setVal(BigInteger.valueOf(mediumHP));
+					break;
 			}
 			this.setObject(hpsMeasure);				
 			
@@ -143,7 +152,7 @@ public class FontSize extends AbstractRunProperty {
 	@Override
 	public String getCssProperty() {
 		
-		if (((HpsMeasure)this.getObject())!=null ) {
+		if (this.getObject() !=null ) {
 			float pts = ((HpsMeasure)this.getObject()).getVal().floatValue()/2 ;
 			return composeCss(CSS_NAME, pts + "pt" );
 		} else {
@@ -155,7 +164,7 @@ public class FontSize extends AbstractRunProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 		
-		if (((HpsMeasure)this.getObject())!=null ) {
+		if (this.getObject() !=null ) {
 			float pts = ((HpsMeasure)this.getObject()).getVal().floatValue()/2 ;
 			foElement.setAttribute(FO_NAME, pts + "pt" );
 		} else {

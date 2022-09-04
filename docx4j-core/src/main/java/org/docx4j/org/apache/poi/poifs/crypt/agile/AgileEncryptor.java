@@ -234,8 +234,7 @@ public class AgileEncryptor extends Encryptor {
     public OutputStream getDataStream(DirectoryNode dir)
             throws IOException, GeneralSecurityException {
         // TODO: initialize headers
-        AgileCipherOutputStream countStream = new AgileCipherOutputStream(dir);
-    	return countStream;
+        return new AgileCipherOutputStream(dir);
     }
 
     /**
@@ -291,9 +290,9 @@ public class AgileEncryptor extends Encryptor {
     static final String HTTP_SCHEMAS_MICROSOFT_COM_OFFICE_2006_KEY_ENCRYPTOR_CERTIFICATE = "http://schemas.microsoft.com/office/2006/keyEncryptor/certificate";
 
     
-    private final String passwordUri = 
+    private static final String passwordUri =
         HTTP_SCHEMAS_MICROSOFT_COM_OFFICE_2006_KEY_ENCRYPTOR_PASSWORD;
-    private final String certificateUri = 
+    private static final String certificateUri =
         HTTP_SCHEMAS_MICROSOFT_COM_OFFICE_2006_KEY_ENCRYPTOR_CERTIFICATE;
     
     protected CTEncryption createEncryptionDocument() {

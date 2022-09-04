@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  */
 public class OpenDoPEIntegrity {
 	
-	private static Logger log = LoggerFactory.getLogger(OpenDoPEIntegrity.class);	
+	private static final Logger log = LoggerFactory.getLogger(OpenDoPEIntegrity.class);
 	
 	private HashMap<String, String> commentRangeStart;  // value doesn't matter
 	private HashMap<String, String> commentRangeEnd;
@@ -132,8 +132,8 @@ public class OpenDoPEIntegrity {
 			
 			log.info("/n Processing " + part.getPartName().getName() );
 			
-			org.docx4j.openpackaging.packages.OpcPackage pkg 
-				= part.getPackage();		
+			//org.docx4j.openpackaging.packages.OpcPackage pkg
+			//	= part.getPackage();
 				// Binding is a concept which applies more broadly
 				// than just Word documents.
 			

@@ -60,8 +60,8 @@ public class POIFSHeaderDumper {
             System.exit(1);
         }
 
-        for (int j = 0; j < args.length; j++) {
-            viewFile(args[j]);
+        for (String arg : args) {
+            viewFile(arg);
         }
     }
 
@@ -117,7 +117,7 @@ public class POIFSHeaderDumper {
         System.out.println(" SBAT (MiniFAT) block count: " + header_block.getSBATCount());
         System.out.println(" SBAT (MiniFAT) block 1 at: " + header_block.getSBATStart());
         System.out.println(" Property table at: " + header_block.getPropertyStart());
-        System.out.println("");
+        System.out.println();
     }
 
     public static void displayRawBlocksSummary(RawDataBlockList data_blocks) throws Exception {
@@ -132,11 +132,11 @@ public class POIFSHeaderDumper {
             byte[] data = new byte[Math.min(48, block.getData().length)];
             System.arraycopy(block.getData(), 0, data, 0, data.length);
 
-            System.out.println(" Block #" + i + ":");
+            System.out.println(" Block #" + i + ':');
             System.out.println(HexDump.dump(data, 0, 0));
         }
 
-        System.out.println("");
+        System.out.println();
     }
 
     public static void displayBATReader(String type, BlockAllocationTableReader batReader) throws Exception {
@@ -161,7 +161,7 @@ public class POIFSHeaderDumper {
             System.out.println("  Block  # " + i + " -> " + bnS);
         }
 
-        System.out.println("");
+        System.out.println();
     }
 
     public static void displayPropertiesSummary(PropertyTable properties) {
@@ -171,7 +171,7 @@ public class POIFSHeaderDumper {
         
         System.out.println("Properties and their block start:");
         displayProperties(properties.getRoot(), "");
-        System.out.println("");
+        System.out.println();
     }
     public static void displayProperties(DirectoryProperty prop, String indent) {
         String nextIndent = indent + "  ";

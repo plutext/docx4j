@@ -82,6 +82,6 @@ public enum CipherAlgorithm {
                 if (ks == keySize) return ca;
             }
         }
-        throw new EncryptedDocumentException("cipher algorithm " + xmlId + "/" + keySize + " not found");
+        throw new EncryptedDocumentException("cipher algorithm " + xmlId + '/' + keySize + " not found");
     }
 }

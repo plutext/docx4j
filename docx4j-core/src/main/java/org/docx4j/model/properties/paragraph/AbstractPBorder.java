@@ -113,7 +113,7 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 			if (border.getColor().equals("auto")) {
 				color = composeCss(CSS_NAME__COLOR, "#000000"  );
 			} else {
-				color = composeCss(CSS_NAME__COLOR, "#" + border.getColor() );
+				color = composeCss(CSS_NAME__COLOR, '#' + border.getColor() );
 			}
 		}
 		
@@ -169,7 +169,7 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 			if (border.getColor().equals("auto")) {
 				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
 			} else {
-				foElement.setAttribute(CSS_NAME__COLOR, "#" + border.getColor() );
+				foElement.setAttribute(CSS_NAME__COLOR, '#' + border.getColor() );
 			}
 		}
 		

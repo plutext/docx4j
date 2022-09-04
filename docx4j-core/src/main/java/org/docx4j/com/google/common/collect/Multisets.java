@@ -874,12 +874,7 @@ public final class Multisets {
       if (multiset.size() != that.size() || multiset.entrySet().size() != that.entrySet().size()) {
         return false;
       }
-      for (Entry<?> entry : that.entrySet()) {
-        if (multiset.count(entry.getElement()) != entry.getCount()) {
-          return false;
-        }
-      }
-      return true;
+      return that.entrySet().stream().noneMatch(entry -> multiset.count(entry.getElement()) != entry.getCount());
     }
     return false;
   }
@@ -1114,10 +1109,7 @@ public final class Multisets {
 
   /** An implementation of {@link Multiset#size}. */
   static int linearTimeSizeImpl(Multiset<?> multiset) {
-    long size = 0;
-    for (Entry<?> entry : multiset.entrySet()) {
-      size += entry.getCount();
-    }
+    long size = multiset.entrySet().stream().mapToLong(Entry::getCount).sum();
     return Ints.saturatedCast(size);
   }
 

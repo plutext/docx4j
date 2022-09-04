@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public class ListsToContentControlsTest {
 
-	protected static Logger log = LoggerFactory.getLogger(ListsToContentControls.class); // same logger	
+	protected static final Logger log = LoggerFactory.getLogger(ListsToContentControls.class); // same logger
 
 	private static org.docx4j.wml.ObjectFactory wmlObjectFactory = Context.getWmlObjectFactory();
 	

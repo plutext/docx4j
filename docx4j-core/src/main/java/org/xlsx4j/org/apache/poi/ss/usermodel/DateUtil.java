@@ -41,7 +41,7 @@ import org.xlsx4j.sml.Cell;
  */
 public class DateUtil {
 	
-	protected static Logger log = LoggerFactory.getLogger(DateUtil.class);
+	protected static final Logger log = LoggerFactory.getLogger(DateUtil.class);
 	
     protected DateUtil() {
         // no instances of this class
@@ -337,24 +337,24 @@ public class DateUtil {
     // avoid re-checking DataUtil.isADateFormat(int, String) if a given format
     // string represents a date format if the same string is passed multiple times.
     // see https://issues.apache.org/bugzilla/show_bug.cgi?id=55611
-    private static ThreadLocal<Integer> lastFormatIndex = new ThreadLocal<Integer>() {
+    private static final ThreadLocal<Integer> lastFormatIndex = new ThreadLocal<Integer>() {
         protected Integer initialValue() {
             return -1;
         }
     };
-    private static ThreadLocal<String> lastFormatString = new ThreadLocal<String>();
-    private static ThreadLocal<Boolean> lastCachedResult = new ThreadLocal<Boolean>();
+    private static final ThreadLocal<String> lastFormatString = new ThreadLocal<String>();
+    private static final ThreadLocal<Boolean> lastCachedResult = new ThreadLocal<Boolean>();
     
     private static boolean isCached(String formatString, int formatIndex) {
         String cachedFormatString = lastFormatString.get();
-        return cachedFormatString != null && formatIndex == lastFormatIndex.get()
+        return formatIndex == lastFormatIndex.get()
                 && formatString.equals(cachedFormatString);
     }
 
     private static void cache(String formatString, int formatIndex, boolean cached) {
         lastFormatIndex.set(formatIndex);
         lastFormatString.set(formatString);
-        lastCachedResult.set(Boolean.valueOf(cached));
+        lastCachedResult.set(cached);
     }
 
     /**
@@ -638,7 +638,7 @@ public class DateUtil {
             case 2: secStr = "00"; break;
             case 3: secStr = parts[2]; break;
             default:
-                throw new FormatException("Expected 2 or 3 fields but got (" + parts.length + ")");
+                throw new FormatException("Expected 2 or 3 fields but got (" + parts.length + ')');
         }
         String hourStr = parts[0];
         String minStr = parts[1];
@@ -691,7 +691,7 @@ public class DateUtil {
         }
         if (result < lowerLimit || result > upperLimit) {
             throw new FormatException(fieldName + " value (" + result
-                    + ") is outside the allowable range(0.." + upperLimit + ")");
+                    + ") is outside the allowable range(0.." + upperLimit + ')');
         }
         return result;
     }

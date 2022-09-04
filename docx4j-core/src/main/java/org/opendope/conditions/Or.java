@@ -149,7 +149,7 @@ public class Or implements Evaluable {
     		}
     	}
 		
-		return "(" + sb.toString() + ")";
+		return "(" + sb + ')';
 	}
 	
 	public Condition repeat(String xpathBase,

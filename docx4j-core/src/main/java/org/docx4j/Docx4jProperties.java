@@ -9,7 +9,7 @@ import org.docx4j.utils.ResourceUtils;
 
 public class Docx4jProperties {
 	
-	protected static Logger log = LoggerFactory.getLogger(Docx4jProperties.class);
+	protected static final Logger log = LoggerFactory.getLogger(Docx4jProperties.class);
 	
 	private static Properties properties;
 	

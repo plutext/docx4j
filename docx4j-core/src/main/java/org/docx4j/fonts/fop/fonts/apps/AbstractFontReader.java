@@ -64,10 +64,10 @@ public abstract class AbstractFontReader {
     protected static String[] parseArguments(Map options, String[] args) {
         List arguments = new java.util.ArrayList();
         for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("-")) {
+            if (!args[i].isEmpty() && args[i].charAt(0) == '-') {
                 if ("-t".equals(args[i]) || "-d".equals(args[i]) || "-q".equals(args[i])) {
                     options.put(args[i], "");
-                } else if ((i + 1) < args.length && !args[i + 1].startsWith("-")) {
+                } else if ((i + 1) < args.length && !(!args[i + 1].isEmpty() && args[i + 1].charAt(0) == '-')) {
                     options.put(args[i], args[i + 1]);
                     i++;
                 } else {

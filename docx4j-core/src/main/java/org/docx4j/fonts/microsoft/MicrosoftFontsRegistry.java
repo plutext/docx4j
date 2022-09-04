@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class MicrosoftFontsRegistry {
 
-	protected static Logger log = LoggerFactory.getLogger(MicrosoftFontsRegistry.class);
+	protected static final Logger log = LoggerFactory.getLogger(MicrosoftFontsRegistry.class);
 
 	private static HashMap<String, MicrosoftFonts.Font> msFontsByName;
 	public final static Map<String, MicrosoftFonts.Font> getMsFonts() {

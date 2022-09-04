@@ -26,6 +26,8 @@ package org.docx4j.fonts.fop.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * This class provides utilities to distinguish various kinds of Unicode
@@ -268,18 +270,18 @@ public class CharUtilities {
      * @return a string representing a numeric character reference
      */
     public static String charToNCRef(int c) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0, nDigits = (c > 0xFFFF) ? 6 : 4; i < nDigits; i++, c >>= 4) {
             int d = c & 0xF;
             char hd;
             if (d < 10) {
-                hd = (char) ((int) '0' + d);
+                hd = (char) ('0' + d);
             } else {
-                hd = (char) ((int) 'A' + (d - 10));
+                hd = (char) ('A' + (d - 10));
             }
             sb.append(hd);
         }
-        return "&#x" + sb.reverse() + ";";
+        return "&#x" + sb.reverse() + ';';
     }
 
     /**
@@ -289,7 +291,7 @@ public class CharUtilities {
      * ASCII characters
      */
     public static String toNCRefs(String s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (s != null) {
             for (int i = 0; i < s.length(); i++) {
                 char c = s.charAt(i);
@@ -319,12 +321,7 @@ public class CharUtilities {
      * @return padded string
      */
     public static String padLeft(String s, int width, char pad) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = s.length(); i < width; i++) {
-            sb.append(pad);
-        }
-        sb.append(s);
-        return sb.toString();
+        return IntStream.range(s.length(), width).mapToObj(i -> String.valueOf(pad)).collect(Collectors.joining("", "", s));
     }
 
     /**

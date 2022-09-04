@@ -209,7 +209,7 @@ public abstract class Equivalence<T> implements BiPredicate<T, T> {
      */
     @Override
     public String toString() {
-      return equivalence + ".wrap(" + reference + ")";
+      return equivalence + ".wrap(" + reference + ')';
     }
 
     private static final long serialVersionUID = 0;
@@ -259,7 +259,7 @@ public abstract class Equivalence<T> implements BiPredicate<T, T> {
 
     @Override
     public String toString() {
-      return equivalence + ".equivalentTo(" + target + ")";
+      return equivalence + ".equivalentTo(" + target + ')';
     }
 
     private static final long serialVersionUID = 0;

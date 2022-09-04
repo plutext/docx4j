@@ -178,11 +178,11 @@ public class FieldsCombiner {
 		List<Object> rContent = run.getContent();
 		Object item = null;
 		Text text = null;
-			for (int i=0; i<rContent.size(); i++) {
-				item = rContent.get(i);
+			for (Object o : rContent) {
+				item = o;
 				if (item instanceof JAXBElement
-						&& ((JAXBElement)item).getName().equals(_RInstrText_QNAME)) {
-					text = (Text)((JAXBElement)item).getValue();
+						&& ((JAXBElement) item).getName().equals(_RInstrText_QNAME)) {
+					text = (Text) ((JAXBElement) item).getValue();
 					break;
 				}
 			}
@@ -212,10 +212,10 @@ public class FieldsCombiner {
 		List<Object> rContent = r.getContent();
 		Object item = null;
 			if ((rContent != null) && (!rContent.isEmpty())) {
-				for (int i=0; i<rContent.size(); i++) {
-					item = XmlUtils.unwrap(rContent.get(i));
+				for (Object o : rContent) {
+					item = XmlUtils.unwrap(o);
 					if (item instanceof FldChar) {
-						ret = ((FldChar)item).getFldCharType();
+						ret = ((FldChar) item).getFldCharType();
 						break;
 					}
 				}

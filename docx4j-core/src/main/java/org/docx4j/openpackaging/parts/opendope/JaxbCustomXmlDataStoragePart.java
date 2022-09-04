@@ -110,7 +110,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {
-			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
+			throw new Docx4JException("Problems evaluating xpath '" + xpathString + '\'', e);
 		}
 	}
 	
@@ -172,7 +172,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		} catch (Docx4JException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new Docx4JException("Problems evaluating xpath '" + xpath + "'", e);
+			throw new Docx4JException("Problems evaluating xpath '" + xpath + '\'', e);
 		}
 		
 	}

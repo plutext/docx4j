@@ -654,7 +654,7 @@ public class TocEntry {
               t.setValue(numberTriple.getNumString() ); 
 	          this.entryValues.add(1, tabAfterPNumber());
           } else if ( numberTriple.getLvl().getSuff().getVal().equals("space")) {
-              t.setValue(numberTriple.getNumString() + " ");         	  
+              t.setValue(numberTriple.getNumString() + ' ');
           } else if ( numberTriple.getLvl().getSuff().getVal().equals("nothing")) {
               t.setValue(numberTriple.getNumString());         	          	  
           } else {

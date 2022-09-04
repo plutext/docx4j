@@ -58,25 +58,25 @@ import org.w3c.dom.Document;
  */
 public class PartialDeepCopy {
 	
-	protected static Logger log = LoggerFactory.getLogger(PartialDeepCopy.class);
+	protected static final Logger log = LoggerFactory.getLogger(PartialDeepCopy.class);
 	
 	
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> relationshipTypes) throws Docx4JException {
 		
 		OpcPackage ret = null;
-		RelationshipsPart relPart = null;
+
 		if (opcPackage != null) {
 			if ((relationshipTypes != null) && (relationshipTypes.isEmpty())) {
 				ret = opcPackage;
 			}
 			else {
 				ret = createPackage(opcPackage);
-				
+
 				if (ret==null) {
 					log.error("createPackage returned null!");
 				}
-				
-				
+
+
 				deepCopyRelationships(ret, opcPackage, ret, relationshipTypes);
 				
 				// Copy the font mappings
@@ -161,31 +161,30 @@ public class PartialDeepCopy {
 									   				 sourceRelationships.getRelationship() : 
 													 null);
 		
-		RelationshipsPart targetRelationshipsPart = null;
-		Relationships targetRelationships = null;
+		RelationshipsPart targetRelationshipsPart;
+		Relationships targetRelationships;
 		
-		Relationship sourceRelationship = null;
-		Relationship targetRelationship = null;
+		Relationship sourceRelationship;
 		
-		Part sourceChild = null;
-		Part targetChild = null;
+		Part sourceChild;
+		Part targetChild;
 		
 		if ((sourceRelationshipList != null) && 
 			(!sourceRelationshipList.isEmpty())) {
 			
 			targetRelationshipsPart = targetPart.getRelationshipsPart(); //create if needed
 			targetRelationships = targetRelationshipsPart.getRelationships();
-			
-			for (int i=0; i<sourceRelationshipList.size(); i++) {
-				
-				sourceRelationship = sourceRelationshipList.get(i);
+
+			for (Relationship relationship : sourceRelationshipList) {
+
+				sourceRelationship = relationship;
 				//the Relationship doesn't have any references to parts, therefore it can be reused
 				targetRelationships.getRelationship().add(sourceRelationship);
-				
-				if (sourceRelationship.getTargetMode()==null
+
+				if (sourceRelationship.getTargetMode() == null
 						// per ECMA 376 4ed Part 2, capitalisation should be thus: "External"
 						// but we can relax this..
-						|| !"external".equals(sourceRelationship.getTargetMode().toLowerCase())) {
+						|| !"external".equalsIgnoreCase(sourceRelationship.getTargetMode())) {
 					sourceChild = sourceRelationshipsPart.getPart(sourceRelationship);
 					targetChild = deepCopyPart(opcPackage, targetPart, sourceChild, relationshipTypes);
 					if (sourceChild != targetChild) {

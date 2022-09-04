@@ -20,28 +20,19 @@
 package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import jakarta.xml.bind.Binder;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
-import jakarta.xml.bind.util.JAXBResult;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stax.StAXSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
@@ -69,7 +60,7 @@ import org.w3c.dom.Node;
 public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> 
 implements XPathEnabled<E> {
 	
-	protected static Logger log = LoggerFactory.getLogger(JaxbXmlPartXPathAware.class);
+	protected static final Logger log = LoggerFactory.getLogger(JaxbXmlPartXPathAware.class);
 
 	public JaxbXmlPartXPathAware(PartName partName)
 			throws InvalidFormatException {

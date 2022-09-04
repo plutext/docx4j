@@ -28,11 +28,7 @@ import java.awt.Rectangle;
 import java.io.InputStream;
 import java.nio.CharBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,23 +220,22 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      */
     // [TBD] - needs optimization, i.e., change from linear search to binary search
     public int findGlyphIndex(int c) {
-        int idx = c;
         int retIdx = SingleByteEncoding.NOT_FOUND_CODE_POINT;
 
         // for most users the most likely glyphs are in the first cmap segments (meaning the one with
         // the lowest unicode start values)
-        if (idx < NUM_MOST_LIKELY_GLYPHS && mostLikelyGlyphs[idx] != 0) {
-            return mostLikelyGlyphs[idx];
+        if (c < NUM_MOST_LIKELY_GLYPHS && mostLikelyGlyphs[c] != 0) {
+            return mostLikelyGlyphs[c];
         }
         for (CMapSegment i : cmap) {
             if (retIdx == 0
-                    && i.getUnicodeStart() <= idx
-                    && i.getUnicodeEnd() >= idx) {
+                    && i.getUnicodeStart() <= c
+                    && i.getUnicodeEnd() >= c) {
                 retIdx = i.getGlyphStartIndex()
-                    + idx
+                    + c
                     - i.getUnicodeStart();
-                if (idx < NUM_MOST_LIKELY_GLYPHS) {
-                    mostLikelyGlyphs[idx] = retIdx;
+                if (c < NUM_MOST_LIKELY_GLYPHS) {
+                    mostLikelyGlyphs[c] = retIdx;
                 }
                 if (retIdx != 0) {
                     break;
@@ -288,7 +283,7 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
                 log.debug("Create private use mapping from "
                             + CharUtilities.format(pu)
                             + " to glyph index " + gi
-                            + " in font '" + getFullName() + "'");
+                            + " in font '" + getFullName() + '\'');
             }
             return pu;
         } else {
@@ -299,8 +294,8 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
             numUnmapped++;
             log.warn("Exhausted private use area: unable to map "
                        + numUnmapped + " glyphs in glyph index range ["
-                       + firstUnmapped + "," + lastUnmapped
-                       + "] (inclusive) of font '" + getFullName() + "'");
+                       + firstUnmapped + ',' + lastUnmapped
+                       + "] (inclusive) of font '" + getFullName() + '\'');
             return 0;
         }
     }
@@ -584,8 +579,7 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
                 associations.clear();
                 associations.addAll(ogs.getAssociations());
             }
-            CharSequence ocs = mapGlyphsToChars(ogs);
-            return ocs;
+            return mapGlyphsToChars(ogs);
         } else {
             return cs;
         }
@@ -703,18 +697,17 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
      */
     private CharSequence mapGlyphsToChars(GlyphSequence gs) {
         int ng = gs.getGlyphCount();
-        int ccMissing = Typeface.NOT_FOUND;
         List<Character> chars = new ArrayList<Character>(gs.getUTF16CharacterCount());
 
-        for (int i = 0, n = ng; i < n; i++) {
+        for (int i = 0; i < ng; i++) {
             int gi = gs.getGlyph(i);
             int cc = findCharacterFromGlyphIndex(gi);
             if ((cc == 0) || (cc > 0x10FFFF)) {
-                cc = ccMissing;
+                cc = Typeface.NOT_FOUND;
                 log.warn("Unable to map glyph index " + gi
                          + " to Unicode scalar in font '"
                          + getFullName() + "', substituting missing character '"
-                         + (char) cc + "'");
+                         + (char) cc + '\'');
             }
             if (cc > 0x00FFFF) {
                 int sh;
@@ -811,12 +804,7 @@ public class MultiByteFont extends CIDFont implements Substitutable, Positionabl
 
     private static boolean hasElidableControl(GlyphSequence gs) {
         int[] ca = gs.getCharacterArray(false);
-        for (int ch : ca) {
-            if (isElidableControl(ch)) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(ca).anyMatch(MultiByteFont::isElidableControl);
     }
 
     private static boolean isElidableControl(int ch) {

@@ -30,11 +30,11 @@ class Decimal
 {
     static final int SIZE = 16;
 
-    private short field_1_wReserved;
-    private byte field_2_scale;
-    private byte field_3_sign;
-    private int field_4_hi32;
-    private long field_5_lo64;
+    private short field_1_wReserved; // TODO assigned, but never accessed
+    private byte field_2_scale; // TODO assigned, but never accessed
+    private byte field_3_sign; // TODO assigned, but never accessed
+    private int field_4_hi32; // TODO assigned, but never accessed
+    private long field_5_lo64; // TODO assigned, but never accessed
 
     Decimal( final byte[] data, final int startOffset )
     {

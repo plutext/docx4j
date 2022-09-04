@@ -26,7 +26,7 @@ import org.w3c.dom.Node;
  */
 public class XPathAwareCloner {
 	
-	private static Logger log = LoggerFactory.getLogger(XPathAwareCloner.class);	
+	private static final Logger log = LoggerFactory.getLogger(XPathAwareCloner.class);
 			
 	/** Clone this JAXB object, using default JAXBContext. */ 
 	public Object deepCopy(Object o) {		
@@ -174,7 +174,7 @@ public class XPathAwareCloner {
 	    P pIn = (P)XmlUtils.unmarshalString(pString);
 	    
 	    XPathAwareCloner cloner = new XPathAwareCloner();
-	    P clonedP = (P)cloner.deepCopy(pIn);
+	    //P clonedP = (P)cloner.deepCopy(pIn);
 	    
 	    List<Object> results = cloner.getJAXBNodesViaXPath("//w:r[contains( w:t, 'seeking')]", false);
 	    //List<Object> results = cloner.getJAXBNodesViaXPath("//w:r", false);

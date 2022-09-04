@@ -71,12 +71,12 @@ public class AbstractTableWriterModelCell extends TableModelCell {
 		
 		if (content==null) {
             if(logger.isErrorEnabled()) {
-                logger.error("No content for row " + row + ", col " + col + "\n"
+                logger.error("No content for row " + row + ", col " + col + '\n'
                         + XmlUtils.marshaltoString(tc, true, true));
             }
 		} else {
             if(logger.isDebugEnabled()) {
-                logger.debug("Cell content for row " + row + ", col " + col + "\n" + XmlUtils.w3CDomNodeToString(content));
+                logger.debug("Cell content for row " + row + ", col " + col + '\n' + XmlUtils.w3CDomNodeToString(content));
             }
 		}
 

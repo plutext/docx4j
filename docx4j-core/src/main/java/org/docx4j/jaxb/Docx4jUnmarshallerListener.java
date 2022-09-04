@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class Docx4jUnmarshallerListener extends Unmarshaller.Listener {
 
-	protected static Logger log = LoggerFactory.getLogger(Docx4jUnmarshallerListener.class);
+	protected static final Logger log = LoggerFactory.getLogger(Docx4jUnmarshallerListener.class);
 	
 	private JaxbXmlPart part;
 

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 public final class AlternativeFormatInputPart extends BinaryPart {
 	
-	protected static Logger log = LoggerFactory.getLogger(AlternativeFormatInputPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(AlternativeFormatInputPart.class);
 	
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {

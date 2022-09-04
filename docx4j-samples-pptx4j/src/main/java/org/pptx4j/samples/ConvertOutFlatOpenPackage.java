@@ -25,11 +25,8 @@ package org.pptx4j.samples;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.docx4j.Docx4J;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.PresentationMLPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
 /**
@@ -52,7 +49,7 @@ public class ConvertOutFlatOpenPackage  {
 		
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(pptxPackage);
 		
-		org.docx4j.xmlPackage.Package result = worker.get();
+		org.docx4j.xmlPackage.Package result = FlatOpcXmlCreator.get();
 		
 		boolean suppressDeclaration = true;
 		boolean prettyprint = true;

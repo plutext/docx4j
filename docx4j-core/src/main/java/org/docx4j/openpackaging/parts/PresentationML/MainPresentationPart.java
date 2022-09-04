@@ -41,7 +41,6 @@ import org.docx4j.relationships.Relationship;
 import org.pptx4j.Pptx4jException;
 import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSection;
 import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSectionList;
-import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main.CTSectionSlideIdListEntry;
 import org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main.CTExtendedGuideList;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.SlideSizesWellKnown;
@@ -60,7 +59,7 @@ import org.slf4j.LoggerFactory;
 
 public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	
-	protected static Logger log = LoggerFactory.getLogger(MainPresentationPart.class);
+	protected static final Logger log = LoggerFactory.getLogger(MainPresentationPart.class);
 	
 	public MainPresentationPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -202,7 +201,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 	}
 	
-	private CTNotesMasterIdList createNotesMasterIdListPlusEntry(String relId) {
+	private static CTNotesMasterIdList createNotesMasterIdListPlusEntry(String relId) {
 
 		org.pptx4j.pml.ObjectFactory pmlObjectFactory = new org.pptx4j.pml.ObjectFactory();
 
@@ -429,7 +428,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 		Presentation.SldIdLst.SldId entry = Context.getpmlObjectFactory().createPresentationSldIdLstSldId();
 		
-		entry.setId( this.getSlideId() );
+		entry.setId( JaxbPmlPart.getSlideId() );
 		entry.setRid(rel.getId());
 		
 		this.getJaxbElement().getSldIdLst().getSldId().add(entry);
@@ -445,7 +444,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 		Presentation.SldMasterIdLst.SldMasterId entry = Context.getpmlObjectFactory().createPresentationSldMasterIdLstSldMasterId();
 		
-		entry.setId( new Long(this.getSlideLayoutOrMasterId()) );
+		entry.setId(getSlideLayoutOrMasterId());
 		entry.setRid(rel.getId());
 
 		this.getJaxbElement().getSldMasterIdLst().getSldMasterId().add(entry);
@@ -514,7 +513,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 			
 		Presentation.SldIdLst.SldId entry = Context.getpmlObjectFactory().createPresentationSldIdLstSldId();
 		
-		entry.setId( this.getSlideId() );
+		entry.setId( JaxbPmlPart.getSlideId() );
 		entry.setRid(rel.getId());
 		
 		return entry;
@@ -759,7 +758,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		        CTExtensionList extLst = getExtensionList(true);
 				
 				ext = new CTExtension();
-				String newUUID = "{" + UUID.randomUUID().toString().toUpperCase() + "}";
+				String newUUID = '{' + UUID.randomUUID().toString().toUpperCase() + '}';
 				ext.setUri(newUUID);
 				
 				extLst.getExt().add(ext);
@@ -832,15 +831,9 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	/**
 	 * @since 8.1.0
 	 */
-	private CTSection getSection(CTSectionList sectLst, long sldId) {
-		
-		for (CTSection p14Section : sectLst.getSection()) {
-			if (p14Section.getSldIdLst()==null) continue;
-			for (CTSectionSlideIdListEntry p14SldId : p14Section.getSldIdLst().getSldId()) {
-				if(p14SldId.getId()== sldId) return p14Section;
-			}
-		}
-		return null;
+	private static CTSection getSection(CTSectionList sectLst, long sldId) {
+
+		return sectLst.getSection().stream().filter(p14Section -> p14Section.getSldIdLst() != null).filter(p14Section -> p14Section.getSldIdLst().getSldId().stream().anyMatch(p14SldId -> p14SldId.getId() == sldId)).findFirst().orElse(null);
 	}
 	
 	/**
@@ -851,9 +844,6 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	 */
 	public SldId getSldIdByRelId(String relId) {
 
-		for( SldId sldId : this.getJaxbElement().getSldIdLst().getSldId() ) {
-			if (sldId.getRid().equals(relId)) return sldId;
-		}
-		return null;
+		return this.getJaxbElement().getSldIdLst().getSldId().stream().filter(sldId -> sldId.getRid().equals(relId)).findFirst().orElse(null);
 	}
 }

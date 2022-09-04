@@ -579,12 +579,9 @@ public class DocumentSummaryInformation extends SpecialPropertySet
             final Map<Long,String> dictionary = section.getDictionary();
             final Property[] properties = section.getProperties();
             int propertyCount = 0;
-            for (int i = 0; i < properties.length; i++)
-            {
-                final Property p = properties[i];
+            for (final Property p : properties) {
                 final long id = p.getID();
-                if (id != 0 && id != 1)
-                {
+                if (id != 0 && id != 1) {
                     propertyCount++;
                     final CustomProperty cp = new CustomProperty(p,
                             dictionary.get(Long.valueOf(id)));
@@ -620,9 +617,7 @@ public class DocumentSummaryInformation extends SpecialPropertySet
         customProperties.setCodepage(cpCodepage);
         section.setCodepage(cpCodepage);
         section.setDictionary(dictionary);
-        for (final Iterator<CustomProperty> i = customProperties.values().iterator(); i.hasNext();)
-        {
-            final Property p = i.next();
+        for (final Property p : customProperties.values()) {
             section.setProperty(p);
         }
     }

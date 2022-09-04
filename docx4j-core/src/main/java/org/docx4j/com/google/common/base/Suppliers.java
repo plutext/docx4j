@@ -76,7 +76,7 @@ public final class Suppliers {
 
     @Override
     public String toString() {
-      return "Suppliers.compose(" + function + ", " + supplier + ")";
+      return "Suppliers.compose(" + function + ", " + supplier + ')';
     }
 
     private static final long serialVersionUID = 0;
@@ -139,8 +139,8 @@ public final class Suppliers {
     @Override
     public String toString() {
       return "Suppliers.memoize("
-          + (initialized ? "<supplier that returned " + value + ">" : delegate)
-          + ")";
+          + (initialized ? "<supplier that returned " + value + '>' : delegate)
+          + ')';
     }
 
     private static final long serialVersionUID = 0;
@@ -180,8 +180,8 @@ public final class Suppliers {
     public String toString() {
       Supplier<T> delegate = this.delegate;
       return "Suppliers.memoize("
-          + (delegate == null ? "<supplier that returned " + value + ">" : delegate)
-          + ")";
+          + (delegate == null ? "<supplier that returned " + value + '>' : delegate)
+          + ')';
     }
   }
 
@@ -296,7 +296,7 @@ public final class Suppliers {
 
     @Override
     public String toString() {
-      return "Suppliers.ofInstance(" + instance + ")";
+      return "Suppliers.ofInstance(" + instance + ')';
     }
 
     private static final long serialVersionUID = 0;
@@ -326,7 +326,7 @@ public final class Suppliers {
 
     @Override
     public String toString() {
-      return "Suppliers.synchronizedSupplier(" + delegate + ")";
+      return "Suppliers.synchronizedSupplier(" + delegate + ')';
     }
 
     private static final long serialVersionUID = 0;

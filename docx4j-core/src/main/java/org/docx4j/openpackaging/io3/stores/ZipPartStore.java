@@ -187,7 +187,7 @@ public class ZipPartStore implements PartStore {
 		return (partByteArrays.get(partName) !=null );
 	}
 
-	private byte[] getBytesFromInputStream(InputStream is, long size)
+	private static byte[] getBytesFromInputStream(InputStream is, long size)
 			throws Exception {
 
 		if (size == -1) {

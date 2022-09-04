@@ -27,6 +27,7 @@ package org.docx4j.org.apache.fop.tools;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ class EventProducerCollector {
      * Creates the {@link DocletTagFactory} to be used by the collector.
      * @return the doclet tag factory
      */
-    protected DocletTagFactory createDocletTagFactory() {
+    protected static DocletTagFactory createDocletTagFactory() {
         return new DefaultDocletTagFactory();
     }
 
@@ -108,14 +109,9 @@ class EventProducerCollector {
         return eventProducerFound;
     }
 
-    private boolean implementsInterface(JavaClass clazz, String intf) {
+    private static boolean implementsInterface(JavaClass clazz, String intf) {
         JavaClass[] classes = clazz.getImplementedInterfaces();
-        for (JavaClass cl : classes) {
-            if (cl.getFullyQualifiedName().equals(intf)) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(classes).anyMatch(cl -> cl.getFullyQualifiedName().equals(intf));
     }
 
     /**
@@ -137,7 +133,7 @@ class EventProducerCollector {
         models.add(model);
     }
 
-    private EventMethodModel createMethodModel(JavaMethod method)
+    private static EventMethodModel createMethodModel(JavaMethod method)
             throws EventConventionException, ClassNotFoundException {
         JavaClass clazz = method.getParentClass();
         //Check EventProducer conventions
@@ -145,7 +141,7 @@ class EventProducerCollector {
             throw new EventConventionException("All methods of interface "
                     + clazz.getFullyQualifiedName() + " must have return type 'void'!");
         }
-        String methodSig = clazz.getFullyQualifiedName() + "." + method.getCallSignature();
+        String methodSig = clazz.getFullyQualifiedName() + '.' + method.getCallSignature();
         JavaParameter[] params = method.getParameters();
         if (params.length < 1) {
             throw new EventConventionException("The method " + methodSig

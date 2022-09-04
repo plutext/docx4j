@@ -26,6 +26,7 @@ package org.docx4j.fonts.fop.complexscripts.util;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -172,11 +173,7 @@ public class GlyphSequence implements Cloneable {
      * character array
      */
     public int getUTF16CharacterCount() {
-        int count = 0;
-        for (int ch : characters.array()) {
-            count += Character.charCount(ch);
-        }
-        return count;
+        return Arrays.stream(characters.array()).map(Character::charCount).sum();
     }
 
     /**
@@ -405,7 +402,7 @@ public class GlyphSequence implements Cloneable {
 
     /** {@inheritDoc} */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append('{');
         sb.append("chars = [");
         sb.append(characters);
@@ -413,7 +410,7 @@ public class GlyphSequence implements Cloneable {
         sb.append(glyphs);
         sb.append("], associations = [");
         sb.append(associations);
-        sb.append("]");
+        sb.append(']');
         sb.append('}');
         return sb.toString();
     }
@@ -422,10 +419,10 @@ public class GlyphSequence implements Cloneable {
      * Determine if two arrays of glyphs are identical.
      * @param ga1 first glyph array
      * @param ga2 second glyph array
-     * @return true if arrays are botth null or both non-null and have identical elements
+     * @return true if arrays are both null or both non-null and have identical elements
      */
     public static boolean sameGlyphs(int[] ga1, int[] ga2) {
-        if (ga1 == ga2) {
+        if (Arrays.equals(ga1, ga2)) {
             return true;
         } else if ((ga1 == null) || (ga2 == null)) {
             return false;
@@ -555,11 +552,11 @@ public class GlyphSequence implements Cloneable {
             CharAssociation[] naa = new CharAssociation [ ng ];
             if (source < target) {
                 int t = 0;
-                for (int s = 0, e = source; s < e; s++, t++) {
+                for (int s = 0; s < source; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
-                for (int s = source + count, e = target; s < e; s++, t++) {
+                for (int s = source + count; s < target; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
@@ -567,13 +564,13 @@ public class GlyphSequence implements Cloneable {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
-                for (int s = target, e = ng; s < e; s++, t++) {
+                for (int s = target; s < ng; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
             } else {
                 int t = 0;
-                for (int s = 0, e = target; s < e; s++, t++) {
+                for (int s = 0; s < target; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
@@ -581,11 +578,11 @@ public class GlyphSequence implements Cloneable {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
-                for (int s = target, e = source; s < e; s++, t++) {
+                for (int s = target; s < source; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
-                for (int s = source + count, e = ng; s < e; s++, t++) {
+                for (int s = source + count; s < ng; s++, t++) {
                     nga[t] = ga[s];
                     naa[t] = aa[s];
                 }
@@ -608,12 +605,10 @@ public class GlyphSequence implements Cloneable {
     }
 
     private static List makeIdentityAssociations(int numChars, int numGlyphs) {
-        int nc = numChars;
-        int ng = numGlyphs;
-        List av = new ArrayList(ng);
-        for (int i = 0, n = ng; i < n; i++) {
-            int k = (i > nc) ? nc : i;
-            av.add(new CharAssociation(i, (k == nc) ? 0 : 1));
+        List av = new ArrayList(numGlyphs);
+        for (int i = 0; i < numGlyphs; i++) {
+            int k = (i > numChars) ? numChars : i;
+            av.add(new CharAssociation(i, (k == numChars) ? 0 : 1));
         }
         return av;
     }

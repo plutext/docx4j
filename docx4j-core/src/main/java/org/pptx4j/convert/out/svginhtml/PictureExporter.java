@@ -55,7 +55,7 @@ public class PictureExporter extends AbstractWordXmlPicture {
             
             	 */
 
-	protected static Logger log = LoggerFactory.getLogger(PictureExporter.class);	
+	protected static final Logger log = LoggerFactory.getLogger(PictureExporter.class);
 
 	public static DocumentFragment createHtmlImg(
 			SvgConversionContext context,
@@ -156,7 +156,7 @@ public class PictureExporter extends AbstractWordXmlPicture {
 		return converter;
 	}
 
-    private final int extentToPixelConversionFactor = 9525; //12700;	
+    private static final int extentToPixelConversionFactor = 9525; //12700;
 
     
     private Dimensions readDimensions(long x, long y) {

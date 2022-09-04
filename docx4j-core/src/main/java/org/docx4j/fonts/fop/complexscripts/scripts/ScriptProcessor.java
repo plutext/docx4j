@@ -215,7 +215,7 @@ public abstract class ScriptProcessor {
         if ((usa = assembledLookupsGet(key)) != null) {
             return usa;
         } else {
-            return assembledLookupsPut(key, table.assembleLookups(features, lookups));
+            return assembledLookupsPut(key, GlyphTable.assembleLookups(features, lookups));
         }
     }
 

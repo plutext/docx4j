@@ -26,6 +26,7 @@ package org.docx4j.fonts.fop.complexscripts.fonts;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,9 +149,7 @@ public final class GlyphCoverageTable extends GlyphMappingTable implements Glyph
         public List getEntries() {
             List entries = new java.util.ArrayList();
             if (map != null) {
-                for (int aMap : map) {
-                    entries.add(aMap);
-                }
+                entries = Arrays.stream(map).boxed().collect(Collectors.toList());
             }
             return entries;
         }
@@ -203,7 +202,7 @@ public final class GlyphCoverageTable extends GlyphMappingTable implements Glyph
         }
         /** {@inheritDoc} */
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append('{');
             for (int i = 0, n = map.length; i < n; i++) {
                 if (i > 0) {

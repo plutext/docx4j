@@ -38,14 +38,14 @@ public final class LittleEndianByteArrayOutputStream implements LittleEndianOutp
 	public LittleEndianByteArrayOutputStream(byte[] buf, int startOffset, int maxWriteLen) {
 		if (startOffset < 0 || startOffset > buf.length) {
 			throw new IllegalArgumentException("Specified startOffset (" + startOffset 
-					+ ") is out of allowable range (0.." + buf.length + ")");
+					+ ") is out of allowable range (0.." + buf.length + ')');
 		}
 		_buf = buf;
 		_writeIndex = startOffset;
 		_endIndex = startOffset + maxWriteLen;
 		if (_endIndex < startOffset ||  _endIndex > buf.length) {
 			throw new IllegalArgumentException("calculated end index (" + _endIndex 
-					+ ") is out of allowable range (" + _writeIndex + ".." + buf.length + ")");
+					+ ") is out of allowable range (" + _writeIndex + ".." + buf.length + ')');
 		}
 	}
 	public LittleEndianByteArrayOutputStream(byte[] buf, int startOffset) {

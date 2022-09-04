@@ -29,7 +29,7 @@ import org.docx4j.org.apache.poi.util.LittleEndian;
 
 class Filetime
 {
-    static final int SIZE = LittleEndian.INT_SIZE * 2;
+    static final int SIZE = LittleEndian.INT_SIZE << 1;
 
     private int _dwHighDateTime;
     private int _dwLowDateTime;

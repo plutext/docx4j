@@ -218,7 +218,7 @@ public class XMLFontMetricsReader extends DefaultHandler {
 
     }
 
-    private int getInt(String str) throws SAXException {
+    private static int getInt(String str) throws SAXException {
         int ret = 0;
         try {
             ret = Integer.parseInt(str);

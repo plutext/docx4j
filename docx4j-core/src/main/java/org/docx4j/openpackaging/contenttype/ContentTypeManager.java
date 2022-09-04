@@ -138,33 +138,33 @@ import org.slf4j.LoggerFactory;
  */
 public class ContentTypeManager  {
 	
-	protected static Logger log = LoggerFactory.getLogger(ContentTypeManager.class);
+	protected static final Logger log = LoggerFactory.getLogger(ContentTypeManager.class);
 	
 	/**
 	 * Content type part name.
 	 */
-	public static final String CONTENT_TYPES_PART_NAME = "[Content_Types].xml";
+	//public static final String CONTENT_TYPES_PART_NAME = "[Content_Types].xml";
 
 	/**
 	 * Content type namespace
 	 */
-	public static final String TYPES_NAMESPACE_URI = "http://schemas.openxmlformats.org/package/2006/content-types";
+	//public static final String TYPES_NAMESPACE_URI = "http://schemas.openxmlformats.org/package/2006/content-types";
 
 	
 	
 	/* Xml elements in content type part */
 
-	private static final String TYPES_TAG_NAME = "Types";
+	//private static final String TYPES_TAG_NAME = "Types";
 
-	private static final String DEFAULT_TAG_NAME = "Default";
+	//private static final String DEFAULT_TAG_NAME = "Default";
 
-	private static final String EXTENSION_ATTRIBUTE_NAME = "Extension";
+	//private static final String EXTENSION_ATTRIBUTE_NAME = "Extension";
 
-	private static final String CONTENT_TYPE_ATTRIBUTE_NAME = "ContentType";
+	//private static final String CONTENT_TYPE_ATTRIBUTE_NAME = "ContentType";
 
-	private static final String OVERRIDE_TAG_NAME = "Override";
+	//private static final String OVERRIDE_TAG_NAME = "Override";
 
-	private static final String PART_NAME_ATTRIBUTE_NAME = "PartName";
+	//private static final String PART_NAME_ATTRIBUTE_NAME = "PartName";
 
 	/**
 	 * Default content type tree. <Extension, ContentType>
@@ -284,7 +284,7 @@ public class ContentTypeManager  {
 		// look for an override
 		CTOverride overrideCT = (CTOverride) overrideContentType.get(new URI(partName));
 		if (overrideCT!=null ) {
-			String contentType = new String(overrideCT.getContentType()); 
+			String contentType = overrideCT.getContentType();
 			if (log.isDebugEnabled()) {
 				log.debug("Found content type '" + contentType + "' for " + partName);
 			}
@@ -299,7 +299,7 @@ public class ContentTypeManager  {
 		}		
 		
 		// if there is no override, get use the file extension
-		String ext = new String(partName.substring(partName.indexOf(".") + 1).toLowerCase());
+		String ext = partName.substring(partName.indexOf('.') + 1).toLowerCase();
 		log.debug("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
 		if (defaultCT!=null ) {
@@ -536,11 +536,11 @@ public class ContentTypeManager  {
 			// For SVG, we could unmarshall with our jaxb-svg, but probably little reason to do that.
 			
 			if (contentType.equals(ContentTypes.WORDPROCESSINGML_STYLESWITHEFFECTS)) {
-				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + "'");
+				log.debug("DefaultPart used for part '" + partName + "' of content type '" + contentType + '\'');
 				
 			} else {
 				log.warn("DefaultPart used for part '" + partName 
-						+ "' of content type '" + contentType + "'");				
+						+ "' of content type '" + contentType + '\'');
 			}
 			
 			return CreateDefaultXmlPartObject(partName );
@@ -767,7 +767,7 @@ public class ContentTypeManager  {
 		if (contentType == null)
 			throw new IllegalArgumentException("contentType");
 
-		return this.defaultContentType.values().contains(contentType); 
+		return this.defaultContentType.values().contains(contentType); // TODO is always false, values in defaultContentType have type CTDefault
 //				|| (this.overrideContentType != null 
 //						&& this.overrideContentType.values().contains(contentType)));
 	}

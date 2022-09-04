@@ -147,7 +147,7 @@ public class UnitsOfMeasurement {
 		
 		if (i < 16) {
 			// Pad so we have 2 digits
-			return "0" + hexValue;
+			return '0' + hexValue;
 		}
 		return hexValue;
 	}
@@ -190,7 +190,7 @@ public class UnitsOfMeasurement {
 		return resColor;
 	}
 	
-	private String calcHexColor(int value) {
+	private static String calcHexColor(int value) {
 	String	ret = Integer.toHexString(value).toUpperCase();
 		return (ret.length() < 6 ?
 				"000000".substring(0, 6 - ret.length()) + ret :

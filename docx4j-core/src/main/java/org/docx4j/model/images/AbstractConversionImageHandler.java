@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractConversionImageHandler implements ConversionImageHandler {
 	
-	protected static Logger log = LoggerFactory.getLogger(AbstractConversionImageHandler.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractConversionImageHandler.class);
 	protected String uuid = UUID.randomUUID().toString();
 	protected Map<String, String> handledImagesMap = new TreeMap<String, String>();
 	protected String imageDirPath = null;  // TODO FIXME should not be here; move to FileConversionImageHandler
@@ -64,12 +64,12 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 		return uri;
 	}
 
-	protected String createKey(Relationship relationship, BinaryPart part) {
+	protected static String createKey(Relationship relationship, BinaryPart part) {
 		return relationship.getTarget();
 	}
 
 	protected String doHandleImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException {
-	String uri = null;
+	String uri;
 		if (isInternalImage(picture, relationship, part)) {
 			uri = handleInternalImage(picture, relationship, part);
 		} else { // External
@@ -78,7 +78,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 		return uri;
 	}
 
-	protected boolean isInternalImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException {
+	protected static boolean isInternalImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) throws Docx4JException {
 		//treat external images, that are loaded, as internal images
 		return (part != null) &&
 			   ((part.getExternalTarget() == null) || (part.getBuffer() != null)); 	
@@ -92,7 +92,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 */
 	protected String handleInternalImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart binaryPart) throws Docx4JException {
 	byte[] bytes = getImageData(binaryPart);
-	String uri = null;
+	String uri;
 		if (imageDirPath.equals("")) {
 			// TODO: this isn't going to work for XSL FO!
 			// So for XSL FO, you always need an imageDirPath! 
@@ -113,8 +113,8 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 
 	protected abstract String createStoredImage(BinaryPart binaryPart, byte[] bytes) throws Docx4JException;
 	
-	protected String createEncodedImage(BinaryPart binaryPart, byte[] bytes) throws Docx4JException {
-	String uri = null;
+	protected static String createEncodedImage(BinaryPart binaryPart, byte[] bytes) throws Docx4JException {
+	String uri;
 	byte[] encoded = Base64.encodeBase64(bytes, true);
 		try {
 			uri = "data:" + binaryPart.getContentType()
@@ -142,9 +142,9 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 * @param binaryPart
 	 * @return
 	 */
-	protected String getImageName(BinaryPart binaryPart) {
-	String partname = null;
-	int p = -1;
+	protected static String getImageName(BinaryPart binaryPart) {
+	String partname;
+	int p;
 		if (binaryPart.getExternalTarget() != null) {
 			partname = binaryPart.getExternalTarget().getValue();
 			p = partname.lastIndexOf('\\'); 
@@ -164,7 +164,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 * @param binaryPart
 	 * @return
 	 */
-	protected byte[] getImageData(BinaryPart binaryPart) {
+	protected static byte[] getImageData(BinaryPart binaryPart) {
 		return binaryPart.getBytes();
 	}
 
@@ -174,7 +174,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 * @param part (is always null)
 	 * @return uri for the image we've saved, or null
 	 */
-	protected String handleExternalImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) {
+	protected static String handleExternalImage(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part) {
 		return relationship.getTarget();
 	}
 	

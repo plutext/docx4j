@@ -255,7 +255,7 @@ public class FieldsPreprocessor {
 	 * @param fieldRef
 	 * @return
 	 */
-	private boolean preserveResult(FieldRef fieldRef) {
+	private static boolean preserveResult(FieldRef fieldRef) {
 		
 		if (fieldRef.isLock()) return true;
 		

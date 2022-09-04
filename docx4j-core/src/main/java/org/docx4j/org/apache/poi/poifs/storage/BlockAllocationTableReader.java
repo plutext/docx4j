@@ -195,7 +195,7 @@ public final class BlockAllocationTableReader {
        if (block_count > MAX_BLOCK_COUNT) {
           throw new IOException(
                 "Block count " + block_count + 
-                " is too high. POI maximum is " + MAX_BLOCK_COUNT + "."
+                " is too high. POI maximum is " + MAX_BLOCK_COUNT + '.'
           );
        }
     }

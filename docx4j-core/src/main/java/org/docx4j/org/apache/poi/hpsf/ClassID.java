@@ -25,6 +25,8 @@ package org.docx4j.org.apache.poi.hpsf;
 
 import org.docx4j.org.apache.poi.util.HexDump;
 
+import java.util.stream.IntStream;
+
 /**
  *  <p>Represents a class ID (16 bytes). Unlike other little-endian
  *  type the {@link ClassID} is not just 16 bytes stored in the wrong
@@ -194,7 +196,7 @@ public class ClassID
         if (dst.length < 16)
             throw new ArrayStoreException
                 ("Destination byte[] must have room for at least 16 bytes, " +
-                 "but has a length of only " + dst.length + ".");
+                 "but has a length of only " + dst.length + '.');
         /* Write double word. */
         dst[0 + offset] = bytes[3];
         dst[1 + offset] = bytes[2];
@@ -231,10 +233,7 @@ public class ClassID
         final ClassID cid = (ClassID) o;
         if (bytes.length != cid.bytes.length)
             return false;
-        for (int i = 0; i < bytes.length; i++)
-            if (bytes[i] != cid.bytes[i])
-                return false;
-        return true;
+        return IntStream.range(0, bytes.length).noneMatch(i -> bytes[i] != cid.bytes[i]);
     }
 
 
@@ -257,7 +256,7 @@ public class ClassID
      */
     public String toString()
     {
-        StringBuffer sbClassId = new StringBuffer(38);
+        StringBuilder sbClassId = new StringBuilder(38);
         sbClassId.append('{');
         for (int i = 0; i < 16; i++)
         {
