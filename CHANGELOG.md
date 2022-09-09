@@ -2,6 +2,29 @@ CHANGELOG
 =========
 
 
+Version 11.4.8
+==============
+￼
+Release date
+------------
+￼
+9 Sept 2022
+
+Changes in Version 11.4.8
+-------------------------
+
+Alter convertAltChunks interface:
+- this method now does the conversion in situ (ie rather than cloning the pkg),
+for efficiency (eg where the docx contains many altChunks including in its headers/footers).
+
+- Now supports .mht altChunks (as produced by BIRT) via docx4j-ImportXHTML (v11.4.8)
+
+- This method now does not convert docx altChunks.  Convert docx altChunks has always required the MergeDocx component
+of Docx4j Enterprise; users wishing to convert docx altChunks should use that directly.
+
+Some other minor changes; please see https://github.com/plutext/docx4j/commits/VERSION_11_4_8
+
+
 Version 11.4.7
 ==============
 ￼
