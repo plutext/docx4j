@@ -91,6 +91,7 @@
 	<logger name="org.docx4j.model.table" level="INFO" />
 
 	<logger name="org.docx4j.openpackaging" level="WARN" />
+	<logger name="org.docx4j.openpackaging.contenttype" level="WARN" />
 	
 	<logger name="org.docx4j.openpackaging.URIHelper" level="WARN" />
 
