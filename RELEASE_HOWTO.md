@@ -321,6 +321,7 @@ $ sudo archlinux-java set java-14-adoptopenjdk
 
 Upodate pom.xml to -SNAPSHOT
 
+
 ----
 
 Put in /docx4j dir, for example
@@ -331,6 +332,8 @@ Put in /docx4j dir, for example
 Update downloads.html
 Announce release in docx4j forum
 Update news  (includes link to release announcement)
+
+Update the default branch in GitHub
 
 ----
 
