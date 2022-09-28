@@ -91,7 +91,7 @@ ID │ State  │ Lvl │ Version        │ Name
 45 │ Active │  80 │ 2.8.1       │ checker-qual
 46 │ Active │  80 │ 2.9.0       │ Jackson-annotations
 47 │ Active │  80 │ 2.9.9       │ Jackson-core
-48 │ Active │  80 │ 2.9.9       │ jackson-databind
+48 │ Active │  80 │ 2.12.6.1    │ jackson-databind
 49 │ Active │  80 │ 3.0.0       │ Expression Language 3.0 API
 50 │ Active │  80 │ 1.3.2       │ mbassador
 51 │ Active │  80 │ 1.12.0      │ Apache Commons Codec
@@ -174,7 +174,7 @@ NamespacePrefixMapper: org.docx4j.jaxb.ri.NamespacePrefixMapper
 <w:p xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:cppr="http://schemas.microsoft.com/office/2006/coverPageProps" xmlns:odx="http://opendope.org/xpaths" xmlns:c14="http://schemas.microsoft.com/office/drawing/2007/8/2/chart" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:odgm="http://opendope.org/SmartArt/DataHierarchy" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11" xmlns:pvml="urn:schemas-microsoft-com:office:powerpoint" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:comp="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:b="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:xvml="urn:schemas-microsoft-com:office:excel" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:oda="http://opendope.org/answers" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:odc="http://opendope.org/conditions" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:odi="http://opendope.org/components" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:odq="http://opendope.org/questions" xmlns:wetp="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"/>
 it worked.
 karaf@root>
-```
+ ```
 
   
 
