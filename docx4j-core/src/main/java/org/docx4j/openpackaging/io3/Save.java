@@ -44,6 +44,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ImageBrokenPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -426,8 +427,11 @@ public class Save {
 			log.debug(".. duplicate save avoided .." );
 			return;
 		}
-				
-		if (part instanceof BinaryPart ) {
+
+		if (part instanceof ImageBrokenPart ) {
+			log.debug(".. ignoring broken image" );
+		
+		} else if (part instanceof BinaryPart ) {
 			log.debug(".. saving binary stuff" );
 			p.getTargetPartStore().saveBinaryPart( part );
 			

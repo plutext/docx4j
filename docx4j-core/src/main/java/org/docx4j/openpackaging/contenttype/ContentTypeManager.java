@@ -58,9 +58,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
@@ -108,6 +105,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ImageBrokenPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.KeyMapCustomizationsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
@@ -128,6 +126,10 @@ import org.docx4j.relationships.Relationship;
 import org.glox4j.openpackaging.packages.GloxPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 
 /**
@@ -316,6 +318,13 @@ public class ContentTypeManager  {
 			}
 			p.setContentType(new ContentType(contentType));
 			return p;
+		}
+		
+		// <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="NULL"/>
+		// In this case at least we know it is an image
+		if (Namespaces.IMAGE.equals(rel.getType())) {
+			log.error("No content type found for image rel " + partName);
+			return new ImageBrokenPart(new PartName(partName));
 		}
 		
 		// otherwise
