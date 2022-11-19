@@ -108,6 +108,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ImageBrokenPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.KeyMapCustomizationsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
@@ -318,7 +319,13 @@ public class ContentTypeManager  {
 			return p;
 		}
 		
-		// otherwise
+		// <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="NULL"/>
+		// In this case at least we know it is an image
+		if (Namespaces.IMAGE.equals(rel.getType())) {
+			log.error("No content type found for image rel " + partName);
+			return new ImageBrokenPart(new PartName(partName));
+		}
+				// otherwise
 		log.error("No content type found for " + partName);
 		return null;		
 		
