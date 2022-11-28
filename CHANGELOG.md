@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-Version 8.3.5  (minor release)
+Version 8.3.8  (minor release)
 ==============
 
 Release date
