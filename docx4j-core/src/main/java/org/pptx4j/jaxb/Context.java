@@ -60,7 +60,11 @@ public class Context {
 			java.lang.ClassLoader classLoader = Context.class.getClassLoader();
 
 			jcPML = JAXBContext.newInstance("org.pptx4j.pml:" +
-					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:" +
+					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chart.x2007:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
+					"org.docx4j.mce:" + // note that's not in the docx4j Context.jc
+					// VML, requires WML and DML (and MathML), but not PML or SML
+					// Is it ever used in a pptx?
+					// "org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.vml.wordprocessingDrawing:org.docx4j.vml.presentationDrawing:org.docx4j.vml.spreadsheetDrawing:org.docx4j.vml.root:" +					
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2010.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x2012.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201606.main:" +
@@ -74,7 +78,45 @@ public class Context {
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201710.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201703.main:" +
 					"org.pptx4j.com.microsoft.schemas.office.powerpoint.x201804.main:" +
-					"org.docx4j.mce", 
+					// The following copied from docx4j Context.jc 2023 01 14; since docx4j 11.4.9
+					"org.docx4j.sharedtypes:org.docx4j.bibliography:" +
+					"org.docx4j.com.microsoft.schemas.ink.x2010.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.chartDrawing:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.chartStyle:" +
+//					"org.docx4j.com.microsoft.schemas.office.drawing.x2008.diagram:" // see instead existing org.docx4j.dml.diagram2008
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2012.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2010.picture:" +
+					"org.docx4j.org.w3.x1998.math.mathML:" +
+					"org.docx4j.org.w3.x2003.inkML:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2013.main.command:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart.ac:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chartex:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2014.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201611.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201612.diagram:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.ink:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2016.SVG.main:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x201703.chart:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.decorative:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2017.model3d:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation:" +
+					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.hyperlinkcolor:" +
+					"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + 
+					"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
+//					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
+//					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
+//					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas:" +
+//					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup:" +
+//					"org.docx4j.com.microsoft.schemas.office.word.x2012.wordprocessingDrawing:" +
+//					"org.docx4j.w15symex:org.docx4j.w16cid:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
+					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11",
 					classLoader, ProviderProperties.getProviderProperties() );
 			
 			if (jcPML.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
