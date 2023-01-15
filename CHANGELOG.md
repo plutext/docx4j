@@ -2,12 +2,39 @@ CHANGELOG
 =========
 
 
-Version 11.4.8
+Version 11.4.9
 ==============
-￼
+
 Release date
 ------------
-￼
+
+15 Jan 2023
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+mayoATC
+
+Changes in Version 11.4.9
+-------------------------
+
+Fixes #529 Converting multiple AltChunks may corrupt content list
+
+Allow a docx containing a broken image (rel target=null case) to be loaded and saved.
+
+pptx4j: Add various packages (primarily org.docx4j.com.microsoft.schemas.office.drawing sub packages) already present in docx4j Context.jc to jcPML
+
+
+
+Version 11.4.8
+==============
+
+Release date
+------------
+
 9 Sept 2022
 
 Changes in Version 11.4.8
@@ -27,10 +54,10 @@ Some other minor changes; please see https://github.com/plutext/docx4j/commits/V
 
 Version 11.4.7
 ==============
-￼
+
 Release date
 ------------
-￼
+
 21 May 2022
 
 Changes in Version 11.4.7 
@@ -47,21 +74,20 @@ Bump MBassador to 1.3.2; see EventMonitoringDemo sample for how to monitor docx4
 
 Version 11.4.6
 ==============
-￼
+
 Release date
 ------------
-￼
+
 16 April 2022
-￼
-￼
+
+
 Contributors to this release
 ----------------------------
-￼
+
 Jason Harrop
 
 Thor Åge Eldby
-￼
-￼
+
 Changes in Version 11.4.6 
 -------------------------
 
@@ -76,19 +102,19 @@ Issue 501: Correct encoding issue when writing version comment for non UTF-8 loc
 
 Version 11.4.5  (jakarta.xml.bind; parity with 8.3.4)
 ==============
-￼
+
 Release date
 ------------
-￼
+
 7 March 2022
-￼
-￼
+
+
 Contributors to this release
 ----------------------------
-￼
+
 Jason Harrop
-￼
-￼
+
+
 Changes in Version 11.4.5 
 -------------------------
 
