@@ -22,8 +22,6 @@ When it comes to the actual release, follow the below for:
 + docx4j-ImportXHTML
 + docx4j-export-FO
 
-+ docx4j-MOXy
-
 + Enterprise Ed. 
 
 + .NET dist
@@ -52,13 +50,14 @@ Update CHANGELOG.md, README.md with release info.
 
     git lg b6c12c8..HEAD > stuff.txt  
 
-Update pom.xml with target version number (must still be -SNAPSHOT)
+Update pom.xml with target version number (must NOT be -SNAPSHOT for nexus-staging-maven-plugin )
+Update <tag> in scm element.  (Can it just be deleted?)
 
 Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
 
-Update build.xml so it has the same version as pom.xml (but without  -SNAPSHOT) 
+Update build.xml so it has the same version as pom.xml (ie without  -SNAPSHOT)
 
-Check everything is committed
+Check everything is committed (though nexus-staging-maven-plugin doesn't seem to care)
 
 Update Getting Started as necessary (inc HTML and PDF versions)
 
@@ -79,15 +78,18 @@ Note for Java 11:  Maven Central requires Javadoc.
 
 But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
 				 
-So we have to build with Java 12 or later (currently 14) :- 
+So we have to build with Java 12 or later (currently 17) :-
 
-$ sudo archlinux-java set java-14-adoptopenjdk
+$ sudo archlinux-java set java-17-openjdk
 
 (running this also sets JAVA_HOME)
 
 for import-XHTML:
     export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
     mvn install -P jdk-8-config
+
+Use eclipse/java-2022-06
+(cf docx4j 8 / Java 8: use eclipse 2019-12)
 
 -------------
 
@@ -130,170 +132,66 @@ Enter passphrase for ... .ssh/id_rsa: [the github 2 one]
 
 This command prompt can be used to do what follows for the 4 projects.  ie the above only needs to be done once :-)
 
-then per https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+New release process (docx4j 11.4.9 and later, which uses nexus-staging-maven-plugin instead of maven-deploy-plugin based on https://central.sonatype.org/publish/publish-maven/ and working with gpg 2.2.40 (first listed signature is jason@plutext.org)
 
-mvn release:clean
+    mvn clean deploy -P release
 
-mvn release:prepare
+in deploy, prompt for passphrase is the *other* one [e..]
 
-in prepare, prompt for passphrase is the *other* one [e..]
-(if you bugger it up, do git reset --hard, and start again with clean!)
+That should complete with something like:
 
-release:prepare ends with:
+		Uploaded to ossrh: https://oss.sonatype.org:443/service/local/staging/deployByRepositoryId/orgdocx4j-1095/org/docx4j/docx4j-core-tests/11.4.9/docx4j-core-tests-11.4.9.pom (2.7 kB at 1.5 kB/s)
+		[INFO]  * Upload of locally staged artifacts finished.
+		[INFO]  * Closing staging repository with ID "orgdocx4j-1095".
 
-		---
-		[INFO] Checking in modified POMs...
-		[INFO] Executing: cmd.exe /X /C "git add -- pom.xml"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git status"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git commit --verbose -F C:\Users\jharrop\AppDat
-		a\Local\Temp\maven-scm-1479963909.commit pom.xml"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git symbolic-ref HEAD"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git push git@github.com:plutext/docx4j.git mast
-		er:master"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Tagging release with the label docx4j-2.8.0...
-		[INFO] Executing: cmd.exe /X /C "git tag -F C:\Users\jharrop\AppData\Local\Temp\
-		maven-scm-1814557282.commit docx4j-2.8.0"
-		[INFO] Working directory: c:\users\jharrop\git\plutext\docx4jgreat
-		[INFO] Executing: cmd.exe /X /C "git push git@github.com:plutext/docx4j.git docx
-		4j-2.8.0"
-		[INFO] Working directory: c:\users\jharrop\git\plutext\docx4jgreat
-		[INFO] Executing: cmd.exe /X /C "git ls-files"
-		[INFO] Working directory: c:\users\jharrop\git\plutext\docx4jgreat
-		[INFO] Transforming 'docx4j'...
-		[INFO] Not removing release POMs
-		[INFO] Checking in modified POMs...
-		[INFO] Executing: cmd.exe /X /C "git add -- pom.xml"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git status"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git commit --verbose -F C:\Users\jharrop\AppDat
-		a\Local\Temp\maven-scm-651007931.commit pom.xml"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git symbolic-ref HEAD"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Executing: cmd.exe /X /C "git push git@github.com:plutext/docx4j.git mast
-		er:master"
-		[INFO] Working directory: c:\Users\jharrop\git\plutext\docx4jGREAT
-		[INFO] Release preparation complete.
+		Waiting for operation to complete...
+		..........
+
+		[INFO] Remote staged 1 repositories, finished with success.
+		[INFO] Remote staging repositories are being released...
+
+		Waiting for operation to complete...
+		.........
+
+		[INFO] Remote staging repositories released.
+		[INFO] ------------------------------------------------------------------------
+		[INFO] Reactor Summary for docx4j parent 11.4.9:
+		[INFO]
+		[INFO] docx4j parent ...................................... SUCCESS [  6.737 s]
+		[INFO] docx4j-openxml-objects ............................. SUCCESS [ 14.698 s]
+		[INFO] docx4j-openxml-objects-pml ......................... SUCCESS [  4.891 s]
+		[INFO] docx4j-openxml-objects-sml ......................... SUCCESS [  5.554 s]
+		[INFO] docx4j-core ........................................ SUCCESS [ 12.495 s]
+		[INFO] docx4j-JAXB-ReferenceImpl .......................... SUCCESS [  3.642 s]
+		[INFO] docx4j-samples-resources ........................... SUCCESS [  2.389 s]
+		[INFO] docx4j-core-tests .................................. SUCCESS [  4.713 s]
+		[INFO] docx4j-diffx ....................................... SUCCESS [  4.096 s]
+		[INFO] docx4j-docx-anon ................................... SUCCESS [  3.227 s]
+		[INFO] docx4j-export-fo ................................... SUCCESS [  3.740 s]
+		[INFO] docx4j-conversion-via-microsoft-graph .............. SUCCESS [  2.839 s]
+		[INFO] docx4j-documents4j-remote .......................... SUCCESS [  3.503 s]
+		[INFO] docx4j-documents4j-local ........................... SUCCESS [  3.386 s]
+		[INFO] docx4j-JAXB-MOXy ................................... SUCCESS [  3.149 s]
+		[INFO] docx4j-samples-docx4j .............................. SUCCESS [  0.476 s]
+		[INFO] docx4j-samples-docx-diffx .......................... SUCCESS [  0.316 s]
+		[INFO] docx4j-samples-docx-export-fo ...................... SUCCESS [  0.445 s]
+		[INFO] docx4j-samples-pptx4j .............................. SUCCESS [  0.347 s]
+		[INFO] docx4j-samples-xlsx4j .............................. SUCCESS [  0.340 s]
+		[INFO] docx4j-samples-glox4j .............................. SUCCESS [  0.317 s]
+		[INFO] docx4j-samples-conversion-via-microsoft-graph ...... SUCCESS [  0.431 s]
+		[INFO] docx4j-samples-documents4j-remote .................. SUCCESS [  0.356 s]
+		[INFO] docx4j-samples-documents4j-local ................... SUCCESS [  0.504 s]
+		[INFO] docx4j-bundle ...................................... SUCCESS [  3.399 s]
+		[INFO] docx4j-legacy-service .............................. SUCCESS [06:13 min]
 		[INFO] ------------------------------------------------------------------------
 		[INFO] BUILD SUCCESS
 		[INFO] ------------------------------------------------------------------------
-		[INFO] Total time: 2:46.951s
-		[INFO] Finished at: Thu May 24 15:42:00 EST 2012
-		[INFO] Final Memory: 8M/244M
-		[INFO] ------------------------------------------------------------------------
+		[INFO] Total time:  07:40 min
 
-and gives you release.properties:
-
-		jharrop@JHARROP-M4600 ~/git/plutext/docx4jGREAT (master)
-		$ cat release.properties
-		#release configuration
-		#Thu May 24 15:42:00 EST 2012
-		project.dev.org.docx4j\:docx4j=2.8.1-SNAPSHOT
-		scm.tag=docx4j-2.8.0
-		project.scm.org.docx4j\:docx4j.tag=HEAD
-		scm.url=scm\:git|git@github.com\:plutext/docx4j.git
-		pushChanges=true
-		preparationGoals=clean verify
-		project.scm.org.docx4j\:docx4j.url=http\://svn.sonatype.org/spice/tags/oss-paren
-		t-7/docx4j
-		project.scm.org.docx4j\:docx4j.developerConnection=scm\:git|git@github.com\:plut
-		ext/docx4j.git
-		project.rel.org.docx4j\:docx4j=2.8.0
-		remoteTagging=true
-		scm.commentPrefix=[maven-release-plugin]
-		project.scm.org.docx4j\:docx4j.connection=scm\:svn\:http\://svn.sonatype.org/spi
-		ce/tags/oss-parent-7/docx4j
-		exec.additionalArguments=-Psonatype-oss-release
-		completedPhase=end-release
-
-NB: it says that before you've done release:perform!!
-
-If you need to start again for any reason, delete the tag it added:
-
-	git tag -d docx4j-2.8.0
-	git push origin :refs/tags/docx4j-2.8.0
-
-and change the version back in your pom (and commit)
-and delete release.properties
-
-Easiest is to discard all changes, and if necessary revert and commit any commits it made.
-
-You'll still need to delete any tag as per above.
+ie no need to Login to the Nexus UI at https://oss.sonatype.org/index.html#welcome anymore,
+or to manually close then release :-)
 
 
------------
-
-You can't do:
-
-	$ mvn release:perform -X -DlocalCheckout=true
-
-since it says it
-
-	don't handle protocol 'git@github.com:file'
-
-so just do:
-
-	$ mvn release:perform -X 
-
-(don't need to worry about presence of bin-testOutput dir etc)
-
-.. be patient .. it may look like nothing is happening 
-(frozen checking out... and no network traffic), but have faith....
-
-enter code signing password again [ie e..]
-
-.. then its upload to oss.sonatype.org
-
-    [INFO] --- maven-gpg-plugin:1.1:sign (sign-artifacts) @ docx4j ---
-
-    [INFO] --- maven-install-plugin:2.3.1:install (default-install) @ docx4j ---
-
-    [INFO] Installing c:\Users\jharrop\git\plutext\docx4jGREAT\target\checkout\t
-arget\docx4j-2.8.0.jar to C:\Users\jharrop\.m2\repository\org\docx4j\docx4j\2.8.
-0\docx4j-2.8.0.jar
-
-etc
-
-    [INFO] --- maven-deploy-plugin:2.5:deploy (default-deploy) @ docx4j ---
-
-    Uploading: https://oss.sonatype.org/service/local/staging/deploy/maven2/org/
-docx4j/docx4j/2.8.0/docx4j-2.8.0.jar
-    Uploaded: https://oss.sonatype.org/service/local/staging/deploy/maven2/org/d
-ocx4j/docx4j/2.8.0/docx4j-2.8.0.jar (3735 KB at 31.7 KB/sec)
-
-    Uploading: https://oss.sonatype.org/service/local/staging/deploy/maven2/org/
-docx4j/docx4j/2.8.0/docx4j-2.8.0-sources.jar
-    Uploaded: https://oss.sonatype.org/service/local/staging/deploy/maven2/org/d
-ocx4j/docx4j/2.8.0/docx4j-2.8.0-sources.jar (4042 KB at 84.5 KB/sec)
-
-    Uploading: https://oss.sonatype.org/service/local/staging/deploy/maven2/org/
-docx4j/docx4j/2.8.0/docx4j-2.8.0-javadoc.jar
-    16061 KB 
-.. at 74.5 KB/sec
-
-Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
-
-1. close the staging repository:
-
-   1. Login to the Nexus UI, https://oss.sonatype.org/index.html#welcome
-   2. Go to Staging Repositories page.
-   3. Select a staging repository.
-   4. Click the Close button.
-
-2. when you are sure the closed staging repository has no problem, click the Release button.
-
-
--------
-
-Revert and commit (most recent first) the 2 commits which change the version number in all the poms
-(Swap sub-modules back to <version>${revision}</version>)
-then manually update the version number in parent pom (it needs to be the released version, since build.xml copies the pom.xml)
 
 Repeat above for -ImportXHTML 
 
@@ -304,9 +202,7 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 Ideally you'd commit the branch with the actual released version number in the pom,
 then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
-Here, also do:  git push -u origin [the incremented version number]
-
---------
+Here, also do:  git push -u origin [the incremented version number]  <--------- set up to track remote branch
 
 Switch branch if necessary, eg:
 
@@ -321,6 +217,9 @@ or
 $ sudo archlinux-java set java-14-adoptopenjdk
 
 
+Update pom.xml to incremented-SNAPSHOT
+
+
 ----
 
 Put in /docx4j dir, for example
@@ -331,6 +230,8 @@ Put in /docx4j dir, for example
 Update downloads.html
 Announce release in docx4j forum
 Update news  (includes link to release announcement)
+
+Update the default branch in GitHub
 
 ----
 
@@ -368,5 +269,4 @@ Procedure for -ImportXHTML is similar,
 
 TODO: review which version of .NET to target (see howto file)  
   
-
 

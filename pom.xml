@@ -2,18 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>9</version>
-  </parent>
-
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j-parent</artifactId>	
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.8</revision>
+		<revision>8.3.9</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -91,26 +85,23 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>HEAD</tag>
+	    <tag>HEAD</tag>
+	    <url>https://github.com/plutext/docx4j</url>      
   </scm>
 	<inceptionYear>2007</inceptionYear>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 	
 	<build>
 
 	<pluginManagement>
 		<plugins>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
-				<configuration>
-					<mavenExecutorId>forked-path</mavenExecutorId>
-					<useReleaseProfile>false</useReleaseProfile>
-					<arguments>${arguments} -Psonatype-oss-release</arguments>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -146,6 +137,19 @@
 	</pluginManagement>    
     	
 		<plugins>
+		
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.13</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -296,7 +300,29 @@
 			            </goals>
 			        </execution>
 			    </executions>
-			</plugin>			
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+					<id>sign-artifacts</id>
+					<phase>verify</phase>
+					<goals>
+						<goal>sign</goal>
+					</goals>
+		            <configuration>
+		                <gpgArguments>
+		                    <arg>--pinentry-mode</arg>
+		                    <arg>loopback</arg>
+		                </gpgArguments>
+		            </configuration>
+					</execution>
+				</executions>
+			</plugin>
+						
 			
 		</plugins>
 	</build>
@@ -338,27 +364,6 @@
  -->
 
 	<profiles> <!--  use -P eg mvn -Psign-artifacts  -->
-		<profile>
-			<id>sign-artifacts</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 
 		<profile>
 			<id>OSGi</id>
@@ -424,75 +429,80 @@
 			</build>
 		</profile>
 		
+		  <profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-source-plugin</artifactId>
+						<!-- The Source Plugin creates a jar archive of the source files of the
+							current project. -->
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Maven Central REQUIRES Javadoc
 
-   		<!--  comment this out, until the Windows path issues below are fixed in m2eclipse
-   	<profile>
-   		<id>jdk15</id>
-   		<activation>
-   			<jdk>1.5</jdk>
-   		</activation>
-   		<dependencies>
-   			<dependency>
-   				<groupId>javax.xml.bind</groupId>
-   				<artifactId>jaxb-api</artifactId>
-   				<version>2.1</version>
-   			</dependency>
+						hiccups on org.slf4j since it is a multi-release jar
+						broken in Java 11, fixed in Java 12
+						https://bugs.openjdk.java.net/browse/JDK-8222309
+					-->
+					<plugin>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.1.0</version>
+						<configuration>
+							<maxmemory>512m</maxmemory>
+							<additionalJOption>-Xdoclint:none</additionalJOption>
+							<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+							<!-- workaround for 'javadoc: error - The code being documented uses packages in the unnamed module' issue
+								still present in Java 14!
+								https://stackoverflow.com/a/63475569/1031689
+								-->
+							<source>8</source>
+							<detectJavaApiLink>false</detectJavaApiLink>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 
-   			<dependency>
-   				<groupId>com.sun.xml.bind</groupId>
-   				<artifactId>jaxb-impl</artifactId>
-   				<version>2.1.3</version>
-   			</dependency>
-   		</dependencies>
-   	</profile>
-   	<profile>
-   		<id>jdk16</id>
-   		<activation>
-   			<jdk>1.6</jdk>
-   		</activation>
-   		<dependencies>
-   			<dependency>
-   				<groupId>com.sun.xml.bind</groupId>
-   				<artifactId>jaxb-impl</artifactId>
-   				<version>2.0</version>
-   				<scope>system</scope>
-                <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
-   			</dependency>
-   		</dependencies>
-   	</profile>
-   				-->
-
-
-<!-- 
-
-            <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-
- -->
-
-
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+								<configuration>
+									<gpgArguments>
+										<arg>--pinentry-mode</arg>
+										<arg>loopback</arg>
+									</gpgArguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			
+		</profile>
+		
    </profiles>
 
-   				<!--
-                <systemPath>
-                    /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
-                </systemPath>
-   					Note for Windows users: Maven won't find rt.jar if systemPath
-   					contains a space (eg "Program Files"). Either copy rt.jar
-   					to a path that doesn't contain spaces, or use:
-
-   					    <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
-
-   					which works on the command line, but not in m2eclipse 0.9.x.
-   					See http://jira.codehaus.org/browse/MNGECLIPSE-581
-
-   					<systemPath>${java.home}/lib/rt.jar</systemPath>
-   					broken (mvn 2.0.9) even though java.home is supposed to point to JRE_HOME:
-
-   				-->
    				
 <!-- Uncomment to deploy to GitHub.  MUST Comment out for real release
 <distributionManagement>
