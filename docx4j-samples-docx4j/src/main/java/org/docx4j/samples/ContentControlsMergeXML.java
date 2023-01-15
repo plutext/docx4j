@@ -84,6 +84,23 @@ public class ContentControlsMergeXML {
 		//the example document binding-simple.docx doesn't have an XPathPart....
 		Docx4J.bind(wordMLPackage, xmlStream, Docx4J.FLAG_BIND_INSERT_XML | Docx4J.FLAG_BIND_BIND_XML);
 		
+		/* Alternatively, you could programmatically create the answers, for example:
+		 * 
+			Answers answers = new Answers();
+			Repeat r = new Repeat();
+			r.setQref("PleaseRepeat_Yg");
+			// 2 rows
+			r.getRow().add(new Repeat.Row());
+			r.getRow().add(new Repeat.Row());
+			
+			answers.getAnswerOrRepeat().add(r);
+			
+			System.out.println(XmlUtils.marshaltoString(answers));
+			
+			Docx4J.bind(wordMLPackage, answers, Docx4J.FLAG_BIND_INSERT_XML | Docx4J.FLAG_BIND_BIND_XML);
+
+		*/
+		
 		//Save the document 
 		Docx4J.save(wordMLPackage, new File(OUTPUT_DOCX), Docx4J.FLAG_NONE);
 		System.out.println("Saved: " + OUTPUT_DOCX);
