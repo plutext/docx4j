@@ -154,7 +154,7 @@ public class Context {
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation.model3d:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.animation:" +
 					"org.docx4j.com.microsoft.schemas.office.drawing.x2018.hyperlinkcolor:" +
-					"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + /* nb that is generated from drawing, but maybe we need to copy this and ink to pptx4j context */
+					"org.docx4j.com.microsoft.schemas.office.powerpoint.x2014.inkAction:" + 
 					"org.docx4j.com.microsoft.schemas.office.thememl.x2012.main:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingDrawing:" +
 					"org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape:" +
