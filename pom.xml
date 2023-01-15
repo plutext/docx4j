@@ -15,7 +15,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.4.9-SNAPSHOT</revision>
+		<revision>11.4.9</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -104,10 +104,6 @@
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
 	</distributionManagement>
 
 
@@ -164,6 +160,17 @@
     	
 		<plugins>
 
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -450,7 +457,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
-						<version>2.1.2</version>
+						<version>3.0.1</version>
 						<executions>
 							<execution>
 								<id>attach-sources</id>
@@ -463,7 +470,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.7</version>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -476,7 +483,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.1</version>
+						<version>1.5</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -491,6 +498,73 @@
 			</build>
 		</profile>
 
+		  <profile>
+			<id>release</id>
+			<build>
+
+				<plugins>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<!-- The Source Plugin creates a jar archive of the source files of the
+					current project. -->
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Maven Central REQUIRES Javadoc
+
+				 hiccups on org.slf4j since it is a multi-release jar
+				 broken in Java 11, fixed in Java 12
+				 https://bugs.openjdk.java.net/browse/JDK-8222309
+			 -->
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<maxmemory>512m</maxmemory>
+					<additionalJOption>-Xdoclint:none</additionalJOption>
+					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+					<!-- workaround for 'javadoc: error - The code being documented uses packages in the unnamed module' issue
+						 still present in Java 14!
+						 https://stackoverflow.com/a/63475569/1031689
+						 -->
+				    <source>8</source>
+				    <detectJavaApiLink>false</detectJavaApiLink>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+					<id>sign-artifacts</id>
+					<phase>verify</phase>
+					<goals>
+						<goal>sign</goal>
+					</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+			</build>
+		</profile>
    </profiles>
 
    				
