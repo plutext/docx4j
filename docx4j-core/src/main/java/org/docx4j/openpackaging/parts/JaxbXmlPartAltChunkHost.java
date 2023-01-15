@@ -210,7 +210,8 @@ public abstract class JaxbXmlPartAltChunkHost<E> extends JaxbXmlPartXPathAware<E
 		CTAltChunk altChunk;
 		boolean encounteredDocxAltChunk = false;
 		log.info("Detected " + bf.getAltChunks().size() );
-		for (LocatedChunk locatedChunk : bf.getAltChunks()) {
+		for (int i = bf.getAltChunks().size() - 1; i >= 0; i--) {
+			LocatedChunk locatedChunk = bf.getAltChunks().get(i);
 			
 			boolean deleteThisAltChunk = false;
 			
