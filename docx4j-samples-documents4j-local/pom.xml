@@ -80,13 +80,13 @@
 			
 			<!--  don't deploy this jar to Maven Central -->			
 			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-deploy-plugin</artifactId>
-			  <version>3.0.0-M1</version>
-			  <configuration>
-			    <skip>true</skip>
-			  </configuration>
-			</plugin>					
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.13</version>
+				<configuration>
+				    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+				</configuration>
+			</plugin>
 			
 		</plugins>
         
