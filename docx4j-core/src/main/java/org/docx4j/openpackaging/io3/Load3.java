@@ -466,7 +466,7 @@ public class Load3 extends Load {
 				
 				// Get a subclass of Part appropriate for this content type	
 				// This will throw UnrecognisedPartException in the absence of
-				// specific knowledge. Hence it is important to get the is
+				// specific knowledge. Hence it is important to get the InputStream
 				// first, as we do above.
 				part = ctm.getPart("/" + resolvedPartUri, rel);				
 

@@ -480,7 +480,7 @@ public class ZipPartStore implements PartStore {
 		        	log.debug(part.getPartName() + " is clean" );
 		            ByteArray byteArray = partByteArrays.get(
 		            		part.getPartName().getName().substring(1) );
-		            if (byteArray == null) throw new IOException("part '" + part.getPartName() + "' not found");
+		            if (byteArray == null) throw new IOException("part '" + part.getPartName() + "' contents not found");
 		            bytes = byteArray.getBytes();
 
 	        	} else {
