@@ -215,10 +215,11 @@
 				out if your build is failing because you don't have enough -->
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
+				<version>3.1.0</version>
 				<configuration>
 					<maxmemory>512m</maxmemory>
 			        <additionalparam>-Xdoclint:none</additionalparam> 
+					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
                     <source>8</source>
 				 </configuration>
 				<executions>
@@ -446,23 +447,14 @@
 							</execution>
 						</executions>
 					</plugin>
-					<!-- Maven Central REQUIRES Javadoc
 
-						hiccups on org.slf4j since it is a multi-release jar
-						broken in Java 11, fixed in Java 12
-						https://bugs.openjdk.java.net/browse/JDK-8222309
-					-->
 					<plugin>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<version>3.1.0</version>
 						<configuration>
 							<maxmemory>512m</maxmemory>
 							<additionalJOption>-Xdoclint:none</additionalJOption>
-							<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-							<!-- workaround for 'javadoc: error - The code being documented uses packages in the unnamed module' issue
-								still present in Java 14!
-								https://stackoverflow.com/a/63475569/1031689
-								-->
+							<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
 							<source>8</source>
 							<detectJavaApiLink>false</detectJavaApiLink>
 						</configuration>

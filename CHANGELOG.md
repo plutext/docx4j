@@ -1,6 +1,34 @@
 CHANGELOG
 =========
 
+Version 8.3.9  (minor release; parity with 11.4.9)
+==============
+
+Release date
+------------
+
+16 Jan 2023
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+mayoATC
+
+Changes in Version 8.4.9
+-------------------------
+
+Switch from oss-parent and maven-deploy-plugin to nexus-staging-maven-plugin for releases.
+
+Fixes #529 Converting multiple AltChunks may corrupt content list
+
+Allow a docx containing a broken image (rel target=null case) to be loaded and saved.
+
+pptx4j: Add various packages (primarily org.docx4j.com.microsoft.schemas.office.drawing sub packages) already present in docx4j Context.jc to jcPML
+
+
+
 Version 8.3.8  (minor release)
 ==============
 
