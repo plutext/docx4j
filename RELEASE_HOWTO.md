@@ -18,9 +18,7 @@ When it comes to the actual release, follow the below for:
 
 + docx4j
 
-+ xhtmlrenderer
 + docx4j-ImportXHTML
-+ docx4j-export-FO
 
 + Enterprise Ed. 
 
@@ -51,6 +49,7 @@ Update CHANGELOG.md, README.md with release info.
     git lg b6c12c8..HEAD > stuff.txt  
 
 Update pom.xml with target version number (must NOT be -SNAPSHOT for nexus-staging-maven-plugin )
+Update <tag> in scm element.  (Can it just be deleted?)
 
 Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
 
@@ -77,15 +76,18 @@ Note for Java 11:  Maven Central requires Javadoc.
 
 But org.slf4j is a multi-release jar, and the maven javadoc plugin can't handle it under Java 11: https://bugs.openjdk.java.net/browse/JDK-8222309
 				 
-So we have to build with Java 12 or later (currently 14) :- 
+So we have to build with Java 12 or later (currently 17) :-
 
-$ sudo archlinux-java set java-14-adoptopenjdk
+$ sudo archlinux-java set java-17-openjdk
 
 (running this also sets JAVA_HOME)
 
 for import-XHTML:
     export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
     mvn install -P jdk-8-config
+
+Use eclipse/java-2022-06
+(cf docx4j 8 / Java 8: use eclipse 2019-12)
 
 -------------
 
@@ -213,7 +215,7 @@ or
 $ sudo archlinux-java set java-14-adoptopenjdk
 
 
-Upodate pom.xml to -SNAPSHOT
+Update pom.xml to incremented-SNAPSHOT
 
 
 ----
