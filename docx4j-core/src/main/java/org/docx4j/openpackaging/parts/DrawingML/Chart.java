@@ -35,8 +35,8 @@ public class Chart  extends JaxbDmlPart<CTChartSpace> {
 		init();
 	}
 
-	public Chart() throws InvalidFormatException {
-		super(new PartName("/word/charts/chart1.xml"));  // In a .xlsx could be "/xl/charts/chart1.xml"?
+	private Chart() throws InvalidFormatException {
+		super(new PartName(null)); 
 		init();
 	}
 	

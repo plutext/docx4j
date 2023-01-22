@@ -1,19 +1,22 @@
-package org.docx4j.openpackaging.parts.WordprocessingML;
+package org.docx4j.openpackaging.parts.DrawingML;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-public class ChartExSpacePart<E> extends JaxbXmlPart<E> {
+/**
+ * @since 11.4.10
+ */
+ public class ChartExSpacePart<E> extends JaxbXmlPart<E> {
 
 	public ChartExSpacePart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
 	}
 
-	public ChartExSpacePart() throws InvalidFormatException {
-		super(new PartName("/word/charts/chartEx1.xml"));
+	private ChartExSpacePart() throws InvalidFormatException {
+		super(new PartName(null));
 		init();
 	}
 	

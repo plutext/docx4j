@@ -1,19 +1,22 @@
-package org.docx4j.openpackaging.parts.WordprocessingML;
+package org.docx4j.openpackaging.parts.DrawingML;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-public class ChartColorStylePart<E> extends JaxbXmlPart<E> {
+/**
+ * @since 11.4.10
+ */
+ public class ChartColorStylePart<E> extends JaxbXmlPart<E> {
 
 	public ChartColorStylePart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
 	}
 
-	public ChartColorStylePart() throws InvalidFormatException {
-		super(new PartName("/word/charts/colors1.xml"));
+	private ChartColorStylePart() throws InvalidFormatException {
+		super(new PartName(null));
 		init();
 	}
 	
