@@ -220,7 +220,7 @@ public class ProtectDocument extends ProtectionSettings {
 		if (documentSettingsPart == null) {
 			return false;
 		} else {
-			return isRestrictEditingWith( editValue);
+			return documentSettingsPart.isRestrictEditingWith( editValue);
 		}
     	
     }
