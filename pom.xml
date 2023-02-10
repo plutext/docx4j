@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.9</revision>
+		<revision>8.3.10-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -218,9 +218,10 @@
 				<version>3.1.0</version>
 				<configuration>
 					<maxmemory>512m</maxmemory>
-			        <additionalparam>-Xdoclint:none</additionalparam> 
+					<doclint>none</doclint>
 					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
                     <source>8</source>
+                    <detectJavaApiLink>false</detectJavaApiLink>
 				 </configuration>
 				<executions>
 					<execution>
@@ -331,12 +332,12 @@
 	<dependencies>
 
 		<!--  required if eclipse is using a recent Java 
-		<dependency>
+		-->		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
 			<version>2.3.2</version>
 		</dependency>
-		-->
+
 		
 		<dependency>
 			<groupId>org.slf4j</groupId>
