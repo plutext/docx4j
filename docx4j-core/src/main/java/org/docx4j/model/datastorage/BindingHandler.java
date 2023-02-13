@@ -159,7 +159,7 @@ public class BindingHandler {
 		log.warn("Recalculating starting value for new bookmarks.  For efficiency, you should set this in your code.");
 		int highestId = 0;
 		
-		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		RangeFinder rt = new RangeFinder();
 		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), rt);
 		
 		for (CTBookmark bm : rt.getStarts()) {

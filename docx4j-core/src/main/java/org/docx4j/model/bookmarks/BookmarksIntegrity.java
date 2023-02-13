@@ -152,7 +152,7 @@ public class BookmarksIntegrity {
 		
 		List<Object> faulty = new ArrayList<Object>(); 
 
-		RangeFinder rt = new RangeFinder("CTBookmark", "CTMarkupRange");
+		RangeFinder rt = new RangeFinder();
 		new TraversalUtil(paragraphs, rt);
 
 		write("Checking starts " );
