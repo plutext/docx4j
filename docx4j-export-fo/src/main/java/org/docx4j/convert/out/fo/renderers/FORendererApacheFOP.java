@@ -121,7 +121,16 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 		FormattingResults formattingResults = null;
 		FopFactory fopFactory = null;
 		if (settings.getSettings().get(FOP_FACTORY)==null) {
-			throw new Docx4JException("You must invoke FORendererApacheFOP.getFOUserAgent");
+			
+			try {
+				FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(settings);
+				fopFactory = fopFactoryBuilder.build();
+				// Put FOP_FACTORY and FO_USER_AGENT in settings
+			    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(settings, fopFactory);			
+			} catch (FOPException e) {
+				throw new Docx4JException("FOUserAgent issue", e);
+			}
+			
 		} else {
 			fopFactory = (FopFactory)settings.getSettings().get(FOP_FACTORY);
 		}
