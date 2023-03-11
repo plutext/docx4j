@@ -442,7 +442,7 @@ Significant Changes in Version 8.2.3
 -------------------------
 
 Support for docx/pptx/slsx conversion to PDF via Microsoft's cloud (Microsoft Graph)
- 
+
 
 
 Version 8.2.2  minor release
@@ -788,7 +788,7 @@ Release date
 
 Contributors to this release
 ----------------------------
-	
+
 Jason Harrop
 
 
@@ -868,13 +868,13 @@ We require named modules:
 
     docx4j_xalan_serializer
     docx4j_xalan_interpretive
-	org.slf4j
-	
+    org.slf4j
+
 (Other dependencies generally aren't JPMS-ready, so they go on the classpath in the "unnamed" module.)	
 
 11.1.0 is compiled with Java 12, targeting Java 11.
 
-jackson-databind dep bumped to 2.9.9.
+jackson-databind dep bumped to 2.12.6.1.
 
 In other respects this release is the same as v8.1.0, except that docx4j-export-fo 
 is temporarily omitted since Maven compiler doesn't like FOP 2.3's avalon dependency.  
@@ -1312,7 +1312,7 @@ Minor modifications to support use on Android; see https://github.com/plutext/An
 Several bugfixes, including:
 - Handle non-English speaking locales in XmlPart.cachedXPathGetString (used in OpenDoPE content control data binding)
 - Regression in xpathtracker histgram namespace handling (issue #230)
- 
+
 
 xlsx4j
 ------
@@ -1376,7 +1376,7 @@ Contents lists are now of type ArrayListWml, in which parent is automatically se
 org.docx4j.anon: new package which converts a docx to lorem ipsum latin, and removes
 other sensitive info, so the docx can safely be shared eg for tech support.  
 For this to work, you'll need to add a new dependency: http://search.maven.org/#artifactdetails%7Ccom.thedeanda%7Clorem%7C2.0%7Cjar
- 
+
 OpenDoPE: Two separate performance optimizations which substantially speed up large XML binding jobs.  By traversing the XML data, manually calculate and cache XPaths (tested with 500,000 entries).  Our strategy is to try the cache first (if enabled), then if there is a cache miss, use org.apache.xpath.CachedXPathAPI (the second optimization - CachedXPathAPI  is quicker than default javax.xml.xpath.XPath implementations)
 
 Dedicated parts for w15 CommentsExtended and People
@@ -1401,7 +1401,7 @@ Dependency Changes
 ------------------
 
 Added com.thedeanda:lorem:jar:2.0; only required if you want to use org.docx4j.anon (see above)
- 
+
 
 
 Version 3.3.0
@@ -1534,7 +1534,7 @@ databinding/OpenDoPE:
 - support w14 checkbox, w15:repeatingSection
 
 - property docx4j.model.datastorage.BindingHandler.Implementation (which defaults to BindingTraverserXSLT)
- 
+
 - ODH minor performance optimization
 
 (X)HTML output: use ul|ol list items, if feature PP_HTML_COLLECT_LISTS is set and SdtToListSdtTagHandler is registered.
@@ -1684,7 +1684,7 @@ New docx4j.properties
 	# will fallback to org/docx4j/model/datastorage/placeholder.xml (which is in the docx4j jar)
 	#docx4j.model.datastorage.placeholder=OpenDoPE/placeholder.xml	
 	# What is new is that you can override that location (ie so you don't have to create an OpenDoPE folder)
-   
+
 Pptx4j
 ------
 
@@ -1700,7 +1700,7 @@ Other Changes (non-exhaustive)
 9d714432db partName is now private; has getter/setter
 
 e66884b830 Create rels part name dynamically
-   
+
 31mff84cf0  DocumentModel: use SectPrFinder to find the sectPr (which means it will now find sectPr inside content controls) 
 
 31m0700196  preset Shape definitions
@@ -1720,11 +1720,11 @@ e66884b830 Create rels part name dynamically
 Import XHTML
 
     31m85b7a4d  In XHTML import, span/@style='background-color:red;' would usually become w:rPr/w:shd/@w:fill="ff0000" Now you can configure it to use w:highlight instead
-
+    
     31m810ed9b LineSpacing: handle the CSS default 'normal' sensibly when importing 
 
 31mdbf7dee StyleUtil: changes to isEmpty and apply semantics for Style objects
- 
+
 31m3845825 StyleUtil changes: - change to isEmpty semantics for Integer, BigInteger so that a value of 0 is not treated as empty (since otherwise eg spaceAfter 0 isn't applied) - pPr includes sectPr, so add PARTIAL implementation of areEqual and apply for sectPr
 
 31mea22fb6  make jc final. it's used in a lot of places but only assigned once. (apixandru)
@@ -1902,7 +1902,7 @@ MERGEFIELD and DOCPROPERTY field improvements, including formatting switches
 Support XPath operations on all docx, pptx and xlsx xml parts
 Support for portions of [MS-DOCX] (w14,w15 namespace support)
 Update pml to ECMA 376 2ed
- 
+
 
 Other Changes (non-exhaustive)
 ------------------------------
@@ -2046,7 +2046,7 @@ df9afd6 - Import Word 2003 XML. Proof of concept.
 63c61bf - simplifying AlternativeFormatInputPart with better use of enum (zluspai) 
 
 a947e6e - Header|Footer part, Styles, Numbering now extends JaxbXmlPartXPathAware 
- 
+
 8908a82 - VerticalAlignment css value "super" 
 
 ec6c723 - Bug fix: Change content type for mht to "message/rfc822" (Zoltan Luspai) 
@@ -2271,7 +2271,7 @@ content control databinding (OpenDoPE) changes
 dd3ed9a - Distinguish repeat instances, so "and" between repeat items still works when a repeat is re-used. 
 049ebe9 - Support for od:RptPosCon (retain/delete a content control sensitive to position in a repeat)  
 6a19661 - Make merge sample work where OpenDoPE parts aren't present; add sample data  
- 
+
 
 Other Changes (non-exhaustive)
 ------------------------------
