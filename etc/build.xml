@@ -124,7 +124,7 @@
 		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpclient/4.5.8/httpclient-4.5.8.jar"/>
 		<pathelement location="${m2Repository}/org/apache/httpcomponents/httpcore/4.4.11/httpcore-4.4.11.jar"/>
 		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.jar"/>
-		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
+		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-databind/2.12.6.1/jackson-databind-2.9.9.jar"/>
 		<pathelement location="${m2Repository}/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
 
 -->
