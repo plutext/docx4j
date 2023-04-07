@@ -297,12 +297,7 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 			log.debug(userConfig);
 		}
 		
-		InputStream is=null;
-		try {
-			is = IOUtils.toInputStream(userConfig, "UTF-8");
-		} catch (IOException e2) {
-			throw new FOPException(e2.getMessage(), e2); 
-		}		
+		InputStream is = IOUtils.toInputStream(userConfig, "UTF-8");		
 		
 		try {
 			
