@@ -37,7 +37,9 @@ REVISION HISTORY
            
 20181124   Add w14 EG_RPrOpenType to rPr. (since docx4j 6.1.0)   
 
-20210104   Add office-word-2006-wordml.xsd        
+20210104   Add office-word-2006-wordml.xsd    
+
+20230413   add tblCaption, tblDescription; (tblCaption had previously been added manually to the generated classes)    
 	
 USAGE INSTRUCTIONS
 	  
@@ -61,6 +63,10 @@ USAGE INSTRUCTIONS
 	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/math/*.java -rf
 	
   To generate the classes (from the same directory)	
+  
+    2023 04 13 (Jakarta):
+	  sh ~/git/docx4j/xjc/jaxb-ri/bin/xjc.sh  wml.xsd -d tmp  -no-header -target 3.0
+
 
 	// 201805: Extensions don't work with xjc 2.3.0? https://stackoverflow.com/questions/28145306/how-to-use-jaxb-extensions-on-xjc-command-line?rq=1
 	// so use 2.2.11 instead
@@ -9474,8 +9480,11 @@ PRINCIPLES:
 					<xsd:documentation>Table Cell Margin
 						Defaults</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element>
+			</xsd:element>			
       		<xsd:element name="tblLook" type="CT_TblLook" minOccurs="0" maxOccurs="1"/>
+      		<!-- Added 2023 04 13 docx4j 11.4.10 -->
+      		<xsd:element name="tblCaption" type="CT_String" minOccurs="0" maxOccurs="1"/>
+      		<xsd:element name="tblDescription" type="CT_String" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblPr">
