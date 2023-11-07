@@ -591,7 +591,7 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 			}
 			if (is!=null) {
 
-				try {
+//				try {
 					List<String> lines = IOUtils.readLines(is);
 					String line = lines.get(
 							e.getLocation().getLineNumber()-1);
@@ -626,9 +626,9 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 //						log.error("Namespace decs: " + line.substring(0, end));
 //					}
 					
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
 			}
 			
 			// now rethrow
