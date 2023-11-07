@@ -68,7 +68,7 @@ public class SubDocument  {
 		
 		// Create the master doc, and specify
 		// the subdoc 
-		String subdocx = ".\\sample-docs\\word\\sample-docx.xml";
+		String subdocx = ".\\sample-docs\\sample-docx.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart(); 
