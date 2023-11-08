@@ -335,7 +335,20 @@
 
 	<dependencies>
 
-		<!--  docx4j v11.4.0 and later use JAXB 3.0 -->
+		<!--  docx4j v11.4.0 and later use JAXB 3.0 
+		
+			There is a JAXB 4.x, but it changes how implementation lookup works.
+			Specifically, the META-INF approach used by docx4j-JAXB-MOXy has been dropped,
+			so we'd need an alternative way of specifying this implementation
+			(system property JAXB_CONTEXT_FACTORY or service-provider loading facilities?).
+			
+			Also, as of Nov 2023, there is only a M3 release of an implementation.
+			
+			Looks like https://github.com/eclipse-ee4j/eclipselink is working on it.
+			
+			There is a 3.0.2, but it is not in Maven Central, so remain on 3.0.1.
+		
+		-->
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
