@@ -127,17 +127,15 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		// Save the result
 		setF(new File(getTmpFontDir(), filenamePrefix + "-"+fontFileName +".ttf"));
 		getF().deleteOnExit();
-		String path = null; 
 		
 		java.io.FileOutputStream fos = null; 
 		try {
-			path = getF().getCanonicalPath();
 			fos = new java.io.FileOutputStream(getF());
 			fos.write(fontData);
 			log.debug("wrote: " + fontData.length);
 			fos.close();
 		} catch (IOException e) {
-			log.error("Problem with " + path);
+			log.error("Problem with " + this.getF());
 			log.error(e.getMessage(), e);
 		} 
 		
@@ -160,7 +158,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		if (log.isDebugEnabled()) {
 	        CustomFont customFont = null;
 	        try {
-	        	log.debug("Loading from: " + path);
+				log.debug("[DEBUG] Loading from: " + this.getF());
 	        	String subFontName = null; // TODO set this if its a TTC
 	        	boolean embedded = true;   
 	        	boolean useKerning = true;
@@ -168,7 +166,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	        	boolean simulateStyle = false;
 	        	boolean embedAsType1 = false;
 	        	
-	        	FontUris fontUris = new FontUris(new URI("file:" + path.replace(" ", "%20")), null);
+	        	FontUris fontUris = new FontUris(this.getF().toURI(), null);
 	        	
 	            customFont = FontLoader.loadFont(fontUris, 
 	            		subFontName, embedded, EmbeddingMode.AUTO, EncodingMode.AUTO, 
@@ -190,20 +188,13 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		}
 
 		// Get this font as a PhysicalFont object; do NOT add it to physical fonts (since those are available to all documents)  
-        try {
-			List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, 
-					new URI("file:" + path.replace(" ", "%20")));
-			return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
+		List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, 
+				this.getF().toURI() );
+		return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
-			// This needs to be done before populateFontMappings, 
-			// otherwise this font will be ignored, and references
-			// to it mapped to some substitute font!
-			
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		// This needs to be done before populateFontMappings, 
+		// otherwise this font will be ignored, and references
+		// to it mapped to some substitute font!
 		
 	}
 	
