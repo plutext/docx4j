@@ -23,7 +23,11 @@ It uses JAXB to create the Java representation.
 docx4j-8
 --------
 
-This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
+This is docx4j for Java 8. 
+
+docx4j-8 uses JAXB 2.x (which import javax.xml.bind ). Compare newer docx4j v11.4 which uses Jakarta XML Binding API 3.0 (import jakarta.xml.bind )
+
+Although in principle it would compile and run under Java 6, some of its
 dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
 which docx4j 6.x uses.
 
@@ -52,7 +56,9 @@ Being a JPMS modularised release, the jars contain module-info.class entries.
 
 11.3.2 is compiled with Java 14, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.3.x.
 
-Aside from the use of named modules / module path, the releases pretty much track v8. 
+Aside from the use of named modules / module path, the 11.3 release pretty much tracks v8. 
+
+docx4j v11.4 uses Jakarta XML Binding API 3.0 (import jakarta.xml.bind ).  Since this release uses jakarta.xml.bind, rather than javax.xml.bind, if you have existing code which imports javax.xml.bind, you'll need to search/replace across your code base, replacing javax.xml.bind with jakarta.xml.bind. You'll also need to replace your JAXB jars (which Maven will do for you automatically).
 
 To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
 
@@ -60,6 +66,40 @@ To use docx4j v11, add the dep corresponding to the JAXB implementation you wish
  docx4j-JAXB-ReferenceImpl
 * [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.docx4j/docx4j-JAXB-MOXy)
  docx4j-JAXB-MOXy
+
+docx4j-8 on modern Java
+-----------------------
+
+If you are running Java 11 or later, we recommend docx4j 11.4, which  import jakarta.xml.bind
+
+However there may be cases where you wish to run docx4j-8 (which import javax.xml.bind ) on Java 11 or newer. 
+
+This can be done.  To build 8.3.9 under Java 17:-
+
+First, change pom.xml:
+  
+Add
+```
+  		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+```
+
+Comment out docx4j-JAXB-Internal subproject:
+
+``` 		
+<!--        <module>docx4j-JAXB-Internal</module> -->
+```
+
+Move sub-project docx4j-JAXB-ReferenceImpl above module docx4j-core-tests
+		
+Then :		
+```
+mvn clean
+mvn install  -Dmaven.javadoc.skip=true 
+```
 
 
 How do I build docx4j?
