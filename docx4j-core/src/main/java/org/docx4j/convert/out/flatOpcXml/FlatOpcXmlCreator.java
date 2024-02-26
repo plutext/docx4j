@@ -525,7 +525,11 @@ public class FlatOpcXmlCreator implements Output {
 				
 				//log.debug("Encountered external resource " + r.getTarget() + " of type " + r.getType() );
 				// So
-				continue;				
+				continue;
+			}
+			
+			if (r.getTarget().startsWith("#")) {
+				continue;
 			}
 			
 			try {
