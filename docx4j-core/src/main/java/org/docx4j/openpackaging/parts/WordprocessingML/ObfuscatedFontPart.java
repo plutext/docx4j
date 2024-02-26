@@ -93,6 +93,11 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 		
 		log.debug("bytes: " + fontData.length);
 		
+		if (fontData.length==0) {
+			log.error(this.getF() + " is empty");
+			return null;
+		}
+		
 		log.info("deObfuscating '" + fontFileName + "' with fontkey: " + fontKey);			
 		// INPUT: {1DF903E3-2F14-4575-8028-881FEBABF2AB}
 
