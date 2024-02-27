@@ -23,9 +23,11 @@ It uses JAXB to create the Java representation.
 docx4j-8
 --------
 
-This is docx4j for Java 8. Although in principle it would compile and run under Java 6, some of its
-dependencies are Java 8 only.  So to run it under Java 6, you'd need to use the same version of the deps
-which docx4j 6.x uses.
+This is docx4j for Java 8.
+
+docx4j-8 uses JAXB 2.x (which import javax.xml.bind ). Compare newer docx4j v11.4 which uses Jakarta XML Binding API 3.0 (import jakarta.xml.bind )
+
+Although in principle it would compile and run under Java 6, some of its dependencies are Java 8 only. So to run it under Java 6, you'd need to use the same version of the deps which docx4j 6.x uses.
 
 docx4j v8 is a multi-module Maven project.
 
@@ -44,15 +46,13 @@ You should use one and only one of docx4j-JAXB-*
 docx4j for Java 11
 ------------------
 
-See https://github.com/plutext/docx4j/tree/VERSION_11_3_2
+See https://github.com/plutext/docx4j/tree/VERSION_11_4_10
 
-docx4j 11.3.x - for use with Java 11 or later - is available in Maven Central.
+This uses jakarta.xml.bind (as opposed to legacy javax.xml.bind)
 
 Being a JPMS modularised release, the jars contain module-info.class entries.
 
-11.3.2 is compiled with Java 14, targeting Java 11. If you are not using Java 11, you should stick with docx4j 8.3.x.
-
-Aside from the use of named modules / module path, the releases pretty much track v8. 
+11.4.10 is compiled with Java 17, targeting Java 11. If you are not using Java 11 or later, you should stick with docx4j 8.3.x.
 
 To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
 

@@ -219,7 +219,6 @@
 				<configuration>
 					<maxmemory>512m</maxmemory>
 					<doclint>none</doclint>
-					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
                     <source>8</source>
                     <detectJavaApiLink>false</detectJavaApiLink>
 				 </configuration>
@@ -368,6 +367,25 @@
 
 	<profiles> <!--  use -P eg mvn -Psign-artifacts  -->
 
+		    <profile>
+		        <id>jdk-8-config</id>
+		        <activation>
+		            <jdk>1.8</jdk>
+		        </activation>
+		        <properties>
+		            <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
+		        </properties>
+		    </profile>
+		    <profile>
+		        <id>jdk-11-config</id>
+		        <activation>
+		            <jdk>[11,)</jdk>
+		        </activation>
+		        <properties>
+		            <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+		        </properties>
+		    </profile>
+		    
 		<profile>
 			<id>OSGi</id>
 			<properties>
@@ -456,7 +474,6 @@
 						<configuration>
 							<maxmemory>512m</maxmemory>
 							<additionalJOption>-Xdoclint:none</additionalJOption>
-							<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
 							<source>8</source>
 							<detectJavaApiLink>false</detectJavaApiLink>
 						</configuration>
