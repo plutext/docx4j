@@ -117,7 +117,8 @@ public class Context {
 //					"org.docx4j.w15symex:org.docx4j.w16cid:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.taskpanes_2010_11:" +
 					"org.docx4j.com.microsoft.schemas.office.webextensions.webextension_2010_11",
-					classLoader, ProviderProperties.getProviderProperties() );			
+					classLoader, ProviderProperties.getProviderProperties() );
+			
 			if (jcPML.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
 				log.info("MOXy JAXB implementation is in use!");
 			} else {

@@ -43,7 +43,7 @@ public class BinderListenerUtils {
 		}
 		
 		if (testContext.getClass().getName().equals("org.eclipse.persistence.jaxb.JAXBContext")) {
-			log.info("Using MOXy BinderListener");
+			log.info("Using MOXy NamespacePrefixMapper");
 			try {
 				Class c = Class.forName("org.docx4j.jaxb.moxy.BinderListener");
 				binderListener = (BinderListenerInterface)c.newInstance();
@@ -78,7 +78,7 @@ public class BinderListenerUtils {
 			return binderListener;
 		} catch (Exception e) {
 			//log.error("JAXB: Can't instantiate JAXB Reference Implementation", e);
-			throw new JAXBException("Can't create org.docx4j.jaxb.ri.BinderListener", e);
+			throw new JAXBException("JAXB: Can't instantiate JAXB Reference Implementation", e);
 		}
 	}
 

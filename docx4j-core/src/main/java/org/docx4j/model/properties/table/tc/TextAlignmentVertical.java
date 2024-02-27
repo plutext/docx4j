@@ -81,7 +81,7 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 		} else if (val == STVerticalJc.CENTER) {
 			return composeCss(CSS_NAME, "middle");
 		} else {
-			// No CSS equibalent for "both"
+			// No CSS equivalent for "both"
 			return CSS_NULL;
 		}
 	}
@@ -98,7 +98,7 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 		} else if (val == STVerticalJc.BOTTOM) {
 			foElement.setAttribute(FO_NAME, "after");
 		} else  {
-			log.warn("How to handle vertical alignment of " + val.value());
+			log.warn("How to handle vertical alignment of " + (null == val ? "null" : val.value()));
 		} 		
 	}
 

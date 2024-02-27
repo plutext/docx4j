@@ -58,9 +58,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
@@ -87,6 +84,9 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.TrueTypeFontPart;
 import org.docx4j.openpackaging.parts.VMLPart;
+import org.docx4j.openpackaging.parts.DrawingML.ChartColorStylePart;
+import org.docx4j.openpackaging.parts.DrawingML.ChartExSpacePart;
+import org.docx4j.openpackaging.parts.DrawingML.ChartStylePart;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.FontDataPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
@@ -94,9 +94,6 @@ import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ChartColorStylePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ChartExSpacePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ChartStylePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsExtendedPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsIdsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -129,6 +126,10 @@ import org.docx4j.relationships.Relationship;
 import org.glox4j.openpackaging.packages.GloxPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 
 /**
@@ -325,7 +326,8 @@ public class ContentTypeManager  {
 			log.error("No content type found for image rel " + partName);
 			return new ImageBrokenPart(new PartName(partName));
 		}
-				// otherwise
+		
+		// otherwise
 		log.error("No content type found for " + partName);
 		return null;		
 		

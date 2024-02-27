@@ -880,17 +880,15 @@ public class BindingTraverserXSLT extends BindingTraverserCommonImpl {
 			}
 			
 			
-			//xHTMLImporter.setHyperlinkStyle(BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 	        Method setHyperlinkStyleMethod = xhtmlImporterClass.getMethod("setHyperlinkStyle", String.class);
-	        setHyperlinkStyleMethod.invoke(null, 
+	        setHyperlinkStyleMethod.invoke(xHTMLImporter, 
 	        		BindingHandler.getHyperlinkResolver().getHyperlinkStyleId());
 			
 			String baseUrl = null;
 			List<Object> results = null;
 			try {
-//				results = xHTMLImporter.convert(r, baseUrl );
 		        Method convertMethod = xhtmlImporterClass.getMethod("convert", String.class, String.class );
-		        results = (List<Object>)convertMethod.invoke(null, r, baseUrl);
+		        results = (List<Object>)convertMethod.invoke(xHTMLImporter, r, baseUrl);
 		        
 			} catch (Exception e) {
 				if (e instanceof NullPointerException) {

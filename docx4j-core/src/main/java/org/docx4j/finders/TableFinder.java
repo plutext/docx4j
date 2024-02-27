@@ -9,7 +9,7 @@ import org.docx4j.wml.Tc;
 
 public class  TableFinder extends CallbackImpl {
 	
-	boolean traveseTables=false;
+	boolean traverseTables=false;
 	
 	/**
 	 * Defaults to false; set this to true unless you don't
@@ -18,8 +18,8 @@ public class  TableFinder extends CallbackImpl {
 	 * 
 	 * @param traveseNestedTable
 	 */
-	public void setTraverseTables(boolean traveseTables) {
-		this.traveseTables = traveseTables;
+	public void setTraverseTables(boolean traverseTables) {
+		this.traverseTables = traverseTables;
 	}
 
 	public List<Tbl> tblList = new ArrayList<Tbl>();  
@@ -36,7 +36,7 @@ public class  TableFinder extends CallbackImpl {
 	@Override
 	public boolean shouldTraverse(Object o) {
 		
-		if (traveseTables) {
+		if (traverseTables) {
 			return true;
 		} else {
 			// Yes, unless its a nested Tbl

@@ -5,7 +5,9 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-public class ChartExSpacePart<E> extends JaxbXmlPart<E> {
+
+@Deprecated
+public class ChartExSpacePart<E> extends org.docx4j.openpackaging.parts.DrawingML.ChartExSpacePart<E> {
 
 	public ChartExSpacePart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -17,14 +19,4 @@ public class ChartExSpacePart<E> extends JaxbXmlPart<E> {
 		init();
 	}
 	
-	public void init() {
-				
-		// Used if this Part is added to [Content_Types].xml 
-		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.CHART_EX));
-
-		// Used when this Part is added to a rels 
-		setRelationshipType(Namespaces.CHART_EX);
-		
-	}	
 }

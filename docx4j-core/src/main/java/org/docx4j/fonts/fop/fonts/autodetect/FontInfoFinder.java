@@ -212,6 +212,12 @@ public class FontInfoFinder {
                 TTFFile ttf = new TTFFile(false, false);
                 FontFileReader reader = new FontFileReader(in);
                 ttcNames = ttf.getTTCnames(reader);
+                
+                if (ttcNames==null) {
+                	log.error("Can't get TTCnames for " + fontURI.toString());
+                	return null;
+                }
+                
             } catch (Exception e) {
                 if (this.eventListener != null) {
                     this.eventListener.fontLoadingErrorAtAutoDetection(this,

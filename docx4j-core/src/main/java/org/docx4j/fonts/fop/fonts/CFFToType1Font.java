@@ -59,7 +59,18 @@ public class CFFToType1Font extends MultiByteFont {
     }
 
     private List<InputStream> convertOTFToType1(InputStream in) throws IOException {
+//		FontBox 2.0.24    	
         CFFFont f = new CFFParser().parse(IOUtils.toByteArray(in)).get(0);
+
+//		FontBox 3.0.0    	
+//    	CFFFont f = new CFFParser().parse(IOUtils.toByteArray(in), 
+//    		  			new CFFParser.ByteSource() {
+//						    @Override
+//							public byte[] getBytes() throws IOException {
+//								return IOUtils.toByteArray(in);
+//							}
+//      	}).get(0);
+    	
         List<InputStream> fonts = new ArrayList<InputStream>();
         Map<Integer, Integer> glyphs = cidSet.getGlyphs();
         int i = 0;

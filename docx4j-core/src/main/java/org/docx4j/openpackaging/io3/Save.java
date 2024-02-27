@@ -427,7 +427,7 @@ public class Save {
 			log.debug(".. duplicate save avoided .." );
 			return;
 		}
-				
+
 		if (part instanceof ImageBrokenPart ) {
 			log.debug(".. ignoring broken image" );
 		

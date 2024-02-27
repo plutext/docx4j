@@ -21,15 +21,7 @@ package org.docx4j.openpackaging.io3.stores;
 
 import static java.lang.Math.toIntExact;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -50,15 +42,8 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.XmlPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart;
+import org.docx4j.openpackaging.parts.*;
+import org.docx4j.openpackaging.parts.WordprocessingML.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -227,15 +212,6 @@ public class ZipPartStore implements PartStore {
 			
 	}
 
-//	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
-//			String partName) throws IOException {
-//
-//        ByteArray bytes = partByteArrays.get(partName);
-//        if (bytes == null) throw new IOException("part '" + partName + "' not found");
-//		return bytes.getInputStream();
-//	}
-
-//	protected InputStream getInputStreamFromZippedPart(String partName) throws IOException {
 	public InputStream loadPart(String partName) throws Docx4JException {
 
         ByteArray bytes = partByteArrays.get(partName);
@@ -491,9 +467,7 @@ public class ZipPartStore implements PartStore {
 	        }
 			
 	        // Add ZIP entry to output stream.
-			if (part instanceof OleObjectBinaryPart 
-					|| part instanceof EmbeddedPackagePart
-					|| part instanceof ImagePngPart) {
+			if (part instanceof OleObjectBinaryPart || ! shouldCompress(part)) {
 				// Workaround: Powerpoint 2010 (32-bit) can't play eg WMV if it is compressed!
 				// (though 64-bit version is fine)
 				
@@ -522,9 +496,19 @@ public class ZipPartStore implements PartStore {
 			throw new Docx4JException("Failed to put binary part", e);
 		}
 
-		log.debug( "success writing part: " + resolvedPartUri);
-
+		log.debug("success writing part: " + resolvedPartUri);
 	}
+
+    private static boolean shouldCompress(Part part) {
+        if (part instanceof EmbeddedPackagePart || part instanceof ImagePngPart || part instanceof ImageJpegPart || part instanceof ImageGifPart)
+            return false;
+        if (part instanceof AlternativeFormatInputPart) {
+            AltChunkType type = ((AlternativeFormatInputPart) part).getAltChunkType();
+            return type != AltChunkType.WordprocessingML && type != AltChunkType.OfficeWordTemplate &&
+                   type != AltChunkType.OfficeWordMacroEnabled && type != AltChunkType.OfficeWordMacroEnabledTemplate;
+        }
+        return true;
+    }
 
 	public void finishSave() throws Docx4JException {
 
