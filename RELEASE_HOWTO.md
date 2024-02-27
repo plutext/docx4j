@@ -189,7 +189,7 @@ That should complete with something like:
 ie no need to Login to the Nexus UI at https://oss.sonatype.org/index.html#welcome anymore,
 or to manually close then release :-)
 
-
+This new release process does not add a tag; easiest to do that in SmartGit.
 
 Repeat above for -ImportXHTML 
 
@@ -200,7 +200,9 @@ Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 Ideally you'd commit the branch with the actual released version number in the pom,
 then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
+
 Here, also do:  git push -u origin [the incremented version number]  <--------- set up to track remote branch
+(can do that in SmartGit)
 
 Switch branch if necessary, eg:
 
