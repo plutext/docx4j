@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.4.10-SNAPSHOT</revision>
+		<revision>11.4.10</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -87,7 +87,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-parent-11.4.9</tag>
+      <tag>docx4j-parent-11.4.10</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
@@ -342,11 +342,11 @@
 			so we'd need an alternative way of specifying this implementation
 			(system property JAXB_CONTEXT_FACTORY or service-provider loading facilities?).
 			
-			Also, as of Nov 2023, there is only a M3 release of an implementation.
-			
-			Looks like https://github.com/eclipse-ee4j/eclipselink is working on it.
+			https://eclipse-ee4j.github.io/jaxb-ri/4.0.3/docs/ch02.html#a-3-0-2
 			
 			There is a 3.0.2, but it is not in Maven Central, so remain on 3.0.1.
+			
+			https://search.maven.org/artifact/jakarta.xml.bind/jakarta.xml.bind-api
 		
 		-->
 		<dependency>
