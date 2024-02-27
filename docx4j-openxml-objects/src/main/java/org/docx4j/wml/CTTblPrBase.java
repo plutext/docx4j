@@ -23,12 +23,12 @@ package org.docx4j.wml;
 
 import java.math.BigInteger;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -92,6 +92,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="tblLayout" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblLayoutType" minOccurs="0"/>
  *         &lt;element name="tblCellMar" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblCellMar" minOccurs="0"/>
  *         &lt;element name="tblLook" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblLook" minOccurs="0"/>
+ *         &lt;element name="tblCaption" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String" minOccurs="0"/&gt;
+ *         &lt;element name="tblDescription" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String" minOccurs="0"/&gt; *         
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -117,7 +119,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "tblLayout",
     "tblCellMar",
     "tblLook",
-	"tblCaption"
+	"tblCaption",
+	"tblDescription"
 })
 public class CTTblPrBase implements Child
 {
@@ -138,6 +141,7 @@ public class CTTblPrBase implements Child
     protected CTTblCellMar tblCellMar;
     protected CTTblLook tblLook;
 	protected CTString tblCaption;
+	protected CTString tblDescription;
     @XmlTransient
     private Object parent;
 
@@ -524,6 +528,30 @@ public class CTTblPrBase implements Child
     public void setTblCaption(CTString value) {
         this.tblCaption = value;
     }
+    
+    /**
+     * Gets the value of the tblDescription property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTString }
+     *     
+     */
+    public CTString getTblDescription() {
+        return tblDescription;
+    }
+
+    /**
+     * Sets the value of the tblDescription property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTString }
+     *     
+     */
+    public void setTblDescription(CTString value) {
+        this.tblDescription = value;
+    }    
 
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
