@@ -20,7 +20,7 @@
 
 	<property name="version" value="8.3.9"/>
 	<property name="importxhtml-version" value="8.3.8"/>
-	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML-${importxhtml-version}"/>
+	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML-8_3_x"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
 	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
