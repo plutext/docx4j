@@ -81,7 +81,7 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 		} else if (val == STVerticalJc.CENTER) {
 			return composeCss(CSS_NAME, "middle");
 		} else {
-			// No CSS equibalent for "both"
+			// No CSS equivalent for "both"
 			return CSS_NULL;
 		}
 	}
