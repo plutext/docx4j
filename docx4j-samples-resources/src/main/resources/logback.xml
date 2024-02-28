@@ -165,6 +165,14 @@
 	<logger name="com.plutext.merge.RFontsThemeResolver" level="INFO" />
 
 	<logger name="com.plutext.merge.altchunk" level="WARN" />
+	
+	<logger name="com.plutext.merge.StyleUtils" level="INFO" />
+	<logger name="com.plutext.merge.TableStyleRespector" level="INFO" />
+
+<!--
+	<logger name="com.plutext.merge.NumUtils" level="DEBUG" />
+	<logger name="com.plutext.merge.TrimResources" level="DEBUG" />
+  -->	
 
 	<logger name="com.plutext.merge.pptx" level="WARN" />
 

@@ -59,7 +59,7 @@
   </xsd:simpleType>
   <xsd:complexType name="CT_Extension">
     <xsd:sequence>
-      <xsd:any processContents="lax" />
+      <xsd:any processContents="lax" maxOccurs="unbounded" minOccurs="0"/>
     </xsd:sequence>
     <xsd:attribute name="uri" type="xsd:token">
       <xsd:annotation>
