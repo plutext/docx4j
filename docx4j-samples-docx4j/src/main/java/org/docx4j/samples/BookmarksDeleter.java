@@ -34,7 +34,7 @@ public class BookmarksDeleter {
 				.getJaxbElement();
 		Body body = wmlDocumentEl.getBody();
 
-		fixRange(body.getContent(), "CTBookmark", "CTMarkupRange");
+		fixRange(body.getContent() );
 		
 		// After
 //		System.out.println(XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true));
@@ -44,10 +44,9 @@ public class BookmarksDeleter {
 						+ "/OUT_BookmarksDeleter.docx"));
 	}
 
-	private static void fixRange(List<Object> paragraphs, String startElement,
-			String endElement) throws Exception {
+	private static void fixRange(List<Object> paragraphs) throws Exception {
 
-		RangeFinder rt = new RangeFinder(startElement, endElement);
+		RangeFinder rt = new RangeFinder();
 		new TraversalUtil(paragraphs, rt);
 		
 		for (CTBookmark bm : rt.getStarts()) {

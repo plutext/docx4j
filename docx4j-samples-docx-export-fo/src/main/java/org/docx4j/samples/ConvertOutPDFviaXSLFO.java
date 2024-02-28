@@ -200,7 +200,7 @@ public class ConvertOutPDFviaXSLFO {
 //				ResourceResolverFactory.createInternalResourceResolver( (new File(".")).toURI(), new ClasspathResolverURIAdapter()));
 		FopFactory fopFactory = fopFactoryBuilder.build();
 		
-		// Config - step 3
+		// Config - step 3 (optional since 8.3.10)
 	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory);
 	    // configure foUserAgent as desired
 	    foUserAgent.setTitle("my title");
