@@ -7,11 +7,14 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.10-SNAPSHOT</revision>
+		<revision>8.3.10</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
+		<version.logback-classic>1.2.10</version.logback-classic>
+		<version.maven-jar-plugin>2.3.1</version.maven-jar-plugin>
+		<version.maven-bundle-plugin>5.1.2</version.maven-bundle-plugin>	    
 	</properties>
 
     <packaging>pom</packaging>
@@ -85,7 +88,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-	    <tag>HEAD</tag>
+	    <tag>docx4j-8.3.10</tag>
 	    <url>https://github.com/plutext/docx4j</url>      
   </scm>
 	<inceptionYear>2007</inceptionYear>
@@ -348,7 +351,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
+			<version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>		
 		

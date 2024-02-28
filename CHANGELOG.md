@@ -1,6 +1,42 @@
 CHANGELOG
 =========
 
+Version 8.3.10  (recommended update on account of w16du; parity with 11.4.10)
+===============
+
+Release date
+------------
+
+28 Feb 2024
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+ameramayreh  Amer Amayreh
+
+h-huss
+
+
+Changes in Version 8.3.10
+--------------------------
+
+http://schemas.microsoft.com/office/word/2023/wordml/word16du is new in [MS-DOCX] v19.0 of June 2023 and has now started to show up in Word releases.  See further  https://msopenspecs.azureedge.net/files/MS-DOCX/%5bMS-DOCX%5d-230616.pdf  Word writes the w16du namespace prefix to @mc:Ignorable in the MDP, so Word requires the namespace to also be declared.
+
+package org.docx4j.convert.in.xhtml removed for consistency with 11.4.x (where it causes a split package issue)
+
+Improve load/save performance
+
+Bump dependencies
+
+export--fo: don't require user to set up FOUserAgent
+
+Miscellaneous small fixes
+
+
+
 Version 8.3.9  (minor release; parity with 11.4.9)
 ==============
 

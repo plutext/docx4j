@@ -51,13 +51,16 @@
 						<exclude>src/test/resources/**/*</exclude>
 						<exclude>src/main/resources/README.txt</exclude><!--  sample log4j.xml and docx4j.properties are now in src/samples/_resources-->
 					</excludes>
+					<archive>
+			            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+			          </archive>
 				</configuration>
 			</plugin>
 			
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>4.1.0</version>
+                <version>${version.maven-bundle-plugin}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -66,9 +69,6 @@
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Import-Package>
-                            com.topologi.diffx.event;resolution:=optional,
-                            com.topologi.diffx.xml;resolution:=optional,
-                            com.topologi.diffx.xml.esc;resolution:=optional,
                             net.engio.mbassy.bus,
                             net.engio.mbassy.bus.config,
                             org.antlr.runtime;resolution:=optional,
@@ -151,14 +151,7 @@
                             com.thedeanda.lorem
                         </Import-Package>
                         <Export-Package>
-                            com.topologi.diffx.xml,
-                            com.topologi.diffx.xml.esc,
-                            com.topologi.diffx.event,
-						    org.eclipse.compare,
-						    org.eclipse.compare.internal,
-						    org.eclipse.compare.rangedifferencer,                            
                             net.engio.mbassy.bus,
-                            org.apache.avalon.framework.configuration,
                             org.plutext.jaxb.*,
                             org.docx4j.*,
                             org.pptx4j.*,
@@ -170,6 +163,16 @@
                         </Export-Package>
                     </instructions>
                 </configuration>
+						<executions>
+							<execution>
+								<id>add-meta</id>
+								<phase>process-classes</phase><!-- or prepare-package -->
+								<goals>
+									<goal>manifest</goal>
+								</goals>
+								<!-- writes to bin/META-INF/MANIFEST.MF, where it is picked up by maven-jar-plugin -->
+							</execution>
+						</executions>
             </plugin>				
  			
  			<!--  mvn versions:display-dependency-updates --> 
@@ -239,24 +242,30 @@
 		</dependency>
 
 
-		<!--  instead of FOP's commons-logging;  without this commons-graphics gives no class def --> 		
+		<!--  instead of FOP's commons-logging;  without this commons-graphics gives no class def 
+		
+				java.lang.NoClassDefFoundError: org/apache/commons/logging/LogFactory
+				        at org.apache.xmlgraphics.util.uri.DataURIResolver.<clinit>(DataURIResolver.java:45)
+				        at org.docx4j.fonts.fop.apps.io.InternalResourceResolver.<init>(InternalResourceResolver.java:50)
+				        at org.docx4j.fonts.PhysicalFonts.<clinit>(PhysicalFonts.java:125)
+		--> 		
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>1.7.26</version>
+		    <version>2.0.9</version>
 		</dependency>		
  		 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.9</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+			<version>3.13.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
 		</dependency>
 
 		<!--  3.4.0: used for zip/unzip -->		 
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-compress</artifactId>
-		    <version>1.21</version>
+		    <version>1.24.0</version>
 		</dependency>		 
 		 
 		 <!--  supports org.apache.commons.lang.NotImplementedException -->
@@ -272,7 +281,7 @@
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.12</version>
+			<version>1.16.0</version>
 		</dependency>
 
 		<dependency>
@@ -284,7 +293,7 @@
 	<dependency>
 		<groupId>org.apache.xmlgraphics</groupId>
 		<artifactId>xmlgraphics-commons</artifactId>
-		<version>2.7</version>
+		<version>2.9</version>
 		<exclusions>
 			<exclusion>
 				<groupId>commons-logging</groupId>
@@ -315,13 +324,13 @@
 	<dependency>
 	    <groupId>net.arnx</groupId>
 	    <artifactId>wmf2svg</artifactId>
-	    <version>0.9.8</version>
+	    <version>0.9.11</version>
 	</dependency>
 
 		<dependency>
     		<groupId>org.antlr</groupId>
     		<artifactId>antlr-runtime</artifactId>
-    		<version>3.5.2</version>
+    		<version>3.5.3</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.antlr</groupId>
@@ -369,7 +378,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
-			<version>2.0.24</version>
+			<version>2.0.30</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -378,18 +387,13 @@
 			</exclusions>
 		</dependency>
 	
+		<!--  for repackaged fop-events -->
 		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>fop-events</artifactId>
-			<version>2.7</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.ant</groupId>
-					<artifactId>ant</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.thoughtworks.qdox</groupId>
+			<artifactId>qdox</artifactId>
+			<version>1.12</version>
 		</dependency>
-    		 
+	
 	</dependencies>
 	
 </project>
