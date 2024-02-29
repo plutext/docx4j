@@ -200,7 +200,6 @@ public class Save {
 //				realOS.close();
 //			}
 	    } catch (Exception e) {
-			e.printStackTrace() ;
 			if (e instanceof Docx4JException) {
 				throw (Docx4JException)e;
 			} else {
@@ -314,7 +313,6 @@ public class Save {
 			}		
 		
 		} catch (Exception e) {
-			e.printStackTrace();
 			log.error(e.getMessage(), e);
 			throw new Docx4JException("Problem saving part " + part.getPartName(), e);
 		} 
