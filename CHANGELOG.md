@@ -2,6 +2,29 @@ CHANGELOG
 =========
 
 
+Version 11.4.11  (recommended update on account of w16du)
+===============
+
+Release date
+------------
+
+5 March 2024
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Changes in Version 11.4.11
+--------------------------
+
+Bump dependencies to address upstream security advisories in commons-compress and batik (used in export-fo).
+
+Bump certain other deps
+
+
+
 Version 11.4.10  (recommended update on account of w16du)
 ===============
 
