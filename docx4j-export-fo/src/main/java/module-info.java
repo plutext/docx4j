@@ -22,17 +22,20 @@ module org.docx4j.export_fo {
 		requires batik.util;
 		requires batik.constants;
 		requires batik.i18n;
-		requires batik.awt.util;
+//		requires batik.awt.util;
 		requires batik.bridge;
-		//requires batik.script;
-		requires batik.extension;
-		requires batik.gvt;
-		requires batik.transcoder;
-		requires batik.svggen;
+//		//requires batik.script;
+//		requires batik.extension;
+//		requires batik.gvt;
+//		requires batik.transcoder;
+//		requires batik.svggen;
 		requires org.apache.fontbox;
 		requires jakarta.xml.bind; // has an Automatic-Module-Name in its MANIFEST.MF
 		//requires jai.core;
 		//requires jai.codec;
+			
+	// necessary for FOP 2.9 but not 2.9 or earlier
+//	requires fop.core; 
 
 	
 	exports org.docx4j.convert.out.fo;

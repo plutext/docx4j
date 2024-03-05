@@ -112,8 +112,8 @@
 	    
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>fop</artifactId>
-			<version>2.7</version>
+			<artifactId>batik-anim</artifactId>
+			<version>1.17</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -124,10 +124,6 @@
 					<artifactId>xml-apis-ext</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
 				</exclusion>
@@ -135,6 +131,80 @@
 					<groupId>xalan</groupId>
 					<artifactId>serializer</artifactId>
 				</exclusion>			
+			</exclusions>
+			
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-bridge</artifactId>
+			<version>1.17</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis-ext</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-transcoder</artifactId>
+			<version>1.17</version>
+		</dependency>
+		
+<!-- Unnecessary: 
+		
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-awt-util</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-extension</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-gvt</artifactId>
+			<version>1.17</version>
+		</dependency>
+		-->
+
+	    
+	    <!-- Use batik 1.17 above, not an older version with known security issues -->
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>2.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-anim</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-awt-util</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-bridge</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-extension</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-gvt</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.xmlgraphics</groupId>
+					<artifactId>batik-transcoder</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
