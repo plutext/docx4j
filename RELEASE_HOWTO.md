@@ -231,7 +231,7 @@ Update downloads.html
 Announce release in docx4j forum
 Update news  (includes link to release announcement)
 
-Update the default branch in GitHub
+Update the default branch in GitHub (Settings > General > Default Branch > Switch)
 
 ----
 
