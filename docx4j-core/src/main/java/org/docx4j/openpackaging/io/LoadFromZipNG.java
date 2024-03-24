@@ -687,7 +687,7 @@ public class LoadFromZipNG extends Load {
 						
 					} catch (jakarta.xml.bind.UnmarshalException ue) {
 
-						log.warn("No JAXB model for this CustomXmlDataStorage part; " + ue.getMessage()  );
+						log.info("No JAXB model for this CustomXmlDataStorage part; " + ue.getMessage()  );
 						
 						CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();	
 						is.reset();
