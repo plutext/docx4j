@@ -172,7 +172,7 @@
 			      2019 05 25 should work with Java 11: https://github.com/mojohaus/extra-enforcer-rules/pull/63
 			      but it doesn't.
 			      
-			      Seems to work with Java 12 though -->
+			      Seems to work with Java 12 though
 			      
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
@@ -205,6 +205,7 @@
 		          </dependency>
 		        </dependencies> 
 		      </plugin>
+		       -->
 	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
