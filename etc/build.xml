@@ -14,7 +14,7 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.4.11"/>
+	<property name="version" value="11.4.12-SNAPSHOT"/>
 	<property name="importxhtml-version" value="11.4.8"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
@@ -42,7 +42,7 @@
 		
 		<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	 -->
-	<property name="logback-version" value="1.3.0-alpha4"/>
+	<property name="logback-version" value="1.5.3"/>
 	<property name="log4j-slf4j-impl" value="log4j-slf4j18-impl"/>
 	
 	<!--.NET properties -->
@@ -50,70 +50,70 @@
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 
 	<!-- 
-		org.docx4j:docx4j-core:jar:11.4.4
-		
-		+- org.docx4j:docx4j-openxml-objects:jar:11.4.4
-		+- org.docx4j:docx4j-openxml-objects-pml:jar:11.4.4
-		+- org.docx4j:docx4j-openxml-objects-sml:jar:11.4.4
-		
-		+- org.plutext:jaxb-svg11:jar:11.4.0
-		+- net.engio:mbassador:jar:1.3.2
-		
-		+- org.slf4j:jcl-over-slf4j:jar:2.0.0-alpha5
-		+- org.apache.commons:commons-lang3:jar:3.9
-		+- org.apache.commons:commons-compress:jar:1.21
-		+- commons-codec:commons-codec:jar:1.12
-		+- commons-io:commons-io:jar:2.7
-		+- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.7
-		
-		+- org.docx4j.org.apache:xalan-interpretive:jar:11.0.0
-		|  \- org.docx4j.org.apache:xalan-serializer:jar:11.0.0
-		
-		+- net.arnx:wmf2svg:jar:0.9.8
-		+- org.antlr:antlr-runtime:jar:3.5.2
-		+- org.antlr:stringtemplate:jar:3.2.1
-		|  \- antlr:antlr:jar:2.7.7
-		+- org.checkerframework:checker-qual:jar:2.8.1
-		+- com.google.errorprone:error_prone_annotations:jar:2.3.3
-		+- org.apache.pdfbox:fontbox:jar:2.0.24
-		+- com.thoughtworks.qdox:qdox:jar:1.12
-		
-		+- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1
-		|  \- com.sun.activation:jakarta.activation:jar:2.0.1
-		
-		+- org.slf4j:slf4j-api:jar:2.0.0-alpha6
+        org.docx4j:docx4j-core:jar:11.4.11
+
+        +- org.docx4j:docx4j-openxml-objects:jar:11.4.11
+        +- org.docx4j:docx4j-openxml-objects-pml:jar:11.4.11
+        +- org.docx4j:docx4j-openxml-objects-sml:jar:11.4.11
+
+        +- org.plutext:jaxb-svg11:jar:11.4.0
+        +- net.engio:mbassador:jar:1.3.2
+
+        +- org.slf4j:jcl-over-slf4j:jar:2.0.12
+        +- org.apache.commons:commons-lang3:jar:3.14.0
+        +- org.apache.commons:commons-compress:jar:1.26.0
+        +- commons-codec:commons-codec:jar:1.16.0
+        +- commons-io:commons-io:jar:2.15.1
+        +- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.9
+
+        +- org.docx4j.org.apache:xalan-interpretive:jar:11.0.0
+        |  \- org.docx4j.org.apache:xalan-serializer:jar:11.0.0
+
+        +- net.arnx:wmf2svg:jar:0.9.11
+        +- org.antlr:antlr-runtime:jar:3.5.3
+        +- org.antlr:stringtemplate:jar:3.2.1
+        |  \- antlr:antlr:jar:2.7.7
+        +- org.checkerframework:checker-qual:jar:3.42.0
+        +- com.google.errorprone:error_prone_annotations:jar:2.3.3
+        +- org.apache.pdfbox:fontbox:jar:2.0.30
+        +- com.thoughtworks.qdox:qdox:jar:1.12
+
+        +- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1
+        |  \- com.sun.activation:jakarta.activation:jar:2.0.1
+
+        +- org.slf4j:slf4j-api:jar:2.0.12
 	 -->
 	<path id="MavenDeps">
 
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/11.4.0/jaxb-svg11-11.4.0.jar"/>
 		<pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.0-alpha5/jcl-over-slf4j-2.0.0-alpha5.jar"/>
-		<pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar"/>
-		<pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"/>
-		<pathelement location="${m2Repository}/commons-codec/commons-codec/1.12/commons-codec-1.12.jar"/>
-		<pathelement location="${m2Repository}/commons-io/commons-io/2.7/commons-io-2.7.jar"/>
-		<pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.7/xmlgraphics-commons-2.7.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.12/jcl-over-slf4j-2.0.12.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.26.0/commons-compress-1.26.0.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.15.1/commons-io-2.15.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.9/xmlgraphics-commons-2.9.jar"/>
 
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/11.0.0/xalan-interpretive-11.0.0.jar"/>
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/11.0.0/xalan-serializer-11.0.0.jar"/>
 
-		<pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.8/wmf2svg-0.9.8.jar"/>
+        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.11/wmf2svg-0.9.11.jar"/>
 
-		<pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar"/>
+		<pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.3/antlr-runtime-3.5.3.jar"/>
 		<pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
 		<pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
 
-        <pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar"/>
+        <pathelement location="${m2Repository}/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar"/>
         <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
 
-    	<pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.24/fontbox-2.0.24.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.30/fontbox-2.0.30.jar"/>
         
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>        
 
         <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/3.0.1/jakarta.xml.bind-api-3.0.1.jar"/>
         <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/>
 		
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.0-alpha6/slf4j-api-2.0.0-alpha6.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar"/>
 		
 	</path>
 
@@ -143,24 +143,23 @@
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop-core/2.7/fop-core-2.7.jar"/>
 -->
 				
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.14/batik-anim-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.14/batik-css-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.14/batik-dom-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.14/batik-ext-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.14/batik-parser-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-shared-resources/1.14/batik-shared-resources-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.14/batik-svg-dom-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.14/batik-util-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.14/batik-constants-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.14/batik-i18n-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.14/batik-awt-util-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.14/batik-bridge-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.14/batik-script-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.14/batik-xml-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-extension/1.14/batik-extension-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.14/batik-gvt-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.14/batik-transcoder-1.14.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.14/batik-svggen-1.14.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-anim/1.17/batik-anim-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-awt-util/1.17/batik-awt-util-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-css/1.17/batik-css-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-dom/1.17/batik-dom-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-ext/1.17/batik-ext-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-parser/1.17/batik-parser-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-shared-resources/1.17/batik-shared-resources-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svg-dom/1.17/batik-svg-dom-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-util/1.17/batik-util-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-constants/1.17/batik-constants-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-i18n/1.17/batik-i18n-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-bridge/1.17/batik-bridge-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-gvt/1.17/batik-gvt-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-script/1.17/batik-script-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-xml/1.17/batik-xml-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-transcoder/1.17/batik-transcoder-1.17.jar"/>
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/batik-svggen/1.17/batik-svggen-1.17.jar"/>
 
 		<!--  FOP 2.6 FOP-2889: Make JAI optional  
         <pathelement location="${m2Repository}/javax/media/jai-core/1.1.3/jai-core-1.1.3.jar"/>
@@ -270,7 +269,10 @@
 		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/3.0.2/org.eclipse.persistence.moxy-3.0.2.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.1.0/org.eclipse.persistence.asm-9.1.0.jar"/>
 		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/3.0.2/org.eclipse.persistence.core-3.0.2.jar"/>
+				<!-- have already <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/> -->
 		        <pathelement location="${m2Repository}/com/sun/mail/jakarta.mail/2.0.1/jakarta.mail-2.0.1.jar"/>
+		        <pathelement location="${m2Repository}/jakarta/mail/jakarta.mail-api/2.1.0/jakarta.mail-api-2.1.0.jar"/>
+		        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar"/>				
 			</path>
 		</copy>
 
@@ -291,6 +293,7 @@
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
 		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/3.0.2/jaxb-runtime-3.0.2.jar"/>
+				<!-- have already <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/> -->
 		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/3.0.2/jaxb-core-3.0.2.jar"/>
 		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/3.0.2/txw2-3.0.2.jar"/>
 		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.0.1/istack-commons-runtime-4.0.1.jar"/>
