@@ -189,6 +189,8 @@ That should complete with something like:
 ie no need to Login to the Nexus UI at https://oss.sonatype.org/index.html#welcome anymore,
 or to manually close then release :-)
 
+If the remote operation is skipped, it might be because your last module had skip in it? (eg docx4j-ImportXHTML)
+
 This new release process does not add a tag; easiest to do that in SmartGit.
 
 Repeat above for -ImportXHTML 
