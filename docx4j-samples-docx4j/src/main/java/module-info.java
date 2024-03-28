@@ -7,11 +7,10 @@ module docx4j_samples_docx4j {
 	requires org.docx4j.docx_anon;
 	requires jakarta.xml.bind;
 	
-	//requires docx4j_JAXB_ReferenceImpl;
-    
-//	requires docx4j_JAXB_MOXy;
-//	requires org.eclipse.persistence.moxy;
-//	requires org.eclipse.persistence.core;
+	// Uncomment ONE of the following:
+	 requires org.docx4j.JAXB_ReferenceImpl;
+//	 requires org.docx4j.JAXB_MOXy;
+	
 	
 	opens org.docx4j.samples; // required for mbassador	
 }

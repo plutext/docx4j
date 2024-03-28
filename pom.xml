@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.4.12-SNAPSHOT</revision>
+		<revision>11.5.0-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
@@ -336,24 +336,11 @@
 
 	<dependencies>
 
-		<!--  docx4j v11.4.0 and later use JAXB 3.0 
-		
-			There is a JAXB 4.x, but it changes how implementation lookup works.
-			Specifically, the META-INF approach used by docx4j-JAXB-MOXy has been dropped,
-			so we'd need an alternative way of specifying this implementation
-			(system property JAXB_CONTEXT_FACTORY or service-provider loading facilities?).
-			
-			https://eclipse-ee4j.github.io/jaxb-ri/4.0.3/docs/ch02.html#a-3-0-2
-			
-			There is a 3.0.2, but it is not in Maven Central, so remain on 3.0.1.
-			
-			https://search.maven.org/artifact/jakarta.xml.bind/jakarta.xml.bind-api
-		
-		-->
+		<!--  docx4j v11.5.0 uses JAXB 4.0.x -->
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<version>3.0.1</version>
+			<version>4.0.2</version>
 		</dependency>
 
 		<dependency>

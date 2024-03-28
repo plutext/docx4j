@@ -46,7 +46,10 @@
 	
 	<dependencies>
 
-		<!--  choose a docx4j-JAXB implementation, one ONLY of the 2 following :-->
+		<!--  choose a docx4j-JAXB implementation, one ONLY of the 2 following.
+		
+			  You also need to update module-info.java consistent with your choice here.
+		 :-->
 
 		<dependency>
             <groupId>org.docx4j</groupId>
