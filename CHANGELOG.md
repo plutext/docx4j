@@ -1,6 +1,28 @@
 CHANGELOG
 =========
 
+
+Version 8.3.11  
+===============
+
+Release date
+------------
+
+25 April 2024
+
+
+Changes in Version 8.3.11
+--------------------------
+
+Bump deps, including:
+- commons-compress to address reported vulnerabilities
+- slf4j to v2
+- logback (optional) to address reported vulnerabilities and match slf4j v2 api
+- fop (for export-fo) 2.7 to 2.9
+
+
+
+
 Version 8.3.10  (recommended update on account of w16du; parity with 11.4.10)
 ===============
 
