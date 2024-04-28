@@ -22,7 +22,12 @@ package org.docx4j.samples;
 
 import java.io.OutputStream;
 
+import org.apache.fop.apps.FOUserAgent;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.FopFactoryBuilder;
 import org.docx4j.Docx4J;
+import org.docx4j.convert.out.FOSettings;
+import org.docx4j.convert.out.fo.renderers.FORendererApacheFOP;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 
@@ -126,6 +131,20 @@ public class ConvertOutViaFacade {
 		
 
 		Docx4J.toPDF(wordMLPackage, os);
+		
+		// to use Docx4J.toFO instead, uncomment:
+		/* 
+			FOSettings foSettings =Docx4J.createFOSettings();
+			foSettings.setOpcPackage(wordMLPackage);
+	
+			// docx4j 8.3.9 and 11.4.9 (?!)	
+			// Not required in 11.4.11 
+			FopFactoryBuilder fopFactoryBuilder = FORendererApacheFOP.getFopFactoryBuilder(foSettings) ;
+			FopFactory fopFactory = fopFactoryBuilder.build();
+		    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettings, fopFactory);
+			
+			Docx4J.toFO(foSettings, os, Docx4J.FLAG_EXPORT_PREFER_NONXSL);
+		*/
 		
     }
     
