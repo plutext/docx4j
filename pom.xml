@@ -9,10 +9,13 @@
 	<properties>
 		<revision>11.5.0-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
-	    <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> -->
+		
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	    
 	    <!-- github server corresponds to entry in ~/.m2/settings.xml -->
 	    <github.global.server>github</github.global.server>
-		<version.logback-classic>1.5.3</version.logback-classic>
+		<version.logback-classic>1.5.6</version.logback-classic>
 		<version.maven-jar-plugin>2.3.1</version.maven-jar-plugin>
 		<version.maven-bundle-plugin>5.1.2</version.maven-bundle-plugin>
 	</properties>
@@ -346,7 +349,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-  			<version>2.0.12</version>
+  			<version>2.0.13</version>
   		</dependency>
 
 		<dependency>

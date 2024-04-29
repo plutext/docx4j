@@ -125,7 +125,7 @@
 			<dependency>
 				<groupId>org.eclipse.persistence</groupId>
 				<artifactId>org.eclipse.persistence.moxy</artifactId>
--				<version>4.0.2</version> 
+				<version>4.0.2</version> 
 			</dependency>
 			<!-- in principle, you can revert to 3.0.1 here, provided you also downgrade jakarta.xml.bind-api to 3.0.1 
 			     3.0.1 does also need requires org.eclipse.persistence.core -->
