@@ -51,6 +51,8 @@ public abstract class AbstractFontPart extends BinaryPart {
 	public static File getTmpFontDir() {
 		return tmpFontDir;
 	}
+
+	protected static boolean deleteFileOnFinalize;
     
     static {
     	
@@ -80,7 +82,10 @@ public abstract class AbstractFontPart extends BinaryPart {
             }
     	
     	}
-    }
+
+		deleteFileOnFinalize = Docx4jProperties.getProperty(
+				"docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart.deleteFileOnFinalize", true);
+	}
     
     public static String getTemporaryEmbeddedFontsDir() {
     	
@@ -141,7 +146,7 @@ public abstract class AbstractFontPart extends BinaryPart {
 	protected void finalize() throws Throwable {
 		
         try {
-        	if (getF()!=null) {
+        	if (deleteFileOnFinalize && getF()!=null) {
 	    		log.debug("Deleting  " + getF().getName());
 				getF().delete();
         	}

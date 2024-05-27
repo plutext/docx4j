@@ -241,7 +241,7 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	protected void finalize() throws Throwable {
 		
         try {
-        	if (getF()!=null) {
+        	if (deleteFileOnFinalize && getF()!=null) {
 	    		log.debug("Deleting  " + getF().getName());
 				getF().delete();
         	}
