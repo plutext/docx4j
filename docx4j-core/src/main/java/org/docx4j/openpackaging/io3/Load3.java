@@ -300,7 +300,7 @@ public class Load3 extends Load {
 	 * @throws Docx4JException
 	 * @throws InvalidFormatException
 	 */
-	private void getPart(OpcPackage pkg, RelationshipsPart rp, 
+	protected void getPart(OpcPackage pkg, RelationshipsPart rp, 
 			Relationship r, ContentTypeManager ctm)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
