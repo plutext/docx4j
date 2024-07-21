@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.5.0-SNAPSHOT</revision>
+		<revision>11.5.0</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -90,7 +90,7 @@
   	
 	<scm>
 	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
-      <tag>docx4j-11.4.11</tag>
+      <tag>docx4j-11.5.0</tag>
       <url>https://github.com/plutext/docx4j</url>
   </scm>
 	<inceptionYear>2007</inceptionYear>
@@ -286,7 +286,8 @@
             </configuration>
         </plugin>
  -->
- 			
+
+			<!-- generate a flattened version of the pom.xml that Maven installs and deploys instead of the original --> 			
 			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>flatten-maven-plugin</artifactId>

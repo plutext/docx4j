@@ -2,6 +2,34 @@ CHANGELOG
 =========
 
 
+Version 11.5.0  (Jakarta XML Binding 4.0)
+===============
+
+Release date
+------------
+
+21 July 2024
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+shushu888
+
+sveale
+
+
+Changes in Version 11.5.0
+--------------------------
+
+Jakarta XML Binding 4.0 implementation (compare 11.4.x, which used the 3.0 API). Both JAXB implementations (reference/glassfish, and MOXy) are providers of jakarta.xml.bind.JAXBContextFactory, so each can be automagically discovered and loaded using service-provider loading facilities as described in the spec.  The dep change from 3.0 to 4.0 API does not change docx4j at all, but makes integration easier with other jars which expect the 4.0 API (for example, Spring Boot 3.3.0).
+
+Bump certain depss
+New property docx4j...ObfuscatedFontPart.deleteFileOnFinalize which can be set to false to prevent temporary font files from being deleted in finalize
+
+
 Version 11.4.11  (recommended update on account of w16du)
 ===============
 
