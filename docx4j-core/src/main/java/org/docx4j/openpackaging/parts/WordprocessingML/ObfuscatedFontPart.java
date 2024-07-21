@@ -217,6 +217,11 @@ public class ObfuscatedFontPart extends AbstractFontPart {
 	
     protected static void deleteEmbeddedFontTempFiles(String filenamePrefix) {
     	
+    	if (getTmpFontDir()==null) {
+    		log.warn("TmpFontDir is null");
+    		return;
+    	}
+    	
     	// this isn't really necessary given finalize(), but this gets rid of them a bit sooner than GC may happen
     	// (when it is invoked first; sometimes it isn't - note this is a static method)
     	
