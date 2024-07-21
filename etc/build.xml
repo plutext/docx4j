@@ -14,8 +14,8 @@
 	<property environment="env"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="11.4.12-SNAPSHOT"/>
-	<property name="importxhtml-version" value="11.4.8"/>
+	<property name="version" value="11.5.0"/>
+	<property name="importxhtml-version" value="11.5.0"/>
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
@@ -49,49 +49,15 @@
 	<property name="ikvm.dir" value="/Java/ikvm/ikvm-8.1.5717.0"/>
 	<property name="ikvmc" value="${ikvm.dir}/bin/ikvmc.exe"/>
 
-	<!-- 
-        org.docx4j:docx4j-core:jar:11.4.11
-
-        +- org.docx4j:docx4j-openxml-objects:jar:11.4.11
-        +- org.docx4j:docx4j-openxml-objects-pml:jar:11.4.11
-        +- org.docx4j:docx4j-openxml-objects-sml:jar:11.4.11
-
-        +- org.plutext:jaxb-svg11:jar:11.4.0
-        +- net.engio:mbassador:jar:1.3.2
-
-        +- org.slf4j:jcl-over-slf4j:jar:2.0.12
-        +- org.apache.commons:commons-lang3:jar:3.14.0
-        +- org.apache.commons:commons-compress:jar:1.26.0
-        +- commons-codec:commons-codec:jar:1.16.0
-        +- commons-io:commons-io:jar:2.15.1
-        +- org.apache.xmlgraphics:xmlgraphics-commons:jar:2.9
-
-        +- org.docx4j.org.apache:xalan-interpretive:jar:11.0.0
-        |  \- org.docx4j.org.apache:xalan-serializer:jar:11.0.0
-
-        +- net.arnx:wmf2svg:jar:0.9.11
-        +- org.antlr:antlr-runtime:jar:3.5.3
-        +- org.antlr:stringtemplate:jar:3.2.1
-        |  \- antlr:antlr:jar:2.7.7
-        +- org.checkerframework:checker-qual:jar:3.42.0
-        +- com.google.errorprone:error_prone_annotations:jar:2.3.3
-        +- org.apache.pdfbox:fontbox:jar:2.0.30
-        +- com.thoughtworks.qdox:qdox:jar:1.12
-
-        +- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1
-        |  \- com.sun.activation:jakarta.activation:jar:2.0.1
-
-        +- org.slf4j:slf4j-api:jar:2.0.12
-	 -->
 	<path id="MavenDeps">
 
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/11.4.0/jaxb-svg11-11.4.0.jar"/>
 		<pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.12/jcl-over-slf4j-2.0.12.jar"/>
+        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.13/jcl-over-slf4j-2.0.13.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar"/>
-        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.26.0/commons-compress-1.26.0.jar"/>
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/2.15.1/commons-io-2.15.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.26.1/commons-compress-1.26.1.jar"/>
+        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.17.0/commons-codec-1.17.0.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/2.16.1/commons-io-2.16.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.9/xmlgraphics-commons-2.9.jar"/>
 
 		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/11.0.0/xalan-interpretive-11.0.0.jar"/>
@@ -110,10 +76,10 @@
         
         <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>        
 
-        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/3.0.1/jakarta.xml.bind-api-3.0.1.jar"/>
-        <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/>
-		
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.12/slf4j-api-2.0.12.jar"/>
+        <pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/4.0.2/jakarta.xml.bind-api-4.0.2.jar"/>
+        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.3/jakarta.activation-api-2.1.3.jar"/>
+    	
+        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar"/>
 		
 	</path>
 
@@ -208,7 +174,7 @@
 		<mkdir dir="${release.dir}/optional"/>
 		
 		<!-- Xerces -->
-		<copy file="${m2Repository}/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar" todir="${release.dir}/optional"/>
+		<copy file="${m2Repository}/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.jar" todir="${release.dir}/optional"/>
 		<copy file="${m2Repository}/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar" todir="${release.dir}/optional"/>
 
 		
@@ -266,13 +232,18 @@
 		<mkdir dir="${releaseMOXy.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/3.0.2/org.eclipse.persistence.moxy-3.0.2.jar"/>
-		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.1.0/org.eclipse.persistence.asm-9.1.0.jar"/>
-		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/3.0.2/org.eclipse.persistence.core-3.0.2.jar"/>
-				<!-- have already <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/> -->
-		        <pathelement location="${m2Repository}/com/sun/mail/jakarta.mail/2.0.1/jakarta.mail-2.0.1.jar"/>
-		        <pathelement location="${m2Repository}/jakarta/mail/jakarta.mail-api/2.1.0/jakarta.mail-api-2.1.0.jar"/>
-		        <pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar"/>				
+		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-xjc/4.0.5/jaxb-xjc-4.0.5.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/xml/bind/jaxb-core/4.0.5/jaxb-core-4.0.5.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/4.0.4/org.eclipse.persistence.moxy-4.0.4.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/4.0.4/org.eclipse.persistence.core-4.0.4.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/9.7.0/org.eclipse.persistence.asm-9.7.0.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-mail/2.0.3/angus-mail-2.0.3.jar"/>
+		        <pathelement location="${m2Repository}/jakarta/mail/jakarta.mail-api/2.1.0/jakarta.mail-api-2.1.0.jar"/>		        
+				<!-- have already jakarta.activation, but 2.1.3 
+				
+					<pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar"/>
+				-->
 			</path>
 		</copy>
 
@@ -292,11 +263,11 @@
 		<mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/3.0.2/jaxb-runtime-3.0.2.jar"/>
-				<!-- have already <pathelement location="${m2Repository}/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar"/> -->
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/3.0.2/jaxb-core-3.0.2.jar"/>
-		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/3.0.2/txw2-3.0.2.jar"/>
-		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.0.1/istack-commons-runtime-4.0.1.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/4.0.5/jaxb-runtime-4.0.5.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-core/4.0.5/jaxb-core-4.0.5.jar"/>
+		        <pathelement location="${m2Repository}/org/eclipse/angus/angus-activation/2.0.2/angus-activation-2.0.2.jar"/>
+		        <pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/4.0.5/txw2-4.0.5.jar"/>
+		        <pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar"/>
 			</path>
 		</copy>
 
