@@ -306,11 +306,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Also reported on Win XP, but in my testing, the files were deleting OK anyway.
 		fos = null;
 		fis = null;
-		tmpImageFile.delete();
+		if (tmpImageFile.delete()) {
+			log.debug(".. deleted " + tmpImageFile.getAbsolutePath());
+		}
 		if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.TempFiles.ForceGC", true) && tmpImageFile.exists()) {
 			System.gc();
 			if (tmpImageFile.delete()) {
-				log.debug(".. deleted " + tmpImageFile.getAbsolutePath());
+				log.debug(".. GC then deleted " + tmpImageFile.getAbsolutePath());
 			} else {
 				log.warn("Couldn't delete tmp file " + tmpImageFile.getAbsolutePath());
 				tmpImageFile.deleteOnExit();
