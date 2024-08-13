@@ -30,4 +30,17 @@
     <xsl:apply-templates select="*"/>
   </xsl:template>
 
+  <xsl:template match="w:tbl" >
+  	<xsl:choose>
+  		<xsl:when test="w:tr[1]/w:trPr/w:del">
+  			<!-- Word deletes the entire table if this is present -->
+  		</xsl:when>
+  		<xsl:otherwise>
+		    <xsl:copy>
+		      <xsl:apply-templates select="@*|node()"/>
+		    </xsl:copy>
+  		</xsl:otherwise>
+  	</xsl:choose>
+  </xsl:template>
+  
 </xsl:stylesheet>
