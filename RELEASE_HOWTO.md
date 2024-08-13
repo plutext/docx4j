@@ -39,6 +39,10 @@ may need to run dos2unix on source file(s), then its
 
     patch -p1 --dry-run  < patchfile
 
+Pull request can be merged into the correct branch by:
+1. appending .patch to the URL in GitHub
+2. git am < blah.patch
+(they are automatically committed)
 
 Update CHANGELOG.md, README.md with release info.
 
@@ -55,11 +59,11 @@ Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven 
 
 Update build.xml so it has the same version as pom.xml (ie without  -SNAPSHOT)
 
+Check jar versions in pom.xml, build.xml
+
 Check everything is committed (though nexus-staging-maven-plugin doesn't seem to care)
 
 Update Getting Started as necessary (inc HTML and PDF versions)
-
-Check jar versions in pom.xml, build.xml
 
 mvn clean
 
@@ -271,4 +275,11 @@ Procedure for -ImportXHTML is similar,
 
 TODO: review which version of .NET to target (see howto file)  
   
+-----
+
+The infernal:-
+
+grep -rli '<nature>org.fusesource.ide.project.RiderProjectNature</nature>' * | xargs -i@ sed -i 's/<nature>org.fusesource.ide.project.RiderProjectNature<\/nature>//g' @
+
+
 
