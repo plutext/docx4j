@@ -180,7 +180,7 @@
 		
 		<!-- ImportXHTML -->
 		<mkdir dir="${release.dir}/optional/ImportXHTML"/>
-		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML/${importxhtml-version}/docx4j-ImportXHTML-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
+		<copy file="${m2Repository}/org/docx4j/docx4j-ImportXHTML-core/${importxhtml-version}/docx4j-ImportXHTML-core-${importxhtml-version}.jar" todir="${release.dir}/optional/ImportXHTML"/>
 
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.10/openhtmltopdf-core-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.10/openhtmltopdf-pdfbox-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
