@@ -57,11 +57,11 @@ public class USwitch extends AbstractSwitch {
     }
 
     @Override
-    public void process(Style s, SwitchProcessor sp) {
+    public void process(Style s, SwitchProcessorInterface sp) {
     	// Not used
     }
 
-    public void process(Style s, SwitchProcessor sp, PPr pPr, OSwitch oSwitch) {
+    public void process(Style s, SwitchProcessorInterface sp, PPr pPr, OSwitch oSwitch) {
     	
     	// TODO, need actual pPr, since it could have an outline level defined on it!
     	
@@ -73,7 +73,7 @@ public class USwitch extends AbstractSwitch {
     	int level = getOutlineLvl(pPr, sp, s, cutOff); 
     	
         if( level == 9){
-            sp.proceed(false);
+            sp.setProceed(false);
         } else {
             TocEntry te = sp.getEntry(); // creates it       	
             te.setEntryLevel(level);
@@ -86,7 +86,7 @@ public class USwitch extends AbstractSwitch {
         return PRIORITY;
     }
     
-    public int getOutlineLvl(PPr pPr, SwitchProcessor sp, Style s, int cutOff) {
+    public int getOutlineLvl(PPr pPr, SwitchProcessorInterface sp, Style s, int cutOff) {
         // Heading 1 is lvl 0
         // There are 9 levels, so 9 will be lvl 8
         // So return 9 for normal text
@@ -104,7 +104,7 @@ public class USwitch extends AbstractSwitch {
     		// is never included. That is suppose this is H3, and 
     		// we have \o "1-2".  
 //			if (s.getStyleId().startsWith("Heading")) {
-		        int hLevel = sp.styleBasedOnHelper.getBasedOnHeading(s);
+		        int hLevel = sp.getStyleBasedOnHelper().getBasedOnHeading(s);
 				if (hLevel>cutOff) {
 					return 9;
 				}
@@ -114,7 +114,7 @@ public class USwitch extends AbstractSwitch {
     		
     		if (outlineLvl==null) { 
     			
-		        PPr effectivePPr = sp.propertyResolver.getEffectivePPr(s.getStyleId());
+		        PPr effectivePPr = sp.getPropertyResolver().getEffectivePPr(s.getStyleId());
 		        	// that takes care of any unexpected outline level found in a heading style,
 		        	// by overwriting it (see fillPPrStack)
 	        	outlineLvl = effectivePPr.getOutlineLvl();

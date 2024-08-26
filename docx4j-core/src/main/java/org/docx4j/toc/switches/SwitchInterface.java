@@ -25,7 +25,7 @@ import org.docx4j.wml.Style;
 public interface SwitchInterface {
     public String parseFieldArgument(String fieldArgument);
     public boolean hasFieldArgument();
-    public void process(Style s, SwitchProcessor sp);
+    public void process(Style s, SwitchProcessorInterface sp);
     public int getPriority();
     public boolean isStyleSwitch();
 }

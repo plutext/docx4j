@@ -24,6 +24,8 @@ import java.util.Map;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.toc.TocEntry;
 import org.docx4j.wml.Style;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Uses paragraphs formatted with (or based on) styles other than the built-in heading styles. 
@@ -33,6 +35,8 @@ import org.docx4j.wml.Style;
  *
  */
 public class TSwitch extends AbstractSwitch{
+	
+	private static Logger log = LoggerFactory.getLogger(TSwitch.class);					
 
     public static final String ID = "\\t";
     private static final int PRIORITY = 9;
@@ -41,8 +45,14 @@ public class TSwitch extends AbstractSwitch{
     private static final String COMMA = ",";
 
     @Override
-    public void process(Style s, SwitchProcessor sp) {
+    public void process(Style s, SwitchProcessorInterface sp) {
+    	
+    	if (log.isDebugEnabled()) {
+    		log.debug(s.getStyleId());
+    	}
+    	
         if(sp.isStyleFound()){
+        	log.debug(s.getName().getVal() + "already found");
             return;
         }
         TocEntry te = sp.getEntry();
@@ -51,6 +61,9 @@ public class TSwitch extends AbstractSwitch{
 //        	log.debug("testing against" + styleMapValue);
             if( sp.getStyleBasedOnHelper().isBasedOn(s, styleMapValue)){
                 te.setEntryLevel(styleLevelMap.get(styleMapValue));
+                if (log.isDebugEnabled()) {
+                	log.debug("its based on " + styleMapValue + "; level " + styleLevelMap.get(styleMapValue));
+                }
                 sp.setStyleFound(true);
                 break;
             }
