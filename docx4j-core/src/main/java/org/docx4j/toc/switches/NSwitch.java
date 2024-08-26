@@ -34,7 +34,7 @@ public class NSwitch extends AbstractSwitch {
     }
 
     @Override
-    public void process(Style s, SwitchProcessor sp) {
+    public void process(Style s, SwitchProcessorInterface sp) {
         TocEntry te = sp.getEntry();
         if(fieldArgument == null){
             sp.setPageNumbers(false);

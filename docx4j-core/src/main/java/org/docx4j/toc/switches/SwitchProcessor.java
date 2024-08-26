@@ -55,13 +55,21 @@ import org.docx4j.wml.PPrBase.PStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SwitchProcessor {
+public class SwitchProcessor implements SwitchProcessorInterface {
 	
 	private static Logger log = LoggerFactory.getLogger(SwitchProcessor.class);				
 
     protected PropertyResolver propertyResolver;
-    protected StyleBasedOnHelper styleBasedOnHelper;
-    private PageDimensions pageDimensions;
+    public PropertyResolver getPropertyResolver() {
+		return propertyResolver;
+	}
+
+	protected StyleBasedOnHelper styleBasedOnHelper;
+    public StyleBasedOnHelper getStyleBasedOnHelper() {
+		return styleBasedOnHelper;
+	}
+
+	private PageDimensions pageDimensions;
 
     private static final String TOC_PREFIX = "_Toc";
     private static final int MILLION = 1000000;
@@ -70,7 +78,18 @@ public class SwitchProcessor {
     private STTabTlc leader;
     
     private boolean proceed = true;
-    private boolean styleFound = false;
+    public void setProceed(boolean proceed) {
+		this.proceed = proceed;
+	}
+
+	private boolean styleFound = false;
+    public boolean isStyleFound() {
+        return styleFound;
+    }
+
+    public void setStyleFound(boolean headingFound) {
+        this.styleFound = headingFound;
+    }
     
     private boolean pageNumbers = true;
         
@@ -325,17 +344,10 @@ public class SwitchProcessor {
         return entry;
     }
     
-    public void proceed(boolean proceed){
-        this.proceed = proceed;
-    }
+//    public void proceed(boolean proceed){
+//        this.proceed = proceed;
+//    }
 
-    public boolean isStyleFound() {
-        return styleFound;
-    }
-
-    public void setStyleFound(boolean headingFound) {
-        this.styleFound = headingFound;
-    }
     
 	private AtomicInteger bookmarkId = null;
 	

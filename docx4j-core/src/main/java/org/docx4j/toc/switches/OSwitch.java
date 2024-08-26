@@ -44,13 +44,13 @@ public class OSwitch extends AbstractSwitch {
 
 
     @Override
-    public void process(Style s, SwitchProcessor sp) {
+    public void process(Style s, SwitchProcessorInterface sp) {
         if(sp.isStyleFound()){
             return;
         }
         TocEntry te = sp.getEntry();
 
-        int level = sp.styleBasedOnHelper.getBasedOnHeading(s);
+        int level = sp.getStyleBasedOnHelper().getBasedOnHeading(s);
         
         if(level != -1){
         	

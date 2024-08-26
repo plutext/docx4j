@@ -35,7 +35,7 @@ public class HSwitch extends AbstractSwitch{
     }
 
     @Override
-    public void process(Style s, SwitchProcessor sp) {
+    public void process(Style s, SwitchProcessorInterface sp) {
         sp.getEntry().makeHyperlink(true);
     }
 

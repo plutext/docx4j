@@ -48,7 +48,8 @@ public class TSwitch extends AbstractSwitch{
         TocEntry te = sp.getEntry();
         Map<String, Integer> styleLevelMap = getStyleLevelMap();
         for(String styleMapValue: styleLevelMap.keySet()){
-            if( sp.styleBasedOnHelper.isBasedOn(s, styleMapValue)){
+//        	log.debug("testing against" + styleMapValue);
+            if( sp.getStyleBasedOnHelper().isBasedOn(s, styleMapValue)){
                 te.setEntryLevel(styleLevelMap.get(styleMapValue));
                 sp.setStyleFound(true);
                 break;
