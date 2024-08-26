@@ -49,6 +49,7 @@ public class Toc {
     private static final String ERROR_BOOKMARK_NOT_DEFINED = "Error! Bookmark not defined.";
 
     private static final String SPACE = " ";
+    private static final String BACKSLASH = "\\";
     private static final String TOC_INSTRUCTION_MASK = "TOC ";
     private static final String DEFAULT_TOC_INSTRUCTION = "TOC \\o \"1-3\" \\h \\z \\u ";
     //private static final String TOC_HEADING_STYLE = "TOCHeading";
@@ -102,29 +103,24 @@ public class Toc {
         }
         // 3. Parsing switches
     	log.debug("starting to parse: " + toParse);
-        String[] switchesArray = toParse.split(SPACE);
+        String[] switchesArray = toParse.split(BACKSLASH+BACKSLASH); //double escape
         SwitchInterface tocSwitch;
         String fieldArgument;
         for(int i = 0; i < switchesArray.length; i++) {
-            tocSwitch = SwitchesFactory.getSwitch(switchesArray[i]);
-            if(tocSwitch != null){
-                if(i + 1 < switchesArray.length ){
-                    fieldArgument = switchesArray[i + 1];
-                    if(tocSwitch.hasFieldArgument() && SwitchesFactory.getSwitch(fieldArgument) == null) {
-                        i++;
-                    } else {
-                        fieldArgument = null;
-                    }
-                } else {
-                    fieldArgument = null;
-                }
+//        	log.debug(switchesArray[i]);
+            tocSwitch = SwitchesFactory.getSwitch(BACKSLASH + switchesArray[i].split(SPACE)[0]);
+            if(tocSwitch == null){
+            	log.warn("Unsupported switch:" + BACKSLASH + switchesArray[i].split(SPACE)[0]);
+            } else {
+            	fieldArgument = switchesArray[i].substring(1).trim();
+//            	log.debug(fieldArgument);
                 errorString = tocSwitch.parseFieldArgument(fieldArgument);
                 if(!errorString.isEmpty()){
 //                    return;
                 	throw new TocException(errorString);
                 }
                 switchesList.add(tocSwitch);
-                log.debug("Got switch: " + tocSwitch);
+//                log.debug("Got switch: " + tocSwitch);
             }
         }
         // 4. Check if switches were found, else use approach as for empty instruction
