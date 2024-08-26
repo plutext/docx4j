@@ -36,9 +36,63 @@ public class StyleBasedOnHelper {
 		this.propertyResolver = propertyResolver;
 	}
 	
-	public boolean isBasedOn(Style thisStyle, String baseStyleId ) {
+	private String normaliseHeadingName(String tocInstructionName) {
 		
-		if (thisStyle.getStyleId().equals(baseStyleId)) {
+		/* In Word, if you create a style, you give it a w:name eg "my style 1";
+		 * Word removes the spaces to create the styleID "mystyle1".
+		 * 
+		 * (Word can open a docx which has spaces in a styleID, but it removes
+		 *  the spaces so they aren't present when saved)
+		 * 
+		 * Built-in headings are different, name "heading 1" is capitalized to Id "Heading1".
+		 * Compare TOC \t "Heading 2,1,Heading 3,2"!
+		 * 
+		 * But "heading happy" or "heading 14" are unchanged; only "heading 1" to "heading 9"
+		 * 
+		 * Word's TOC options dialog shows style names (not IDs), but capitalizes H in heading.
+		 * 
+		 * TOC \t "my style 1,1,mystyle2,2"
+		 */
+		
+		// TODO: does Word do similar weird stuff with eg DE language docx?
+		
+		if (!tocInstructionName.startsWith("Heading ") ) {
+			return tocInstructionName;
+			
+			// Not sure what Word would do ingesting a docx with stylename hEADing 1 ?!
+		}
+		
+		if (tocInstructionName.length()<8) {
+			return tocInstructionName;			
+		}
+		
+		String headingLevel = null;
+		try{			
+			headingLevel = tocInstructionName.substring(8);
+//			log.debug("Parsing " + headingLevel);
+            int level = Integer.parseInt(headingLevel);
+            
+            if (level >0 && level <=9) {
+//    			log.debug("converted Heading to lower case");
+            	return "heading " + level;
+            }
+			return tocInstructionName;			            
+            
+        } catch(NumberFormatException ex){
+			log.info("Couldn't Parse " + headingLevel);
+			return tocInstructionName;			        	
+        }
+		
+	}
+	
+	public boolean isBasedOn(Style thisStyle, String baseStyleName ) {
+		
+//		if (log.isDebugEnabled()) {
+//			log.debug("Testing " + thisStyle.getName().getVal() + " against " + baseStyleName);
+//		}
+		
+		if (thisStyle.getName().getVal().equals(
+				normaliseHeadingName(baseStyleName))) {
 			return true;
 		}
 		
@@ -50,7 +104,7 @@ public class StyleBasedOnHelper {
         		log.error(thisStyle.getStyleId() + " is based on missing " + thisStyle.getBasedOn().getVal());
         		return false;
         	}
-        	return isBasedOn(baseStyle, baseStyleId);
+        	return isBasedOn(baseStyle, baseStyleName);
         }
 		
 	}
