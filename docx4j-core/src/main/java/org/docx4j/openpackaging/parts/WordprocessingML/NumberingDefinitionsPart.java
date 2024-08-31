@@ -108,15 +108,11 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 	}
 	
 	private boolean numStyleLinkIsPresent = false;
-	private StyleDefinitionsPart sdp = null;
 
-    /**
-     * @since 11.5.1
-     */
-    public void setStyleDefinitionsPart(StyleDefinitionsPart sdp) {
-		this.sdp = sdp;
+	private StyleDefinitionsPart getStyleDefinitionsPart() {
+		return ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getStyleDefinitionsPart();
 	}
-
+	
 	public void initialiseMaps()
     {
     	initialiseMaps(false);
@@ -181,7 +177,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     
     private void resolveLinkedAbstractNum() {
     	
-    	if (sdp==null) {
+    	
+    	if (getStyleDefinitionsPart()==null) {
     		log.warn("No StyleDefinitionsPart found");
     		return;
     	}
@@ -204,7 +201,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	
     	String numStyleId = abstractNum.getNumStyleLink().getVal();
     	
-    	Style s = sdp.getStyleById(numStyleId);
+    	Style s = getStyleDefinitionsPart().getStyleById(numStyleId);
     	if (s==null) {
     		log.warn("For w:numStyleLink, couldn't find style " + numStyleId);
     		return;
