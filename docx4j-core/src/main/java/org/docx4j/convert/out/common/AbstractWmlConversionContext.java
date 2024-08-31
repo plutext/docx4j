@@ -105,8 +105,12 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		if (wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false)!=null
 				&& wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart()!=null) {
 			
-			 wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().resolveLinkedAbstractNum(
-					 wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false));
+			wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().setStyleDefinitionsPart(
+					wmlPkg.getMainDocumentPart().getStyleDefinitionsPart(false));
+			
+			//wmlPkg.getMainDocumentPart().getNumberingDefinitionsPart().resolveLinkedAbstractNum();
+			// from 11.5.1, it should be sufficient to set the SDP on the NDP;
+			// initialiseMaps() should do the rest
 		}
 	}
 
