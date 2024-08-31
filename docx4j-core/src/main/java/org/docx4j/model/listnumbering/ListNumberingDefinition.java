@@ -126,11 +126,14 @@ public class ListNumberingDefinition {
 	protected static Logger log = LoggerFactory.getLogger(ListNumberingDefinition.class);
 	
     /**
+     * Set up a concrete list numbering definition, by reference to the abstract lists
+     * 
      * @param numNode
      * @param abstractListDefinitions
      */
     public ListNumberingDefinition(Numbering.Num numNode, 
-    		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
+    		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions,
+    		boolean resolveLinkedStyle)
     {
     	this.numNode = numNode;
     	
@@ -138,6 +141,7 @@ public class ListNumberingDefinition {
 //        if (log.isDebugEnabled()) {
 //	    	log.debug("Constructing model for numId=" + listNumberId);
 //	    	log.debug(XmlUtils.marshaltoString(numNode));
+////        	new Throwable().printStackTrace();
 //        }
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
@@ -175,6 +179,12 @@ public class ListNumberingDefinition {
             	 * typically by AbstractWmlConversionContext, prior to converting 
             	 * the docx to HTML or PDF.
             	 */
+            	if (resolveLinkedStyle) {
+            		log.debug("abstract list has linked style; resolving this pass"); 
+            	} else {
+            		log.debug("abstract list has linked style; resolve this later"); 
+            		return;
+            	}
             }
 
             this.levels = new HashMap<String, ListLevel>(this.abstractListDefinition.getLevelCount() );
@@ -220,7 +230,25 @@ public class ListNumberingDefinition {
 									&& startOverride.getVal() != null) {
 								
 								if (this.levels.get(overrideLevelId)==null) {
-									throw new RuntimeException(overrideLevelId + " level missing for abstractListDefinition " + abstractListDefinition.getID());
+									
+									if (abstractListDefinition.getAbstractNumNode().getNumStyleLink()!=null) {
+										log.error("numStyleLink (Numbering Style Reference) is supported; but should not now be present in this pass!");
+										/*
+										 * This element specifies an abstract numbering does not contain the actual
+										 * numbering properties for its type, but rather serves as a reference to a
+										 * numbering style stored in the document, which shall be applied when this
+										 * abstract numbering definition is referenced, and itself points at the actual
+										 * underlying abstract numbering definition to be used.
+										 * 
+										 * The numbering style that is to be applied when this abstract numbering
+										 * definition is referenced is identified by the string contained in
+										 * numStyleLink's val attribute.
+										 */
+									}
+									
+									throw new RuntimeException(overrideLevelId + " level missing for abstractListDefinition " 
+												+ XmlUtils.marshaltoString(abstractListDefinition.getAbstractNumNode() ));
+
 								}
 								this.levels.get(overrideLevelId).setStartValue(
 										startOverride.getVal().subtract(BigInteger.ONE));
@@ -451,7 +479,7 @@ public class ListNumberingDefinition {
     		if (getAbstractListDefinition()==null) {
     			log.info("[missing]");
     		} else {
-    			log.info(XmlUtils.marshaltoString(getAbstractListDefinition()));
+    			log.info(XmlUtils.marshaltoString(getAbstractListDefinition().getAbstractNumNode()));
     		}
     		log.debug("referenced from ");
     		log.debug(XmlUtils.marshaltoString(numNode));

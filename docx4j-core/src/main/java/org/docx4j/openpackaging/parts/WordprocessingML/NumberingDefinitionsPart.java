@@ -107,8 +107,30 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		return instanceListDefinitions;
 	}
 	
-    public void initialiseMaps()
+	private boolean numStyleLinkIsPresent = false;
+	private StyleDefinitionsPart sdp = null;
+
+    /**
+     * @since 11.5.1
+     */
+    public void setStyleDefinitionsPart(StyleDefinitionsPart sdp) {
+		this.sdp = sdp;
+	}
+
+	public void initialiseMaps()
     {
+    	initialiseMaps(false);
+    	if (numStyleLinkIsPresent) {
+    		resolveLinkedAbstractNum();
+        	log.info("Having encountered NumStyleLink, now performing second pass");
+    		initialiseMaps(true);
+    	}
+    }
+
+    
+	
+    public void initialiseMaps(boolean resolveNumStyleLink) {
+
     	Numbering numbering = getJaxbElement();
     	
         // count the number of different list numbering schemes
@@ -118,37 +140,46 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     		// Don't return; init empty lists.
         }
         
-        // initialize the abstract number list
-        abstractListDefinitions 
-        	= new HashMap<String, AbstractListNumberingDefinition>(numbering.getAbstractNum().size() );
-                
-        // initialize the instance number list
-        instanceListDefinitions 
-        	= new HashMap<String, ListNumberingDefinition>( numbering.getNum().size() );
-
-        // store the abstract list type definitions
-        for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() )
-        {
-            AbstractListNumberingDefinition absNumDef 
-            	= new AbstractListNumberingDefinition(abstractNumNode);
-
-            abstractListDefinitions.put(absNumDef.getID(), absNumDef);
-
-        }
-
+    	
+    	boolean needSecondPass = false;
+    	if (/* pass 1 */ !resolveNumStyleLink) {
+	        // initialize the abstract number list
+	        abstractListDefinitions 
+	        	= new HashMap<String, AbstractListNumberingDefinition>(numbering.getAbstractNum().size() );
+	                
+	        // initialize the instance number list
+	        instanceListDefinitions 
+	        	= new HashMap<String, ListNumberingDefinition>( numbering.getNum().size() );
+	
+	        // store the abstract list type definitions
+	        for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() )
+	        {
+	        	AbstractListNumberingDefinition absNumDef = new AbstractListNumberingDefinition(abstractNumNode);
+	            abstractListDefinitions.put(absNumDef.getID(), absNumDef);
+	            
+	            if (abstractNumNode.getNumStyleLink()!=null) {
+	            	// set flag
+	            	log.info("Encountered NumStyleLink, will need second pass");
+	            	needSecondPass = true;
+	            }
+	        }
+    	}
+        
         // instantiate the list number definitions
         for( Numbering.Num numNode : numbering.getNum() )
         {
             ListNumberingDefinition listDef 
-            	= new ListNumberingDefinition(numNode, abstractListDefinitions);
+            	= new ListNumberingDefinition(numNode, abstractListDefinitions, resolveNumStyleLink);
 
-            instanceListDefinitions.put(listDef.getListNumberId(), listDef);
+            instanceListDefinitions.put(listDef.getListNumberId(), listDef); // on pass 2, this overwrites the existing instance list
 //            log.debug("Added list: " + listDef.getListNumberId() );
         }
 
+    	numStyleLinkIsPresent = needSecondPass;
+        
     }
     
-    public void resolveLinkedAbstractNum(StyleDefinitionsPart sdp) {
+    private void resolveLinkedAbstractNum() {
     	
     	if (sdp==null) {
     		log.warn("No StyleDefinitionsPart found");
@@ -157,61 +188,68 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	
         for (Numbering.AbstractNum abstractNum : getJaxbElement().getAbstractNum() ) {
         	
-        	// <w:numStyleLink w:val="MyListStyle"/>
-        	if (abstractNum.getNumStyleLink()==null) continue;
-        	
-        	// there is also abstractNum.getStyleLink(), but ignore that
-        	
-        	String numStyleId = abstractNum.getNumStyleLink().getVal();
-        	
-        	Style s = sdp.getStyleById(numStyleId);
-        	if (s==null) {
-        		log.warn("For w:numStyleLink, couldn't find style " + numStyleId);
-        		continue;
-        	}
-        	if (s.getPPr()==null || s.getPPr().getNumPr()==null) {
-        		log.warn("For w:numStyleLink, style " + numStyleId + " has no w:numPr");
-        		continue;        		
-        	}
-        	
-        	NumPr styleNumPr = s.getPPr().getNumPr();
-        	
-        	// Get the concrete list this point to
-        	if (styleNumPr.getNumId()==null) {
-        		log.warn("For w:numStyleLink, style " + numStyleId + " w:numPr has no w:numId");
-        		continue;        		        		
-        	}
-        	BigInteger concreteListId = styleNumPr.getNumId().getVal();
-        	
-        	// Get the target abstract num
-        	ListNumberingDefinition lnd = getInstanceListDefinitions().get(concreteListId.toString());
-        	if (lnd==null) {
-        		log.warn("No ListNumberingDefinition entry with ID " + concreteListId.toString());
-        	}
-        	Numbering.AbstractNum linkedNum = lnd.getAbstractListDefinition().getAbstractNumNode();
-
-        	// OK, update
             AbstractListNumberingDefinition absNumDef 
             	= abstractListDefinitions.get(abstractNum.getAbstractNumId().toString());
-            
-            absNumDef.updateDefinitionFromLinkedStyle(linkedNum);
-            
-            // Also update the underlying abstract list
-            if (abstractNum.getLvl().size()>0) {
-            	log.warn("Cowardly refusing to overwrite existing List<Lvl>" );
-            } else {
-            	abstractNum.getLvl().clear();
-            	abstractNum.getLvl().addAll(linkedNum.getLvl());
-            		// This list is treated as a separate list by Word (ie its numbers are incremented
-            		// independently), and this code honours that.
-            }
-            
-            
-            log.info("Updated abstract list def " + abstractNum.getAbstractNumId().toString() + " based on w:numStyleLink " + numStyleId );
+        	
+        	resolveLinkedAbstractNum(abstractNum, absNumDef );
         }
-    	
-    	
     }
+
+    public void resolveLinkedAbstractNum(Numbering.AbstractNum abstractNum, AbstractListNumberingDefinition absNumDef ) {
+        	
+    	// <w:numStyleLink w:val="MyListStyle"/>
+    	if (abstractNum.getNumStyleLink()==null) return;
+    	
+    	// there is also abstractNum.getStyleLink(), but ignore that
+    	
+    	String numStyleId = abstractNum.getNumStyleLink().getVal();
+    	
+    	Style s = sdp.getStyleById(numStyleId);
+    	if (s==null) {
+    		log.warn("For w:numStyleLink, couldn't find style " + numStyleId);
+    		return;
+    	}
+    	if (s.getPPr()==null || s.getPPr().getNumPr()==null) {
+    		log.warn("For w:numStyleLink, style " + numStyleId + " has no w:numPr");
+    		return;        		
+    	}
+    	
+    	NumPr styleNumPr = s.getPPr().getNumPr();
+    	
+    	// Get the concrete list this point to
+    	if (styleNumPr.getNumId()==null) {
+    		log.warn("For w:numStyleLink, style " + numStyleId + " w:numPr has no w:numId");
+    		return;        		        		
+    	}
+    	BigInteger concreteListId = styleNumPr.getNumId().getVal();
+    	
+    	// Get the target abstract num
+    	ListNumberingDefinition lnd = getInstanceListDefinitions().get(concreteListId.toString());
+    	if (lnd==null) {
+    		log.warn("No ListNumberingDefinition entry with ID " + concreteListId.toString());
+    	}
+    	Numbering.AbstractNum linkedNum = lnd.getAbstractListDefinition().getAbstractNumNode();
+
+    	// OK, update
+//        AbstractListNumberingDefinition absNumDef 
+//        	= abstractListDefinitions.get(abstractNum.getAbstractNumId().toString());
+        
+        absNumDef.updateDefinitionFromLinkedStyle(linkedNum);
+        
+        // Also update the underlying abstract list
+        if (abstractNum.getLvl().size()>0) {
+        	log.warn("Cowardly refusing to overwrite existing List<Lvl>" );
+        } else {
+        	abstractNum.getLvl().clear();
+        	abstractNum.getLvl().addAll(linkedNum.getLvl());
+        		// This list is treated as a separate list by Word (ie its numbers are incremented
+        		// independently), and this code honours that.
+        }
+        
+        
+        log.info("Updated abstract list def " + abstractNum.getAbstractNumId().toString() + " based on w:numStyleLink " + numStyleId );
+    }
+    	
     
     /**
      * For the given *concrete* list numId, restart the numbering on the specified
@@ -279,7 +317,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	// Add it to the jaxb object and our hashmap
 		((Numbering)getJaxbElement()).getNum().add(newNum);
         ListNumberingDefinition listDef 
-    		= new ListNumberingDefinition(newNum, abstractListDefinitions);
+    		= new ListNumberingDefinition(newNum, abstractListDefinitions, false);
         instanceListDefinitions.put(listDef.getListNumberId(), listDef);		
     	
     	// Return the new numId
@@ -465,7 +503,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
     	this.getJaxbElement().getNum().add(num);
     	
     	// Add it to our hashmap
-        ListNumberingDefinition listDef = new ListNumberingDefinition(num, abstractListDefinitions);
+        ListNumberingDefinition listDef = new ListNumberingDefinition(num, abstractListDefinitions, false);
         instanceListDefinitions.put(listDef.getListNumberId(), listDef);
         
         // 

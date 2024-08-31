@@ -167,14 +167,15 @@ public class Emulator {
     		return null;
     	}
 
+//    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
+//        		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
+//    	numberingPart.setStyleDefinitionsPart(stylesPart);
+    	
     	Emulator em = numberingPart.getEmulator();
     	
     	// Object to hold results
     	ResultTriple triple = em.new ResultTriple();    	
-    	
-    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
-    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
-    	
+    	    	
     	PropertyResolver propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
     	    	
     	// If numId is not provided explicitly, 
