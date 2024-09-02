@@ -341,6 +341,25 @@ public class ListLevel {
     		NumberFormatDecimalZero converter = new NumberFormatDecimalZero(); 
     		return converter.format(current);
     	}
+        // These two are the same in Chinese
+        // no need to be processed separately
+    	if (numFmt.equals( NumberFormat.CHINESE_COUNTING ) ||
+                numFmt.equals( NumberFormat.CHINESE_COUNTING_THOUSAND ) ) {
+    		NumberFormatChineseLower converter = new NumberFormatChineseLower();
+    		return converter.format(current);
+    	}
+        // This one means use upper Chinese number characters
+        if (numFmt.equals( NumberFormat.CHINESE_LEGAL_SIMPLIFIED ) ) {
+            NumberFormatChineseUpper converter = new NumberFormatChineseUpper();
+            return converter.format(current);
+        }
+        // These two are the same
+        // just to adapt to documents in Chinese
+        if (numFmt.equals( NumberFormat.DECIMAL_ENCLOSED_CIRCLE ) ||
+                numFmt.equals( NumberFormat.DECIMAL_ENCLOSED_CIRCLE_CHINESE )) {
+            NumberFormatDecimalEnclosedCircle converter = new NumberFormatDecimalEnclosedCircle();
+            return converter.format(current);
+        }
     	
     	log.error("Unhandled numFmt: " + numFmt.name() );
         return this.counter.getCurrentValue().toString();
