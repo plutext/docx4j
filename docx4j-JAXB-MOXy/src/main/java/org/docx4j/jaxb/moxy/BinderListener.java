@@ -34,6 +34,22 @@ public class BinderListener implements BinderListenerInterface {
 		org.eclipse.persistence.jaxb.JAXBBinder jaxbBinder = (JAXBBinder)binder; 
 		Field f = jaxbBinder.getClass().getDeclaredField("xmlBinder"); //NoSuchFieldException
 		f.setAccessible(true);
+		
+		/* Might throw:
+			java.lang.reflect.InaccessibleObjectException: Unable to make field private org.eclipse.persistence.oxm.XMLBinder org.eclipse.persistence.jaxb.JAXBBinder.xmlBinder accessible: module org.eclipse.persistence.moxy does not "opens org.eclipse.persistence.jaxb" to module org.docx4j.JAXB_MOXy
+				at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:354)
+				at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:297)
+				at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:178)
+				at java.base/java.lang.reflect.Field.setAccessible(Field.java:172)
+				
+			See now https://github.com/eclipse-ee4j/eclipselink/issues/2283
+			"Enable setUnmarshalListener on XMLBinder"
+			
+			Workaround to avoid this error, launch your VM with:  
+			--add-opens org.eclipse.persistence.moxy/org.eclipse.persistence.jaxb=org.docx4j.JAXB_MOXy
+			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.oxm=org.docx4j.JAXB_MOXy
+			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.internal.oxm.record=org.docx4j.JAXB_MOXy			
+		 */
 		XMLBinder binderImpl = (XMLBinder)f.get(jaxbBinder);
 		
 		Field f2 = binderImpl.getClass().getDeclaredField("unmarshaller"); //NoSuchFieldException

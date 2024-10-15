@@ -21,6 +21,18 @@ public class BinderListener implements BinderListenerInterface {
 		
 		Method method = binderImpl.getClass().getDeclaredMethod("getUnmarshaller");
 		method.setAccessible(true);
+		/*
+			java.lang.reflect.InaccessibleObjectException: Unable to make private org.glassfish.jaxb.runtime.v2.runtime.unmarshaller.UnmarshallerImpl org.glassfish.jaxb.runtime.v2.runtime.BinderImpl.getUnmarshaller() accessible: module org.glassfish.jaxb.runtime does not "opens org.glassfish.jaxb.runtime.v2.runtime" to module org.docx4j.JAXB_ReferenceImpl
+				at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:354)
+				at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:297)
+				at java.base/java.lang.reflect.Method.checkCanSetAccessible(Method.java:200)
+				at java.base/java.lang.reflect.Method.setAccessible(Method.java:194)
+				
+				See https://github.com/eclipse-ee4j/jaxb-ri/issues/1822
+				"Enable setUnmarshalListener on Binder"
+				
+				Workaround to avoid this error, launch your VM with:  --add-opens org.glassfish.jaxb.runtime/org.glassfish.jaxb.runtime.v2.runtime=org.docx4j.JAXB_ReferenceImpl
+			 */
 		Unmarshaller u  = (Unmarshaller)method.invoke(binderImpl);	
 		u.setListener(listener);
 	}

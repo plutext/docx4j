@@ -40,6 +40,16 @@ public class XPathQuery {
 	 * to use TraversalUtil;
 	 * see the OpenMainDocumentAndTraverse sample.
 	 * 
+	 * With module system encapsulation, you should launch your
+	 * JVM with the following options:
+	 * 
+			--add-opens org.glassfish.jaxb.runtime/org.glassfish.jaxb.runtime.v2.runtime=org.docx4j.JAXB_ReferenceImpl
+			
+			--add-opens org.eclipse.persistence.moxy/org.eclipse.persistence.jaxb=org.docx4j.JAXB_MOXy
+			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.oxm=org.docx4j.JAXB_MOXy
+			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.internal.oxm.record=org.docx4j.JAXB_MOXy
+	 * 
+	 * See further https://openjdk.org/jeps/261#Breaking-encapsulation
 	 */
 	public static void main(String[] args) throws Exception {
 		
@@ -54,7 +64,7 @@ public class XPathQuery {
 //		if (USE_SAXON) XPathFactoryUtil.setxPathFactory(
 //		        new net.sf.saxon.xpath.XPathFactoryImpl());
 		
-		String xpath = "//w:t[contains(text(),'scaled')]";
+		String xpath = "//w:p";
 		//String xpath = "//w:r[w:t[contains(text(),'scaled')]]";
 		
 		List<Object> list = documentPart.getJAXBNodesViaXPath(xpath, false);
