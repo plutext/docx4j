@@ -37,12 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.compress.utils.Lists;
+//import org.apache.commons.compress.utils.Lists;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.docx4j.com.google.common.annotations.GwtCompatible;
 import org.docx4j.com.google.common.base.Function;
 import org.docx4j.com.google.common.base.Objects;
-import org.docx4j.com.google.common.collect.Maps.EntryTransformer;
+//import org.docx4j.com.google.common.collect.Maps.EntryTransformer;
 import org.docx4j.com.google.common.primitives.Ints;
 
 /**
