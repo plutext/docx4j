@@ -144,6 +144,7 @@ public class TocEntry {
     }
 
     public void setEntryLevel(int entryLevel) {
+    	log.debug("set entry level " + entryLevel);
         this.entryLevel = entryLevel;
     }
 

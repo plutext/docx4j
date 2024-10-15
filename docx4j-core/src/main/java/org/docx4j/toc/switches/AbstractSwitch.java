@@ -116,6 +116,7 @@ public abstract class AbstractSwitch implements SwitchInterface {
         String[] styleLevels = field.split(tSwitchSeparator);
         int level = -1;
         for(int i = 0; i < styleLevels.length; i++){
+//        	log.debug(styleLevels[i]);
             if(i + 1 < styleLevels.length){
                 try{
                     level = Integer.parseInt(styleLevels[i + 1].trim());
@@ -127,13 +128,14 @@ public abstract class AbstractSwitch implements SwitchInterface {
                 }
             } else {
                 styleLevelMap.put(styleLevels[i].trim(), 1);
+//            	log.debug("Added " + styleLevels[i] );
                 break;
             }
             if(level < 1 || level > 9){
                 level = 1;
             }
             styleLevelMap.put(styleLevels[i].trim(), level);
-        	log.debug("Added " + styleLevels[i] );
+//        	log.debug("Added " + styleLevels[i] );
             i++;
         }
 

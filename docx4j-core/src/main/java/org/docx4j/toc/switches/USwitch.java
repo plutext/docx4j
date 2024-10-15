@@ -22,12 +22,12 @@ package org.docx4j.toc.switches;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.docx4j.model.PropertyResolver;
 import org.docx4j.toc.TocEntry;
-import org.docx4j.toc.TocHelper;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.Style;
 import org.docx4j.wml.PPrBase.OutlineLvl;
+import org.docx4j.wml.Style;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This switch indicates to consider the outline level set
@@ -44,6 +44,8 @@ import org.docx4j.wml.PPrBase.OutlineLvl;
  */
 public class USwitch extends AbstractSwitch {
 
+	private static Logger log = LoggerFactory.getLogger(USwitch.class);					
+	
     public static final String ID = "\\u";
     private static final int PRIORITY = 8;
     
@@ -71,6 +73,9 @@ public class USwitch extends AbstractSwitch {
     	}
     	
     	int level = getOutlineLvl(pPr, sp, s, cutOff); 
+    	if (log.isDebugEnabled()) {
+    		log.debug("outline level " + level);
+    	}
     	
         if( level == 9){
             sp.setProceed(false);
@@ -93,6 +98,7 @@ public class USwitch extends AbstractSwitch {
     	OutlineLvl outlineLvl = null;
     	if (pPr!=null) {
     		outlineLvl = pPr.getOutlineLvl();
+//        	log.debug("outline level from ppr" );
     	}
 		
     	// If not direct, look in styles
@@ -105,6 +111,8 @@ public class USwitch extends AbstractSwitch {
     		// we have \o "1-2".  
 //			if (s.getStyleId().startsWith("Heading")) {
 		        int hLevel = sp.getStyleBasedOnHelper().getBasedOnHeading(s);
+//	        	log.debug("hlevel " +  hLevel);
+		        
 				if (hLevel>cutOff) {
 					return 9;
 				}

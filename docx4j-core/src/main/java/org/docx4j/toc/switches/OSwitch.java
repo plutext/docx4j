@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
  * with a style ID of HeadingX (e.g. 1 corresponds to Heading1). 
  * If no heading range is specified, all heading levels used in the document are listed.
  * 
- * Actually Word 2010 does this based on style's w:name (TODO confirm its that or id, not instead of id)
+ * Actually Word 2010 does this based on style's w:name 
+ * (TODO confirm its that or id, not instead of id)
  *
  */
 public class OSwitch extends AbstractSwitch {
