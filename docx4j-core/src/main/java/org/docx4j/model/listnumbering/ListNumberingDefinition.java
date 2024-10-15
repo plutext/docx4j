@@ -145,12 +145,12 @@ public class ListNumberingDefinition {
 //        }
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
-        Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
-        if (abstractNumNode == null) {
+        Numbering.Num.AbstractNumId abstractNumId = numNode.getAbstractNumId();
+        if (abstractNumId == null) {
         	log.warn("No abstractNumId on w:numId=" + listNumberId);
         } else {
-        	log.debug("concrete " + listNumberId + " points to abstract list " + abstractNumNode.getVal().toString());
-            this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
+        	log.debug("concrete " + listNumberId + " points to abstract list " + abstractNumId.getVal().toString());
+            this.abstractListDefinition = abstractListDefinitions.get(abstractNumId.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
             if (abstractListDefinition==null) {
             	log.warn("No abstractListDefinition for w:numId=" + listNumberId);  
             	return;
