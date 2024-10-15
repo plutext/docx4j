@@ -434,6 +434,7 @@ implements XPathEnabled<E> {
 							} else {
 								// continue with a new is
 								log.debug("MOXy: no, looks ok");
+								is = is2;
 							}
 						
 						}
