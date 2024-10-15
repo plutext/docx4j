@@ -29,10 +29,10 @@ public class Tree<T> {
     
     /**
      * Quick access to any node in the tree.
-     * @param name
+     * @param styleId
      * @return
      */
-    public Node<T> get(String name) {
+    public Node<T> get(String styleId) {
     	
 //    	if (log.isDebugEnabled()) {
 //    		Node<T> result = (Node<T>)nodes.get(name);
@@ -41,7 +41,7 @@ public class Tree<T> {
 //    		} 
 //    		return result;
 //    	}
-    	return (Node<T>)nodes.get(name);
+    	return (Node<T>)nodes.get(styleId);
     	
     }
  
@@ -59,7 +59,7 @@ public class Tree<T> {
      */
     public void setRootElement(Node<T> rootElement) {
         this.rootElement = rootElement;
-    	nodes.put(rootElement.name, rootElement);	        
+    	nodes.put(rootElement.styleId, rootElement);	        
     }
      
     /**
@@ -82,7 +82,7 @@ public class Tree<T> {
     	
     	StringBuffer sb = new StringBuffer();
     	for (Node<T> n : toList() ) {
-    		sb.append(n.name + "\n");	    		
+    		sb.append(n.styleId + "\n");	    		
     	}
     	
         return sb.toString();
@@ -121,5 +121,75 @@ public class Tree<T> {
 	        climb(parent, list);
     	}
         return list;
+    }
+    
+    /**
+     * Distance to root
+     * 
+     * @param node
+     * @return
+     * @since 11.5.1
+     */
+    public int getDistanceFromRoot(Node<T> node) {
+    	
+    	return climb(node).size();
+
+    }
+    
+    /**
+     * Simple metric for the distance between 2 nodes.
+     * 
+     * @param node1
+     * @param node2
+     * @return
+     * @since 11.5.1
+     */
+    public int getDistance(Node<T> node1, Node<T> node2) {
+    	
+    	/*
+    	 * Algorithm:
+    	 * - count how far down each node is
+    	 * - for deepest, climb the tree til they are same level
+    	 * - now, iteratively, climb both by 1 until they meet
+    	 */
+    	
+    	int distance =0;
+    	
+    	// count how far down each node is
+    	List<Node<T>> branch1 = climb(node1);
+    	List<Node<T>> branch2 = climb(node2);
+    	
+    	int len1 = branch1.size();
+    	int len2 = branch2.size();
+    	
+    	if (len1==len2) {
+    		// same depth
+    	} else if (len1>len2) {
+    		distance = len1-len2;
+    		for (int i=0; i<distance; i++) {
+    			branch1.remove(0); // remove the first
+    		}
+    	} else {
+    		distance = len2-len1;
+    		for (int i=0; i<distance; i++) {
+    			branch2.remove(0); // remove the first
+    		}    		
+    	}
+    	
+    	// now they are the same length
+    	if (branch1.size()!=branch2.size()) {
+    		throw new RuntimeException("branches should be the same size!");
+    	}
+    	
+    	for (int j = branch1.size(); j>0; j--) {
+    		if (branch1.get(j)==branch2.get(j)) {
+    			// converged!
+    			break;
+    		}
+    		// nope
+    		distance+=2;
+    	}
+    	
+    	return distance;
     }
 }	    

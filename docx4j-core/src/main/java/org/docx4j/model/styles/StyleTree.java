@@ -335,7 +335,7 @@ public class StyleTree {
         for (Node<AugmentedStyle> valNode : classVals) { 
         	// Avoid including root node (eg dummy character root node)
         	if (valNode.getData()!=null) {
-        		sb.append(valNode.name + " ");
+        		sb.append(valNode.styleId + " ");
         	}
         }
         return sb.toString();

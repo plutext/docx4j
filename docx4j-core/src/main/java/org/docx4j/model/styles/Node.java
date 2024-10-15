@@ -11,10 +11,7 @@ import java.util.List;
  */
 public class Node<T> {
  
-    /**
-     * Nodes have names
-     */
-    protected String name;
+    protected String styleId;
     
     protected Tree<T> tree;
 	
@@ -33,9 +30,9 @@ public class Node<T> {
      * Convenience ctor to create a Node<T> with an instance of T.
      * @param data an instance of T.
      */
-    public Node(Tree<T> tree, String name, T data) {
+    public Node(Tree<T> tree, String styleId, T data) {
         //this();
-    	this.name = name;
+    	this.styleId = styleId;
         setData(data);
         this.tree = tree;
     }
@@ -86,7 +83,7 @@ public class Node<T> {
         }
         if (!children.contains(child)) {
         	children.add(child);
-        	tree.nodes.put(child.name, child);
+        	tree.nodes.put(child.styleId, child);
         	child.setParent(this);
         }
     }
