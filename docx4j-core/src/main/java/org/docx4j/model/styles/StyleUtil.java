@@ -21,6 +21,8 @@ package org.docx4j.model.styles;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.paragraph.Indent;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.sharedtypes.STOnOff;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
@@ -1837,7 +1839,78 @@ public class StyleUtil {
 		return destination;
 	}
 
+	/**
+	 * @param source
+	 * @param destination
+	 * @param numberingDefinitionsPart
+	 * @return
+	 * @since 11.5.1
+	 */
+	public static PPr apply(PPr source, PPr destination, NumberingDefinitionsPart numberingDefinitionsPart) {
+		
+		/*
+		 * source numId might define indentation or tabs that we need
+		 * 
+		 * at concrete: 
+			  <w:num w:numId="2" w16cid:durableId="1712267544">
+			    <w:abstractNumId w:val="8"/>
+			    <w:lvlOverride w:ilvl="0">
+			      <w:lvl w:ilvl="0">
+			        <w:start w:val="1"/>
+			        <w:numFmt w:val="decimal"/>
+			        <w:pStyle w:val="Level1Heading"/>
+			        <w:lvlText w:val="%1"/>
+			        <w:lvlJc w:val="left"/>
+			        <w:pPr>
+			          <w:ind w:left="720" w:hanging="720"/>
+			        </w:pPr>
+			        
+			or abstract level:
+
+          <w:abstractNum w:abstractNumId="0" w15:restartNumberingAfterBreak="0">
+			    <w:nsid w:val="FFFFFF88"/>
+			    <w:multiLevelType w:val="singleLevel"/>
+			    <w:tmpl w:val="507AE76C"/>
+			    <w:lvl w:ilvl="0">
+			      <w:start w:val="1"/>
+			      <w:numFmt w:val="decimal"/>
+			      <w:lvlText w:val="%1."/>
+			      <w:lvlJc w:val="left"/>
+			      <w:pPr>
+			        <w:tabs>
+			          <w:tab w:val="num" w:pos="360"/>
+			        </w:tabs>
+			        <w:ind w:left="360" w:hanging="360"/>
+			      </w:pPr>
+			    </w:lvl>
+			  </w:abstractNum>
+			  
+			  Better to handle this here than to require user to have taken this into account by 
+			  pre-applying it themselves.
+			  
+        		 */
+		
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createPPr();
+			apply((PPrBase)source, (PPrBase)destination, numberingDefinitionsPart);
+			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			destination.setSectPr(apply(source.getSectPr(), destination.getSectPr()));
+		}
+		return destination;
+	}
+
 	public static void apply(PPrBase source, PPrBase destination) {
+		apply(source, destination, null);
+	}
+	
+	/**
+	 * @param source
+	 * @param destination
+	 * @param numberingDefinitionsPart
+	 * @since 11.5.1
+	 */
+	public static void apply(PPrBase source, PPrBase destination, NumberingDefinitionsPart numberingDefinitionsPart) {
 		
 	//PPrBase as a Base class isn't instantiated
 		if (!isEmpty((PPrBase)source)) {
@@ -1846,8 +1919,34 @@ public class StyleUtil {
 			destination.setKeepLines(apply(source.getKeepLines(), destination.getKeepLines()));	
 			destination.setPageBreakBefore(apply(source.getPageBreakBefore(), destination.getPageBreakBefore()));	
 			destination.setFramePr(apply(source.getFramePr(), destination.getFramePr()));	
-			destination.setWidowControl(apply(source.getWidowControl(), destination.getWidowControl()));	
+			destination.setWidowControl(apply(source.getWidowControl(), destination.getWidowControl()));
+
 			destination.setNumPr(apply(source.getNumPr(), destination.getNumPr()));	
+			
+			/* comment copied from org.docx4j.convert.out.fo.XsltFOFunctions
+
+				 Indent (setting provisional-distance-between-starts)
+				 Indent on direct pPr (trumps indent specified in
+				 direct numbering??) which trumps indent in pPr in style, 
+				 which trumps indent specified in a style's numbering.  
+				 Well, not exactly, components which aren't set in
+				 the direct formatting will be contributed by the numbering's indent settings
+				 
+				Indent indent = new Indent(pPrDirect.getInd(), triple.getIndent());
+			*/
+			
+			// Apply indent from source numPr
+			if (numberingDefinitionsPart !=null
+					&& source.getNumPr()!=null) {
+				Ind numInd = numberingDefinitionsPart.getInd(source.getNumPr());
+				if (numInd!=null) {
+					destination.setInd(apply(numInd, destination.getInd()));	
+					// TODO: make apply more sophisticated; see code in Indent.
+				}
+			}
+			// Indent in style overrides any set in numPr
+			destination.setInd(apply(source.getInd(), destination.getInd()));
+			
 			destination.setSuppressLineNumbers(apply(source.getSuppressLineNumbers(), destination.getSuppressLineNumbers()));	
 			destination.setPBdr(apply(source.getPBdr(), destination.getPBdr()));	
 			destination.setShd(apply(source.getShd(), destination.getShd()));	
@@ -1865,7 +1964,6 @@ public class StyleUtil {
 			
 			destination.setSpacing(apply(source.getSpacing(), destination.getSpacing()));	
 			
-			destination.setInd(apply(source.getInd(), destination.getInd()));
 			
 			destination.setContextualSpacing(apply(source.getContextualSpacing(), destination.getContextualSpacing()));	
 			destination.setMirrorIndents(apply(source.getMirrorIndents(), destination.getMirrorIndents()));	
@@ -2416,6 +2514,7 @@ public class StyleUtil {
 		if (!isEmpty(source)) {
 			if (destination == null)
 				destination = Context.getWmlObjectFactory().createPPrBasePStyle();
+			log.debug("Applying " + source.getVal());
 			destination.setVal(apply(source.getVal(), destination.getVal()));
 		}
 		return destination;

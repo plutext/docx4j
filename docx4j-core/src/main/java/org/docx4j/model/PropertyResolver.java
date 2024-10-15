@@ -214,6 +214,10 @@ public class PropertyResolver {
 	}
 
 
+	/**
+	 * Add the effective properties of Normal style
+	 * to resolvedStylePPrComponent.
+	 */
 	private void addNormalToResolvedStylePPrComponent() {
 		
 		Stack<PPr> pPrStack = new Stack<PPr>();
@@ -835,7 +839,7 @@ public class PropertyResolver {
                     + "\n\r to " + XmlUtils.marshaltoString(effectivePPr, true, true));
         }
 		
-		StyleUtil.apply(pPrToApply, effectivePPr);
+		StyleUtil.apply(pPrToApply, effectivePPr, this.numberingDefinitionsPart);
 		
 //		if (pPrToApply==null) {
 //			return;
