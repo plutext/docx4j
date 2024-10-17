@@ -15,8 +15,8 @@ public class ChartStylePart<E> extends JaxbXmlPart<E> {
 		init();
 	}
 
-	private ChartStylePart() throws InvalidFormatException {
-		super(new PartName(null));
+	public ChartStylePart() throws InvalidFormatException {
+		super(new PartName("/word/charts/style1.xml")); 
 		init();
 	}
 	

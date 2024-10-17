@@ -15,8 +15,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 		init();
 	}
 
-	private ChartColorStylePart() throws InvalidFormatException {
-		super(new PartName(null));
+	public ChartColorStylePart() throws InvalidFormatException {
+		super(new PartName("/word/charts/colors1.xml")); 
 		init();
 	}
 	

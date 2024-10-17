@@ -15,8 +15,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 		init();
 	}
 
-	private ChartExSpacePart() throws InvalidFormatException {
-		super(new PartName(null));
+	public ChartExSpacePart() throws InvalidFormatException {
+		super(new PartName("/word/charts/chartEx1.xml")); 
 		init();
 	}
 	
