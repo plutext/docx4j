@@ -201,7 +201,7 @@ then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
 
 Here, also do:  git push -u origin [the incremented version number]  <--------- set up to track remote branch
-(can do that in SmartGit)
+(can do that in SmartGit: Remote > Push To..)
 
 Switch branch if necessary, eg:
 

@@ -2,6 +2,34 @@ CHANGELOG
 =========
 
 
+Version 8.3.12  
+===============
+
+Release date
+------------
+
+20 October 2024
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+https://github.com/Devindan
+
+
+Changes in Version 8.3.12
+--------------------------
+
+Add chinese numbering support (include decimal enclosed circle) #591
+
+Avoid "Premature end of file" when using Binder with MOXy JAXB (and docx has no AlternateContent).
+
+Fix DrawingML chart part constructors to be consistent with other JaxbXmlPart
+
+
+
 Version 8.3.11  
 ===============
 
