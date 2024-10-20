@@ -171,10 +171,11 @@
 
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-core/1.0.10/openhtmltopdf-core-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/com/openhtmltopdf/openhtmltopdf-pdfbox/1.0.10/openhtmltopdf-pdfbox-1.0.10.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.24/pdfbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
-        <copy file="${m2Repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" todir="${release.dir}/optional/ImportXHTML"/>
+        <copy file="${m2Repository}/org/apache/pdfbox/pdfbox/2.0.30/pdfbox-2.0.30.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/org/apache/pdfbox/xmpbox/2.0.24/xmpbox-2.0.24.jar" todir="${release.dir}/optional/ImportXHTML"/>
         <copy file="${m2Repository}/de/rototor/pdfbox/graphics2d/0.32/graphics2d-0.32.jar" todir="${release.dir}/optional/ImportXHTML"/>
+
+        <copy file="${m2Repository}/org/apache/james/apache-mime4j-core/0.8.11/apache-mime4j-core-0.8.11.jar" todir="${release.dir}/optional/ImportXHTML"/>
 
 		<copy file="${importxhtml-dir}/src/samples/_resources/docx4j-ImportXHTML.properties" todir="${release.dir}/optional/ImportXHTML"/>
 

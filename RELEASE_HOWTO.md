@@ -51,7 +51,6 @@ Update CHANGELOG.md, README.md with release info.
 Update pom.xml with target version number (must NOT be -SNAPSHOT for nexus-staging-maven-plugin )
 Update <tag> in scm element.  (Can it just be deleted?)
 
-Check sub-modules are using <version>${revision}</version> (ie that the 2 Maven commits from last time have been reverted)
 
 Update build.xml so it has the same version as pom.xml (ie without  -SNAPSHOT)
 

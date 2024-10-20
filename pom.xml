@@ -283,6 +283,7 @@
 				</configuration>
 			</plugin> 
 			
+			<!-- generate a flattened version of the pom.xml that Maven installs and deploys instead of the original -->
 			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>flatten-maven-plugin</artifactId>
