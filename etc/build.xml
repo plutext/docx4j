@@ -223,6 +223,7 @@
 				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.4/org.eclipse.persistence.moxy-2.7.4.jar"/>
 				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.7.4/org.eclipse.persistence.core-2.7.4.jar"/>
 				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.7.4/org.eclipse.persistence.asm-2.7.4.jar"/>
+		        <pathelement location="${m2Repository}/javax/mail/javax.mail-api/1.6.2/javax.mail-api-1.6.2.jar"/>			
 			</path>
 		</copy>
 
