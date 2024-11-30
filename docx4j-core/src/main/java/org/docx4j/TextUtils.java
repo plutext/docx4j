@@ -28,6 +28,7 @@ import java.io.Writer;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
@@ -71,7 +72,7 @@ public class TextUtils {
 	 * @param jcSVG JAXBContext
 	 * @return
 	 */
-	public static void extractText(Object o, Writer w) throws Exception {
+	public static void extractText(Object o, Writer w) throws Docx4JException {
 
 		extractText(o, w, Context.jc);
 	}
@@ -83,16 +84,20 @@ public class TextUtils {
 	 * @param jc JAXBContext
 	 * @return
 	 */
-	public static void extractText(Object o, Writer w, JAXBContext jc) throws Exception {
+	public static void extractText(Object o, Writer w, JAXBContext jc) throws Docx4JException {
 		
 		if (o==null) {
 			throw new Docx4JException("Can't extractText from null object");
 		}
 		
-		Marshaller marshaller=jc.createMarshaller();
-		NamespacePrefixMapperUtils.setProperty(marshaller, 
-				NamespacePrefixMapperUtils.getPrefixMapper());
-		marshaller.marshal(o, new TextExtractor(w));
+		try {
+			Marshaller marshaller=jc.createMarshaller();
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());
+			marshaller.marshal(o, new TextExtractor(w));
+		} catch (JAXBException e) {
+			throw new Docx4JException("JAXB error marshalling to extractText", e);
+		}
 		
 	}
 
@@ -109,14 +114,18 @@ public class TextUtils {
 	 * @throws Exception
 	 */
 	public static void extractText(Object o, Writer w, JAXBContext jc,
-			String uri, String local, Class declaredType) throws Exception {
+			String uri, String local, Class declaredType) throws Docx4JException {
 		
-		Marshaller marshaller=jc.createMarshaller();
-		NamespacePrefixMapperUtils.setProperty(marshaller, 
-				NamespacePrefixMapperUtils.getPrefixMapper());
-		marshaller.marshal(
-				new JAXBElement(new QName(uri,local), declaredType, o ), 
-				new TextExtractor(w));		
+		try {
+			Marshaller marshaller=jc.createMarshaller();
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());
+			marshaller.marshal(
+					new JAXBElement(new QName(uri,local), declaredType, o ), 
+					new TextExtractor(w));
+		} catch (JAXBException e) {
+			throw new Docx4JException("JAXB error marshalling to extractText", e);
+		}		
 	}
 	
 	
@@ -147,7 +156,10 @@ public class TextUtils {
 		  }  
 		    
 		} // end TextExtractor	
-	
+
+/* sample code:
+ * 	
+
 	public static void main(String[] args) throws Exception {
 
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
@@ -165,8 +177,8 @@ public class TextUtils {
 		//out.flush();
 		out.close();
 		
-
 	}
+*/	
 	
 }
 
