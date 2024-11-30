@@ -138,7 +138,7 @@ public class TrueTypeFontPart extends AbstractFontPart {
 	        	boolean simulateStyle = false;
 	        	boolean embedAsType1 = false;
 	        	
-	        	FontUris fontUris = new FontUris(new URI("file:" + path), null);
+	        	FontUris fontUris = new FontUris(getF().toURI(), null);
 	        	
 	            customFont = FontLoader.loadFont(fontUris, 
 	            		subFontName, embedded, EmbeddingMode.AUTO, EncodingMode.AUTO, 
@@ -158,21 +158,14 @@ public class TrueTypeFontPart extends AbstractFontPart {
 	        }
 		}
 
-		// Get this font as a PhysicalFont object; do NOT add it to physical fonts (since those are available to all documents)  
-        try {
-					List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, new URI("file:" + path));
-					return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
-
+		// Get this font as a PhysicalFont object; do NOT add it to physical fonts
+		// (since those are available to all documents)
+		List<PhysicalFont> fonts = PhysicalFonts.getPhysicalFont(fontNameAsInTablePart, getF().toURI());
+		return (fonts == null || fonts.isEmpty()) ? null : fonts.iterator().next();
 
 			// This needs to be done before populateFontMappings, 
 			// otherwise this font will be ignored, and references
 			// to it mapped to some substitute font!
-			
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
 		
 	}
 	
