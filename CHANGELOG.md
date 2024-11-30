@@ -2,6 +2,45 @@ CHANGELOG
 =========
 
 
+Version 8.3.13   (recommended update on account of sdtfl) 
+===============
+
+Release date
+------------
+
+30 Nov 2024
+
+
+Contributors to this release
+----------------------------
+
+arunvc (#596 - handle whitespace in font name)
+
+balajiasokkumar  (#601 - w16sdtfl)
+
+Jason Harrop
+
+
+Changes in Version 8.3.13
+--------------------------
+
+Add xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock".  w16sdtfl has started to show up in Word releases, despite not yet being specified in [MS-DOCX].  Word writes the w16sdtfl namespace prefix to @mc:Ignorable in the MDP, so Word requires the namespace to also be declared.
+
+Numbering - fix NumStyleLink handling
+Take NDP into account in applying indent
+
+Avoid "Premature end of file" when using Binder with MOXy JAXB (and docx has no AlternateContent).
+
+Bump commons-compress from 1.26.1 to 1.27.1
+
+new interface PackageTransformer
+
+Fix Chart*Parts constructor to be consistent with other Parts
+
+export-fo: bump from 2.9 to 2.10
+
+
+
 Version 8.3.12  
 ===============
 
