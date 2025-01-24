@@ -410,19 +410,40 @@ public final class NumberingDefinitionsPart extends JaxbXmlPartXPathAware<Number
 		// use any w:ind in it (or TODO styles it is based on)
 		if (lvl.getPStyle()!=null) {
 			
-			// Get the style
-//			StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).
-//				getMainDocumentPart().getStyleDefinitionsPart();
-			PropertyResolver propertyResolver 
-				= ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(); 
-			
 			log.debug("override level has linked style: " + lvl.getPStyle().getVal() );
-			
-			org.docx4j.wml.Style style = propertyResolver.getStyle( lvl.getPStyle().getVal() );
+
+			// Get the style
+			org.docx4j.wml.Style style = null;
+			PropertyResolver propertyResolver 
+				= ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(false); 
+				/* avoids invoking it during init:
+					at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getPropertyResolver(MainDocumentPart.java:163)
+					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getIndFromLvl(NumberingDefinitionsPart.java:417)
+					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getInd(NumberingDefinitionsPart.java:401)
+					at org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart.getInd(NumberingDefinitionsPart.java:365)
+					at org.docx4j.model.styles.StyleUtil.apply(StyleUtil.java:1941)
+					at org.docx4j.model.styles.StyleUtil.apply(StyleUtil.java:1896)
+					at org.docx4j.model.PropertyResolver.applyPPr(PropertyResolver.java:842)
+					at org.docx4j.model.PropertyResolver.addNormalToResolvedStylePPrComponent(PropertyResolver.java:234)
+					at org.docx4j.model.PropertyResolver.init(PropertyResolver.java:212)
+					at org.docx4j.model.PropertyResolver.<init>(PropertyResolver.java:145)
+					at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getPropertyResolver(MainDocumentPart.java:163)
+				*/			
+			if (propertyResolver==null) {
+				// less efficient
+				StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getStyleDefinitionsPart();
+				style = stylesPart.getStyleById(lvl.getPStyle().getVal());
+				
+			} else {
+				// use propertyResolver
+				style = propertyResolver.getStyle( lvl.getPStyle().getVal() );
+			}
 			
 			if (style==null) {
-				log.error("Couldn't find style " + lvl.getPStyle().getVal());
+				log.warn("Couldn't find style " + lvl.getPStyle().getVal());
 				return null;
+			} else {
+				log.debug(".. found it");
 			}
 			
 			// If the style has a w:ind, return it.
