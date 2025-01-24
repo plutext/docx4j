@@ -46,13 +46,13 @@ You should use one and only one of docx4j-JAXB-*
 docx4j for Java 11
 ------------------
 
-See https://github.com/plutext/docx4j/tree/VERSION_11_5_1
+See https://github.com/plutext/docx4j/tree/VERSION_11_5_2
 
 This uses jakarta.xml.bind (as opposed to legacy javax.xml.bind)
 
 Being a JPMS modularised release, the jars contain module-info.class entries.
 
-11.5.1 is compiled with Java 17, targeting Java 11. If you are not using Java 11 or later, you should stick with docx4j 8.3.x.
+11.5.2 is compiled with Java 17, targeting Java 11. If you are not using Java 11 or later, you should stick with docx4j 8.3.x.
 
 To use docx4j v11, add the dep corresponding to the JAXB implementation you wish to use
 

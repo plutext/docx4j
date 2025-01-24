@@ -2,6 +2,28 @@ CHANGELOG
 =========
 
 
+Version 8.3.14   (fixes regression in 8.3.13) 
+===============
+
+Release date
+------------
+
+24 January 2025
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.3.14
+--------------------------
+
+Fixes a StackOverflow error caused by PropertyResolver constructor indirectly calling itself, triggered by documents in which the Normal style's hierarchy includes numbering.
+
+
+
 Version 8.3.13   (recommended update on account of sdtfl) 
 ===============
 
