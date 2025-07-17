@@ -159,7 +159,13 @@ or to manually close then release :-)
 
 If the remote operation is skipped, it might be because your last module had skip in it? (eg docx4j-ImportXHTML)
 
+-----
 
+July 2025, 11.5.4, we're using Central Publisher Portal:  https://ossrh-staging-api.central.sonatype.com
+
+because as of June 30, 2025 OSSRH has reached end of life and has been shut down.
+
+-----
 
 This new release process does not add a tag; easiest to do that in SmartGit: Branch > Add Tag...
 

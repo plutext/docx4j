@@ -8,7 +8,7 @@ Version 11.5.4 (minor release)
 Release date
 ------------
 
-14 July 2025
+17 July 2025
 
 
 Contributors to this release
