@@ -25,6 +25,7 @@ import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
@@ -244,6 +245,22 @@ public class ListsToContentControls {
 					closeAllLists();
 					resultElts.add(unwrapped);
 					continue;
+				}
+				
+				// Is it a heading?  If so, don't treat as a list item
+				if (paragraph.getPPr()!=null
+						&& paragraph.getPPr().getPStyle()!=null) {
+					
+					Style s = propertyResolver.getStyle( paragraph.getPPr().getPStyle().getVal() );
+					
+					if (s.getName()!=null 
+							&& s.getName().getVal().startsWith("heading ")  // the style name is always in English
+							) {
+						
+						closeAllLists();
+						resultElts.add(unwrapped);
+						continue;						
+					}					
 				}
 				
 				/* It is numbered.
