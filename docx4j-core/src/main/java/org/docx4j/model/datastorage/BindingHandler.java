@@ -358,9 +358,6 @@ public class BindingHandler {
 		}
 		
 		/**
-		 * Used by OpenDoPE handler, but not directly by bind.xslt anymore.
-		 * Not multiLine aware.
-		 * 
 		 * @param customXmlDataStorageParts
 		 * @param storeItemId
 		 * @param xpath
@@ -370,6 +367,8 @@ public class BindingHandler {
 		public static String xpathGetString(
 				WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings) {
+			
+			// Not multiLine aware.
 			
 			log.debug(xpath + " with " + prefixMappings);
 			

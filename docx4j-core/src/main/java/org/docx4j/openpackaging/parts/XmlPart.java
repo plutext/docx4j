@@ -29,8 +29,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.docx4j.org.apache.xpath.CachedXPathAPI;
+import org.docx4j.org.apache.xpath.objects.XBoolean;
 import org.docx4j.org.apache.xpath.objects.XObject;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
@@ -154,6 +156,33 @@ public abstract class XmlPart extends Part {
 	private CachedXPathAPI cachedXPathAPI = null;
 	private String cachedPrefixMappings = null;
 	
+	private void setupCache(String prefixMappings) {
+		
+		if (cachedXPathAPI==null) {
+			cachedXPathAPI = new CachedXPathAPI();
+
+			// Ignored by CachedXPathAPI in Xalan 2.7.2! 
+			//cachedXPathAPI.getXPathContext().setNamespaceContext(
+			//		getNamespaceContext());
+		}
+		
+		// Init namespace prefix mappings
+		if (cachedPrefixMappings == null
+				&& prefixMappings!=null ) {
+			cachedPrefixMappings = prefixMappings;
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+						
+		}
+		
+		// Register any new prefixes; simple-minded
+		if (prefixMappings!=null 
+				&& !prefixMappings.equals(cachedPrefixMappings)) {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			
+		}
+		
+	}
+	
 	/**
 	 * (Unless you are using Saxon as your XPath implementation (XPathFactoryUtil.setxPathFactory))
 	 * this uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
@@ -181,28 +210,7 @@ public abstract class XmlPart extends Part {
 		
 		// eg org.apache.xpath.jaxp.XPathImpl
 		
-		if (cachedXPathAPI==null) {
-			cachedXPathAPI = new CachedXPathAPI();
-
-			// Ignored by CachedXPathAPI in Xalan 2.7.2! 
-			//cachedXPathAPI.getXPathContext().setNamespaceContext(
-			//		getNamespaceContext());
-		}
-		
-		// Init namespace prefix mappings
-		if (cachedPrefixMappings == null
-				&& prefixMappings!=null ) {
-			cachedPrefixMappings = prefixMappings;
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-						
-		}
-		
-		// Register any new prefixes; simple-minded
-		if (prefixMappings!=null 
-				&& !prefixMappings.equals(cachedPrefixMappings)) {
-			getNamespaceContext().registerPrefixMappings(prefixMappings);
-			
-		}
+		setupCache(prefixMappings);
 				
 		try {
 			
@@ -210,13 +218,9 @@ public abstract class XmlPart extends Part {
 
 			if (Docx4jProperties.getProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", true) ) {
 				
-				/* Note: we also execute booleans here!
-				 * 
-				 * For example, from org.opendope.conditions.Xpathref.evaluate(Xpathref.java:87)
-				 *
-				 * Quick n dirty heuristic to avoid falling through to the catch block
-				 * in a couple of common cases.  
-				 */
+				if (log.isDebugEnabled()) {
+					log.debug("may use cachedXPathGetString.heuristic for: " + xpath);
+				}
 				
 				String trimmedXPath = xpath.trim();
 	 
@@ -350,6 +354,9 @@ public abstract class XmlPart extends Part {
 										
 					log.debug("Fallback handling XPath of form: " + xpath + " in case of " + e.getMessage() );
 					if (xo.bool(cachedXPathAPI.getXPathContext())) {
+						// Note: XObject.bool() always returns false, which would be a worry,
+						// but this uses subclass org.docx4j.org.apache.xpath.objects.XBoolean
+						// (found in our xalan-interpretive jar) 
 						return "true";
 					} else {
 						return "false";					
@@ -385,6 +392,90 @@ public abstract class XmlPart extends Part {
 			throw new Docx4JException("Exception executing " + xpath, e);
 		}
 	}	
+	
+	/**
+	 * For OpenDope Conditions, use XPath's conversion rules for boolean rather than Java's, since
+	 * XPath's define useful behaviour for node-set and number.  Note that this changes behaviour 
+	 * for string, since XPath only returns false if the string is zero length.
+	 *   
+	 * Whether this is used is controlled by property org.opendope.conditions.Xpathref.XPathBoolean
+	 * which defaults to false (to preserve existing behaviour).
+	 * 
+	 * (Unless you are using Saxon as your XPath implementation (XPathFactoryUtil.setxPathFactory))
+	 * this uses org.apache.xpath.CachedXPathAPI for better performance, since Apache's old XPathAPI class, 
+	 * have the drawback of instantiating a new XPathContext 
+	 * (and thus building a new DTMManager, and new DTMs) each time it was called. 
+	 * XPathAPIObject instead retains its context as long as the object persists, 
+	 * reusing the DTMs. 
+	 * 
+	 * If you are using Saxon, then the cache won't be used.
+	 * 
+	 * @see discardCacheXPathObject
+
+	 * @param xpath
+	 * @param prefixMappings
+	 * @return
+	 * @throws Docx4JException
+	 * @since 11.5.5
+	 */
+	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException {
+
+		String booleanXPath = "boolean(" + xpath.trim() + ")";		
+			// always force XPath boolean handling;
+			// if we only did it in cases which don't start with boolean|not,
+			// how would we catch, for example: boolean(//foo) + string(//fileNumber[1])		
+		
+		if (true || xPath.getClass().getName().equals("net.sf.saxon.xpath.XPathEvaluator")) {
+			return xpathGetAsBoolean( booleanXPath, prefixMappings);
+		}
+		
+		// eg org.apache.xpath.jaxp.XPathImpl		
+		setupCache(prefixMappings);
+
+		XObject xo;
+		try {
+			xo = cachedXPathAPI.eval(doc, booleanXPath, getNamespaceContext());
+		} catch (TransformerException e) {
+			log.error(System.getProperty("java.vendor"));
+			log.error(System.getProperty("java.version"));
+			log.error(Locale.getDefault().toString());				
+			throw new Docx4JException("Exception executing " + xpath, e);
+		}
+		
+		if (xo instanceof XBoolean) {
+			return ((XBoolean)xo).bool();
+		} else {
+			throw new Docx4JException("XPath " + booleanXPath + " evaluated to " + xo.getClass().getName() + ", not boolean.");
+		}
+		
+	}	
+	
+	/**
+	 * @param xpathB
+	 * @param prefixMappings
+	 * @return
+	 * @throws Docx4JException
+	 * @since 11.5.5
+	 */
+	public boolean xpathGetAsBoolean(String xpathB, String prefixMappings)  throws Docx4JException {
+		
+		Object result;
+		synchronized(xPath) {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			try {
+				result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
+			} catch (XPathExpressionException e) {
+				throw new Docx4JException("Exception executing " + xpathB, e);
+			}
+		}
+		if (result instanceof XBoolean) {
+			return ((XBoolean)result).bool();
+		} else if (result instanceof Boolean /* as expected */) {
+			return ((Boolean)result).booleanValue();
+		} else {
+			throw new Docx4JException("XPath " + xpathB + " evaluated to " + result.getClass().getName() + ", not boolean.");
+		}
+	}
 	
 	public void discardCacheXPathObject() {
 		

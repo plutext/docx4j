@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import junit.framework.Assert;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -25,7 +26,10 @@ public class CachedXPathTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
-		String xml = "<Template><fileNumber>xxxx</fileNumber><Sender class='1'><id>3</id></Sender><Receiver/></Template>";
+		// Should work for true|false
+		Docx4jProperties.setProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", true);
+		
+		String xml = "<Template><fileNumber>xxxx</fileNumber><Sender class='1'><id>3</id><val>some</val></Sender><Receiver/></Template>";
 		
 		CustomXmlDataStorage dataStorage = new CustomXmlDataStorageImpl();
 		dataStorage.setDocument(
@@ -35,7 +39,7 @@ public class CachedXPathTest {
 		xmlPart.setData(dataStorage);
 		
 	}
-	
+
 
 	@Test
 	public void simpleNumber() throws Exception {
@@ -216,6 +220,54 @@ public class CachedXPathTest {
 				
 		String result = xmlPart.cachedXPathGetString("/ns0:case/ns0:fileNumber", null);
 	}
+
+	@Test
+	public void heuristicStartsWithBoolean() throws Exception {
+
+		String result = xmlPart.cachedXPathGetString("boolean(//val)", null);
+		System.out.println(result);
+		Assert.assertEquals("true", result);		
+		
+	}
+
+	@Test
+	public void heuristicStartsWithNot() throws Exception {
+
+		String result = xmlPart.cachedXPathGetString("not(//foo)", null);
+		Assert.assertEquals("true", result);
+		
+	}
+
+	@Test
+	public void heuristicStartsWithCount() throws Exception {
+
+		String result = xmlPart.cachedXPathGetString("count(//Sender)", null);
+		Assert.assertEquals("1", result);
+		
+	}
+
+	@Test
+	public void heuristicContainsEquals() throws Exception {
+
+		String result = xmlPart.cachedXPathGetString("//Sender[@class='1']/id", null);
+		System.out.println(result);
+		Assert.assertEquals("3", result);
+		
+	}
+	
+	@Test
+	public void heuristicFalseStartsWithBoolean() throws Exception {
+
+		boolean val = Docx4jProperties.getProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", true);
+		Docx4jProperties.setProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", false);
+
+		String result = xmlPart.cachedXPathGetString("boolean(//val)", null);  // non-empty node set returns true
+		System.out.println(result);
+		Assert.assertEquals("true", result);		
+		
+		Docx4jProperties.setProperty("docx4j.openpackaging.parts.XmlPart.cachedXPathGetString.heuristic", val);
+	}
+
 	
 	public static Document loadXMLFromString(String xml) throws Exception
 	{

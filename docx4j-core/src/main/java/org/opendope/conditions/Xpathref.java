@@ -14,8 +14,11 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.BindingHandler;
+import org.docx4j.model.datastorage.InputIntegrityException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -88,15 +91,89 @@ public class Xpathref implements Evaluable {
 			log.debug("Evaluating " + xpath.getDataBinding().getXpath());
 		}
 		
-		String val = BindingHandler.xpathGetString(pkg,
-				customXmlDataStorageParts, xpath.getDataBinding()
-						.getStoreItemID(), xpath.getDataBinding()
-						.getXpath(), xpath.getDataBinding()
-						.getPrefixMappings());
-
-		return Boolean.parseBoolean(val);		
+		if (Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", false) ) {
 		
+			// Use XPath conversion rules for boolean.
+			// Notably:-
+			//   string: false only for empty string.  ie the string "false" would return true!
+			//   node-set: true if non-empty
+			//   number: true if greater than zero
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Using XPath conversion rules for boolean.");
+			}
+			
+			return xpathEval(pkg,
+					customXmlDataStorageParts, xpath.getDataBinding()
+							.getStoreItemID(), xpath.getDataBinding()
+							.getXpath(), xpath.getDataBinding()
+							.getPrefixMappings());
+
+		} else {
+			
+			// Default behaviour, uses Boolean.parseBoolean
+			if (log.isDebugEnabled()) {
+				log.debug("Using Java to convert strings to boolean.");
+			}
+			
+			String val = BindingHandler.xpathGetString(pkg,
+					customXmlDataStorageParts, xpath.getDataBinding()
+							.getStoreItemID(), xpath.getDataBinding()
+							.getXpath(), xpath.getDataBinding()
+							.getPrefixMappings());
+
+			return Boolean.parseBoolean(val);							
+		}
     }
+	
+	/**
+	 * @param customXmlDataStorageParts
+	 * @param storeItemId
+	 * @param xpath
+	 * @param prefixMappings a string such as "xmlns:ns0='http://schemas.medchart'"
+	 * @return
+	 * @since 11.5.5
+	 */
+	public static boolean xpathEval(
+			WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings) {
+		
+		log.debug(xpath + " with " + prefixMappings + " prefixMappings");
+		
+		if (xpath.contains("preceding-sibling")) {
+			xpath = xpath.replace("][1]", "]"); // replace segment eg phase[1][1] to match map				
+		}
+		
+		try {
+			
+			if (storeItemId.toUpperCase().equals(BindingHandler.CORE_PROPERTIES_STOREITEMID)  ) {
+				
+				return Boolean.parseBoolean(
+						pkg.getDocPropsCorePart().xpathGetString(xpath, prefixMappings));
+				
+			} else if (storeItemId.toUpperCase().equals(BindingHandler.EXTENDED_PROPERTIES_STOREITEMID) ) {
+				
+				return Boolean.parseBoolean(
+						pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings));
+			} 
+			
+			CustomXmlPart part  = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+				// Also handles cover page properties (since we've allocated it a store item id)
+				// Note that Word does not create that part until the user provides one or more prop values
+			
+			if (part==null) {
+				throw new InputIntegrityException("Couldn't locate part by storeItemId " + storeItemId);
+			}
+			
+			return part.cachedXPathGetBoolean(xpath, prefixMappings);  
+
+		} catch (Docx4JException e) {
+			log.error(e.getMessage(), e);
+			throw new InputIntegrityException(e.getMessage());
+		}
+	}
+
+	
     
 	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
 			Map<String, Condition> conditionsMap,

@@ -50,6 +50,16 @@ public interface CustomXmlPart {
 	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException;
 	
 	/**
+	 * @since 11.5.5
+	 */	
+	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException;
+
+	/**
+	 * @since 11.5.5
+	 */
+	public boolean xpathGetAsBoolean(String xpathB, String prefixMappings)  throws Docx4JException;
+	
+	/**
 	 * Use this to null out the org.apache.xpath.CachedXPathAPI object, which you should do
 	 * if you've changed your source document, or want to reclaim memory.
 	 * @since 3.3.1

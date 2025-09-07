@@ -71,6 +71,9 @@ public interface CustomXmlDataStorage {
 	 */
 	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException;
 	
+	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException;
+	public boolean xpathGetAsBoolean(String xpathB, String prefixMappings)  throws Docx4JException;
+	
 	/**
 	 * Use this to null out the org.apache.xpath.CachedXPathAPI object, which you should do
 	 * if you've changed your source document, or want to reclaim memory.

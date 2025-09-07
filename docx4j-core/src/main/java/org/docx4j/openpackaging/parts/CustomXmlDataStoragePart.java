@@ -169,6 +169,24 @@ public final class CustomXmlDataStoragePart extends Part implements CustomXmlPar
 	public String cachedXPathGetString(String xpath, String prefixMappings) throws Docx4JException {
 		return getData().cachedXPathGetString(xpath, prefixMappings);		
 	}
+
+	/**
+	 * @since 11.5.5
+	 */
+	@Override
+	public boolean xpathGetAsBoolean(String xpath, String prefixMappings)
+			throws Docx4JException {
+		return getData().xpathGetAsBoolean(xpath, prefixMappings);
+	}
+	
+	/**
+	 * @since 11.5.5
+	 */
+	@Override
+	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException {
+		return getData().cachedXPathGetBoolean(xpath, prefixMappings);		
+	}
+	
 	
 	@Override
 	public void discardCacheXPathObject() {

@@ -8,6 +8,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
@@ -18,6 +19,7 @@ import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.org.apache.xpath.objects.XBoolean;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.utils.XPathFactoryUtil;
 import org.w3c.dom.Document;
@@ -127,6 +129,42 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 		return xpathGetString( xpath,  prefixMappings);
 		
 	}
+	
+	/**
+	 * @since 11.5.5
+	 */
+	public boolean xpathGetAsBoolean(String xpathB, String prefixMappings)  throws Docx4JException {
+		
+		Object result;
+		synchronized(xPath) {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			try {
+				result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
+			} catch (XPathExpressionException e) {
+				throw new Docx4JException("Exception executing " + xpathB, e);
+			}
+		}
+		if (result instanceof XBoolean) {
+			return ((XBoolean)result).bool();
+		} else {
+			throw new Docx4JException("XPath " + xpathB + " evaluated to " + result.getClass().getName() + ", not boolean.");
+		}
+	}
+	
+	/* cachedXPath falls through to xpathGetAsBoolean (ie no caching is done in this class)
+	 * (non-Javadoc)
+	 * @see org.docx4j.openpackaging.parts.CustomXmlPart#cachedXPathGetBoolean(java.lang.String, java.lang.String)
+	 * @since 11.5.5
+	 */
+	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException {
+
+		if (log.isDebugEnabled()) {
+			log.debug("cachedXPath not implemented for " + this.getClass().getName() + " ; falling back to xpathGetString");
+		}
+		return xpathGetAsBoolean( xpath,  prefixMappings);
+		
+	}
+	
 	
 	public void discardCacheXPathObject() {}	
 	
