@@ -259,7 +259,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.14.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+			<version>3.18.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
 		</dependency>
 
 		<!--  3.4.0: used for zip/unzip -->		 
