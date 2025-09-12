@@ -14,10 +14,31 @@ package org.docx4j.model.fields.merge;
  */
 public class DataFieldName {
 	
-	String name;
+	private String name;
+
+	private String nameCaseSensitive;
 	
+	/**
+	 * Returns the data field name in caps (which is what a Word mail merge expects)
+	 * @since 11.5.5
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Returns the data field name as provided in the constructor (ie case sensitive);
+	 * useful outside of mail merge applications.
+	 * @since 11.5.5
+	 */
+	public String getNameAsProvided() {
+		return nameCaseSensitive;
+	}
+	
+
 	public DataFieldName(String name) {
 		
+		this.nameCaseSensitive = name;
 		this.name = name.toUpperCase();
 	}
 	
