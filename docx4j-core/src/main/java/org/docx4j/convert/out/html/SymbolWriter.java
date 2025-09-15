@@ -25,6 +25,8 @@ import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
+import org.docx4j.convert.out.common.writer.SymbolMapper;
+import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.wml.R;
 import org.slf4j.Logger;
@@ -55,9 +57,6 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	}
 
 	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
-
-	private final static int UNICODE_PRIV_USE_START = 0xF000;
-	private final static int UNICODE_PRIV_USE_END = 0xFFFF;
 	
 	private final static boolean USE_UNICODE_SYMBOL_REPLACEMENTS = true; //TODO: make this configurable
 	
@@ -69,7 +68,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		R.Sym modelData = (R.Sym)unmarshalledNode;
 		String value =  modelData.getChar(); 
 	
-		byte[] valBytes = hexStringToByteArray(value);
+		byte[] valBytes = SymbolUtils.hexStringToByteArray(value);
 		assert(valBytes.length <= 2); //this is a short according to the ECMA spec
 		
 		String fontName = modelData.getFont();
@@ -79,8 +78,8 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		
 		// Pre-process according to ECMA-376 2.3.3.29
 		// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
-		if (valBytes.length==2 && UNICODE_PRIV_USE_START <= short2Int(valBytes)
-				&& UNICODE_PRIV_USE_END >= short2Int(valBytes) ) {
+		if (valBytes.length==2 && SymbolUtils.UNICODE_PRIV_USE_START <= SymbolUtils.short2Int(valBytes)
+				&& SymbolUtils.UNICODE_PRIV_USE_END >= SymbolUtils.short2Int(valBytes) ) {
 			
 			valBytes[0] = (byte)(valBytes[0] - 0xF0);
 			int nonZeroIdx = -1; 
@@ -94,7 +93,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 					
 				if (USE_UNICODE_SYMBOL_REPLACEMENTS) {
 						//check if we have a suitable unicode replacement character for the symbol
-					valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)short2Int(valBytes));
+					valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)SymbolUtils.short2Int(valBytes));
 					
 					if (valStr!=null) {
 						haveUnicodeReplacement = true;
@@ -108,7 +107,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 			}
 			
 		} else {
-			int codePoint = short2Int(valBytes);
+			int codePoint = SymbolUtils.short2Int(valBytes);
 			valStr = Character.toString( codePoint );
 		}
 		
@@ -150,27 +149,5 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	    
 	    return docfrag;
 	}
-	
-	protected static int short2Int(byte[] val) {
-		
-		assert(val.length<=2);
-		
-		if (val.length==1) {
-			return (val[0] & 0xFF);
-		} else {
-			return (((val[0] & 0xFF) << 8) | ((val[1] & 0xFF) << 0));
-		}
-	}
-	
-	protected byte[] hexStringToByteArray(String s) {
-		// From http://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
-	    int len = s.length();
-	    byte[] data = new byte[len / 2];
-	    for (int i = 0; i < len; i += 2) {
-	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-	                             + Character.digit(s.charAt(i+1), 16));
-	    }
-	    return data;
-	}
-  
+	  
 }

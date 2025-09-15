@@ -1,4 +1,4 @@
-package org.docx4j.convert.out.html;
+package org.docx4j.convert.out.common.writer;
 
 import java.util.HashMap;
 import java.util.Map;
