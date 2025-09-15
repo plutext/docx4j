@@ -2,6 +2,8 @@ package org.docx4j.fonts;
 
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.writer.SymbolMapper;
+import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.Property;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -24,6 +26,7 @@ import org.w3c.dom.Element;
 //import com.vdurmont.emoji.EmojiManager;
 
 import java.awt.font.NumericShaper;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -292,6 +295,29 @@ public class RunFontSelector {
     		
     	} 
     }
+
+    public void symbolSetAttribute(Element el) {
+    	
+    	// could a document fragment contain just a #text node?
+    	
+		if (outputType== RunFontActionType.DISCOVERY) {
+			return;
+		} else if (outputType==RunFontActionType.XHTML) {
+    		if (spacePreserve) {
+    	    	/*
+    	    	 * 	Convert @xml:space='preserve' to style="white-space:pre-wrap;"
+    				which is good for FF3, and WebKit; not honoured by IE7 though. 
+    	    	 */
+    			el.setAttribute("style", Property.composeCss(CSS_NAME, SymbolUtils.HTML_FONT_FAMILY) + "white-space:pre-wrap;");
+    			
+    		} else {
+    			el.setAttribute("style", Property.composeCss(CSS_NAME, SymbolUtils.HTML_FONT_FAMILY) );
+    		}
+    	} else if (outputType==RunFontActionType.XSL_FO) {
+    			el.setAttribute("font-family", "TODO" );
+    				// whichever is available of Noto Sans Symbols 2; Segoe UI Symbol etc
+    	} 
+    }
     
     private boolean spacePreserve;
     
@@ -403,7 +429,57 @@ public class RunFontSelector {
 		if (rFonts==null) // compare empty, which RunFontSelectorChinese2Test is sensitive to; with empty on a quick skim it looks like unicodeRangeToFont is used. 
 		{
 			return nullRPr(document, text);
-		}		
+		}	
+		
+		// @since 11.5.5
+		if (rFonts.getHAnsi()!=null) {  
+			String actualFontName = rFonts.getHAnsi();
+			if (actualFontName.equals("Symbol") || actualFontName.equals("Webdings") || actualFontName.equals("Wingdings") || actualFontName.equals("Wingdings 2") || actualFontName.equals("Wingdings 3") ) {
+    			Element	span = createElement(document);
+    			if (span!=null) {
+    				// It will be null in MainDocumentPart$FontAndStyleFinder case
+	    			document.appendChild(span); 
+	    			this.symbolSetAttribute(span); 
+	    			
+	    			StringBuffer sb = new StringBuffer();
+	    			
+	    			text.codePoints().forEach(cp -> 
+		    			{
+		    				String valStr = null;	    				
+		    				// Word usually does weird stuff for cases where you'd expect a ch in the range 127 to 159.
+		    				// So test for this!
+		    				if (cp>255) {
+		    					
+//								String codePointString = new String(Character.toChars(cp));
+//								byte[] valBytes = codePointString.getBytes(StandardCharsets.UTF_8);
+								
+								// what to do?  try anyway...
+		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
+								
+		    				} /* usual case */ else {
+		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
+		    				}
+							if (valStr==null) {
+								sb.append("?"); // TODO
+								log.warn(actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) + " has no replacement.");
+								
+							} else {
+								sb.append(valStr);  						
+							}
+		    			}
+	    			);
+	    			
+	    			span.setTextContent(sb.toString());  
+    			}
+    			if (outputType== RunFontActionType.DISCOVERY) {
+    				// TODO?
+    				// vis.fontAction(fontName);
+    			}
+    			
+    			return result(document);
+				
+			}
+		}
     	
 		if (pPr!=null && pPr.getBidi()!=null && pPr.getBidi().isVal() ) {
 			text = this.arabicNumbering(text, rPr.getRtl(), rPr.getCs(), themeFontLang);
@@ -1159,6 +1235,9 @@ public class RunFontSelector {
 			if (englishFromCJK==null) {
 				if (wordMLPackage.getFontMapper().size()>0) {
 					log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
+					Throwable t = new Throwable();
+					t.printStackTrace();
+					throw new RuntimeException();
 				}
 				return null;
 			} else {

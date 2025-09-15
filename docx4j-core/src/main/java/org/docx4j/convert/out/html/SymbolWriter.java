@@ -120,8 +120,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 			Element span = doc.createElement("span");
 		    docfrag.appendChild(span);
 			
-		    //font-family style with a font that will likely cover the unicode symbols
-		    span.setAttribute("style", "font-family: 'SymbolFont'" );
+		    span.setAttribute("style", "font-family: " + SymbolUtils.HTML_FONT_FAMILY );
 		    span.appendChild( theChar );		
 			
 		} else {

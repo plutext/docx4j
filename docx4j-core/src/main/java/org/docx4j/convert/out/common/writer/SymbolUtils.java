@@ -24,6 +24,10 @@ public class SymbolUtils  {
 	public final static int UNICODE_PRIV_USE_START = 0xF000;
 	public final static int UNICODE_PRIV_USE_END = 0xFFFF;
 
+	public final static String HTML_FONT_FAMILY = "'Arial, Helvetica, sans-serif'"; 
+	// as used at https://www.alanwood.net/
+	// in practice, seems to use Noto Sans Symbols 2 on Linux (Chrome, Firefox); Segoe UI Symbol on Windows (Chrome, Edge); OSX unknown.
+	
 	public static int short2Int(byte[] val) {
 		
 		assert(val.length<=2);
