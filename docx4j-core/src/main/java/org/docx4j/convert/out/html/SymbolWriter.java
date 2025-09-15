@@ -39,6 +39,12 @@ import org.w3c.dom.Text;
  * Convert the character reference to a string, 
  * since XSLT doesn't like us putting &#x and @w:char and ';' together
  * 
+ * Note: this class handles R.Sym, but usually Word 
+ * does not necessarily use that element for a symbol:
+ * it may do so if you use Insert > Symbol, but not
+ * if you add it some other way.  The other case is
+ * handled in RunFontSelector.
+ * 
  *  @author Jason Harrop
  *  
 */
@@ -48,7 +54,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		super();
 	}
 
-	private final static Logger log = LoggerFactory.getLogger(BrWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
 
 	private final static int UNICODE_PRIV_USE_START = 0xF000;
 	private final static int UNICODE_PRIV_USE_END = 0xFFFF;
@@ -59,85 +65,91 @@ public class SymbolWriter extends AbstractSymbolWriter {
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
 			throws TransformerException {
-	R.Sym modelData = (R.Sym)unmarshalledNode;
-	String value =  modelData.getChar(); 
-
-	byte[] valBytes = hexStringToByteArray(value);
-	assert(valBytes.length <= 2); //this is a short according to the ECMA spec
+				
+		R.Sym modelData = (R.Sym)unmarshalledNode;
+		String value =  modelData.getChar(); 
 	
-	String fontName = modelData.getFont();
-	
-	String valStr;
-	boolean haveUnicodeReplacement = false;
-	
-	// Pre-process according to ECMA-376 2.3.3.29
-	// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
-	if (valBytes.length==2 && UNICODE_PRIV_USE_START <= short2Int(valBytes)
-			&& UNICODE_PRIV_USE_END >= short2Int(valBytes) ) {
+		byte[] valBytes = hexStringToByteArray(value);
+		assert(valBytes.length <= 2); //this is a short according to the ECMA spec
 		
-		valBytes[0] = (byte)(valBytes[0] - 0xF0);
-		int nonZeroIdx = -1; 
-		for (int i=0; i<valBytes.length; i++) {
-			if (valBytes[i]!=0) {
-				nonZeroIdx = i;
-				break;
-			}
-		}
-		if (nonZeroIdx!=-1) {
-				
-			if (USE_UNICODE_SYMBOL_REPLACEMENTS) {
-					//check if we have a suitable unicode replacement character for the symbol
-				valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)short2Int(valBytes));
-				
-				if (valStr!=null) {
-					haveUnicodeReplacement = true;
+		String fontName = modelData.getFont();
+		
+		String valStr;
+		boolean haveUnicodeReplacement = false;
+		
+		// Pre-process according to ECMA-376 2.3.3.29
+		// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
+		if (valBytes.length==2 && UNICODE_PRIV_USE_START <= short2Int(valBytes)
+				&& UNICODE_PRIV_USE_END >= short2Int(valBytes) ) {
+			
+			valBytes[0] = (byte)(valBytes[0] - 0xF0);
+			int nonZeroIdx = -1; 
+			for (int i=0; i<valBytes.length; i++) {
+				if (valBytes[i]!=0) {
+					nonZeroIdx = i;
+					break;
 				}
 			}
-			if (!haveUnicodeReplacement) {
-				valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+			if (nonZeroIdx!=-1) {
+					
+				if (USE_UNICODE_SYMBOL_REPLACEMENTS) {
+						//check if we have a suitable unicode replacement character for the symbol
+					valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)short2Int(valBytes));
+					
+					if (valStr!=null) {
+						haveUnicodeReplacement = true;
+					}
+				}
+				if (!haveUnicodeReplacement) {
+					valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+				}
+			} else {
+				valStr = ""; //valBytes only contains null characters
 			}
+			
 		} else {
-			valStr = ""; //valBytes only contains null characters
+			int codePoint = short2Int(valBytes);
+			valStr = Character.toString( codePoint );
 		}
 		
-	} else {
-		int codePoint = short2Int(valBytes);
-		valStr = Character.toString( codePoint );
-	}
-	
-    Text theChar = doc.createTextNode( valStr );
-    
-	DocumentFragment docfrag = doc.createDocumentFragment();
-		
-	if (haveUnicodeReplacement) {
-		
-		Element span = doc.createElement("span");
-	    docfrag.appendChild(span);
-		
-	    //TODO: add a font-family style with a font that will likely cover the unicode symbols
-	    //span.setAttribute("style", "font-family: '" + ??? + "'" );
-	    span.appendChild( theChar );		
-		
-	} else {
-		PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
-
-		if (pf==null) {
-			log.warn("No physical font present for:" + fontName);		
-		    docfrag.appendChild( theChar );
+	    Text theChar = doc.createTextNode( valStr );
+	    
+		DocumentFragment docfrag = doc.createDocumentFragment();
 			
-		} else {
+		if (haveUnicodeReplacement) {
 			
-		    Element span = doc.createElement("span");
+			Element span = doc.createElement("span");
 		    docfrag.appendChild(span);
 			
-		    span.setAttribute("style", "font-family: '" + pf.getName() + "'" );
-		    span.appendChild( theChar );
+		    //font-family style with a font that will likely cover the unicode symbols
+		    span.setAttribute("style", "font-family: 'SymbolFont'" );
+		    span.appendChild( theChar );		
+			
+		} else {
+			
+			if (log.isDebugEnabled()) {
+				log.debug("No Unicode replacement for ? in font " + fontName);
+			}
+			
+			PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
+	
+			if (pf==null) {
+				log.warn("No physical font present for:" + fontName);		
+			    docfrag.appendChild( theChar );
+				
+			} else {
+				
+			    Element span = doc.createElement("span");
+			    docfrag.appendChild(span);
+				
+			    span.setAttribute("style", "font-family: '" + pf.getName() + "'" );
+			    span.appendChild( theChar );
+			}
 		}
+	
+	    
+	    return docfrag;
 	}
-
-    
-    return docfrag;
-  }
 	
 	protected static int short2Int(byte[] val) {
 		
