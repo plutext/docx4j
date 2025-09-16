@@ -294,6 +294,21 @@ public class XpathrefJavaBooleanTest {
 	}
 	
 	@Test
+	public void booleanTextEquals() throws Exception {
+		
+		boolean result = evaluate("//fileNumber[1]/text()= 'xxxx'");
+		assertTrue( result);
+	}
+
+	@Test
+	public void booleanTextNotEquals() throws Exception {
+		
+		boolean result = evaluate("//fileNumber[1]/text() != 'xyz'");
+		assertTrue( result);
+	}
+	
+	
+	@Test
 	public void simpleBoolean3() throws Exception {
 		
 		boolean result = evaluate("not(//MissingNode)");

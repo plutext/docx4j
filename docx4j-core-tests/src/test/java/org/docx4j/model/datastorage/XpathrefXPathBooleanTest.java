@@ -69,6 +69,7 @@ public class XpathrefXPathBooleanTest {
 		return xmlPart.cachedXPathGetBoolean(xpath, null);
 	}
 
+	
 /*********************************************************
  * 
  *  Number tests
@@ -206,6 +207,20 @@ public class XpathrefXPathBooleanTest {
 		
 		boolean result = evaluate("false()");
 		assertFalse( result);
+	}
+	
+	@Test
+	public void booleanTextEquals() throws Exception {
+		
+		boolean result = evaluate("//fileNumber[1]/text()= 'xxxx'");
+		assertTrue( result);
+	}
+
+	@Test
+	public void booleanTextNotEquals() throws Exception {
+		
+		boolean result = evaluate("//fileNumber[1]/text() != 'xyz'");
+		assertTrue( result);
 	}
 	
 	@Test
