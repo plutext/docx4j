@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -210,13 +211,13 @@ public class FOPAreaTreeHelper {
         // no need to clone, as long as we remember to change it back again
         foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(MimeConstants.MIME_FOP_AREA_TREE);
         //  ERROR org.apache.fop.apps.FOUserAgent 103 - The simulate-style property is only supported in PDF.
-        boolean flippedSimulateStyle = false;
+	    List<Font> simulateStyleFonts = new ArrayList<Font>();
         if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {        	
         	// Need to set to false
         	for (Font f : foSettingsOverall.getFopConfig().getRenderers().getRenderer().getFonts().getFont()) {
         		if (f.isSimulateStyle()) {
         			f.setSimulateStyle(false);
-        			flippedSimulateStyle = true;
+			        simulateStyleFonts.add(f);
         		}
         	}
         }
@@ -226,10 +227,8 @@ public class FOPAreaTreeHelper {
         
 		// change it back
         foSettingsOverall.getFopConfig().getRenderers().getRenderer().setMime(FOSettings.MIME_PDF);
-        if (flippedSimulateStyle) {        	
-        	for (Font f : foSettingsOverall.getFopConfig().getRenderers().getRenderer().getFonts().getFont()) {
-        		f.setSimulateStyle(true);
-        	}
+        for (Font f : simulateStyleFonts) {
+            f.setSimulateStyle(true);
         }
         
 	    FOUserAgent foUserAgent = FORendererApacheFOP.getFOUserAgent(foSettingsHere, fopFactory);
