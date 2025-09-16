@@ -99,8 +99,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                 &lt;sequence>
  *                   &lt;element name="top" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="left" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
+ *                   &lt;element name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="bottom" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
+ *                   &lt;element name="end" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="insideH" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="insideV" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
  *                   &lt;element name="tl2br" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
@@ -762,8 +764,10 @@ public class TcPrInner implements Child
      *       &lt;sequence>
      *         &lt;element name="top" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="left" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
+	 *         &lt;element name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="bottom" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
+	 *         &lt;element name="end" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="insideH" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="insideV" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
      *         &lt;element name="tl2br" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Border" minOccurs="0"/>
@@ -780,8 +784,10 @@ public class TcPrInner implements Child
     @XmlType(name = "", propOrder = {
         "top",
         "left",
+		"start",
         "bottom",
         "right",
+		"end",
         "insideH",
         "insideV",
         "tl2Br",
@@ -792,8 +798,10 @@ public class TcPrInner implements Child
 
         protected CTBorder top;
         protected CTBorder left;
+		protected CTBorder start;
         protected CTBorder bottom;
         protected CTBorder right;
+		protected CTBorder end;
         protected CTBorder insideH;
         protected CTBorder insideV;
         @XmlElement(name = "tl2br")
@@ -850,7 +858,31 @@ public class TcPrInner implements Child
         public void setLeft(CTBorder value) {
             this.left = value;
         }
+		
+        /**
+         * Gets the value of the start property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTBorder }
+         *     
+         */
+        public CTBorder getStart() {
+            return start;
+        }
 
+        /**
+         * Sets the value of the start property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTBorder }
+         *     
+         */
+        public void setStart(CTBorder value) {
+            this.start = value;
+        }
+		
         /**
          * Gets the value of the bottom property.
          * 
@@ -899,6 +931,30 @@ public class TcPrInner implements Child
             this.right = value;
         }
 
+        /**
+         * Gets the value of the end property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTBorder }
+         *     
+         */
+        public CTBorder getEnd() {
+            return end;
+        }
+
+        /**
+         * Sets the value of the end property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTBorder }
+         *     
+         */
+        public void setEnd(CTBorder value) {
+            this.end = value;
+        }
+		
         /**
          * Gets the value of the insideH property.
          * 

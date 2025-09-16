@@ -42,8 +42,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;sequence>
  *         &lt;element name="top" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
  *         &lt;element name="left" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
  *         &lt;element name="bottom" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
  *         &lt;element name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="end" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -56,16 +58,20 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_TblCellMar", propOrder = {
     "top",
     "left",
+    "start",
     "bottom",
-    "right"
+    "right",
+    "end"
 })
 public class CTTblCellMar implements Child
 {
 
     protected TblWidth top;
     protected TblWidth left;
+    protected TblWidth start;
     protected TblWidth bottom;
     protected TblWidth right;
+    protected TblWidth end;
     @XmlTransient
     private Object parent;
 
@@ -116,6 +122,30 @@ public class CTTblCellMar implements Child
     public void setLeft(TblWidth value) {
         this.left = value;
     }
+    
+    /**
+     * Gets the value of the start property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link TblWidth }
+     *     
+     */
+    public TblWidth getStart() {
+        return start;
+    }
+
+    /**
+     * Sets the value of the start property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link TblWidth }
+     *     
+     */
+    public void setStart(TblWidth value) {
+        this.start = value;
+    }
 
     /**
      * Gets the value of the bottom property.
@@ -163,6 +193,30 @@ public class CTTblCellMar implements Child
      */
     public void setRight(TblWidth value) {
         this.right = value;
+    }
+
+    /**
+     * Gets the value of the end property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link TblWidth }
+     *     
+     */
+    public TblWidth getEnd() {
+        return end;
+    }
+
+    /**
+     * Sets the value of the end property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link TblWidth }
+     *     
+     */
+    public void setEnd(TblWidth value) {
+        this.end = value;
     }
 
     /**
