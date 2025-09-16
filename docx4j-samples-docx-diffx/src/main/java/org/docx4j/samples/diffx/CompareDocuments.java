@@ -1,3 +1,4 @@
+package org.docx4j.samples.diffx;
 /*
  *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
@@ -75,8 +76,8 @@ public class CompareDocuments {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String newerfilepath = System.getProperty("user.dir") + "/test2.docx";
-		String olderfilepath = System.getProperty("user.dir") + "/test.docx";
+		String newerfilepath = System.getProperty("user.dir") + "/sample-docs/test2.docx";
+		String olderfilepath = System.getProperty("user.dir") + "/sample-docs/test.docx";
 		
 		// 1. Load the Packages
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));

@@ -76,34 +76,25 @@
 		</plugins>
         
 		<resources>
-			<!-- be sure to get xml,xlst resources in various src trees -->
 			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.xslt</include>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
-			<!-- 
-			<resource>
-				<directory>src/main/java/org/docx4j/org/apache/xml/serializer</directory>
-				<includes>
-					<include>*.properties</include>
-				</includes>
-			</resource>
-			 -->
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.properties</include>
-				</includes>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<!-- beware, a couple of our resources are UTF-16, but with filtering=true, 
+					Maven will break them when it copies them. -->
+	
+				<excludes>
+					<exclude>docx4j_version.properties</exclude>
+				</excludes>
 			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
+				<includes>
+					<include>docx4j_version.properties</include>
+				</includes>
 			</resource>
-			
-		</resources>
+		</resources>        
+        
 	</build>
 	
 	

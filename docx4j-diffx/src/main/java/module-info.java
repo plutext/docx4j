@@ -25,5 +25,6 @@ module org.docx4j.docx4j_diffx {
     exports org.eclipse.compare.rangedifferencer;
 
     exports org.docx4j.diff;
+    opens org.docx4j.diff;  // so the XSLT can be loaded by ResourceUtils
     
 }
