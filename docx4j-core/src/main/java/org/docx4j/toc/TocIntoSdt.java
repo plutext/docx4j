@@ -17,19 +17,16 @@
     limitations under the License.
 
  */
-package org.docx4j.samples;
+package org.docx4j.toc;
 
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.docx4j.TraversalUtil;
-import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.toc.TocSdtUtils;
 import org.docx4j.wml.CTSdtDocPart;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.FldChar;
@@ -81,23 +78,8 @@ import jakarta.xml.bind.JAXBElement;
 public class TocIntoSdt  { 
 
 	private static Logger log = LoggerFactory.getLogger(TocIntoSdt.class);
-	
-	static String inputfilepath = System.getProperty("user.dir") + "/TOC.docx";
-	
-	static String outputfilepath = System.getProperty("user.dir") + "/OUT_TocIntoSdt.docx";
-	    
-    public static void main(String[] args) throws Exception{
-    	
-        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new File(inputfilepath));
-        System.out.println(wordMLPackage.getMainDocumentPart().getXML());
-
-        TocIntoSdt tocIntoSdt = new TocIntoSdt();
-        tocIntoSdt.process(wordMLPackage);
-        
-        wordMLPackage.save(new java.io.File(outputfilepath) );        
-    }
-    
-    private void process(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+	   
+    public SdtBlock process(WordprocessingMLPackage wordMLPackage) throws TocException {
         
         List<Object> topLevelContent = wordMLPackage.getMainDocumentPart().getContent();
         
@@ -114,7 +96,7 @@ public class TocIntoSdt  {
 		int toIndex = topLevelContent.indexOf(finder.pLast);
 
 		if (fromIndex<0 || toIndex<0) {
-			throw new Docx4JException("Couldn't find TOC field");
+			throw new TocException("Couldn't find TOC field");
 		}
 		
         // Create new list containing the range
@@ -131,8 +113,9 @@ public class TocIntoSdt  {
         
         topLevelContent.add(fromIndex, sdtBlock);
 
-        log.debug(wordMLPackage.getMainDocumentPart().getXML());
+        //log.debug(wordMLPackage.getMainDocumentPart().getXML());
         
+        return sdtBlock;
     }
     
 
