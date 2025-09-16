@@ -314,7 +314,7 @@ public class RunFontSelector {
     			el.setAttribute("style", Property.composeCss(CSS_NAME, SymbolUtils.HTML_FONT_FAMILY) );
     		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
-    			el.setAttribute("font-family", "TODO" );
+    			//el.setAttribute("font-family", "TODO" );
     				// whichever is available of Noto Sans Symbols 2; Segoe UI Symbol etc
     	} 
     }
@@ -435,6 +435,8 @@ public class RunFontSelector {
 		if (rFonts.getHAnsi()!=null) {  
 			String actualFontName = rFonts.getHAnsi();
 			if (actualFontName.equals("Symbol") || actualFontName.equals("Webdings") || actualFontName.equals("Wingdings") || actualFontName.equals("Wingdings 2") || actualFontName.equals("Wingdings 3") ) {
+				// For these fonts, we depart from the general approach outline in the class comment above,
+				// and map the char to a known Unicode replacement.
     			Element	span = createElement(document);
     			if (span!=null) {
     				// It will be null in MainDocumentPart$FontAndStyleFinder case
@@ -449,6 +451,8 @@ public class RunFontSelector {
 		    				// Word usually does weird stuff for cases where you'd expect a ch in the range 127 to 159.
 		    				// So test for this!
 		    				if (cp>255) {
+		    					// Unexpected, since those fonts only have 255 chars
+		    					log.info("Encountered unexpected char: " + actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) );
 		    					
 //								String codePointString = new String(Character.toChars(cp));
 //								byte[] valBytes = codePointString.getBytes(StandardCharsets.UTF_8);
