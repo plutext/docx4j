@@ -232,6 +232,16 @@
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
 			<version>11.4.0</version> 
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jakarta.xml.bind</groupId>
+					<artifactId>jakarta.xml.bind-api</artifactId>
+				</exclusion>
+			</exclusions>			
 		</dependency>
 				
 		
@@ -253,7 +263,7 @@
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>2.0.13</version>
+		    <version>2.0.17</version>
 		</dependency>		
  		 
 		<dependency>
@@ -266,7 +276,7 @@
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-compress</artifactId>
-		    <version>1.27.1</version>
+		    <version>1.28.0</version>
 		</dependency>		 
 		 
 		 <!--  supports org.apache.commons.lang.NotImplementedException -->
@@ -282,13 +292,13 @@
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.17.0</version>
+			<version>1.19.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.16.1</version> 
+			<version>2.20.0</version> 
 		</dependency>								
 
 	<dependency>
@@ -299,7 +309,12 @@
 			<exclusion>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
-			</exclusion>		
+			</exclusion>
+			<exclusion>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<!-- pulls in old 2.17.0 -->
+			</exclusion>
 		</exclusions>
 	</dependency>
 
@@ -307,6 +322,24 @@
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-interpretive</artifactId>
 		<version>11.0.0</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+
+	<dependency>
+		<groupId>org.docx4j.org.apache</groupId>
+		<artifactId>xalan-serializer</artifactId>
+		<version>11.0.0</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+			</exclusion>
+		</exclusions>
 	</dependency>
 		 
 	<!-- Saxon for XPath
@@ -356,7 +389,7 @@
 	    <dependency>
 	      <groupId>org.checkerframework</groupId>
 	      <artifactId>checker-qual</artifactId>
-	      <version>3.42.0</version>
+	      <version>3.51.0</version>
 	    </dependency>
 	    <dependency>
 	      <groupId>com.google.errorprone</groupId>
@@ -374,7 +407,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
-			<version>3.0.3</version>
+			<version>3.0.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -383,11 +416,12 @@
 			</exclusions>
 		</dependency>
 	
-		<!--  for repackaged fop-events -->
+		<!--  for repackaged fop-events. 1.12.1 is last of 1.x series. 
+		      2.2.0 is not a drop in replacement' -->
 		<dependency>
 			<groupId>com.thoughtworks.qdox</groupId>
 			<artifactId>qdox</artifactId>
-			<version>1.12</version>
+			<version>1.12.1</version>
 		</dependency>
 	
 	</dependencies>

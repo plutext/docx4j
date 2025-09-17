@@ -193,11 +193,10 @@
 			      but it doesn't.
 			      
 			      Seems to work with Java 12 though
-			      
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-enforcer-plugin</artifactId>
-		        <version>3.0.0-M2</version> 
+		        <version>3.4.1</version> 
 		        <executions>
 		          <execution>
 		            <id>enforce-bytecode-version</id>
@@ -212,6 +211,7 @@
 		                    <exclude>org.mindrot:jbcrypt</exclude>
 		                  </excludes>
 		                </enforceBytecodeVersion>
+		                 <dependencyConvergence/>
 		              </rules>
 		              <fail>true</fail>
 		            </configuration>
@@ -225,7 +225,7 @@
 		          </dependency>
 		        </dependencies> 
 		      </plugin>
-		       -->
+			      -->
 	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
@@ -268,7 +268,8 @@
 					</execution>
 				</executions>
 			</plugin>
-<!-- 			
+			
+<!-- A maven plugin to find and flag duplicate classes and resources on the java classpath.			
 		<plugin>
             <groupId>org.basepom.maven</groupId>
             <artifactId>duplicate-finder-maven-plugin</artifactId>
@@ -361,13 +362,13 @@
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<version>4.0.2</version>
+			<version>4.0.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-  			<version>2.0.13</version>
+  			<version>2.0.17</version>
   		</dependency>
 
 		<dependency>
