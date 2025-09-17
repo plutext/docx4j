@@ -23,6 +23,12 @@ public class SymbolUtils  {
 	
 	public final static int UNICODE_PRIV_USE_START = 0xF000;
 	public final static int UNICODE_PRIV_USE_END = 0xFFFF;
+	
+	
+	/**
+	 * Replacement to use in case of a symbol for which we don't have a mapping.
+	 */
+	public final static String MISSING_SYMBOL = "□";
 
 	public final static String HTML_FONT_FAMILY = "'Arial, Helvetica, sans-serif'"; 
 	// as used at https://www.alanwood.net/

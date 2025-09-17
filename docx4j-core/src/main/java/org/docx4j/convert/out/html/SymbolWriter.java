@@ -100,7 +100,8 @@ public class SymbolWriter extends AbstractSymbolWriter {
 					}
 				}
 				if (!haveUnicodeReplacement) {
-					valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+					//valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+					valStr = SymbolUtils.MISSING_SYMBOL;
 				}
 			} else {
 				valStr = ""; //valBytes only contains null characters

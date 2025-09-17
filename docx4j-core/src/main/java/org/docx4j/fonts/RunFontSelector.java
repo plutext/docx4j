@@ -447,24 +447,29 @@ public class RunFontSelector {
 	    			
 	    			text.codePoints().forEach(cp -> 
 		    			{
-		    				String valStr = null;	    				
-		    				// Word usually does weird stuff for cases where you'd expect a ch in the range 127 to 159.
-		    				// So test for this!
+		    				String valStr = null;
+		    				
+		    				// VBA like rng.InsertAfter Chr(i); rng.Font.Name = "Wingdings"
+		    				// for code points 128-159 (0x80-0x9F) results in Unicode you might not expect (rather than the code point asked for).
+		    				// This is because these are used in the Windows-1252 codepage but are reserved in Unicode for 
+		    				// control characters: https://en.wikipedia.org/wiki/Windows-1252
+		    				// For example, codepoint 137 (0x89) gets translated to U+2030.	
+		    				// See further https://github.com/plutext/docx4j/issues/632
 		    				if (cp>255) {
-		    					// Unexpected, since those fonts only have 255 chars
+		    					cp = translateUnicode2SingleByte(cp);
+		    				}
+		    				
+		    				if (cp>255 /* couldn't translate! */ ) {
 		    					log.info("Encountered unexpected char: " + actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) );
-		    					
 //								String codePointString = new String(Character.toChars(cp));
 //								byte[] valBytes = codePointString.getBytes(StandardCharsets.UTF_8);
-								
 								// what to do?  try anyway...
 		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
-								
 		    				} /* usual case */ else {
 		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
 		    				}
 							if (valStr==null) {
-								sb.append("?"); // TODO
+								sb.append(SymbolUtils.MISSING_SYMBOL); 
 								log.warn(actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) + " has no replacement.");
 								
 							} else {
@@ -671,7 +676,42 @@ public class RunFontSelector {
 	    		 eastAsia,  ascii,  hAnsi );
     }
     
-    private boolean contains(String langEastAsia, String lang) {
+    private int translateUnicode2SingleByte(int cp) {
+
+		switch (cp) {
+		case 0x20AC: return 0x80;
+		case 0x201A: return 0x82;
+		case 0x0192: return 0x83;
+		case 0x201E: return 0x84;
+		case 0x2026: return 0x85;
+		case 0x2020: return 0x86;
+		case 0x2021: return 0x87;
+		case 0x02C6: return 0x88;
+		case 0x2030: return 0x89;
+		case 0x0160: return 0x8A;
+		case 0x2039: return 0x8B;
+		case 0x0152: return 0x8C;
+		case 0x017D: return 0x8E;
+		case 0x2018: return 0x91;
+		case 0x2019: return 0x92;
+		case 0x201C: return 0x93;
+		case 0x201D: return 0x94;
+		case 0x2022: return 0x95;
+		case 0x2013: return 0x96;
+		case 0x2014: return 0x97;
+		case 0x02DC: return 0x98;
+		case 0x2122: return 0x99;
+		case 0x0161: return 0x9A;
+		case 0x203A: return 0x9B;
+		case 0x0153: return 0x9C;
+		case 0x017E: return 0x9E;
+		case 0x0178: return 0x9F;		
+		default: return cp;
+		}
+	}
+
+
+	private boolean contains(String langEastAsia, String lang) {
     	
     	// eg <w:lang w:eastAsia="zh-CN" .. />
     	if (langEastAsia==null) return false;
