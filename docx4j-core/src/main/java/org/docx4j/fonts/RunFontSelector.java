@@ -1239,9 +1239,6 @@ public class RunFontSelector {
 			if (englishFromCJK==null) {
 				if (wordMLPackage.getFontMapper().size()>0) {
 					log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
-					Throwable t = new Throwable();
-					t.printStackTrace();
-					throw new RuntimeException();
 				}
 				return null;
 			} else {
