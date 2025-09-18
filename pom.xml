@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>11.5.5</revision>
+		<revision>11.5.6-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 		
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
