@@ -2,6 +2,57 @@ CHANGELOG
 =========
 
 
+Version 11.5.5 (minor release) 
+===============
+
+Release date
+------------
+
+18 September 2025
+
+
+Contributors to this release
+----------------------------
+
+benht-nps
+dickyiu2025
+tom0709
+Jason Harrop
+
+
+Changes in Version 11.5.5
+--------------------------
+
+Bump commons-lang to 3.18.0 addressing https://www.cve.org/CVERecord?id=CVE-2025-48924
+Addresses https://github.com/plutext/docx4j/security/dependabot/19 and fixes #625
+
+Bump dependencies:
+
+	com.thoughtworks.qdox:qdox ............................ 1.12 -> 1.12.1
+	commons-codec:commons-codec ......................... 1.17.0 -> 1.19.0
+	commons-io:commons-io ............................... 2.16.1 -> 2.20.0
+	jakarta.xml.bind:jakarta.xml.bind-api ................ 4.0.2 -> 4.0.4
+	org.apache.commons:commons-compress ................. 1.27.1 -> 1.28.0
+	org.apache.pdfbox:fontbox ............................ 3.0.3 -> 3.0.5
+	org.checkerframework:checker-qual ................... 3.42.0 -> 3.51.0
+	org.slf4j:jcl-over-slf4j ............................ 2.0.13 -> 2.0.17
+	org.slf4j:slf4j-api ................................. 2.0.13 -> 2.0.17
+	jakarta.mail:jakarta.mail-api .......... ............. 2.1.0 -> 2.1.3 (MOXy)	
+
+New property org.opendope.conditions.Xpathref.XPathBoolean; Set this to true to convert to boolean using XPath conversion rules.
+If false, Java's rules will be used.  A key difference is how strings are handled.  Be aware that XPath's rules treat any non-empty string
+as true!  Defaults to false, matching previous behaviour.
+
+HTML output: map symbol font characters to UTF-8 for display in web browser
+
+TOC: handle a TOC which is not in a content control.
+
+docx4j-diffx: update for JPMS
+
+Miscellaneous minor enhancements/bug fixes - see https://github.com/plutext/docx4j/commits/VERSION_11_5_5/
+
+
+
 Version 11.5.4 (minor release) 
 ===============
 
