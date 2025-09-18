@@ -272,6 +272,24 @@ public class BestMatchingMapper extends Mapper {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
+	        else if (documentFontName.equals("Calibri") ) {
+	        	// Temp workaround for Calibri to use Carlito Regular;
+	        	// necessary since panose matches carlito bold italic! 
+	        	// @since 11.5.5
+	        	if (PhysicalFonts.get("Calibri")!=null ) {
+	        		// Calibri is present, so use it
+					put(documentFontName, PhysicalFonts.get("Calibri"));
+	    			continue;
+	        	} else if (PhysicalFonts.get("Carlito Regular")!=null ) {
+	        	
+					put(documentFontName, PhysicalFonts.get("Carlito Regular"));
+					log.debug("Mapped " +  documentFontName  + " -->  " + "Carlito-Regular" 
+							+ "( "+ PhysicalFonts.get("Carlito Regular").getEmbeddedURI() );	        		
+	    			continue;
+	        	} else {
+	        		log.debug("Can't override Calibri with Carlito-Regular");
+	        	}
+	        }
 	        
 	        // Embedded fonts - bypass panose for these
 	        if (regularForms.get(documentFontName)!=null) {
@@ -362,6 +380,7 @@ public class BestMatchingMapper extends Mapper {
 						put(documentFontName, PhysicalFonts.getPhysicalFonts().get(panoseKey));
 						log.debug("Mapped " +  documentFontName  + " -->  " + panoseKey 
 								+ "( "+ PhysicalFonts.getPhysicalFonts().get(panoseKey).getEmbeddedURI() );
+						//Mapped Calibri -->  carlito bold italic( file:/usr/share/fonts/carlito/Carlito-BoldItalic.ttf
 					} else {
 						
 						log.debug("font with key " + panoseKey + " doesn't exist!");
@@ -369,8 +388,12 @@ public class BestMatchingMapper extends Mapper {
 
 					// Out of interest, is this match in font substitutions table?
 					FontSubstitutions.Replace rtmp 
-						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(documentFontName);
-					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
+						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(documentFontName.toLowerCase());
+					if (rtmp == null) {
+						log.debug("Couldn't find " + documentFontName + " in SubstitutionsMap");
+					} else if (rtmp.getSubstFonts()!=null) {
+						log.debug("looking for " + panoseKey + " in " + rtmp.getSubstFonts());
+						//looking for carlito bold italic in calibri;carlito;tahoma;stradatf;alineasans;verdana;helvetica;trebuchet;arial
 						if (rtmp.getSubstFonts().contains(panoseKey) ) {
 							log.debug("(consistent with explicit substitutes)");
 						} else {

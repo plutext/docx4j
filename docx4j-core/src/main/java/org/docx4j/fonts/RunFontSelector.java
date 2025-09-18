@@ -1221,7 +1221,7 @@ public class RunFontSelector {
 				if (!GlyphCheck.hasChar(fontName, c)) {
 //					Throwable t = new Throwable();
 //					log.debug("FIXME", t);
-					log.debug(fontName + " missing " + c);
+					log.debug(fontName + "'s PhysicalFont is missing char " + c);
 				}
 			} catch (ExecutionException e) {
 				log.error(e.getMessage(), e);
