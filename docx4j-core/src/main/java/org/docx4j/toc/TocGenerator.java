@@ -508,7 +508,10 @@ public class TocGenerator {
         sectPr = finder.sectPr;
         
         if(sdt == null){
-            throw new TocException("No ToC content control found");
+        	
+            TocIntoSdt tocIntoSdt = new TocIntoSdt();
+            sdt = tocIntoSdt.process(wordMLPackage);
+            // throws TocException if not found
         }
 
         String instruction = finder.tocInstruction;

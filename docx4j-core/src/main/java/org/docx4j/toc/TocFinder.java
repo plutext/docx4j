@@ -22,8 +22,6 @@ package org.docx4j.toc;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.xml.bind.JAXBElement;
-
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
@@ -34,13 +32,26 @@ import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Text;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.xml.bind.JAXBElement;
+
 /**
  * Don't attempt to reuse this; create a new TocFinder object each time you invoke it.
- *
+ * 
+ * Word (current version 2025 07) adds a table of contents in a content control.
+ * 
+    <w:sdt>
+      <w:sdtPr>
+        <w:docPartObj>
+          <w:docPartGallery w:val="Table of Contents"/>
+          
+ * One which represents a table of figures though, is added without the content control.
+ * 
+    <w:p>
+      <w:fldSimple w:instr=" TOC \h \z \c &quot;Figure&quot; ">
+      
  */
 public class TocFinder  extends CallbackImpl {
 	
