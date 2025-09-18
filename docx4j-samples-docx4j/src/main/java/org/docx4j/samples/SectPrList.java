@@ -74,7 +74,7 @@ public class SectPrList  {
 			i++;
 		}
 		
-		System.out.println("Count: " + i );
+		System.out.println("Count: " + --i );
 		
 
 	}

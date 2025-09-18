@@ -122,7 +122,7 @@ public class HeaderFooterCreate {
 		Hdr hdr = objectFactory.createHdr();
 		
 		File file = new File(System.getProperty("user.dir") 
-				+ "/src/test/resources/images/greentick.png" );
+				+ "/../docx4j-core-tests/src/test/resources/images/greentick.png" );
 		java.io.InputStream is = new java.io.FileInputStream(file );
 		
 		hdr.getContent().add(

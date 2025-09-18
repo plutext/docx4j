@@ -36,7 +36,7 @@ import org.docx4j.dml.GraphicData;
 import org.docx4j.dml.picture.Pic;
 
 
-public class ImageDelete  {
+public class ImageDeleteViaXPath  {
 	
 	public static void main(String[] args) throws Exception {
 
