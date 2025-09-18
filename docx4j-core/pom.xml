@@ -232,16 +232,6 @@
 			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
 			<version>11.4.0</version> 
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jakarta.xml.bind</groupId>
-					<artifactId>jakarta.xml.bind-api</artifactId>
-				</exclusion>
-			</exclusions>			
 		</dependency>
 				
 		
@@ -298,7 +288,6 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.20.0</version> 
 		</dependency>								
 
 	<dependency>
@@ -310,11 +299,6 @@
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
 			</exclusion>
-			<exclusion>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<!-- pulls in old 2.17.0 -->
-			</exclusion>
 		</exclusions>
 	</dependency>
 
@@ -322,24 +306,12 @@
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-interpretive</artifactId>
 		<version>11.0.0</version>
-		<exclusions>
-			<exclusion>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-			</exclusion>
-		</exclusions>
 	</dependency>
 
 	<dependency>
 		<groupId>org.docx4j.org.apache</groupId>
 		<artifactId>xalan-serializer</artifactId>
 		<version>11.0.0</version>
-		<exclusions>
-			<exclusion>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-			</exclusion>
-		</exclusions>
 	</dependency>
 		 
 	<!-- Saxon for XPath
@@ -407,13 +379,6 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
-			<version>3.0.5</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	
 		<!--  for repackaged fop-events. 1.12.1 is last of 1.x series. 

@@ -94,6 +94,21 @@
 		  <artifactId>jaxb-runtime</artifactId>
 		  <version>4.0.5</version>
 		</dependency>
+
+ 		<!-- ensure dependency convergence -->
+		<dependency>
+		  <groupId>org.glassfish.jaxb</groupId>
+		  <artifactId>jaxb-core</artifactId>
+		  <version>4.0.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.xml.bind</groupId>
+					<artifactId>jakarta.xml.bind-api</artifactId>
+				</exclusion>
+			</exclusions>			
+		</dependency>
+
+		 
 		 
 		<!-- 
          <dependency>
@@ -177,7 +192,24 @@
 </dependency>
   uses JAXB Impl 2.2.11 -->
  
- 
+
+ <!--
+	<dependency>
+		<groupId>org.apache.xmlgraphics</groupId>
+		<artifactId>xmlgraphics-commons</artifactId>
+		<version>2.11</version>
+		<exclusions>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+-->
 	</dependencies>
 
 </project>
