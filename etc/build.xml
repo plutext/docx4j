@@ -135,13 +135,13 @@
 		
 		<pathelement location="${m2Repository}/org/docx4j/docx4j-ImportXHTML-core/${importxhtml-version}/docx4j-ImportXHTML-core-${importxhtml-version}.jar" />
 
-        <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-core/1.1.28/openhtmltopdf-core-1.1.28.jar"/>
-        <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-pdfbox/1.1.28/openhtmltopdf-pdfbox-1.1.28.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/3.0.3/pdfbox-3.0.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/3.0.3/xmpbox-3.0.3.jar"/>
+        <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-core/1.1.31/openhtmltopdf-core-1.1.31.jar"/>
+        <pathelement location="${m2Repository}/io/github/openhtmltopdf/openhtmltopdf-pdfbox/1.1.31/openhtmltopdf-pdfbox-1.1.31.jar"/>
         <pathelement location="${m2Repository}/de/rototor/pdfbox/graphics2d/3.0.1/graphics2d-3.0.1.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.3/fontbox-3.0.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.3/pdfbox-io-3.0.3.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox/3.0.5/pdfbox-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/pdfbox-io/3.0.5/pdfbox-io-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/xmpbox/3.0.5/xmpbox-3.0.5.jar"/>
+        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/3.0.5/fontbox-3.0.5.jar"/>
 	</path>
 	
 
