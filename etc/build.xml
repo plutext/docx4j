@@ -16,7 +16,7 @@
 
 	<property name="version" value="11.5.5"/>
 	<property name="importxhtml-version" value="11.5.5"/>
-	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML"/>
+	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML"/>
 
 	<property name="release.dir" value="docx4j-community-${version}"/>
 	<property name="releaseMOXy.dir" value="docx4j-JAXB-MOXy-${version}"/>
@@ -31,7 +31,7 @@
 	
 	<property name="src.main.java.dir" value="src/main/java"/>
 
-	<property name="m2Repository" value="/home/jharrop/.m2/repository"/>
+	<property name="m2Repository" value="/home/${user.name}/.m2/repository"/>
 
 	<!-- adjust these, they differ for docx4j 8 vs docx4j 11 -->
 	<!-- docx4j 11 settings
