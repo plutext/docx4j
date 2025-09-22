@@ -18,7 +18,7 @@
 	<property name="source" value="1.8"/>
 	<property name="dist" value="./dist"/>
 
-	<property name="version" value="8.3.14"/>
+	<property name="version" value="8.3.15"/>
 	<property name="importxhtml-version" value="8.3.11"/>
 	<!--<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML-${importxhtml-version}"/>-->
 	<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML-8_3_x"/>
@@ -48,25 +48,27 @@
 
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
         <pathelement location="${m2Repository}/net/engio/mbassador/1.3.2/mbassador-1.3.2.jar"/>
-        <pathelement location="${m2Repository}/org/slf4j/jcl-over-slf4j/2.0.12/jcl-over-slf4j-2.0.12.jar"/>
-        <pathelement location="${m2Repository}/org/apache/commons/commons-lang3/3.14.0/commons-lang3-3.14.0.jar"/>
-        <pathelement location="${m2Repository}/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar"/>
-        <pathelement location="${m2Repository}/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/2.15.1/commons-io-2.15.1.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/2.9/xmlgraphics-commons-2.9.jar"/>
-        <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
+		
+        <pathelement location="${m2Repository}/repository/org/slf4j/jcl-over-slf4j/2.0.17/jcl-over-slf4j-2.0.17.jar"/>
+        <pathelement location="${m2Repository}/repository/org/apache/commons/commons-lang3/3.18.0/commons-lang3-3.18.0.jar"/>
+        <pathelement location="${m2Repository}/repository/org/apache/commons/commons-compress/1.28.0/commons-compress-1.28.0.jar"/>
+        <pathelement location="${m2Repository}/repository/commons-codec/commons-codec/1.19.0/commons-codec-1.19.0.jar"/>
+        <pathelement location="${m2Repository}/repository/commons-io/commons-io/2.20.0/commons-io-2.20.0.jar"/>
+        <pathelement location="${m2Repository}/repository/org/apache/xmlgraphics/xmlgraphics-commons/2.11/xmlgraphics-commons-2.11.jar"/>
+
+		<pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-metainf/8.0.0/xalan-metainf-8.0.0.jar"/>
         <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-interpretive/8.0.0/xalan-interpretive-8.0.0.jar"/>
         <pathelement location="${m2Repository}/org/docx4j/org/apache/xalan-serializer/8.0.0/xalan-serializer-8.0.0.jar"/>
         <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.11/wmf2svg-0.9.11.jar"/>
         <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.5.3/antlr-runtime-3.5.3.jar"/>
         <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
-        <pathelement location="${m2Repository}/org/checkerframework/checker-qual/2.8.1/checker-qual-2.8.1.jar"/>
+        <pathelement location="${m2Repository}/repository/org/checkerframework/checker-qual/3.51.0/checker-qual-3.51.0.jar"/>
         <pathelement location="${m2Repository}/com/google/errorprone/error_prone_annotations/2.3.3/error_prone_annotations-2.3.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/pdfbox/fontbox/2.0.30/fontbox-2.0.30.jar"/>
-        <pathelement location="${m2Repository}/com/thoughtworks/qdox/qdox/1.12/qdox-1.12.jar"/>
+        <pathelement location="${m2Repository}/repository/org/apache/pdfbox/fontbox/2.0.34/fontbox-2.0.34.jar"/>
+        <pathelement location="${m2Repository}/repository/com/thoughtworks/qdox/qdox/1.12.1/qdox-1.12.1.jar"/>
 
-        <pathelement location="${m2Repository}/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar"/>
+        <pathelement location="${m2Repository}/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar"/>
 		
 	</path>
 
@@ -221,9 +223,9 @@
 		<mkdir dir="${releaseMOXy.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseMOXy.dir}/dependencies" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.4/org.eclipse.persistence.moxy-2.7.4.jar"/>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.7.4/org.eclipse.persistence.core-2.7.4.jar"/>
-				<pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/2.7.4/org.eclipse.persistence.asm-2.7.4.jar"/>
+		        <pathelement location="${m2Repository}/repository/org/eclipse/persistence/org.eclipse.persistence.moxy/2.7.16/org.eclipse.persistence.moxy-2.7.16.jar"/>
+		        <pathelement location="${m2Repository}/repository/org/eclipse/persistence/org.eclipse.persistence.core/2.7.16/org.eclipse.persistence.core-2.7.16.jar"/>
+		        <pathelement location="${m2Repository}/repository/org/eclipse/persistence/org.eclipse.persistence.asm/9.8.0/org.eclipse.persistence.asm-9.8.0.jar"/>
 		        <pathelement location="${m2Repository}/javax/mail/javax.mail-api/1.6.2/javax.mail-api-1.6.2.jar"/>			
 			</path>
 		</copy>
@@ -244,13 +246,15 @@
 		<mkdir dir="${releaseReferenceImpl.dir}/dependencies"/>
 		<copy includeemptydirs="false" todir="${releaseReferenceImpl.dir}/dependencies" flatten="true">
 			<path>
-				<pathelement location="${m2Repository}/org/glassfish/jaxb/jaxb-runtime/2.3.2/jaxb-runtime-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/org/glassfish/jaxb/txw2/2.3.2/txw2-2.3.2.jar"/>
-				<pathelement location="${m2Repository}/com/sun/istack/istack-commons-runtime/3.0.8/istack-commons-runtime-3.0.8.jar"/>
+		        <pathelement location="${m2Repository}/repository/org/glassfish/jaxb/jaxb-runtime/2.3.8/jaxb-runtime-2.3.8.jar"/>
+		        <pathelement location="${m2Repository}/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar"/>
+		        <pathelement location="${m2Repository}/repository/org/glassfish/jaxb/txw2/2.3.8/txw2-2.3.8.jar"/>
+		        <pathelement location="${m2Repository}/repository/com/sun/istack/istack-commons-runtime/3.0.12/istack-commons-runtime-3.0.12.jar"/>
+<!--				
 				<pathelement location="${m2Repository}/org/jvnet/staxex/stax-ex/1.8.1/stax-ex-1.8.1.jar"/>
 				<pathelement location="${m2Repository}/com/sun/xml/fastinfoset/FastInfoset/1.2.16/FastInfoset-1.2.16.jar"/>
-				<pathelement location="${m2Repository}/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"/>
+				-->
+		        <pathelement location="${m2Repository}/repository/com/sun/activation/jakarta.activation/1.2.2/jakarta.activation-1.2.2.jar"/>
 			</path>
 		</copy>
 
