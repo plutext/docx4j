@@ -56,7 +56,13 @@
         <module>docx4j-samples-documents4j-remote</module>        
         <module>docx4j-samples-documents4j-local</module>        
         
+<!--
+
         <module>docx4j-bundle</module>        
+		July 2025
+		docx4j-bundle needs Sources, Javadoc in order to pass Central Publishing component validation
+
+		-->
         
         <module>docx4j-legacy-service</module>        
         
@@ -200,11 +206,21 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.13</version>
+				<version>1.7.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<nexusUrl>https://ossrh-staging-api.central.sonatype.com</nexusUrl>
+					<!-- July 2025
+
+					Portal OSSRH Staging API is a partial reimplementation of the OSSRH / Nexus Repository Manager 2 Staging APIs.
+					The intent of this service is to enable publishers who are using existing plugins to have a smooth migration to the Central Publisher Portal.
+
+					https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/
+
+					TODO: migrate to https://central.sonatype.org/publish/publish-portal-maven/
+
+					-->
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
