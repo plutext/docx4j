@@ -42,7 +42,7 @@
 
 		<dependency>
             <groupId>org.docx4j</groupId>
-			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<artifactId>docx4j-JAXB-MOXy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
@@ -50,6 +50,12 @@
 		<dependency>
             <groupId>org.docx4j</groupId>
 			<artifactId>docx4j-JAXB-Internal</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+            <groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		

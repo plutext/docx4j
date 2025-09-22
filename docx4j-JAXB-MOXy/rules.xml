@@ -9,6 +9,27 @@
     
     <rules>
 
+<rule groupId="jakarta.xml.bind" artifactId="jakarta.xml.bind-api" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">3\.*.*</ignoreVersion>
+        <ignoreVersion type="regex">4\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.docx4j" artifactId="docx4j-core" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.eclipse.persistence" artifactId="org.eclipse.persistence.moxy" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">3\.*.*</ignoreVersion>
+        <ignoreVersion type="regex">4\.*.*</ignoreVersion>
+        <ignoreVersion type="regex">5\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
 <!-- stringtemplate 4 is ok for JDK 6, but causes tests to fail -->
 <rule groupId="org.antlr" artifactId="stringtemplate" comparisonMethod="maven">
       <ignoreVersions>

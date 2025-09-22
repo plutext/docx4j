@@ -9,13 +9,32 @@
     
     <rules>
 
-<!-- stringtemplate 4 is ok for JDK 6, but causes tests to fail -->
-<rule groupId="org.antlr" artifactId="stringtemplate" comparisonMethod="maven">
+
+<rule groupId="org.apache.xmlgraphics" artifactId="fop" comparisonMethod="maven">
       <ignoreVersions>
-        <ignoreVersion type="regex">4.*</ignoreVersion>
+        <ignoreVersion type="regex">2\.11</ignoreVersion> <!--  uses fontbox 3.0.3 -->        
       </ignoreVersions>
-    </rule>
+    </rule>    
+
+
+<rule groupId="jakarta.xml.bind" artifactId="jakarta.xml.bind-api" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">3\.*.*</ignoreVersion>
+        <ignoreVersion type="regex">4\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+ 
+<rule groupId="org.docx4j" artifactId="docx4j-core" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
     
+<rule groupId="org.docx4j" artifactId="docx4j-JAXB-ReferenceImpl" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
     
 <!--  these deps latest currently OK 
 

@@ -2,6 +2,48 @@ CHANGELOG
 =========
 
 
+Version 8.3.15   
+===============
+
+Release date
+------------
+
+22 September 2025
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Changes in Version 8.3.15
+--------------------------
+
+Bump commons-lang to 3.18.0 addressing https://www.cve.org/CVERecord?id=CVE-2025-48924
+Addresses https://github.com/plutext/docx4j/security/dependabot/19 and fixes #625
+
+Bump dependencies:
+
+  jakarta.xml.bind:jakarta.xml.bind-api ................ 2.3.2 -> 2.3.3
+  commons-codec:commons-codec ......................... 1.16.0 -> 1.19.0
+  commons-io:commons-io ............................... 2.15.1 -> 2.20.0
+  org.apache.commons:commons-compress ................. 1.27.1 -> 1.28.0
+  org.apache.commons:commons-lang3 .................... 3.14.0 -> 3.18.0
+  org.apache.pdfbox:fontbox ........................... 2.0.30 -> 2.0.34
+  org.apache.xmlgraphics:xmlgraphics-commons ............. 2.9 -> 2.11
+  org.checkerframework:checker-qual .................... 2.8.1 -> 3.51.0
+  com.thoughtworks.qdox:qdox ............................ 1.12 -> 2.2.1
+  
+  org.slf4j:slf4j-api ................................. 2.0.13 -> 2.0.17
+  org.slf4j:jcl-over-slf4j ............................ 2.0.12 -> 2.0.17
+
+  org.apache.xmlgraphics:fop ............................ 2.10 -> 2.11
+
+  org.eclipse.persistence:org.eclipse.persistence.moxy . 2.7.4 -> 2.7.16 (MOXy)
+  org.glassfish.jaxb:jaxb-runtime ...................... 2.3.2 -> 2.3.9 (JAXB Reference Impl)	
+
+
 Version 8.3.14   (fixes regression in 8.3.13) 
 ===============
 

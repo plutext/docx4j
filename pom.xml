@@ -7,7 +7,7 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>8.3.14</revision>
+		<revision>8.3.15-SNAPSHOT</revision>
 		<packaging.type>jar</packaging.type>
 
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -103,6 +103,59 @@
 		</snapshotRepository>
 	</distributionManagement>
 	
+  <dependencyManagement>
+    <dependencies>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+  			<version>2.0.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.20.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.18.0</version>  
+		</dependency>
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.thoughtworks.qdox</groupId>
+			<artifactId>qdox</artifactId>
+			<version>1.12.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>fontbox</artifactId>
+			<version>2.0.34</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>xmlgraphics-commons</artifactId>
+			<version>2.11</version>
+		</dependency>
+		
+    </dependencies>
+        
+  </dependencyManagement>	
 	<build>
 
 	<pluginManagement>
@@ -171,7 +224,7 @@
 			</plugin>
 			
 			<!--  you can run this with: mvn validate
-			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules -->
+			      See further https://stackoverflow.com/questions/24827194/maven-enforcer-plugin-missing-or-invalid-rules 
 		     <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-enforcer-plugin</artifactId>
@@ -190,6 +243,7 @@
 		                    <exclude>org.mindrot:jbcrypt</exclude>
 		                  </excludes>
 		                </enforceBytecodeVersion>
+		                 <dependencyConvergence/>		                
 		              </rules>
 		              <fail>true</fail>
 		            </configuration>
@@ -203,6 +257,7 @@
 		          </dependency>
 		        </dependencies> 
 		      </plugin>
+	       			-->
 	       			
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
@@ -348,7 +403,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>2.0.13</version>
 		</dependency>
 		
 		<dependency>

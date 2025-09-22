@@ -9,6 +9,66 @@
     
     <rules>
 
+
+<rule groupId="jakarta.xml.bind" artifactId="jakarta.xml.bind-api" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">3\.*.*</ignoreVersion>
+        <ignoreVersion type="regex">4\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+
+<rule groupId="org.plutext" artifactId="jaxb-svg11" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+    
+<rule groupId="org.docx4j" artifactId="docx4j-openxml-objects" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.docx4j" artifactId="docx4j-openxml-objects-pml" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.docx4j" artifactId="docx4j-openxml-objects-sml" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.docx4j.org.apache" artifactId="xalan-interpretive" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="org.plutext" artifactId="jaxb-svg11" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">11\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<rule groupId="com.thoughtworks.qdox" artifactId="qdox" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">2\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+<!--  don't upgrade docx4j v8 to FontBox 3 for now  -->
+<rule groupId="org.apache.pdfbox" artifactId="fontbox" comparisonMethod="maven">
+      <ignoreVersions>
+        <ignoreVersion type="regex">3\.*.*</ignoreVersion>
+      </ignoreVersions>
+    </rule>    
+
+
 <!-- stringtemplate 4 is ok for JDK 6, but causes tests to fail -->
 <rule groupId="org.antlr" artifactId="stringtemplate" comparisonMethod="maven">
       <ignoreVersions>
