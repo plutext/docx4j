@@ -19,7 +19,7 @@
 	<property name="dist" value="./dist"/>
 
 	<property name="version" value="8.3.15"/>
-	<property name="importxhtml-version" value="8.3.11"/>
+	<property name="importxhtml-version" value="8.3.15"/>
 	<!--<property name="importxhtml-dir" value="/home/jharrop/git/docx4j-ImportXHTML-${importxhtml-version}"/>-->
 	<property name="importxhtml-dir" value="/home/${user.name}/git/docx4j-ImportXHTML-8_3_x"/>
 
