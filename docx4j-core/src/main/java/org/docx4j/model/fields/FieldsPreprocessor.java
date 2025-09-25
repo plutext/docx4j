@@ -35,6 +35,9 @@ import java.util.NoSuchElementException;
  * - step 1: use XSLT to convert simple fields into complex ones
  * - step 2: put all the instructions into a single run
  * 
+ * Note that step 1 is optional.  It is generally only performed
+ * for MERGEFIELD.  
+ * 
  * Currently the canonicalisation is done at the paragraph level,
  * so it is not suitable for fields (such as TOC) which extend across paragraphs.
  * TOC will need to be regenerated if touched by canonicalisation.
@@ -199,7 +202,7 @@ public class FieldsPreprocessor {
 				// Well, a stray spellStart doesn't matter to Word 2010, so
 				// assume others would be ok as well.
 			} else {
-				// its not something we're interested in
+				// its not something we're interested in; could be w:fldSimple
 				
 				log.debug("Retaining" + XmlUtils.unwrap(o).getClass().getName());
 
@@ -298,6 +301,8 @@ public class FieldsPreprocessor {
 			if (isCharType(o2, STFldCharType.BEGIN)) {
 				
 				log.debug("\n\n begin.. ");
+				
+				FieldRef parent = stack.peek();
 
 				// Setup a FieldRef object 
 				currentField = new FieldRef((FldChar)XmlUtils.unwrap(o2));							
@@ -317,6 +322,7 @@ public class FieldsPreprocessor {
 				} else {
 					
 					if ( fieldIsTopLevel() ) { 
+						log.debug(".. top level ");
 					
 						newR = Context.getWmlObjectFactory().createR();
 						newR.getContent().add(o2);					
@@ -325,9 +331,10 @@ public class FieldsPreprocessor {
 						
 						fieldRefs.add(currentField);					
 					} else {
+						log.debug(".. nested ");
 						newR.getContent().add(o2);
 						
-						stack.peek().getInstructions().add(currentField);
+						parent.getInstructions().add(currentField);
 					}
 				}
 				

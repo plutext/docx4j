@@ -293,21 +293,27 @@ public class FieldRef {
 	 * @return
 	 */
 	public String getFldName() {
-		Object o = XmlUtils.unwrap(instructions.get(0));
+		
+		Object o;
+		if (instructions.get(0) instanceof FieldRef) {
+			log.info("FieldRef present..");
+			FieldRef nested = (FieldRef)instructions.get(0);
+			o = nested.instructions.get(0);			
+		} else {
+			o = instructions.get(0);
+		}
+		o = XmlUtils.unwrap(o);
+		
 		if (o instanceof Text) {
 			return FormattingSwitchHelper.getFldSimpleName( ((Text)o).getValue() );
+		} else if (o instanceof FieldRef) {
+			log.error("Doubly nested FieldRef present! TODO");
+			return null;
 		} else {
-			log.error("TODO: extract field name from " + o.getClass().getName() );
-			if (o instanceof FieldRef) {
-				// contains a nested field?!
-				FieldRef nested = (FieldRef)o;
-				log.error("Nested field " + nested.getFldName() );				
-				
-			} else {
-                if(log.isErrorEnabled()) {
-                    log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
-                }
-			}
+            if(log.isErrorEnabled()) {
+    			log.error("TODO: extract field name from " + o.getClass().getName() );
+                log.error(XmlUtils.marshaltoString(instructions.get(0), true, true));
+            }
 			return null;
 		}
 	}	
@@ -481,20 +487,20 @@ public class FieldRef {
 		this.endRun = endRun;
 	}
 	
-	
 	/**
-	 * A list of the content between the outermost w:fldChar begin and separate elements;
+	 * A list of the content between the w:fldChar begin and separate elements;
 	 * in the simplest case, this will be a single w:instrText object;
-	 * in a more general case it will be a mixture of w:instrText and FieldRef objects
+	 * in a more general case of nested fields it will be a mixture of w:instrText and FieldRef objects
 	 * (and possibly other things such as w:br).
-	 */
-	private List<Object> instructions = new ArrayList<Object>();
-	/**
-	 * @return the instructions
+	 * 
+	 * To obtain the effective instruction in the general case, you'd need to process
+	 * bottom-up ie evaluate the nested instructions (in the FieldRef objects).
+	 * This is not done currently.
 	 */
 	public List<Object> getInstructions() {
 		return instructions;
 	}
+	private List<Object> instructions = new ArrayList<Object>();
 	
 //	private JAXBElement<Text> instrText;
 //	public String getInstr() {
