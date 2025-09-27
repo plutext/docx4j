@@ -1,5 +1,5 @@
 /*
- *  Copyright 2009-2010, Plutext Pty Ltd.
+ *  Copyright 2009-2025, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -20,13 +20,19 @@
 
 package org.docx4j.convert.out.fo;
 
+import java.util.concurrent.ExecutionException;
+
 import javax.xml.transform.TransformerException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
+import org.docx4j.convert.out.common.writer.SymbolMapper;
+import org.docx4j.convert.out.common.writer.SymbolUtils;
+import org.docx4j.fonts.GlyphCheck;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.Typeface;
 import org.docx4j.wml.R;
 import org.w3c.dom.Document;
@@ -39,11 +45,13 @@ import org.w3c.dom.Text;
  * Convert the character reference to a string, 
  * since XSLT doesn't like us putting &#x and @w:char and ';' together
  * 
- *  @author Jason Harrop, alberto
+ *  @author Jason Harrop, alberto, tom07091
  *  
 */
 public class SymbolWriter extends AbstractSymbolWriter {
 	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
+	
+	private final static boolean USE_UNICODE_SYMBOL_REPLACEMENTS = true; 
 	
 	public SymbolWriter() {
 		super();
@@ -92,58 +100,165 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		R.Sym modelData = (R.Sym)unmarshalledNode;
 		String fontName = modelData.getFont();
 		String textValue =  modelData.getChar();
-		PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
-		char chValue = '\0';
-		Typeface typeface = null;
-	  
-	  	if (pf != null) {
-	  		typeface = pf.getTypeface();
-	  		
-	  	  	if (typeface != null) {
-		  	  	if (textValue.length() > 1) {
-		  	  		try {
-		  	  			chValue = (char)Integer.parseInt(textValue, 16);
-		  	  		}
-		  	  		catch (NumberFormatException nfe) {
-		  	  			chValue = '\0';
-		  	  		}
+
+		boolean haveUnicodeReplacement = false;
+		
+		// TODO: if Symbol, Wingdings, Webdings is actually present, use it?
+		// If there is a PhysicalFont, and it is the identity mapping, 
+		// ie Symbol, Wingdings, Webdings is actually present,
+		// should we try to use it?
+		// Maybe this should be fallback if Noto Sans Symbols 2 (Linux) or Segoe UI Symbol (Windows)
+		// is not present?
+				
+		// TODO: are there other symbol fonts?  what to do?
+		
+		PhysicalFont pf;
+		PhysicalFont pf2;
+		if (fontName.equals("Symbol")) {
+			pf =PhysicalFonts.getSymbolFont();
+			pf2 = null;
+		} else {
+			pf = PhysicalFonts.getWDingsFont();
+			pf2 = PhysicalFonts.getWDingsFont2();
+		}
+		
+		if (pf!=null) {
+			
+			byte[] valBytes = SymbolUtils.hexStringToByteArray(textValue);
+			assert(valBytes.length <= 2); //this is a short according to the ECMA spec
+						
+			// Pre-process according to ECMA-376 2.3.3.29
+			// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
+			if (valBytes.length==2 && SymbolUtils.UNICODE_PRIV_USE_START <= SymbolUtils.short2Int(valBytes)
+					&& SymbolUtils.UNICODE_PRIV_USE_END >= SymbolUtils.short2Int(valBytes) ) {
+				
+				valBytes[0] = (byte)(valBytes[0] - 0xF0);
+				int nonZeroIdx = -1; 
+				for (int i=0; i<valBytes.length; i++) {
+					if (valBytes[i]!=0) {
+						nonZeroIdx = i;
+						break;
+					}
+				}
+				
+				int codePoint = SymbolUtils.short2Int(valBytes);
+				
+				if (nonZeroIdx!=-1) {
+						
+					if (USE_UNICODE_SYMBOL_REPLACEMENTS) {
+							//check if we have a suitable unicode replacement character for the symbol
+						textValue = SymbolMapper.getUnicodeReplacementChar(fontName, (short)codePoint);
+						
+						if (textValue!=null) {
+							haveUnicodeReplacement = true;
+							
+							try {
+								if (GlyphCheck.hasChar(pf, textValue.charAt(0))) {
+									// good, it is there
+								} else if (pf2!=null && GlyphCheck.hasChar(pf2, textValue.charAt(0))) {
+									pf =pf2; // use pf2
+								} else {
+									log.warn("Missing symbol " + fontName + " " + codePoint);
+								}
+							} catch (ExecutionException e) {}
+
+						}
+					}
+					if (!haveUnicodeReplacement) {
+						//valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+						textValue = SymbolUtils.MISSING_SYMBOL;
+						if (log.isDebugEnabled()) {
+							if (fontName.equals("Symbol")
+									&& codePoint >=127 && codePoint <=160) {
+								// Symbol font doesn't contain these code points,
+								// so it shouldn't be being used in a real Word document 
+								log.debug("Symbol does not contain " + codePoint + "; why is this in the docx?");
+							} else {
+								log.debug("Missing symbol " + fontName + " " + codePoint);
+							}
+						}
+					}
+				} else {
+					textValue = ""; //valBytes only contains null characters
+				}
+				
+			} else {
+				// Doesn't happen
+				int codePoint = SymbolUtils.short2Int(valBytes);
+				textValue = Character.toString( codePoint );
+			}
+			
+		} else {
+				
+			char chValue = '\0';
+			Typeface typeface = null;
+			pf = context.getWmlPackage().getFontMapper().get(fontName);
+		  	if (pf != null) {
+		  		typeface = pf.getTypeface();
+		  		
+		  	  	if (typeface != null) {
+			  	  	if (textValue.length() > 1) {
+			  	  		try {
+			  	  			chValue = (char)Integer.parseInt(textValue, 16);
+			  	  		}
+			  	  		catch (NumberFormatException nfe) {
+			  	  			chValue = '\0';
+			  	  		}
+			  	  	}
+			  	  	else {
+			  	  		chValue = textValue.charAt(0);
+			  	  	}
+			  	  	
+			  	  	if (chValue != '\0') {
+			  	  		if (chValue > 0xf000) { //let's check first the character in the lower ascii (Pre-process according to ECMA-376 2.3.3.29)
+			  	  			chValue -= 0xf000;
+			  	  		}
+			  	  		if (typeface.mapChar(chValue) == 0) {
+			  	  			chValue += 0xf000;
+			  	  			if (typeface.mapChar(chValue) == 0) {
+			  	  				chValue = '\0';
+			  	  			}
+			  	  		}
+			  	  		if (chValue != '\0') {//character was found
+			  	  			textValue = Character.toString(chValue);
+			  	  		}
+			  	  	}
 		  	  	}
-		  	  	else {
-		  	  		chValue = textValue.charAt(0);
-		  	  	}
-		  	  	
-		  	  	if (chValue != '\0') {
-		  	  		if (chValue > 0xf000) { //let's check first the character in the lower ascii (Pre-process according to ECMA-376 2.3.3.29)
-		  	  			chValue -= 0xf000;
-		  	  		}
-		  	  		if (typeface.mapChar(chValue) == 0) {
-		  	  			chValue += 0xf000;
-		  	  			if (typeface.mapChar(chValue) == 0) {
-		  	  				chValue = '\0';
-		  	  			}
-		  	  		}
-		  	  		if (chValue != '\0') {//character was found
-		  	  			textValue = Character.toString(chValue);
-		  	  		}
-		  	  	}
-	  	  	}
+		  	}
 	  	}
 	    
 	    Text theChar = doc.createTextNode(textValue);
 		DocumentFragment docfrag = doc.createDocumentFragment();
-	
-		if (pf==null) {
-			log.warn("No physical font present for:" + fontName);		
-		    docfrag.appendChild( theChar );
 			
-		} else {
-			
+		if (haveUnicodeReplacement) {
+						
 		    Element foInline = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
 		    docfrag.appendChild(foInline);
 			
 		    foInline.setAttribute("font-family", pf.getName() );
 		    foInline.appendChild(theChar);
-		}
+			
+		} else {
+			
+			if (log.isDebugEnabled()) {
+				log.debug("No Unicode replacement for ? in font " + fontName);
+			}
+			
+//			PhysicalFont pf = context.getWmlPackage().getFontMapper().get(fontName);
+	
+			if (pf==null) {
+				log.warn("No physical font present for:" + fontName);		
+			    docfrag.appendChild( theChar );
+				
+			} else {
+				
+			    Element foInline = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+			    docfrag.appendChild(foInline);
+				
+			    foInline.setAttribute("font-family", pf.getName() );
+			    foInline.appendChild(theChar);
+			}
+		}		
 	    
 	    return docfrag;
 	}

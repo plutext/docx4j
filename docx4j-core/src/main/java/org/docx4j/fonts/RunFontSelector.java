@@ -296,13 +296,19 @@ public class RunFontSelector {
     	} 
     }
 
-    public void symbolSetAttribute(Element el) {
+    public void symbolSetAttribute(Element el, String fontName, String textValue) {
+    	// We only pass the actual text here, so that we can do GlyphCheck
+    	// to ensure the correct font in the PDF case.
+    	// TODO: this assumes that each char in textValue uses the same font,
+    	// which may not be true.  Unlikely edge case though...
+    	// To fix this, we'd have to create a new span each time the font changed. 
     	
     	// could a document fragment contain just a #text node?
     	
 		if (outputType== RunFontActionType.DISCOVERY) {
 			return;
 		} else if (outputType==RunFontActionType.XHTML) {
+			// In XHTML, we leave it up to the browser to choose the specific font
     		if (spacePreserve) {
     	    	/*
     	    	 * 	Convert @xml:space='preserve' to style="white-space:pre-wrap;"
@@ -314,8 +320,43 @@ public class RunFontSelector {
     			el.setAttribute("style", Property.composeCss(CSS_NAME, SymbolUtils.HTML_FONT_FAMILY) );
     		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
-    			//el.setAttribute("font-family", "TODO" );
-    				// whichever is available of Noto Sans Symbols 2; Segoe UI Symbol etc
+    		
+			PhysicalFont pf = null;
+			PhysicalFont pf2 = null;
+			if (fontName.equals("Webdings")
+					|| fontName.equals("Wingdings")
+					|| fontName.equals("Wingdings 2")
+					|| fontName.equals("Wingdings 3")
+					) {
+				pf = PhysicalFonts.getWDingsFont();
+				pf2 = PhysicalFonts.getWDingsFont2();
+			} else if (fontName.equals("Symbol")) {
+				pf = PhysicalFonts.getSymbolFont();
+			} 
+			
+			try {
+				if (GlyphCheck.hasChar(pf, textValue.charAt(0))) {
+					// good, it is there
+				} else if (pf2!=null && GlyphCheck.hasChar(pf2, textValue.charAt(0))) {
+					pf =pf2; // use pf2
+				} else {
+					log.warn("Missing symbol " + fontName + " " + textValue);
+				}
+			} catch (ExecutionException e) {}
+			
+			String val = null;
+			if (pf == null) {
+				val = getPhysicalFont(fontName);
+			} else {
+				val = pf.getName();
+			}
+    		
+    		if (val==null) {
+    			// Avoid @font-family="", which FOP doesn't like
+    			el.setAttribute("font-family", fallbackFont );
+    		} else {	
+    			el.setAttribute("font-family", val );
+    		}
     	} 
     }
     
@@ -431,6 +472,7 @@ public class RunFontSelector {
 			return nullRPr(document, text);
 		}	
 		
+		// Symbol handling
 		// @since 11.5.5
 		if (rFonts.getHAnsi()!=null) {  
 			String actualFontName = rFonts.getHAnsi();
@@ -441,7 +483,6 @@ public class RunFontSelector {
     			if (span!=null) {
     				// It will be null in MainDocumentPart$FontAndStyleFinder case
 	    			document.appendChild(span); 
-	    			this.symbolSetAttribute(span); 
 	    			
 	    			StringBuffer sb = new StringBuffer();
 	    			
@@ -479,6 +520,7 @@ public class RunFontSelector {
 	    			);
 	    			
 	    			span.setTextContent(sb.toString());  
+	    			this.symbolSetAttribute(span, actualFontName, span.getTextContent() ); 
     			}
     			if (outputType== RunFontActionType.DISCOVERY) {
     				// TODO?

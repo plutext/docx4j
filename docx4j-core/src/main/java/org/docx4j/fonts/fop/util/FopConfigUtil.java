@@ -123,6 +123,7 @@ public class FopConfigUtil {
 		
 		return fopConfig;
 	}
+		
 
 	/**
 	 * Create a FOP font configuration for each font used in the
@@ -145,44 +146,31 @@ public class FopConfigUtil {
 		// <font simulate-style="true"	
 			for (String fontName : fontsInUse) {		    
 			    
-			    PhysicalFont pf = fontMapper.get(fontName);
-			    
+				PhysicalFont pf;
+				PhysicalFont pf2 = null;
+				if (fontName.equals("Webdings")
+						|| fontName.equals("Wingdings")
+						|| fontName.equals("Wingdings 2")
+						|| fontName.equals("Wingdings 3")
+						) {
+					pf = PhysicalFonts.getWDingsFont();
+					pf2 = PhysicalFonts.getWDingsFont2();
+				} else if (fontName.equals("Symbol")) {
+					pf = PhysicalFonts.getSymbolFont();
+				} else {				
+					pf = fontMapper.get(fontName);
+				}
+
+				
 			    if (pf==null) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded, but ignore this for now
 			    } else {
 			    	haveSomeMappedPhysicalFonts = true;
 			    	
-			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
-			    	rendererFont.setSimulateStyle(false);
-			    	rendererFonts.getFont().add(rendererFont);
-			    	
-				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
-				    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
-				    }
-				    	
-			    	if (fontMapper.getBoldForm(fontName, pf)==null
-			    			|| fontMapper.getItalicForm(fontName, pf)==null) {
-			    		
-			    		rendererFont.setSimulateStyle(true);
-			    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
-			    		
-			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "normal"));
-			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "normal"));
-			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "bold"));
-			    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
-			    		
-			    	} else {
-			    		// If we don't have to simulate-style, fall back to the old way of doing things
-			    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
-			    
-				    	// now add the first font triplet
-					    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    		rendererFont.getFontTriplet().add(
-			    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
-			    						weightToCSS2FontWeight(fontTriplet.getWeight())));
-					    			    
-					    addVariations(fontMapper, rendererFonts, fontName, pf, rendererFont.getSubFont());
+			    	createFontEntrySimulateStyles( fontMapper,  rendererFonts, fontName, pf);
+			    	if (pf2!=null) {
+			    		createFontEntrySimulateStyles( fontMapper,  rendererFonts, fontName, pf2);			    		
 			    	}
 			    }
 			}
@@ -193,7 +181,20 @@ public class FopConfigUtil {
 		// <font simulate-style="false"
 			for (String fontName : fontsInUse) {		    
 			    
-			    PhysicalFont pf = fontMapper.get(fontName);
+				PhysicalFont pf;
+				PhysicalFont pf2 = null;
+				if (fontName.equals("Webdings")
+						|| fontName.equals("Wingdings")
+						|| fontName.equals("Wingdings 2")
+						|| fontName.equals("Wingdings 3")
+						) {
+					pf = PhysicalFonts.getWDingsFont();
+					pf2 = PhysicalFonts.getWDingsFont2();
+				} else if (fontName.equals("Symbol")) {
+					pf = PhysicalFonts.getSymbolFont();
+				} else {				
+					pf = fontMapper.get(fontName);
+				}
 			    
 			    if (pf==null) {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
@@ -202,29 +203,76 @@ public class FopConfigUtil {
 
 			    	haveSomeMappedPhysicalFonts = true;
 
-			    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
-			    	rendererFont.setSimulateStyle(false);
-			    	rendererFonts.getFont().add(rendererFont);
-			    	
-				    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
-				    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
-				    }
-		    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
-				    
-
-		    		// now add the first font triplet
-				    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-		    		rendererFont.getFontTriplet().add(
-		    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
-		    						weightToCSS2FontWeight(fontTriplet.getWeight())));
-
-				    addVariations(fontMapper, rendererFonts, fontName, pf, 
-				    		pf.getEmbedFontInfo().getSubFontName());
+			    	createFontEntry( fontMapper,  rendererFonts, fontName, pf);
+			    	if (pf2!=null) {
+				    	createFontEntry( fontMapper,  rendererFonts, fontName, pf2);			    		
+			    	}
 			    }
 			}
 		}
 		if (!haveSomeMappedPhysicalFonts) log.warn("No fonts configured!");
 		return rendererFonts;
+	}
+
+	private static void createFontEntrySimulateStyles(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+			String fontName, PhysicalFont pf) {
+		
+    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+    	rendererFont.setSimulateStyle(false);
+    	rendererFonts.getFont().add(rendererFont);
+    	
+	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
+	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
+	    }
+	    	
+    	if (fontMapper.getBoldForm(fontName, pf)==null
+    			|| fontMapper.getItalicForm(fontName, pf)==null) {
+    		
+    		rendererFont.setSimulateStyle(true);
+    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
+    		
+    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "normal"));
+    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "normal"));
+    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "normal", "bold"));
+    		rendererFont.getFontTriplet().add(createFontTriplet(pf.getName(), "italic", "bold"));
+    		
+    	} else {
+    		// If we don't have to simulate-style, fall back to the old way of doing things
+    		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
+    
+	    	// now add the first font triplet
+		    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+    		rendererFont.getFontTriplet().add(
+    				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
+    						weightToCSS2FontWeight(fontTriplet.getWeight())));
+		    			    
+		    addVariations(fontMapper, rendererFonts, fontName, pf, rendererFont.getSubFont());
+    	}
+		
+	}	
+	
+	private static void createFontEntry(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+			String fontName, PhysicalFont pf) {
+
+    	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+    	rendererFont.setSimulateStyle(false);
+    	rendererFonts.getFont().add(rendererFont);
+    	
+	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
+	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
+	    }
+		rendererFont.setEmbedUrl(pf.getEmbeddedURI().toString());
+	    
+
+		// now add the first font triplet
+	    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+		rendererFont.getFontTriplet().add(
+				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
+						weightToCSS2FontWeight(fontTriplet.getWeight())));
+
+	    addVariations(fontMapper, rendererFonts, fontName, pf, 
+	    		pf.getEmbedFontInfo().getSubFontName());
+		
 	}
 	
 	private static org.docx4j.convert.out.fopconf.Fonts.Font.FontTriplet createFontTriplet(String name, String style, String weight) {

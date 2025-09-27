@@ -599,7 +599,97 @@ public class PhysicalFonts {
 		}		
 	}	
 	
+	/**
+	 * For XSL FO output of Webdings and the Wingdings fonts, 
+	 * substitute a font known to contain the appropriate glyphs
+	 * (if font is present). 
+	 * @return
+	 */
+	public static PhysicalFont getWDingsFont() {
+		
+		if (suitableFontWDings!=null) return suitableFontWDings;
+		
+		if (haveLookedForsuitableFontWFDings) {
+			return null;
+		} else { 
+			haveLookedForsuitableFontWFDings = true; 
+			suitableFontWDings = PhysicalFonts.get("Noto Sans Symbols 2 Regular");
+			if (suitableFontWDings!=null) {
+				log.info("Will use Noto Sans Symbols 2 Regular for most bullets");
+				return suitableFontWDings;
+			}
+			suitableFontWDings = PhysicalFonts.get("Segoe UI Symbol");
+			if (suitableFontWDings!=null) {
+				log.info("Will use Segoe UI Symbol for bullets");
+				return suitableFontWDings;
+			}
+			return null;
+		}
+	}
+	private static PhysicalFont suitableFontWDings;
+	private static boolean haveLookedForsuitableFontWFDings = false;
 
+	/**
+	 * For XSL FO output of Webdings and the Wingdings fonts, 
+	 * most are in Noto Sans Symbols 2 Regular, but some ranges are not.
+	 * This returns the font containing the remainder. 
+	 * @return
+	 */
+	public static PhysicalFont getWDingsFont2() {
+		
+		if (suitableFontWDings2!=null) return suitableFontWDings2;
+		
+		if (haveLookedForsuitableFontWFDings2) {
+			return null;
+		} else { 
+			haveLookedForsuitableFontWFDings2 = true; 
+			suitableFontWDings2 = PhysicalFonts.get("Noto Sans Symbols Regular");
+			if (suitableFontWDings2!=null) {
+				log.info("Will use Noto Sans Symbols Regular for bullets");
+				return suitableFontWDings2;
+			}
+			suitableFontWDings2 = PhysicalFonts.get("Segoe UI Symbol");
+			if (suitableFontWDings2!=null) {
+				log.info("Will use Segoe UI Symbol for bullets");
+				return suitableFontWDings2;
+			}
+			return null;
+		}
+	}
+	private static PhysicalFont suitableFontWDings2;
+	private static boolean haveLookedForsuitableFontWFDings2 = false;
+	
+	/**
+	 * For XSL FO output of Webdings and the Wingdings fonts, 
+	 * substitute a font known to contain the appropriate glyphs
+	 * (if font is present). 
+	 * @return
+	 */
+	public static PhysicalFont getSymbolFont() {
+		
+		if (suitableFontSymbol!=null) return suitableFontSymbol;
+		
+		if (haveLookedForsuitableFontSymbol) {
+			return null;
+		} else { 
+			haveLookedForsuitableFontSymbol = true; 
+			suitableFontSymbol = PhysicalFonts.get("DejaVu Serif");
+			if (suitableFontSymbol!=null) {
+				log.info("Will use Noto Sans Symbols Regular for bullets");
+				return suitableFontSymbol;
+			}
+			suitableFontSymbol = PhysicalFonts.get("Segoe UI Symbol");
+			if (suitableFontSymbol!=null) {
+				log.info("Will use Segoe UI Symbol for bullets");
+				return suitableFontSymbol;
+			}
+			return null;
+		}
+	}
+	private static PhysicalFont suitableFontSymbol;
+	private static boolean haveLookedForsuitableFontSymbol = false;
+
+	
 	public static void main(String[] args) throws Exception {
 
 		discoverPhysicalFonts();
