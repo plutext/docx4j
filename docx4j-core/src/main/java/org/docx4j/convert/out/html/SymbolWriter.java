@@ -19,8 +19,6 @@
  */
 package org.docx4j.convert.out.html;
 
-import java.nio.charset.StandardCharsets;
-
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
@@ -47,7 +45,7 @@ import org.w3c.dom.Text;
  * if you add it some other way.  The other case is
  * handled in RunFontSelector.
  * 
- *  @author Jason Harrop
+ *  @author Jason Harrop, tom07091
  *  
 */
 public class SymbolWriter extends AbstractSymbolWriter {
@@ -58,7 +56,7 @@ public class SymbolWriter extends AbstractSymbolWriter {
 
 	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
 	
-	private final static boolean USE_UNICODE_SYMBOL_REPLACEMENTS = true; //TODO: make this configurable
+	private final static boolean USE_UNICODE_SYMBOL_REPLACEMENTS = true; 
 	
 	@Override
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
