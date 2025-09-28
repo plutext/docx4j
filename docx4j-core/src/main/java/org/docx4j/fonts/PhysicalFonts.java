@@ -637,6 +637,14 @@ public class PhysicalFonts {
 	 */
 	public static PhysicalFont getWDingsFont2() {
 		
+		/* The following ranges are in Noto Sans Symbols Regular:
+		 * 
+		 * Wingdings:    85-105, 128-149   [where is 83, 85, 87?]
+		 * Wingdings 2:  105-126 [where is 87-88?]
+		 * Wingdings 3:  102-109
+		 * 
+		 */
+		
 		if (suitableFontWDings2!=null) return suitableFontWDings2;
 		
 		if (haveLookedForsuitableFontWFDings2) {
@@ -645,7 +653,7 @@ public class PhysicalFonts {
 			haveLookedForsuitableFontWFDings2 = true; 
 			suitableFontWDings2 = PhysicalFonts.get("Noto Sans Symbols Regular");
 			if (suitableFontWDings2!=null) {
-				log.info("Will use Noto Sans Symbols Regular for bullets");
+				log.info("Will use Noto Sans Symbols Regular for remaining bullets");
 				return suitableFontWDings2;
 			}
 			suitableFontWDings2 = PhysicalFonts.get("Segoe UI Symbol");
@@ -675,7 +683,7 @@ public class PhysicalFonts {
 			haveLookedForsuitableFontSymbol = true; 
 			suitableFontSymbol = PhysicalFonts.get("DejaVu Serif");
 			if (suitableFontSymbol!=null) {
-				log.info("Will use Noto Sans Symbols Regular for bullets");
+				log.info("Will use DejaVu Serif for Symbol font");
 				return suitableFontSymbol;
 			}
 			suitableFontSymbol = PhysicalFonts.get("Segoe UI Symbol");

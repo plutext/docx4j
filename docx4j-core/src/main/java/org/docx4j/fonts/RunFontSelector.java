@@ -335,10 +335,11 @@ public class RunFontSelector {
 			} 
 			
 			try {
-				if (GlyphCheck.hasChar(pf, textValue.charAt(0))) {
+				if (GlyphCheck.hasCodepoint(pf, textValue.codePointAt(0))) {
 					// good, it is there
-				} else if (pf2!=null && GlyphCheck.hasChar(pf2, textValue.charAt(0))) {
+				} else if (pf2!=null && GlyphCheck.hasCodepoint(pf2, textValue.codePointAt(0))) {
 					pf =pf2; // use pf2
+					log.debug("For " + fontName + " mapped to " + textValue.codePointAt(0) + ", using 2nd substitute font " + pf2.getName());
 				} else {
 					log.warn("Missing symbol " + fontName + " " + textValue);
 				}
