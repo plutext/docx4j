@@ -605,6 +605,28 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 		<bold filename="LiberationMono-Bold.ttf"/>
 		<italic filename="LiberationMono-Italic.ttf"/>
 	</font>
+
+<!-- Symbol fonts @since 11.5.6-->
+
+<font name="Noto Sans Symbols Regular" filename="NotoSansSymbols-Regular.ttf">
+		<bold filename="NotoSansSymbols-Bold.ttf"/>
+		<!-- no italic -->
+	</font>
+
+<font name="Noto Sans Symbols 2 Regular" filename="NotoSansSymbols2-Regular.ttf">
+		<!-- no bold -->
+		<!-- no italic -->
+	</font>
 	
+<font name="DejaVu Serif" filename="DejaVuSerif.ttf">
+		<bold filename="DejaVuSerif-Bold.ttf"/>
+		<italic filename="DejaVuSerif-Italic.ttf"/>
+		<bolditalic filename="DejaVuSerif-BoldItalic.ttf"/>
+	</font>
+
+<font name="Segoe UI Symbol" filename="seguisym.ttf">
+		<!-- no bold -->
+		<!-- no italic -->
+	</font>
 
 </MicrosoftFonts>			
