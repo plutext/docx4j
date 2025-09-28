@@ -26,8 +26,10 @@
 package org.docx4j.fonts.fop.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import jakarta.xml.bind.Marshaller;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.fopconf.Fonts.Font;
 import org.docx4j.convert.out.fopconf.Fop;
 import org.docx4j.convert.out.fopconf.Fop.Fonts;
 import org.docx4j.convert.out.fopconf.Fop.Renderers;
@@ -134,13 +137,20 @@ public class FopConfigUtil {
 	protected static org.docx4j.convert.out.fopconf.Fonts declareRendererFonts(Mapper fontMapper, Set<String> fontsInUse) {
 
 		org.docx4j.convert.out.fopconf.Fonts rendererFonts = factory.createFonts();
-		
+
 		if (fontsInUse.size()==0) {
 			log.error("No fonts detected in document!");
 			return rendererFonts;
 		}
 		
-		boolean haveSomeMappedPhysicalFonts = false;
+		/* The idea here is to avoid duplicates,
+                <font simulate-style="false" embed-url="file:/usr/share/fonts/noto/NotoSansSymbols2-Regular.ttf">
+                    <font-triplet name="Noto Sans Symbols 2 Regular" style="normal" weight="normal"/>
+                </font>
+           gets key @embed-url
+		 */
+
+		Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries = new HashMap<String, org.docx4j.convert.out.fopconf.Fonts.Font>(); 
 		
 		if (Docx4jProperties.getProperty("docx4j.fonts.fop.util.FopConfigUtil.simulate-style", false)) {
 		// <font simulate-style="true"	
@@ -166,11 +176,10 @@ public class FopConfigUtil {
 			    	log.warn("Document font " + fontName + " is not mapped to a physical font!");
 			    	// We may still have eg Cambria-bold embedded, but ignore this for now
 			    } else {
-			    	haveSomeMappedPhysicalFonts = true;
 			    	
-			    	createFontEntrySimulateStyles( fontMapper,  rendererFonts, fontName, pf);
+			    	createFontEntrySimulateStyles( fontMapper,  fontEntries, fontName, pf);
 			    	if (pf2!=null) {
-			    		createFontEntrySimulateStyles( fontMapper,  rendererFonts, fontName, pf2);			    		
+			    		createFontEntrySimulateStyles( fontMapper,  fontEntries, fontName, pf2);			    		
 			    	}
 			    }
 			}
@@ -201,25 +210,30 @@ public class FopConfigUtil {
 			    	// We may still have eg Cambria-bold embedded
 			    } else {
 
-			    	haveSomeMappedPhysicalFonts = true;
-
-			    	createFontEntry( fontMapper,  rendererFonts, fontName, pf);
+			    	createFontEntry( fontMapper,  fontEntries, fontName, pf);
 			    	if (pf2!=null) {
-				    	createFontEntry( fontMapper,  rendererFonts, fontName, pf2);			    		
+				    	createFontEntry( fontMapper,  fontEntries, fontName, pf2);			    		
 			    	}
 			    }
 			}
 		}
-		if (!haveSomeMappedPhysicalFonts) log.warn("No fonts configured!");
+		if (fontEntries.isEmpty()) {
+			log.warn("No fonts configured!");
+		} else {
+			for (Entry<String, Font> entry : fontEntries.entrySet() ) {
+				rendererFonts.getFont().add(entry.getValue());
+			}			
+		}
 		return rendererFonts;
 	}
 
-	private static void createFontEntrySimulateStyles(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+	private static void createFontEntrySimulateStyles(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf) {
 		
     	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);
+    	
     	rendererFont.setSimulateStyle(false);
-    	rendererFonts.getFont().add(rendererFont);
     	
 	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
 	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
@@ -246,17 +260,18 @@ public class FopConfigUtil {
     				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
     						weightToCSS2FontWeight(fontTriplet.getWeight())));
 		    			    
-		    addVariations(fontMapper, rendererFonts, fontName, pf, rendererFont.getSubFont());
+		    addVariations(fontMapper, fontEntries, fontName, pf, rendererFont.getSubFont());
     	}
 		
 	}	
 	
-	private static void createFontEntry(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+	private static void createFontEntry(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf) {
 
     	org.docx4j.convert.out.fopconf.Fonts.Font rendererFont = factory.createFontsFont();
+		fontEntries.put(pf.getEmbeddedURI().toString(), rendererFont);    	
+    	
     	rendererFont.setSimulateStyle(false);
-    	rendererFonts.getFont().add(rendererFont);
     	
 	    if (pf.getEmbedFontInfo().getSubFontName()!=null) {
 	    	rendererFont.setSubFont( pf.getEmbedFontInfo().getSubFontName() );
@@ -270,7 +285,7 @@ public class FopConfigUtil {
 				createFontTriplet(fontTriplet.getName(), fontTriplet.getStyle(), 
 						weightToCSS2FontWeight(fontTriplet.getWeight())));
 
-	    addVariations(fontMapper, rendererFonts, fontName, pf, 
+	    addVariations(fontMapper, fontEntries, fontName, pf, 
 	    		pf.getEmbedFontInfo().getSubFontName());
 		
 	}
@@ -284,29 +299,31 @@ public class FopConfigUtil {
 		return triplet;
 	}
 
-	private static void addVariations(Mapper fontMapper, org.docx4j.convert.out.fopconf.Fonts rendererFonts, 
+	private static void addVariations(Mapper fontMapper, Map<String, org.docx4j.convert.out.fopconf.Fonts.Font> fontEntries, 
 			String fontName, PhysicalFont pf,
 			String subFontAtt) {
-		
-		
+				
 		// bold, italic etc
 		PhysicalFont pfVariation = fontMapper.getBoldForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold form");
 		} else {
-	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "normal", "bold"));
+			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "normal", "bold");
+    		fontEntries.put(variant.getEmbedUrl(), variant);
 		}
 		pfVariation = fontMapper.getBoldItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no bold italic form");
 		} else {
-	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "italic", "bold"));
+			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "italic", "bold");
+    		fontEntries.put(variant.getEmbedUrl(), variant);
 		}
 		pfVariation = fontMapper.getItalicForm(fontName, pf);
 		if (pfVariation==null) {
 			log.debug(fontName + " no italic form");
 		} else {
-	    	rendererFonts.getFont().add(createVariant(pf, pfVariation, subFontAtt, "italic", "normal"));
+			org.docx4j.convert.out.fopconf.Fonts.Font variant = createVariant(pf, pfVariation, subFontAtt, "italic", "normal");
+    		fontEntries.put(variant.getEmbedUrl(), variant);
 		}
 	}
 		
