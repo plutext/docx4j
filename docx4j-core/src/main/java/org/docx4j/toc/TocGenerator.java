@@ -156,7 +156,7 @@ public class TocGenerator {
      */
     @Deprecated
     public static SdtBlock generateToc(WordprocessingMLPackage wordMLPackage, int index, String instruction, boolean skipPageNumbering) throws TocException {
-    	return (new TocGenerator(wordMLPackage)).generateToc( wordMLPackage,  index,  instruction,  skipPageNumbering);
+    	return (new TocGenerator(wordMLPackage)).generateToc( index,  instruction,  skipPageNumbering);
     }
 	
     /**
