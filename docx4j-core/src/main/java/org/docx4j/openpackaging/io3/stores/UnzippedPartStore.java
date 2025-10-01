@@ -109,7 +109,7 @@ public class UnzippedPartStore implements PartStore {
 
 		String filePath = dir.getPath() + dir.separator + partName;
 
-		System.out.println("Using " + filePath);
+		log.debug("Using " + filePath);
 
 		InputStream is;
 		try {
@@ -184,10 +184,22 @@ public class UnzippedPartStore implements PartStore {
 		}
 
 		String filePath = dir.getPath() + dir.separator + targetName;
-		System.out.println("Saving " + filePath);
+		log.debug("Saving " + filePath);
 		try {
 
 			File file = new File(filePath);
+			
+			// Safe path validation
+			if (!file.getCanonicalPath().startsWith(dir.getCanonicalPath() + File.separator)) {
+			    throw new Docx4JException("Zip Slip detected. Entry is outside of the target directory.");
+			    /* Shouldn't be necessary, because it ought to be prevented earlier:
+					org.docx4j.openpackaging.exceptions.InvalidFormatException: A segment shall not end with a dot ('.') character [M1.9]: /../../../filename
+						at org.docx4j.openpackaging.parts.PartName.throwExceptionIfPartNameHaveInvalidSegments(PartName.java:305)
+						at org.docx4j.openpackaging.parts.PartName.throwExceptionIfInvalidPartUri(PartName.java:228)
+						at org.docx4j.openpackaging.parts.PartName.<init>(PartName.java:161)
+				     */
+			}			
+			
 			file.getParentFile().mkdirs();
 
 			if (part.isUnmarshalled() ) {
@@ -291,7 +303,7 @@ public class UnzippedPartStore implements PartStore {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 		String filePath = dir.getPath() + dir.separator + resolvedPartUri;
-		System.out.println("saveBinaryPart " + filePath);
+		log.debug("saveBinaryPart " + filePath);
 
 		File file = new File(filePath);
 		file.getParentFile().mkdirs();
