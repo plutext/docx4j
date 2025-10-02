@@ -2,6 +2,27 @@ CHANGELOG
 =========
 
 
+Version 11.5.6 (minor release) 
+===============
+
+Release date
+------------
+
+[  ] October 2025
+
+
+Contributors to this release
+----------------------------
+
+Changes in Version 11.5.6
+--------------------------
+
+Zip bomb defenses: default for docx4j.openpackaging.parts.MAX_BYTES.unzip.error changed from disabled to 50 MB.
+Additional settings introduced: 
+- MAX_UNCOMPRESSED_SIZE for the entire file (defaults to 50MB); 
+- MAX_RATIO, which triggers on a suspect compression ratio (defaults to 500); only checked when reading from a File (not InputStream).
+
+
 Version 11.5.5 (minor release) 
 ===============
 

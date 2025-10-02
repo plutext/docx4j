@@ -41,6 +41,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
+import org.docx4j.openpackaging.exceptions.FileTooLargeException;
 import org.docx4j.openpackaging.exceptions.PartTooLargeException;
 import org.docx4j.openpackaging.parts.*;
 import org.docx4j.openpackaging.parts.WordprocessingML.*;
@@ -62,22 +63,25 @@ public class ZipPartStore implements PartStore {
 
 	HashMap<String, ByteArray> partByteArrays;
 	
-	long MAX_BYTES_Unzip_Error = -1;
+	private static final long MAX_BYTES_Unzip_Error;
+    private static final long MAX_UNCOMPRESSED_SIZE; 
+    private static final double MAX_RATIO; 
+
+    static {
+		MAX_BYTES_Unzip_Error = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip.error", 52428800);
+		MAX_RATIO = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_RATIO.unzip.error", 500);
+		MAX_UNCOMPRESSED_SIZE = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_UNCOMPRESSED_SIZE.unzip.error", 52428800);   
+		if (log.isInfoEnabled()) {
+			log.info("MAX_BYTES.unzip.error: " + (MAX_BYTES_Unzip_Error/(1024*1024)) + " MB");
+			log.info("MAX_UNCOMPRESSED_SIZE.unzip.error: " + (MAX_UNCOMPRESSED_SIZE/(1024*1024)) + " MB");
+			log.info("MAX_RATIO.unzip.error: " + MAX_RATIO);
+		}
+    }
 	
-	private void initMaxBytes() {
-
-		MAX_BYTES_Unzip_Error = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip.error", -1);
-	}
-
-	public ZipPartStore() {
-		
-		initMaxBytes();
-	}
+	public ZipPartStore() {}    
 
 	public ZipPartStore(File f) throws Docx4JException {
-		
-		initMaxBytes();
-		
+				
 		log.info("Filepath = " + f.getPath() );
 
 		ZipFile zf = null;
@@ -92,14 +96,42 @@ public class ZipPartStore implements PartStore {
 		}
 
 		partByteArrays = new HashMap<String, ByteArray>();
+		long totalUncompressedSize = 0;
 		Enumeration entries = zf.getEntries();
 		while (entries.hasMoreElements()) {
 			ZipArchiveEntry entry = (ZipArchiveEntry) entries.nextElement();
 			policePartSize(f, entry.getSize(), entry.getName());
+			
+            // Get uncompressed and compressed sizes from the entry metadata
+            long uncompressedSize = entry.getSize();
+            long compressedSize = entry.getCompressedSize();
+			
+            // Perform zip bomb check: excessive compression ratio
+            if (MAX_RATIO>-1) {
+    			if (uncompressedSize != -1 && compressedSize != -1) {
+	                double compressionRatio = (double) uncompressedSize / compressedSize;
+	                if (compressionRatio > MAX_RATIO) {
+	                    throw new PartTooLargeException("Zip bomb detected: Excessive compression ratio for entry " + entry.getName());
+	                }
+    			} else {
+    				log.warn("Size (compressed or uncompressed) missing for entry: " + entry.getName());
+    			}
+            }
+                        
 			InputStream in = null;
 			try {
 				byte[] bytes =  getBytesFromInputStream( zf.getInputStream(entry), entry.getSize() );
 				policePartSize(f, bytes.length, entry.getName()); // in case earlier check ineffective
+				
+	            // Add the current entry's size to the total uncompressed size
+	            totalUncompressedSize += bytes.length;            
+
+	            // Check against the maximum total uncompressed size
+	            if (MAX_UNCOMPRESSED_SIZE>-1
+	    				&& totalUncompressedSize > MAX_UNCOMPRESSED_SIZE) {
+	                throw new FileTooLargeException("Zip bomb detected: Total uncompressed size exceeds limit in Docx4j.properties.");
+	            }
+				
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
 			} catch (PartTooLargeException e) {
 				throw e;
@@ -130,11 +162,18 @@ public class ZipPartStore implements PartStore {
 		
 	}
 
+	/**
+	 * Note this uses a streaming parser which doesn't have access 
+	 * to entry.getCompressedSize, making it more susceptible to a zip bomb attack.
+	 * If you are concerned, use ZipPartStore(File f).
+	 * @param is
+	 * @throws Docx4JException
+	 */
 	public ZipPartStore(InputStream is) throws Docx4JException {
 
-		initMaxBytes();
-		
 		partByteArrays = new HashMap<String, ByteArray>();
+		long totalUncompressedSize = 0;
+		
        try {
             ZipArchiveInputStream zis = new ZipArchiveInputStream(is);
             ArchiveEntry entry = null;
@@ -142,10 +181,20 @@ public class ZipPartStore implements PartStore {
             	// How to read the data descriptor for length? ie before reading?
             	// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=4079029
     			policePartSize(null, entry.getSize(), entry.getName());
-            	
+
 				byte[] bytes =  getBytesFromInputStream( zis, entry.getSize() );
 				//log.debug("Extracting " + entry.getName());
 				policePartSize(null, bytes.length, entry.getName()); // in case earlier check ineffective
+				
+                // Add the current entry's size to the total uncompressed size
+                totalUncompressedSize += bytes.length;            
+
+                // Check against the maximum total uncompressed size
+                if (MAX_UNCOMPRESSED_SIZE>-1
+        				&& totalUncompressedSize > MAX_UNCOMPRESSED_SIZE) {
+                    throw new FileTooLargeException("Zip bomb detected: Total uncompressed size exceeds limit in Docx4j.properties.");
+                }
+								
 				partByteArrays.put(entry.getName(), new ByteArray(bytes) );
             }
             zis.close();
