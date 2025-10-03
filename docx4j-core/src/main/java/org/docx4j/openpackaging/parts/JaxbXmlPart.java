@@ -74,6 +74,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPartFilterOut
 import org.docx4j.org.apache.poi.util.XMLHelper;
 import org.docx4j.org.apache.xml.security.Init;
 import org.docx4j.org.apache.xml.security.c14n.Canonicalizer;
+import org.docx4j.utils.StaXInputFactoryUtils;
 import org.docx4j.utils.XMLStreamWriterWrapper;
 import org.docx4j.utils.XMLStreamWriterWrapperIndenting;
 import org.slf4j.Logger;
@@ -1192,12 +1193,11 @@ public abstract class JaxbXmlPart<E> /* used directly only by DocProps parts, Re
 		 */
 
 		// Guard against XXE
-	    XMLInputFactory xif = XMLInputFactory.newInstance();
-	    xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-	    xif.setProperty(XMLInputFactory.SUPPORT_DTD, false); // a DTD is merely ignored, its presence doesn't cause an exception
+	    XMLInputFactory xif = StaXInputFactoryUtils.getXMLInputFactory();  
 		return xif.createXMLStreamReader(is);
 		
 	}
+	
     
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
