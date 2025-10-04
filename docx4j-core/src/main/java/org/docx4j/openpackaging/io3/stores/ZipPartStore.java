@@ -76,6 +76,10 @@ public class ZipPartStore implements PartStore {
 			log.info("MAX_UNCOMPRESSED_SIZE.unzip.error: " + (MAX_UNCOMPRESSED_SIZE/(1024*1024)) + " MB");
 			log.info("MAX_RATIO.unzip.error: " + MAX_RATIO);
 		}
+		/*  Potential TODOs:
+				•	Enforce maxEntries
+				•	Reject or limit handling of nested archives (e.g., zip-in-zip). If you allow them, enforce maxNestingDepth.
+		*/
     }
 	
 	public ZipPartStore() {}    
