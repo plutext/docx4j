@@ -44,6 +44,8 @@ import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.util.JAXBResult;
 import jakarta.xml.bind.util.JAXBSource;
+
+import javax.xml.XMLConstants;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -312,9 +314,16 @@ public class XmlUtils {
 			StackTraceElement[] elements = e.getStackTrace();
 			if (elements.length>0) log.warn(elements[0].toString());				
 		}
-//		try {
-//			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
+		try {
+			// @since 11.5.6
+			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//
+//			// Sets:		
+//			//  entityExpansionLimit = 64000  - redundant
+//			//  elementAttributeLimit = 1000
+//			//  maxOccurLimit = 5000		  - wouldn't be a problem, since doesn't apply where maxOccurs=unbounded
+		
+		} catch (ParserConfigurationException e) { log.error(e.getMessage(), e); }
 		
 		// see also https://svn.apache.org/repos/asf/shindig/trunk/java/common/src/main/java/org/apache/shindig/common/xml/XmlUtil.java
 		// for how Shindig does it
