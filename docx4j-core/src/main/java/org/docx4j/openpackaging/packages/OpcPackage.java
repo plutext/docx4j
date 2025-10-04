@@ -34,11 +34,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-
 import org.docx4j.Docx4J;
 import org.docx4j.TextUtils;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
@@ -52,13 +47,11 @@ import org.docx4j.events.PackageIdentifierTransient;
 import org.docx4j.events.StartEvent;
 import org.docx4j.events.WellKnownProcessSteps;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.PackageRelsUtil;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.io3.stores.PartStore;
@@ -80,6 +73,8 @@ import org.docx4j.org.apache.poi.poifs.crypt.Encryptor;
 import org.docx4j.org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.xml.bind.JAXBElement;
 
 
 /**
@@ -291,21 +286,8 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	public static OpcPackage load(final java.io.File docxFile, String password) throws Docx4JException {
 		
 		PackageIdentifier name = new PackageIdentifierTransient(docxFile.getName());
-		
-		try {
-			 final FileInputStream fileInputStream = new FileInputStream(docxFile);
-			    try {
-				return OpcPackage.load(name, fileInputStream, password);
-			    } finally {
-				try {
-				    fileInputStream.close();
-				} catch (final IOException e) {
-				    log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
-				}
-			    }
-		} catch (final FileNotFoundException e) {
-			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
-		}
+
+		return load(name, docxFile, password);
 	}
 
 	/**
@@ -322,20 +304,45 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 	 */	
 	public static OpcPackage load(PackageIdentifier pkgIdentifier, final java.io.File docxFile, String password) throws Docx4JException {
 		
-		try {
-			final FileInputStream fileInputStream = new FileInputStream(docxFile);
+		try (FileInputStream fileInputStream = new FileInputStream(docxFile)) {
+			
+			//try to detect the type of file using a bufferedinputstream
+			final BufferedInputStream bis = new BufferedInputStream(fileInputStream);
+			bis.mark(0);
+			final byte[] firstTwobytes=new byte[2];
+			int read=0;
 			try {
-				return OpcPackage.load(pkgIdentifier, fileInputStream, password);
-			} finally {
-				try {
-					fileInputStream.close();
-				} catch (final IOException e) {
-					log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e.getMessage());
-				}
+				read = bis.read(firstTwobytes);
+				bis.reset();
+			} catch (final IOException e) {
+				throw new Docx4JException("Error reading from the stream", e);
 			}
+			if (read!=2){
+				throw new Docx4JException("Error reading from the stream (no bytes available)");
+			}
+			
+			if (firstTwobytes[0]=='P' && firstTwobytes[1]=='K') { // 50 4B
+				
+				// Prefer uncompressing file to uncompressing InputStream
+				return loadFile(docxFile, pkgIdentifier);
+				
+			} else if  (firstTwobytes[0]==(byte)0xD0 && firstTwobytes[1]==(byte)0xCF) {
+				// password protected docx is a compound file, with signature D0 CF 11 E0 A1 B1 1A E1
+				log.info("Detected compound file");
+				return OpcPackage.load(pkgIdentifier, bis, Filetype.Compound, password);
+			} else {
+				//Assume..
+				log.info("Assuming Flat OPC XML");
+				return OpcPackage.load(pkgIdentifier, bis, Filetype.FlatOPC, null);
+			}		
+			
 		} catch (final FileNotFoundException e) {
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
+		} catch (IOException e1) {
+			//  automatic close() invocation 
+			log.warn("Could not close fileInputStream of file {}: {}", docxFile.toString(), e1.getMessage());
 		}
+		return null;
 	}
 	
 	/**
@@ -508,22 +515,7 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 		
 		if (type.equals(Filetype.ZippedPackage)){
 
-			StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
-			startEvent.publish();			
-			
-			// We can/should use Common Compress' ZipFile in preference to ZipArchiveInputStream
-			final ZipPartStore partLoader = new ZipPartStore(file);
-			final Load3 loader = new Load3(partLoader);
-			OpcPackage opcPackage = loader.get();
-			
-			opcPackage.setNew(false);
-			
-			if (pkgIdentifier!=null) {
-				opcPackage.setName(pkgIdentifier.name());
-			}
-			
-			new EventFinished(startEvent).publish();						
-			return opcPackage;
+			return loadFile(file, pkgIdentifier);
 			
 		} else {
 			try {
@@ -543,6 +535,32 @@ public abstract class OpcPackage extends Base implements PackageIdentifier {
 			}
 			
 		}
+	}
+
+	/**
+	 *  We can/should use Common Compress' ZipFile in preference to ZipArchiveInputStream
+	 *  
+	 * @param file
+	 * @param pkgIdentifier
+	 * @return
+	 * @throws Docx4JException
+	 */
+	private static OpcPackage loadFile(final File file, PackageIdentifier pkgIdentifier) throws Docx4JException {
+		StartEvent startEvent = new StartEvent( pkgIdentifier,  WellKnownProcessSteps.PKG_LOAD );
+		startEvent.publish();			
+		
+		final ZipPartStore partLoader = new ZipPartStore(file);
+		final Load3 loader = new Load3(partLoader);
+		OpcPackage opcPackage = loader.get();
+		
+		opcPackage.setNew(false);
+		
+		if (pkgIdentifier!=null) {
+			opcPackage.setName(pkgIdentifier.name());
+		}
+		
+		new EventFinished(startEvent).publish();						
+		return opcPackage;
 	}
 	
 	/**
