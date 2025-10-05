@@ -152,6 +152,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                 &lt;attribute name="leftChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                 &lt;attribute name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_SignedTwipsMeasure" />
  *                 &lt;attribute name="rightChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+ *                 &lt;attribute name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
+ *                 &lt;attribute name="startChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+ *                 &lt;attribute name="end" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
+ *                 &lt;attribute name="endChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                 &lt;attribute name="hanging" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
  *                 &lt;attribute name="hangingChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                 &lt;attribute name="firstLine" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
@@ -1242,6 +1246,10 @@ public class PPrBase implements Child
      *       &lt;attribute name="leftChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *       &lt;attribute name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_SignedTwipsMeasure" />
      *       &lt;attribute name="rightChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+     *       &lt;attribute name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
+     *       &lt;attribute name="startChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+     *       &lt;attribute name="end" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
+     *       &lt;attribute name="endChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *       &lt;attribute name="hanging" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
      *       &lt;attribute name="hangingChars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *       &lt;attribute name="firstLine" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TwipsMeasure" />
@@ -1268,6 +1276,14 @@ public class PPrBase implements Child
         protected BigInteger right;
         @XmlAttribute(name = "rightChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger rightChars;
+        @XmlAttribute(name = "start", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger start;
+        @XmlAttribute(name = "startChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger startChars;
+        @XmlAttribute(name = "end", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger end;
+        @XmlAttribute(name = "endChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger endChars;
         @XmlAttribute(name = "hanging", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger hanging;
         @XmlAttribute(name = "hangingChars", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -1375,6 +1391,102 @@ public class PPrBase implements Child
             this.rightChars = value;
         }
 
+        /**
+         * Gets the value of the start property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getStart() {
+            return start;
+        }
+
+        /**
+         * Sets the value of the start property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setStart(BigInteger value) {
+            this.start = value;
+        }
+
+        /**
+         * Gets the value of the startChars property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getStartChars() {
+            return startChars;
+        }
+
+        /**
+         * Sets the value of the startChars property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setStartChars(BigInteger value) {
+            this.startChars = value;
+        }
+        
+        /**
+         * Gets the value of the end property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getEnd() {
+            return end;
+        }
+
+        /**
+         * Sets the value of the end property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setEnd(BigInteger value) {
+            this.end = value;
+        }
+
+        /**
+         * Gets the value of the endChars property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getEndChars() {
+            return endChars;
+        }
+
+        /**
+         * Sets the value of the endChars property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setEndChars(BigInteger value) {
+            this.endChars = value;
+        }
+        
         /**
          * Gets the value of the hanging property.
          * 
