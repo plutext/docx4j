@@ -59,7 +59,9 @@ Update build.xml so it has the same version as pom.xml (ie without  -SNAPSHOT)
 
 Check jar versions in pom.xml, build.xml
 - run mvn versions:display-dependency-updates on core and JAXB x 2
-- run mvn validate to check byte code version and dependencyConvergence on core, JAXB and export-fo; fix using combo of dependency-management and exclusions
+- run mvn validate to check byte code version and dependencyConvergence on core, JAXB and export-fo; 
+though in the end flatten-maven-plugin specifies actual version of all dependencies specifically
+(so manually satisfying dependencyConvergence for each module is not necessary ).
 
 Check everything is committed (though nexus-staging-maven-plugin doesn't seem to care)
 
@@ -180,8 +182,8 @@ Repeat above for -ImportXHTML
 Run ant release (requires docx4j, -ImportXHTML  to be in maven)
 
  ant release  -buildfile etc/build.xml
-    
-Ideally you'd commit the branch with the actual released version number in the pom,
+ 
+commit the branch with the actual released version number in the pom,
 then checkout -b an incremented version number,
 and in that branch do -SNAPSHOT.
 

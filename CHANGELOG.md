@@ -2,25 +2,46 @@ CHANGELOG
 =========
 
 
-Version 11.5.6 (minor release) 
+Version 11.5.6  (minor release; some security tweaks) 
 ===============
 
 Release date
 ------------
 
-[  ] October 2025
+6 October 2025
 
 
 Contributors to this release
 ----------------------------
 
+benht-nps
+Jason Harrop
+
 Changes in Version 11.5.6
 --------------------------
+
+Note that if you are processing files > 50MB in size, you will need to set properties docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error and docx4j.openpackaging.parts.MAX_BYTES.unzip.error to larger values.
+
+PDF via XSL FO output: map symbol font characters to UTF-8; specify font to use for these on Linux and Windows systems.  OSX is a TODO.
+
+Support bullet symbols in HTML output.
+
+Fields - fix StackOverflowError where instruction contains nested fields.
+
+Some build and security tweaks:-
+
+pom.xml in released jars is created with flatten-maven-plugin, now with flattenDependencyMode set to all.  This pulls up both direct and transitive dependencies, and uses exclusions, so that in effect there are no transitive dependencies.
 
 Zip bomb defenses: default for docx4j.openpackaging.parts.MAX_BYTES.unzip.error changed from disabled to 50 MB.
 Additional settings introduced: 
 - MAX_UNCOMPRESSED_SIZE for the entire file (defaults to 50MB); 
 - MAX_RATIO, which triggers on a suspect compression ratio (defaults to 500); only checked when reading from a File (not InputStream).
+
+StaX XMLInputFactory configuration refactored (noted because configuring this is central to secure operation).
+
+Load a non-password protected docx File using Commons Compress as a file (ZipFile), rather than as a ZipArchiveInputStream, since  the former can read the ZIP archive's central directory (located at the end of the file).
+
+
 
 
 Version 11.5.5 (minor release) 
