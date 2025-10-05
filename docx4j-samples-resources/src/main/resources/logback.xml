@@ -56,24 +56,29 @@
 		name="org.docx4j.convert.out.common.writer.AbstractMessageWriter"
 		level="DEBUG" />
 
-	<logger name="org.docx4j.convert.out.fo" level="WARN" />
+	<logger name="org.docx4j.convert.out.fo" level="INFO" />
+	<!--
+	<logger name="org.docx4j.convert.out.fo.SymbolWriter" level="DEBUG" />
 
-	<logger name="org.docx4j.convert.out.html.ListsToContentControls" level="WARN" />
-
+	<logger name="org.docx4j.convert.out.html.ListsToContentControls" level="DEBUG" />
+	<logger name="org.docx4j.convert.out.html.SdtToListSdtTagHandler" level="DEBUG" />
+	<logger name="org.docx4j.convert.out.html.SymbolWriter" level="DEBUG" />
+	-->
+	
 	<logger name="org.docx4j.diff" level="INFO" />
 
 	<logger name="com.topologi" level="DEBUG" />
 
-	<logger name="org.docx4j.fonts" level="WARN" />
+	<logger name="org.docx4j.fonts" level="ERROR" />
+<!--	
 	<logger name="org.docx4j.fonts.fop.complexscripts.fonts.OTFAdvancedTypographicTableReader" level="WARN" />  
-	<!-- 
 	<logger name="org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder" level="WARN" /> 
 	<logger name="org.docx4j.fonts.BestMatchingMapper" level="WARN" />
-	<logger name="org.docx4j.fonts.PhysicalFonts" level="WARN" />
-
+	<logger name="org.docx4j.fonts.GlyphCheck" level="DEBUG" />
+	<logger name="org.docx4j.fonts.PhysicalFonts" level="DEBUG" />
 	<logger name="org.docx4j.fonts.RunFontSelector" level="WARN" />
- -->
 	<logger name="org.docx4j.fonts.fop.fonts.FontCache" level="WARN" /> 
+-->
 
 	<logger name="org.docx4j.jaxb" level="INFO" />
 
@@ -134,15 +139,14 @@
 
 	<logger name="org.docx4j.services.client" level="INFO" />
 
-	<logger name="org.docx4j.toc" level="DEBUG" />
+	<logger name="org.docx4j.toc" level="WARN" />
 
 	<logger name="org.docx4j.wml" level="WARN" />
 
+	<logger name="org.docx4j.utils.StaXInputFactoryUtils" level="WARN" />
 	<logger name="org.docx4j.utils.XPathFactoryUtil" level="INFO" />
 
 	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN" />
-
-	<logger name="org.docx4j.org.xhtmlrenderer" level="WARN"/>
 	        
 	<logger name="org.pptx4j" level="WARN"/>
 	
