@@ -70,7 +70,7 @@ public class ZipPartStore implements PartStore {
     static {
 		MAX_BYTES_Unzip_Error = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_BYTES.unzip.error", 52428800);
 		MAX_RATIO = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_RATIO.unzip.error", 500);
-		MAX_UNCOMPRESSED_SIZE = Docx4jProperties.getPropertyLong("docx4j.openpackaging.parts.MAX_UNCOMPRESSED_SIZE.unzip.error", 52428800);   
+		MAX_UNCOMPRESSED_SIZE = Docx4jProperties.getPropertyLong("docx4j.openpackaging.package.MAX_UNCOMPRESSED_SIZE.unzip.error", 52428800);   
 		if (log.isInfoEnabled()) {
 			log.info("MAX_BYTES.unzip.error: " + (MAX_BYTES_Unzip_Error/(1024*1024)) + " MB");
 			log.info("MAX_UNCOMPRESSED_SIZE.unzip.error: " + (MAX_UNCOMPRESSED_SIZE/(1024*1024)) + " MB");
