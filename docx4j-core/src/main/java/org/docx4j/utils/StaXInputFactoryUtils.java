@@ -50,6 +50,7 @@ public class StaXInputFactoryUtils {
     public static final int DEFAULT_MAX_ENTITY_EXPANSIONS = 20;
     private static final String JAXP_ENTITY_EXPANSION_LIMIT_KEY = "jdk.xml.entityExpansionLimit";
     private static final AtomicBoolean HAS_WARNED_STAX = new AtomicBoolean(false);
+    private static final AtomicBoolean HAS_WARNED_ACCESS_EXTERNAL_DTD = new AtomicBoolean(false);
 	
     /**
      * Returns the StAX input factory specified in this parsing context.
@@ -136,7 +137,13 @@ public class StaXInputFactoryUtils {
         try {
             factory.setProperty(key, value);
         } catch (IllegalArgumentException e) {
-        	log.warn("StAX Feature unsupported: {}", key, e);
+        	if (key.equals(XMLConstants.ACCESS_EXTERNAL_DTD)) {
+                if (HAS_WARNED_ACCESS_EXTERNAL_DTD.getAndSet(true) == false) {
+            		log.warn("StAX Feature unsupported: {}", key, e);
+                }        	
+        	} else {
+        		log.warn("StAX Feature unsupported: {}", key, e);
+        	}
         }
     }    
 	
