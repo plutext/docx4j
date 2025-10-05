@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import jakarta.xml.bind.JAXBElement;
-
 import org.docx4j.TraversalUtil;
+import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.finders.SdtFinder;
 import org.docx4j.finders.TcFinder;
 import org.docx4j.model.PropertyResolver;
@@ -18,9 +18,11 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.wml.Lvl;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtElement;
@@ -31,6 +33,8 @@ import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.xml.bind.JAXBElement;
 
 /**
  * Create list items in OL or UL (as appropriate).
@@ -204,11 +208,62 @@ public class ListsToContentControls {
 		}
 		
 		if (level.IsBullet()) {
-			tag.setVal("HTML_ELEMENT=UL");			
+			if (level.getLevelText()==null ) {
+				tag.setVal("HTML_ELEMENT=UL");
+			} else {
+				String font = getFont(level.getJaxbAbstractLvl());  // todo what if overridden?  does that ever happen in practice?
+				if (level.getJaxbAbstractLvl().getLvlPicBulletId()!=null ) {
+					log.warn("w:lvlPicBulletId not supported; falling back to w:lvlText");
+				}
+				log.debug("Font: " + font);
+				if (font == null) {
+					tag.setVal("HTML_ELEMENT=UL");					
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Processing '" + level.getLevelText() + "'");
+					}
+					byte[] valBytes = SymbolUtils.hexStringToByteArray(
+							Integer.toHexString(level.getLevelText().codePointAt(0)));	
+					// Usually private use area, so pre-process 
+					tag.setVal("HTML_ELEMENT=UL&lvlText=" + SymbolWriter.getReplacement(
+							valBytes, font));
+				}
+			}
 		} else {
 			tag.setVal("HTML_ELEMENT=OL");						
 		}
 		
+	}
+	
+	private String getFont(Lvl lvl) {
+		
+		if (lvl.getRPr()==null ) {
+			log.warn("Missing rPr in " + XmlUtils.marshaltoString(lvl));  // todo
+			return null;
+		}
+		if (lvl.getRPr().getRFonts()==null ) {
+			log.warn("Missing w:rFonts in " + XmlUtils.marshaltoString(lvl));  // todo
+			return null;
+		}
+		
+		RFonts rFonts = lvl.getRPr().getRFonts();
+		if (rFonts.getHAnsi()!=null) {  
+			String actualFontName = rFonts.getHAnsi();
+			if (actualFontName.equals("Symbol") || actualFontName.equals("Webdings") || actualFontName.equals("Wingdings") || actualFontName.equals("Wingdings 2") || actualFontName.equals("Wingdings 3") ) {
+				// good, we can map these
+				return actualFontName;
+			} else {
+				log.warn(actualFontName + " no font mapping for this?");
+				return actualFontName;
+			}
+		} else if (rFonts.getAscii()!=null) { 
+			log.debug("getAscii() fallback");
+			return rFonts.getAscii();			
+		} 
+		
+		// what to do?
+		log.warn("Handle w:rFonts in " + XmlUtils.marshaltoString(lvl));  // todo
+		return null;
 	}
 	
 	private List<Object> groupContent(List<Object> bodyElts) {
@@ -395,6 +450,4 @@ public class ListsToContentControls {
 		return resultElts;
 	}	
 	
-		
-
 }

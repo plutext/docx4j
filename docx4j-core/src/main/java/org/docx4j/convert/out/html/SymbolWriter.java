@@ -56,8 +56,6 @@ public class SymbolWriter extends AbstractSymbolWriter {
 
 	private final static Logger log = LoggerFactory.getLogger(SymbolWriter.class);
 	
-	private final static boolean USE_UNICODE_SYMBOL_REPLACEMENTS = true; 
-	
 	@Override
 	public Node toNode(AbstractWmlConversionContext context, Object unmarshalledNode, 
 			Node modelContent, TransformState state, Document doc)
@@ -71,50 +69,13 @@ public class SymbolWriter extends AbstractSymbolWriter {
 		
 		String fontName = modelData.getFont();
 		
-		String valStr;
-		boolean haveUnicodeReplacement = false;
-		
-		// Pre-process according to ECMA-376 2.3.3.29
-		// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
-		if (valBytes.length==2 && SymbolUtils.UNICODE_PRIV_USE_START <= SymbolUtils.short2Int(valBytes)
-				&& SymbolUtils.UNICODE_PRIV_USE_END >= SymbolUtils.short2Int(valBytes) ) {
-			
-			valBytes[0] = (byte)(valBytes[0] - 0xF0);
-			int nonZeroIdx = -1; 
-			for (int i=0; i<valBytes.length; i++) {
-				if (valBytes[i]!=0) {
-					nonZeroIdx = i;
-					break;
-				}
-			}
-			if (nonZeroIdx!=-1) {
-					
-				if (USE_UNICODE_SYMBOL_REPLACEMENTS) {
-						//check if we have a suitable unicode replacement character for the symbol
-					valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)SymbolUtils.short2Int(valBytes));
-					
-					if (valStr!=null) {
-						haveUnicodeReplacement = true;
-					}
-				}
-				if (!haveUnicodeReplacement) {
-					//valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
-					valStr = SymbolUtils.MISSING_SYMBOL;
-				}
-			} else {
-				valStr = ""; //valBytes only contains null characters
-			}
-			
-		} else {
-			int codePoint = SymbolUtils.short2Int(valBytes);
-			valStr = Character.toString( codePoint );
-		}
+		String valStr = getReplacement(valBytes, fontName);
 		
 	    Text theChar = doc.createTextNode( valStr );
 	    
 		DocumentFragment docfrag = doc.createDocumentFragment();
 			
-		if (haveUnicodeReplacement) {
+		if (!valStr.equals(SymbolUtils.MISSING_SYMBOL)) {
 			
 			Element span = doc.createElement("span");
 		    docfrag.appendChild(span);
@@ -143,9 +104,56 @@ public class SymbolWriter extends AbstractSymbolWriter {
 			    span.appendChild( theChar );
 			}
 		}
-	
 	    
 	    return docfrag;
+	}
+
+	public static String getReplacement(byte[] valBytes, String fontName) {
+		String valStr;
+		
+		// Pre-process according to ECMA-376 2.3.3.29
+		// If bytes are between 0xF000 and 0xFFFF, subtract 0xF000	
+		if (valBytes.length==2 && SymbolUtils.UNICODE_PRIV_USE_START <= SymbolUtils.short2Int(valBytes)
+				&& SymbolUtils.UNICODE_PRIV_USE_END >= SymbolUtils.short2Int(valBytes) ) {
+			
+			log.debug("In the Private Use Area");
+			
+			valBytes[0] = (byte)(valBytes[0] - 0xF0);
+			int nonZeroIdx = -1; 
+			for (int i=0; i<valBytes.length; i++) {
+				if (valBytes[i]!=0) {
+					nonZeroIdx = i;
+					break;
+				}
+			}
+			if (nonZeroIdx!=-1) {
+//				log.debug("Fetching replacement.");
+					
+				//check if we have a suitable unicode replacement character for the symbol
+				valStr = SymbolMapper.getUnicodeReplacementChar(fontName, (short)SymbolUtils.short2Int(valBytes));
+				
+				if (valStr==null) {
+					//valStr = new String(valBytes, nonZeroIdx, (valBytes.length-nonZeroIdx), StandardCharsets.ISO_8859_1); //TODO: check if this charset is correct
+					valStr = SymbolUtils.MISSING_SYMBOL;
+					log.debug("Missing symbol." );					
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Got " + valStr);
+					}
+				}
+			} else {
+//				valStr = ""; //valBytes only contains null characters
+				valStr = SymbolUtils.MISSING_SYMBOL;
+			}
+			
+		} else {
+			
+			log.debug("Not in Private Use Area");
+			
+			int codePoint = SymbolUtils.short2Int(valBytes);
+			valStr = Character.toString( codePoint );
+		}
+		return valStr;
 	}
 	  
 }

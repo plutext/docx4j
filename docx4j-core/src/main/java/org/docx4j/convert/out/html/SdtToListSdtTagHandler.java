@@ -5,6 +5,7 @@ import java.util.HashMap;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.common.writer.SymbolUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.SdtPr;
 import org.slf4j.Logger;
@@ -43,6 +44,10 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 			} else { // if (tagMap.get("HTML_ELEMENT").equals("UL")) {
 
 				Element xhtmlDiv = document.createElement("ul");
+				if (tagMap.get("lvlText")!=null) {
+					xhtmlDiv.setAttribute("style",  "list-style-type: '" + tagMap.get("lvlText") +"'; font-family: " + SymbolUtils.HTML_FONT_FAMILY ); 					
+				}
+				
 				docfrag.appendChild(xhtmlDiv);						
     			return attachContents(docfrag, xhtmlDiv, childResults);
 			}
@@ -56,6 +61,7 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 	public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
 			Node resultSoFar) throws TransformerException {
+		
 		try {
 			// Create a DOM builder and parse the fragment
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
@@ -75,6 +81,10 @@ public class SdtToListSdtTagHandler extends SdtTagHandler {
 			} else { // if (tagMap.get("HTML_ELEMENT").equals("UL")) {
 
 				Element xhtmlDiv = document.createElement("ul");
+				if (tagMap.get("lvlText")!=null) {
+					xhtmlDiv.setAttribute("style",  "list-style-type: '" + tagMap.get("lvlText") +"'; font-family: " + SymbolUtils.HTML_FONT_FAMILY ); 					
+				}
+				
 				docfrag.appendChild(xhtmlDiv);						
     			return attachContents(docfrag, xhtmlDiv, resultSoFar);
 			}
