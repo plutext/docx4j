@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.List;
 
 import org.docx4j.Docx4J;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
@@ -43,7 +44,7 @@ public class TraverseRemovePageBreakBefore {
 
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/fb.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/fb2/2.docx";
 				
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 
@@ -70,6 +71,7 @@ public class TraverseRemovePageBreakBefore {
 					new TraversalUtilPVisitor());
 		pVisitor.walkJAXBElements(body);
 		
+		System.out.println("setPageBreakBefore(falseVal) " + TraversalUtilPVisitor.count + " times");
 	}
 	public static class TraversalUtilPVisitor extends TraversalUtilVisitor<P> {
 		
@@ -80,6 +82,8 @@ public class TraverseRemovePageBreakBefore {
 			falseVal.setVal(Boolean.FALSE);
 		}
 		
+		public static int count = 0;
+		
 		@Override
 		public void apply(P p, Object parent, List<Object> siblings) {
 
@@ -88,8 +92,17 @@ public class TraverseRemovePageBreakBefore {
 							
 					) {
 				
-				p.getPPr().setPageBreakBefore(falseVal);
-				System.out.println("setPageBreakBefore(falseVal)");
+				System.out.println(XmlUtils.marshaltoString(p.getPPr()));
+				
+				if (p.getPPr().getPageBreakBefore().isVal()) {
+				
+					p.getPPr().setPageBreakBefore(falseVal);
+					System.out.println("setPageBreakBefore(falseVal)");
+					count++;
+				} else {
+					System.out.println("setPageBreakBefore was already false ");
+					
+				}
 								
 			}
 		}
