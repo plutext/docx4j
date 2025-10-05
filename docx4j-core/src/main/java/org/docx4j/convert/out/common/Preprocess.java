@@ -69,8 +69,9 @@ public class Preprocess extends ConversionFeatures {
 	 * @throws Docx4JException
 	 */
 	public static OpcPackage process(OpcPackage opcPackage, Set<String> features) throws Docx4JException {
-	OpcPackage  ret = opcPackage;
-	Set<String> relationshipTypes = null;
+		
+		OpcPackage  ret = opcPackage;
+		Set<String> relationshipTypes = null;
 		checkParams(opcPackage, features);
 		relationshipTypes = createRelationshipTypes(features);
 		if (features.contains(PP_COMMON_DEEP_COPY)) {
@@ -132,6 +133,7 @@ public class Preprocess extends ConversionFeatures {
 
 //		log.debug(wmlPackage.getMainDocumentPart().getXML());		
 		
+		// PP_COMMON_DEEP_COPY
 		WordprocessingMLPackage ret = (WordprocessingMLPackage)process((OpcPackage)wmlPackage, features);
 		
 		StartEvent startEvent = new StartEvent( ret, WellKnownProcessSteps.CONVERT_PREPROCESS );
