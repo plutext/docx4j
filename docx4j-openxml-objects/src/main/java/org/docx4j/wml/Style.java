@@ -823,7 +823,8 @@ public class Style implements Child
      */
     public boolean isCustomStyle() {
         if (customStyle == null) {
-            return true;
+        	// the style shall be assumed to be a built-in style
+            return false;
         } else {
             return customStyle;
         }
