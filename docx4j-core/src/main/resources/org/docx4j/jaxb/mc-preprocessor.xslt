@@ -140,6 +140,10 @@
            <xsl:attribute name="w:hanging"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template>  
 
+  <xsl:template match="w:ind/@w:firstLine" >  <!--  2025 10, v11.5.7 -->
+           <xsl:attribute name="w:firstLine"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
+  </xsl:template>  
+
   <xsl:template match="w:trHeight/@w:val" >
            <xsl:attribute name="w:val"><xsl:value-of select="format-number(., '#')" /></xsl:attribute>
   </xsl:template>  
