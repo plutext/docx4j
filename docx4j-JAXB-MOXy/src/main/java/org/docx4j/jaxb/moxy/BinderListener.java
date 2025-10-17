@@ -49,6 +49,10 @@ public class BinderListener implements BinderListenerInterface {
 			--add-opens org.eclipse.persistence.moxy/org.eclipse.persistence.jaxb=org.docx4j.JAXB_MOXy
 			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.oxm=org.docx4j.JAXB_MOXy
 			--add-opens org.eclipse.persistence.core/org.eclipse.persistence.internal.oxm.record=org.docx4j.JAXB_MOXy			
+			
+			// see also https://github.com/jakartaee/jaxb-api/issues/228
+			// and https://github.com/eclipse-ee4j/eclipselink/issues/1512
+			
 		 */
 		XMLBinder binderImpl = (XMLBinder)f.get(jaxbBinder);
 		
