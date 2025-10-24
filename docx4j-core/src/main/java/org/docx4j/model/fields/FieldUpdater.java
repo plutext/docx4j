@@ -234,6 +234,10 @@ public class FieldUpdater {
 		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
+			if (fr.getInstructions().isEmpty()) {
+				// field w/o instructions (empty)
+				continue;
+			}
 			
 //			if ("DOCPROPERTY".equals(fr.getFldName())) {
 			String fldName = fr.getFldName();
