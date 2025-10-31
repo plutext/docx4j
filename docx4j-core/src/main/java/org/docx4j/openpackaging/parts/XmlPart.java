@@ -420,12 +420,38 @@ public abstract class XmlPart extends Part {
 	 */
 	public boolean cachedXPathGetBoolean(String xpath, String prefixMappings) throws Docx4JException {
 
-		String booleanXPath = "boolean(" + xpath.trim() + ")";		
+		String approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		String booleanXPath = xpath;
+		if (approach.equals("cast1")
+				|| approach.equals("true") ) {
+
+			// Use XPath 1.0 conversion rules for boolean.
+			// Notably:-
+			//   string: false only for empty string.  ie the string "false" would return true!
+			//   node-set: true if non-empty
+			//   number: true if greater than zero
+		
+			booleanXPath = "boolean(" + xpath.trim() + ")";		
 			// always force XPath boolean handling;
 			// if we only did it in cases which don't start with boolean|not,
 			// how would we catch, for example: boolean(//foo) + string(//fileNumber[1])		
+			
+		} else if (approach.equals("cast2") ) {
+			String prefix = getNamespaceContext().getPrefix("http://www.w3.org/2001/XMLSchema");
+			if (prefix==null) {
+				// can't honour intended cast
+				log.debug("http://www.w3.org/2001/XMLSchema not in " + prefixMappings);
+				throw new Docx4JException("Can't cast expression to boolean using XPath 2.0 semantics because namespace not provided");
+			} else {
+				booleanXPath = prefix + ":boolean(" + xpath.trim() + ")";		
+			}
+			
+		} else {
+			log.error("Shouldn't happen");
+		}
 		
-		if (true || xPath.getClass().getName().equals("net.sf.saxon.xpath.XPathEvaluator")) {
+		
+		if (xPath.getClass().getName().equals("net.sf.saxon.xpath.XPathEvaluator")) {
 			return xpathGetAsBoolean( booleanXPath, prefixMappings);
 		}
 		
@@ -439,7 +465,7 @@ public abstract class XmlPart extends Part {
 			log.error(System.getProperty("java.vendor"));
 			log.error(System.getProperty("java.version"));
 			log.error(Locale.getDefault().toString());				
-			throw new Docx4JException("Exception executing " + xpath, e);
+			throw new Docx4JException("Exception executing " + xpath + "; " + e.getMessage(), e);
 		}
 		
 		if (xo instanceof XBoolean) {
@@ -465,7 +491,48 @@ public abstract class XmlPart extends Part {
 			try {
 				result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
 			} catch (XPathExpressionException e) {
-				throw new Docx4JException("Exception executing " + xpathB, e);
+
+				// Try to support legacy implementation migrating to XPath 2.0
+				// which hit Saxon's "cannot compare xs:boolean to xs:string"
+				// TODO this isn't going to help with something like "//Sender[@class='1']/id"
+				// or "string(//fileNumber[1])= 'xxxx' and string(//fileNumber[1])= 'xxxx'"
+				int pos = xpathB.indexOf("=")+1;
+				if (e.getMessage().toLowerCase().contains("cannot compare xs:boolean to xs:string")
+						&& pos>0) {
+
+					String setting = Docx4jProperties.getProperty("org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking", "strict");
+					
+					if (setting.equals("strict")) {
+						// usual Saxon behaviour
+						throw new Docx4JException("Exception executing " + xpathB + ";" + e.getMessage(), e);					
+					}
+					
+					String prefix = getNamespaceContext().getPrefix("http://www.w3.org/2001/XMLSchema");
+					if (setting.equals("cast2")) {
+						if (prefix==null) {
+							// can't honour intended cast
+							log.debug("http://www.w3.org/2001/XMLSchema not in " + prefixMappings);
+							throw new Docx4JException("Can't cast string to boolean using XPath 2.0 semantics while handling exception executing " + xpathB + ";" + e.getMessage(), e);
+						} else {
+							log.debug("Casting string to boolean using XPath 2.0 semantics");
+							xpathB=xpathB.substring(0, pos) + prefix + ":boolean(" + xpathB.substring(pos) + ")";							
+						}
+					} else if (setting.equals("cast1")) {				
+						log.debug("Casting string to boolean using XPath 1.0 semantics");
+						xpathB=xpathB.substring(0, pos) + "boolean(" + xpathB.substring(pos) + ")";
+					} else {
+						throw new Docx4JException("Unexpected value for property org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking while handling exception executing " + xpathB, e);						
+					}
+					log.info("compare xs:boolean to xs:string using " + xpathB);
+					try {
+						result = xPath.evaluate(xpathB, doc, XPathConstants.BOOLEAN );
+					} catch (XPathExpressionException e2) {
+						throw new Docx4JException("Exception executing " + xpathB + ";" + e2.getMessage() , e2);
+					}
+				} else {
+				
+					throw new Docx4JException("Exception executing " + xpathB + ";" + e.getMessage(), e);
+				}
 			}
 		}
 		if (result instanceof XBoolean) {

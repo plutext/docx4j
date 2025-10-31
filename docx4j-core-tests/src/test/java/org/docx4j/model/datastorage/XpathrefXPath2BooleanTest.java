@@ -27,33 +27,22 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 /**
- * Test XPath expression handling using XPath 1.0.
+ * Test XPath expression handling using XPath 2.0.
+ * You need Saxon for this.
+ * @since 11.5.7
  */
-public class XpathrefXPathBooleanTest {
+public class XpathrefXPath2BooleanTest {
 	
 	public static CustomXmlDataStoragePart xmlPart;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
-		Docx4jProperties.setProperty("org.opendope.conditions.Xpathref.XPathBoolean", "true");
+		XPathFactoryUtil.setxPathFactory(new net.sf.saxon.xpath.XPathFactoryImpl());
 		
-		/*
-		 *  https://www.w3.org/TR/1999/REC-xpath-19991116/#section-Boolean-Functions
-		 *  
-			The boolean function converts its argument to a boolean as follows:
-			
-			+ a number is true if and only if it is neither positive or negative zero nor NaN
-			
-			+ a node-set is true if and only if it is non-empty
-			
-			+ a string is true if and only if its length is non-zero
-			
-			an object of a type other than the four basic types is converted to a boolean in a way that is dependent on that type
-			
-			See also https://www.w3.org/TR/xpath-31/#id-ebv
-		 */
-		
+		Docx4jProperties.setProperty("org.opendope.conditions.Xpathref.XPathBoolean", "cast2");
+		Docx4jProperties.setProperty("org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking", "cast2");
+				
 		String xml = "<Template><fileNumber>xxxx</fileNumber><Sender class='1'><id>3</id><val>some</val><val2>true</val2></Sender><Receiver/></Template>";
 		
 		CustomXmlDataStorage dataStorage = new CustomXmlDataStorageImpl();
@@ -156,10 +145,21 @@ public class XpathrefXPathBooleanTest {
 	public void nodesetTrue() throws Exception {
 		
 		// non-empty
-		boolean result = evaluate("//Sender");
+		boolean result = evaluate("//Sender/val2");
 		assertTrue( result);
 	}
 
+	@Test
+	public void nodesetCastException() throws Exception {
+		
+		// 3sometrue
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");	
+		
+		// non-empty
+		boolean result = evaluate("//Sender");
+	}
+	
 	@Test
 	public void nodesetEmpty() throws Exception {
 		
@@ -183,35 +183,43 @@ public class XpathrefXPathBooleanTest {
 	}
 	
 	@Test
-	public void string2True() throws Exception {
+	public void string2CastError() throws Exception {
+		
+		// org.docx4j.openpackaging.exceptions.Docx4JException: Exception executing xs:boolean(string('hello'));net.sf.saxon.trans.XPathException: The string "hello" cannot be cast to a boolean
+
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");	
 		
 		// non-empty
 		boolean result = evaluate("string('hello')");
-		assertTrue( result);
 	}
 
 	@Test
-	public void string3True() throws Exception {
+	public void string3False() throws Exception {
 		
-		// note carefully!
 		boolean result = evaluate("string('false')");
-		assertTrue( result);
+		assertFalse( result);
 	}
 
 	@Test
-	public void string4True() throws Exception {
+	public void stringWhitespace() throws Exception {
+
+		// org.docx4j.openpackaging.exceptions.Docx4JException: Exception executing xs:boolean(string('hello'));net.sf.saxon.trans.XPathException: The string "hello" cannot be cast to a boolean
+
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");	
 		
 		// note carefully!
 		boolean result = evaluate("string('  ')");  // whitespace
-		assertTrue( result);
 	}
 	
 	@Test
-	public void stringFalse() throws Exception {
+	public void stringEmpty() throws Exception {
+
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");	
 		
-		// non-empty
 		boolean result = evaluate("string('')");
-		assertFalse( result);
 	}
 
 	/*********************************************************
@@ -266,79 +274,77 @@ public class XpathrefXPathBooleanTest {
 	
 	@Test
 	public void mixedType1() throws Exception {
+
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");	
 		
+		// net.sf.saxon.trans.XPathException: In {fn:boolean(...) = "foo"}: cannot compare xs:boolean to xs:string
 		boolean result = evaluate("boolean(/Template)='foo'");
-		assertTrue( result);
 	}
 
 	@Test
 	public void mixedType1B() throws Exception {
 		
 		boolean result = evaluate("boolean(/Template/Sender/val2)='true'");
-		assertTrue( result);  
+		assertTrue( result);  // would still fail; (cannot compare xs:boolean to xs:string) but for our workaround
 	}
 	
 	@Test
 	public void mixedType2() throws Exception {
 		
-		// Caused by: javax.xml.transform.TransformerException: Cannot invoke "org.docx4j.org.apache.xpath.ExtensionsProvider.extFunction(org.docx4j.org.apache.xpath.functions.FuncExtFunction, java.util.Vector)" because "extProvider" is null
-		
         thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
+        thrown.expectMessage("ValidationException");	
 		
+		// Saxon: the string (conversion from node-set) cannot be cast to a boolean
+		// In XPath 2.0+,  a string can only be cast to xs:boolean if its lexical value is exactly "true", "false", "1", or "0" (case-sensitive).
 		boolean result = evaluate("fn:boolean(/Template)='foo'", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
 
 	}
 
 	@Test
 	public void mixedType2A() throws Exception {
-
+		
         thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
+        thrown.expectMessage("cannot be cast to a boolean"); // foo
 		
 		boolean result = evaluate("fn:boolean(/Template/Sender/val2)='foo'", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+
 	}
 
 	@Test
 	public void mixedType2B() throws Exception {
-
-        thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
 		
+		// javax.xml.xpath.XPathExpressionException: net.sf.saxon.trans.XPathException: Cannot compare xs:boolean to xs:string
 		boolean result = evaluate("fn:boolean(/Template/Sender/val2)='true'", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+		assertTrue( result);  // true = 'true' would still fail; (cannot compare xs:boolean to xs:string) but for our workaround
 	}
 
 	@Test
 	public void mixedType2C() throws Exception {
-
-        thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
 		
 		boolean result = evaluate("fn:boolean(/Template/Sender/val2/text())='true'", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+		assertTrue( result);  // true = 'true' would still fail; (cannot compare xs:boolean to xs:string) but for our workaround
 	}
 
 	@Test
 	public void mixedType2D() throws Exception {
-
-        thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
 		
 		boolean result = evaluate("fn:boolean(//val2/text())=fn:boolean('true')", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+		assertTrue( result);  
 	}
 
 	@Test
 	public void mixedType2E() throws Exception {
-
-        thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
 		
 		boolean result = evaluate("fn:boolean(//val2/text())=boolean('true')", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+		assertTrue( result);  
 	}
 	
 	
 	@Test
 	public void mixedType3() throws Exception {
 		
+		// Saxon is happy with this
 		boolean result = evaluate("boolean(/Template)=boolean('foo')");
 		assertTrue( result);
 	}
@@ -346,11 +352,9 @@ public class XpathrefXPathBooleanTest {
 
 	@Test
 	public void mixedType4() throws Exception {
-
-        thrown.expect(Docx4JException.class); 
-        thrown.expectMessage("\"extProvider\" is null");	
 		
 		boolean result = evaluate("fn:boolean(true() )=boolean('true')", "xmlns:fn='http://www.w3.org/2001/XMLSchema'");
+		assertTrue( result); 
 	}
 	
 	
@@ -419,18 +423,22 @@ public class XpathrefXPathBooleanTest {
 		assertTrue( result);
 	}
 	
-	@Test // https://github.com/plutext/docx4j/issues/235
+	@Test 
 	public void booleanEqualsInPredicate() throws Exception {
 		
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");  // String 3 	
+		
 		boolean result = evaluate("//Sender[@class='1']/id");
-		assertTrue( result);
 	}
 	
-	@Test // https://github.com/plutext/docx4j/issues/235
+	@Test 
 	public void booleanEqualsInPredicate2() throws Exception {
+
+        thrown.expect(Docx4JException.class); 
+        thrown.expectMessage("cannot be cast to a boolean");  // String 'cdefg'	
 		
 		boolean result = evaluate("substring('abcdefg', 6 - number(//Sender[@class='1']/id))");		
-		assertTrue( result);
 	}
 
 	@Test

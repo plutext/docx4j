@@ -75,6 +75,11 @@
 			<version>${project.version}</version>
 		</dependency>
  	
+		<dependency>
+		  <groupId>net.sf.saxon</groupId>
+		  <artifactId>Saxon-HE</artifactId>
+		  <version>9.9.0-2</version>
+		</dependency> 	
 		
 		</dependencies>
 

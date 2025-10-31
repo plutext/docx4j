@@ -91,7 +91,10 @@ public class Xpathref implements Evaluable {
 			log.debug("Evaluating " + xpath.getDataBinding().getXpath());
 		}
 		
-		if (Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", false) ) {
+		String approach = Docx4jProperties.getProperty("org.opendope.conditions.Xpathref.XPathBoolean", "false");
+		if (approach.equals("cast1")
+				|| approach.equals("true")
+				|| approach.equals("cast2") ) {
 		
 			// Use XPath conversion rules for boolean.
 			// Notably:-
@@ -100,7 +103,7 @@ public class Xpathref implements Evaluable {
 			//   number: true if greater than zero
 			
 			if (log.isDebugEnabled()) {
-				log.debug("Using XPath conversion rules for boolean.");
+				log.debug("Using XPath conversion rules for boolean: " + approach);
 			}
 			
 			return xpathEval(pkg,
@@ -108,7 +111,7 @@ public class Xpathref implements Evaluable {
 							.getStoreItemID(), xpath.getDataBinding()
 							.getXpath(), xpath.getDataBinding()
 							.getPrefixMappings());
-
+			
 		} else {
 			
 			// Default behaviour, uses Boolean.parseBoolean
