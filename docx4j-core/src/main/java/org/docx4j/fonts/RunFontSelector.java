@@ -335,7 +335,7 @@ public class RunFontSelector {
 			} 
 			
 			try {
-				if (GlyphCheck.hasCodepoint(pf, textValue.codePointAt(0))) {
+				if (pf !=null && GlyphCheck.hasCodepoint(pf, textValue.codePointAt(0))) {
 					// good, it is there
 				} else if (pf2!=null && GlyphCheck.hasCodepoint(pf2, textValue.codePointAt(0))) {
 					pf =pf2; // use pf2
