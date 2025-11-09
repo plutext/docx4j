@@ -321,6 +321,10 @@ public class RunFontSelector {
     		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		
+    		if (textValue.equals(SymbolUtils.MISSING_SYMBOL)) {
+    			return;
+    		}
+    		
 			PhysicalFont pf = null;
 			PhysicalFont pf2 = null;
 			if (fontName.equals("Webdings")
@@ -501,12 +505,13 @@ public class RunFontSelector {
 		    					cp = translateUnicode2SingleByte(cp);
 		    				}
 		    				
-		    				if (cp>255 /* couldn't translate! */ ) {
-		    					log.info("Encountered unexpected char: " + actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) );
-//								String codePointString = new String(Character.toChars(cp));
-//								byte[] valBytes = codePointString.getBytes(StandardCharsets.UTF_8);
-								// what to do?  try anyway...
-		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
+		    				if (cp>255 /* couldn't translate using explicit mapping */ ) {
+		    					// Word will also do the following...
+		    					int mappedIndex = cp - 0xF000;
+		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)mappedIndex);
+		    					if (log.isDebugEnabled()) {
+		    						log.debug("Mapped char: " + actualFontName + " " + (short)cp + " Hex " + Integer.toHexString(cp) + " to " + (short)mappedIndex + " Hex " + Integer.toHexString(mappedIndex));
+		    					}
 		    				} /* usual case */ else {
 		    					valStr = SymbolMapper.getUnicodeReplacementChar(actualFontName, (short)cp);
 		    				}
@@ -524,8 +529,7 @@ public class RunFontSelector {
 	    			this.symbolSetAttribute(span, actualFontName, span.getTextContent() ); 
     			}
     			if (outputType== RunFontActionType.DISCOVERY) {
-    				// TODO?
-    				// vis.fontAction(fontName);
+    				vis.fontAction(actualFontName);
     			}
     			
     			return result(document);
