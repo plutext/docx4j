@@ -355,6 +355,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        		}
 	        	}
 				
+    			DocumentFragment rfsFrag = null;	        		
 				if (triple==null) {
 					getLog().warn("computed number ResultTriple was null");
 	        		if (getLog().isDebugEnabled() ) {
@@ -382,13 +383,17 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        				// do nothing, since we're already inheriting the formatting in the style
 	        				// (as opposed to the paragraph mark formatting)
 	        				// EXCEPT for font
-	        				XsltFOFunctions.setFont( conversionContext.getRunFontSelector(),  foListItemLabelBody, pPr, rPr,  triple.getNumString());        				
+	    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, rPr, triple.getNumString());
+	    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
+	        				
 	        			} else {
 
 	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemLabel );	        				
 	        				createFoAttributes(conversionContext.getWmlPackage(), rPrParagraphMark, foListItemBody );
 	        				
-							XsltFOFunctions.setFont( conversionContext.getRunFontSelector(),  foListItemLabelBody, pPr, rPrParagraphMark,  triple.getNumString());	        				
+	    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, rPrParagraphMark, triple.getNumString());
+	    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
+	        				
 	        			}
 	        			
 	        		} else {
@@ -398,7 +403,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	        			// pMark overrides numbering, except for font
 	        			// (which makes sense, since that would change the bullet)
 	        			// so set the font
-	        			XsltFOFunctions.setFont( conversionContext.getRunFontSelector(),  foListItemLabelBody,  pPr,  actual,  triple.getNumString());
+    					rfsFrag = (DocumentFragment)conversionContext.getRunFontSelector().fontSelector(pPr, actual, triple.getNumString());
+    					XsltFOFunctions.applyRunFontSelection(rfsFrag, foListItemLabelBody);
+	        			
         				// .. before taking rPrParagraphMark into account
 	            		StyleUtil.apply(rPrParagraphMark, actual); 
 //	        			System.out.println(XmlUtils.marshaltoString(actual));
@@ -421,7 +428,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
     			int numChars=1;	        		
         		if (triple.getBullet()!=null ) {
-	        		foListItemLabelBody.setTextContent(triple.getBullet() );
+//	        		foListItemLabelBody.setTextContent(triple.getBullet() );
+    		    	foListItemLabelBody.setTextContent(rfsFrag.getTextContent());  // give effect to any character mapping
+        			
 	        	} else if (triple.getNumString()==null) {
 	        		getLog().warn("computed NumString was null!");
 	        		if (getLog().isDebugEnabled() ) {

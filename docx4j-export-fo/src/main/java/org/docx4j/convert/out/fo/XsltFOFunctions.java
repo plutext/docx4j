@@ -539,6 +539,10 @@ public class XsltFOFunctions {
 		
 		Element foListItemLabelBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
 		foListItemLabel.appendChild(foListItemLabelBody);
+		// the following applies to the label the same ppr props as are applied to the body
+		// but it needs testing
+		// createFoAttributes(wmlPackage, pPr, foListItemLabelBody, true, true );				
+		
 		
 		Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-body");
 		foListItem.appendChild(foListItemBody);	
@@ -586,21 +590,22 @@ public class XsltFOFunctions {
 			
 			// OK just to override specific values
 			// Values come from numbering rPr, unless overridden in p-level rpr
+			DocumentFragment rfsFrag = null;
 			if(triple.getRPr()==null) {
 				
 				if (pPr.getRPr()==null) {
 					// do nothing, since we're already inheriting the formatting in the style
 					// (as opposed to the paragraph mark formatting)
 					// EXCEPT for font
-//	        				setFont( context,  foListItemLabelBody, rPr.getRFonts()); 
-					setFont( runFontSelector,  foListItemLabelBody,  pPr,  rPr,  triple.getNumString());
+					rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, rPr, triple.getNumString());
+					applyRunFontSelection(rfsFrag, foListItemLabelBody);
 				} else {
 					
 					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemLabel );	        				
 					createFoAttributes(wmlPackage, rPrParagraphMark, foListItemBody );	
 					
-//	        				setFont( context,  foListItemLabelBody, rPrParagraphMark.getRFonts()); 	        				
-					setFont( runFontSelector,  foListItemLabelBody,  pPr,  rPrParagraphMark,  triple.getNumString());
+					rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, rPrParagraphMark, triple.getNumString());
+					applyRunFontSelection(rfsFrag, foListItemLabelBody);
 				}
 				
 			} else {
@@ -610,7 +615,9 @@ public class XsltFOFunctions {
 				// pMark overrides numbering, except for font
 				// (which makes sense, since that would change the bullet)
 				// so set the font
-				setFont( runFontSelector,  foListItemLabelBody,  pPr,  actual,  triple.getNumString());
+				rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, actual, triple.getNumString());
+				applyRunFontSelection(rfsFrag, foListItemLabelBody);
+				
 				// .. before taking rPrParagraphMark into account
 				StyleUtil.apply(rPrParagraphMark, actual); 
 //	        			System.out.println(XmlUtils.marshaltoString(actual));
@@ -623,7 +630,9 @@ public class XsltFOFunctions {
 			
 			int numChars=1;
 			if (triple.getBullet()!=null ) {
-				foListItemLabelBody.setTextContent(triple.getBullet() );
+//				foListItemLabelBody.setTextContent(triple.getBullet() );  
+		    	foListItemLabelBody.setTextContent(rfsFrag.getTextContent());  // give effect to any character mapping performed by RFS
+				
 			} else if (triple.getNumString()==null) {
 				log.debug("computed NumString was null!");
 				if (log.isDebugEnabled() ) {
@@ -669,31 +678,26 @@ public class XsltFOFunctions {
 		return indentHandledByNumbering;
 	}
     
+    
     /**
-     * Use RunFontSelector to determine the correct font for the list item label.
-     * 
-     * @param context
-     * @param foListItemLabelBody
-     * @param pPr
-     * @param rPr
-     * @param text
+     * Use RunFontSelector result to set the correct font for the list item label.
      */
-    protected static void setFont(RunFontSelector runFontSelector, Element foListItemLabelBody, PPr pPr, RPr rPr, String text) {
+    protected static void applyRunFontSelection(DocumentFragment frag, Element foListItemLabelBody) {
     	
-    	DocumentFragment result = (DocumentFragment)runFontSelector.fontSelector(pPr, rPr, text);
-    	log.debug(XmlUtils.w3CDomNodeToString(result));
+    	if (log.isDebugEnabled()) {
+    		log.debug(XmlUtils.w3CDomNodeToString(frag));
+    	}
     	// eg <fo:inline xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="Times New Roman">1)</fo:inline>
     	
     	// Now get the attribute value
-    	if (result!=null && result.getFirstChild()!=null) {
-    		Attr attr = ((Element)result.getFirstChild()).getAttributeNode("font-family");
+    	if (frag!=null && frag.getFirstChild()!=null) {
+    		Attr attr = ((Element)frag.getFirstChild()).getAttributeNode("font-family");
     		if (attr!=null) {
     			foListItemLabelBody.setAttribute("font-family", attr.getValue());
     		}
     	}
 			
     }
-    
     
     protected static int getDistanceToNextTabStop( int pos, int numWidth, Tabs pprTabs, DocumentSettingsPart settings) {
     	// Also used by FOExporterVisitorGenerator, so should be moved
