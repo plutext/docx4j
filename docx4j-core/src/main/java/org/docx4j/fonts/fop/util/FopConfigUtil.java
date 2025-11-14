@@ -87,7 +87,7 @@ public class FopConfigUtil {
 	
 				Unmarshaller u = Context.getFopConfigContext().createUnmarshaller();
 				Object o = u.unmarshal(is);
-				System.out.println(o.getClass().getName());
+//				log.debug(o.getClass().getName());
 				substitutions = (Substitutions)o;
 			} catch (IOException e) {
 				log.error("Problems with class path resource " + substitutionsPath);

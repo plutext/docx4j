@@ -234,8 +234,8 @@ public class FieldUpdater {
 		
 		// Populate
 		for (FieldRef fr : fieldRefs) {
-			if (fr.getInstructions().isEmpty()) {
-				// field w/o instructions (empty)
+			if (fr.getInstructions().isEmpty()) {				
+				// field w/o instructions (empty) - see https://github.com/plutext/docx4j/issues/643
 				continue;
 			}
 			
