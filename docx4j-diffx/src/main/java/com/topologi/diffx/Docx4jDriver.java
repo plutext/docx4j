@@ -155,6 +155,7 @@ public class Docx4jDriver {
 		String key;
 		for (Enumeration<String> e = others.getURIs(); e.hasMoreElements();) {
 			key = (String) e.nextElement();
+//		  	log.debug("adding " + key);
 			to.add(key, others.getPrefix(key));
 		}
 	}
@@ -358,6 +359,7 @@ public class Docx4jDriver {
 				for (int k = rdi.leftStart() ; k< rdi.leftEnd() ; k++) {
 
 					if (rdi.kind()==rdi.CHANGE) {
+						log.debug("\n left rdi.CHANGE, handling prefixes");
 						// This we need to diff
 						//leftReport.append( "#" );
 						seq1.addSequence(leftESC.getItem(k));
@@ -366,6 +368,7 @@ public class Docx4jDriver {
 						PrefixMapping existingPM = leftESC.getItem(k).getPrefixMapping();
 						addToPrefixMapping(seq1.getPrefixMapping(), existingPM);
 					} else {
+						log.debug("left else, handling prefixes");
 						// Does this happen?
 						// This just goes straight into the output,
 					    formatter.declarePrefixMapping(leftESC.getItem(k).getPrefixMapping());
@@ -383,6 +386,7 @@ public class Docx4jDriver {
 				//seq2.mapPrefix("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "w");
 				for (int k = rdi.rightStart() ; k< rdi.rightEnd() ; k++) {
 					if (rdi.kind()==rdi.CHANGE) {
+						log.debug("\n right rdi.CHANGE, handling prefixes");
 						// This is the RHS of the diff
 						//rightReport.append( "#" );
 						seq2.addSequence(rightESC.getItem(k));
@@ -391,6 +395,8 @@ public class Docx4jDriver {
 						PrefixMapping existingPM = rightESC.getItem(k).getPrefixMapping();
 						addToPrefixMapping(seq2.getPrefixMapping(), existingPM);
 
+					} else {
+						log.debug("right else, doing nothing");						
 					}
 				}
 
@@ -401,14 +407,17 @@ public class Docx4jDriver {
 				//out.append("\n<!-- Differencing -->\n");
 				addComment("Differencing", formatter);
 
+				
 
 				if (seq1.size() + seq2.size() < 5000) {
 				  mainDiff(seq1, seq2, formatter, diffxConfig);
 				} else {
 					for (int i1=0; i1 < seq1.size(); i1++) {
+					    formatter.declarePrefixMapping(seq1.getPrefixMapping());
 						formatter.delete(seq1.getEvent(i1));
 					}
 					for (int i2=0; i2 < seq2.size(); i2++) {
+					    formatter.declarePrefixMapping(seq2.getPrefixMapping()); // probably need this as well?
 						formatter.insert(seq2.getEvent(i2));
 					}
 				}

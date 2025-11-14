@@ -12,6 +12,9 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Enumeration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.topologi.diffx.config.DiffXConfig;
 import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.event.DiffXEvent;
@@ -39,10 +42,8 @@ import com.topologi.diffx.xml.XMLWriterNSImpl;
  */
 public final class SmartXMLFormatter implements XMLDiffXFormatter {
 
-  /**
-   * Set to <code>true</code> to show debug info.
-   */
-  private static final boolean DEBUG = false;
+	protected static Logger log = LoggerFactory.getLogger(SmartXMLFormatter.class);
+	
 
   // class attributes ---------------------------------------------------------------------------
 
@@ -104,8 +105,8 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
 
   @Override
   public void format(DiffXEvent e) throws IOException {
-    if (DEBUG) {
-      System.err.println("="+e);
+    if (log.isDebugEnabled()) {
+      log.debug("="+e);
     }
     e.toXML(this.xml);
     if (e instanceof CharactersEventBase)
@@ -117,8 +118,8 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
 
   @Override
   public void insert(DiffXEvent e) throws IOException {
-    if (DEBUG) {
-      System.err.println("+"+e);
+    if (log.isDebugEnabled()) {
+      log.debug("+"+e);
     }
     // insert an attribute to specify
     if (e instanceof OpenElementEvent) {
@@ -158,8 +159,8 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
 
   @Override
   public void delete(DiffXEvent e) throws IOException {
-    if (DEBUG) {
-      System.err.println("-"+e);
+    if (log.isDebugEnabled()) {
+      log.debug("-"+e);
     }
     // insert an attribute to specify
     if (e instanceof OpenElementEvent) {
@@ -213,8 +214,10 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
    */
   @Override
   public void declarePrefixMapping(PrefixMapping mapping) {
+//	  log.debug("declarePrefixMapping");
     for (Enumeration<String> uris = mapping.getURIs(); uris.hasMoreElements();) {
       String uri = uris.nextElement();
+//	  log.debug(uri);
       this.xml.setPrefixMapping(uri, mapping.getPrefix(uri));
     }
   }

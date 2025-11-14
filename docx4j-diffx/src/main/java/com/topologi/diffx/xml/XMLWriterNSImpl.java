@@ -17,6 +17,9 @@ import java.util.Map.Entry;
 
 import javax.xml.XMLConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A Namespace-aware writer for XML data.
  *
@@ -38,11 +41,9 @@ import javax.xml.XMLConstants;
  * @version 11 December 2011
  */
 public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
-
-  /**
-   * Set to <code>true</code> to show debug info.
-   */
-  private static final boolean DEBUG = false;
+	
+	protected static Logger log = LoggerFactory.getLogger(XMLWriterNSImpl.class);
+	
 
   /**
    * The default namespace mapped to the empty prefix.
@@ -192,6 +193,8 @@ public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
    */
   @Override
   public void openElement(String uri, String name, boolean hasChildren) throws IOException {
+//  	log.debug("< " + name);
+	  
     deNude();
     indent();
     String qName = getQName(uri, name);
@@ -374,8 +377,8 @@ public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
       // create the new prefix mapping
       PrefixMapping pm = new PrefixMapping(prefix, uri);
       this.prefixMapping.put(pm.uri, pm.prefix);
-      if (DEBUG) {
-        System.err.println(pm.prefix+" -> "+pm.uri);
+      if (log.isDebugEnabled()) {
+        log.debug(pm.prefix+" -> "+pm.uri);
       }
       if (this.tempMapping == null) {
         this.tempMapping = new ArrayList<PrefixMapping>();
@@ -397,6 +400,7 @@ public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
   private String getQName(String uri, String name) throws UndeclaredNamespaceException {
     String prefix = this.prefixMapping.get(uri != null? uri : "");
     if (prefix != null) {
+//    	log.debug("Got prefix " + prefix);
       if (!"".equals(prefix))
         return this.prefixMapping.get(uri)+":"+name;
       else
@@ -446,8 +450,8 @@ public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
       // for each mapping of this element
       for (int i = 0; i < elt.mappings.size(); i++) {
         PrefixMapping mpi = elt.mappings.get(i);
-        if (DEBUG) {
-          System.err.print(mpi.prefix+" -< ");
+        if (log.isDebugEnabled()) {
+          log.debug(mpi.prefix+" -< ");
         }
         // find the first previous namespace mapping amongst the parents
         // that defines namespace mappings
@@ -461,8 +465,8 @@ public final class XMLWriterNSImpl extends XMLWriterBase implements XMLWriter {
               if (mpk.prefix.equals(mpi.prefix)) {
                 removeIfNeeded(mpk.prefix);
                 this.prefixMapping.put(mpk.uri, mpk.prefix);
-                if (DEBUG) {
-                  System.err.println(mpk.uri+" [R]");
+                if (log.isDebugEnabled()) {
+                  log.debug(mpk.uri+" [R]");
                 }
                 j = 0; // exit from the previous loop
                 break; // exit from this one

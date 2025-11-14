@@ -339,7 +339,7 @@ java.lang.IllegalArgumentException:
   <xsl:template match="w:drawing" priority="3">
   
 	<xsl:variable name="logdummy" 
-		select="java:org.docx4j.diff.Differencer.log('in my w:drawing template')" /> 
+		select="java:org.docx4j.diff.Differencer.log('in diffx2wml w:drawing template')" /> 
 
   	<xsl:choose>
   		<xsl:when test="@dfx:delete='true'">

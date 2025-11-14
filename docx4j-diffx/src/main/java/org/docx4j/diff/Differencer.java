@@ -245,12 +245,13 @@ public class Differencer {
 		}
 		
 		
-		log.debug("Looking for rel " + relId);
+		log.info("Looking for rel " + relId);
 		Relationship r = docPartRels.getRelationshipByID(relId);
 		if (r==null) {
 			log.error("Couldn't find rel " + relId);
 			return;
 		}
+//		log.info(".. targets " + r.getTarget());
 		
 		Part p = docPartRels.getPart(r);
 		
