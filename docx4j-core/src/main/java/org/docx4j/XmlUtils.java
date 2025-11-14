@@ -256,15 +256,12 @@ public class XmlUtils {
 			log.info("xerces DocumentBuilderFactory in use");
 			
 		} else {
-
-			// In this case suggest you add and use Xerces
-			//     System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-			//		    "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-			// which is what we used to do in XmlPart.
 			
 			log.info("default DocumentBuilderFactory property: " 
-					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" )
-					+ "\n Please consider using Xerces.");
+					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" ) );
+			
+			// com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
+			// is ok/better than Xerces in recent Java
 		}
 		
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
