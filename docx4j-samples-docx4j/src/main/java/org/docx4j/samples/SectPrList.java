@@ -62,13 +62,15 @@ public class SectPrList  {
 		
 		for (SectPr sectPr : sf.getOrderedSectPrList() ) {
 
-			// We are only interested in w:type and page numbering
-			// so remove irrelevant stuff
+			// remove the stuff we're not interested in seeing
 			sectPr.getEGHdrFtrReferences().clear();
 			sectPr.setPgSz(null);
-			sectPr.setPgMar(null);
+//			sectPr.setPgMar(null);
 			sectPr.setCols(null);
 			sectPr.setDocGrid(null);
+			
+//			sectPr.setType(null);
+//			sectPr.setPgNumType(null);
 						
 			System.out.println(i + " " + removeNamespacesFromPrintout(XmlUtils.marshaltoString(sectPr)));
 			i++;
