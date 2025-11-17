@@ -80,20 +80,13 @@
 		</dependency>
 		
 		<!-- required if specified by property javax.xml.parsers.SAXParserFactory
-			 in docx4j.properties --> 
+			 in docx4j.properties  
 		<dependency>
 		  <groupId>xerces</groupId>
 		  <artifactId>xercesImpl</artifactId>
 		  <version>2.12.2</version>
-		  <!-- 
-		  <exclusions>
-		  	<exclusion>
-			  <groupId>xml-apis</groupId>
-			  <artifactId>xml-apis</artifactId>
-		  	</exclusion>
-		  </exclusions>
-		   -->
 		</dependency>
+-->
 
 		<!--  choose your preferred logging implementation, for example: 
 -->
@@ -113,13 +106,14 @@
 		</dependency>
 -->
 
-		<!--  logging config files for log4j2 and logback can be found in:-->
+		<!--  logging config files for log4j2 and logback,
+				along with a docx4j.properties file, can be found in:
+		-->
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>docx4j-samples-resources</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
  	<!-- If you want to use Saxon for XPath, uncomment this, and include
  	
  				XPathFactoryUtil.setxPathFactory(new net.sf.saxon.xpath.XPathFactoryImpl());

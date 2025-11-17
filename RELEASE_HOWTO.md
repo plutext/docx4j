@@ -303,3 +303,9 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_rsa
 Enter passphrase for ... .ssh/id_rsa: [the github 2 one]
 
+-----
+
+Spotbugs:
+
+mvn spotbugs:spotbugs
+mvn spotbugs:gui

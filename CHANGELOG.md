@@ -2,6 +2,35 @@ CHANGELOG
 =========
 
 
+Version 11.5.7  (minor release) 
+===============
+
+Release date
+------------
+
+17 November 2025
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+matthiaso
+RangerMak
+
+Changes in Version 11.5.7
+--------------------------
+
+PDF via XSL FO output again: symbol/bullet fixes
+
+OpenDoPE: allow use of XPath 2 boolean semantics (org.opendope.conditions.Xpathref.XPathBoolean=cast2), and provide ability to circumvent strict type checking where a boolean is being compared to a string by casting the string (org.docx4j.openpackaging.parts.XmlPart.xpath2.typechecking=cast2). Requires Saxon 8.5 or later.
+
+Other minor fixes, including:
+- Setting unmarshaller listener on binder working again with JPMS (ReferenceImpl only)
+- diffx namespace handling
+
+
+
 Version 11.5.6  (minor release; some security tweaks) 
 ===============
 

@@ -92,14 +92,14 @@
 		<dependency>
 		  <groupId>org.glassfish.jaxb</groupId>
 		  <artifactId>jaxb-runtime</artifactId>
-		  <version>4.0.5</version>
+		  <version>4.0.6</version>
 		</dependency>
 
  		<!-- ensure dependency convergence -->
 		<dependency>
 		  <groupId>org.glassfish.jaxb</groupId>
 		  <artifactId>jaxb-core</artifactId>
-		  <version>4.0.5</version>
+		  <version>4.0.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.xml.bind</groupId>

@@ -29,19 +29,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
-					to execute the unit tests of an application -->
-				<version>2.6</version>
-				<configuration>
-					<excludes>
-						<exclude>**/samples/*.java</exclude>
-						<exclude>**/AbstractNumberingTest.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>
@@ -269,18 +256,28 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.18.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
+			<version>3.20.0</version>  <!-- ns prefix mapper uses org.apache.commons.lang3.text.StrTokenizer -->
 		</dependency>
 
-		<!--  3.4.0: used for zip/unzip -->		 
+		<!--  3.4.0: used for zip/unzip -->
 		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-compress</artifactId>
-		    <version>1.28.0</version>
-		</dependency>		 
-		 
-		 <!--  supports org.apache.commons.lang.NotImplementedException -->
-		 <!-- 
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.28.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-lang3</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!--  supports org.apache.commons.lang.NotImplementedException -->
+		<!-- 
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -292,7 +289,7 @@
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.19.0</version>
+			<version>1.20.0</version>
 		</dependency>
 
 		<dependency>
@@ -312,7 +309,7 @@
 			<exclusion>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<!-- pulls in old 2.17.0 -->
+					<!-- pulls in old 2.17.0 -->
 			</exclusion>			
 		</exclusions>
 	</dependency>
@@ -340,8 +337,8 @@
 			</exclusion>
 		</exclusions>		
 	</dependency>
-		 
-	<!-- Saxon for XPath
+
+		<!-- Saxon for XPath
 	<dependency>
 	  <groupId>net.sf.saxon</groupId>
 	  <artifactId>Saxon-HE</artifactId>
@@ -365,8 +362,8 @@
 		    <artifactId>stringtemplate</artifactId>
 		    <version>3.2.1</version>
 		</dependency>
-						
-<!-- Uncomment for load/save via JCR, which
+
+		<!-- Uncomment for load/save via JCR, which
 		may be found in docx4j-extras.
 		<dependency>
 			<groupId>javax.jcr</groupId>
@@ -376,26 +373,26 @@
 		-->
 
 
-  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 			(stuff not available in public repositories)
 
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 		-->
-		
+
 		<!--  deps for our re-packaged guava -->
 	    <dependency>
 	      <groupId>org.checkerframework</groupId>
 	      <artifactId>checker-qual</artifactId>
-	      <version>3.51.0</version>
+	      <version>3.52.0</version>
 	    </dependency>
 	    <dependency>
 	      <groupId>com.google.errorprone</groupId>
 	      <artifactId>error_prone_annotations</artifactId>
 	      <version>2.3.3</version> <!-- do not bump --> 
 	    </dependency>
-	    <!-- 
+		<!-- 
 	    <dependency>
 	      <groupId>com.google.guava</groupId>
 	      <artifactId>failureaccess</artifactId>
@@ -406,7 +403,6 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>fontbox</artifactId>
-			<version>3.0.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -414,7 +410,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	
+
 		<!--  for repackaged fop-events. 1.12.1 is last of 1.x series. 
 		      2.2.0 is not a drop in replacement' -->
 		<dependency>

@@ -19,6 +19,23 @@
 	<build>
 		<plugins>
 		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<!-- The Surefire Plugin is used during the test phase of the build lifecycle
+					to execute the unit tests of an application -->
+				<version>3.5.4</version>
+				<configuration>
+					<excludes>
+						<exclude>**/samples/*.java</exclude>
+						<exclude>**/AbstractNumberingTest.java</exclude>
+					</excludes>
+					<!-- One JVM per test class; necessary to use configured XPath implementation -->
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
+				</configuration>
+			</plugin>
+
 			<!--  don't deploy this jar to Maven Central -->			
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
@@ -32,8 +49,10 @@
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
+						
 		</plugins>
 	</build>
+	
 
 	<dependencies>
 
