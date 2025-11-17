@@ -668,7 +668,7 @@ public class PhysicalFonts {
 	private static boolean haveLookedForsuitableFontWFDings2 = false;
 	
 	/**
-	 * For XSL FO output of Webdings and the Wingdings fonts, 
+	 * For XSL FO output of Symbol font, 
 	 * substitute a font known to contain the appropriate glyphs
 	 * (if font is present). 
 	 * @return
