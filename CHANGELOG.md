@@ -29,6 +29,18 @@ Other minor fixes, including:
 - Setting unmarshaller listener on binder working again with JPMS (ReferenceImpl only)
 - diffx namespace handling
 
+Bump dependencies:
+
+	commons-codec:commons-codec ......................... 1.19.0 -> 1.20.0
+	commons-io:commons-io ............................... 2.20.0 -> 2.21.0
+	org.apache.commons:commons-lang3 .................... 3.18.0 -> 3.20.0
+	org.apache.pdfbox:fontbox ............................. 3.0.5 -> 3.0.6
+	org.checkerframework:checker-qual ................... 3.51.0 -> 3.52.0
+	
+	org.glassfish.jaxb:jaxb-core .......................... 4.0.5 -> 4.0.6 (JAXB Reference Impl)
+	org.glassfish.jaxb:jaxb-runtime ....................... 4.0.5 -> 4.0.6
+	
+	com.sun.xml.bind:jaxb-xjc ............................. 4.0.5 -> 4.0.6 (MOXy)	
 
 
 Version 11.5.6  (minor release; some security tweaks) 
