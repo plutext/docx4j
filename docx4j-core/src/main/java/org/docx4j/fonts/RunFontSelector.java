@@ -93,9 +93,11 @@ public class RunFontSelector {
 		if (fallbackFont==null) {
 			fallbackFont = getDefaultFont();
 			if (outputType!= RunFontActionType.DISCOVERY) {
-				log.warn(getDefaultFont() + " is not mapped!");
+				log.warn("Default font " + getDefaultFont() + " is not mapped; Fallback set to default.");
 			}
-		} 
+		} else {
+			log.debug("Fallback font set to " + fallbackFont);			
+		}
 		
 		vis.setFallbackFont(fallbackFont);
 		
@@ -279,6 +281,9 @@ public class RunFontSelector {
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		String val = getPhysicalFont(fontName);
     		if (val==null) {
+    			if (log.isDebugEnabled() ) {
+    				log.debug(fontName + " not mapped; using fallback " + fallbackFont);
+    			}
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
     		} else {	
@@ -1324,8 +1329,11 @@ public class RunFontSelector {
 			// Special cases; there are more; see http://en.wikipedia.org/wiki/List_of_CJK_fonts
 			String englishFromCJK = CJKToEnglish.toEnglish( fontName);
 			if (englishFromCJK==null) {
+				log.debug("englishFromCJK==null");
 				if (wordMLPackage.getFontMapper().size()>0) {
 					log.warn("Font '" + fontName + "' is not mapped to a physical font. " );
+				} else {
+					log.info("No font mappings present");
 				}
 				return null;
 			} else {
@@ -1334,9 +1342,13 @@ public class RunFontSelector {
 			
 			if (pf==null) {
 				if (wordMLPackage.getFontMapper().size()>0) {
-					log.warn("Font '" + englishFromCJK + "' is not mapped to a physical font. " );
+					log.warn("Font '" + englishFromCJK + "'  (from CJK)  is not mapped to a physical font. " );
+				} else {
+					log.info("No font mappings present");
 				}
 				return null;
+			} else {
+				log.debug(englishFromCJK + " (from CJK) maps to " + pf.getName() );				
 			}
 			
 			return pf.getName();
